@@ -285,26 +285,18 @@ On your **deployment machine**.
 If the Azure subscription that you have deployed into runs out of credit, the SHM and/or SRE will be shutdown automatically.
 ```
 
-## {{package}} Updating proxy package allowlists
+## {{package}} Updating repository package allowlists
 
-When the Nexus repository is deployed the full allowlists present in
-`environment_configs/package_lists/` will be used for configuration. For a
-{ref}`policy_tier_2` proxy these will be ignored and all packages on PyPI and
-CRAN may be installed on linked SREs. For a {ref}`policy_tier_3` proxy only the
-packages named in these lists may be installed.
+For a {ref}`policy_tier_3` SRE only the packages named in the allowlists at `environment_configs/package_lists/` can be installed by users.
 
-To update the allowlists and Nexus configuration on an SHM, you may use the
-`/deployment/administration/SHM_Update_Nexus_Allowlists.ps1` script.
+To update the allowlists on an SHM, you should use the `SHM_Package_Repository_Update_Allowlists.ps1` script.
 
 ```powershell
-PS> /deployment/administration/SHM_Update_Nexus_Allowlists.ps1 -shmId <SHM ID>
+PS> /deployment/administration/SHM_Package_Repository_Update_Allowlists.ps1 -shmId <SHM ID>
 ```
 
-By default, this script will use the allowlists present in
-`environment_configs/package_lists/` but you may use the `-allowlistDirectory`
-option to specify another directory containing the allowlists. It is assumed
-that the allowlists will have the same names as those in in
-`environment_configs/package_lists/`.
+By default, this script will use the allowlists present in `environment_configs/package_lists/` but you may use the `-allowlistDirectory` option to specify another directory containing the allowlists.
+It is assumed that the allowlists will have the same names as those in in `environment_configs/package_lists/`.
 
 ## {{anger}} Tear down SHM package mirrors
 
@@ -314,10 +306,10 @@ However, if you no longer have any SREs at a particular tier and you want to sav
 On your **deployment machine**.
 
 - Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
-- Open a `Powershell` terminal and navigate to the `deployment/safe_haven_management_environment/setup` directory within the Data Safe Haven repository.
+- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository.
 - Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
   - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-- Tear down the package mirrors by running `./Teardown_SHM_Package_Mirrors.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` specified in the configuration file.
+- Tear down the package mirrors by running `./SHM_Package_Repository_Teardown.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` specified in the configuration file.
 - This will take **a few minutes** to run.
 
 ## Ingress and Egress

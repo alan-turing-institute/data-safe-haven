@@ -3,7 +3,7 @@
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
-        "destinationAddressPrefix": "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+        "destinationAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
         "destinationPortRange": "*",
         "direction": "Inbound",
         "priority": 2000,
@@ -27,12 +27,12 @@
         "name": "AllowMirrorSynchronisationOutbound",
         "access": "Allow",
         "description": "Allow rsync over ports 22 and 873.",
-        "destinationAddressPrefix": "{{network.mirrorVnets.tier2.subnets.internal.cidr}}",
+        "destinationAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.mirrorsInternal.cidr}}",
         "destinationPortRange": ["22", "873"],
         "direction": "Outbound",
         "priority": 300,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -44,7 +44,7 @@
         "direction": "Outbound",
         "priority": 900,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -56,7 +56,7 @@
         "direction": "Outbound",
         "priority": 1200,
         "protocol": "*",
-        "sourceAddressPrefix": "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -68,7 +68,7 @@
         "direction": "Outbound",
         "priority": 1500,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -84,7 +84,7 @@
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",
-        "sourceAddressPrefix": "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -96,7 +96,7 @@
         "direction": "Outbound",
         "priority": 3200,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -112,7 +112,7 @@
         "direction": "Outbound",
         "priority": 3800,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {

@@ -1,4 +1,5 @@
 Import-Module Az.KeyVault -ErrorAction Stop
+Import-Module $PSScriptRoot/Cryptography -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 

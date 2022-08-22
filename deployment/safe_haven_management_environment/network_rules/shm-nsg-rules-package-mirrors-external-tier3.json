@@ -1,21 +1,9 @@
 [
     {
-        "name": "AllowRepositoryAccessInbound",
-        "access": "Allow",
-        "description": "Allow package requests over http",
-        "destinationAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
-        "destinationPortRange": "80",
-        "direction": "Inbound",
-        "priority": 1400,
-        "protocol": "*",
-        "sourceAddressPrefix": "VirtualNetwork",
-        "sourcePortRange": "*"
-    },
-    {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",
         "description": "Deny connections from admin P2S VPN",
-        "destinationAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "destinationAddressPrefix": "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
         "destinationPortRange": "*",
         "direction": "Inbound",
         "priority": 2000,
@@ -36,6 +24,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowMirrorSynchronisationOutbound",
+        "access": "Allow",
+        "description": "Allow rsync over ports 22 and 873.",
+        "destinationAddressPrefix": "{{network.vnetRepositoriesTier3.subnets.mirrorsInternal.cidr}}",
+        "destinationPortRange": ["22", "873"],
+        "direction": "Outbound",
+        "priority": 300,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowLinuxUpdatesOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to Linux update servers",
@@ -44,7 +44,7 @@
         "direction": "Outbound",
         "priority": 900,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -56,7 +56,7 @@
         "direction": "Outbound",
         "priority": 1200,
         "protocol": "*",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -68,7 +68,7 @@
         "direction": "Outbound",
         "priority": 1500,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -84,19 +84,19 @@
         "direction": "Outbound",
         "priority": 3000,
         "protocol": "UDP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
         "name": "AllowExternalPackageFetchingOutbound",
         "access": "Allow",
-        "description": "Allow ports 80 (http) and 443 (https) for fetching packages",
+        "description": "Allow ports 443 (https) and 873 (unencrypted rsync) for fetching packages",
         "destinationAddressPrefix": "Internet",
-        "destinationPortRange": ["80", "443"],
+        "destinationPortRange": ["443", "873"],
         "direction": "Outbound",
         "priority": 3200,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {
@@ -112,7 +112,7 @@
         "direction": "Outbound",
         "priority": 3800,
         "protocol": "TCP",
-        "sourceAddressPrefix": "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
         "sourcePortRange": "*"
     },
     {

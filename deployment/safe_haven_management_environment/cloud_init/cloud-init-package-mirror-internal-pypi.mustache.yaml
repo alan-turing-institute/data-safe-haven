@@ -1,13 +1,6 @@
 #cloud-config
 
-apt:
-  # Preserves the existing /etc/apt/sources.list
-  preserve_sources_list: true
-
-  # Update apt database on first boot (ie run apt-get update)
-  update: true
-
-# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+# We know that exactly one data disk will be attached to this VM and we currently start numbering from lun1
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
     table_type: gpt
@@ -22,17 +15,23 @@ fs_setup:
 mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail"]
 
+# Configure apt repositories
+apt:
+  preserve_sources_list: true
+
 # List of packages to install with apt-get
 packages:
   - openssh-server
   - python3-pip
   - python3-venv
+package_update: true
+package_upgrade: true
 
 write_files:
   - path: "/etc/apt/apt.conf.d/00proxy"
     permissions: "0444"
     content: |
-      Acquire::http::Proxy "http://{{updateServers.ip}}:8000";
+      Acquire::http::Proxy "http://{{updateServers.linux.ip}}:8000";
 
   - path: "/etc/crontab"
     append: true
@@ -158,7 +157,7 @@ users:
     lock_passwd: true
     sudo: false
     ssh_authorized_keys:
-      - {{{repositories.externalMirrorPublicKey}}}
+      - {{{perInstance.externalMirrorPublicKey}}}
 
 # Set locale and timezone
 locale: en_GB.UTF-8

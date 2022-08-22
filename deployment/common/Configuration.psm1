@@ -251,10 +251,10 @@ function Get-ShmConfig {
     $shmBasePrefix = "$($shmPrefixOctets[0]).$($shmPrefixOctets[1])"
     $shmThirdOctet = ([int]$shmPrefixOctets[2])
     $shm.network = [ordered]@{
-        vnet            = [ordered]@{
-            rg      = "$($shm.rgPrefix)_NETWORKING".ToUpper()
+        vnet = [ordered]@{
             name    = "VNET_SHM_$($shm.id)".ToUpper()
             cidr    = "${shmBasePrefix}.${shmThirdOctet}.0/21"
+            rg      = "$($shm.rgPrefix)_NETWORKING".ToUpper()
             subnets = [ordered]@{
                 identity      = [ordered]@{
                     name = "IdentitySubnet"
@@ -292,51 +292,39 @@ function Get-ShmConfig {
                 }
             }
         }
-        vpn             = [ordered]@{
+        vpn  = [ordered]@{
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
-        repositoryVnets = [ordered]@{}
-        mirrorVnets     = [ordered]@{}
     }
     foreach ($tier in @(2, 3)) {
-        $shmRepositoryPrefix = "10.30.$($tier-1)"
-        # TODO: $tier-1 is for backwards compatibility and may be removed in a major version update
-        $shm.network.repositoryVnets["tier${tier}"] = [ordered]@{
-            name    = "VNET_SHM_$($shm.id)_NEXUS_REPOSITORY_TIER_${tier}".ToUpper()
+        $shmRepositoryPrefix = "10.10.${tier}"
+        $shm.network["vnetRepositoriesTier${tier}"] = [ordered]@{
+            name    = "VNET_SHM_$($shm.id)_PACKAGE_REPOSITORIES_TIER_${tier}".ToUpper()
             cidr    = "${shmRepositoryPrefix}.0/24"
+            rg      = $shm.network.vnet.rg
             subnets = [ordered]@{
-                repository = [ordered]@{
-                    name = "RepositoryTier${tier}Subnet"
-                    cidr = "${shmRepositoryPrefix}.0/24"
+                mirrorsExternal = [ordered]@{
+                    name = "PackageMirrorsExternalTier${tier}Subnet"
+                    cidr = "${shmRepositoryPrefix}.0/26"
                     nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_NEXUS_REPOSITORY_TIER_${tier}".ToUpper()
-                        rules = "shm-nsg-rules-nexus-tier${tier}.json"
+                        name  = "$($shm.nsgPrefix)_PACKAGE_MIRRORS_EXTERNAL_TIER${tier}".ToUpper()
+                        rules = "shm-nsg-rules-package-mirrors-external-tier${tier}.json"
                     }
                 }
-            }
-        }
-    }
-    # Set package mirror networking information
-    foreach ($tier in @(2, 3)) {
-        $shmMirrorPrefix = "10.20.${tier}"
-        $shm.network.mirrorVnets["tier${tier}"] = [ordered]@{
-            name    = "VNET_SHM_$($shm.id)_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
-            cidr    = "${shmMirrorPrefix}.0/24"
-            subnets = [ordered]@{
-                external = [ordered]@{
-                    name = "ExternalPackageMirrorsTier${tier}Subnet"
-                    cidr = "${shmMirrorPrefix}.0/28"
+                mirrorsInternal = [ordered]@{
+                    name = "PackageMirrorsInternalTier${tier}Subnet"
+                    cidr = "${shmRepositoryPrefix}.64/26"
                     nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_EXTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
-                        rules = "shm-nsg-rules-external-mirrors-tier${tier}.json"
+                        name  = "$($shm.nsgPrefix)_PACKAGE_MIRRORS_INTERNAL_TIER${tier}".ToUpper()
+                        rules = "shm-nsg-rules-package-mirrors-internal-tier${tier}.json"
                     }
                 }
-                internal = [ordered]@{
-                    name = "InternalPackageMirrorsTier${tier}Subnet"
-                    cidr = "${shmMirrorPrefix}.16/28"
+                proxies         = [ordered]@{
+                    name = "PackageProxiesTier${tier}Subnet"
+                    cidr = "${shmRepositoryPrefix}.128/26"
                     nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_INTERNAL_PACKAGE_MIRRORS_TIER${tier}".ToUpper()
-                        rules = "shm-nsg-rules-internal-mirrors-tier${tier}.json"
+                        name  = "$($shm.nsgPrefix)_PACKAGE_PROXIES_TIER_${tier}".ToUpper()
+                        rules = "shm-nsg-rules-package-proxies-tier${tier}.json"
                     }
                 }
             }
@@ -490,48 +478,60 @@ function Get-ShmConfig {
         rg               = $shmConfigBase.dnsRecords.resourceGroupName ? $shmConfigBase.dnsRecords.resourceGroupName : "$($shm.rgPrefix)_DNS_RECORDS".ToUpper()
     }
 
-    # Nexus repository VM config
-    $shm.repository = [ordered]@{}
-    # --------------------------
-    foreach ($tier in @(2, 3)) {
-        $shm.repository["tier${tier}"] = [ordered]@{
-            rg       = "$($shm.rgPrefix)_NEXUS_REPOSITORIES".ToUpper()
-            vmSize   = "Standard_B2ms"
-            diskType = "Standard_LRS"
-            nexus    = [ordered]@{
-                adminPasswordSecretName         = "shm-$($shm.id)-vm-admin-password-nexus-tier${tier}".ToLower()
-                nexusAppAdminPasswordSecretName = "shm-$($shm.id)-nexus-repository-admin-password-tier${tier}".ToLower()
-                ipAddress                       = "10.30.$($tier-1).10"
-                # TODO: $tier-1 is for backwards compatibility and may be removed in a major version update
-                vmName                          = "NEXUS-REPOSITORY-TIER-${tier}"
-            }
-        }
+    # Package repository configuration
+    # --------------------------------
+    $shm.repositories = [ordered]@{
+        rg = "$($shm.rgPrefix)_PACKAGE_REPOSITORIES".ToUpper()
     }
-
-    # Package mirror config
-    # ---------------------
-    $shm.mirrors = [ordered]@{
-        rg       = "$($shm.rgPrefix)_PKG_MIRRORS".ToUpper()
-        vmSize   = "Standard_B2ms"
-        diskType = "Standard_LRS"
-        pypi     = [ordered]@{
-            tier2 = [ordered]@{ diskSize = 8192 }
-            tier3 = [ordered]@{ diskSize = 1024 }
-        }
-        cran     = [ordered]@{
-            tier2 = [ordered]@{ diskSize = 128 }
-            tier3 = [ordered]@{ diskSize = 32 }
-        }
-    }
-    # Set password secret name and IP address for each mirror
     foreach ($tier in @(2, 3)) {
-        foreach ($direction in @("internal", "external")) {
-            # Please note that each mirror type must have a distinct ipOffset in the range 4-15
-            foreach ($typeOffset in @(("pypi", 4), ("cran", 5))) {
-                $shm.mirrors[$typeOffset[0]]["tier${tier}"][$direction] = [ordered]@{
-                    adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-$($typeOffset[0])-${direction}-mirror-tier-${tier}".ToLower()
-                    ipAddress               = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.mirrorVnets["tier${tier}"].subnets[$direction].cidr -Offset $typeOffset[1]
-                    vmName                  = "$($typeOffset[0])-${direction}-MIRROR-TIER-${tier}".ToUpper()
+        $shm.repositories["tier${tier}"] = [ordered]@{}
+        # Tier 2 defaults to using a proxy unless otherwise specified
+        if ($tier -eq 2) {
+            $LocalRepositoryTypes = ($shmConfigBase.repositoryType.tier2 -and ($shmConfigBase.repositoryType.tier2.ToLower() -eq "mirror")) ? @("mirrorsExternal", "mirrorsInternal") : @("proxies")
+        }
+        # Tier 3 defaults to using a proxy unless otherwise specified
+        if ($tier -eq 3) {
+            $LocalRepositoryTypes = ($shmConfigBase.repositoryType.tier3 -and ($shmConfigBase.repositoryType.tier3.ToLower() -eq "mirror")) ? @("mirrorsExternal", "mirrorsInternal") : @("proxies")
+        }
+        # Tier 4 requires the use of mirrors
+        if ($tier -eq 4) {
+            $LocalRepositoryTypes = @("mirrorsExternal", "mirrorsInternal")
+        }
+        foreach ($LocalRepositoryType in $LocalRepositoryTypes) {
+            $shm.repositories["tier${tier}"][$LocalRepositoryType] = [ordered]@{}
+            $RemoteRepositories = ($LocalRepositoryType -eq "proxies") ? "many" : @("cran", "pypi")
+            foreach ($RemoteRepository in $RemoteRepositories) {
+                if ($RemoteRepository -eq "cran") {
+                    $dataDiskSizeGb = ($tier -eq 2) ? 128 : 32
+                    $ipOffset = 4
+                } elseif ($RemoteRepository -eq "pypi") {
+                    $dataDiskSizeGb = ($tier -eq 2) ? 8192 : 1024
+                    $ipOffset = 5
+                } else {
+                    $dataDiskSizeGb = $null
+                    $ipOffset = 6
+                }
+                $vmName = "PACKAGE-$($LocalRepositoryType.Replace("proxies", "proxy").Replace("mirrors", "mirror-"))-${RemoteRepository}-TIER-${tier}".ToUpper()
+                $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository] = [ordered]@{
+                    adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-${vmName}".ToLower()
+                    disks                   = [ordered]@{
+                        os = [ordered]@{
+                            sizeGb = 32
+                            type   = "Standard_LRS"
+                        }
+                    }
+                    ipAddress               = Get-NextAvailableIpInRange -IpRangeCidr $shm.network["vnetRepositoriesTier${tier}"].subnets[$LocalRepositoryType].cidr -Offset $ipOffset
+                    vmName                  = $vmName
+                    vmSize                  = "Standard_B2ms"
+                }
+                if ($dataDiskSizeGb) {
+                    $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository].disks["data"] = [ordered]@{
+                        sizeGb = $dataDiskSizeGb
+                        type   = "Standard_LRS"
+                    }
+                }
+                if ($LocalRepositoryType -eq "proxies") {
+                    $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository]["applicationAdminPasswordSecretName"] = "shm-$($shm.id)-application-admin-password-${vmName}".ToLower()
                 }
             }
         }
@@ -618,7 +618,6 @@ function Get-SreConfig {
         Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($sreConfigBase.tier)'"
     }
     # Setup the basic config
-    $nexusDefault = ($sreConfigBase.tier -eq "2") ? $true : $false # Nexus is the default for tier-2 SREs
     $config = [ordered]@{
         shm = Get-ShmConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
@@ -628,7 +627,6 @@ function Get-SreConfig {
             shortName        = "sre-$($sreConfigBase.sreId)".ToLower()
             subscriptionName = $sreConfigBase.subscriptionName
             tier             = $sreConfigBase.tier
-            nexus            = $sreConfigBase.nexus -is [bool] ? $sreConfigBase.nexus : $nexusDefault
             remoteDesktop    = [ordered]@{
                 provider = $sreConfigBase.remoteDesktopProvider
             }
@@ -1108,28 +1106,27 @@ function Get-SreConfig {
         $repositoryVNetName = $null
         $repositoryVNetCidr = $null
     } else {
-        # All Nexus repositories are accessed over the same port (currently 80)
-        if ($config.sre.nexus) {
-            $nexus_port = 80
-            if ([int]$config.sre.tier -gt 3) {
-                Add-LogMessage -Level Fatal "Nexus repositories cannot currently be used for tier $($config.sre.tier) SREs!"
-            }
-            $cranUrl = "http://$($config.shm.repository["tier$($config.sre.tier)"].nexus.ipAddress):${nexus_port}/repository/cran-proxy"
-            $pypiUrl = "http://$($config.shm.repository["tier$($config.sre.tier)"].nexus.ipAddress):${nexus_port}/repository/pypi-proxy"
-            $repositoryVNetName = $config.shm.network.repositoryVnets["tier$($config.sre.tier)"].name
-            $repositoryVNetCidr = $config.shm.network.repositoryVnets["tier$($config.sre.tier)"].cidr
+        # If using the Nexus proxy then the two repositories are hosted on the same VM
+        $repositoryConfig = $config.shm.repositories["tier$($config.sre.tier)"]
+        if ($repositoryConfig.proxies) {
+            $cranUrl = "http://$($repositoryConfig.proxies.many.ipAddress):80/repository/cran-proxy"
+            $pypiUrl = "http://$($repositoryConfig.proxies.many.ipAddress):80/repository/pypi-proxy"
+            $repositoryVNetName = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].name
+            $repositoryVNetCidr = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].cidr
         # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
+        } elseif ($repositoryConfig.mirrorsInternal) {
+            $cranUrl = "http://$($repositoryConfig.mirrorsInternal.cran.ipAddress)"
+            $pypiUrl = "http://$($repositoryConfig.mirrorsInternal.pypi.ipAddress):3128"
+            $repositoryVNetName = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].name
+            $repositoryVNetCidr = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].cidr
         } else {
-            $cranUrl = "http://" + $($config.shm.mirrors.cran["tier$($config.sre.tier)"].internal.ipAddress)
-            $pypiUrl = "http://" + $($config.shm.mirrors.pypi["tier$($config.sre.tier)"].internal.ipAddress) + ":3128"
-            $repositoryVNetName = $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].name
-            $repositoryVNetCidr = $config.shm.network.mirrorVnets["tier$($config.sre.tier)"].cidr
+            Add-LogMessage -Level Fatal "Unknown package repository source for tier $($config.sre.tier) SRE!"
         }
     }
     # We want to extract the hostname from PyPI URLs in any of the following forms
-    # 1. http://10.20.2.20:3128                      => 10.20.2.20
+    # 1. http://10.10.2.20:3128                      => 10.10.2.20
     # 2. https://pypi.org                            => pypi.org
-    # 3. http://10.30.1.10:80/repository/pypi-proxy  => 10.30.1.10
+    # 3. http://10.10.3.10:80/repository/pypi-proxy  => 10.10.3.10
     $pypiHost = ($pypiUrl -match "https*:\/\/([^:]*)([:0-9]*).*") ? $Matches[1] : ""
     $pypiIndex = $config.sre.nexus ? "${pypiUrl}/pypi" : $pypiUrl
     $config.sre.repositories = [ordered]@{

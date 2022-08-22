@@ -1,13 +1,6 @@
 #cloud-config
 
-apt:
-  # Preserves the existing /etc/apt/sources.list
-  preserve_sources_list: true
-
-  # Update apt database on first boot (ie run apt-get update)
-  update: true
-
-# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+# We know that exactly one data disk will be attached to this VM and we currently start numbering from lun1
 disk_setup:
   /dev/disk/azure/scsi1/lun1:
     table_type: gpt
@@ -22,6 +15,10 @@ fs_setup:
 mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail"]
 
+# Configure apt repositories
+apt:
+  preserve_sources_list: true
+
 # List of packages to install with apt-get
 packages:
   - build-essential
@@ -30,6 +27,8 @@ packages:
   - python3-pip
   - python3-venv
   - rsync
+package_update: true
+package_upgrade: true
 
 # Initialise an empty file `internal_mirror_ip_addresses.txt`
 # When internal mirrors are deployed, they add their IP address to this file
@@ -39,113 +38,7 @@ write_files:
   - path: "/etc/apt/apt.conf.d/00proxy"
     permissions: "0444"
     content: |
-      Acquire::http::Proxy "http://{{updateServers.ip}}:8000";
-
-  - path: "/etc/crontab"
-    append: true
-    content: |
-      45 1 * * * root  apt update
-
-  - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
-    permissions: "0600"
-
-  - path: "/home/mirrordaemon/package_allowlist.txt"
-    permissions: "0600"
-    content: |
-      # PACKAGE_ALLOWLIST
-
-  - path: "/home/mirrordaemon/update_bandersnatch_config.py"
-    permissions: "0400"
-    content: |
-      #! /usr/bin/env python3
-      from collections import defaultdict
-
-      TIER={{repositories.tier}}
-      config_sections = defaultdict(list)
-      section = "main"
-
-      # Load packages from allowlist
-      with open("/home/mirrordaemon/package_allowlist.txt", "r") as f_allowlist:
-          packages = [p for p in f_allowlist.read().splitlines() if p and not p.startswith("#")]
-
-      # Parse bandersnatch configuration into sections
-      with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
-          for line in f_bandersnatch.read().splitlines():
-              if line.startswith("[") and line.endswith("]"):
-                  section = line[1:-1]
-              if line:
-                  config_sections[section].append(line)
-
-      # Enable/disable allowlist depending on tier
-      config_sections["plugins"] = [p for p in config_sections["plugins"] if not "allowlist_project" in p]
-      if int(TIER) == 2:
-          # Tier 2 mirrors should not have a allowlist section
-          config_sections.pop("allowlist", [])
-      else:
-          # If there is already a allowlist section then start by emptying it
-          config_sections["allowlist"] = ["[allowlist]", "packages ="]
-
-          # Ensure the that allowlist_project plugin is enabled
-          config_sections["plugins"].append("    allowlist_project")
-
-          # Add any allowed packages to this section
-          # Note that we need at least one package for package filtering to work. 'six' is minimal and safe.
-          if not packages:
-              packages = ["six"]
-          [config_sections["allowlist"].append("    {}".format(package)) for package in packages]
-
-      # Write the output bandersnatch configuration
-      with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
-          for section in config_sections.keys():
-              [f_bandersnatch.write(line + "\n") for line in config_sections[section]]
-              f_bandersnatch.write("\n")
-      print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_allowlist.txt")
-
-  - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
-    permissions: "0700"
-    content: |
-      #! /bin/bash
-      # rsync: make the destination look like the source
-      #   -p          preserve permissions
-      #   -r          recursive
-      #   -t          preserve times
-      #   -l          follow symlinks
-      #   -v          verbose
-      #   --delete    delete files present in destination but not source
-      #   --progress  show progress
-      echo "[PushToInternal] Found $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt | wc -l | xargs) internal mirrors" | tee >(logger -t SafeHaven)
-      for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
-          echo "[PushToInternal] Started pushing to the internal mirror at ${IP_ADDRESS}..." | tee >(logger -t SafeHaven)
-          START_TIME=$(date +%s)
-          rsync -prtlv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi 2>&1 | awk '{print "[PushToInternal] " $0}' | tee >(logger -t SafeHaven)
-          ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-          echo "[PushToInternal] Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee >(logger -t SafeHaven)
-      done
-
-  - path: "/home/mirrordaemon/pull_from_internet.sh"
-    permissions: "0700"
-    content: |
-      #! /bin/bash
-      TIER={{repositories.tier}}
-      echo "[PullFromInternet] Started pulling from the internet..." | tee >(logger -t SafeHaven)
-      START_TIME=$(date +%s)
-      if [ "$TIER" != "2" ]; then
-          installed_packages=$(ls -d /datadrive/mirrordaemon/pypi/web/simple/*/ | rev | cut -d'/' -f2 | rev | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] | sort)
-          cat /home/mirrordaemon/package_allowlist.txt | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] > /tmp/package_allowlist
-          packages_to_delete=$(for package in $installed_packages; do if [ "$(grep -w -i $package /tmp/package_allowlist)" = "" ]; then echo $package; fi; done)
-          /usr/local/bin/bandersnatch delete $packages_to_delete 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
-          rm /tmp/package_allowlist 2> /dev/null
-      fi
-      /usr/local/bin/bandersnatch mirror 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
-      ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
-      echo "[PullFromInternet] Finished pulling from the internet after $ELAPSED" | tee >(logger -t SafeHaven)
-
-  - path: "/home/mirrordaemon/pull_then_push.sh"
-    permissions: "0700"
-    content: |
-      #! /bin/bash
-      source ~mirrordaemon/pull_from_internet.sh
-      source ~mirrordaemon/push_to_internal_mirrors.sh
+      Acquire::http::Proxy "http://{{updateServers.linux.ip}}:8000";
 
   - path: "/etc/bandersnatch.conf"
     permissions: "0644"
@@ -196,6 +89,117 @@ write_files:
           windows
           macos
           freebsd
+
+  - path: "/etc/crontab"
+    append: true
+    content: |
+      45 1 * * * root  apt update
+
+  - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
+    permissions: "0600"
+
+  - path: "/home/mirrordaemon/package_allowlist.txt"
+    permissions: "0600"
+    content: |
+      {{allowlist-full-python-pypi-tier3.list}}
+
+  - path: "/home/mirrordaemon/update_bandersnatch_config.py"
+    permissions: "0400"
+    content: |
+      #! /usr/bin/env python3
+      from collections import defaultdict
+
+      TIER="{{perInstance.tier}}"
+      config_sections = defaultdict(list)
+      section = "main"
+
+      # Load packages from allowlist
+      with open("/home/mirrordaemon/package_allowlist.txt", "r") as f_allowlist:
+          packages = [p for p in f_allowlist.read().splitlines() if p and not p.startswith("#")]
+
+      # Parse bandersnatch configuration into sections
+      with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
+          for line in f_bandersnatch.read().splitlines():
+              if line.startswith("[") and line.endswith("]"):
+                  section = line[1:-1]
+              if line:
+                  config_sections[section].append(line)
+
+      # Enable/disable allowlist depending on tier
+      config_sections["plugins"] = [p for p in config_sections["plugins"] if not "allowlist_project" in p]
+      if TIER == "tier2":
+          # Tier 2 mirrors should not have a allowlist section
+          config_sections.pop("allowlist", [])
+      else:
+          # If there is already a allowlist section then start by emptying it
+          config_sections["allowlist"] = ["[allowlist]", "packages ="]
+
+          # Ensure the that allowlist_project plugin is enabled
+          config_sections["plugins"].append("    allowlist_project")
+
+          # Add any allowed packages to this section
+          # Note that we need at least one package for package filtering to work. 'six' is minimal and safe.
+          if not packages:
+              packages = ["six"]
+          [config_sections["allowlist"].append("    {}".format(package)) for package in packages]
+
+      # Write the output bandersnatch configuration
+      with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
+          for section in config_sections.keys():
+              [f_bandersnatch.write(line + "\n") for line in config_sections[section]]
+              f_bandersnatch.write("\n")
+      print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_allowlist.txt")
+
+  - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
+    permissions: "0700"
+    content: |
+      #! /bin/bash
+      # rsync: make the destination look like the source
+      #   -p          preserve permissions
+      #   -r          recursive
+      #   -t          preserve times
+      #   -l          follow symlinks
+      #   -v          verbose
+      #   --delete    delete files present in destination but not source
+      #   --progress  show progress
+      echo "[PushToInternal] Found $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt | wc -l | xargs) internal mirrors" | tee >(logger -t SafeHaven)
+      for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
+          echo "[PushToInternal] Started pushing to the internal mirror at ${IP_ADDRESS}..." | tee >(logger -t SafeHaven)
+          START_TIME=$(date +%s)
+          rsync -prtlv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi 2>&1 | awk '{print "[PushToInternal] " $0}' | tee >(logger -t SafeHaven)
+          ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+          echo "[PushToInternal] Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee >(logger -t SafeHaven)
+      done
+
+  - path: "/home/mirrordaemon/pull_from_internet.sh"
+    permissions: "0700"
+    content: |
+      #! /bin/bash
+      TIER="{{perInstance.tier}}"
+      echo "[PullFromInternet] Started pulling from the internet..." | tee >(logger -t SafeHaven)
+      START_TIME=$(date +%s)
+      if [ "$TIER" != "tier2" ]; then
+          installed_packages=$(ls -d /datadrive/mirrordaemon/pypi/web/simple/*/ | rev | cut -d'/' -f2 | rev | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] | sort)
+          cat /home/mirrordaemon/package_allowlist.txt | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] > /tmp/package_allowlist
+          packages_to_delete=$(for package in $installed_packages; do if [ "$(grep -w -i $package /tmp/package_allowlist)" = "" ]; then echo $package; fi; done)
+          /usr/local/bin/bandersnatch delete $packages_to_delete 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
+          rm /tmp/package_allowlist 2> /dev/null
+      fi
+      /usr/local/bin/bandersnatch mirror 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
+      ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+      echo "[PullFromInternet] Finished pulling from the internet after $ELAPSED" | tee >(logger -t SafeHaven)
+
+  - path: "/home/mirrordaemon/pull_then_push.sh"
+    permissions: "0700"
+    content: |
+      #! /bin/bash
+      source ~mirrordaemon/pull_from_internet.sh
+      source ~mirrordaemon/push_to_internal_mirrors.sh
+
+  - path: "/home/mirrordaemon/update_known_internal_mirrors.sh"
+    permissions: "0700"
+    content: |
+      {{update_known_internal_mirrors.sh}}
 
 # Add the SHM admin (default) and mirrordaemon users
 # lock_passwd: Lock the password to disable password login

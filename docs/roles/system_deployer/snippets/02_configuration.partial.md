@@ -19,7 +19,6 @@ The following core SRE properties are required - look in the `environment_config
 {
   "sreId": "The <SRE ID> that you decided on above (eg. 'sandbox').",
   "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
-  "nexus": "[Optional, Bool] Whether to use a Nexus repository as a proxy to PyPI and CRAN. Defaults to true if tier is 2 and false otherwise.",
   "shmId": "The <SHM ID> that you decided on above (eg. 'testa').",
   "subscriptionName": "Azure subscription that the SRE will be deployed into.",
   "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. See below for suggestion on how to set this",
