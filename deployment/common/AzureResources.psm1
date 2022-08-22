@@ -208,10 +208,8 @@ function Remove-ResourceGroup {
     try {
         $ResourceGroup = Get-AzResourceGroup -ResourceGroupName $Name -ErrorAction Stop
         if ($NoWait.IsPresent) {
-            if ($ResourceGroup.ResourceId) {
-                $null = Get-AzResource -ErrorAction SilentlyContinue -ErrorVariable $ignored | Where-Object { $_.ResourceGroupName -eq $Name } | Remove-AzResource -AsJob -ErrorAction SilentlyContinue -ErrorVariable $ignored
-                $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -AsJob -ErrorAction SilentlyContinue -ErrorVariable $ignored
-            }
+            $null = Get-AzResource -ErrorAction SilentlyContinue -ErrorVariable $ignored | Where-Object { $_.ResourceGroupName -eq $Name } | Remove-AzResource -AsJob -ErrorAction SilentlyContinue -ErrorVariable $ignored
+            $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -AsJob -ErrorAction SilentlyContinue -ErrorVariable $ignored
         } else {
             $null = Remove-AzResourceGroup -ResourceId $ResourceGroup.ResourceId -Force -Confirm:$False -ErrorAction Stop
             Add-LogMessage -Level Success "Removing resource group '$Name' succeeded"
