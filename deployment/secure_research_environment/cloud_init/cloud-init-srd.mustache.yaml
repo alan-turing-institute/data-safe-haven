@@ -24,7 +24,7 @@ write_files:
   - path: "/etc/apt/apt.conf.d/00proxy"
     permissions: "0444"
     content: |
-      Acquire::http::Proxy "http://{{shm.updateServers.linux.ip}}:8000";
+      Acquire::http::Proxy "http://{{shm.monitoring.updateServers.linux.ip}}:8000";
 
   - path: "/etc/audit/rules.d/audit.rules"
     permissions: "0400"

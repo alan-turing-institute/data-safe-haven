@@ -746,6 +746,19 @@
           "216.32.180.0/22",
           "216.220.208.0/20"
         ]
+      },
+      "linux": {
+        "adminPasswordSecretName": "shm-testc-vm-admin-password-linux-update-server",
+        "disks": {
+          "os": {
+            "sizeGb": "32",
+            "type": "Standard_LRS"
+          }
+        },
+        "hostname": "LINUX-UPDATES-SHM-TESTC",
+        "ip": "10.0.3.4",
+        "vmName": "LINUX-UPDATES-SHM-TESTC",
+        "vmSize": "Standard_B2ms"
       }
     }
   },
@@ -996,22 +1009,6 @@
       "linux": "Europe/London",
       "windows": "GMT Standard Time"
     }
-  },
-  "updateServers": {
-    "linux": {
-      "adminPasswordSecretName": "shm-testc-vm-admin-password-linux-update-server",
-      "disks": {
-        "os": {
-          "sizeGb": "32",
-          "type": "Standard_LRS"
-        }
-      },
-      "hostname": "APT-SHM-TESTC",
-      "ip": "10.0.3.4",
-      "vmName": "APT-SHM-TESTC",
-      "vmSize": "Standard_B2ms"
-    },
-    "rg": "RG_SHM_TESTC_UPDATE_SERVERS"
   },
   "users": {
     "computerManagers": {
