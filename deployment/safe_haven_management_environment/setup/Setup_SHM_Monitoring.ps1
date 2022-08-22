@@ -104,12 +104,29 @@ try {
 # --------------------------------------
 $null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates"
 $shmQuery = Deploy-AutomationAzureQuery -Account $account -ResourceGroups $shmResourceGroups
-# Create Windows VM update schedule
-$windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "shm-$($config.id)-windows".ToLower() -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Query $shmQuery -Schedule $windowsSchedule -VmType "Windows"
+$localTimeZone = Get-TimeZone -Id $config.time.timezone.linux
+# Create Windows VM virus definitions update schedule
+$windowsDailySchedule = Deploy-AutomationScheduleInDays -Account $account `
+                                                        -Name "shm-$($config.id)-windows-definitions".ToLower() `
+                                                        -Time "01:01" `
+                                                        -TimeZone $localTimeZone
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 1 -Query $shmQuery -Schedule $windowsDailySchedule -VmType "Windows"
+# Create Windows VM other updates schedule
+$windowsWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
+                                                         -DayInterval 7 `
+                                                         -Name "shm-$($config.id)-windows-other".ToLower() `
+                                                         -StartDayOfWeek "Tuesday" `
+                                                         -Time "02:02" `
+                                                         -TimeZone $localTimeZone
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 3 -Query $shmQuery -Schedule $windowsWeeklySchedule -VmType "Windows"
 # Create Linux VM update schedule
-$linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "shm-$($config.id)-linux".ToLower() -Time "02:01" -TimeZone (Get-TimeZone -Id $config.time.timezone.linux)
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Query $shmQuery -Schedule $linuxSchedule -VmType "Linux"
+$linuxWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
+                                                       -DayInterval 7 `
+                                                       -Name "shm-$($config.id)-linux".ToLower() `
+                                                       -StartDayOfWeek "Tuesday" `
+                                                       -Time "02:02" `
+                                                       -TimeZone $localTimeZone
+$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 3 -Query $shmQuery -Schedule $linuxWeeklySchedule -VmType "Linux"
 
 
 # Enable the collection of syslog logs from Linux hosts
