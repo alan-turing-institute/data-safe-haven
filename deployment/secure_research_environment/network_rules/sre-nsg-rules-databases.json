@@ -116,9 +116,9 @@
         "access": "Allow",
         "description": "Allow outbound connections to Windows update servers",
         "destinationAddressPrefix": [
-            {{#shm.monitoring.updateServers.windows}}
+            {{#shm.monitoring.updateServers.externalIpAddresses.windows}}
                 "{{.}}",
-            {{/shm.monitoring.updateServers.windows}}
+            {{/shm.monitoring.updateServers.externalIpAddresses.windows}}
         ],
         "destinationPortRange": ["80", "443"],
         "direction": "Outbound",
@@ -132,9 +132,9 @@
         "access": "Allow",
         "description": "Allow outbound connections to Azure automation servers",
         "destinationAddressPrefix": [
-            {{#shm.monitoring.updateServers.azureAutomation}}
+            {{#shm.monitoring.updateServers.externalIpAddresses.azureAutomation}}
                 "{{.}}",
-            {{/shm.monitoring.updateServers.azureAutomation}}
+            {{/shm.monitoring.updateServers.externalIpAddresses.azureAutomation}}
         ],
         "destinationPortRange": ["443"],
         "direction": "Outbound",

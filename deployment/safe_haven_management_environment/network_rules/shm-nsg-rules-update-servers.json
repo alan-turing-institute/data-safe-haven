@@ -40,9 +40,9 @@
         "access": "Allow",
         "description": "Allow outbound connections to Linux update servers",
         "destinationAddressPrefix": [
-            {{#monitoring.updateServers.linux}}
+            {{#monitoring.updateServers.externalIpAddresses.linux}}
                 "{{.}}",
-            {{/monitoring.updateServers.linux}}
+            {{/monitoring.updateServers.externalIpAddresses.linux}}
         ],
         "destinationPortRange": ["80", "443"],
         "direction": "Outbound",
