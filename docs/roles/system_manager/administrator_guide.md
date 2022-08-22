@@ -436,7 +436,7 @@ The current state will be overwritten by the point which you restore to.
 ```
 
 - In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SRE.
-- Search for the resource group: `RG_SHM_<SHM ID>_SRE_<SRE ID>_BACKUP`, then click on the storage account called: `bv-<shm id>-sre-<sre id>.
+- Search for the resource group: `RG_SHM_<SHM ID>_SRE_<SRE ID>_BACKUP`, then click on the storage account called: `bv-<shm id>-sre-<sre id>`.
 - Click `Backup instances` under `Manage` in the left-hand menu.
 - Ensure that the `Datasource type` filter is set to `Azure Blobs (Azure Storage)`
 
