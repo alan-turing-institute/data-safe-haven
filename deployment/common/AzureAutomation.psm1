@@ -166,6 +166,8 @@ function Register-VmsWithAutomationSchedule {
         [Microsoft.Azure.Commands.Automation.Model.AutomationAccount]$Account,
         [Parameter(Mandatory = $false, HelpMessage = "How many hours to allow for updates")]
         [int]$DurationHours = 2,
+        [Parameter(Mandatory = $false, HelpMessage = "Which categories of update to include")]
+        [string[]]$IncludedUpdateCategories,
         [Parameter(Mandatory = $true, ParameterSetName = "ByQuery", HelpMessage = "Azure query to apply the schedule to")]
         [Microsoft.Azure.Commands.Automation.Model.UpdateManagement.AzureQueryProperties]$Query,
         [Parameter(Mandatory = $true, HelpMessage = "Schedule to apply to the VMs")]
@@ -193,19 +195,21 @@ function Register-VmsWithAutomationSchedule {
         # Remove any existing update configuration with the same name
         $null = Remove-AzAutomationSoftwareUpdateConfiguration -ResourceGroupName "$($Account.ResourceGroupName)" -AutomationAccountName "$($Account.AutomationAccountName)" -Name $Schedule.Name -ErrorAction SilentlyContinue
         if ($VmType -eq "Windows") {
+            $IncludedPackageClassification = @("Critical", "Definition", "FeaturePack", "Security", "ServicePack", "Tools", "Unclassified", "UpdateRollup", "Updates") | Where-Object { $IncludedUpdates.Contains($_) }
             $config = New-AzAutomationSoftwareUpdateConfiguration -AutomationAccountName $Account.AutomationAccountName `
                                                                   -Confirm:$false `
                                                                   -ErrorAction Stop `
-                                                                  -IncludedUpdateClassification @("Unclassified", "Critical", "Security", "UpdateRollup", "FeaturePack", "ServicePack", "Definition", "Tools", "Updates") `
+                                                                  -IncludedUpdateClassification $IncludedPackageClassification `
                                                                   -ResourceGroupName $Account.ResourceGroupName `
                                                                   -Schedule $Schedule `
                                                                   -Windows `
                                                                   @params
         } else {
+            $IncludedPackageClassification = @("Critical", "Other", "Security", "Unclassified") | Where-Object { $IncludedUpdates.Contains($_) }
             $config = New-AzAutomationSoftwareUpdateConfiguration -AutomationAccountName $Account.AutomationAccountName `
                                                                   -Confirm:$false `
                                                                   -ErrorAction Stop `
-                                                                  -IncludedPackageClassification @("Unclassified", "Critical", "Security", "Other") `
+                                                                  -IncludedPackageClassification $IncludedPackageClassification `
                                                                   -Linux `
                                                                   -ResourceGroupName $Account.ResourceGroupName `
                                                                   -Schedule $Schedule `

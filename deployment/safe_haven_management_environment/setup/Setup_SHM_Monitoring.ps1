@@ -110,7 +110,12 @@ $windowsDailySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                         -Name "shm-$($config.id)-windows-definitions".ToLower() `
                                                         -Time "01:01" `
                                                         -TimeZone $localTimeZone
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 1 -Query $shmQuery -Schedule $windowsDailySchedule -VmType "Windows"
+$null = Register-VmsWithAutomationSchedule -Account $account `
+                                           -DurationHours 1 `
+                                           -IncludedUpdateCategories @("Definition") `
+                                           -Query $shmQuery `
+                                           -Schedule $windowsDailySchedule `
+                                           -VmType "Windows"
 # Create Windows VM other updates schedule
 $windowsWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                          -DayInterval 7 `
@@ -118,7 +123,12 @@ $windowsWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                          -StartDayOfWeek "Tuesday" `
                                                          -Time "02:02" `
                                                          -TimeZone $localTimeZone
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 3 -Query $shmQuery -Schedule $windowsWeeklySchedule -VmType "Windows"
+$null = Register-VmsWithAutomationSchedule -Account $account `
+                                           -DurationHours 3 `
+                                           -IncludedUpdateCategories @("Critical", "FeaturePack", "Security", "ServicePack", "Tools", "Unclassified", "UpdateRollup", "Updates") `
+                                           -Query $shmQuery `
+                                           -Schedule $windowsWeeklySchedule `
+                                           -VmType "Windows"
 # Create Linux VM update schedule
 $linuxWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                        -DayInterval 7 `
@@ -126,7 +136,12 @@ $linuxWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                        -StartDayOfWeek "Tuesday" `
                                                        -Time "02:02" `
                                                        -TimeZone $localTimeZone
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 3 -Query $shmQuery -Schedule $linuxWeeklySchedule -VmType "Linux"
+$null = Register-VmsWithAutomationSchedule -Account $account `
+                                           -DurationHours 3 `
+                                           -IncludedUpdateCategories @("Critical", "Other", "Security", "Unclassified") `
+                                           -Query $shmQuery `
+                                           -Schedule $linuxWeeklySchedule `
+                                           -VmType "Linux"
 
 
 # Enable the collection of syslog logs from Linux hosts
