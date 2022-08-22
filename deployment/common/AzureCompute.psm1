@@ -109,7 +109,7 @@ function Deploy-LinuxVirtualMachine {
         [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageId", HelpMessage = "ID of network card to attach to this VM")]
         [Parameter(Mandatory = $true, ParameterSetName = "ByNicId_ByImageSku", HelpMessage = "ID of network card to attach to this VM")]
         [string]$NicId,
-        [Parameter(Mandatory = $true, HelpMessage = "OS disk type (eg. Standard_LRS)")]
+        [Parameter(Mandatory = $true, HelpMessage = "OS disk type (eg. Standard_GRS)")]
         [string]$OsDiskType,
         [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageId", HelpMessage = "Private IP address to assign to this VM")]
         [Parameter(Mandatory = $true, ParameterSetName = "ByIpAddress_ByImageSku", HelpMessage = "Private IP address to assign to this VM")]
@@ -200,7 +200,7 @@ function Deploy-ManagedDisk {
         $Name,
         [Parameter(Mandatory = $true, HelpMessage = "Disk size in GB")]
         $SizeGB,
-        [Parameter(Mandatory = $true, HelpMessage = "Disk type (eg. Standard_LRS)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Disk type (eg. Standard_GRS)")]
         $Type,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         $ResourceGroupName,
