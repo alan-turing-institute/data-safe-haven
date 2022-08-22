@@ -851,37 +851,6 @@
           }
         }
       },
-      "vnetRepositoriesTier4": {
-        "cidr": "10.10.4.0/24",
-        "name": "VNET_SHM_TESTB_PACKAGE_REPOSITORIES_TIER_4",
-        "rg": "RG_SHM_TESTB_NETWORKING",
-        "subnets": {
-          "mirrorsExternal": {
-            "cidr": "10.10.4.0/26",
-            "name": "PackageMirrorsExternalTier4Subnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTB_PACKAGE_MIRRORS_EXTERNAL_TIER4",
-              "rules": "shm-nsg-rules-package-mirrors-external-tier4.json"
-            }
-          },
-          "mirrorsInternal": {
-            "cidr": "10.10.4.64/26",
-            "name": "PackageMirrorsInternalTier4Subnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTB_PACKAGE_MIRRORS_INTERNAL_TIER4",
-              "rules": "shm-nsg-rules-package-mirrors-internal-tier4.json"
-            }
-          },
-          "proxies": {
-            "cidr": "10.10.4.128/26",
-            "name": "PackageProxiesTier4Subnet",
-            "nsg": {
-              "name": "NSG_SHM_TESTB_PACKAGE_PROXIES_TIER_4",
-              "rules": "shm-nsg-rules-package-proxies-tier4.json"
-            }
-          }
-        }
-      },
       "vpn": {
         "cidr": "172.16.201.0/24"
       }
@@ -941,76 +910,6 @@
             },
             "ipAddress": "10.10.3.134",
             "vmName": "PACKAGE-PROXY-MANY-TIER-3",
-            "vmSize": "Standard_B2ms"
-          }
-        }
-      },
-      "tier4": {
-        "mirrorsExternal": {
-          "cran": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-package-mirror-external-cran-tier-4",
-            "disks": {
-              "data": {
-                "sizeGb": 32,
-                "type": "Standard_LRS"
-              },
-              "os": {
-                "sizeGb": 32,
-                "type": "Standard_LRS"
-              }
-            },
-            "ipAddress": "10.10.4.4",
-            "vmName": "PACKAGE-MIRROR-EXTERNAL-CRAN-TIER-4",
-            "vmSize": "Standard_B2ms"
-          },
-          "pypi": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-package-mirror-external-pypi-tier-4",
-            "disks": {
-              "data": {
-                "sizeGb": 1024,
-                "type": "Standard_LRS"
-              },
-              "os": {
-                "sizeGb": 32,
-                "type": "Standard_LRS"
-              }
-            },
-            "ipAddress": "10.10.4.5",
-            "vmName": "PACKAGE-MIRROR-EXTERNAL-PYPI-TIER-4",
-            "vmSize": "Standard_B2ms"
-          }
-        },
-        "mirrorsInternal": {
-          "cran": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-package-mirror-internal-cran-tier-4",
-            "disks": {
-              "data": {
-                "sizeGb": 32,
-                "type": "Standard_LRS"
-              },
-              "os": {
-                "sizeGb": 32,
-                "type": "Standard_LRS"
-              }
-            },
-            "ipAddress": "10.10.4.68",
-            "vmName": "PACKAGE-MIRROR-INTERNAL-CRAN-TIER-4",
-            "vmSize": "Standard_B2ms"
-          },
-          "pypi": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-package-mirror-internal-pypi-tier-4",
-            "disks": {
-              "data": {
-                "sizeGb": 1024,
-                "type": "Standard_LRS"
-              },
-              "os": {
-                "sizeGb": 32,
-                "type": "Standard_LRS"
-              }
-            },
-            "ipAddress": "10.10.4.69",
-            "vmName": "PACKAGE-MIRROR-INTERNAL-PYPI-TIER-4",
             "vmSize": "Standard_B2ms"
           }
         }

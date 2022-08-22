@@ -296,7 +296,7 @@ function Get-ShmConfig {
             cidr = "172.16.201.0/24" # NB. this must not overlap with the VNet that the VPN gateway is part of
         }
     }
-    foreach ($tier in @(2, 3, 4)) {
+    foreach ($tier in @(2, 3)) {
         $shmRepositoryPrefix = "10.10.${tier}"
         $shm.network["vnetRepositoriesTier${tier}"] = [ordered]@{
             name    = "VNET_SHM_$($shm.id)_PACKAGE_REPOSITORIES_TIER_${tier}".ToUpper()
@@ -483,7 +483,7 @@ function Get-ShmConfig {
     $shm.repositories = [ordered]@{
         rg = "$($shm.rgPrefix)_PACKAGE_REPOSITORIES".ToUpper()
     }
-    foreach ($tier in @(2, 3, 4)) {
+    foreach ($tier in @(2, 3)) {
         $shm.repositories["tier${tier}"] = [ordered]@{}
         # Tier 2 defaults to using a proxy unless otherwise specified
         if ($tier -eq 2) {
