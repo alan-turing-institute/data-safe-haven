@@ -6,7 +6,7 @@
       "disks": {
         "os": {
           "sizeGb": "128",
-          "type": "Standard_LRS"
+          "type": "Standard_GRS"
         }
       },
       "external_dns_resolver": "168.63.129.16",
@@ -753,7 +753,7 @@
           "disks": {
             "os": {
               "sizeGb": "32",
-              "type": "Standard_LRS"
+              "type": "Standard_GRS"
             }
           },
           "hostname": "LINUX-UPDATES-SHM-TESTC",
@@ -875,7 +875,7 @@
       "disks": {
         "os": {
           "sizeGb": "128",
-          "type": "Standard_LRS"
+          "type": "Standard_GRS"
         }
       },
       "hostname": "NPS-SHM-TESTC",
@@ -903,7 +903,7 @@
             "disks": {
               "os": {
                 "sizeGb": 32,
-                "type": "Standard_LRS"
+                "type": "Standard_GRS"
               }
             },
             "ipAddress": "10.10.2.134",
@@ -920,7 +920,7 @@
             "disks": {
               "os": {
                 "sizeGb": 32,
-                "type": "Standard_LRS"
+                "type": "Standard_GRS"
               }
             },
             "ipAddress": "10.10.3.134",
@@ -952,6 +952,7 @@
         },
         "vm": {
           "diskSizeGb": 128,
+          "diskType": "Standard_GRS",
           "size": "Standard_F8s_v2"
         },
         "vnet": {
@@ -989,6 +990,7 @@
         "rg": "RG_SHM_TESTC_PERSISTENT_DATA"
       }
     },
+    "storageTypeDefault": "Standard_GRS",
     "subscriptionName": "Data Safe Haven Development",
     "time": {
       "ntp": {
@@ -1072,11 +1074,11 @@
         "disks": {
           "data": {
             "sizeGb": "1024",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "128",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "enableSSIS": true,
@@ -1095,11 +1097,11 @@
         "disks": {
           "data": {
             "sizeGb": "1024",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "128",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "ip": "10.163.3.5",
@@ -1201,7 +1203,7 @@
         "disks": {
           "os": {
             "sizeGb": "128",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "fqdn": "APP-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
@@ -1219,11 +1221,11 @@
         "disks": {
           "data": {
             "sizeGb": "1023",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "128",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "fqdn": "RDG-SRE-T3MSRDS.testc.dsgroupdev.co.uk",
@@ -1268,11 +1270,11 @@
       "disks": {
         "os": {
           "sizeGb": "default",
-          "type": "Standard_LRS"
+          "type": "Standard_GRS"
         },
         "scratch": {
           "sizeGb": "1024",
-          "type": "Standard_LRS"
+          "type": "Standard_GRS"
         }
       },
       "rg": "RG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
@@ -1296,7 +1298,7 @@
           "accessTier": "Cool",
           "allowedIpAddresses": "any",
           "name": "testct3msrdsartifactspjn",
-          "performance": "Standard_LRS",
+          "performance": "Standard_GRS",
           "storageKind": "BlobStorage"
         },
         "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE"
@@ -1310,7 +1312,7 @@
           "accessTier": "Hot",
           "allowedIpAddresses": "193.60.220.253",
           "name": "testct3msrdsdatapjnkuhzc",
-          "performance": "Standard_LRS",
+          "performance": "Standard_GRS",
           "storageKind": "StorageV2"
         },
         "containers": {
@@ -1335,7 +1337,7 @@
         "account": {
           "accessTier": "Hot",
           "name": "testct3msrdsuserdatapjnk",
-          "performance": "Premium_LRS",
+          "performance": "Premium_GRS",
           "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE",
           "storageKind": "FileStorage"
         },
@@ -1353,6 +1355,7 @@
         }
       }
     },
+    "storageTypeDefault": "Standard_GRS",
     "subscriptionName": "Data Safe Haven Development",
     "tier": "3",
     "time": {
@@ -1381,11 +1384,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "dockerVersion": "latest",
@@ -1404,11 +1407,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "fqdn": "CODIMD.t3msrds.testc.dsgroupdev.co.uk",
@@ -1427,11 +1430,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "fqdn": "GITLAB.t3msrds.testc.dsgroupdev.co.uk",

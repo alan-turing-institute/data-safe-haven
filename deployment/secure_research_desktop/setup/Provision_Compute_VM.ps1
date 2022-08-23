@@ -134,7 +134,7 @@ $params = @{
     Location               = $config.srdImage.location
     NicId                  = $buildVmNic.Id
     OsDiskSizeGb           = $config.srdImage.build.vm.diskSizeGb
-    OsDiskType             = "Standard_LRS"
+    OsDiskType             = $config.srdImage.build.vm.diskType
     ResourceGroupName      = $config.srdImage.build.rg
     ImageSku               = $baseImageSku
 }

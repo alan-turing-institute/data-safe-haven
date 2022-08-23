@@ -5,7 +5,7 @@
     "disks": {
       "os": {
         "sizeGb": "128",
-        "type": "Standard_LRS"
+        "type": "Standard_GRS"
       }
     },
     "external_dns_resolver": "168.63.129.16",
@@ -752,7 +752,7 @@
         "disks": {
           "os": {
             "sizeGb": "32",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "hostname": "LINUX-UPDATES-SHM-TESTA",
@@ -874,7 +874,7 @@
     "disks": {
       "os": {
         "sizeGb": "128",
-        "type": "Standard_LRS"
+        "type": "Standard_GRS"
       }
     },
     "hostname": "NPS-SHM-TESTA",
@@ -902,7 +902,7 @@
           "disks": {
             "os": {
               "sizeGb": 32,
-              "type": "Standard_LRS"
+              "type": "Standard_GRS"
             }
           },
           "ipAddress": "10.10.2.134",
@@ -919,7 +919,7 @@
           "disks": {
             "os": {
               "sizeGb": 32,
-              "type": "Standard_LRS"
+              "type": "Standard_GRS"
             }
           },
           "ipAddress": "10.10.3.134",
@@ -951,6 +951,7 @@
       },
       "vm": {
         "diskSizeGb": 128,
+        "diskType": "Standard_GRS",
         "size": "Standard_F8s_v2"
       },
       "vnet": {
@@ -988,6 +989,7 @@
       "rg": "RG_SHM_TESTA_PERSISTENT_DATA"
     }
   },
+  "storageTypeDefault": "Standard_GRS",
   "subscriptionName": "Data Safe Haven Development",
   "time": {
     "ntp": {
