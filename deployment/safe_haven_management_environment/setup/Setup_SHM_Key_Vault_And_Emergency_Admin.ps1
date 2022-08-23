@@ -72,7 +72,7 @@ try {
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.serviceAccounts.aadLocalSync.usernameSecretName -DefaultValue $config.users.serviceAccounts.aadLocalSync.samAccountName -AsPlaintext
     Add-LogMessage -Level Success "Ensured that SHM admin usernames exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that SHM admin usernames exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SHM admin usernames exist!" -Exception $_.Exception
 }
 # :: VM admin passwords
 try {
@@ -93,7 +93,7 @@ try {
     }
     Add-LogMessage -Level Success "Ensured that SHM VM admin passwords exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that SHM VM admin passwords exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SHM VM admin passwords exist!" -Exception $_.Exception
 }
 # :: Computer manager users
 try {
@@ -103,7 +103,7 @@ try {
     }
     Add-LogMessage -Level Success "Ensured that domain joining passwords exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that domain joining passwords exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that domain joining passwords exist!" -Exception $_.Exception
 }
 # :: Service accounts
 try {
@@ -113,7 +113,7 @@ try {
     }
     Add-LogMessage -Level Success "Ensured that service account passwords exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that service account passwords exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that service account passwords exist!" -Exception $_.Exception
 }
 
 
