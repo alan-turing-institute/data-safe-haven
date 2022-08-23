@@ -12,7 +12,6 @@ write_files:
       apt.postgresql.org
       dbeaver.io
       developer.download.nvidia.com
-      download.docker.com
       packages.gitlab.com
       packages.microsoft.com
       qgis.org
