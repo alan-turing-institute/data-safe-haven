@@ -452,8 +452,8 @@ We strongly recommend that you delete the default external administrator account
 
   - Click `Authentication methods` in the left hand sidebar
   - Enter the user's mobile phone number in the `Phone` field, using the same format as above
+    - Note that you do **not** need to fill out the `Alternate Phone` field
   - Enter the user's institutional email address in the `Email` field
-  - Note that you do **not** need to fill out either of the `Phone` fields here
   - Click the `Save` icon at the top of the panel
     <details><summary><b>Screenshots</b></summary>
 
