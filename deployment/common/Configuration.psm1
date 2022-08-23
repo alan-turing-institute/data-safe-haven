@@ -156,6 +156,7 @@ function Get-ShmConfig {
             # Standard_E8_v3  => 8 cores; 64GB RAM; 2.3 GHz; £0.4651/hr
             vm     = [ordered]@{
                 diskSizeGb = 128
+                diskType   = "Standard_GRS"
                 size       = "Standard_F8s_v2"
             }
         }
