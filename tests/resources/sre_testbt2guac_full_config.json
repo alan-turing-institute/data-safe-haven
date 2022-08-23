@@ -1075,11 +1075,11 @@
         "disks": {
           "data": {
             "sizeGb": "1024",
-            "type": null
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "128",
-            "type": null
+            "type": "Standard_GRS"
           }
         },
         "enableSSIS": true,
@@ -1098,11 +1098,11 @@
         "disks": {
           "data": {
             "sizeGb": "1024",
-            "type": null
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "128",
-            "type": null
+            "type": "Standard_GRS"
           }
         },
         "ip": "10.152.3.5",
@@ -1209,7 +1209,7 @@
         "disks": {
           "os": {
             "sizeGb": "128",
-            "type": null
+            "type": "Standard_GRS"
           }
         },
         "fqdn": "GUACAMOLE-SRE-T2GUAC.testb.dsgroupdev.co.uk",
@@ -1249,11 +1249,11 @@
       "disks": {
         "os": {
           "sizeGb": "default",
-          "type": null
+          "type": "Standard_GRS"
         },
         "scratch": {
           "sizeGb": "1024",
-          "type": null
+          "type": "Standard_GRS"
         }
       },
       "rg": "RG_SHM_TESTB_SRE_T2GUAC_COMPUTE",
@@ -1277,7 +1277,7 @@
           "accessTier": "Cool",
           "allowedIpAddresses": "any",
           "name": "testbt2guacartifactsnrza",
-          "performance": null,
+          "performance": "Standard_GRS",
           "storageKind": "BlobStorage"
         },
         "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE"
@@ -1291,7 +1291,7 @@
           "accessTier": "Hot",
           "allowedIpAddresses": "193.60.220.253",
           "name": "testbt2guacdatanrzabxpji",
-          "performance": null,
+          "performance": "Standard_GRS",
           "storageKind": "StorageV2"
         },
         "containers": {
@@ -1363,11 +1363,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": null
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": null
+            "type": "Standard_GRS"
           }
         },
         "dockerVersion": "latest",
@@ -1386,11 +1386,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": null
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": null
+            "type": "Standard_GRS"
           }
         },
         "fqdn": "CODIMD.t2guac.testb.dsgroupdev.co.uk",
@@ -1409,11 +1409,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": null
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": null
+            "type": "Standard_GRS"
           }
         },
         "fqdn": "GITLAB.t2guac.testb.dsgroupdev.co.uk",
