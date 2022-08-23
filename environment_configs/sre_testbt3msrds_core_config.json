@@ -1,7 +1,6 @@
 {
     "sreId": "t3msrds",
     "tier": "3",
-    "nexus": false,
     "shmId": "testb",
     "subscriptionName": "Data Safe Haven Development",
     "ipPrefix": "10.163.0",

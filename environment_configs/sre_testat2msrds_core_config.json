@@ -1,7 +1,6 @@
 {
     "sreId": "t2msrds",
     "tier": "2",
-    "nexus": true,
     "shmId": "testa",
     "subscriptionName": "Data Safe Haven Development",
     "ipPrefix": "10.162.0",
