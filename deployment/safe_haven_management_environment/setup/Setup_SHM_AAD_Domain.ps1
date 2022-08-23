@@ -58,7 +58,7 @@ if ($aadDomain.IsVerified) {
     $recordSet = Get-AzDnsRecordSet -RecordType TXT -Name "@" -ZoneName $config.domain.fqdn -ResourceGroupName $config.dns.rg -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         # If no TXT record set exists at all, create a new TXT record set with the domain validation code
-        $null = Deploy-DnsRecord -DnsRecords $validationCode -RecordName "@" -RecordType "TXT" -ResourceGroupName $config.dns.rg -Subscription $config.dns.subscriptionName -ZoneName $config.domain.fqdn
+        $null = Deploy-DnsRecord -DnsRecords $validationCode -RecordName "@" -RecordType "TXT" -ResourceGroupName $config.dns.rg -Subscription $config.dns.subscriptionName -TtlSeconds 30 -ZoneName $config.domain.fqdn
         Add-LogMessage -Level Success "Verification TXT record added to '$($config.domain.fqdn)' DNS zone."
     } else {
         # Check if the verification TXT record already exists in domain DNS zone
