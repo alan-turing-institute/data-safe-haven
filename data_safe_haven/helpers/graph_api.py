@@ -20,6 +20,8 @@ from .types import JSONType
 
 
 class GraphApi(LoggingMixin):
+    """Interface to the Microsoft Graph REST API"""
+
     linux_schema = "extj8xolrvw_linux"  # this is the "Extension with Properties for Linux User and Groups" extension
     role_template_ids = {"Global Administrator": "62e90394-69f5-4237-9190-012177145e10"}
     uuid_application = {
@@ -93,7 +95,9 @@ class GraphApi(LoggingMixin):
                     f"{self.base_endpoint}/groups/{group_id}/members/$ref",
                     json=request_json,
                 )
-                self.info(f"Added user <fg=green>'{username}'</> to group <fg=green>'{group_name}'</>.")
+                self.info(
+                    f"Added user <fg=green>'{username}'</> to group <fg=green>'{group_name}'</>."
+                )
         except (DataSafeHavenMicrosoftGraphException, IndexError) as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not add user '{username}' to group '{group_name}'.\n{str(exc)}"
@@ -334,7 +338,9 @@ class GraphApi(LoggingMixin):
             error_description = f"Could not create access token"
             if result and "error_description" in result:
                 error_description += f": {result['error_description']}"
-            raise DataSafeHavenMicrosoftGraphException(f"{error_description}.\n{str(exc)}") from exc
+            raise DataSafeHavenMicrosoftGraphException(
+                f"{error_description}.\n{str(exc)}"
+            ) from exc
 
     def create_token_application(
         self, application_id: str, application_secret: str
@@ -361,7 +367,9 @@ class GraphApi(LoggingMixin):
             error_description = f"Could not create access token"
             if result and "error_description" in result:
                 error_description += f": {result['error_description']}"
-            raise DataSafeHavenMicrosoftGraphException(f"{error_description}.\n{str(exc)}") from exc
+            raise DataSafeHavenMicrosoftGraphException(
+                f"{error_description}.\n{str(exc)}"
+            ) from exc
 
     def create_user(
         self,
