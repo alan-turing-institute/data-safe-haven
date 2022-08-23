@@ -623,13 +623,13 @@ function Get-SreConfig {
     $config = [ordered]@{
         shm = Get-ShmConfig -shmId $sreConfigBase.shmId
         sre = [ordered]@{
-            id               = $sreConfigBase.sreId | Limit-StringLength -MaximumLength 7 -FailureIsFatal
-            rgPrefix         = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
-            nsgPrefix        = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
-            shortName        = "sre-$($sreConfigBase.sreId)".ToLower()
-            subscriptionName = $sreConfigBase.subscriptionName
-            tier             = $sreConfigBase.tier
-            remoteDesktop    = [ordered]@{
+            id                 = $sreConfigBase.sreId | Limit-StringLength -MaximumLength 7 -FailureIsFatal
+            rgPrefix           = $sreConfigBase.overrides.sre.rgPrefix ? $sreConfigBase.overrides.sre.rgPrefix : "RG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
+            nsgPrefix          = $sreConfigBase.overrides.sre.nsgPrefix ? $sreConfigBase.overrides.sre.nsgPrefix : "NSG_SHM_$($sreConfigBase.shmId)_SRE_$($sreConfigBase.sreId)".ToUpper()
+            shortName          = "sre-$($sreConfigBase.sreId)".ToLower()
+            subscriptionName   = $sreConfigBase.subscriptionName
+            tier               = $sreConfigBase.tier
+            remoteDesktop      = [ordered]@{
                 provider = $sreConfigBase.remoteDesktopProvider
             }
             storageTypeDefault = $sreConfigBase.storageTypeDefault ? $sreConfigBase.storageTypeDefault : "Standard_GRS"
