@@ -6,7 +6,7 @@
       "disks": {
         "os": {
           "sizeGb": "128",
-          "type": "Standard_LRS"
+          "type": "Standard_GRS"
         }
       },
       "external_dns_resolver": "168.63.129.16",
@@ -860,7 +860,7 @@
       "disks": {
         "os": {
           "sizeGb": "128",
-          "type": "Standard_LRS"
+          "type": "Standard_GRS"
         }
       },
       "hostname": "NPS-SHM-TESTB",
@@ -888,7 +888,7 @@
             "disks": {
               "os": {
                 "sizeGb": 32,
-                "type": "Standard_LRS"
+                "type": "Standard_GRS"
               }
             },
             "ipAddress": "10.10.2.134",
@@ -905,7 +905,7 @@
             "disks": {
               "os": {
                 "sizeGb": 32,
-                "type": "Standard_LRS"
+                "type": "Standard_GRS"
               }
             },
             "ipAddress": "10.10.3.134",
@@ -937,6 +937,7 @@
         },
         "vm": {
           "diskSizeGb": 128,
+          "diskType": "Standard_GRS",
           "size": "Standard_F8s_v2"
         },
         "vnet": {
@@ -974,6 +975,7 @@
         "rg": "RG_SHM_TESTB_PERSISTENT_DATA"
       }
     },
+    "storageTypeDefault": "Standard_GRS",
     "subscriptionName": "Data Safe Haven Development",
     "time": {
       "ntp": {
@@ -1002,7 +1004,7 @@
         "disks": {
           "os": {
             "sizeGb": "32",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "hostname": "APT-SHM-TESTB",
@@ -1073,11 +1075,11 @@
         "disks": {
           "data": {
             "sizeGb": "1024",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "128",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "enableSSIS": true,
@@ -1096,11 +1098,11 @@
         "disks": {
           "data": {
             "sizeGb": "1024",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "128",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "ip": "10.152.3.5",
@@ -1207,7 +1209,7 @@
         "disks": {
           "os": {
             "sizeGb": "128",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "fqdn": "GUACAMOLE-SRE-T2GUAC.testb.dsgroupdev.co.uk",
@@ -1247,11 +1249,11 @@
       "disks": {
         "os": {
           "sizeGb": "default",
-          "type": "Standard_LRS"
+          "type": "Standard_GRS"
         },
         "scratch": {
           "sizeGb": "1024",
-          "type": "Standard_LRS"
+          "type": "Standard_GRS"
         }
       },
       "rg": "RG_SHM_TESTB_SRE_T2GUAC_COMPUTE",
@@ -1275,7 +1277,7 @@
           "accessTier": "Cool",
           "allowedIpAddresses": "any",
           "name": "testbt2guacartifactsnrza",
-          "performance": "Standard_LRS",
+          "performance": "Standard_GRS",
           "storageKind": "BlobStorage"
         },
         "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE"
@@ -1289,7 +1291,7 @@
           "accessTier": "Hot",
           "allowedIpAddresses": "193.60.220.253",
           "name": "testbt2guacdatanrzabxpji",
-          "performance": "Standard_LRS",
+          "performance": "Standard_GRS",
           "storageKind": "StorageV2"
         },
         "containers": {
@@ -1314,7 +1316,7 @@
         "account": {
           "accessTier": "Hot",
           "name": "testbt2guacuserdatanrzab",
-          "performance": "Premium_LRS",
+          "performance": "Premium_GRS",
           "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE",
           "storageKind": "FileStorage"
         },
@@ -1332,6 +1334,7 @@
         }
       }
     },
+    "storageTypeDefault": "Standard_GRS",
     "subscriptionName": "Data Safe Haven Development",
     "tier": "2",
     "time": {
@@ -1360,11 +1363,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "dockerVersion": "latest",
@@ -1383,11 +1386,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "fqdn": "CODIMD.t2guac.testb.dsgroupdev.co.uk",
@@ -1406,11 +1409,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": "Standard_LRS"
+            "type": "Standard_GRS"
           }
         },
         "fqdn": "GITLAB.t2guac.testb.dsgroupdev.co.uk",

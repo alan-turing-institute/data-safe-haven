@@ -69,7 +69,7 @@ function Deploy-StorageAccount {
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy into")]
         [string]$Location,
         [Parameter(Mandatory = $false, HelpMessage = "SKU name of the storage account to deploy")]
-        [string]$SkuName = "Standard_LRS",
+        [string]$SkuName = "Standard_GRS",
         [Parameter(Mandatory = $false, HelpMessage = "Kind of storage account to deploy")]
         [ValidateSet("StorageV2", "BlobStorage", "BlockBlobStorage", "FileStorage")]
         [string]$Kind = "StorageV2",
