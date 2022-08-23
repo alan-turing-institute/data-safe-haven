@@ -80,6 +80,7 @@ function Get-ShmConfig {
         nsgPrefix           = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName    = $shmConfigBase.azure.subscriptionName
         vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_VMIMAGES"
+        storageTypeDefault  = $shmConfigBase.storageTypeDefault ? $shmConfigBase.storageTypeDefault : "Standard_GRS"
     }
     # For normal usage this does not need to be user-configurable.
     # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
@@ -156,7 +157,7 @@ function Get-ShmConfig {
             # Standard_E8_v3  => 8 cores; 64GB RAM; 2.3 GHz; £0.4651/hr
             vm     = [ordered]@{
                 diskSizeGb = 128
-                diskType   = "Standard_GRS"
+                diskType   = $shm.storageTypeDefault
                 size       = "Standard_F8s_v2"
             }
         }
@@ -419,7 +420,7 @@ function Get-ShmConfig {
         disks                      = [ordered]@{
             os = [ordered]@{
                 sizeGb = "128"
-                type   = "Standard_GRS"
+                type   = $shm.storageTypeDefault
             }
         }
     }
@@ -448,7 +449,7 @@ function Get-ShmConfig {
         disks                   = [ordered]@{
             os = [ordered]@{
                 sizeGb = "128"
-                type   = "Standard_GRS"
+                type   = $shm.storageTypeDefault
             }
         }
     }
@@ -518,7 +519,7 @@ function Get-ShmConfig {
                     disks                   = [ordered]@{
                         os = [ordered]@{
                             sizeGb = 32
-                            type   = "Standard_GRS"
+                            type   = $shm.storageTypeDefault
                         }
                     }
                     ipAddress               = Get-NextAvailableIpInRange -IpRangeCidr $shm.network["vnetRepositoriesTier${tier}"].subnets[$LocalRepositoryType].cidr -Offset $ipOffset
@@ -528,7 +529,7 @@ function Get-ShmConfig {
                 if ($dataDiskSizeGb) {
                     $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository].disks["data"] = [ordered]@{
                         sizeGb = $dataDiskSizeGb
-                        type   = "Standard_GRS"
+                        type   = $shm.storageTypeDefault
                     }
                 }
                 if ($LocalRepositoryType -eq "proxies") {
@@ -548,7 +549,7 @@ function Get-ShmConfig {
             disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "32"
-                    type   = "Standard_GRS"
+                    type   = $shm.storageTypeDefault
                 }
             }
             hostname                = $linuxHostname
