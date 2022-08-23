@@ -632,6 +632,7 @@ function Get-SreConfig {
             remoteDesktop    = [ordered]@{
                 provider = $sreConfigBase.remoteDesktopProvider
             }
+            storageTypeDefault = $sreConfigBase.storageTypeDefault ? $sreConfigBase.storageTypeDefault : "Standard_GRS"
         }
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
@@ -748,7 +749,7 @@ function Get-SreConfig {
             account = [ordered]@{
                 name               = "${sreStoragePrefix}artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind        = "BlobStorage"
-                performance        = "Standard_GRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                performance        = $sreConfigBase.storageTypeDefault # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "Cool"
                 allowedIpAddresses = $sreConfigBase.deploymentIpAddresses ? @($sreConfigBase.deploymentIpAddresses) : "any"
             }
@@ -783,7 +784,7 @@ function Get-SreConfig {
             account    = [ordered]@{
                 name               = "${sreStoragePrefix}data${srestorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind        = "StorageV2"
-                performance        = "Standard_GRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                performance        = $sreConfigBase.storageTypeDefault # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "Hot"
                 allowedIpAddresses = $sreConfigBase.dataAdminIpAddresses ? @($sreConfigBase.dataAdminIpAddresses) : $shm.srdImage.build.nsg.allowedIpAddresses
             }
@@ -869,7 +870,7 @@ function Get-SreConfig {
             disks                           = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
             }
         }
@@ -887,11 +888,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "1023"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "128"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
             }
         }
@@ -907,7 +908,7 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
             }
         }
@@ -978,11 +979,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "32"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
             }
         }
@@ -1002,11 +1003,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "32"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
             }
         }
@@ -1020,11 +1021,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "32"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
             }
         }
@@ -1065,11 +1066,11 @@ function Get-SreConfig {
             disks                     = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "1024"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "128"
-                    type   = "Standard_GRS"
+                    type   = $sreConfigBase.storageTypeDefault
                 }
             }
         }
@@ -1090,11 +1091,11 @@ function Get-SreConfig {
         disks                   = [ordered]@{
             os      = [ordered]@{
                 sizeGb = "default"
-                type   = "Standard_GRS"
+                type   = $sreConfigBase.storageTypeDefault
             }
             scratch = [ordered]@{
                 sizeGb = "1024"
-                type   = "Standard_GRS"
+                type   = $sreConfigBase.storageTypeDefault
             }
         }
     }
