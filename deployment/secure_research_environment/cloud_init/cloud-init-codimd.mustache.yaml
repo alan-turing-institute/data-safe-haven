@@ -94,7 +94,7 @@ packages:
   - auditd
   - ca-certificates
   - curl
-  - docker-ce
+  - docker.io
   - docker-compose
   - ldap-utils
   - software-properties-common

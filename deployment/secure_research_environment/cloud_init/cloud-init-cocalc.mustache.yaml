@@ -125,7 +125,7 @@ apt:
 packages:
   - auditd
   - blobfuse
-  - docker-ce
+  - docker.io
   - docker-compose
 package_update: true
 package_upgrade: true
