@@ -84,14 +84,17 @@ Export-ModuleMember -Function Deploy-AutomationAzureQuery
 
 # Create automation schedule if it does not exist
 # -----------------------------------------------
-function Deploy-AutomationScheduleDaily {
+function Deploy-AutomationScheduleInDays {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Automation account to deploy the schedule into")]
         [Microsoft.Azure.Commands.Automation.Model.AutomationAccount]$Account,
         [Parameter(Mandatory = $false, HelpMessage = "Interval in days")]
-        [string]$DayInterval = 1,
+        [int]$DayInterval = 1,
         [Parameter(Mandatory = $true, HelpMessage = "Name of automation schedule to deploy")]
         [string]$Name,
+        [Parameter(Mandatory = $false, HelpMessage = "Day of the week to start on")]
+        [ValidateSet("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")]
+        [string]$StartDayOfWeek = $null,
         [Parameter(Mandatory = $true, HelpMessage = "Start time")]
         [string]$Time,
         [Parameter(Mandatory = $false, HelpMessage = "Time zone")]
@@ -103,22 +106,28 @@ function Deploy-AutomationScheduleDaily {
         $schedule = Get-AzAutomationSchedule -ResourceGroupName $Account.ResourceGroupName -AutomationAccountName $Account.AutomationAccountName | Where-Object { $_.Name -like "${Name}*" } | Remove-AzAutomationSchedule -Force
         # Create the new automation schedule
         Add-LogMessage -Level Info "[ ] Creating automation schedule '$Name'"
-        $startTime = (Get-Date $Time).AddDays(1)
+        # Set the appropriate time and day for this schedule to begin
+        $StartDateTime = (Get-Date $Time).AddDays(1)
+        if ($StartDayOfWeek) {
+            while ($StartDateTime.DayOfWeek -ne $StartDayOfWeek) {
+                $StartDateTime = $StartDateTime.AddDays(1)
+            }
+        }
         $schedule = New-AzAutomationSchedule -AutomationAccountName $account.AutomationAccountName `
                                              -DayInterval $DayInterval `
                                              -ForUpdateConfiguration `
                                              -Name $Name `
                                              -ResourceGroupName $account.ResourceGroupName `
-                                             -StartTime $startTime `
+                                             -StartTime $StartDateTime `
                                              -TimeZone $TimeZone.Id `
                                              -ErrorAction Stop
-        Add-LogMessage -Level Success "Created automation schedule '$($schedule.Name)'"
+        Add-LogMessage -Level Success "Created automation schedule '$($schedule.Name)'. Next trigger will be at ${StartDateTime}."
         return $schedule
     } catch {
         Add-LogMessage -Level Fatal "Failed to create automation schedule '$Name'!" -Exception $_.Exception
     }
 }
-Export-ModuleMember -Function Deploy-AutomationScheduleDaily
+Export-ModuleMember -Function Deploy-AutomationScheduleInDays
 
 
 # Create log analytics solution if it does not exist
@@ -157,6 +166,8 @@ function Register-VmsWithAutomationSchedule {
         [Microsoft.Azure.Commands.Automation.Model.AutomationAccount]$Account,
         [Parameter(Mandatory = $false, HelpMessage = "How many hours to allow for updates")]
         [int]$DurationHours = 2,
+        [Parameter(Mandatory = $false, HelpMessage = "Which categories of update to include")]
+        [string[]]$IncludedUpdateCategories,
         [Parameter(Mandatory = $true, ParameterSetName = "ByQuery", HelpMessage = "Azure query to apply the schedule to")]
         [Microsoft.Azure.Commands.Automation.Model.UpdateManagement.AzureQueryProperties]$Query,
         [Parameter(Mandatory = $true, HelpMessage = "Schedule to apply to the VMs")]
@@ -184,19 +195,21 @@ function Register-VmsWithAutomationSchedule {
         # Remove any existing update configuration with the same name
         $null = Remove-AzAutomationSoftwareUpdateConfiguration -ResourceGroupName "$($Account.ResourceGroupName)" -AutomationAccountName "$($Account.AutomationAccountName)" -Name $Schedule.Name -ErrorAction SilentlyContinue
         if ($VmType -eq "Windows") {
+            $IncludedPackageClassification = @("Critical", "Definition", "FeaturePack", "Security", "ServicePack", "Tools", "Unclassified", "UpdateRollup", "Updates") | Where-Object { $IncludedUpdates.Contains($_) }
             $config = New-AzAutomationSoftwareUpdateConfiguration -AutomationAccountName $Account.AutomationAccountName `
                                                                   -Confirm:$false `
                                                                   -ErrorAction Stop `
-                                                                  -IncludedUpdateClassification @("Unclassified", "Critical", "Security", "UpdateRollup", "FeaturePack", "ServicePack", "Definition", "Tools", "Updates") `
+                                                                  -IncludedUpdateClassification $IncludedPackageClassification `
                                                                   -ResourceGroupName $Account.ResourceGroupName `
                                                                   -Schedule $Schedule `
                                                                   -Windows `
                                                                   @params
         } else {
+            $IncludedPackageClassification = @("Critical", "Other", "Security", "Unclassified") | Where-Object { $IncludedUpdates.Contains($_) }
             $config = New-AzAutomationSoftwareUpdateConfiguration -AutomationAccountName $Account.AutomationAccountName `
                                                                   -Confirm:$false `
                                                                   -ErrorAction Stop `
-                                                                  -IncludedPackageClassification @("Unclassified", "Critical", "Security", "Other") `
+                                                                  -IncludedPackageClassification $IncludedPackageClassification `
                                                                   -Linux `
                                                                   -ResourceGroupName $Account.ResourceGroupName `
                                                                   -Schedule $Schedule `
