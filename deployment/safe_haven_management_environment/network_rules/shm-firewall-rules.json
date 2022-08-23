@@ -294,20 +294,6 @@
                         ]
                     },
                     {
-                        "name": "AllowDocker",
-                        "protocols": [
-                            "https:443"
-                       ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "download.docker.com"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
-                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
-                        ]
-                    },
-                    {
                         "name": "AllowGoogleNTP",
                         "protocols": [
                             "http:123"
@@ -337,7 +323,6 @@
                             "database.clamav.net",
                             "dbeaver.io",
                             "developer.download.nvidia.com",
-                            "download.docker.com",
                             "packagecloud.io",
                             "packages.microsoft.com",
                             "qgis.org",

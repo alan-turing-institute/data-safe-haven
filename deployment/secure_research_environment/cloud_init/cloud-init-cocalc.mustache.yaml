@@ -113,10 +113,6 @@ ntp:
 apt:
   preserve_sources_list: true
   sources:
-    docker.list:
-      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
-
     microsoft-general.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
@@ -125,7 +121,7 @@ apt:
 packages:
   - auditd
   - blobfuse
-  - docker-ce
+  - docker.io
   - docker-compose
 package_update: true
 package_upgrade: true
