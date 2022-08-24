@@ -1,0 +1,82 @@
+cff-version: 1.2.0
+message: "To acknowledge the data safe haven please use the citation below"
+title: "Turing Data Safe Haven"
+url: "https://alan-turing-institute.github.io/data-safe-haven/develop/index.html"
+repository-code: "https://github.com/alan-turing-institute/data-safe-haven"
+license: MIT
+keywords:
+  - "trusted research environment"
+  - "infrastructure as code"
+  - "cloud computing"
+references:
+  - title: "Design choices for productive, secure, data-intensive research at scale in the cloud"
+    doi: 10.48550/arXiv.1908.08737
+    type: article
+    authors:
+      - given-names: Diego
+        family-names: Arenas
+      - given-names: Jon
+        family-names: Atkins
+      - given-names: Claire
+        family-names: Austin
+      - given-names: David
+        family-names: Beavan
+      - given-names: Alvaro Cabrejas
+        family-names: Egea
+      - given-names: Steven
+        family-names: Carlysle-Davies
+      - given-names: Ian
+        family-names: Carter
+      - given-names: Rob
+        family-names: Clarke
+      - given-names: James
+        family-names: Cunningham
+      - given-names: Tom
+        family-names: Doel
+      - given-names: Oliver
+        family-names: Forrest
+      - given-names: Evelina
+        family-names: Gabasova
+      - given-names: James
+        family-names: Geddes
+      - given-names: James
+        family-names: Hetherington
+      - given-names: Radka
+        family-names: Jersakova
+      - given-names: Franz
+        family-names: Kiraly
+      - given-names: Catherine
+        family-names: Lawrence
+      - given-names: Jules
+        family-names: Manser
+      - given-names: Martin T.
+        family-names: O'Reilly
+      - given-names: James
+        family-names: Robinson
+      - given-names: Helen
+        family-names: Sherwood-Taylor
+      - given-names: Serena
+        family-names: Tierney
+      - given-names: Catalina A.
+        family-names: Vallejos
+      - given-names: Sebastian
+        family-names: Vollmer
+      - given-names: Kirstie
+        family-names: Whitaker
+    abstract: |
+      We present a policy and process framework for secure environments for
+      productive data science research projects at scale, by combining
+      prevailing data security threat and risk profiles into five sensitivity
+      tiers, and, at each tier, specifying recommended policies for data
+      classification, data ingress, software ingress, data egress, user access,
+      user device control, and analysis environments. By presenting design
+      patterns for security choices for each tier, and using software defined
+      infrastructure so that a different, independent, secure research
+      environment can be instantiated for each project appropriate to its
+      classification, we hope to maximise researcher productivity and minimise
+      risk, allowing research organisations to operate with confidence.
+    date-published: "2019-08-23"
+    url: "https://arxiv.org/abs/1908.08737"
+  - title: "Data safe havens in the cloud"
+    type: website
+    url: "https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud"
