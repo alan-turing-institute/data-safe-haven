@@ -67,14 +67,14 @@ class PulumiInterface(LoggingMixin):
         self.login()
         self.install_plugins()
         self.set_config_options()
-        self.ensure_config(
-            "azuread-authentication-application-secret",
-            aad_auth_app_secret,
-            secret=True,
-        )
-        self.refresh()
-        self.preview()
-        self.update()
+        # self.ensure_config(
+        #     "azuread-authentication-application-secret",
+        #     aad_auth_app_secret,
+        #     secret=True,
+        # )
+        # self.refresh()
+        # self.preview()
+        # self.update()
 
     def destroy(self):
         """Destroy deployed infrastructure."""
