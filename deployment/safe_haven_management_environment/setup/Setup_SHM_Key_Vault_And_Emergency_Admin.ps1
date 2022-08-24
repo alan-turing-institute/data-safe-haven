@@ -183,7 +183,7 @@ $userHasRole = Get-MgDirectoryRoleMember -DirectoryRoleId $globalAdminRole.Id | 
 if ($userHasRole) {
     Add-LogMessage -Level Success "AAD emergency administrator already has '$globalAdminRoleName' role."
 } else {
-    New-MgDirectoryRoleMemberByRef -DirectoryRoleId $globalAdminRole.Id -BodyParameter @{"@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$($globalAdminUser.Id)" }
+    $null = New-MgDirectoryRoleMemberByRef -DirectoryRoleId $globalAdminRole.Id -BodyParameter @{"@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$($globalAdminUser.Id)" }
     $userHasRole = Get-MgDirectoryRoleMember -DirectoryRoleId $globalAdminRole.Id | Where-Object { $_.Id -eq $globalAdminUser.Id }
     if ($userHasRole) {
         Add-LogMessage -Level Success "Granted AAD emergency administrator '$globalAdminRoleName' role."
@@ -195,7 +195,7 @@ if ($userHasRole) {
 
 # Sign out of Microsoft Graph
 # ---------------------------
-Disconnect-MgGraph
+$null = Disconnect-MgGraph
 
 
 # Ensure that certificates exist
@@ -221,20 +221,9 @@ try {
     # Ensure that CA certificate exists in the Key Vault
     # --------------------------------------------------
     Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' Key Vault..."
-    # Check whether a certificate with a valid private key already exists in the Key Vault. If not, then remove and purge any existing certificate with this name
-    $newCertRequired = $True
-    $existingCert = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate
-    if ($existingCert) {
-        if ($existingCert.Certificate.HasPrivateKey) {
-            Add-LogMessage -Level InfoSuccess "Found existing CA certificate"
-            $newCertRequired = $False
-        } else {
-            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -Force -ErrorAction SilentlyContinue
-            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -InRemovedState -Force -ErrorAction SilentlyContinue
-        }
-    }
-    # Generate a new certificate if required
-    if ($newCertRequired) {
+    # Check whether CA certificate exists
+    $vpnCaCertificate = Resolve-KeyVaultPrivateKeyCertificate -VaultName $config.keyVault.name -CertificateName $config.keyVault.secretNames.vpnCaCertificate
+    if (-not $vpnCaCertificate) {
         Add-LogMessage -Level Info "Creating new self-signed CA certificate..."
 
         # Create self-signed CA certificate with private key
@@ -296,20 +285,9 @@ try {
     # Generate or retrieve client certificate
     # ---------------------------------------
     Add-LogMessage -Level Info "Ensuring that client certificate exists in the '$($config.keyVault.name)' Key Vault..."
-    # Check whether a certificate with a valid private key already exists in the Key Vault. If not, then remove and purge any existing certificate with this name
-    $newCertRequired = $True
-    $existingCert = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate
-    if ($existingCert) {
-        if ($existingCert.Certificate.HasPrivateKey) {
-            Add-LogMessage -Level InfoSuccess "Found existing client certificate"
-            $newCertRequired = $False
-        } else {
-            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate -Force -ErrorAction SilentlyContinue
-            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate -InRemovedState -Force -ErrorAction SilentlyContinue
-        }
-    }
-    # Generate a new certificate if required
-    if ($newCertRequired) {
+    # Check whether client certificate exists
+    $vpnClientCertificate = Resolve-KeyVaultPrivateKeyCertificate -VaultName $config.keyVault.name -CertificateName $config.keyVault.secretNames.vpnClientCertificate
+    if (-not $vpnClientCertificate) {
         Add-LogMessage -Level Info "Creating new client certificate..."
 
         # Load CA certificate into local PFX file and extract the private key
