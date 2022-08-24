@@ -81,6 +81,7 @@ function Get-ShmConfig {
         subscriptionName    = $shmConfigBase.azure.subscriptionName
         vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_VMIMAGES"
         storageTypeDefault  = $shmConfigBase.storageTypeDefault ? $shmConfigBase.storageTypeDefault : "Standard_GRS"
+        diskTypeDefault     = $shmConfigBase.diskTypeDefault ? $shmConfigBase.diskTypeDefault : "Standard_LRS"
     }
     # For normal usage this does not need to be user-configurable.
     # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
@@ -157,7 +158,7 @@ function Get-ShmConfig {
             # Standard_E8_v3  => 8 cores; 64GB RAM; 2.3 GHz; £0.4651/hr
             vm     = [ordered]@{
                 diskSizeGb = 128
-                diskType   = $shm.storageTypeDefault
+                diskType   = $shm.diskTypeDefault
                 size       = "Standard_F8s_v2"
             }
         }
@@ -334,7 +335,7 @@ function Get-ShmConfig {
                 disks                   = [ordered]@{
                     os = [ordered]@{
                         sizeGb = "32"
-                        type   = $shm.storageTypeDefault
+                        type   = $shm.diskTypeDefault
                     }
                 }
                 hostname                = $linuxUpdateServerHostname
@@ -432,7 +433,7 @@ function Get-ShmConfig {
         disks                      = [ordered]@{
             os = [ordered]@{
                 sizeGb = "128"
-                type   = $shm.storageTypeDefault
+                type   = $shm.diskTypeDefault
             }
         }
     }
@@ -461,7 +462,7 @@ function Get-ShmConfig {
         disks                   = [ordered]@{
             os = [ordered]@{
                 sizeGb = "128"
-                type   = $shm.storageTypeDefault
+                type   = $shm.diskTypeDefault
             }
         }
     }
@@ -531,7 +532,7 @@ function Get-ShmConfig {
                     disks                   = [ordered]@{
                         os = [ordered]@{
                             sizeGb = 32
-                            type   = $shm.storageTypeDefault
+                            type   = $shm.diskTypeDefault
                         }
                     }
                     ipAddress               = Get-NextAvailableIpInRange -IpRangeCidr $shm.network["vnetRepositoriesTier${tier}"].subnets[$LocalRepositoryType].cidr -Offset $ipOffset
@@ -541,7 +542,7 @@ function Get-ShmConfig {
                 if ($dataDiskSizeGb) {
                     $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository].disks["data"] = [ordered]@{
                         sizeGb = $dataDiskSizeGb
-                        type   = $shm.storageTypeDefault
+                        type   = $shm.diskTypeDefault
                     }
                 }
                 if ($LocalRepositoryType -eq "proxies") {
@@ -625,6 +626,7 @@ function Get-SreConfig {
                 provider = $sreConfigBase.remoteDesktopProvider
             }
             storageTypeDefault = $sreConfigBase.storageTypeDefault ? $sreConfigBase.storageTypeDefault : "Standard_GRS"
+            diskTypeDefault    = $shmConfigBase.diskTypeDefault ? $shmConfigBase.diskTypeDefault : "Standard_LRS"
         }
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
@@ -862,7 +864,7 @@ function Get-SreConfig {
             disks                           = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -880,11 +882,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "1023"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "128"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -900,7 +902,7 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -971,11 +973,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "32"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -995,11 +997,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "32"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -1013,11 +1015,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "32"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -1058,11 +1060,11 @@ function Get-SreConfig {
             disks                     = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "1024"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "128"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -1083,11 +1085,11 @@ function Get-SreConfig {
         disks                   = [ordered]@{
             os      = [ordered]@{
                 sizeGb = "default"
-                type   = $config.sre.storageTypeDefault
+                type   = $config.sre.diskTypeDefault
             }
             scratch = [ordered]@{
                 sizeGb = "1024"
-                type   = $config.sre.storageTypeDefault
+                type   = $config.sre.diskTypeDefault
             }
         }
     }

@@ -5,7 +5,7 @@
     "disks": {
       "os": {
         "sizeGb": "128",
-        "type": "Standard_GRS"
+        "type": "Standard_LRS"
       }
     },
     "external_dns_resolver": "168.63.129.16",
@@ -26,6 +26,7 @@
     "ip": "10.0.0.5",
     "vmName": "DC2-SHM-TESTC"
   },
+  "diskTypeDefault": "Standard_LRS",
   "dns": {
     "rg": "RG_SHM_DNS_TEST",
     "subscriptionName": "[Prod] Safe Haven Domains"
@@ -620,7 +621,7 @@
         "disks": {
           "os": {
             "sizeGb": "32",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           }
         },
         "hostname": "LINUX-UPDATES-SHM-TESTC",
@@ -742,7 +743,7 @@
     "disks": {
       "os": {
         "sizeGb": "128",
-        "type": "Standard_GRS"
+        "type": "Standard_LRS"
       }
     },
     "hostname": "NPS-SHM-TESTC",
@@ -770,7 +771,7 @@
           "disks": {
             "os": {
               "sizeGb": 32,
-              "type": "Standard_GRS"
+              "type": "Standard_LRS"
             }
           },
           "ipAddress": "10.10.2.134",
@@ -787,7 +788,7 @@
           "disks": {
             "os": {
               "sizeGb": 32,
-              "type": "Standard_GRS"
+              "type": "Standard_LRS"
             }
           },
           "ipAddress": "10.10.3.134",
@@ -819,7 +820,7 @@
       },
       "vm": {
         "diskSizeGb": 128,
-        "diskType": "Standard_GRS",
+        "diskType": "Standard_LRS",
         "size": "Standard_F8s_v2"
       },
       "vnet": {

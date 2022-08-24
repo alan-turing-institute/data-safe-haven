@@ -6,7 +6,7 @@
       "disks": {
         "os": {
           "sizeGb": "128",
-          "type": "Standard_GRS"
+          "type": "Standard_LRS"
         }
       },
       "external_dns_resolver": "168.63.129.16",
@@ -27,6 +27,7 @@
       "ip": "10.0.0.5",
       "vmName": "DC2-SHM-TESTA"
     },
+    "diskTypeDefault": "Standard_LRS",
     "dns": {
       "rg": "RG_SHM_DNS_TEST",
       "subscriptionName": "[Prod] Safe Haven Domains"
@@ -621,7 +622,7 @@
           "disks": {
             "os": {
               "sizeGb": "32",
-              "type": "Standard_GRS"
+              "type": "Standard_LRS"
             }
           },
           "hostname": "LINUX-UPDATES-SHM-TESTA",
@@ -743,7 +744,7 @@
       "disks": {
         "os": {
           "sizeGb": "128",
-          "type": "Standard_GRS"
+          "type": "Standard_LRS"
         }
       },
       "hostname": "NPS-SHM-TESTA",
@@ -771,7 +772,7 @@
             "disks": {
               "os": {
                 "sizeGb": 32,
-                "type": "Standard_GRS"
+                "type": "Standard_LRS"
               }
             },
             "ipAddress": "10.10.2.134",
@@ -788,7 +789,7 @@
             "disks": {
               "os": {
                 "sizeGb": 32,
-                "type": "Standard_GRS"
+                "type": "Standard_LRS"
               }
             },
             "ipAddress": "10.10.3.134",
@@ -820,7 +821,7 @@
         },
         "vm": {
           "diskSizeGb": 128,
-          "diskType": "Standard_GRS",
+          "diskType": "Standard_LRS",
           "size": "Standard_F8s_v2"
         },
         "vnet": {
@@ -942,11 +943,11 @@
         "disks": {
           "data": {
             "sizeGb": "1024",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           },
           "os": {
             "sizeGb": "128",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           }
         },
         "enableSSIS": true,
@@ -965,11 +966,11 @@
         "disks": {
           "data": {
             "sizeGb": "1024",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           },
           "os": {
             "sizeGb": "128",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           }
         },
         "ip": "10.151.3.5",
@@ -982,6 +983,7 @@
       },
       "rg": "RG_SHM_TESTA_SRE_T1GUAC_DATABASES"
     },
+    "diskTypeDefault": "Standard_LRS",
     "domain": {
       "dn": "DC=t1guac,DC=testa,DC=dsgroupdev,DC=co,DC=uk",
       "fqdn": "t1guac.testa.dsgroupdev.co.uk",
@@ -1076,7 +1078,7 @@
         "disks": {
           "os": {
             "sizeGb": "128",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           }
         },
         "fqdn": "GUACAMOLE-SRE-T1GUAC.testa.dsgroupdev.co.uk",
@@ -1116,11 +1118,11 @@
       "disks": {
         "os": {
           "sizeGb": "default",
-          "type": "Standard_GRS"
+          "type": "Standard_LRS"
         },
         "scratch": {
           "sizeGb": "1024",
-          "type": "Standard_GRS"
+          "type": "Standard_LRS"
         }
       },
       "rg": "RG_SHM_TESTA_SRE_T1GUAC_COMPUTE",
@@ -1230,11 +1232,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           }
         },
         "dockerVersion": "latest",
@@ -1253,11 +1255,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           }
         },
         "fqdn": "CODIMD.t1guac.testa.dsgroupdev.co.uk",
@@ -1276,11 +1278,11 @@
         "disks": {
           "data": {
             "sizeGb": "512",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           },
           "os": {
             "sizeGb": "32",
-            "type": "Standard_GRS"
+            "type": "Standard_LRS"
           }
         },
         "fqdn": "GITLAB.t1guac.testa.dsgroupdev.co.uk",
