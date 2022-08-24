@@ -24,13 +24,14 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Connect to Microsoft Graph
 # --------------------------
-if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
-Add-LogMessage -Level Info "Authenticating against Azure Active Directory: use an AAD global administrator for tenant ($tenantId)..."
-Connect-MgGraph -TenantId $tenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop
-if (Get-MgContext) {
-    Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
-} else {
-    Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
+if (-not (Get-MgContext)) {
+    Add-LogMessage -Level Info "Authenticating against Azure Active Directory: use an AAD global administrator for tenant ($tenantId)..."
+    Connect-MgGraph -TenantId $tenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop
+    if (Get-MgContext) {
+        Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
+    }
 }
 
 
@@ -191,11 +192,6 @@ if ($userHasRole) {
         Add-LogMessage -Level Failure "Failed to grant AAD emergency administrator '$globalAdminRoleName' role!"
     }
 }
-
-
-# Sign out of Microsoft Graph
-# ---------------------------
-$null = Disconnect-MgGraph
 
 
 # Ensure that certificates exist
