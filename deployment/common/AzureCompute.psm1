@@ -45,8 +45,15 @@ function Confirm-VmDeallocated {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
         [string]$ResourceGroupName
     )
-    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
-    return (($vmStatuses -contains "PowerState/deallocated") -and ($vmStatuses -contains "ProvisioningState/succeeded"))
+    try {
+        $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status -ErrorAction Stop).Statuses.Code
+        if ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription") {
+            Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning that it was automatically stopped when the subscription ran out of credit."
+        }
+        return (($vmStatuses -contains "PowerState/deallocated") -and ($vmStatuses -contains "ProvisioningState/succeeded"))
+    } catch {
+        return $false
+    }
 }
 Export-ModuleMember -Function Confirm-VmDeallocated
 
@@ -60,8 +67,15 @@ function Confirm-VmRunning {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
         [string]$ResourceGroupName
     )
-    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
-    return (($vmStatuses -contains "PowerState/running") -and ($vmStatuses -contains "ProvisioningState/succeeded"))
+    try {
+        $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status -ErrorAction Stop).Statuses.Code
+        if ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription") {
+            Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning that it was automatically stopped when the subscription ran out of credit."
+        }
+        return (($vmStatuses -contains "PowerState/running") -and ($vmStatuses -contains "ProvisioningState/succeeded"))
+    } catch {
+        return $false
+    }
 }
 Export-ModuleMember -Function Confirm-VmRunning
 
@@ -75,11 +89,15 @@ function Confirm-VmStopped {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
         [string]$ResourceGroupName
     )
-    if ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription") {
-        Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning that it was automatically stopped when the subscription ran out of credit."
+    try {
+        $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status -ErrorAction Stop).Statuses.Code
+        if ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription") {
+            Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning that it was automatically stopped when the subscription ran out of credit."
+        }
+        return (($vmStatuses -contains "PowerState/stopped") -and (($vmStatuses -contains "ProvisioningState/succeeded") -or ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription")))
+    } catch {
+        return $false
     }
-    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
-    return (($vmStatuses -contains "PowerState/stopped") -and (($vmStatuses -contains "ProvisioningState/succeeded") -or ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription")))
 }
 Export-ModuleMember -Function Confirm-VmStopped
 
