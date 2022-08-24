@@ -91,17 +91,6 @@ configuration CreateSecondaryDomainController {
             Name = "RSAT-AD-PowerShell"
         }
 
-        WindowsFeature DNS {
-            Ensure = "Present"
-            Name = "DNS"
-        }
-
-        WindowsFeature DnsServer {
-            Ensure = "Present"
-            Name = "RSAT-DNS-Server"
-            DependsOn = "[WindowsFeature]DNS"
-        }
-
         DnsServerAddress DnsServerAddress { # from NetworkingDsc
             Address = $PrimaryDomainControllerIp
             AddressFamily = "IPv4"
@@ -118,16 +107,27 @@ configuration CreateSecondaryDomainController {
             Credential = $DomainAdministratorCredentials
             DatabasePath = $ActiveDirectoryNtdsPath
             DomainName = $DomainFqdn
-            InstallDns = $false
             LogPath = $ActiveDirectoryLogPath
             SafeModeAdministratorPassword = $SafeModeCredentials
             SysvolPath = $ActiveDirectorySysvolPath
             DependsOn = "[WaitForADDomain]WaitForestAvailability"
         }
 
+        WindowsFeature DNS { # Promotion to SecondaryDomainController should have already enabled this but we ensure it here
+            Ensure = "Present"
+            Name = "DNS"
+            DependsOn = "[ADDomainController]SecondaryDomainController"
+        }
+
+        WindowsFeature DnsServer { # Promotion to SecondaryDomainController should have already enabled this but we ensure it here
+            Ensure = "Present"
+            Name = "RSAT-DNS-Server"
+            DependsOn = "[WindowsFeature]DNS"
+        }
+
         PendingReboot RebootAfterPromotion { # from ComputerManagementDsc
             Name = "RebootAfterDCPromotion"
-            DependsOn = "[ADDomainController]SecondaryDomainController"
+            DependsOn = "[WindowsFeature]DnsServer"
         }
     }
 }
