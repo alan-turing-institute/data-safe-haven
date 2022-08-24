@@ -33,7 +33,7 @@ if (Get-MgContext) {
 
 # Ensure that the SHM domain is registered with the Azure AD
 # ----------------------------------------------------------
-Add-LogMessage -Level Info "Adding SHM domain to AAD..."
+Add-LogMessage -Level Info "Ensuring that '$($config.domain.fqdn)' is registered with AAD..."
 $aadDomain = Get-MgDomain | Where-Object { $_.Id -eq $config.domain.fqdn }
 if ($aadDomain) {
     Add-LogMessage -Level InfoSuccess "'$($config.domain.fqdn)' already present as custom domain on SHM AAD."
@@ -45,7 +45,7 @@ if ($aadDomain) {
 
 # Verify the SHM domain record for the Azure AD
 # ---------------------------------------------
-Add-LogMessage -Level Info "Verifying domain on SHM AAD..."
+Add-LogMessage -Level Info "Ensuring that '$($config.domain.fqdn)' is verified with AAD..."
 if ($aadDomain.IsVerified) {
     Add-LogMessage -Level InfoSuccess "'$($config.domain.fqdn)' already verified on SHM AAD."
 } else {
@@ -96,7 +96,7 @@ if ($aadDomain.IsVerified) {
 
 # Make domain primary on SHM AAD
 # ------------------------------
-Add-LogMessage -Level Info "Ensuring '$($config.domain.fqdn)' is primary domain on SHM AAD."
+Add-LogMessage -Level Info "Ensuring that '$($config.domain.fqdn)' is primary domain on SHM AAD."
 if ($aadDomain.IsDefault) {
     Add-LogMessage -Level InfoSuccess "'$($config.domain.fqdn)' is already primary domain on SHM AAD."
 } else {
