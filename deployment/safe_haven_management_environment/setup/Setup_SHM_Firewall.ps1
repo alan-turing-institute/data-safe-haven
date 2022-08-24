@@ -20,6 +20,11 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
+# Create resource group if it does not exist
+# ------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.monitoring.rg -Location $config.location
+
+
 # Ensure that firewall subnet exists
 # ----------------------------------
 $vnetShm = Get-VirtualNetwork $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
