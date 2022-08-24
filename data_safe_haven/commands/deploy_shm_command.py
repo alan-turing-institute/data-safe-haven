@@ -30,6 +30,10 @@ class DeploySHMCommand(LoggingMixin, Command):
                 raise DataSafeHavenInputException("Unable to load project settings. Please run this command from inside the project directory.")
             config = Config(settings.name, settings.subscription_name)
 
+            # Request FQDN if not provided
+            while not config.shm.fqdn:
+                config.shm.fqdn = self.log_ask("Please enter the domain that SHM users will belong to:", None)
+
             # Deploy infrastructure with Pulumi
             infrastructure = PulumiInterface(config, "SHM")
             infrastructure.deploy()
