@@ -33,7 +33,6 @@ $null = Deploy-ResourceGroup -Name $config.monitoring.rg -Location $config.locat
 # Deploy log analytics workspace
 # ------------------------------
 $workspace = Deploy-LogAnalyticsWorkspace -Name $config.monitoring.loggingWorkspace.name -ResourceGroupName $config.monitoring.rg -Location $config.location
-$workspaceKey = Get-AzOperationalInsightsWorkspaceSharedKey -Name $workspace.Name -ResourceGroup $workspace.ResourceGroupName
 
 
 # Deploy automation account and connect to log analytics
@@ -86,24 +85,10 @@ foreach ($DnsConfig in $DnsConfigs) {
 }
 
 
-# Ensure all SHM VMs are registered with the logging workspace
-# ---------------------------------------------------------------
-Add-LogMessage -Level Info "[ ] Ensuring logging agent is installed on all SHM VMs..."
-$shmResourceGroups = Get-ShmResourceGroups -shmConfig $config
-try {
-    $null = $shmResourceGroups | ForEach-Object { Get-AzVM -ResourceGroup $_.ResourceGroupName } | ForEach-Object {
-        Deploy-VirtualMachineMonitoringExtension -VM $_ -WorkspaceId $workspace.CustomerId -WorkspaceKey $workspaceKey.PrimarySharedKey
-    }
-    Add-LogMessage -Level Success "Ensured that logging agent is installed on all SHM VMs."
-} catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that logging agent is installed on all SHM VMs!" -Exception $_.Exception
-}
-
-
 # Schedule updates for all connected VMs
 # --------------------------------------
 $null = Deploy-LogAnalyticsSolution -Workspace $workspace -SolutionType "Updates"
-$shmQuery = Deploy-AutomationAzureQuery -Account $account -ResourceGroups $shmResourceGroups
+$shmQuery = Deploy-AutomationAzureQuery -Account $account -ResourceGroups (Get-ShmResourceGroups -shmConfig $config)
 $localTimeZone = Get-TimeZone -Id $config.time.timezone.linux
 # Create Windows VM virus definitions update schedule
 $windowsDailySchedule = Deploy-AutomationScheduleInDays -Account $account `

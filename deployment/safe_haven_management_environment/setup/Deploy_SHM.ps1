@@ -97,6 +97,11 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_NPS.ps1')"
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Package_Repositories.ps1')" -shmId $shmId }
 
 
+# Register all SHM VMs with LogAnalytics
+# --------------------------------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Register_VMs.ps1')" -shmId $shmId }
+
+
 # Switch back to original subscription
 # ------------------------------------
 $null = Set-AzContext -Context $originalContext -ErrorAction Stop
