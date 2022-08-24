@@ -26,14 +26,14 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
-# Setup boot diagnostics resource group and storage account
-# ---------------------------------------------------------
+# Ensure that boot diagnostics resource group and storage account exist
+# ---------------------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.storage.bootdiagnostics.rg -Location $config.location
 $null = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 
 
-# Setup artifacts resource group and storage account
-# --------------------------------------------------
+# Ensure that artifacts resource group and storage account exist
+# --------------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
 $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
 
@@ -62,11 +62,11 @@ $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dscPath "DC1
                                      -StorageAccountName $config.storage.artifacts.accountName
 $success = $success -and $?
 $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dscPath "DC2DesiredState.ps1") `
-                                        -ContainerName $storageContainerDscName `
-                                        -Force `
-                                        -ResourceGroupName $config.storage.artifacts.rg `
-                                        -SkipDependencyDetection `
-                                        -StorageAccountName $config.storage.artifacts.accountName
+                                     -ContainerName $storageContainerDscName `
+                                     -Force `
+                                     -ResourceGroupName $config.storage.artifacts.rg `
+                                     -SkipDependencyDetection `
+                                     -StorageAccountName $config.storage.artifacts.accountName
 $success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Uploaded desired state configuration (DSC) files"
