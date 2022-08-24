@@ -171,27 +171,27 @@ Export-ModuleMember -Function Deploy-Firewall
 # ----------------------------------------
 function Deploy-FirewallApplicationRule {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of application rule")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of application rule collection to add this to")]
-        [string]$CollectionName,
-        [Parameter(Mandatory = $true, HelpMessage = "Firewall to add this collection to")]
-        $Firewall,
-        [Parameter(Mandatory = $true, HelpMessage = "Address of source")]
-        [string]$SourceAddress,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByFqdn", HelpMessage = "Protocol to use")]
-        [string]$Protocol,
-        [Parameter(Mandatory = $false, HelpMessage = "Priority of this application rule collection")]
-        [string]$Priority,
         [Parameter(Mandatory = $false, HelpMessage = "Whether these rules will allow or deny access to the specified resources")]
         [ValidateSet("Allow", "Deny")]
         [string]$ActionType,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByFqdn", HelpMessage = "List of FQDNs to apply rule to. Supports '*' wildcard at start of each FQDN.")]
-        [string]$TargetFqdn,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByTag", HelpMessage = "List of FQDN tags to apply rule to. An FQN tag represents a set of Azure-curated FQDNs.")]
-        [string]$TargetTag,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of application rule collection to add this to")]
+        [string]$CollectionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Firewall to add this collection to")]
+        [Microsoft.Azure.Commands.Network.Models.PSAzureFirewall]$Firewall,
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
-        [switch]$LocalChangeOnly
+        [switch]$LocalChangeOnly,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of application rule")]
+        [string]$Name,
+        [Parameter(Mandatory = $false, HelpMessage = "Priority of this application rule collection")]
+        [UInt32]$Priority,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFqdn", HelpMessage = "Protocol to use")]
+        [string[]]$Protocol,
+        [Parameter(Mandatory = $true, HelpMessage = "Address of source")]
+        [string[]]$SourceAddress,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFqdn", HelpMessage = "List of FQDNs to apply rule to. Supports '*' wildcard at start of each FQDN.")]
+        [string[]]$TargetFqdn,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByTag", HelpMessage = "List of FQDN tags to apply rule to. An FQN tag represents a set of Azure-curated FQDNs.")]
+        [string[]]$TargetTag
     )
     Add-LogMessage -Level Info "[ ] Ensuring that application rule '$Name' exists..."
     $params = @{}
@@ -232,29 +232,29 @@ Export-ModuleMember -Function Deploy-FirewallApplicationRule
 # ----------------------------------------------
 function Deploy-FirewallNetworkRule {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of network rule")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of network rule collection to add this to")]
-        [string]$CollectionName,
-        [Parameter(Mandatory = $true, HelpMessage = "Firewall to add this collection to")]
-        $Firewall,
-        [Parameter(Mandatory = $true, HelpMessage = "Address(es) of source")]
-        [string]$SourceAddress,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByAddress", HelpMessage = "Address(es) of destination")]
-        [string]$DestinationAddress,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByFQDN", HelpMessage = "FQDN(s) of destination")]
-        [string]$DestinationFqdn,
-        [Parameter(Mandatory = $true, HelpMessage = "Port(s) of destination")]
-        [string]$DestinationPort,
-        [Parameter(Mandatory = $true, HelpMessage = "Protocol to use")]
-        [string]$Protocol,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        [string]$Priority,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [ValidateSet("Allow", "Deny")]
         [string]$ActionType,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network rule collection to add this to")]
+        [string]$CollectionName,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByAddress", HelpMessage = "Address(es) of destination")]
+        [string[]]$DestinationAddress,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFQDN", HelpMessage = "FQDN(s) of destination")]
+        [string[]]$DestinationFqdn,
+        [Parameter(Mandatory = $true, HelpMessage = "Port(s) of destination")]
+        [string[]]$DestinationPort,
+        [Parameter(Mandatory = $true, HelpMessage = "Firewall to add this collection to")]
+        [Microsoft.Azure.Commands.Network.Models.PSAzureFirewall]$Firewall,
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
-        [switch]$LocalChangeOnly
+        [switch]$LocalChangeOnly,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network rule")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [UInt32]$Priority,
+        [Parameter(Mandatory = $true, HelpMessage = "Protocol to use")]
+        [string[]]$Protocol,
+        [Parameter(Mandatory = $true, HelpMessage = "Address(es) of source")]
+        [string[]]$SourceAddress
     )
     Add-LogMessage -Level Info "[ ] Ensuring that traffic from '$SourceAddress' to '$($DestinationAddress ? $DestinationAddress : $DestinationFqdn)' on ports '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
     $params = @{}
