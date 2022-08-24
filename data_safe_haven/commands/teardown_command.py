@@ -12,8 +12,8 @@ from cleo import Command
 from data_safe_haven.backend import Backend
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenException, DataSafeHavenInputException
-from data_safe_haven.infrastructure import PulumiInterface
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.pulumi import PulumiInterface
 
 
 class TeardownCommand(LoggingMixin, Command):

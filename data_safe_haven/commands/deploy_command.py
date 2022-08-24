@@ -16,7 +16,6 @@ class DeployCommand(LoggingMixin, Command):
     deploy
         {deployment-type : Whether to deploy a Safe Haven Management environment ('shm') or a Secure Research Environment ('sre')}
         {--o|output= : Path to an output log file}
-        {--p|project= : Path to the base directory which will hold the project files for this deployment}
     """
 
     def handle(self):

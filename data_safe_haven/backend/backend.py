@@ -46,6 +46,7 @@ class Backend(LoggingMixin):
             DataSafeHavenAzureException if any resources cannot be created
         """
         try:
+            self.config.azure.subscription_id = self.azure_api.subscription_id
             resource_group = self.azure_api.ensure_resource_group(
                 location=self.config.azure.location,
                 resource_group_name=self.config.backend.resource_group_name,
@@ -80,6 +81,11 @@ class Backend(LoggingMixin):
                 resource_group_name=resource_group.name,
                 tags=self.tags,
             )
+            pulumi_encryption_key = self.azure_api.ensure_keyvault_key(
+                key_name=self.config.backend.pulumi_encryption_key_name,
+                key_vault_name=keyvault.name,
+            )
+            self.config.backend.pulumi_secrets_provider = pulumi_encryption_key.id.replace("https:", "azurekeyvault:")
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create backend resources.\n{str(exc)}"

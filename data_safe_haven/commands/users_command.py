@@ -11,8 +11,8 @@ from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.backend import Backend
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenException
-from data_safe_haven.infrastructure import PulumiInterface
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.pulumi import PulumiInterface
 
 
 class UsersCommand(LoggingMixin, Command):

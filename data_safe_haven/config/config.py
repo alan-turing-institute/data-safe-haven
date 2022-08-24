@@ -13,6 +13,7 @@ import yaml
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenAzureException
+# from data_safe_haven.helpers import AzureApi
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
@@ -31,13 +32,12 @@ class Config(LoggingMixin, AzureMixin):
 
         # Set names
         self.name = name
-        self.name_sanitised = re.sub(r"[^0-9a-zA-Z]+", "", self.name).lower()
-        self.subscription_name = subscription_name
+        self.shm_name = re.sub(r"[^0-9a-zA-Z]+", "", self.name).lower()
 
         # Construct backend storage variables
-        backend_resource_group_name = f"rg-shm-{self.name_sanitised}-backend"
+        backend_resource_group_name = f"rg-shm-{self.shm_name}-backend"
         backend_storage_account_name = (
-            f"shm{self.name_sanitised[:12]}backend"  # maximum of 24 characters allowed
+            f"shm{self.shm_name[:12]}backend"  # maximum of 24 characters allowed
         )
         backend_storage_container_name = "config"
 
@@ -63,7 +63,7 @@ class Config(LoggingMixin, AzureMixin):
         if isinstance(self.tags.version, dotmap.DotMap):
             self.tags.version = __version__
         if isinstance(self.backend.key_vault_name, dotmap.DotMap):
-            self.backend.key_vault_name = f"kv-{self.name_sanitised[:13]}-backend"
+            self.backend.key_vault_name = f"kv-{self.shm_name[:13]}-backend"
         if isinstance(self.backend.resource_group_name, dotmap.DotMap):
             self.backend.resource_group_name = backend_resource_group_name
         if isinstance(self.backend.storage_account_name, dotmap.DotMap):
@@ -72,6 +72,8 @@ class Config(LoggingMixin, AzureMixin):
             self.backend.storage_container_name = backend_storage_container_name
         if isinstance(self.backend.managed_identity_name, dotmap.DotMap):
             self.backend.managed_identity_name = "KeyVaultReaderIdentity"
+        if isinstance(self.backend.pulumi_encryption_key_name, dotmap.DotMap):
+            self.backend.pulumi_encryption_key_name = "pulumi-encryption-key"
         if isinstance(self.pulumi.storage_container_name, dotmap.DotMap):
             self.pulumi.storage_container_name = "pulumi"
         if isinstance(self.settings.allow_copy, dotmap.DotMap):
@@ -80,6 +82,8 @@ class Config(LoggingMixin, AzureMixin):
             self.settings.allow_paste = False
         if isinstance(self.settings.timezone, dotmap.DotMap):
             self.settings.timezone = "Europe/London"
+        if isinstance(self.shm.name, dotmap.DotMap):
+            self.shm.name = self.shm_name
 
     def __repr__(self) -> str:
         return f"{self.__class__} containing: {self._map}"
@@ -94,7 +98,7 @@ class Config(LoggingMixin, AzureMixin):
     @property
     def filename(self) -> str:
         """Filename where this configuration will be stored"""
-        return f"config-{self.name_sanitised}.yaml"
+        return f"config-{self.shm_name}.yaml"
 
     def download(
         self,
@@ -108,9 +112,8 @@ class Config(LoggingMixin, AzureMixin):
             storage_account_key = self.storage_account_key(
                 backend_resource_group_name, backend_storage_account_name
             )
-            blob_connection_string = f"DefaultEndpointsProtocol=https;AccountName={backend_storage_account_name};AccountKey={storage_account_key};EndpointSuffix=core.windows.net"
             blob_service_client = BlobServiceClient.from_connection_string(
-                blob_connection_string
+                f"DefaultEndpointsProtocol=https;AccountName={backend_storage_account_name};AccountKey={storage_account_key};EndpointSuffix=core.windows.net"
             )
             # Download the created file
             blob_client = blob_service_client.get_blob_client(
@@ -119,8 +122,18 @@ class Config(LoggingMixin, AzureMixin):
             return dotmap.DotMap(yaml.safe_load(blob_client.download_blob().readall()))
         except Exception as exc:
             raise DataSafeHavenAzureException(
-                f"Configuration file could not be downloaded from '{backend_storage_account_name}'."
+                f"Configuration file could not be downloaded from '{backend_storage_account_name}'\n{str(exc)}."
             ) from exc
+
+    # def get_secret(self, name: str) -> str:
+    #     """Get secret value"""
+    #     azure_api = AzureApi(self.subscription_name)
+    #     return azure_api.get_keyvault_secret(self.backend.key_vault_name, name)
+
+    # def set_secret(self, name: str, value: str) -> None:
+    #     """Set secret value"""
+    #     azure_api = AzureApi(self.subscription_name)
+    #     azure_api.set_keyvault_secret(self.backend.key_vault_name, name, value)
 
     def storage_account_key(
         self, backend_resource_group_name: str, backend_storage_account_name: str
@@ -151,9 +164,8 @@ class Config(LoggingMixin, AzureMixin):
             storage_account_key = self.storage_account_key(
                 self.backend.resource_group_name, self.backend.storage_account_name
             )
-            blob_connection_string = f"DefaultEndpointsProtocol=https;AccountName={self.backend.storage_account_name};AccountKey={storage_account_key};EndpointSuffix=core.windows.net"
             blob_service_client = BlobServiceClient.from_connection_string(
-                blob_connection_string
+                f"DefaultEndpointsProtocol=https;AccountName={self.backend.storage_account_name};AccountKey={storage_account_key};EndpointSuffix=core.windows.net"
             )
             # Upload the created file
             blob_client = blob_service_client.get_blob_client(

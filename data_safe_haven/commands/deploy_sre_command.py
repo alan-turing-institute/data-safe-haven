@@ -1,17 +1,15 @@
-"""Command-line application for deploying a Secure Research Environment"""
+"""Command-line application for deploying a Secure Research Environment from project files"""
 # Standard library imports
 import pathlib
-import sys
 
 # Third party imports
 from cleo import Command
 import yaml
 
 # Local imports
-from data_safe_haven.config import Config
-from data_safe_haven.backend import Backend
-from data_safe_haven.exceptions import DataSafeHavenException
-from data_safe_haven.infrastructure import PulumiInterface
+from data_safe_haven.config import Config, DotFileSettings
+from data_safe_haven.exceptions import DataSafeHavenException, DataSafeHavenInputException
+from data_safe_haven.pulumi import PulumiInterface
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisioner
 
@@ -21,9 +19,7 @@ class DeploySRECommand(LoggingMixin, Command):
     Deploy a Secure Research Environment using local configuration and project files
 
     deploy-sre
-        {--c|config= : Path to an input config YAML file}
         {--o|output= : Path to an output log file}
-        {--p|project= : Path to the output directory which will hold the project files}
     """
 
     def handle(self):
@@ -31,35 +27,16 @@ class DeploySRECommand(LoggingMixin, Command):
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
 
-            # Load the job configuration
-            config_path = self.option("config") if self.option("config") else "example.yaml"
-            config = Config(config_path)
-
-            # Ensure that the project directory exists
-            if self.option("project"):
-                project_path = pathlib.Path(self.option("project"))
-            else:
-                project_path = pathlib.Path(config_path).parent.resolve()
-                self.warning(f"No --project option was provided. Using '{project_path}'.")
-            if not project_path.exists():
-                if not self.confirm(
-                    f"{self.prefix} Directory '{project_path}' does not exist. Create it?",
-                    False,
-                ):
-                    sys.exit(0)
-                project_path.mkdir()
+            # Use dotfile settings to load the job configuration
+            try:
+                settings = DotFileSettings()
+            except DataSafeHavenInputException:
+                raise DataSafeHavenInputException("Unable to load project settings. Please run this command from inside the project directory.")
+            config = Config(settings.name, settings.subscription_name)
 
             # Deploy infrastructure with Pulumi
-            backend = Backend(config)
-            infrastructure = PulumiInterface(config, project_path)
-            # infrastructure.deploy(
-            #     aad_auth_app_secret=backend.get_secret(
-            #         config.backend.key_vault_name,
-            #         "azuread-authentication-application-secret",
-            #     ),
-            # )
-            print(infrastructure.secret("secure-research-desktop-admin-password"))
-            print(infrastructure.secret("secure-research-desktop-admin-password"))
+            infrastructure = PulumiInterface(config, "SRE")
+            infrastructure.deploy()
             infrastructure.update_config()
 
             # Add Pulumi output information to the config file
@@ -115,5 +92,9 @@ class DeploySRECommand(LoggingMixin, Command):
             )
             guacamole_provisioner.restart()
         except DataSafeHavenException as exc:
-            for line in f"Could not deploy Data Safe Haven '{config.environment_name}'.\n{str(exc)}".split("\n"):
+            for (
+                line
+            ) in f"Could not deploy Secure Research Environment.\n{str(exc)}".split(
+                "\n"
+            ):
                 self.error(line)

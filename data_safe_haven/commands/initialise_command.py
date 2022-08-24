@@ -22,6 +22,7 @@ class InitialiseCommand(LoggingMixin, Command):
         {--d|deployment-name= : Name for this Data Safe Haven deployment}
         {--l|location= : Name of the Azure location to deploy into}
         {--o|output= : Path to an output log file}
+        {--p|project= : Path to the base directory which will hold the project files for this deployment}
         {--s|subscription= : Name of the Azure subscription to deploy into}
     """
 
@@ -29,6 +30,15 @@ class InitialiseCommand(LoggingMixin, Command):
         try:
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
+
+            # Confirm project path
+            if self.option("project"):
+                project_base_path = pathlib.Path(self.option("project")).resolve()
+            else:
+                project_base_path = pathlib.Path.cwd().resolve()
+                self.warning("No --project option was provided")
+                if not self.log_confirm(f"Do you want to use the default project location (<fg=green>{project_base_path}</>)?", False):
+                    sys.exit(0)
 
             # Request admin_group if not provided
             admin_group = self.option("admin-group")
@@ -66,13 +76,12 @@ class InitialiseCommand(LoggingMixin, Command):
             config = backend.config
             config.upload()
 
-            # Create a project directory and write the project settings there
-            project_base_path = pathlib.Path.cwd().resolve() / config.name_sanitised
+            # Ensure that the project directory exists
             if not project_base_path.exists():
                 self.info(f"Creating project directory '<fg=green>{project_base_path}</>'.")
-                project_base_path.mkdir()
-            settings.write(project_base_path)
-
+                project_base_path.mkdir(parents=True)
+            settings_path = settings.write(project_base_path)
+            self.info(f"Saved project settings to '<fg=green>{settings_path}</>'.")
         except DataSafeHavenException as exc:
             for line in f"Could not initialise Data Safe Haven.\n{str(exc)}".split(
                 "\n"

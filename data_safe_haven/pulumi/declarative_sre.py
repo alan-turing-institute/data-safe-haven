@@ -18,7 +18,7 @@ from .components.secure_research_desktop import (
 from .components.state_storage import StateStorageComponent, StateStorageProps
 
 
-class PulumiProgram:
+class DeclarativeSRE:
     """Deploy with Pulumi"""
 
     def __init__(self, config):

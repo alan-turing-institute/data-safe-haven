@@ -14,12 +14,12 @@ from data_safe_haven.exceptions import DataSafeHavenInputException
 class DotFileSettings:
     """Load global and local settings from dotfiles with structure like the following
 
-    dsh:
-      name: Turing Development
     azure:
-        subscription_name: Data Safe Haven Development
-        admin_group_id: 347c68cb-261f-4a3e-ac3e-6af860b5fec9
-        location: uksouth
+      admin_group_id: 347c68cb-261f-4a3e-ac3e-6af860b5fec9
+      location: uksouth
+      subscription_name: Data Safe Haven Development
+    shm:
+      name: Turing Development
     """
 
     admin_group_id: str = None
@@ -43,7 +43,7 @@ class DotFileSettings:
                     self.location = settings.get("azure", {}).get(
                         "location", self.location
                     )
-                    self.name = settings.get("dsh", {}).get("name", self.name)
+                    self.name = settings.get("shm", {}).get("name", self.name)
                     self.subscription_name = settings.get("azure", {}).get(
                         "subscription_name", self.subscription_name
                     )
@@ -74,7 +74,7 @@ class DotFileSettings:
 
     def write(self, directory: pathlib.Path) -> None:
         settings = {
-            "dsh": {
+            "shm": {
                 "name": self.name,
             },
             "azure": {
@@ -86,3 +86,4 @@ class DotFileSettings:
         filepath = (directory / self.config_file_name).resolve()
         with open(filepath, "w") as f_settings:
             yaml.dump(settings, f_settings, indent=2)
+        return filepath

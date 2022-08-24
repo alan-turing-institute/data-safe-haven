@@ -4,40 +4,52 @@ from contextlib import suppress
 import pathlib
 import subprocess
 import time
+from typing import Any, Optional
 
 # Third party imports
 from pulumi import automation
 import yaml
 
 # Local imports
-from .pulumi_program import PulumiProgram
+from .declarative_shm import DeclarativeSHM
+from .declarative_sre import DeclarativeSRE
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
-from data_safe_haven.helpers import password
+from data_safe_haven.helpers import AzureApi, password
 from data_safe_haven.mixins import LoggingMixin
 
 
 class PulumiInterface(LoggingMixin):
     """Interact with infrastructure using Pulumi"""
 
-    def __init__(self, config, project_path, *args, **kwargs):
-        self.cfg = config
-        self.stack_ = None
-        self.work_dir = pathlib.Path(project_path / "pulumi").resolve()
-        self.program = PulumiProgram(self.cfg)
-        self.env_ = None
+    def __init__(self, config: Config, deployment_type: str, *args: Optional[Any], **kwargs: Optional[Any]):
         super().__init__(*args, **kwargs)
+        self.cfg = config
+        self.env_ = None
+        self.stack_ = None
+        if deployment_type == "SHM":
+            self.program = DeclarativeSHM(config)
+            self.work_dir = pathlib.Path.cwd() / "pulumi" / f"shm-{config.shm.name}"
+        elif deployment_type == "SRE":
+            self.program = DeclarativeSRE(config)
+            self.work_dir = pathlib.Path.cwd() / "pulumi" / f"sre-srename"
+        else:
+            raise DataSafeHavenPulumiException(f"Deployment type '{deployment_type}' was not recognised.")
 
     @property
     def local_stack_path(self):
         """Return the local stack path"""
-        return self.work_dir / f"Pulumi.{self.cfg.environment.name}.yaml"
+        return self.work_dir / f"Pulumi.{self.cfg.shm.name}.yaml"
 
     @property
     def env(self):
         if not self.env_:
+            backend_storage_account_key = self.cfg.storage_account_key(
+                self.cfg.backend.resource_group_name, self.cfg.backend.storage_account_name
+            )
             self.env_ = {
                 "AZURE_STORAGE_ACCOUNT": self.cfg.backend.storage_account_name,
-                "AZURE_STORAGE_KEY": self.cfg.storage_account_key(),
+                "AZURE_STORAGE_KEY": backend_storage_account_key,
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
             }
         return self.env_
@@ -47,34 +59,29 @@ class PulumiInterface(LoggingMixin):
         """Load the Pulumi stack, creating if needed."""
         if not self.stack_:
             self.info(
-                f"Creating/loading stack <fg=green>{self.cfg.environment.name}</>."
+                f"Creating/loading stack <fg=green>{self.cfg.shm.name}</>."
             )
             self.stack_ = automation.create_or_select_stack(
                 project_name="data_safe_haven",
-                stack_name=self.cfg.environment.name,
+                stack_name=self.cfg.shm.name,
                 program=self.program.run,
                 opts=automation.LocalWorkspaceOptions(
-                    secrets_provider=self.cfg.pulumi.encryption_key,
+                    secrets_provider=self.cfg.backend.pulumi_secrets_provider,
                     work_dir=self.work_dir,
                     env_vars=self.env,
                 ),
             )
         return self.stack_
 
-    def deploy(self, aad_auth_app_secret):
+    def deploy(self):
         """Deploy the infrastructure with Pulumi."""
         self.initialise_workdir()
         self.login()
         self.install_plugins()
         self.set_config_options()
-        # self.ensure_config(
-        #     "azuread-authentication-application-secret",
-        #     aad_auth_app_secret,
-        #     secret=True,
-        # )
-        # self.refresh()
-        # self.preview()
-        # self.update()
+        self.refresh()
+        self.preview()
+        self.update()
 
     def destroy(self):
         """Destroy deployed infrastructure."""
@@ -106,7 +113,7 @@ class PulumiInterface(LoggingMixin):
         """Ensure that config values have been set"""
         try:
             self.stack.get_config(name)
-        except automation.errors.CommandError as exc:
+        except automation.errors.CommandError:
             self.stack.set_config(
                 name, automation.ConfigValue(value=value, secret=secret)
             )
@@ -123,12 +130,12 @@ class PulumiInterface(LoggingMixin):
         """Create project directory if it does not exist and update local stack."""
         self.info(f"Ensuring that {self.work_dir} exists...", no_newline=True)
         if not self.work_dir.exists():
-            self.work_dir.mkdir()
+            self.work_dir.mkdir(parents=True)
         self.info(f"Ensured that {self.work_dir} exists.", overwrite=True)
         # If stack information is saved in the config file then apply it here
         if "stack" in self.cfg.pulumi.keys():
             self.info(
-                f"Loading stack <fg=green>{self.cfg.environment.name}</> information from config"
+                f"Loading stack <fg=green>{self.cfg.shm.name}</> information from config"
             )
             stack_yaml = yaml.dump(self.cfg.pulumi.stack.toDict(), indent=2)
             with open(self.local_stack_path, "w") as f_stack:
@@ -167,7 +174,7 @@ class PulumiInterface(LoggingMixin):
             self.info(f"Refreshing stack <fg=green>{self.stack.name}</>.")
             self.stack.refresh(color="always")
         except automation.errors.CommandError as exc:
-            raise DataSafeHavenPulumiException("Pulumi refresh failed.") from exc
+            raise DataSafeHavenPulumiException(f"Pulumi refresh failed.\n{str(exc)}") from exc
 
     def secret(self, name):
         """Read a secret from the Pulumi stack."""
@@ -181,23 +188,7 @@ class PulumiInterface(LoggingMixin):
     def set_config_options(self):
         """Set Pulumi config options"""
         self.ensure_config("azure-native:location", self.cfg.azure.location)
-        self.ensure_config(
-            "azure-native:subscriptionId", self.cfg.azure.subscription_id
-        )
-        self.ensure_config(
-            "authentication-openldap-admin-password",
-            password(20),
-            secret=True,
-        )
-        self.ensure_config(
-            "authentication-openldap-search-password",
-            password(20),
-            secret=True,
-        )
-        self.ensure_config("guacamole-postgresql-password", password(20), secret=True)
-        self.ensure_config(
-            "secure-research-desktop-admin-password", password(20), secret=True
-        )
+        self.ensure_config("azure-native:subscriptionId", self.cfg.azure.subscription_id)
 
     def teardown(self):
         """Teardown the infrastructure deployed with Pulumi."""
