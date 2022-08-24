@@ -1,4 +1,4 @@
-"""Command-line application for deploying a Data Safe Haven from project files"""
+"""Command-line application for deploying a Secure Research Environment"""
 # Standard library imports
 import pathlib
 import sys
@@ -16,11 +16,11 @@ from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisioner
 
 
-class DeployCommand(LoggingMixin, Command):
+class DeploySRECommand(LoggingMixin, Command):
     """
-    Deploy a Data Safe Haven using local configuration and project files
+    Deploy a Secure Research Environment using local configuration and project files
 
-    deploy
+    deploy-sre
         {--c|config= : Path to an input config YAML file}
         {--o|output= : Path to an output log file}
         {--p|project= : Path to the output directory which will hold the project files}
