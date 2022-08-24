@@ -26,34 +26,14 @@ class DotFileSettings:
     location: str = None
     name: str = None
     subscription_name: str = None
+    config_file_name = ".dshconfig"
 
     def __init__(
-        self, admin_group_id: str, location: str, name: str, subscription_name: str
+        self, admin_group_id: str = None, location: str = None, name: str = None, subscription_name: str = None
     ):
-        # Override with global dotfile settings (if any)
         try:
-            global_dotfile = pathlib.Path.home() / ".dshbackend.yaml"
-            if global_dotfile.exists():
-                with open(pathlib.Path(global_dotfile), "r") as f_yaml:
-                    settings = yaml.safe_load(f_yaml)
-                    self.admin_group_id = settings.get("azure", {}).get(
-                        "admin_group_id", self.admin_group_id
-                    )
-                    self.location = settings.get("azure", {}).get(
-                        "location", self.location
-                    )
-                    self.name = settings.get("dsh", {}).get("name", self.name)
-                    self.subscription_name = settings.get("azure", {}).get(
-                        "subscription_name", self.subscription_name
-                    )
-        except Exception as exc:
-            raise DataSafeHavenInputException(
-                f"Could not load settings from YAML file '{global_dotfile}'"
-            ) from exc
-
-        try:
-            # Override with local dotfile settings (if any)
-            local_dotfile = pathlib.Path.cwd() / ".dshbackend.yaml"
+            # Load local dotfile settings (if any)
+            local_dotfile = pathlib.Path.cwd() / self.config_file_name
             if local_dotfile.exists():
                 with open(pathlib.Path(local_dotfile), "r") as f_yaml:
                     settings = yaml.safe_load(f_yaml)
@@ -82,12 +62,27 @@ class DotFileSettings:
         if subscription_name:
             self.subscription_name = subscription_name
 
+        # Check that all variables exist
         if not all(
             [self.admin_group_id, self.location, self.name, self.subscription_name]
         ):
             raise DataSafeHavenInputException(
                 f"Not enough information to initialise Data Safe Haven. Please provide subscription_name and location in one of the following ways\n"
-                + "- in ~/.dshbackend.yaml\n"
-                + "- in $PWD/.dshbackend.yaml\n"
+                + "- in the current directory .dshconfig\n"
                 + "- via command line arguments"
             )
+
+    def write(self, directory: pathlib.Path) -> None:
+        settings = {
+            "dsh": {
+                "name": self.name,
+            },
+            "azure": {
+                "admin_group_id": self.admin_group_id,
+                "location": self.location,
+                "subscription_name": self.subscription_name,
+            }
+        }
+        filepath = (directory / self.config_file_name).resolve()
+        with open(filepath, "w") as f_settings:
+            yaml.dump(settings, f_settings, indent=2)
