@@ -71,6 +71,7 @@ foreach ($tier in @("tier2", "tier3")) {
                     -Vnet2Name $config.network.vnet.name `
                     -Vnet2ResourceGroupName $config.network.vnet.rg `
                     -Vnet2SubscriptionName $config.subscriptionName
+    $deploymentSubnet = Get-Subnet -Name $vnetConfig.subnets.deployment.name -VirtualNetworkName $vnetRepository.Name -ResourceGroupName $config.network.vnet.rg
 
     # Deploy proxy servers if requested
     if ($config.repositories[$tier].proxies) {
@@ -86,6 +87,7 @@ foreach ($tier in @("tier2", "tier3")) {
         $CloudInitYaml = Resolve-CloudInit -CloudInitTemplateName $cloudInitFileName `
                                            -TemplateParameters $config
         # Deploy the VM
+        $deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $vnetConfig.subnets.deployment.cidr -VirtualNetwork $vnetRepository
         $params = @{
             AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $vmConfig.adminPasswordSecretName -DefaultLength 20)
             AdminUsername          = $vmAdminUsername
@@ -96,12 +98,12 @@ foreach ($tier in @("tier2", "tier3")) {
             Name                   = $vmConfig.vmName
             OsDiskSizeGb           = $vmConfig.disks.os.sizeGb
             OsDiskType             = $vmConfig.disks.os.type
-            PrivateIpAddress       = $vmConfig.ipAddress
+            PrivateIpAddress       = $deploymentIpAddress
             ResourceGroupName      = $config.repositories.rg
             Size                   = $vmConfig.vmSize
-            Subnet                 = $proxiesSubnet
+            Subnet                 = $deploymentSubnet
         }
-        $null = Deploy-LinuxVirtualMachine @params | Start-VM -ForceRestart
+        $null = Deploy-LinuxVirtualMachine @params | Update-VMIpAddress -Subnet $proxiesSubnet -IpAddress $vmConfig.ipAddress
     }
 
     # Deploy external mirrors if requested (this must come before the internal ones are deployed)
@@ -120,6 +122,7 @@ foreach ($tier in @("tier2", "tier3")) {
             # Deploy the data disk
             $dataDisk = Deploy-ManagedDisk -Name "$($vmConfig.vmName)-DATA-DISK" -SizeGB $vmConfig.disks.data.sizeGb -Type $vmConfig.disks.data.type -ResourceGroupName $config.repositories.rg -Location $config.location
             # Deploy the VM
+            $deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $vnetConfig.subnets.deployment.cidr -VirtualNetwork $vnetRepository
             $params = @{
                 AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $vmConfig.adminPasswordSecretName -DefaultLength 20)
                 AdminUsername          = $vmAdminUsername
@@ -131,12 +134,12 @@ foreach ($tier in @("tier2", "tier3")) {
                 Name                   = $vmConfig.vmName
                 OsDiskSizeGb           = $vmConfig.disks.os.sizeGb
                 OsDiskType             = $vmConfig.disks.os.type
-                PrivateIpAddress       = $vmConfig.ipAddress
+                PrivateIpAddress       = $deploymentIpAddress
                 ResourceGroupName      = $config.repositories.rg
                 Size                   = $vmConfig.vmSize
-                Subnet                 = $mirrorsExternalSubnet
+                Subnet                 = $deploymentSubnet
             }
-            $null = Deploy-LinuxVirtualMachine @params | Start-VM -ForceRestart
+            $null = Deploy-LinuxVirtualMachine @params | Update-VMIpAddress -Subnet $mirrorsExternalSubnet -IpAddress $vmConfig.ipAddress
             # Extract the public key and save it for later use
             try {
                 Add-LogMessage -Level Info "Extracting public SSH key to allow connections to internal mirrors"
@@ -166,45 +169,25 @@ foreach ($tier in @("tier2", "tier3")) {
                                                -TemplateParameters $config
             # Deploy the data disk
             $dataDisk = Deploy-ManagedDisk -Name "$($vmConfig.vmName)-DATA-DISK" -SizeGB $vmConfig.disks.data.sizeGb -Type $vmConfig.disks.data.type -ResourceGroupName $config.repositories.rg -Location $config.location
-            try {
-                # Set temporary NSG rules to allow package installation during deployment
-                Add-LogMessage -Level Info "Temporarily allowing outbound internet access from $privateIpAddress on ports 80, 443 and 3128 during deployment"
-                $mirrorsInternalNsg = Get-AzNetworkSecurityGroup | Where-Object { $_.Id -eq $mirrorsInternalSubnet.NetworkSecurityGroup.Id }
-                Add-NetworkSecurityGroupRule -Access Allow `
-                                             -Description "Allow ports 80 (http), 443 (pip) and 3128 (pip) for installing software" `
-                                             -DestinationAddressPrefix Internet `
-                                             -DestinationPortRange @(80, 443, 3128) `
-                                             -Direction Outbound `
-                                             -Name "ConfigurationOutboundTemporary" `
-                                             -NetworkSecurityGroup $mirrorsInternalNsg `
-                                             -Priority 100 `
-                                             -Protocol TCP `
-                                             -SourceAddressPrefix $vmConfig.ipAddress `
-                                             -SourcePortRange *
-                # Deploy the VM
-                $params = @{
-                    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $vmConfig.adminPasswordSecretName -DefaultLength 20)
-                    AdminUsername          = $vmAdminUsername
-                    BootDiagnosticsAccount = $bootDiagnosticsAccount
-                    CloudInitYaml          = $CloudInitYaml
-                    DataDiskIds            = @($dataDisk.Id)
-                    ImageSku               = "Ubuntu-latest"
-                    Location               = $config.location
-                    Name                   = $vmConfig.vmName
-                    OsDiskSizeGb           = $vmConfig.disks.os.sizeGb
-                    OsDiskType             = $vmConfig.disks.os.type
-                    PrivateIpAddress       = $vmConfig.ipAddress
-                    ResourceGroupName      = $config.repositories.rg
-                    Size                   = $vmConfig.vmSize
-                    Subnet                 = $mirrorsInternalSubnet
-                }
-                $null = Deploy-LinuxVirtualMachine @params | Start-VM -ForceRestart
-            } finally {
-                # Remove temporary NSG rules
-                Add-LogMessage -Level Info "Disabling outbound internet access from $privateIpAddress..."
-                $null = Remove-AzNetworkSecurityRuleConfig -Name "ConfigurationOutboundTemporary" -NetworkSecurityGroup $mirrorsInternalNsg
-                $null = $mirrorsInternalNsg | Set-AzNetworkSecurityGroup
+            # Deploy the VM
+            $deploymentIpAddress = Get-NextAvailableIpInRange -IpRangeCidr $vnetConfig.subnets.deployment.cidr -VirtualNetwork $vnetRepository
+            $params = @{
+                AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $vmConfig.adminPasswordSecretName -DefaultLength 20)
+                AdminUsername          = $vmAdminUsername
+                BootDiagnosticsAccount = $bootDiagnosticsAccount
+                CloudInitYaml          = $CloudInitYaml
+                DataDiskIds            = @($dataDisk.Id)
+                ImageSku               = "Ubuntu-latest"
+                Location               = $config.location
+                Name                   = $vmConfig.vmName
+                OsDiskSizeGb           = $vmConfig.disks.os.sizeGb
+                OsDiskType             = $vmConfig.disks.os.type
+                PrivateIpAddress       = $deploymentIpAddress
+                ResourceGroupName      = $config.repositories.rg
+                Size                   = $vmConfig.vmSize
+                Subnet                 = $deploymentSubnet
             }
+            $null = Deploy-LinuxVirtualMachine @params | Update-VMIpAddress -Subnet $mirrorsInternalSubnet -IpAddress $vmConfig.ipAddress
             # Ensure that the fingerprint for this VM is registered with the corresponding external mirror
             Add-LogMessage -Level Info "Retrieving fingerprint for '$($vmConfig.vmName)'..."
             $result = Invoke-RemoteScript -VMName $vmConfig.vmName -ResourceGroupName $config.repositories.rg -Shell "UnixShell" -Script "ssh-keyscan 127.0.0.1 2> /dev/null"
