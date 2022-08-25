@@ -79,9 +79,8 @@ write_files:
     permissions: "0500"
     content: |
       #! /bin/bash
-      echo ">=== Waiting for realm availability... ===<"
-      while [ "$(realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
       echo ">=== Joining domain '{{shm.domain.fqdnLower}}'... ===<"
+      while [ "$(/usr/sbin/realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do echo "Waiting for realm availability..."; sleep 1; done
       echo "/opt/configuration/join_domain.sh '{{shm.domain.fqdnLower}}' '{{shm.domain.ous.databaseServers.path}}' '{{shm.users.computerManagers.databaseServers.samAccountName}}' '{{postgres.vmName}}'"
       /opt/configuration/join_domain.sh "{{shm.domain.fqdnLower}}" "{{shm.domain.ous.databaseServers.path}}" "{{shm.users.computerManagers.databaseServers.samAccountName}}" "{{postgres.vmName}}"
 

@@ -11,11 +11,9 @@ VM_HOSTNAME=$4
 
 # Ensure that  /etc/resolv.conf has the correct settings
 echo "Ensuring that /etc/resolv.conf has the correct settings..."
-cp /etc/systemd/resolved.conf /tmp/resolved.conf
 sed -i -e "s/^[#]DNS=.*/DNS=/" -e "s/^[#]FallbackDNS=.*/FallbackDNS=/" -e "s/^[#]Domains=.*/Domains=${DOMAIN_FQDN_LOWER}/" /etc/systemd/resolved.conf
 ln -rsf /run/systemd/resolve/resolv.conf /etc/resolv.conf
-cmp /etc/systemd/resolved.conf /tmp/resolved.conf || systemctl restart systemd-resolved
-rm /tmp/resolved.conf
+systemctl restart systemd-resolved
 
 # Check that hostname is correct
 echo "Ensuring that hostname is correct..."
@@ -51,8 +49,8 @@ fi
 
 # Join realm - creating the SSSD config if it does not exist
 echo "Joining realm '${DOMAIN_FQDN_LOWER}'..."
-realm leave 2> /dev/null
-cat /etc/domain-join.secret | realm join --verbose --computer-ou="${DOMAIN_JOIN_OU}" -U ${DOMAIN_JOIN_USER} ${DOMAIN_FQDN_LOWER} --install=/ 2>&1
+/usr/sbin/realm leave 2> /dev/null
+cat /etc/domain-join.secret | /usr/sbin/realm join --verbose --computer-ou="${DOMAIN_JOIN_OU}" -U "${DOMAIN_JOIN_USER}" "${DOMAIN_FQDN_LOWER}" --install=/ 2>&1
 
 # Update SSSD settings
 echo "Updating SSSD settings..."
