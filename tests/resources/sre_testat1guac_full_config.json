@@ -849,6 +849,11 @@
     "storage": {
       "artifacts": {
         "accountName": "shmtestaartifactsnaycqgw",
+        "containers": {
+          "shmArtifactsDC": "shm-artifacts-dc",
+          "shmArtifactsNPS": "shm-artifacts-nps",
+          "shmDesiredState": "shm-desired-state"
+        },
         "rg": "RG_SHM_TESTA_STORAGE"
       },
       "bootdiagnostics": {
@@ -1148,6 +1153,10 @@
           "name": "testat1guacartifactsnrza",
           "performance": "Standard_GRS",
           "storageKind": "BlobStorage"
+        },
+        "containers": {
+          "sreArtifactsRDS": "sre-artifacts-rds",
+          "sreScriptsRDS": "sre-scripts-rds"
         },
         "rg": "RG_SHM_TESTA_SRE_T1GUAC_STORAGE"
       },

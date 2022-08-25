@@ -41,9 +41,7 @@ $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Secr
 # ---------------------------------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
 $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
-$storageContainerDscName = "shm-desired-state"
-$storageContainerArtifactsName = "shm-nps-artifacts"
-$null = Deploy-StorageContainer -Name $storageContainerArtifactsName -StorageAccount $storageAccount
+$null = Deploy-StorageContainer -Name $config.storage.artifacts.containers.shmArtifactsNPS -StorageAccount $storageAccount
 
 
 # Upload artifacts
@@ -54,20 +52,20 @@ try {
     # Desired state
     $dscPath = Join-Path $PSScriptRoot ".." "desired_state_configuration"
     $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dscPath "NPSDesiredState.ps1") `
-                                        -ContainerName $storageContainerDscName `
-                                        -Force `
-                                        -ResourceGroupName $config.storage.artifacts.rg `
-                                        -SkipDependencyDetection `
-                                        -StorageAccountName $config.storage.artifacts.accountName
+                                         -ContainerName $config.storage.artifacts.containers.shmDesiredState `
+                                         -Force `
+                                         -ResourceGroupName $config.storage.artifacts.rg `
+                                         -SkipDependencyDetection `
+                                         -StorageAccountName $config.storage.artifacts.accountName
     $success = $success -and $?
     # Local artifacts
     foreach ($filePath in $(Get-ChildItem (Join-Path $dscPath "npsArtifacts") -Recurse)) {
-        $null = Set-AzStorageBlobContent -Container $storageContainerArtifactsName -Context $storageAccount.Context -File $filePath -Force
+        $null = Set-AzStorageBlobContent -Container $config.storage.artifacts.containers.shmArtifactsNPS -Context $storageAccount.Context -File $filePath -Force
         $success = $success -and $?
     }
     # Remote artifacts
-    $null = Set-AzureStorageBlobFromUri -FileUri "https://raw.githubusercontent.com/Azure-Samples/azure-mfa-nps-extension-health-check/master/MFA_NPS_Troubleshooter.ps1" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
-    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/F/F/BFFB4F12-9C09-4DBC-A4AF-08E51875EEA9/NpsExtnForAzureMfaInstaller.exe" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
+    $null = Set-AzureStorageBlobFromUri -FileUri "https://raw.githubusercontent.com/Azure-Samples/azure-mfa-nps-extension-health-check/master/MFA_NPS_Troubleshooter.ps1" -StorageContainer $config.storage.artifacts.containers.shmArtifactsNPS -StorageContext $storageAccount.Context
+    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/F/F/BFFB4F12-9C09-4DBC-A4AF-08E51875EEA9/NpsExtnForAzureMfaInstaller.exe" -StorageContainer $config.storage.artifacts.containers.shmArtifactsNPS -StorageContext $storageAccount.Context
     if (-not $success) { throw }
     Add-LogMessage -Level Success "Uploaded NPS artifacts to storage account '$($config.storage.artifacts.accountName)'"
 } catch {
@@ -104,14 +102,14 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 Add-LogMessage -Level Info "Installing desired state prerequisites on NPS..."
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dscPath "NPSBootstrap.ps1") -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -SuppressOutput
 $params = @{
-    ArtifactsBlobNamesB64         = Get-AzStorageBlob -Container $storageContainerArtifactsName -Context $storageAccount.Context | ForEach-Object { $_.Name } | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    ArtifactsBlobNamesB64         = Get-AzStorageBlob -Container $config.storage.artifacts.containers.shmArtifactsNPS -Context $storageAccount.Context | ForEach-Object { $_.Name } | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     ArtifactsBlobSasTokenB64      = (New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.subscriptionName -ResourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName) | ConvertTo-Base64
     ArtifactsStorageAccountName   = $config.storage.artifacts.accountName
-    ArtifactsStorageContainerName = $storageContainerArtifactsName
+    ArtifactsStorageContainerName = $config.storage.artifacts.containers.shmArtifactsNPS
     ArtifactsTargetDirectory      = $config.nps.installationDirectory
 }
 $null = Invoke-AzureVmDesiredState -ArchiveBlobName "NPSDesiredState.ps1.zip" `
-                                   -ArchiveContainerName $storageContainerDscName `
+                                   -ArchiveContainerName $config.storage.artifacts.containers.shmDesiredState `
                                    -ArchiveResourceGroupName $config.storage.artifacts.rg `
                                    -ArchiveStorageAccountName $config.storage.artifacts.accountName `
                                    -ConfigurationName "ConfigureNetworkPolicyServer" `

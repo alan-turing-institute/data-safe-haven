@@ -849,6 +849,11 @@
     "storage": {
       "artifacts": {
         "accountName": "shmtestcartifactsnaycqgw",
+        "containers": {
+          "shmArtifactsDC": "shm-artifacts-dc",
+          "shmArtifactsNPS": "shm-artifacts-nps",
+          "shmDesiredState": "shm-desired-state"
+        },
         "rg": "RG_SHM_TESTC_STORAGE"
       },
       "bootdiagnostics": {
@@ -1170,6 +1175,10 @@
           "name": "testct3msrdsartifactspjn",
           "performance": "Standard_GRS",
           "storageKind": "BlobStorage"
+        },
+        "containers": {
+          "sreArtifactsRDS": "sre-artifacts-rds",
+          "sreScriptsRDS": "sre-scripts-rds"
         },
         "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE"
       },

@@ -848,6 +848,11 @@
   "storage": {
     "artifacts": {
       "accountName": "shmtestbartifactsnaycqgw",
+      "containers": {
+        "shmArtifactsDC": "shm-artifacts-dc",
+        "shmArtifactsNPS": "shm-artifacts-nps",
+        "shmDesiredState": "shm-desired-state"
+      },
       "rg": "RG_SHM_TESTB_STORAGE"
     },
     "bootdiagnostics": {

@@ -476,6 +476,11 @@ function Get-ShmConfig {
         artifacts       = [ordered]@{
             rg          = $storageRg
             accountName = "${shmStoragePrefix}artifacts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+            containers  = [ordered]@{
+                shmArtifactsDC  = "shm-artifacts-dc"
+                shmArtifactsNPS = "shm-artifacts-nps"
+                shmDesiredState = "shm-desired-state"
+            }
         }
         bootdiagnostics = [ordered]@{
             rg          = $storageRg
@@ -740,14 +745,18 @@ function Get-SreConfig {
             }
         }
         artifacts       = [ordered]@{
-            account = [ordered]@{
+            account    = [ordered]@{
                 name               = "${sreStoragePrefix}artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind        = "BlobStorage"
                 performance        = $config.sre.storageTypeDefault # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "Cool"
                 allowedIpAddresses = $sreConfigBase.deploymentIpAddresses ? @($sreConfigBase.deploymentIpAddresses) : "any"
             }
-            rg      = $storageRg
+            containers = [ordered]@{
+                sreArtifactsRDS = "sre-artifacts-rds"
+                sreScriptsRDS   = "sre-scripts-rds"
+            }
+            rg         = $storageRg
         }
         bootdiagnostics = [ordered]@{
             accountName = "${sreStoragePrefix}bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
