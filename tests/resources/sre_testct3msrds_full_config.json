@@ -767,8 +767,8 @@
       "tier2": {
         "proxies": {
           "many": {
-            "adminPasswordSecretName": "shm-testc-vm-admin-password-package-proxy-many-tier-2",
-            "applicationAdminPasswordSecretName": "shm-testc-application-admin-password-package-proxy-many-tier-2",
+            "adminPasswordSecretName": "vm-admin-password-package-proxy-shm-testc-many-tier-2",
+            "applicationAdminPasswordSecretName": "application-admin-password-package-proxy-shm-testc-many-tier-2",
             "disks": {
               "os": {
                 "sizeGb": 32,
@@ -776,7 +776,7 @@
               }
             },
             "ipAddress": "10.10.2.134",
-            "vmName": "PACKAGE-PROXY-MANY-TIER-2",
+            "vmName": "PACKAGE-PROXY-SHM-TESTC-MANY-TIER-2",
             "vmSize": "Standard_B2ms"
           }
         }
@@ -784,8 +784,8 @@
       "tier3": {
         "proxies": {
           "many": {
-            "adminPasswordSecretName": "shm-testc-vm-admin-password-package-proxy-many-tier-3",
-            "applicationAdminPasswordSecretName": "shm-testc-application-admin-password-package-proxy-many-tier-3",
+            "adminPasswordSecretName": "vm-admin-password-package-proxy-shm-testc-many-tier-3",
+            "applicationAdminPasswordSecretName": "application-admin-password-package-proxy-shm-testc-many-tier-3",
             "disks": {
               "os": {
                 "sizeGb": 32,
@@ -793,7 +793,7 @@
               }
             },
             "ipAddress": "10.10.3.134",
-            "vmName": "PACKAGE-PROXY-MANY-TIER-3",
+            "vmName": "PACKAGE-PROXY-SHM-TESTC-MANY-TIER-3",
             "vmSize": "Standard_B2ms"
           }
         }

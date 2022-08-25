@@ -526,9 +526,9 @@ function Get-ShmConfig {
                     $dataDiskSizeGb = $null
                     $ipOffset = 6
                 }
-                $vmName = "PACKAGE-$($LocalRepositoryType.Replace("proxies", "proxy").Replace("mirrors", "mirror-"))-${RemoteRepository}-TIER-${tier}".ToUpper()
+                $vmName = "PACKAGE-$($LocalRepositoryType.Replace("proxies", "proxy").Replace("mirrors", "mirror-"))-SHM-$($shm.id)-${RemoteRepository}-TIER-${tier}".ToUpper()
                 $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository] = [ordered]@{
-                    adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-${vmName}".ToLower()
+                    adminPasswordSecretName = "vm-admin-password-${vmName}".ToLower()
                     disks                   = [ordered]@{
                         os = [ordered]@{
                             sizeGb = 32
@@ -546,7 +546,7 @@ function Get-ShmConfig {
                     }
                 }
                 if ($LocalRepositoryType -eq "proxies") {
-                    $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository]["applicationAdminPasswordSecretName"] = "shm-$($shm.id)-application-admin-password-${vmName}".ToLower()
+                    $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository]["applicationAdminPasswordSecretName"] = "application-admin-password-${vmName}".ToLower()
                 }
             }
         }
