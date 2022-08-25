@@ -95,6 +95,7 @@ foreach ($rg in $selected_rgs) {
                                   -ResourceGroupName $rg `
                                   -RoleDefinitionName "Disk Restore Operator"
 }
+Start-Sleep 30 # Allow time for role assignments to persist
 
 
 # Create backup instances for all disks in selected resource groups
