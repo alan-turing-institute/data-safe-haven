@@ -83,7 +83,7 @@ foreach ($tier in @("tier2", "tier3")) {
             nexusAdminPassword = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $vmConfig.applicationAdminPasswordSecretName -DefaultLength 20 -AsPlaintext)
             tier               = [int]$tier.Replace("tier", "")
         }
-        $cloudInitFileName = "cloud-init-package-proxy.mustache.yaml".ToLower()
+        $cloudInitFileName = "cloud-init-repository-proxy.mustache.yaml".ToLower()
         $CloudInitYaml = Resolve-CloudInit -CloudInitTemplateName $cloudInitFileName `
                                            -TemplateParameters $config
         # Deploy the VM
@@ -113,7 +113,7 @@ foreach ($tier in @("tier2", "tier3")) {
         foreach ($SourceRepositoryName in $config.repositories[$tier].mirrorsExternal.Keys) {
             $vmConfig = $config.repositories[$tier].mirrorsExternal[$SourceRepositoryName]
             # Construct the cloud-init file
-            $cloudInitFileName = "cloud-init-package-mirror-external-${SourceRepositoryName}.mustache.yaml".ToLower()
+            $cloudInitFileName = "cloud-init-repository-mirror-external-${SourceRepositoryName}.mustache.yaml".ToLower()
             $config["perInstance"] = @{
                 tier = $Tier
             }
@@ -164,7 +164,7 @@ foreach ($tier in @("tier2", "tier3")) {
                 externalMirrorPublicKey = $vmConfig["externalMirrorPublicKey"]
                 tier                    = $Tier
             }
-            $cloudInitFileName = "cloud-init-package-mirror-internal-${SourceRepositoryName}.mustache.yaml".ToLower()
+            $cloudInitFileName = "cloud-init-repository-mirror-internal-${SourceRepositoryName}.mustache.yaml".ToLower()
             $CloudInitYaml = Resolve-CloudInit -CloudInitTemplateName $cloudInitFileName `
                                                -TemplateParameters $config
             # Deploy the data disk

@@ -678,35 +678,35 @@
       "rg": "RG_SHM_TESTB_NETWORKING",
       "subnets": {
         "deployment": {
-          "cidr": "10.10.2.192/26",
-          "name": "DeploymentSubnet",
+          "cidr": "10.10.2.0/26",
+          "name": "RepositoryDeploymentSubnet",
           "nsg": {
             "name": "NSG_SHM_TESTB_REPOSITORY_DEPLOYMENT_TIER_2",
             "rules": "shm-nsg-rules-repository-deployment-tier2.json"
           }
         },
         "mirrorsExternal": {
-          "cidr": "10.10.2.0/26",
-          "name": "PackageMirrorsExternalTier2Subnet",
+          "cidr": "10.10.2.64/26",
+          "name": "RepositoryMirrorsExternalTier2Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_PACKAGE_MIRRORS_EXTERNAL_TIER2",
-            "rules": "shm-nsg-rules-package-mirrors-external-tier2.json"
+            "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_EXTERNAL_TIER2",
+            "rules": "shm-nsg-rules-repository-mirrors-external-tier2.json"
           }
         },
         "mirrorsInternal": {
-          "cidr": "10.10.2.64/26",
-          "name": "PackageMirrorsInternalTier2Subnet",
+          "cidr": "10.10.2.128/26",
+          "name": "RepositoryMirrorsInternalTier2Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_PACKAGE_MIRRORS_INTERNAL_TIER2",
-            "rules": "shm-nsg-rules-package-mirrors-internal-tier2.json"
+            "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_INTERNAL_TIER2",
+            "rules": "shm-nsg-rules-repository-mirrors-internal-tier2.json"
           }
         },
         "proxies": {
-          "cidr": "10.10.2.128/26",
-          "name": "PackageProxiesTier2Subnet",
+          "cidr": "10.10.2.192/26",
+          "name": "RepositoryProxiesTier2Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_PACKAGE_PROXIES_TIER_2",
-            "rules": "shm-nsg-rules-package-proxies-tier2.json"
+            "name": "NSG_SHM_TESTB_REPOSITORY_PROXIES_TIER_2",
+            "rules": "shm-nsg-rules-repository-proxies-tier2.json"
           }
         }
       }
@@ -717,35 +717,35 @@
       "rg": "RG_SHM_TESTB_NETWORKING",
       "subnets": {
         "deployment": {
-          "cidr": "10.10.3.192/26",
-          "name": "DeploymentSubnet",
+          "cidr": "10.10.3.0/26",
+          "name": "RepositoryDeploymentSubnet",
           "nsg": {
             "name": "NSG_SHM_TESTB_REPOSITORY_DEPLOYMENT_TIER_3",
             "rules": "shm-nsg-rules-repository-deployment-tier3.json"
           }
         },
         "mirrorsExternal": {
-          "cidr": "10.10.3.0/26",
-          "name": "PackageMirrorsExternalTier3Subnet",
+          "cidr": "10.10.3.64/26",
+          "name": "RepositoryMirrorsExternalTier3Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_PACKAGE_MIRRORS_EXTERNAL_TIER3",
-            "rules": "shm-nsg-rules-package-mirrors-external-tier3.json"
+            "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_EXTERNAL_TIER3",
+            "rules": "shm-nsg-rules-repository-mirrors-external-tier3.json"
           }
         },
         "mirrorsInternal": {
-          "cidr": "10.10.3.64/26",
-          "name": "PackageMirrorsInternalTier3Subnet",
+          "cidr": "10.10.3.128/26",
+          "name": "RepositoryMirrorsInternalTier3Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_PACKAGE_MIRRORS_INTERNAL_TIER3",
-            "rules": "shm-nsg-rules-package-mirrors-internal-tier3.json"
+            "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_INTERNAL_TIER3",
+            "rules": "shm-nsg-rules-repository-mirrors-internal-tier3.json"
           }
         },
         "proxies": {
-          "cidr": "10.10.3.128/26",
-          "name": "PackageProxiesTier3Subnet",
+          "cidr": "10.10.3.192/26",
+          "name": "RepositoryProxiesTier3Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_PACKAGE_PROXIES_TIER_3",
-            "rules": "shm-nsg-rules-package-proxies-tier3.json"
+            "name": "NSG_SHM_TESTB_REPOSITORY_PROXIES_TIER_3",
+            "rules": "shm-nsg-rules-repository-proxies-tier3.json"
           }
         }
       }
@@ -782,16 +782,16 @@
     "tier2": {
       "proxies": {
         "many": {
-          "adminPasswordSecretName": "vm-admin-password-package-proxy-shm-testb-many-tier-2",
-          "applicationAdminPasswordSecretName": "application-admin-password-package-proxy-shm-testb-many-tier-2",
+          "adminPasswordSecretName": "shm-testb-vm-admin-password-many-repository-proxy-tier-2",
+          "applicationAdminPasswordSecretName": "application-admin-password-shm-testb-many-repository-proxy-tier-2",
           "disks": {
             "os": {
               "sizeGb": 32,
               "type": "Standard_LRS"
             }
           },
-          "ipAddress": "10.10.2.134",
-          "vmName": "PACKAGE-PROXY-SHM-TESTB-MANY-TIER-2",
+          "ipAddress": "10.10.2.198",
+          "vmName": "SHM-TESTB-MANY-REPOSITORY-PROXY-TIER-2",
           "vmSize": "Standard_B2ms"
         }
       }
@@ -799,16 +799,16 @@
     "tier3": {
       "proxies": {
         "many": {
-          "adminPasswordSecretName": "vm-admin-password-package-proxy-shm-testb-many-tier-3",
-          "applicationAdminPasswordSecretName": "application-admin-password-package-proxy-shm-testb-many-tier-3",
+          "adminPasswordSecretName": "shm-testb-vm-admin-password-many-repository-proxy-tier-3",
+          "applicationAdminPasswordSecretName": "application-admin-password-shm-testb-many-repository-proxy-tier-3",
           "disks": {
             "os": {
               "sizeGb": 32,
               "type": "Standard_LRS"
             }
           },
-          "ipAddress": "10.10.3.134",
-          "vmName": "PACKAGE-PROXY-SHM-TESTB-MANY-TIER-3",
+          "ipAddress": "10.10.3.198",
+          "vmName": "SHM-TESTB-MANY-REPOSITORY-PROXY-TIER-3",
           "vmSize": "Standard_B2ms"
         }
       }

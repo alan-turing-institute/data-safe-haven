@@ -268,36 +268,36 @@ function Get-ShmConfig {
             cidr    = "${shmRepositoryPrefix}.0/24"
             rg      = $shm.network.vnet.rg
             subnets = [ordered]@{
-                mirrorsExternal = [ordered]@{
-                    name = "PackageMirrorsExternalTier${tier}Subnet"
-                    cidr = "${shmRepositoryPrefix}.0/26"
-                    nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_PACKAGE_MIRRORS_EXTERNAL_TIER${tier}".ToUpper()
-                        rules = "shm-nsg-rules-package-mirrors-external-tier${tier}.json"
-                    }
-                }
-                mirrorsInternal = [ordered]@{
-                    name = "PackageMirrorsInternalTier${tier}Subnet"
-                    cidr = "${shmRepositoryPrefix}.64/26"
-                    nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_PACKAGE_MIRRORS_INTERNAL_TIER${tier}".ToUpper()
-                        rules = "shm-nsg-rules-package-mirrors-internal-tier${tier}.json"
-                    }
-                }
-                proxies         = [ordered]@{
-                    name = "PackageProxiesTier${tier}Subnet"
-                    cidr = "${shmRepositoryPrefix}.128/26"
-                    nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_PACKAGE_PROXIES_TIER_${tier}".ToUpper()
-                        rules = "shm-nsg-rules-package-proxies-tier${tier}.json"
-                    }
-                }
                 deployment      = [ordered]@{
-                    name = "DeploymentSubnet"
-                    cidr = "${shmRepositoryPrefix}.192/26"
+                    name = "RepositoryDeploymentSubnet"
+                    cidr = "${shmRepositoryPrefix}.0/26"
                     nsg  = [ordered]@{
                         name  = "$($shm.nsgPrefix)_REPOSITORY_DEPLOYMENT_TIER_${tier}".ToUpper()
                         rules = "shm-nsg-rules-repository-deployment-tier${tier}.json"
+                    }
+                }
+                mirrorsExternal = [ordered]@{
+                    name = "RepositoryMirrorsExternalTier${tier}Subnet"
+                    cidr = "${shmRepositoryPrefix}.64/26"
+                    nsg  = [ordered]@{
+                        name  = "$($shm.nsgPrefix)_REPOSITORY_MIRRORS_EXTERNAL_TIER${tier}".ToUpper()
+                        rules = "shm-nsg-rules-repository-mirrors-external-tier${tier}.json"
+                    }
+                }
+                mirrorsInternal = [ordered]@{
+                    name = "RepositoryMirrorsInternalTier${tier}Subnet"
+                    cidr = "${shmRepositoryPrefix}.128/26"
+                    nsg  = [ordered]@{
+                        name  = "$($shm.nsgPrefix)_REPOSITORY_MIRRORS_INTERNAL_TIER${tier}".ToUpper()
+                        rules = "shm-nsg-rules-repository-mirrors-internal-tier${tier}.json"
+                    }
+                }
+                proxies         = [ordered]@{
+                    name = "RepositoryProxiesTier${tier}Subnet"
+                    cidr = "${shmRepositoryPrefix}.192/26"
+                    nsg  = [ordered]@{
+                        name  = "$($shm.nsgPrefix)_REPOSITORY_PROXIES_TIER_${tier}".ToUpper()
+                        rules = "shm-nsg-rules-repository-proxies-tier${tier}.json"
                     }
                 }
             }
@@ -528,6 +528,7 @@ function Get-ShmConfig {
         foreach ($LocalRepositoryType in $LocalRepositoryTypes) {
             $shm.repositories["tier${tier}"][$LocalRepositoryType] = [ordered]@{}
             $RemoteRepositories = ($LocalRepositoryType -eq "proxies") ? "many" : @("cran", "pypi")
+            $LocalRepositoryShort = $LocalRepositoryType.Replace("proxies", "proxy").Replace("mirrors", "mirror-")
             foreach ($RemoteRepository in $RemoteRepositories) {
                 if ($RemoteRepository -eq "cran") {
                     $dataDiskSizeGb = ($tier -eq 2) ? 128 : 32
@@ -539,9 +540,9 @@ function Get-ShmConfig {
                     $dataDiskSizeGb = $null
                     $ipOffset = 6
                 }
-                $vmName = "PACKAGE-$($LocalRepositoryType.Replace("proxies", "proxy").Replace("mirrors", "mirror-"))-SHM-$($shm.id)-${RemoteRepository}-TIER-${tier}".ToUpper()
+                $vmName = "SHM-$($shm.id)-${RemoteRepository}-REPOSITORY-${LocalRepositoryShort}-TIER-${tier}".ToUpper()
                 $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository] = [ordered]@{
-                    adminPasswordSecretName = "vm-admin-password-${vmName}".ToLower()
+                    adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-${RemoteRepository}-repository-${LocalRepositoryShort}-tier-${tier}".ToLower()
                     disks                   = [ordered]@{
                         os = [ordered]@{
                             sizeGb = 32
@@ -1127,14 +1128,14 @@ function Get-SreConfig {
             $pypiUrl = "http://$($repositoryConfig.proxies.many.ipAddress):80/repository/pypi-proxy"
             $repositoryVNetName = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].name
             $repositoryVNetCidr = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].cidr
-        # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
+        # Repository mirrors use port 3128 (PyPI) or port 80 (CRAN)
         } elseif ($repositoryConfig.mirrorsInternal) {
             $cranUrl = "http://$($repositoryConfig.mirrorsInternal.cran.ipAddress)"
             $pypiUrl = "http://$($repositoryConfig.mirrorsInternal.pypi.ipAddress):3128"
             $repositoryVNetName = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].name
             $repositoryVNetCidr = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].cidr
         } else {
-            Add-LogMessage -Level Fatal "Unknown package repository source for tier $($config.sre.tier) SRE!"
+            Add-LogMessage -Level Fatal "Unknown repository source for tier $($config.sre.tier) SRE!"
         }
     }
     # We want to extract the hostname from PyPI URLs in any of the following forms
