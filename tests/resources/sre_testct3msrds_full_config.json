@@ -1207,7 +1207,7 @@
         "account": {
           "accessTier": "Hot",
           "name": "testct3msrdsuserdatapjnk",
-          "performance": "Premium_GRS",
+          "performance": "Premium_ZRS",
           "rg": "RG_SHM_TESTC_SRE_T3MSRDS_STORAGE",
           "storageKind": "FileStorage"
         },

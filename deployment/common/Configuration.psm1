@@ -80,9 +80,9 @@ function Get-ShmConfig {
         nsgPrefix           = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName    = $shmConfigBase.azure.subscriptionName
         vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_VMIMAGES"
-        storageTypeDefault  = $shmConfigBase.storageTypeDefault ? $shmConfigBase.storageTypeDefault : "Standard_GRS"
-        diskTypeDefault     = $shmConfigBase.diskTypeDefault ? $shmConfigBase.diskTypeDefault : "Standard_LRS"
-    }
+        storageTypeDefault  = "Standard_GRS"
+        diskTypeDefault     = "Standard_LRS"
+}
     # For normal usage this does not need to be user-configurable.
     # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
     $shmIpPrefix = $shmConfigBase.overrides.ipPrefix ? $shmConfigBase.overrides.ipPrefix : "10.0.0"
@@ -625,8 +625,8 @@ function Get-SreConfig {
             remoteDesktop      = [ordered]@{
                 provider = $sreConfigBase.remoteDesktopProvider
             }
-            storageTypeDefault = $sreConfigBase.storageTypeDefault ? $sreConfigBase.storageTypeDefault : "Standard_GRS"
-            diskTypeDefault    = $shmConfigBase.diskTypeDefault ? $shmConfigBase.diskTypeDefault : "Standard_LRS"
+            storageTypeDefault = "Standard_GRS"
+            diskTypeDefault    = "Standard_LRS"
         }
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
@@ -757,7 +757,7 @@ function Get-SreConfig {
             account    = [ordered]@{
                 name        = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind = "FileStorage"
-                performance = $config.sre.storageTypeDefault # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                performance = $config.sre.storageTypeDefault.Contains("LRS") ? "Premium_LRS" : "Premium_ZRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier  = "Hot"
                 rg          = $storageRg
             }

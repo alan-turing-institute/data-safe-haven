@@ -1185,7 +1185,7 @@
         "account": {
           "accessTier": "Hot",
           "name": "testat1guacuserdatanrzab",
-          "performance": "Premium_GRS",
+          "performance": "Premium_ZRS",
           "rg": "RG_SHM_TESTA_SRE_T1GUAC_STORAGE",
           "storageKind": "FileStorage"
         },
