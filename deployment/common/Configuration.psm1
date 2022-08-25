@@ -931,7 +931,7 @@ function Get-SreConfig {
     } elseif ($sreConfigBase.inboundAccessFrom -eq "anywhere") {
         $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
     } else {
-        $config.sre.remoteDesktop.networkRules.allowedSources = $sreConfigBase.inboundAccessFrom
+        $config.sre.remoteDesktop.networkRules.allowedSources = @($sreConfigBase.inboundAccessFrom)
     }
     # Outbound: whether internet access is allowed (if 'default' is given then apply sensible defaults)
     if ($sreConfigBase.outboundInternetAccess -eq "default") {
@@ -945,7 +945,7 @@ function Get-SreConfig {
     } elseif (@("no", "deny", "forbid").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
         $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
     } else {
-        $config.sre.remoteDesktop.networkRules.outboundInternet = $sreConfigBase.outboundInternet
+        $config.sre.remoteDesktop.networkRules.outboundInternet = @($sreConfigBase.outboundInternet)
     }
     # Copy-and-paste
     if (@("0", "1").Contains($config.sre.tier)) {

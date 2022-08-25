@@ -12,11 +12,11 @@ function Add-NetworkSecurityGroupRule {
         [Parameter(Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "A NetworkSecurityGroup object to apply this rule to")]
-        $NetworkSecurityGroup,
+        [Microsoft.Azure.Commands.Network.Models.PSNetworkSecurityGroup]$NetworkSecurityGroup,
         [Parameter(Mandatory = $true, HelpMessage = "A description of the network security rule")]
         [string]$Description,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies the priority of a rule configuration")]
-        $Priority,
+        [Uint32]$Priority,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies whether a rule is evaluated on incoming or outgoing traffic")]
         [string]$Direction,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies whether network traffic is allowed or denied")]
@@ -24,13 +24,13 @@ function Add-NetworkSecurityGroupRule {
         [Parameter(Mandatory = $true, HelpMessage = "Specifies the network protocol that a rule configuration applies to")]
         [string]$Protocol,
         [Parameter(Mandatory = $true, HelpMessage = "Source addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
-        $SourceAddressPrefix,
+        [string[]]$SourceAddressPrefix,
         [Parameter(Mandatory = $true, HelpMessage = "Source port or range. One or more of: an integer, a range of integers or a wildcard")]
-        $SourcePortRange,
+        [string[]]$SourcePortRange,
         [Parameter(Mandatory = $true, HelpMessage = "Destination addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
-        $DestinationAddressPrefix,
+        [string[]]$DestinationAddressPrefix,
         [Parameter(Mandatory = $true, HelpMessage = "Destination port or range. One or more of: an integer, a range of integers or a wildcard")]
-        $DestinationPortRange,
+        [string[]]$DestinationPortRange,
         [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
         [switch]$VerboseLogging = $false
     )
