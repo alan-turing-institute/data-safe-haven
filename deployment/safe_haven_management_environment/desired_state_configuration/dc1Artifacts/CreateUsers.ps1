@@ -28,13 +28,13 @@ Import-Csv $userFilePath | ForEach-Object {
         AccountPassword      = (ConvertTo-SecureString $Password -AsPlainText -Force)
         PasswordNeverExpires = $False
         Mobile               = $_.Mobile
-        Email                = $UserPrincipalName
+        Email                = $_.SecondaryEmail
         Country              = "GB"
     }
 
     # Create user and add them to the group if requested
     try {
-        New-ADUser @props -PassThru
+        $null = New-ADUser @props -PassThru
         if ($_.GroupName) {
             foreach ($group in $($_.GroupName.Split("|"))) {
                 Write-Output "Adding user to group '$group'"

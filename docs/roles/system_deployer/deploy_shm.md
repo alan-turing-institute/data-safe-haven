@@ -256,6 +256,7 @@ In particular, it should not be used as a shared admin account for routine admin
     - Add the the user's mobile phone number to the `Mobile phone` field.
       Make sure to prefix it with the country code and **do not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
     - They will need to enter their number in **exactly this format** when performing a self-service password reset.
+    - Do **not** add anything in the `Email` field here as this will prevent you from using the same email address for a user account
   - Click the `Save` icon at the top of the user details panel
 - Add an authentication email
 
