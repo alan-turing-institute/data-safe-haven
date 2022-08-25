@@ -79,8 +79,8 @@ foreach ($tier in @("tier2", "tier3")) {
         $vmConfig = $config.repositories[$tier].proxies.many
         # Construct the cloud-init file
         $config["perInstance"] = @{
-            adminPassword = $nexusAppAdminPassword
-            tier          = [int]$tier.Replace("tier", "")
+            nexusAdminPassword = (Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $vmConfig.applicationAdminPasswordSecretName -DefaultLength 20 -AsPlaintext)
+            tier               = [int]$tier.Replace("tier", "")
         }
         $cloudInitFileName = "cloud-init-package-proxy.mustache.yaml".ToLower()
         $CloudInitYaml = Resolve-CloudInit -CloudInitTemplateName $cloudInitFileName `
