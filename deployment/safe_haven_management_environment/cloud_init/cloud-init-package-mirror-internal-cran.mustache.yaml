@@ -33,13 +33,14 @@ write_files:
     content: |
       Acquire::http::Proxy "http://{{monitoring.updateServers.linux.ip}}:8000";
 
-  - path: "/etc/crontab"
-    append: true
+  - path: "/etc/cron.d/apt-update"
+    permissions: "0644"
     content: |
+      # Run every day at 01:45
       45 1 * * * root  apt update
 
   - path: /var/local/cran-mirror-apache.conf
-    permissions: 0644
+    permissions: "0644"
     content: |
       <VirtualHost *:80>
         DocumentRoot "/datadrive/mirrordaemon/www/cran"

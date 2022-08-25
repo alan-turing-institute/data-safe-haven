@@ -31,11 +31,6 @@ write_files:
     content: |
       {{audit.rules}}
 
-  - path: "/etc/crontab"
-    append: true
-    content: |
-      45 1 * * * root  apt update
-
   - path: "/etc/bash.bashrc"
     permissions: "0644"
     append: true
@@ -65,11 +60,23 @@ write_files:
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
 
-  - path: "/etc/crontab"
-    append: true
+  - path: "/etc/cron.d/apt-update"
+    permissions: "0644"
     content: |
-      @reboot root /usr/local/bin/runonce | logger -t SafeHaven
+      # Run every day at 01:45
+      45 1 * * * root  apt update
+
+  - path: "/etc/cron.d/clamav-update"
+    permissions: "0644"
+    content: |
+      # Run every day at 01:01
       01 01 * * * freshclam
+
+  - path: "/etc/cron.d/runonce"
+    permissions: "0644"
+    content: |
+      # Run on every reboot
+      @reboot root /usr/local/bin/runonce | logger -t SafeHaven
 
   - path: "/etc/domain-join.secret"
     permissions: "0400"

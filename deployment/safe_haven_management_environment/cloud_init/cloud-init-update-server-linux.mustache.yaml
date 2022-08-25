@@ -1,9 +1,10 @@
 #cloud-config
 
 write_files:
-  - path: "/etc/crontab"
-    append: true
+  - path: "/etc/cron.d/apt-update"
+    permissions: "0644"
     content: |
+      # Run every day at 01:45
       45 1 * * * root  apt update
 
   - path: "/etc/squid-deb-proxy/mirror-dstdomain.acl.d/20-data-safe-haven"
