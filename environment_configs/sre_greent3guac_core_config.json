@@ -4,7 +4,7 @@
     "shmId": "green",
     "subscriptionName": "Data Safe Haven Development",
     "ipPrefix": "10.153.0",
-    "inboundAccessFrom": "default",
+    "inboundAccessFrom": ["193.60.220.253", "212.82.79.35"],
     "outboundInternetAccess": "default",
     "computeVmImage": {
         "type": "Ubuntu",
