@@ -107,11 +107,6 @@ $certificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretNa
 $null = Deploy-VirtualNetworkGateway -Name "$($config.network.vnet.name)_GW" -ResourceGroupName $config.network.vnet.rg -Location $config.location -PublicIpAddressId $publicIp.Id -SubnetId $gatewaySubnet.Id -P2SCertificate $certificate -VpnClientAddressPool $config.network.vpn.cidr
 
 
-# Create a route table for the SHM
-# --------------------------------
-$null = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceGroupName $config.network.vnet.rg -Location $config.location
-
-
 # Switch back to original subscription
 # ------------------------------------
 $null = Set-AzContext -Context $originalContext -ErrorAction Stop
