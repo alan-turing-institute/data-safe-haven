@@ -426,6 +426,7 @@ If you see a message about buying licences, you may need to refresh the page for
 
     </details>
 
+(roles_deployer_deploy_shm)=
 ## 6. {{computer}} Deploy SHM
 
 ![Powershell: a few hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20hours) at {{file_folder}} `./deployment/secure_research_environment/setup`
@@ -684,9 +685,8 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 
 </details>
 
-## 7. {{station}} Configure VPN connection
-
 (deploy_shm_vpn)=
+## 7. {{station}} Configure VPN connection
 
 ### Download a client VPN certificate for the Safe Haven Management network
 

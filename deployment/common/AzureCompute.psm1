@@ -160,7 +160,8 @@ function Deploy-LinuxVirtualMachine {
         } elseif ($ImageSku) {
             if ($ImageSku -eq "Ubuntu-22.04") {
                 $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer 0001-com-ubuntu-server-jammy -Skus "22_04-LTS" -Version "latest"
-            } elseif (($ImageSku -eq "Ubuntu-20.04") -or ($ImageSku -eq "Ubuntu-latest")) { # Note that we cannot move 'Ubuntu-latest' to 22.04 until migrating to Azure Monitor Agent https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration
+            # Note that we cannot move 'Ubuntu-latest' to 22.04 until migrating to Azure Monitor Agent https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration
+            } elseif (($ImageSku -eq "Ubuntu-20.04") -or ($ImageSku -eq "Ubuntu-latest")) {
                 $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer 0001-com-ubuntu-server-focal -Skus "20_04-LTS" -Version "latest"
             } elseif ($ImageSku -eq "Ubuntu-18.04") {
                 $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus "18.04-LTS" -Version "latest"

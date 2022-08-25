@@ -61,13 +61,13 @@ Full disconnection of the `Azure` Active Directory can take up to 72 hours but w
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
-See the {ref}`Safe Haven Management documentation <roles_deployer_shm_configure_dns>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ## 5. {{file_folder}} Ensure the Azure Active Directory domain is registered
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
-See the {ref}`Safe Haven Management documentation <roles_deployer_shm_setup_aad>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ```{note}
 You will need to use an AAD global admin when the `AzureAD` module asks you to sign-in.
@@ -77,7 +77,7 @@ You will need to use an AAD global admin when the `AzureAD` module asks you to s
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
-See the {ref}`Safe Haven Management documentation <roles_deployer_shm_key_vault>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ```{note}
 You will need to use an AAD global admin when the `AzureAD` module asks you to sign-in.
@@ -87,13 +87,13 @@ You will need to use an AAD global admin when the `AzureAD` module asks you to s
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
-See the {ref}`Safe Haven Management documentation <roles_deployer_shm_vnet_gateway>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ## 8. {{house_with_garden}} Deploy the domain controllers
 
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
-See the {ref}`Safe Haven Management documentation <roles_deployer_shm_domain_controllers>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ```{important}
 Do **not** run any of the domain controller configuration steps yet
@@ -191,40 +191,40 @@ See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_aad
 
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
 
-See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_validate_aad_synchronisation>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ## 10. {{police_car}} Deploy and configure network policy server
 
 ![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
-See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_deploy_nps>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ## 11. {{closed_lock_with_key}} Require MFA for all users
 
 ![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
 
-See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_require_mfa>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ## 12. {{no_pedestrians}} Block portal access for normal users
 
 ![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
 
-See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_block_portal_access>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ## 13. {{package}} Deploy Python/R package repositories
 
 ![Powershell: thirty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=thirty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
-See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_deploy_mirrors>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ## 14. {{chart_with_upwards_trend}} Deploy logging
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
-See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_deploy_logging>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ## 15. {{fire_engine}} Deploy firewall
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
-See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_deploy_firewall>` for more details.
+See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
