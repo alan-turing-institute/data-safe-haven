@@ -28,12 +28,16 @@ $firewallRules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScript
 $allowedFqdns = @($firewallRules.applicationRuleCollections | ForEach-Object { $_.properties.rules.targetFqdns }) +
                 @(Get-PrivateDnsZones -ResourceGroupName $config.shm.network.vnet.rg -SubscriptionName $config.shm.subscriptionName | ForEach-Object { $_.Name })
 # List all unique FQDNs
-$allowedFqdns = $allowedFqdns | Sort-Object -Unique
+$allowedFqdns = $allowedFqdns |
+                Where-Object { $_ -notlike "g*.servicebus.windows.net" } | # Remove AzureADConnect password reset endpoints
+                Where-Object { $_ -notlike "pksproddatastore*.blob.core.windows.net" } | # Remove AzureAD operations endpoints
+                Sort-Object -Unique
 Add-LogMessage -Level Info "Restricted networks will be allowed to run DNS lookup on the following $($allowedFqdns.Count) FQDNs:"
 foreach ($allowedFqdn in $allowedFqdns) { Add-LogMessage -Level Info "... $allowedFqdn" }
 # Allow DNS resolution for arbitrary subdomains under a private link
 # Note: this does NOT guarantee that we control the subdomain, but there is currently no way to dynamically resolve only those subdomains belonging to the private link
 $allowedFqdns = $allowedFqdns | ForEach-Object { $_.Replace("privatelink", "*") }
+
 
 # Construct lists of CIDRs to apply restrictions to
 # -------------------------------------------------
