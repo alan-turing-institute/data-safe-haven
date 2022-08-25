@@ -42,11 +42,13 @@ $vnetRepositoriesTier2 = Deploy-VirtualNetwork -Name $config.network.vnetReposit
 $mirrorsExternalTier2Subnet = Deploy-Subnet -Name $config.network.vnetRepositoriesTier2.subnets.mirrorsExternal.name -AddressPrefix $config.network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr -VirtualNetwork $vnetRepositoriesTier2
 $mirrorsInternalTier2Subnet = Deploy-Subnet -Name $config.network.vnetRepositoriesTier2.subnets.mirrorsInternal.name -AddressPrefix $config.network.vnetRepositoriesTier2.subnets.mirrorsInternal.cidr -VirtualNetwork $vnetRepositoriesTier2
 $proxiesTier2Subnet = Deploy-Subnet -Name $config.network.vnetRepositoriesTier2.subnets.proxies.name -AddressPrefix $config.network.vnetRepositoriesTier2.subnets.proxies.cidr -VirtualNetwork $vnetRepositoriesTier2
+$deploymentTier2Subnet = Deploy-Subnet -Name $config.network.vnetRepositoriesTier2.subnets.deployment.name -AddressPrefix $config.network.vnetRepositoriesTier2.subnets.deployment.cidr -VirtualNetwork $vnetRepositoriesTier2
 # Tier 3
 $vnetRepositoriesTier3 = Deploy-VirtualNetwork -Name $config.network.vnetRepositoriesTier3.name -ResourceGroupName $config.network.vnetRepositoriesTier3.rg -AddressPrefix $config.network.vnetRepositoriesTier3.cidr -Location $config.location
 $mirrorsExternalTier3Subnet = Deploy-Subnet -Name $config.network.vnetRepositoriesTier3.subnets.mirrorsExternal.name -AddressPrefix $config.network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr -VirtualNetwork $vnetRepositoriesTier3
 $mirrorsInternalTier3Subnet = Deploy-Subnet -Name $config.network.vnetRepositoriesTier3.subnets.mirrorsInternal.name -AddressPrefix $config.network.vnetRepositoriesTier3.subnets.mirrorsInternal.cidr -VirtualNetwork $vnetRepositoriesTier3
 $proxiesTier3Subnet = Deploy-Subnet -Name $config.network.vnetRepositoriesTier3.subnets.proxies.name -AddressPrefix $config.network.vnetRepositoriesTier3.subnets.proxies.cidr -VirtualNetwork $vnetRepositoriesTier3
+$deploymentTier3Subnet = Deploy-Subnet -Name $config.network.vnetRepositoriesTier3.subnets.deployment.name -AddressPrefix $config.network.vnetRepositoriesTier3.subnets.deployment.cidr -VirtualNetwork $vnetRepositoriesTier3
 # As we do not currently support Tier 4 we do not deploy any networks for it
 
 
@@ -76,6 +78,10 @@ $mirrorsInternalTier2Subnet = Set-SubnetNetworkSecurityGroup -Subnet $mirrorsInt
 $proxiesTier2Nsg = Deploy-NetworkSecurityGroup -Name $config.network.vnetRepositoriesTier2.subnets.proxies.nsg.name -ResourceGroupName $config.network.vnetRepositoriesTier2.rg -Location $config.location
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $proxiesTier2Nsg -Rules (Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.vnetRepositoriesTier2.subnets.proxies.nsg.rules) -Parameters $config -AsHashtable)
 $proxiesTier2Subnet = Set-SubnetNetworkSecurityGroup -Subnet $proxiesTier2Subnet -NetworkSecurityGroup $proxiesTier2Nsg
+# Tier 2 deployment
+$deploymentTier2Nsg = Deploy-NetworkSecurityGroup -Name $config.network.vnetRepositoriesTier2.subnets.deployment.nsg.name -ResourceGroupName $config.network.vnetRepositoriesTier2.rg -Location $config.location
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $deploymentTier2Nsg -Rules (Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.vnetRepositoriesTier2.subnets.deployment.nsg.rules) -Parameters $config -AsHashtable)
+$deploymentTier2Subnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentTier2Subnet -NetworkSecurityGroup $deploymentTier2Nsg
 # Tier 3 external mirrors
 $mirrorsExternalTier3Nsg = Deploy-NetworkSecurityGroup -Name $config.network.vnetRepositoriesTier3.subnets.mirrorsExternal.nsg.name -ResourceGroupName $config.network.vnetRepositoriesTier3.rg -Location $config.location
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $mirrorsExternalTier3Nsg -Rules (Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.vnetRepositoriesTier3.subnets.mirrorsExternal.nsg.rules) -Parameters $config -AsHashtable)
@@ -88,6 +94,10 @@ $mirrorsInternalTier3Subnet = Set-SubnetNetworkSecurityGroup -Subnet $mirrorsInt
 $proxiesTier3Nsg = Deploy-NetworkSecurityGroup -Name $config.network.vnetRepositoriesTier3.subnets.proxies.nsg.name -ResourceGroupName $config.network.vnetRepositoriesTier3.rg -Location $config.location
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $proxiesTier3Nsg -Rules (Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.vnetRepositoriesTier3.subnets.proxies.nsg.rules) -Parameters $config -AsHashtable)
 $proxiesTier3Subnet = Set-SubnetNetworkSecurityGroup -Subnet $proxiesTier3Subnet -NetworkSecurityGroup $proxiesTier3Nsg
+# Tier 3 deployment
+$deploymentTier3Nsg = Deploy-NetworkSecurityGroup -Name $config.network.vnetRepositoriesTier3.subnets.deployment.nsg.name -ResourceGroupName $config.network.vnetRepositoriesTier3.rg -Location $config.location
+$null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $deploymentTier3Nsg -Rules (Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.network.vnetRepositoriesTier3.subnets.deployment.nsg.rules) -Parameters $config -AsHashtable)
+$deploymentTier3Subnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentTier3Subnet -NetworkSecurityGroup $deploymentTier3Nsg
 
 
 # Create the VPN gateway

@@ -77,7 +77,7 @@ foreach ($route in $rules.routes) {
 
 # Attach all subnets except the VPN gateway and firewall subnets to the firewall route table
 # ------------------------------------------------------------------------------------------
-$excludedSubnetNames = @($config.network.vnet.subnets.firewall.name, $config.network.vnet.subnets.gateway.name)
+$excludedSubnetNames = @($config.network.vnet.subnets.firewall.name, $config.network.vnet.subnets.gateway.name, $config.network.vnetRepositoriesTier2.subnets.deployment.name, $config.network.vnetRepositoriesTier3.subnets.deployment.name)
 $vnetRepositoriesTier2 = Get-VirtualNetwork -Name $config.network.vnetRepositoriesTier2.name -ResourceGroupName $config.network.vnetRepositoriesTier2.rg
 $vnetRepositoriesTier3 = Get-VirtualNetwork -Name $config.network.vnetRepositoriesTier3.name -ResourceGroupName $config.network.vnetRepositoriesTier3.rg
 foreach ($vnet in @($vnetShm, $vnetRepositoriesTier2, $vnetRepositoriesTier3)) {

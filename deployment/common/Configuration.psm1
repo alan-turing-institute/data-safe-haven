@@ -292,6 +292,14 @@ function Get-ShmConfig {
                         rules = "shm-nsg-rules-package-proxies-tier${tier}.json"
                     }
                 }
+                deployment      = [ordered]@{
+                    name = "DeploymentSubnet"
+                    cidr = "${shmRepositoryPrefix}.192/26"
+                    nsg  = [ordered]@{
+                        name  = "$($shm.nsgPrefix)_REPOSITORY_DEPLOYMENT_TIER_${tier}".ToUpper()
+                        rules = "shm-nsg-rules-repository-deployment-tier${tier}.json"
+                    }
+                }
             }
         }
     }

@@ -678,6 +678,14 @@
         "name": "VNET_SHM_TESTB_PACKAGE_REPOSITORIES_TIER_2",
         "rg": "RG_SHM_TESTB_NETWORKING",
         "subnets": {
+          "deployment": {
+            "cidr": "10.10.2.192/26",
+            "name": "DeploymentSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_REPOSITORY_DEPLOYMENT_TIER_2",
+              "rules": "shm-nsg-rules-repository-deployment-tier2.json"
+            }
+          },
           "mirrorsExternal": {
             "cidr": "10.10.2.0/26",
             "name": "PackageMirrorsExternalTier2Subnet",
@@ -709,6 +717,14 @@
         "name": "VNET_SHM_TESTB_PACKAGE_REPOSITORIES_TIER_3",
         "rg": "RG_SHM_TESTB_NETWORKING",
         "subnets": {
+          "deployment": {
+            "cidr": "10.10.3.192/26",
+            "name": "DeploymentSubnet",
+            "nsg": {
+              "name": "NSG_SHM_TESTB_REPOSITORY_DEPLOYMENT_TIER_3",
+              "rules": "shm-nsg-rules-repository-deployment-tier3.json"
+            }
+          },
           "mirrorsExternal": {
             "cidr": "10.10.3.0/26",
             "name": "PackageMirrorsExternalTier3Subnet",
