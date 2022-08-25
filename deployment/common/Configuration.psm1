@@ -1085,11 +1085,11 @@ function Get-SreConfig {
         disks                   = [ordered]@{
             os      = [ordered]@{
                 sizeGb = "default"
-                type   = $config.sre.diskTypeDefault
+                type   = "StandardSSD_LRS" # explicitly override defaults and use SSD for SRD disks
             }
             scratch = [ordered]@{
                 sizeGb = "1024"
-                type   = $config.sre.diskTypeDefault
+                type   = "StandardSSD_LRS" # explicitly override defaults and use SSD for SRD disks
             }
         }
     }

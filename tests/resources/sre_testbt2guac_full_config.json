@@ -1118,11 +1118,11 @@
       "disks": {
         "os": {
           "sizeGb": "default",
-          "type": "Standard_LRS"
+          "type": "StandardSSD_LRS"
         },
         "scratch": {
           "sizeGb": "1024",
-          "type": "Standard_LRS"
+          "type": "StandardSSD_LRS"
         }
       },
       "rg": "RG_SHM_TESTB_SRE_T2GUAC_COMPUTE",

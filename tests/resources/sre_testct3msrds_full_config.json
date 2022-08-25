@@ -1140,11 +1140,11 @@
       "disks": {
         "os": {
           "sizeGb": "default",
-          "type": "Standard_LRS"
+          "type": "StandardSSD_LRS"
         },
         "scratch": {
           "sizeGb": "1024",
-          "type": "Standard_LRS"
+          "type": "StandardSSD_LRS"
         }
       },
       "rg": "RG_SHM_TESTC_SRE_T3MSRDS_COMPUTE",
