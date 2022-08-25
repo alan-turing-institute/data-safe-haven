@@ -864,11 +864,11 @@ function Set-VnetPeering {
         # Set remote gateway parameters if requested
         $paramsVnet1 = @{}
         $paramsVnet2 = @{}
-        if ($AllowVNet1Gateway.IsPresent) {
+        if ($VNet1AllowRemoteGateway.IsPresent) {
             $paramsVnet1["AllowGatewayTransit"] = $true
             $paramsVnet2["UseRemoteGateways"] = $true
         }
-        if ($AllowVNet2Gateway.IsPresent) {
+        if ($VNet2AllowRemoteGateway.IsPresent) {
             $paramsVnet1["UseRemoteGateways"] = $true
             $paramsVnet2["AllowGatewayTransit"] = $true
         }
