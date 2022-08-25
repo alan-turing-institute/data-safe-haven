@@ -1078,7 +1078,7 @@ Export-ModuleMember -Function Update-NetworkSecurityGroupRule
 # -------------------------------------
 function Update-VMIpAddress {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject")]
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject", ValueFromPipeline = $true)]
         [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
         [Parameter(Mandatory = $true, HelpMessage = "VM name", ParameterSetName = "ByName")]
         [string]$Name,
@@ -1115,7 +1115,7 @@ function Update-VMIpAddress {
         } else {
             Add-LogMessage -Level Fatal "Failed to change IP address to '$IpAddress'!"
         }
-        Start-VM -VM $VM
+        Start-VM -VM $VM -ForceRestart
     }
 }
 Export-ModuleMember -Function Update-VMIpAddress
