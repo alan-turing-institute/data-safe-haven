@@ -128,7 +128,7 @@ references:
         family-names: Vollmer
       - given-names: Kirstie
         family-names: Whitaker
-    abstract: |
+    abstract: >
       We present a policy and process framework for secure environments for
       productive data science research projects at scale, by combining
       prevailing data security threat and risk profiles into five sensitivity
