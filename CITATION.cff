@@ -1,8 +1,73 @@
 cff-version: 1.2.0
-message: "To acknowledge the data safe haven please use the citation below"
+message: "To acknowledge the data safe haven please use the citation and references below."
 title: "Turing Data Safe Haven"
 url: "https://alan-turing-institute.github.io/data-safe-haven/develop/index.html"
 repository-code: "https://github.com/alan-turing-institute/data-safe-haven"
+authors:
+  - given-names: James
+    family-names: Robinson
+  - given-names: Martin T.
+    family-names: O'Reilly
+  - given-names: Jim
+    family-names: Madge
+  - given-names: Tom
+    family-names: Doel
+  - given-names: James
+    family-names: Cunningham
+  - given-names: Miguel
+    family-names: Morin
+  - given-names: Catherine
+    family-names: Lawrence
+  - given-names: Rob
+    family-names: Clarke
+  - given-names: Ben
+    family-names: Walden
+  - given-names: Warick
+    family-names: Wood
+  - given-names: Oliver
+    family-names: Forrest
+  - given-names: James
+    family-names: Hetherington
+  - given-names: Kirstie
+    family-names: Whitaker
+  - given-names: Tim
+    family-names: Hobson
+  - given-names: George
+    family-names: Holmes
+  - given-names: Federico
+    family-names: Nanni
+  - given-names: Ed
+    family-names: Chalstrey
+  - given-names: Tomas
+    family-names: Lazauskas
+  - given-names: Rachel
+    family-names: Winstanley
+  - given-names: Daniel
+    family-names: Allen
+  - given-names: Alvaro
+    family-names: Cabrejas Egea
+  - given-names: Ian
+    family-names: Carter
+  - given-names: Hari
+    family-names: Sood
+  - given-names: Brett
+    family-names: Todd
+  - given-names: Diego
+    family-names: Arenas
+  - given-names: Kevin
+    family-names: Xu
+  - given-names: Sebastian
+    family-names: Vollmer
+  - given-names: Jules
+    family-names: Manser
+  - given-names: Christopher
+    family-names: Edsall
+  - given-names: Jack
+    family-names: Roberts
+  - given-names: Guillaume
+    family-names: Noell
+  - given-names: David
+    family-names: Beavan
 license: MIT
 keywords:
   - "trusted research environment"
@@ -63,7 +128,7 @@ references:
         family-names: Vollmer
       - given-names: Kirstie
         family-names: Whitaker
-    abstract: |
+    abstract: >
       We present a policy and process framework for secure environments for
       productive data science research projects at scale, by combining
       prevailing data security threat and risk profiles into five sensitivity
@@ -80,3 +145,5 @@ references:
   - title: "Data safe havens in the cloud"
     type: website
     url: "https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud"
+    authors:
+      - name: "The Alan Turing Institute"

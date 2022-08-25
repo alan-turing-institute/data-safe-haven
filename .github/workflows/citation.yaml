@@ -1,0 +1,18 @@
+name: cffconvert
+
+on:
+  push:
+    paths:
+      - CITATION.cff
+
+jobs:
+  validate:
+    name: "validate"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Validate CITATION.cff
+        uses: citation-file-format/cffconvert-github-action@2.0.0
+        with:
+          args: "--validate"
