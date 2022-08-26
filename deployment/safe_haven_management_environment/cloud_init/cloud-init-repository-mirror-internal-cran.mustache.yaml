@@ -22,6 +22,7 @@ apt:
 # List of packages to install with apt-get
 packages:
   - apache2
+  - auditd
   - clamav
   - clamav-base
   - clamav-daemon
@@ -37,6 +38,11 @@ write_files:
     permissions: "0444"
     content: |
       Acquire::http::Proxy "http://{{monitoring.updateServers.linux.ip}}:8000";
+
+  - path: "/etc/audit/rules.d/audit.rules"
+    permissions: "0400"
+    content: |
+      {{audit.rules}}
 
   - path: "/etc/clamav/clamd.conf"
     permissions: "0644"
@@ -113,6 +119,13 @@ runcmd:
   - apt-get -y autoremove
   - apt-get clean
   - apt --fix-broken install
+
+  # Ensure that auditd is running and enabled at startup
+  - echo ">=== Enabling auditd services... ===<"
+  - systemctl start auditd
+  - systemctl enable auditd
+  - sleep 20
+  - systemctl status auditd
 
   # Show authorised SSH keys
   - echo ">=== Authorised SSH keys... ===<"

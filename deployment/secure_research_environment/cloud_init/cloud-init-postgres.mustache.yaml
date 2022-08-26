@@ -240,6 +240,8 @@ runcmd:
   - echo ">=== Enabling auditd services... ===<"
   - systemctl start auditd
   - systemctl enable auditd
+  - sleep 20
+  - systemctl status auditd
 
   # Configure services for realm joining
   - echo ">=== Configuring domain joining settings... ===<"

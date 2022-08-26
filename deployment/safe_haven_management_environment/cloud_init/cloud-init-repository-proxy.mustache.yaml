@@ -6,6 +6,11 @@ write_files:
     content: |
       Acquire::http::Proxy "http://{{monitoring.updateServers.linux.ip}}:8000";
 
+  - path: "/etc/audit/rules.d/audit.rules"
+    permissions: "0400"
+    content: |
+      {{audit.rules}}
+
   - path: "/etc/clamav/clamd.conf"
     permissions: "0644"
     append: true
@@ -82,6 +87,7 @@ apt:
 
 # Install necessary apt packages
 packages:
+  - auditd
   - clamav
   - clamav-base
   - clamav-daemon
@@ -111,6 +117,13 @@ runcmd:
   - apt-get -y autoremove
   - apt-get clean
   - apt --fix-broken install
+
+  # Ensure that auditd is running and enabled at startup
+  - echo ">=== Enabling auditd services... ===<"
+  - systemctl start auditd
+  - systemctl enable auditd
+  - sleep 20
+  - systemctl status auditd
 
   # Ensure that Docker is running and enabled at startup
   - echo ">=== Configuring Docker... ===<"
