@@ -11,12 +11,6 @@ write_files:
     content: |
       {{audit.rules}}
 
-  - path: "/etc/cron.d/apt-update"
-    permissions: "0644"
-    content: |
-      # Run every day at 01:45
-      45 1 * * * root  apt update
-
   - path: "/etc/cron.d/ldap-db-sync"
     permissions: "0644"
     content: |
@@ -100,19 +94,21 @@ runcmd:
   - DEBIAN_FRONTEND=noninteractive
   - export DEBIAN_FRONTEND
 
-  # Install pg-ldap-sync
-  - echo ">=== Installing pg-ldap-sync... ===<"
-  - gem install pg-ldap-sync
-
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
   - apt-get -y autoremove
   - apt-get clean
+  - apt --fix-broken install
 
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
   - systemctl start auditd
   - systemctl enable auditd
+
+  # Install pg-ldap-sync
+  - echo ">=== Installing pg-ldap-sync... ===<"
+  - gem install pg-ldap-sync
 
   # Ensure that Docker is running and enabled at startup
   - echo ">=== Configuring Docker... ===<"

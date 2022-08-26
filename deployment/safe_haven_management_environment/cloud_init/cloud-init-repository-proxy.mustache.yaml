@@ -6,12 +6,6 @@ write_files:
     content: |
       Acquire::http::Proxy "http://{{monitoring.updateServers.linux.ip}}:8000";
 
-  - path: "/etc/cron.d/apt-update"
-    permissions: "0644"
-    content: |
-      # Run every day at 01:45
-      45 1 * * * root  apt update
-
   - path: "/etc/nexus/docker-compose.yaml"
     permissions: "0400"
     content: |
@@ -75,6 +69,17 @@ users:
     sudo: false        # This user will not have sudo privileges
 
 runcmd:
+  # Suppress apt prompts and warning messages
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
+
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
+  - apt-get -y autoremove
+  - apt-get clean
+  - apt --fix-broken install
+
   # Ensure that Docker is running and enabled at startup
   - echo ">=== Configuring Docker... ===<"
   - systemctl enable docker

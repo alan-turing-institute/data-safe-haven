@@ -60,12 +60,6 @@ write_files:
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
 
-  - path: "/etc/cron.d/apt-update"
-    permissions: "0644"
-    content: |
-      # Run every day at 01:45
-      45 1 * * * root  apt update
-
   - path: "/etc/cron.d/clamav-update"
     permissions: "0644"
     content: |

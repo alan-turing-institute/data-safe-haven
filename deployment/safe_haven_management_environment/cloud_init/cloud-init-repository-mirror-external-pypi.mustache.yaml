@@ -90,12 +90,6 @@ write_files:
           macos
           freebsd
 
-  - path: "/etc/cron.d/apt-update"
-    permissions: "0644"
-    content: |
-      # Run every day at 01:45
-      45 1 * * * root  apt update
-
   - path: "/etc/cron.d/push-to-internal-mirrors"
     permissions: "0644"
     content: |
@@ -243,12 +237,15 @@ ntp:
 
 runcmd:
   # Suppress apt prompts and warning messages
-  - export DEBIAN_FRONTEND=noninteractive
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
 
-  # Upgrade installation then clean up
-  - echo ">=== Upgrade and clean up apt-get packages... ===<"
-  - apt-get -y upgrade
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
+  - apt-get -y autoremove
   - apt-get clean
+  - apt --fix-broken install
 
   # Set up and partition data disk
   - echo ">=== Setting up local disk... ===<"

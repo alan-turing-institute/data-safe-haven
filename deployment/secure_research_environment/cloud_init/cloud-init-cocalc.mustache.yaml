@@ -12,12 +12,6 @@ write_files:
     content: |
       {{audit.rules}}
 
-  - path: "/etc/cron.d/apt-update"
-    permissions: "0644"
-    content: |
-      # Run every day at 01:45
-      45 1 * * * root  apt update
-
   - path: "/etc/pip.conf"
     permissions: "0444"
     content: |

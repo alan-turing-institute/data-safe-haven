@@ -1,12 +1,6 @@
 #cloud-config
 
 write_files:
-  - path: "/etc/cron.d/apt-update"
-    permissions: "0644"
-    content: |
-      # Run every day at 01:45
-      45 1 * * * root  apt update
-
   - path: "/etc/squid-deb-proxy/mirror-dstdomain.acl.d/20-data-safe-haven"
     content: |
       # Additional mirror domains that are allowed by this cache
@@ -38,6 +32,17 @@ package_update: true
 package_upgrade: true
 
 runcmd:
+  # Suppress apt prompts and warning messages
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
+
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
+  - apt-get -y autoremove
+  - apt-get clean
+  - apt --fix-broken install
+
   # Remove the unnecessary squid service and prevent it from running
   - service squid stop
   - systemctl disable -f squid

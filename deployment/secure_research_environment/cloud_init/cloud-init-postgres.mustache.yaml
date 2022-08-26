@@ -42,12 +42,6 @@ write_files:
     content: |
       {{audit.rules}}
 
-  - path: "/etc/cron.d/apt-update"
-    permissions: "0644"
-    content: |
-      # Run every day at 01:45
-      45 1 * * * root  apt update
-
   - path: "/etc/cron.d/ldap-db-sync"
     permissions: "0644"
     content: |
@@ -199,6 +193,17 @@ manage_etc_hosts: true
 prefer_fqdn_over_hostname: true
 
 runcmd:
+  # Suppress apt prompts and warning messages
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
+
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
+  - apt-get -y autoremove
+  - apt-get clean
+  - apt --fix-broken install
+
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
   - systemctl start auditd
