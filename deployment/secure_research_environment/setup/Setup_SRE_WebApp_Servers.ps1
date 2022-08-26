@@ -62,6 +62,7 @@ Add-LogMessage -Level Info "Constructing CoCalc cloud-init from template..."
 # Load the cloud-init template then add resources and expand mustache placeholders
 $cocalcCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-cocalc.mustache.yaml" | Get-Item | Get-Content -Raw
 $cocalcCloudInitTemplate = Expand-CloudInitResources -Template $cocalcCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$cocalcCloudInitTemplate = Expand-CloudInitResources -Template $cocalcCloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
 $cocalcCloudInitTemplate = Expand-MustacheTemplate -Template $cocalcCloudInitTemplate -Parameters $config
 # Deploy CoCalc VM
 $cocalcDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.cocalc.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.cocalc.disks.data.sizeGb -Type $config.sre.webapps.cocalc.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
@@ -100,6 +101,7 @@ $config["codimd"] = @{
 }
 $codimdCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-codimd.mustache.yaml" | Get-Item | Get-Content -Raw
 $codimdCloudInitTemplate = Expand-CloudInitResources -Template $codimdCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$codimdCloudInitTemplate = Expand-CloudInitResources -Template $codimdCloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
 $codimdCloudInitTemplate = Expand-MustacheTemplate -Template $codimdCloudInitTemplate -Parameters $config
 # Deploy CodiMD VM
 $codimdDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.codimd.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.codimd.disks.data.sizeGb -Type $config.sre.webapps.codimd.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
@@ -138,6 +140,7 @@ $config["gitlab"] = @{
 }
 $gitlabCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-gitlab.mustache.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInitTemplate = Expand-CloudInitResources -Template $gitlabCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$gitlabCloudInitTemplate = Expand-CloudInitResources -Template $gitlabCloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
 $gitlabCloudInitTemplate = Expand-MustacheTemplate -Template $gitlabCloudInitTemplate -Parameters $config
 # Deploy GitLab VM
 $gitlabDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlab.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.gitlab.disks.data.sizeGb -Type $config.sre.webapps.gitlab.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location

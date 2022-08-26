@@ -31,6 +31,7 @@ function Resolve-CloudInit {
         $CloudInitTemplate = Get-Content $CloudInitPath -Raw -ErrorAction Stop
         # Expand the template
         $CloudInitTemplate = Expand-CloudInitResources -Template $CloudInitTemplate -ResourcePath (Join-Path $CloudInitBasePath "resources")
+        $CloudInitTemplate = Expand-CloudInitResources -Template $CloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
         $CloudInitTemplate = Expand-CloudInitResources -Template $CloudInitTemplate -ResourcePath (Join-Path ".." ".." ".." "environment_configs" "package_lists")
         $CloudInitTemplate = Expand-MustacheTemplate -Template $CloudInitTemplate -Parameters $TemplateParameters
         return $CloudInitTemplate

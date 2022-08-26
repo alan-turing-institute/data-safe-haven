@@ -32,7 +32,8 @@ $null = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName 
 
 # Deploy the Linux update server
 # ------------------------------
-$cloudInitYaml = Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-update-server-linux.mustache.yaml") -Parameters $config
+$cloudInitYaml = Expand-CloudInitResources -Template (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-update-server-linux.mustache.yaml") -ResourcePath (Join-Path ".." ".." "common" "resources")
+$cloudInitYaml = Expand-MustacheTemplate -TemplatePath $cloudInitYaml -Parameters $config
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 $vmName = $config.monitoring.updateServers.linux.vmName
 $params = @{
