@@ -909,6 +909,7 @@
                         "fqdnTags": [],
                         "targetFqdns": [
                             "current.cvd.clamav.net",
+                            "database.clamav.net.cdn.cloudflare.net",
                             "database.clamav.net"
                         ],
                         "sourceAddresses": [

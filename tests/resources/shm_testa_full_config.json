@@ -628,6 +628,16 @@
         "ip": "10.0.3.4",
         "vmName": "LINUX-UPDATES-SHM-TESTA",
         "vmSize": "Standard_B2ms"
+      },
+      "schedule": {
+        "daily_definition_updates": {
+          "hour": "01",
+          "minute": "01"
+        },
+        "weekly_system_updates": {
+          "hour": "02",
+          "minute": "02"
+        }
       }
     }
   },

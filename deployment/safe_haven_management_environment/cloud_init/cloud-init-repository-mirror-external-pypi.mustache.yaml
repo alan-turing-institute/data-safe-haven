@@ -110,8 +110,8 @@ write_files:
   - path: "/etc/cron.d/clamav-update"
     permissions: "0644"
     content: |
-      # Run every day at 01:01
-      01 01 * * * freshclam
+      # Run every day at a fixed time
+      {{monitoring.schedule.daily_definition_updates.minute}} {{monitoring.schedule.daily_definition_updates.hour}} * * * freshclam
 
   - path: "/etc/cron.d/push-to-internal-mirrors"
     permissions: "0644"
