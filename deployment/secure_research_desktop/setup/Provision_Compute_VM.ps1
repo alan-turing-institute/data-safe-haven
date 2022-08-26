@@ -39,10 +39,10 @@ if ($vmSize -eq "default") { $vmSize = $config.srdImage.build.vm.size }
 # Select which source URN to base the build on
 # --------------------------------------------
 if ($sourceImage -eq "Ubuntu2204") {
+    Add-LogMessage -Level Warning "Note that '$sourceImage' is not supported by the Azure Log Analytics Agent used to manage automatic updates. Please consider using Ubuntu 20.04."
     $baseImageSku = "Ubuntu-22.04"
     $shortVersion = "2204"
 } elseif ($sourceImage -eq "Ubuntu2004") {
-    Add-LogMessage -Level Warning "Note that '$sourceImage' is out-of-date. Please consider using a newer base Ubuntu version."
     $baseImageSku = "Ubuntu-20.04"
     $shortVersion = "2004"
 } elseif ($sourceImage -eq "Ubuntu1804") {

@@ -12,21 +12,6 @@ write_files:
     content: |
       {{audit.rules}}
 
-  - path: "/opt/cocalc/docker-compose.yaml"
-    permissions: "0400"
-    content: |
-      {{cocalc_docker_compose.mustache.yaml}}
-
-  - path: "/opt/configuration/set_dns.sh"
-    permissions: "0500"
-    content: |
-      {{set_dns.mustache.sh}}
-
-  - path: "/etc/crontab"
-    append: true
-    content: |
-      45 1 * * * root  apt update
-
   - path: "/etc/pip.conf"
     permissions: "0444"
     content: |
@@ -76,6 +61,16 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+
+  - path: "/opt/cocalc/docker-compose.yaml"
+    permissions: "0400"
+    content: |
+      {{cocalc_docker_compose.mustache.yaml}}
+
+  - path: "/opt/configuration/set_dns.sh"
+    permissions: "0500"
+    content: |
+      {{set_dns.mustache.sh}}
 
   - path: "/opt/mounts/ingress-credentials.secret"
     permissions: "0400"

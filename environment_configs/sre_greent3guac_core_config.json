@@ -1,10 +1,10 @@
 {
-    "sreId": "t3msrds",
+    "sreId": "t3guac",
     "tier": "3",
-    "shmId": "testc",
+    "shmId": "green",
     "subscriptionName": "Data Safe Haven Development",
-    "ipPrefix": "10.163.0",
-    "inboundAccessFrom": "default",
+    "ipPrefix": "10.153.0",
+    "inboundAccessFrom": ["193.60.220.253", "212.82.79.35"],
     "outboundInternetAccess": "default",
     "computeVmImage": {
         "type": "Ubuntu",
@@ -12,5 +12,5 @@
     },
     "databases": ["MSSQL", "PostgreSQL"],
     "dataAdminIpAddresses": ["193.60.220.253"],
-    "remoteDesktopProvider": "MicrosoftRDS"
+    "remoteDesktopProvider": "ApacheGuacamole"
 }

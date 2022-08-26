@@ -5,6 +5,40 @@ Import-Module $PSScriptRoot/AzureNetwork -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
+# Clear contents of storage container if it exists
+# ------------------------------------------------
+function Clear-StorageContainer {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account container belongs to")]
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
+    )
+    Add-LogMessage -Level Info "Clearing contents of storage container '$Name'..."
+    try {
+        $StorageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorAction Stop
+        $blobs = @(Get-AzStorageBlob -Container $StorageContainer.Name -Context $sreStorageAccount.Context)
+        $numBlobs = $blobs.Length
+        if ($numBlobs -gt 0) {
+            Add-LogMessage -Level Info "[ ] Deleting $numBlobs blobs already in container '$($StorageContainer.Name)'..."
+            $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $StorageContainer.Name -Context $StorageAccount.Context -Force }
+            while ($numBlobs -gt 0) {
+                Start-Sleep -Seconds 5
+                $numBlobs = (Get-AzStorageBlob -Container $StorageContainer.Name -Context $StorageAccount.Context).Length
+            }
+            if ($?) {
+                Add-LogMessage -Level Success "Blob deletion succeeded for storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
+            } else {
+                Add-LogMessage -Level Fatal "Blob deletion failed for storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+            }
+        }
+    } catch {
+        Add-LogMessage -Level InfoSuccess "Storage container '$Name' does not exist in storage account '$($StorageAccount.StorageAccountName)'"
+    }
+}
+Export-ModuleMember -Function Clear-StorageContainer
+
+
 # Generate a new SAS policy
 # Note that there is a limit of 5 policies for a given storage account/container
 # ------------------------------------------------------------------------------

@@ -36,10 +36,23 @@ write_files:
     content: |
       Acquire::http::Proxy "http://{{monitoring.updateServers.linux.ip}}:8000";
 
-  - path: "/etc/crontab"
-    append: true
+  - path: "/etc/cron.d/push-to-internal-mirrors"
+    permissions: "0644"
     content: |
-      45 1 * * * root  apt update
+      # Internal update (rsync) every day at 2am
+      0 2 * * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh
+
+  - path: "/etc/cron.d/pull-from-internet"
+    permissions: "0644"
+    content: |
+      # External update (rsync from CRAN) every 6 hours
+      0 */6 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh
+
+  - path: "/etc/cron.d/pull-then-push"
+    permissions: "0644"
+    content: |
+      # Run both jobs on every reboot
+      @reboot mirrordaemon ~mirrordaemon/pull_then_push.sh
 
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     permissions: "0600"
@@ -148,30 +161,20 @@ ntp:
 
 runcmd:
   # Suppress apt prompts and warning messages
-  - export DEBIAN_FRONTEND=noninteractive
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
 
-  # Upgrade installation then clean up
-  - echo ">=== Upgrade and clean up apt-get packages... ===<"
-  - apt-get -y upgrade
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
+  - apt-get -y autoremove
   - apt-get clean
+  - apt --fix-broken install
 
   # Set up and partition data disk
   - echo ">=== Setting up local disk... ===<"
   - mkdir -p /datadrive/mirrordaemon/www/cran
   - ls -alh /datadrive
-
-  # Schedule regular mirroring jobs
-  - echo ">=== Adding internal update (rsync) job to crontab (2am each day)... ===<"
-  - echo "0 2 * * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh" >> /etc/crontab
-  - tail -n 1 /etc/crontab
-  - echo ">=== Adding external update (rsync from CRAN) job to crontab (every 6 hours)... ===<"
-  - echo "0 */6 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh" >> /etc/crontab
-  - tail -n 1 /etc/crontab
-
-  # Schedule update job on each boot
-  - echo ">=== Schedule both mirror update jobs for each boot... ===<"
-  - echo "@reboot mirrordaemon ~mirrordaemon/pull_then_push.sh" >> /etc/crontab
-  - tail -n 1 /etc/crontab
 
   # Fix permissions so that mirrordaemon owns its files
   - mkdir -p /home/mirrordaemon/.ssh

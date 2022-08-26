@@ -11,10 +11,11 @@ write_files:
     content: |
       {{audit.rules}}
 
-  - path: "/etc/crontab"
-    append: true
+  - path: "/etc/cron.d/ldap-db-sync"
+    permissions: "0644"
     content: |
-      45 1 * * * root  apt update
+      # Run user synchronisation every 10 minutes
+      */10 * * * * root /opt/pg-ldap-sync/synchronise_database.sh
 
   - path: "/opt/guacamole/docker-compose.yaml"
     permissions: "0400"
@@ -93,19 +94,21 @@ runcmd:
   - DEBIAN_FRONTEND=noninteractive
   - export DEBIAN_FRONTEND
 
-  # Install pg-ldap-sync
-  - echo ">=== Installing pg-ldap-sync... ===<"
-  - gem install pg-ldap-sync
-
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
   - apt-get -y autoremove
   - apt-get clean
+  - apt --fix-broken install
 
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
   - systemctl start auditd
   - systemctl enable auditd
+
+  # Install pg-ldap-sync
+  - echo ">=== Installing pg-ldap-sync... ===<"
+  - gem install pg-ldap-sync
 
   # Ensure that Docker is running and enabled at startup
   - echo ">=== Configuring Docker... ===<"
@@ -154,12 +157,6 @@ runcmd:
   # Add initial set of LDAP users with pg-ldap-sync
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
   - /opt/pg-ldap-sync/synchronise_database.sh
-
-  # Schedule a sync every 5 minutes
-  - echo ">=== Scheduling database sync every 5 minutes... ===<"
-  - echo "*/5 * * * * root /opt/pg-ldap-sync/synchronise_database.sh" >> /etc/crontab
-  - tail -n 1 /etc/crontab
-
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

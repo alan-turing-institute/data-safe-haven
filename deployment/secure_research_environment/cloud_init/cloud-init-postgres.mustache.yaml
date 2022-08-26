@@ -42,12 +42,17 @@ write_files:
     content: |
       {{audit.rules}}
 
-  - path: "/etc/crontab"
-    append: true
+  - path: "/etc/cron.d/ldap-db-sync"
+    permissions: "0644"
     content: |
+      # Run user synchronisation every 10 minutes
       */10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
-      45   1 * * * root     apt update
-      @reboot      root     /usr/local/bin/runonce | logger -t SafeHaven
+
+  - path: "/etc/cron.d/runonce"
+    permissions: "0644"
+    content: |
+      # Run on every reboot
+      @reboot root /usr/local/bin/runonce | logger -t SafeHaven
 
   - path: "/etc/domain-join.secret"
     permissions: "0400"
@@ -68,9 +73,8 @@ write_files:
     permissions: "0500"
     content: |
       #! /bin/bash
-      echo ">=== Waiting for realm availability... ===<"
-      while [ "$(realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
       echo ">=== Joining domain '{{shm.domain.fqdnLower}}'... ===<"
+      while [ "$(/usr/sbin/realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do echo "Waiting for realm availability..."; sleep 1; done
       echo "/opt/configuration/join_domain.sh '{{shm.domain.fqdnLower}}' '{{shm.domain.ous.databaseServers.path}}' '{{shm.users.computerManagers.databaseServers.samAccountName}}' '{{postgres.vmName}}'"
       /opt/configuration/join_domain.sh "{{shm.domain.fqdnLower}}" "{{shm.domain.ous.databaseServers.path}}" "{{shm.users.computerManagers.databaseServers.samAccountName}}" "{{postgres.vmName}}"
 
@@ -189,6 +193,17 @@ manage_etc_hosts: true
 prefer_fqdn_over_hostname: true
 
 runcmd:
+  # Suppress apt prompts and warning messages
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
+
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
+  - apt-get -y autoremove
+  - apt-get clean
+  - apt --fix-broken install
+
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
   - systemctl start auditd
@@ -255,9 +270,6 @@ runcmd:
   - gem install pg-ldap-sync
   - mv /opt/configuration/pg-ldap-sync.yaml /etc/postgresql/12/main/pg-ldap-sync.yaml
   - chown postgres:postgres /etc/postgresql/12/main/pg-ldap-sync.yaml
-  # Add cronjob
-  - echo "Checking that LDAP user sync is scheduled every 10 minutes..."
-  - grep pg_ldap_sync /etc/crontab
 
   # Allow Kerberos login - disable all other login types except the dbadmin on localhost
   - echo ">=== Restricting login types... ===<"

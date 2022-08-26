@@ -45,8 +45,15 @@ function Confirm-VmDeallocated {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
         [string]$ResourceGroupName
     )
-    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
-    return (($vmStatuses -contains "PowerState/deallocated") -and ($vmStatuses -contains "ProvisioningState/succeeded"))
+    try {
+        $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status -ErrorAction Stop).Statuses.Code
+        if ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription") {
+            Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning that it was automatically stopped when the subscription ran out of credit."
+        }
+        return (($vmStatuses -contains "PowerState/deallocated") -and ($vmStatuses -contains "ProvisioningState/succeeded"))
+    } catch {
+        return $false
+    }
 }
 Export-ModuleMember -Function Confirm-VmDeallocated
 
@@ -60,8 +67,15 @@ function Confirm-VmRunning {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
         [string]$ResourceGroupName
     )
-    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
-    return (($vmStatuses -contains "PowerState/running") -and ($vmStatuses -contains "ProvisioningState/succeeded"))
+    try {
+        $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status -ErrorAction Stop).Statuses.Code
+        if ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription") {
+            Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning that it was automatically stopped when the subscription ran out of credit."
+        }
+        return (($vmStatuses -contains "PowerState/running") -and ($vmStatuses -contains "ProvisioningState/succeeded"))
+    } catch {
+        return $false
+    }
 }
 Export-ModuleMember -Function Confirm-VmRunning
 
@@ -75,11 +89,15 @@ function Confirm-VmStopped {
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group that the VM belongs to")]
         [string]$ResourceGroupName
     )
-    if ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription") {
-        Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning that it was automatically stopped when the subscription ran out of credit."
+    try {
+        $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status -ErrorAction Stop).Statuses.Code
+        if ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription") {
+            Add-LogMessage -Level Warning "VM '$Name' has status: VMStoppedToWarnSubscription meaning that it was automatically stopped when the subscription ran out of credit."
+        }
+        return (($vmStatuses -contains "PowerState/stopped") -and (($vmStatuses -contains "ProvisioningState/succeeded") -or ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription")))
+    } catch {
+        return $false
     }
-    $vmStatuses = (Get-AzVM -Name $Name -ResourceGroupName $ResourceGroupName -Status).Statuses.Code
-    return (($vmStatuses -contains "PowerState/stopped") -and (($vmStatuses -contains "ProvisioningState/succeeded") -or ($vmStatuses -contains "ProvisioningState/failed/VMStoppedToWarnSubscription")))
 }
 Export-ModuleMember -Function Confirm-VmStopped
 
@@ -140,9 +158,11 @@ function Deploy-LinuxVirtualMachine {
         if ($ImageId) {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
         } elseif ($ImageSku) {
-            if (($ImageSku -eq "Ubuntu-22.04") -or ($ImageSku -eq "Ubuntu-latest")) {
+            if ($ImageSku -eq "Ubuntu-22.04") {
+                # Note that we cannot move 'Ubuntu-latest' to 22.04 until migrating to Azure Monitor Agent https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration
+                Add-LogMessage -Level Warning "Note that Ubuntu 22.04 is not supported by the Azure Log Analytics Agent used to manage automatic updates. Please consider using Ubuntu 20.04."
                 $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer 0001-com-ubuntu-server-jammy -Skus "22_04-LTS" -Version "latest"
-            } elseif ($ImageSku -eq "Ubuntu-20.04") {
+            } elseif (($ImageSku -eq "Ubuntu-20.04") -or ($ImageSku -eq "Ubuntu-latest")) {
                 $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer 0001-com-ubuntu-server-focal -Skus "20_04-LTS" -Version "latest"
             } elseif ($ImageSku -eq "Ubuntu-18.04") {
                 $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer UbuntuServer -Skus "18.04-LTS" -Version "latest"
@@ -238,12 +258,12 @@ function Deploy-VirtualMachineMonitoringExtension {
         [string]$WorkspaceKey
     )
     if ($VM.OSProfile.WindowsConfiguration) {
-        # Install Monitoring Agent
+        # Install Monitoring Agent - Replacement is Azure Monitor Agent (https://docs.microsoft.com/en-us/azure/azure-monitor/agents/agents-overview?tabs=PowerShellWindows)
         Set-VirtualMachineExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.EnterpriseCloud.Monitoring" -Type "MicrosoftMonitoringAgent" -Version 1.0 -WorkspaceId $WorkspaceId -WorkspaceKey $WorkspaceKey
         # # Install Dependency Agent
         # Set-VirtualMachineExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.Azure.Monitoring.DependencyAgent" -Type "DependencyAgentWindows" -Version 9.10 -WorkspaceId $WorkspaceId -WorkspaceKey $WorkspaceKey
     } elseif ($VM.OSProfile.LinuxConfiguration) {
-        # Install Monitoring Agent
+        # Install Monitoring Agent - does not support Ubuntu 22.04. Replacement is Azure Monitor Agent (https://docs.microsoft.com/en-us/azure/azure-monitor/agents/agents-overview?tabs=PowerShellWindows)
         Set-VirtualMachineExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.EnterpriseCloud.Monitoring" -Type "OmsAgentForLinux" -EnableAutomaticUpgrade $true -Version 1.14 -WorkspaceId $WorkspaceId -WorkspaceKey $WorkspaceKey
         # # Install Dependency Agent - not working with current Ubuntu 20.04 (https://docs.microsoft.com/en-us/answers/questions/938560/unable-to-enable-insights-on-ubuntu-2004-server.html)
         # Set-VirtualMachineExtensionIfNotInstalled -VM $VM -Publisher "Microsoft.Azure.Monitoring.DependencyAgent" -Type "DependencyAgentLinux" -Version 9.10 -WorkspaceId $WorkspaceId -WorkspaceKey $WorkspaceKey

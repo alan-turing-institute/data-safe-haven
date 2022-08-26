@@ -24,13 +24,14 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 # Connect to Microsoft Graph
 # --------------------------
-if (Get-MgContext) { Disconnect-MgGraph } # force a refresh of the Microsoft Graph token before starting
-Add-LogMessage -Level Info "Authenticating against Azure Active Directory: use an AAD global administrator for tenant ($tenantId)..."
-Connect-MgGraph -TenantId $tenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop
-if (Get-MgContext) {
-    Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
-} else {
-    Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
+if (-not (Get-MgContext)) {
+    Add-LogMessage -Level Info "Authenticating against Azure Active Directory: use an AAD global administrator for tenant ($tenantId)..."
+    Connect-MgGraph -TenantId $tenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop
+    if (Get-MgContext) {
+        Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
+    } else {
+        Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
+    }
 }
 
 
@@ -72,14 +73,14 @@ try {
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.serviceAccounts.aadLocalSync.usernameSecretName -DefaultValue $config.users.serviceAccounts.aadLocalSync.samAccountName -AsPlaintext
     Add-LogMessage -Level Success "Ensured that SHM admin usernames exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that SHM admin usernames exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SHM admin usernames exist!" -Exception $_.Exception
 }
 # :: VM admin passwords
 try {
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.dc.safemodePasswordSecretName -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.updateServers.linux.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.monitoring.updateServers.linux.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     foreach ($repositoryTier in $config.repository.Keys) {
         $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.repository[$repositoryTier].nexus.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     }
@@ -93,7 +94,7 @@ try {
     }
     Add-LogMessage -Level Success "Ensured that SHM VM admin passwords exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that SHM VM admin passwords exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that SHM VM admin passwords exist!" -Exception $_.Exception
 }
 # :: Computer manager users
 try {
@@ -103,7 +104,7 @@ try {
     }
     Add-LogMessage -Level Success "Ensured that domain joining passwords exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that domain joining passwords exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that domain joining passwords exist!" -Exception $_.Exception
 }
 # :: Service accounts
 try {
@@ -113,7 +114,7 @@ try {
     }
     Add-LogMessage -Level Success "Ensured that service account passwords exist"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to ensure that service account passwords exist!"
+    Add-LogMessage -Level Fatal "Failed to ensure that service account passwords exist!" -Exception $_.Exception
 }
 
 
@@ -183,7 +184,7 @@ $userHasRole = Get-MgDirectoryRoleMember -DirectoryRoleId $globalAdminRole.Id | 
 if ($userHasRole) {
     Add-LogMessage -Level Success "AAD emergency administrator already has '$globalAdminRoleName' role."
 } else {
-    New-MgDirectoryRoleMemberByRef -DirectoryRoleId $globalAdminRole.Id -BodyParameter @{"@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$($globalAdminUser.Id)" }
+    $null = New-MgDirectoryRoleMemberByRef -DirectoryRoleId $globalAdminRole.Id -BodyParameter @{"@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$($globalAdminUser.Id)" }
     $userHasRole = Get-MgDirectoryRoleMember -DirectoryRoleId $globalAdminRole.Id | Where-Object { $_.Id -eq $globalAdminUser.Id }
     if ($userHasRole) {
         Add-LogMessage -Level Success "Granted AAD emergency administrator '$globalAdminRoleName' role."
@@ -191,11 +192,6 @@ if ($userHasRole) {
         Add-LogMessage -Level Failure "Failed to grant AAD emergency administrator '$globalAdminRoleName' role!"
     }
 }
-
-
-# Sign out of Microsoft Graph
-# ---------------------------
-Disconnect-MgGraph
 
 
 # Ensure that certificates exist
@@ -221,20 +217,9 @@ try {
     # Ensure that CA certificate exists in the Key Vault
     # --------------------------------------------------
     Add-LogMessage -Level Info "Ensuring that self-signed CA certificate exists in the '$($config.keyVault.name)' Key Vault..."
-    # Check whether a certificate with a valid private key already exists in the Key Vault. If not, then remove and purge any existing certificate with this name
-    $newCertRequired = $True
-    $existingCert = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate
-    if ($existingCert) {
-        if ($existingCert.Certificate.HasPrivateKey) {
-            Add-LogMessage -Level InfoSuccess "Found existing CA certificate"
-            $newCertRequired = $False
-        } else {
-            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -Force -ErrorAction SilentlyContinue
-            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnCaCertificate -InRemovedState -Force -ErrorAction SilentlyContinue
-        }
-    }
-    # Generate a new certificate if required
-    if ($newCertRequired) {
+    # Check whether CA certificate exists
+    $vpnCaCertificate = Resolve-KeyVaultPrivateKeyCertificate -VaultName $config.keyVault.name -CertificateName $config.keyVault.secretNames.vpnCaCertificate
+    if (-not $vpnCaCertificate) {
         Add-LogMessage -Level Info "Creating new self-signed CA certificate..."
 
         # Create self-signed CA certificate with private key
@@ -296,20 +281,9 @@ try {
     # Generate or retrieve client certificate
     # ---------------------------------------
     Add-LogMessage -Level Info "Ensuring that client certificate exists in the '$($config.keyVault.name)' Key Vault..."
-    # Check whether a certificate with a valid private key already exists in the Key Vault. If not, then remove and purge any existing certificate with this name
-    $newCertRequired = $True
-    $existingCert = Get-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate
-    if ($existingCert) {
-        if ($existingCert.Certificate.HasPrivateKey) {
-            Add-LogMessage -Level InfoSuccess "Found existing client certificate"
-            $newCertRequired = $False
-        } else {
-            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate -Force -ErrorAction SilentlyContinue
-            Remove-AzKeyVaultCertificate -VaultName $config.keyVault.name -Name $config.keyVault.secretNames.vpnClientCertificate -InRemovedState -Force -ErrorAction SilentlyContinue
-        }
-    }
-    # Generate a new certificate if required
-    if ($newCertRequired) {
+    # Check whether client certificate exists
+    $vpnClientCertificate = Resolve-KeyVaultPrivateKeyCertificate -VaultName $config.keyVault.name -CertificateName $config.keyVault.secretNames.vpnClientCertificate
+    if (-not $vpnClientCertificate) {
         Add-LogMessage -Level Info "Creating new client certificate..."
 
         # Load CA certificate into local PFX file and extract the private key

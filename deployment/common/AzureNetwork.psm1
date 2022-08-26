@@ -12,11 +12,11 @@ function Add-NetworkSecurityGroupRule {
         [Parameter(Mandatory = $true, HelpMessage = "Name of network security group rule to deploy")]
         [string]$Name,
         [Parameter(Mandatory = $true, HelpMessage = "A NetworkSecurityGroup object to apply this rule to")]
-        $NetworkSecurityGroup,
+        [Microsoft.Azure.Commands.Network.Models.PSNetworkSecurityGroup]$NetworkSecurityGroup,
         [Parameter(Mandatory = $true, HelpMessage = "A description of the network security rule")]
         [string]$Description,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies the priority of a rule configuration")]
-        $Priority,
+        [Uint32]$Priority,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies whether a rule is evaluated on incoming or outgoing traffic")]
         [string]$Direction,
         [Parameter(Mandatory = $true, HelpMessage = "Specifies whether network traffic is allowed or denied")]
@@ -24,13 +24,13 @@ function Add-NetworkSecurityGroupRule {
         [Parameter(Mandatory = $true, HelpMessage = "Specifies the network protocol that a rule configuration applies to")]
         [string]$Protocol,
         [Parameter(Mandatory = $true, HelpMessage = "Source addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
-        $SourceAddressPrefix,
+        [string[]]$SourceAddressPrefix,
         [Parameter(Mandatory = $true, HelpMessage = "Source port or range. One or more of: an integer, a range of integers or a wildcard")]
-        $SourcePortRange,
+        [string[]]$SourcePortRange,
         [Parameter(Mandatory = $true, HelpMessage = "Destination addresses. One or more of: a CIDR, an IP address range, a wildcard or an Azure tag (eg. VirtualNetwork)")]
-        $DestinationAddressPrefix,
+        [string[]]$DestinationAddressPrefix,
         [Parameter(Mandatory = $true, HelpMessage = "Destination port or range. One or more of: an integer, a range of integers or a wildcard")]
-        $DestinationPortRange,
+        [string[]]$DestinationPortRange,
         [Parameter(Mandatory = $false, HelpMessage = "Print verbose logging messages")]
         [switch]$VerboseLogging = $false
     )
@@ -171,27 +171,27 @@ Export-ModuleMember -Function Deploy-Firewall
 # ----------------------------------------
 function Deploy-FirewallApplicationRule {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of application rule")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of application rule collection to add this to")]
-        [string]$CollectionName,
-        [Parameter(Mandatory = $true, HelpMessage = "Firewall to add this collection to")]
-        $Firewall,
-        [Parameter(Mandatory = $true, HelpMessage = "Address of source")]
-        [string]$SourceAddress,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByFqdn", HelpMessage = "Protocol to use")]
-        [string]$Protocol,
-        [Parameter(Mandatory = $false, HelpMessage = "Priority of this application rule collection")]
-        [string]$Priority,
         [Parameter(Mandatory = $false, HelpMessage = "Whether these rules will allow or deny access to the specified resources")]
         [ValidateSet("Allow", "Deny")]
         [string]$ActionType,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByFqdn", HelpMessage = "List of FQDNs to apply rule to. Supports '*' wildcard at start of each FQDN.")]
-        [string]$TargetFqdn,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByTag", HelpMessage = "List of FQDN tags to apply rule to. An FQN tag represents a set of Azure-curated FQDNs.")]
-        [string]$TargetTag,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of application rule collection to add this to")]
+        [string]$CollectionName,
+        [Parameter(Mandatory = $true, HelpMessage = "Firewall to add this collection to")]
+        [Microsoft.Azure.Commands.Network.Models.PSAzureFirewall]$Firewall,
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
-        [switch]$LocalChangeOnly
+        [switch]$LocalChangeOnly,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of application rule")]
+        [string]$Name,
+        [Parameter(Mandatory = $false, HelpMessage = "Priority of this application rule collection")]
+        [UInt32]$Priority,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFqdn", HelpMessage = "Protocol to use")]
+        [string[]]$Protocol,
+        [Parameter(Mandatory = $true, HelpMessage = "Address of source")]
+        [string[]]$SourceAddress,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFqdn", HelpMessage = "List of FQDNs to apply rule to. Supports '*' wildcard at start of each FQDN.")]
+        [string[]]$TargetFqdn,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByTag", HelpMessage = "List of FQDN tags to apply rule to. An FQN tag represents a set of Azure-curated FQDNs.")]
+        [string[]]$TargetTag
     )
     Add-LogMessage -Level Info "[ ] Ensuring that application rule '$Name' exists..."
     $params = @{}
@@ -232,29 +232,29 @@ Export-ModuleMember -Function Deploy-FirewallApplicationRule
 # ----------------------------------------------
 function Deploy-FirewallNetworkRule {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of network rule")]
-        [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of network rule collection to add this to")]
-        [string]$CollectionName,
-        [Parameter(Mandatory = $true, HelpMessage = "Firewall to add this collection to")]
-        $Firewall,
-        [Parameter(Mandatory = $true, HelpMessage = "Address(es) of source")]
-        [string]$SourceAddress,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByAddress", HelpMessage = "Address(es) of destination")]
-        [string]$DestinationAddress,
-        [Parameter(Mandatory = $true, ParameterSetName = "ByFQDN", HelpMessage = "FQDN(s) of destination")]
-        [string]$DestinationFqdn,
-        [Parameter(Mandatory = $true, HelpMessage = "Port(s) of destination")]
-        [string]$DestinationPort,
-        [Parameter(Mandatory = $true, HelpMessage = "Protocol to use")]
-        [string]$Protocol,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        [string]$Priority,
         [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
         [ValidateSet("Allow", "Deny")]
         [string]$ActionType,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network rule collection to add this to")]
+        [string]$CollectionName,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByAddress", HelpMessage = "Address(es) of destination")]
+        [string[]]$DestinationAddress,
+        [Parameter(Mandatory = $true, ParameterSetName = "ByFQDN", HelpMessage = "FQDN(s) of destination")]
+        [string[]]$DestinationFqdn,
+        [Parameter(Mandatory = $true, HelpMessage = "Port(s) of destination")]
+        [string[]]$DestinationPort,
+        [Parameter(Mandatory = $true, HelpMessage = "Firewall to add this collection to")]
+        [Microsoft.Azure.Commands.Network.Models.PSAzureFirewall]$Firewall,
         [Parameter(HelpMessage = "Make change to the local firewall object only. Useful when making lots of updates in a row. You will need to make a separate call to 'Set-AzFirewall' to apply the changes to the actual Azure firewall.")]
-        [switch]$LocalChangeOnly
+        [switch]$LocalChangeOnly,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of network rule")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        [UInt32]$Priority,
+        [Parameter(Mandatory = $true, HelpMessage = "Protocol to use")]
+        [string[]]$Protocol,
+        [Parameter(Mandatory = $true, HelpMessage = "Address(es) of source")]
+        [string[]]$SourceAddress
     )
     Add-LogMessage -Level Info "[ ] Ensuring that traffic from '$SourceAddress' to '$($DestinationAddress ? $DestinationAddress : $DestinationFqdn)' on ports '$DestinationPort' over $Protocol is set on $($Firewall.Name)..."
     $params = @{}
@@ -864,11 +864,11 @@ function Set-VnetPeering {
         # Set remote gateway parameters if requested
         $paramsVnet1 = @{}
         $paramsVnet2 = @{}
-        if ($AllowVNet1Gateway.IsPresent) {
+        if ($VNet1AllowRemoteGateway.IsPresent) {
             $paramsVnet1["AllowGatewayTransit"] = $true
             $paramsVnet2["UseRemoteGateways"] = $true
         }
-        if ($AllowVNet2Gateway.IsPresent) {
+        if ($VNet2AllowRemoteGateway.IsPresent) {
             $paramsVnet1["UseRemoteGateways"] = $true
             $paramsVnet2["AllowGatewayTransit"] = $true
         }
@@ -1078,7 +1078,7 @@ Export-ModuleMember -Function Update-NetworkSecurityGroupRule
 # -------------------------------------
 function Update-VMIpAddress {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject")]
+        [Parameter(Mandatory = $true, HelpMessage = "Azure VM object", ParameterSetName = "ByObject", ValueFromPipeline = $true)]
         [Microsoft.Azure.Commands.Compute.Models.PSVirtualMachine]$VM,
         [Parameter(Mandatory = $true, HelpMessage = "VM name", ParameterSetName = "ByName")]
         [string]$Name,
@@ -1115,7 +1115,7 @@ function Update-VMIpAddress {
         } else {
             Add-LogMessage -Level Fatal "Failed to change IP address to '$IpAddress'!"
         }
-        Start-VM -VM $VM
+        Start-VM -VM $VM -ForceRestart
     }
 }
 Export-ModuleMember -Function Update-VMIpAddress

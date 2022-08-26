@@ -195,7 +195,7 @@ function Register-VmsWithAutomationSchedule {
         # Remove any existing update configuration with the same name
         $null = Remove-AzAutomationSoftwareUpdateConfiguration -ResourceGroupName "$($Account.ResourceGroupName)" -AutomationAccountName "$($Account.AutomationAccountName)" -Name $Schedule.Name -ErrorAction SilentlyContinue
         if ($VmType -eq "Windows") {
-            $IncludedPackageClassification = @("Critical", "Definition", "FeaturePack", "Security", "ServicePack", "Tools", "Unclassified", "UpdateRollup", "Updates") | Where-Object { $IncludedUpdates.Contains($_) }
+            $IncludedPackageClassification = @("Critical", "Definition", "FeaturePack", "Security", "ServicePack", "Tools", "Unclassified", "UpdateRollup", "Updates") | Where-Object { $IncludedUpdateCategories.Contains($_) }
             $config = New-AzAutomationSoftwareUpdateConfiguration -AutomationAccountName $Account.AutomationAccountName `
                                                                   -Confirm:$false `
                                                                   -ErrorAction Stop `
@@ -205,7 +205,7 @@ function Register-VmsWithAutomationSchedule {
                                                                   -Windows `
                                                                   @params
         } else {
-            $IncludedPackageClassification = @("Critical", "Other", "Security", "Unclassified") | Where-Object { $IncludedUpdates.Contains($_) }
+            $IncludedPackageClassification = @("Critical", "Other", "Security", "Unclassified") | Where-Object { $IncludedUpdateCategories.Contains($_) }
             $config = New-AzAutomationSoftwareUpdateConfiguration -AutomationAccountName $Account.AutomationAccountName `
                                                                   -Confirm:$false `
                                                                   -ErrorAction Stop `

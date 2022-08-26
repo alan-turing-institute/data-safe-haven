@@ -26,14 +26,14 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
-# Setup boot diagnostics resource group and storage account
-# ---------------------------------------------------------
+# Ensure that boot diagnostics resource group and storage account exist
+# ---------------------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.storage.bootdiagnostics.rg -Location $config.location
 $null = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 
 
-# Setup artifacts resource group and storage account
-# --------------------------------------------------
+# Ensure that artifacts resource group and storage account exist
+# --------------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
 $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
 
@@ -41,11 +41,9 @@ $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountN
 # Create blob storage containers
 # ------------------------------
 Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
-$storageContainerArtifactsName = "shm-dc1-artifacts"
-$storageContainerDscName = "shm-desired-state"
-$storageContainerSreRds = "sre-rds-sh-packages"
-foreach ($containerName in ($storageContainerDscName, $storageContainerArtifactsName, $storageContainerSreRds)) {
+foreach ($containerName in $config.storage.artifacts.containers.Values) {
     $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
+    $null = Clear-StorageContainer -Name $containerName -StorageAccount $storageAccount
 }
 
 
@@ -55,18 +53,18 @@ Add-LogMessage -Level Info "[ ] Uploading desired state configuration (DSC) file
 $dscPath = Join-Path $PSScriptRoot ".." "desired_state_configuration"
 $success = $true
 $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dscPath "DC1DesiredState.ps1") `
-                                     -ContainerName $storageContainerDscName `
+                                     -ContainerName $config.storage.artifacts.containers.shmDesiredState `
                                      -Force `
                                      -ResourceGroupName $config.storage.artifacts.rg `
                                      -SkipDependencyDetection `
                                      -StorageAccountName $config.storage.artifacts.accountName
 $success = $success -and $?
 $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dscPath "DC2DesiredState.ps1") `
-                                        -ContainerName $storageContainerDscName `
-                                        -Force `
-                                        -ResourceGroupName $config.storage.artifacts.rg `
-                                        -SkipDependencyDetection `
-                                        -StorageAccountName $config.storage.artifacts.accountName
+                                     -ContainerName $config.storage.artifacts.containers.shmDesiredState `
+                                     -Force `
+                                     -ResourceGroupName $config.storage.artifacts.rg `
+                                     -SkipDependencyDetection `
+                                     -StorageAccountName $config.storage.artifacts.accountName
 $success = $success -and $?
 if ($success) {
     Add-LogMessage -Level Success "Uploaded desired state configuration (DSC) files"
@@ -84,10 +82,10 @@ foreach ($filePath in $(Get-ChildItem -File (Join-Path $dscPath "dc1Artifacts"))
         # Expand the AD disconnection template before uploading
         $adScriptLocalFilePath = (New-TemporaryFile).FullName
         Expand-MustacheTemplate -Template $(Get-Content $filePath -Raw) -Parameters $config | Out-File $adScriptLocalFilePath
-        $null = Set-AzStorageBlobContent -Container $storageContainerArtifactsName -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
+        $null = Set-AzStorageBlobContent -Container $config.storage.artifacts.containers.shmArtifactsDC -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
         $null = Remove-Item $adScriptLocalFilePath
     } else {
-        $null = Set-AzStorageBlobContent -Container $storageContainerArtifactsName -Context $storageAccount.Context -File $filePath -Force
+        $null = Set-AzStorageBlobContent -Container $config.storage.artifacts.containers.shmArtifactsDC -Context $storageAccount.Context -File $filePath -Force
     }
     $success = $success -and $?
 }
@@ -103,17 +101,10 @@ if ($success) {
 Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($storageAccount.StorageAccountName)'..."
 try {
     # AzureADConnect
-    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
-    # Chrome
-    $null = Set-AzureStorageBlobFromUri -FileUri "http://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi" -BlobFilename "GoogleChrome_x64.msi" -StorageContainer $storageContainerArtifactsName -StorageContext $storageAccount.Context
-    # PuTTY
-    $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
-    $filename = $(Invoke-WebRequest -Uri $baseUri).Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
-    $version = ($filename -split "-")[2]
-    $null = Set-AzureStorageBlobFromUri -FileUri "$($baseUri.Replace('latest', $version))/$filename" -BlobFilename "PuTTY_x64.msi" -StorageContainer $storageContainerSreRds -StorageContext $storageAccount.Context
+    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -StorageContainer $config.storage.artifacts.containers.shmArtifactsDC -StorageContext $storageAccount.Context
     Add-LogMessage -Level Success "Uploaded Windows package installers"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to upload Windows package installers!"
+    Add-LogMessage -Level Fatal "Failed to upload Windows package installers!" -Exception $_.Exception
 }
 
 
@@ -160,7 +151,7 @@ Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "
 $domainAdminCredentials = (New-Object System.Management.Automation.PSCredential ($domainAdminUsername, $(ConvertTo-SecureString $domainAdminPassword -AsPlainText -Force)))
 $safeModeCredentials = (New-Object System.Management.Automation.PSCredential ($domainAdminUsername, $(ConvertTo-SecureString $safemodeAdminPassword -AsPlainText -Force)))
 $commonDscParams = @{
-    ArchiveContainerName      = $storageContainerDscName
+    ArchiveContainerName      = $config.storage.artifacts.containers.shmDesiredState
     ArchiveResourceGroupName  = $config.storage.artifacts.rg
     ArchiveStorageAccountName = $config.storage.artifacts.accountName
     VmLocation                = $config.location
@@ -177,10 +168,10 @@ $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dscPath 
 $params = @{
     ActiveDirectoryBasePath       = $config.dc.adDirectory
     AdministratorCredentials      = $domainAdminCredentials
-    ArtifactsBlobNamesB64         = Get-AzStorageBlob -Container $storageContainerArtifactsName -Context $storageAccount.Context | ForEach-Object { $_.Name } | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    ArtifactsBlobNamesB64         = Get-AzStorageBlob -Container $config.storage.artifacts.containers.shmArtifactsDC -Context $storageAccount.Context | ForEach-Object { $_.Name } | ConvertTo-Json -Depth 99 | ConvertTo-Base64
     ArtifactsBlobSasTokenB64      = (New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.subscriptionName -ResourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName) | ConvertTo-Base64
     ArtifactsStorageAccountName   = $config.storage.artifacts.accountName
-    ArtifactsStorageContainerName = $storageContainerArtifactsName
+    ArtifactsStorageContainerName = $config.storage.artifacts.containers.shmArtifactsDC
     ArtifactsTargetDirectory      = $config.dc.installationDirectory
     DomainDn                      = $config.domain.dn
     DomainFqdn                    = $config.domain.fqdn

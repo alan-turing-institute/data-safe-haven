@@ -67,8 +67,8 @@ if ($Clean) {
 }
 
 
-# Register SRE with the SHM
-# -------------------------
+# Deploy the SRE KeyVault and register users with the SHM
+# -------------------------------------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Key_Vault_And_Users.ps1')" -shmId $shmId -sreId $sreId }
 
 

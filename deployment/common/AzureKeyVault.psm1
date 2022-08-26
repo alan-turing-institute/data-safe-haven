@@ -1,5 +1,6 @@
 Import-Module Az.KeyVault -ErrorAction Stop
 Import-Module $PSScriptRoot/Cryptography -ErrorAction Stop
+Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
@@ -71,6 +72,38 @@ function Remove-AndPurgeKeyVaultSecret {
     }
 }
 Export-ModuleMember -Function Remove-AndPurgeKeyVaultSecret
+
+
+# Return a certificate with a valid private key if it exists, otherwise remove and purge any certificate with this name
+# ---------------------------------------------------------------------------------------------------------------------
+function Resolve-KeyVaultPrivateKeyCertificate {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of secret")]
+        [ValidateNotNullOrEmpty()]
+        [string]$CertificateName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of key vault this secret belongs to")]
+        [ValidateNotNullOrEmpty()]
+        [string]$VaultName
+    )
+    # Return existing certificate if it exists and has a private key
+    $existingCert = Get-AzKeyVaultCertificate -VaultName $VaultName -Name $CertificateName
+    $privateKey = Get-AzKeyVaultSecret -VaultName $VaultName -Name $CertificateName -AsPlainText
+    if ($existingCert -and $privateKey) {
+        Add-LogMessage -Level InfoSuccess "Found existing certificate with private key"
+        return $existingCert
+    }
+    # Remove any existing certificate with this name
+    Remove-AzKeyVaultCertificate -VaultName $VaultName -Name $CertificateName -Force -ErrorAction SilentlyContinue
+    Wait-For -Target "removal of old certificate to complete" -Seconds 30
+    # Purge any removed certificate with this name
+    $removedCert = Get-AzKeyVaultCertificate -VaultName $VaultName -Name $CertificateName -InRemovedState
+    if ($removedCert) {
+        Remove-AzKeyVaultCertificate -VaultName $VaultName -Name $CertificateName -InRemovedState -Force -ErrorAction SilentlyContinue
+        Wait-For -Target "pruning of old certificate to complete" -Seconds 30
+    }
+    return $false
+}
+Export-ModuleMember -Function Resolve-KeyVaultPrivateKeyCertificate
 
 
 # Ensure that a password is in the keyvault

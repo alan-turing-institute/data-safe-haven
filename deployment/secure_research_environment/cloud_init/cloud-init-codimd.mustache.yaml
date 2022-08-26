@@ -12,11 +12,6 @@ write_files:
     content: |
       {{audit.rules}}
 
-  - path: "/etc/crontab"
-    append: true
-    content: |
-      45 1 * * * root  apt update
-
   - path: "/opt/codimd/docker-compose.yml"
     permissions: "0400"
     content: |

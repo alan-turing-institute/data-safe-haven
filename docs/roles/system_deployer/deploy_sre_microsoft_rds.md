@@ -269,7 +269,9 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 ```{error}
 If you can log in to the initial webclient authentication but do not get the MFA request, then the issue is likely that the configuration of the connection between the SHM NPS server and the RDS Gateway server is not correct.
 
-In order to diagnose whether this is an issue with the NPS settings or the MFA connection, run the diagnostic script at `C:\Installation\MFA_NPS_Troubleshooter.ps1` and follow the instructions there.
+In order to diagnose whether this is an issue with the NPS settings or the MFA connection, run the diagnostic script on the NPS server at `C:\Installation\MFA_NPS_Troubleshooter.ps1` and follow the instructions there.
+
+If the "Checking if Azure MFA SPN exists" test fails, then run `C:\Installation\Ensure_MFA_SP_AAD.ps1` to restore it.
 ```
 
 ```{error}

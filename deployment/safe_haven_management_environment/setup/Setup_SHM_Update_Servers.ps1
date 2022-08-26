@@ -19,9 +19,15 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
-# Create resource group if it does not exist
-# ------------------------------------------
+# Ensure that boot diagnostics and monitoring resource groups exist
+# -----------------------------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.storage.bootdiagnostics.rg -Location $config.location
 $null = Deploy-ResourceGroup -Name $config.monitoring.rg -Location $config.location
+
+
+# Ensure that boot diagnostics storage account exists
+# ---------------------------------------------------
+$null = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
 
 
 # Deploy the Linux update server

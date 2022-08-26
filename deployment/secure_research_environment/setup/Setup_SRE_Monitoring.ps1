@@ -66,12 +66,44 @@ try {
 # --------------------------------------
 $account = Deploy-AutomationAccount -Name $config.shm.monitoring.automationAccount.name -ResourceGroupName $config.shm.monitoring.rg -Location $config.shm.location
 $sreQuery = Deploy-AutomationAzureQuery -Account $account -ResourceGroups $sreResourceGroups
-# Create Windows VM update schedule
-$windowsSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "sre-$($config.sre.id.ToLower())-windows" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.shm.time.timezone.linux)
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Query $sreQuery -Schedule $windowsSchedule -VmType "Windows"
+$localTimeZone = Get-TimeZone -Id $config.shm.time.timezone.linux
+# Create Windows VM virus definitions update schedule
+$windowsDailySchedule = Deploy-AutomationScheduleInDays -Account $account `
+                                                        -Name "sre-$($config.sre.id)-windows-definitions".ToLower() `
+                                                        -Time "01:01" `
+                                                        -TimeZone $localTimeZone
+$null = Register-VmsWithAutomationSchedule -Account $account `
+                                           -DurationHours 1 `
+                                           -IncludedUpdateCategories @("Definition") `
+                                           -Query $sreQuery `
+                                           -Schedule $windowsDailySchedule `
+                                           -VmType "Windows"
+# Create Windows VM other updates schedule
+$windowsWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
+                                                         -DayInterval 7 `
+                                                         -Name "sre-$($config.sre.id)-windows-other".ToLower() `
+                                                         -StartDayOfWeek "Tuesday" `
+                                                         -Time "02:02" `
+                                                         -TimeZone $localTimeZone
+$null = Register-VmsWithAutomationSchedule -Account $account `
+                                           -DurationHours 3 `
+                                           -IncludedUpdateCategories @("Critical", "FeaturePack", "Security", "ServicePack", "Tools", "Unclassified", "UpdateRollup", "Updates") `
+                                           -Query $sreQuery `
+                                           -Schedule $windowsWeeklySchedule `
+                                           -VmType "Windows"
 # Create Linux VM update schedule
-$linuxSchedule = Deploy-AutomationScheduleDaily -Account $account -Name "sre-$($config.sre.id.ToLower())-linux" -Time "02:01" -TimeZone (Get-TimeZone -Id $config.shm.time.timezone.linux)
-$null = Register-VmsWithAutomationSchedule -Account $account -DurationHours 2 -Query $sreQuery -Schedule $linuxSchedule -VmType "Linux"
+$linuxWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
+                                                       -DayInterval 7 `
+                                                       -Name "sre-$($config.sre.id)-linux".ToLower() `
+                                                       -StartDayOfWeek "Tuesday" `
+                                                       -Time "02:02" `
+                                                       -TimeZone $localTimeZone
+$null = Register-VmsWithAutomationSchedule -Account $account `
+                                           -DurationHours 3 `
+                                           -IncludedUpdateCategories @("Critical", "Other", "Security", "Unclassified") `
+                                           -Query $sreQuery `
+                                           -Schedule $linuxWeeklySchedule `
+                                           -VmType "Linux"
 
 
 # Switch back to original subscription

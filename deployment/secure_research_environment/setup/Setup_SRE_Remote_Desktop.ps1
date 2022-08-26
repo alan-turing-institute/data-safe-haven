@@ -40,8 +40,6 @@ if ($config.sre.remoteDesktop.provider -ne "MicrosoftRDS") {
 
 # Set constants used in this script
 # ---------------------------------
-$containerNameGateway = "sre-rds-gateway-scripts"
-$containerNameSessionHosts = "sre-rds-sh-packages"
 $vmNamePairs = @(("RDS Gateway", $config.sre.remoteDesktop.gateway.vmName),
                  ("RDS Session Host (App server)", $config.sre.remoteDesktop.appSessionHost.vmName))
 
@@ -124,68 +122,6 @@ $params = @{
 Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -TemplateParameters $params -ResourceGroupName $config.sre.remoteDesktop.rg
 
 
-# Create blob containers in SRE storage account
-# ---------------------------------------------
-Add-LogMessage -Level Info "Creating blob storage containers in storage account '$($sreStorageAccount.StorageAccountName)'..."
-foreach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) {
-    $null = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
-    $blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
-    $numBlobs = $blobs.Length
-    if ($numBlobs -gt 0) {
-        Add-LogMessage -Level Info "[ ] Deleting $numBlobs blobs aready in container '$containerName'..."
-        $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $sreStorageAccount.Context -Force }
-        while ($numBlobs -gt 0) {
-            Start-Sleep -Seconds 5
-            $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context).Length
-        }
-        if ($?) {
-            Add-LogMessage -Level Success "Blob deletion succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Blob deletion failed!"
-        }
-    }
-}
-
-
-# Upload RDS deployment scripts and installers to SRE storage
-# -----------------------------------------------------------
-Add-LogMessage -Level Info "Upload RDS deployment scripts to storage..."
-
-# Expand mustache template variables
-$config["rdsTemplates"] = @{
-    domainAdminUsername = $domainAdminUsername
-    ipAddressFirstSRD   = $ipAddressFirstSRD
-}
-# Expand deploy script
-$deployScriptLocalFilePath = (New-TemporaryFile).FullName
-$template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.mustache.ps1" | Get-Item | Get-Content -Raw
-Expand-MustacheTemplate -Template $template -Parameters $config | Out-File $deployScriptLocalFilePath
-# Expand server list XML
-$serverListLocalFilePath = (New-TemporaryFile).FullName
-$template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.mustache.xml" | Get-Item | Get-Content -Raw
-Expand-MustacheTemplate -Template $template -Parameters $config | Out-File $serverListLocalFilePath
-
-# Copy installers from SHM storage
-try {
-    Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$($sreStorageAccount.StorageAccountName)'"
-    $blobs = Get-AzStorageBlob -Context $shmStorageAccount.Context -Container $containerNameSessionHosts -ErrorAction Stop
-    $null = $blobs | Start-AzStorageBlobCopy -Context $shmStorageAccount.Context -DestContext $sreStorageAccount.Context -DestContainer $containerNameSessionHosts -Force -ErrorAction Stop
-    Add-LogMessage -Level Success "File copying succeeded"
-} catch {
-    Add-LogMessage -Level Fatal "File copying failed!" -Exception $_.Exception
-}
-
-# Upload scripts
-try {
-    Add-LogMessage -Level Info "[ ] Uploading RDS gateway scripts to storage account '$($sreStorageAccount.StorageAccountName)'"
-    $null = Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force -ErrorAction Stop
-    $null = Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force -ErrorAction Stop
-    Add-LogMessage -Level Success "File uploading succeeded"
-} catch {
-    Add-LogMessage -Level Fatal "File uploading failed!" -Exception $_.Exception
-}
-
-
 # Get public IP address of RDS gateway
 # ------------------------------------
 $rdsGatewayVM = Get-AzVM -ResourceGroupName $config.sre.remoteDesktop.rg -Name $config.sre.remoteDesktop.gateway.vmName
@@ -205,24 +141,75 @@ Deploy-DnsRecordCollection -PublicIpAddress $rdsGatewayPublicIp `
                            -ZoneName $config.sre.domain.fqdn
 
 
+# Create blob containers in SRE storage account
+# ---------------------------------------------
+Add-LogMessage -Level Info "Creating blob storage containers in storage account '$($sreStorageAccount.StorageAccountName)'..."
+foreach ($containerName in $config.sre.storage.artifacts.containers.Values) {
+    $null = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
+    $null = Clear-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
+}
+
+
+# Upload RDS deployment scripts to SRE storage
+# --------------------------------------------
+Add-LogMessage -Level Info "Upload RDS deployment scripts to storage..."
+# Expand mustache template variables
+$config["rdsTemplates"] = @{
+    domainAdminUsername = $domainAdminUsername
+    ipAddressFirstSRD   = $ipAddressFirstSRD
+}
+# Upload deploy script
+try {
+    Add-LogMessage -Level Info "[ ] Uploading RDS deployment script to storage account '$($sreStorageAccount.StorageAccountName)'"
+    $temporaryPath = (New-TemporaryFile).FullName
+    Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.mustache.ps1") -Parameters $config | Out-File $temporaryPath
+    $null = Set-AzStorageBlobContent -Container $config.sre.storage.artifacts.containers.sreScriptsRDS -Context $sreStorageAccount.Context -File $temporaryPath -Blob "Deploy_RDS_Environment.ps1" -Force -ErrorAction Stop
+    Remove-Item -Path $temporaryPath
+} catch {
+    Add-LogMessage -Level Fatal "Uploading RDS deployment script failed!" -Exception $_.Exception
+}
+# Upload deploy script
+try {
+    Add-LogMessage -Level Info "[ ] Uploading RDS server list to storage account '$($sreStorageAccount.StorageAccountName)'"
+    $temporaryPath = (New-TemporaryFile).FullName
+    Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.mustache.xml") -Parameters $config | Out-File $temporaryPath
+    $null = Set-AzStorageBlobContent -Container $config.sre.storage.artifacts.containers.sreScriptsRDS -Context $sreStorageAccount.Context -File $temporaryPath -Blob "ServerList.xml" -Force -ErrorAction Stop
+    Remove-Item -Path $temporaryPath
+} catch {
+    Add-LogMessage -Level Fatal "Uploading RDS server list failed!" -Exception $_.Exception
+}
+
+
+# Upload RDS package installers to SRE storage
+# --------------------------------------------
+Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($sreStorageAccount.StorageAccountName)'..."
+try {
+    # Chrome
+    $null = Set-AzureStorageBlobFromUri -FileUri "http://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi" -BlobFilename "GoogleChrome_x64.msi" -StorageContainer $config.sre.storage.artifacts.containers.sreArtifactsRDS -StorageContext $sreStorageAccount.Context
+    # PuTTY
+    $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
+    $filename = $(Invoke-WebRequest -Uri $baseUri).Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
+    $version = ($filename -split "-")[2]
+    $null = Set-AzureStorageBlobFromUri -FileUri "$($baseUri.Replace('latest', $version))/$filename" -BlobFilename "PuTTY_x64.msi" -StorageContainer $config.sre.storage.artifacts.containers.sreArtifactsRDS -StorageContext $sreStorageAccount.Context
+    Add-LogMessage -Level Success "Uploaded Windows package installers"
+} catch {
+    Add-LogMessage -Level Fatal "Failed to upload Windows package installers!" -Exception $_.Exception
+}
+
+
 # Import files to RDS VMs
 # -----------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
 # Set correct list of packages from blob storage for each session host
 $blobfiles = @{}
 $vmNamePairs | ForEach-Object { $blobfiles[$_[1]] = @() }
-foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
-    if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi")) {
-        $blobfiles[$config.sre.remoteDesktop.appSessionHost.vmName] += @{$containerNameSessionHosts = $blob.Name }
-    }
+foreach ($blob in Get-AzStorageBlob -Container $config.sre.storage.artifacts.containers.sreArtifactsRDS -Context $sreStorageAccount.Context) {
+    $blobfiles[$config.sre.remoteDesktop.appSessionHost.vmName] += @{$config.sre.storage.artifacts.containers.sreArtifactsRDS = $blob.Name }
 }
 # ... and for the gateway
-foreach ($blob in Get-AzStorageBlob -Container $containerNameGateway -Context $sreStorageAccount.Context) {
-    $blobfiles[$config.sre.remoteDesktop.gateway.vmName] += @{$containerNameGateway = $blob.Name }
+foreach ($blob in Get-AzStorageBlob -Container $config.sre.storage.artifacts.containers.sreScriptsRDS -Context $sreStorageAccount.Context) {
+    $blobfiles[$config.sre.remoteDesktop.gateway.vmName] += @{$config.sre.storage.artifacts.containers.sreScriptsRDS = $blob.Name }
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
-
 # Copy software and/or scripts to RDS VMs
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Import_And_Install_Blobs.ps1"
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
@@ -241,6 +228,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     }
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.remoteDesktop.rg -Parameter $params
 }
+
 
 # Set locale, install updates and reboot
 # --------------------------------------

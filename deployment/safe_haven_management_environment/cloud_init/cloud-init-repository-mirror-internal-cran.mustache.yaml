@@ -33,13 +33,8 @@ write_files:
     content: |
       Acquire::http::Proxy "http://{{monitoring.updateServers.linux.ip}}:8000";
 
-  - path: "/etc/crontab"
-    append: true
-    content: |
-      45 1 * * * root  apt update
-
   - path: /var/local/cran-mirror-apache.conf
-    permissions: 0644
+    permissions: "0644"
     content: |
       <VirtualHost *:80>
         DocumentRoot "/datadrive/mirrordaemon/www/cran"
@@ -77,7 +72,15 @@ ntp:
 
 runcmd:
   # Suppress apt prompts and warning messages
-  - export DEBIAN_FRONTEND=noninteractive
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
+
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
+  - apt-get -y autoremove
+  - apt-get clean
+  - apt --fix-broken install
 
   # Show authorised SSH keys
   - echo ">=== Authorised SSH keys... ===<"

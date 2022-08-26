@@ -10,7 +10,7 @@ RED="\033[0;31m"
 BLUE="\033[0;36m"
 END="\033[0m"
 
-RESOLVE_CONF_TARGET="/run/systemd/resolve/resolv.conf"
+SYSTEMD_RESOLV_CONF="/run/systemd/resolve/resolv.conf"
 
 # Test nslookup
 test_dnslookup () {
@@ -34,8 +34,8 @@ test_dnslookup () {
 test_resolve_conf() {
     local RESOLVE_CONF_LOCATION
     RESOLVE_CONF_LOCATION=$(realpath /etc/resolv.conf)
-    cat /etc/resolv.conf
-    if [ "${RESOLVE_CONF_LOCATION}" != "${RESOLVE_CONF_TARGET}" ]; then
+    sed -e 's|^|/etc/resolv.conf: |g' /etc/resolv.conf
+    if [ "${RESOLVE_CONF_LOCATION}" != "${SYSTEMD_RESOLV_CONF}" ]; then
         echo -e "${RED}/etc/resolv.conf is currently pointing to ${RESOLVE_CONF_LOCATION}${END}"
         return 1
     else
@@ -44,17 +44,17 @@ test_resolve_conf() {
     return 0
 }
 
-# Update /etc/systemd/resolved.conf
-update_systemd_resolved_conf () {
-    cp /etc/systemd/resolved.conf /tmp/resolved.conf
-    sed -i -e "s/^[#]DNS=.*/DNS=/" -e "s/^[#]FallbackDNS=.*/FallbackDNS=/" -e "s/^[#]Domains=.*/Domains=${DOMAIN_FQDN_LOWER}/" /etc/systemd/resolved.conf
-    if (cmp /etc/systemd/resolved.conf /tmp/resolved.conf); then
+# Update systemd resolv.conf
+update_systemd_resolv_conf () {
+    cp ${SYSTEMD_RESOLV_CONF} /tmp/resolved.conf
+    sudo sed -i -e "s/^[#]DNS=.*/DNS=/" -e "s/^[#]FallbackDNS=.*/FallbackDNS=/" -e "s/^[#]Domains=.*/Domains=${DOMAIN_FQDN_LOWER}/" ${SYSTEMD_RESOLV_CONF}
+    if (cmp ${SYSTEMD_RESOLV_CONF} /tmp/resolved.conf); then
         echo "No updates needed"
     else
-        echo "Previous /etc/systemd/resolved.conf:"
+        echo "Previous ${SYSTEMD_RESOLV_CONF}:"
         grep -v -e '^[[:space:]]*$' /tmp/resolved.conf | grep -v "^#"
-        echo "Updated /etc/systemd/resolved.conf:"
-        grep -v -e '^[[:space:]]*$' /etc/systemd/resolved.conf | grep -v "^#"
+        echo "Updated ${SYSTEMD_RESOLV_CONF}:"
+        grep -v -e '^[[:space:]]*$' ${SYSTEMD_RESOLV_CONF} | grep -v "^#"
         restart_resolved
     fi
 }
@@ -62,16 +62,14 @@ update_systemd_resolved_conf () {
 # Restart the systemd-resolved service
 restart_resolved () {
     echo "Restarting systemd-resolved name service"
-    ln -rsf /run/systemd/resolve/resolv.conf /etc/resolv.conf
     sudo systemctl restart systemd-resolved
-    cat /etc/resolv.conf
 }
 
 # Reset /etc/resolv.conf
 reset_resolv_conf () {
     echo -e "${BLUE}Resetting /etc/resolv.conf symlink${END}"
     sudo rm /etc/resolv.conf
-    sudo ln -s "$RESOLVE_CONF_TARGET" /etc/resolv.conf
+    sudo ln -rsf "${SYSTEMD_RESOLV_CONF}" /etc/resolv.conf
     test_resolve_conf
 }
 
@@ -81,16 +79,16 @@ reset_resolv_conf () {
 echo -e "${BLUE}Checking name resolution${END}"
 
 # Check nslookup
-echo "Testing connectivity for '$DOMAIN_CONTROLLER'"
+echo -e "\nTesting connectivity for '$DOMAIN_CONTROLLER'"
 test_dnslookup
 DNS_STATUS=$?
 
-# Update /etc/systemd/resolved.conf if necessary
-echo "Testing /etc/systemd/resolved.conf"
-update_systemd_resolved_conf
+# Update ${SYSTEMD_RESOLV_CONF} if necessary
+echo -e "\nTesting ${SYSTEMD_RESOLV_CONF}"
+update_systemd_resolv_conf
 
 # Check where resolv.conf is pointing
-echo "Testing /etc/resolv.conf"
+echo -e "\nTesting /etc/resolv.conf"
 test_resolve_conf
 RESOLVE_CONF_STATUS=$?
 if [ "$RESOLVE_CONF_STATUS" != "0" ]; then

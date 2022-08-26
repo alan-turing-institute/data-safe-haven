@@ -6,8 +6,10 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Network -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureMonitor -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureOperationalInsights -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
@@ -18,6 +20,11 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 $config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
+
+
+# Create resource group if it does not exist
+# ------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.monitoring.rg -Location $config.location
 
 
 # Ensure that firewall subnet exists
@@ -70,7 +77,7 @@ foreach ($route in $rules.routes) {
 
 # Attach all subnets except the VPN gateway and firewall subnets to the firewall route table
 # ------------------------------------------------------------------------------------------
-$excludedSubnetNames = @($config.network.vnet.subnets.firewall.name, $config.network.vnet.subnets.gateway.name)
+$excludedSubnetNames = @($config.network.vnet.subnets.firewall.name, $config.network.vnet.subnets.gateway.name, $config.network.vnetRepositoriesTier2.subnets.deployment.name, $config.network.vnetRepositoriesTier3.subnets.deployment.name)
 $vnetRepositoriesTier2 = Get-VirtualNetwork -Name $config.network.vnetRepositoriesTier2.name -ResourceGroupName $config.network.vnetRepositoriesTier2.rg
 $vnetRepositoriesTier3 = Get-VirtualNetwork -Name $config.network.vnetRepositoriesTier3.name -ResourceGroupName $config.network.vnetRepositoriesTier3.rg
 foreach ($vnet in @($vnetShm, $vnetRepositoriesTier2, $vnetRepositoriesTier3)) {

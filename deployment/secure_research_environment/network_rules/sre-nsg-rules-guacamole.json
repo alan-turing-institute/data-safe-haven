@@ -20,7 +20,11 @@
         "direction": "Inbound",
         "priority": 2200,
         "protocol": "TCP",
-        "sourceAddressPrefix": ["{{sre.remoteDesktop.networkRules.allowedSources}}"],
+        "sourceAddressPrefix": [
+            {{#sre.remoteDesktop.networkRules.allowedSources}}
+                "{{.}}",
+            {{/sre.remoteDesktop.networkRules.allowedSources}}
+        ],
         "sourcePortRange": "*"
     },
     {

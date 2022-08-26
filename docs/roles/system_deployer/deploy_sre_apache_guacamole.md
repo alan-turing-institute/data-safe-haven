@@ -35,6 +35,11 @@ PS> ./Deploy_SRE.ps1 -shmId <SHM ID> -sreId <SRE ID> -tenantId <AAD tenant ID> -
 - where `<AAD tenant ID>` is the {ref}`tenant ID <roles_deployer_aad_tenant_id>` for the AzureAD that you created during SHM deployment
 - where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create (for example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`)
 
+You will be prompted for credentials for:
+
+- a user with admin rights over the Azure subscriptions you plan to deploy into
+- a user with Global Administrator privileges over the SHM Azure Active Active directory
+
 This will perform the following actions, which can be run individually if desired:
 
 <details>

@@ -80,8 +80,9 @@ function Get-ShmConfig {
         nsgPrefix           = $shmConfigBase.overrides.nsgPrefix ? $shmConfigBase.overrides.nsgPrefix : "NSG_SHM_$($shmConfigBase.shmId)".ToUpper()
         subscriptionName    = $shmConfigBase.azure.subscriptionName
         vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_VMIMAGES"
-        storageTypeDefault  = $shmConfigBase.storageTypeDefault ? $shmConfigBase.storageTypeDefault : "Standard_GRS"
-    }
+        storageTypeDefault  = "Standard_GRS"
+        diskTypeDefault     = "Standard_LRS"
+}
     # For normal usage this does not need to be user-configurable.
     # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
     $shmIpPrefix = $shmConfigBase.overrides.ipPrefix ? $shmConfigBase.overrides.ipPrefix : "10.0.0"
@@ -157,7 +158,7 @@ function Get-ShmConfig {
             # Standard_E8_v3  => 8 cores; 64GB RAM; 2.3 GHz; £0.4651/hr
             vm     = [ordered]@{
                 diskSizeGb = 128
-                diskType   = $shm.storageTypeDefault
+                diskType   = $shm.diskTypeDefault
                 size       = "Standard_F8s_v2"
             }
         }
@@ -267,28 +268,36 @@ function Get-ShmConfig {
             cidr    = "${shmRepositoryPrefix}.0/24"
             rg      = $shm.network.vnet.rg
             subnets = [ordered]@{
-                mirrorsExternal = [ordered]@{
-                    name = "PackageMirrorsExternalTier${tier}Subnet"
+                deployment      = [ordered]@{
+                    name = "RepositoryDeploymentSubnet"
                     cidr = "${shmRepositoryPrefix}.0/26"
                     nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_PACKAGE_MIRRORS_EXTERNAL_TIER${tier}".ToUpper()
-                        rules = "shm-nsg-rules-package-mirrors-external-tier${tier}.json"
+                        name  = "$($shm.nsgPrefix)_REPOSITORY_DEPLOYMENT_TIER_${tier}".ToUpper()
+                        rules = "shm-nsg-rules-repository-deployment-tier${tier}.json"
+                    }
+                }
+                mirrorsExternal = [ordered]@{
+                    name = "RepositoryMirrorsExternalTier${tier}Subnet"
+                    cidr = "${shmRepositoryPrefix}.64/26"
+                    nsg  = [ordered]@{
+                        name  = "$($shm.nsgPrefix)_REPOSITORY_MIRRORS_EXTERNAL_TIER${tier}".ToUpper()
+                        rules = "shm-nsg-rules-repository-mirrors-external-tier${tier}.json"
                     }
                 }
                 mirrorsInternal = [ordered]@{
-                    name = "PackageMirrorsInternalTier${tier}Subnet"
-                    cidr = "${shmRepositoryPrefix}.64/26"
+                    name = "RepositoryMirrorsInternalTier${tier}Subnet"
+                    cidr = "${shmRepositoryPrefix}.128/26"
                     nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_PACKAGE_MIRRORS_INTERNAL_TIER${tier}".ToUpper()
-                        rules = "shm-nsg-rules-package-mirrors-internal-tier${tier}.json"
+                        name  = "$($shm.nsgPrefix)_REPOSITORY_MIRRORS_INTERNAL_TIER${tier}".ToUpper()
+                        rules = "shm-nsg-rules-repository-mirrors-internal-tier${tier}.json"
                     }
                 }
                 proxies         = [ordered]@{
-                    name = "PackageProxiesTier${tier}Subnet"
-                    cidr = "${shmRepositoryPrefix}.128/26"
+                    name = "RepositoryProxiesTier${tier}Subnet"
+                    cidr = "${shmRepositoryPrefix}.192/26"
                     nsg  = [ordered]@{
-                        name  = "$($shm.nsgPrefix)_PACKAGE_PROXIES_TIER_${tier}".ToUpper()
-                        rules = "shm-nsg-rules-package-proxies-tier${tier}.json"
+                        name  = "$($shm.nsgPrefix)_REPOSITORY_PROXIES_TIER_${tier}".ToUpper()
+                        rules = "shm-nsg-rules-repository-proxies-tier${tier}.json"
                     }
                 }
             }
@@ -334,7 +343,7 @@ function Get-ShmConfig {
                 disks                   = [ordered]@{
                     os = [ordered]@{
                         sizeGb = "32"
-                        type   = $shm.storageTypeDefault
+                        type   = $shm.diskTypeDefault
                     }
                 }
                 hostname                = $linuxUpdateServerHostname
@@ -432,7 +441,7 @@ function Get-ShmConfig {
         disks                      = [ordered]@{
             os = [ordered]@{
                 sizeGb = "128"
-                type   = $shm.storageTypeDefault
+                type   = $shm.diskTypeDefault
             }
         }
     }
@@ -461,7 +470,7 @@ function Get-ShmConfig {
         disks                   = [ordered]@{
             os = [ordered]@{
                 sizeGb = "128"
-                type   = $shm.storageTypeDefault
+                type   = $shm.diskTypeDefault
             }
         }
     }
@@ -475,6 +484,11 @@ function Get-ShmConfig {
         artifacts       = [ordered]@{
             rg          = $storageRg
             accountName = "${shmStoragePrefix}artifacts${shmStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
+            containers  = [ordered]@{
+                shmArtifactsDC  = "shm-artifacts-dc"
+                shmArtifactsNPS = "shm-artifacts-nps"
+                shmDesiredState = "shm-desired-state"
+            }
         }
         bootdiagnostics = [ordered]@{
             rg          = $storageRg
@@ -514,6 +528,7 @@ function Get-ShmConfig {
         foreach ($LocalRepositoryType in $LocalRepositoryTypes) {
             $shm.repositories["tier${tier}"][$LocalRepositoryType] = [ordered]@{}
             $RemoteRepositories = ($LocalRepositoryType -eq "proxies") ? "many" : @("cran", "pypi")
+            $LocalRepositoryShort = $LocalRepositoryType.Replace("proxies", "proxy").Replace("mirrors", "mirror-")
             foreach ($RemoteRepository in $RemoteRepositories) {
                 if ($RemoteRepository -eq "cran") {
                     $dataDiskSizeGb = ($tier -eq 2) ? 128 : 32
@@ -525,13 +540,13 @@ function Get-ShmConfig {
                     $dataDiskSizeGb = $null
                     $ipOffset = 6
                 }
-                $vmName = "PACKAGE-$($LocalRepositoryType.Replace("proxies", "proxy").Replace("mirrors", "mirror-"))-${RemoteRepository}-TIER-${tier}".ToUpper()
+                $vmName = "SHM-$($shm.id)-${RemoteRepository}-REPOSITORY-${LocalRepositoryShort}-TIER-${tier}".ToUpper()
                 $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository] = [ordered]@{
-                    adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-${vmName}".ToLower()
+                    adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-${RemoteRepository}-repository-${LocalRepositoryShort}-tier-${tier}".ToLower()
                     disks                   = [ordered]@{
                         os = [ordered]@{
                             sizeGb = 32
-                            type   = $shm.storageTypeDefault
+                            type   = $shm.diskTypeDefault
                         }
                     }
                     ipAddress               = Get-NextAvailableIpInRange -IpRangeCidr $shm.network["vnetRepositoriesTier${tier}"].subnets[$LocalRepositoryType].cidr -Offset $ipOffset
@@ -541,11 +556,11 @@ function Get-ShmConfig {
                 if ($dataDiskSizeGb) {
                     $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository].disks["data"] = [ordered]@{
                         sizeGb = $dataDiskSizeGb
-                        type   = $shm.storageTypeDefault
+                        type   = $shm.diskTypeDefault
                     }
                 }
                 if ($LocalRepositoryType -eq "proxies") {
-                    $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository]["applicationAdminPasswordSecretName"] = "shm-$($shm.id)-application-admin-password-${vmName}".ToLower()
+                    $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository]["applicationAdminPasswordSecretName"] = "shm-$($shm.id)-application-admin-password-${RemoteRepository}-repository-${LocalRepositoryShort}-tier-${tier}".ToLower()
                 }
             }
         }
@@ -624,7 +639,8 @@ function Get-SreConfig {
             remoteDesktop      = [ordered]@{
                 provider = $sreConfigBase.remoteDesktopProvider
             }
-            storageTypeDefault = $sreConfigBase.storageTypeDefault ? $sreConfigBase.storageTypeDefault : "Standard_GRS"
+            storageTypeDefault = "Standard_GRS"
+            diskTypeDefault    = "Standard_LRS"
         }
     }
     $config.sre.azureAdminGroupName = $sreConfigBase.azureAdminGroupName ? $sreConfigBase.azureAdminGroupName : $config.shm.azureAdminGroupName
@@ -738,14 +754,18 @@ function Get-SreConfig {
             }
         }
         artifacts       = [ordered]@{
-            account = [ordered]@{
+            account    = [ordered]@{
                 name               = "${sreStoragePrefix}artifacts${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind        = "BlobStorage"
                 performance        = $config.sre.storageTypeDefault # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier         = "Cool"
                 allowedIpAddresses = $sreConfigBase.deploymentIpAddresses ? @($sreConfigBase.deploymentIpAddresses) : "any"
             }
-            rg      = $storageRg
+            containers = [ordered]@{
+                sreArtifactsRDS = "sre-artifacts-rds"
+                sreScriptsRDS   = "sre-scripts-rds"
+            }
+            rg         = $storageRg
         }
         bootdiagnostics = [ordered]@{
             accountName = "${sreStoragePrefix}bootdiags${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
@@ -755,7 +775,7 @@ function Get-SreConfig {
             account    = [ordered]@{
                 name        = "${sreStoragePrefix}userdata${sreStorageSuffix}".ToLower() | Limit-StringLength -MaximumLength 24 -Silent
                 storageKind = "FileStorage"
-                performance = "Premium_GRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
+                performance = $config.sre.storageTypeDefault.Contains("LRS") ? "Premium_LRS" : "Premium_ZRS" # see https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#types-of-storage-accounts for allowed types
                 accessTier  = "Hot"
                 rg          = $storageRg
             }
@@ -862,7 +882,7 @@ function Get-SreConfig {
             disks                           = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -880,11 +900,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "1023"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "128"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -900,7 +920,7 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -929,7 +949,7 @@ function Get-SreConfig {
     } elseif ($sreConfigBase.inboundAccessFrom -eq "anywhere") {
         $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
     } else {
-        $config.sre.remoteDesktop.networkRules.allowedSources = $sreConfigBase.inboundAccessFrom
+        $config.sre.remoteDesktop.networkRules.allowedSources = @($sreConfigBase.inboundAccessFrom)
     }
     # Outbound: whether internet access is allowed (if 'default' is given then apply sensible defaults)
     if ($sreConfigBase.outboundInternetAccess -eq "default") {
@@ -943,7 +963,7 @@ function Get-SreConfig {
     } elseif (@("no", "deny", "forbid").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
         $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
     } else {
-        $config.sre.remoteDesktop.networkRules.outboundInternet = $sreConfigBase.outboundInternet
+        $config.sre.remoteDesktop.networkRules.outboundInternet = @($sreConfigBase.outboundInternet)
     }
     # Copy-and-paste
     if (@("0", "1").Contains($config.sre.tier)) {
@@ -971,11 +991,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "32"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -995,11 +1015,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "32"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -1013,11 +1033,11 @@ function Get-SreConfig {
             disks                   = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "512"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "32"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -1058,11 +1078,11 @@ function Get-SreConfig {
             disks                     = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "1024"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
                 os   = [ordered]@{
                     sizeGb = "128"
-                    type   = $config.sre.storageTypeDefault
+                    type   = $config.sre.diskTypeDefault
                 }
             }
         }
@@ -1083,11 +1103,11 @@ function Get-SreConfig {
         disks                   = [ordered]@{
             os      = [ordered]@{
                 sizeGb = "default"
-                type   = $config.sre.storageTypeDefault
+                type   = "StandardSSD_LRS" # explicitly override defaults and use SSD for SRD disks
             }
             scratch = [ordered]@{
                 sizeGb = "1024"
-                type   = $config.sre.storageTypeDefault
+                type   = "StandardSSD_LRS" # explicitly override defaults and use SSD for SRD disks
             }
         }
     }
@@ -1108,14 +1128,14 @@ function Get-SreConfig {
             $pypiUrl = "http://$($repositoryConfig.proxies.many.ipAddress):80/repository/pypi-proxy"
             $repositoryVNetName = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].name
             $repositoryVNetCidr = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].cidr
-        # Package mirrors use port 3128 (PyPI) or port 80 (CRAN)
+        # Repository mirrors use port 3128 (PyPI) or port 80 (CRAN)
         } elseif ($repositoryConfig.mirrorsInternal) {
             $cranUrl = "http://$($repositoryConfig.mirrorsInternal.cran.ipAddress)"
             $pypiUrl = "http://$($repositoryConfig.mirrorsInternal.pypi.ipAddress):3128"
             $repositoryVNetName = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].name
             $repositoryVNetCidr = $config.shm.network["vnetRepositoriesTier$($config.sre.tier)"].cidr
         } else {
-            Add-LogMessage -Level Fatal "Unknown package repository source for tier $($config.sre.tier) SRE!"
+            Add-LogMessage -Level Fatal "Unknown repository source for tier $($config.sre.tier) SRE!"
         }
     }
     # We want to extract the hostname from PyPI URLs in any of the following forms
