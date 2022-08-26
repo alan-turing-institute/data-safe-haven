@@ -70,7 +70,7 @@ $localTimeZone = Get-TimeZone -Id $config.shm.time.timezone.linux
 # Create Windows VM virus definitions update schedule
 $windowsDailySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                         -Name "sre-$($config.sre.id)-windows-definitions".ToLower() `
-                                                        -Time "01:01" `
+                                                        -Time "$($config.shm.monitoring.schedule.daily_definition_updates.hour):$($config.shm.monitoring.schedule.daily_definition_updates.minute)" `
                                                         -TimeZone $localTimeZone
 $null = Register-VmsWithAutomationSchedule -Account $account `
                                            -DurationHours 1 `
@@ -82,8 +82,8 @@ $null = Register-VmsWithAutomationSchedule -Account $account `
 $windowsWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                          -DayInterval 7 `
                                                          -Name "sre-$($config.sre.id)-windows-other".ToLower() `
-                                                         -StartDayOfWeek "Tuesday" `
-                                                         -Time "02:02" `
+                                                         -StartDayOfWeek $config.shm.monitoring.schedule.weekly_system_updates.day `
+                                                         -Time "$($config.shm.monitoring.schedule.weekly_system_updates.hour):$($config.shm.monitoring.schedule.weekly_system_updates.minute)" `
                                                          -TimeZone $localTimeZone
 $null = Register-VmsWithAutomationSchedule -Account $account `
                                            -DurationHours 3 `
@@ -95,8 +95,8 @@ $null = Register-VmsWithAutomationSchedule -Account $account `
 $linuxWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                        -DayInterval 7 `
                                                        -Name "sre-$($config.sre.id)-linux".ToLower() `
-                                                       -StartDayOfWeek "Tuesday" `
-                                                       -Time "02:02" `
+                                                       -StartDayOfWeek $config.shm.monitoring.schedule.weekly_system_updates.day `
+                                                       -Time "$($config.shm.monitoring.schedule.weekly_system_updates.hour):$($config.shm.monitoring.schedule.weekly_system_updates.minute)" `
                                                        -TimeZone $localTimeZone
 $null = Register-VmsWithAutomationSchedule -Account $account `
                                            -DurationHours 3 `

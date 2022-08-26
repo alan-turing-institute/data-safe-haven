@@ -12,6 +12,18 @@ write_files:
     content: |
       {{audit.rules}}
 
+  - path: "/etc/clamav/clamd.conf"
+    permissions: "0644"
+    append: true
+    content: |
+      {{clamd.conf}}
+
+  - path: "/etc/cron.d/clamav-freshclam"
+    permissions: "0644"
+    content: |
+      # Run every day at a fixed time
+      {{shm.monitoring.schedule.daily_definition_updates.minute}} {{shm.monitoring.schedule.daily_definition_updates.hour}} * * * freshclam
+
   - path: "/etc/gitlab/gitlab.rb"
     permissions: "0600"
     content: |
@@ -39,6 +51,21 @@ write_files:
         last_name:  'sn'
       EOS
       git_data_dirs({ "default" => { "path" => "/data" } })
+
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
 
   - path: "/opt/configuration/set_dns.sh"
     permissions: "0500"
@@ -71,6 +98,11 @@ packages:
   - apt-transport-https
   - auditd
   - ca-certificates
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - curl
   - gitlab-ce
   - gnupg
@@ -122,6 +154,22 @@ runcmd:
   - echo ">=== Enabling auditd services... ===<"
   - systemctl start auditd
   - systemctl enable auditd
+  - sleep 20
+  - systemctl status auditd
+
+  # Configure ClamAV
+  - echo ">=== Configure ClamAV... ===<"
+  # Allow unlimited recursion when scanning
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  # Enable ClamAV daemon
+  - systemctl enable clamav-daemon
+  # Enable ClamAV scan on access
+  - systemctl enable clamav-clamonacc
+  # Enable ClamAV daily scan
+  - systemctl enable clamav-clamdscan.timer
+  # Disable ClamAV database update on boot
+  - systemctl stop clamav-freshclam
+  - systemctl disable clamav-freshclam
 
   # Check server settings
   - echo ">=== DNS ===<"

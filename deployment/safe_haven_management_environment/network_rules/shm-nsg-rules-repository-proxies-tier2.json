@@ -100,6 +100,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowExternalClamAVOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external ClamAV servers",
+        "destinationAddressPrefix": ["104.16.218.84", "104.16.219.84"],
+        "destinationPortRange": ["53", "443"],
+        "direction": "Outbound",
+        "priority": 3300,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowAzureAutomationOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to Azure automation servers",

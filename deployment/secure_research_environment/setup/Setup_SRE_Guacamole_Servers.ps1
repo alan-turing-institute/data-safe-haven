@@ -104,6 +104,7 @@ $ldapSearchPassword = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.nam
 Add-LogMessage -Level Info "Constructing cloud-init from template..."
 $cloudInitTemplate = (Join-Path $PSScriptRoot ".." "cloud_init" "cloud-init-guacamole.mustache.yaml") | Get-Item | Get-Content -Raw
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
 # Expand mustache template variables
 $config["guacamole"] = @{
     applicationId          = $application.AppId

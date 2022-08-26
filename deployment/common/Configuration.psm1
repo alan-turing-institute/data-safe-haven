@@ -351,6 +351,17 @@ function Get-ShmConfig {
                 vmName                  = $linuxUpdateServerHostname
                 vmSize                  = "Standard_B2ms"
             }
+            schedule            = [ordered]@{
+                daily_definition_updates = [ordered]@{
+                    hour   = "01"
+                    minute = "01"
+                }
+                weekly_system_updates    = [ordered]@{
+                    day    = "Tuesday"
+                    hour   = "02"
+                    minute = "02"
+                }
+            }
         }
     }
 

@@ -181,6 +181,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Insert additional files into the cloud-init template
         $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
+        $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
 
         # Expand placeholders in the cloud-init file
         $config["postgres"] = @{

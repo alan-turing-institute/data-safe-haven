@@ -198,6 +198,7 @@ $config["srd"] = @{
 }
 $cloudInitTemplate = Get-Content $cloudInitFilePath -Raw
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
 $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
 
 

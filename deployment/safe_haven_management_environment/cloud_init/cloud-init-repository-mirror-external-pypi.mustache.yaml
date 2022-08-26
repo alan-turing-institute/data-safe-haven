@@ -21,7 +21,13 @@ apt:
 
 # List of packages to install with apt-get
 packages:
+  - auditd
   - build-essential
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - openssh-server
   - python3-dev
   - python3-pip
@@ -39,6 +45,11 @@ write_files:
     permissions: "0444"
     content: |
       Acquire::http::Proxy "http://{{monitoring.updateServers.linux.ip}}:8000";
+
+  - path: "/etc/audit/rules.d/audit.rules"
+    permissions: "0400"
+    content: |
+      {{audit.rules}}
 
   - path: "/etc/bandersnatch.conf"
     permissions: "0644"
@@ -90,6 +101,18 @@ write_files:
           macos
           freebsd
 
+  - path: "/etc/clamav/clamd.conf"
+    permissions: "0644"
+    append: true
+    content: |
+      {{clamd.conf}}
+
+  - path: "/etc/cron.d/clamav-freshclam"
+    permissions: "0644"
+    content: |
+      # Run every day at a fixed time
+      {{monitoring.schedule.daily_definition_updates.minute}} {{monitoring.schedule.daily_definition_updates.hour}} * * * freshclam
+
   - path: "/etc/cron.d/push-to-internal-mirrors"
     permissions: "0644"
     content: |
@@ -107,6 +130,21 @@ write_files:
     content: |
       # Run both jobs on every reboot
       @reboot mirrordaemon ~mirrordaemon/pull_then_push.sh
+
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
 
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     permissions: "0600"
@@ -246,6 +284,27 @@ runcmd:
   - apt-get -y autoremove
   - apt-get clean
   - apt --fix-broken install
+
+  # Ensure that auditd is running and enabled at startup
+  - echo ">=== Enabling auditd services... ===<"
+  - systemctl start auditd
+  - systemctl enable auditd
+  - sleep 20
+  - systemctl status auditd
+
+  # Configure ClamAV
+  - echo ">=== Configure ClamAV... ===<"
+  # Allow unlimited recursion when scanning
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  # Enable ClamAV daemon
+  - systemctl enable clamav-daemon
+  # Enable ClamAV scan on access
+  - systemctl enable clamav-clamonacc
+  # Enable ClamAV daily scan
+  - systemctl enable clamav-clamdscan.timer
+  # Disable ClamAV database update on boot
+  - systemctl stop clamav-freshclam
+  - systemctl disable clamav-freshclam
 
   # Set up and partition data disk
   - echo ">=== Setting up local disk... ===<"

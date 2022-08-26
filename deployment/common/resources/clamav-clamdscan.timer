@@ -1,0 +1,12 @@
+[Unit]
+Description=Run ClamAV scan every day
+
+[Timer]
+# Will run daily at 00:01:00
+OnCalendar=*-*-* 00:01:00
+AccuracySec=1h
+# Will run if a job was missed (e.g. due to system being powered down)
+Persistent=true
+
+[Install]
+WantedBy=timers.target

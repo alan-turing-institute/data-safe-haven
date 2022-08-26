@@ -60,11 +60,11 @@ write_files:
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
 
-  - path: "/etc/cron.d/clamav-update"
+  - path: "/etc/cron.d/clamav-freshclam"
     permissions: "0644"
     content: |
-      # Run every day at 01:01
-      01 01 * * * freshclam
+      # Run every day at a fixed time
+      {{shm.monitoring.schedule.daily_definition_updates.minute}} {{shm.monitoring.schedule.daily_definition_updates.hour}} * * * freshclam
 
   - path: "/etc/cron.d/runonce"
     permissions: "0644"
@@ -224,50 +224,17 @@ write_files:
   - path: "/etc/systemd/system/clamav-clamonacc.service"
     permissions: "0644"
     content: |
-      [Unit]
-      Description=ClamAV on access scanning daemon
-      Requires=clamav-daemon.service
-      After=clamav-daemon.service syslog.target network.target
-
-      [Service]
-      Type=simple
-      User=root
-      ExecStartPre=/bin/bash -c "while [ ! -S /var/run/clamav/clamd.ctl ]; do sleep 1; done"
-      ExecStart=/usr/bin/clamonacc --foreground=true
-      Restart=on-failure
-      RestartSec=30
-
-      [Install]
-      WantedBy=multi-user.target
+      {{clamav-clamonacc.service}}
 
   - path: "/etc/systemd/system/clamav-clamdscan.service"
     permissions: "0644"
     content: |
-      [Unit]
-      Description=ClamAV full system scan
-      Requires=clamav-daemon.service
-      After=clamav-daemon.service
-
-      [Service]
-      Type=oneshot
-      User=root
-      ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
+      {{clamav-clamdscan.service}}
 
   - path: "/etc/systemd/system/clamav-clamdscan.timer"
     permissions: "0644"
     content: |
-      [Unit]
-      Description=Run ClamAV scan every week
-
-      [Timer]
-      # Will run on every Monday at 00:00:00
-      OnCalendar=weekly
-      AccuracySec=1h
-      # Will run if a job was missed (e.g. due to system being powered down)
-      Persistent=true
-
-      [Install]
-      WantedBy=timers.target
+      {{clamav-clamdscan.timer}}
 
   - path: "/etc/systemd/system/backup.mount"
     permissions: "0644"
@@ -525,6 +492,20 @@ runcmd:
   - sleep 20
   - systemctl status auditd
 
+  # Configure ClamAV
+  - echo ">=== Configure ClamAV... ===<"
+  # Allow unlimited recursion when scanning
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  # Enable ClamAV daemon
+  - systemctl enable clamav-daemon
+  # Enable ClamAV scan on access
+  - systemctl enable clamav-clamonacc
+  # Enable ClamAV daily scan
+  - systemctl enable clamav-clamdscan.timer
+  # Disable ClamAV database update on boot
+  - systemctl stop clamav-freshclam
+  - systemctl disable clamav-freshclam
+
   # Configure services for realm joining
   - echo ">=== Configuring domain joining settings... ===<"
   - OSVERSION=$(lsb_release -a 2> /dev/null | grep "Description:" | awk '{print $3}')
@@ -626,21 +607,6 @@ runcmd:
   - echo ">=== Checking disk mounts... ===<"
   - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
   - mount -fav 2> /dev/null
-
-  # ClamAV update using freshclam. Note that the systemd unit must not be running when we update manually
-  - echo ">=== Update ClamAV... ===<"
-  - systemctl stop clamav-freshclam
-  - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "inactive")" ]; then break; else sleep 1; fi; done
-  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
-  - rm -f /var/lib/clamav/daily.cvd 2> /dev/null
-  - freshclam
-
-  # ClamAV: allow unlimited recursion when scanning; enable daemon, scan on access and periodic scan
-  - echo ">=== Enabling clamav services... ===<"
-  - systemctl enable clamav-daemon
-  - systemctl enable clamav-clamonacc
-  - systemctl enable clamav-clamdscan.timer
-  - systemctl enable clamav-freshclam
 
 final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 
