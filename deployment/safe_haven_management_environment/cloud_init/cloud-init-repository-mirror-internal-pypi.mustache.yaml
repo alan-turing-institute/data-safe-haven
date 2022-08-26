@@ -224,6 +224,20 @@ runcmd:
   - sleep 20
   - systemctl status auditd
 
+  # Configure ClamAV
+  - echo ">=== Configure ClamAV... ===<"
+  # Allow unlimited recursion when scanning
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  # Enable ClamAV daemon
+  - systemctl enable clamav-daemon
+  # Enable ClamAV scan on access
+  - systemctl enable clamav-clamonacc
+  # Enable ClamAV daily scan
+  - systemctl enable clamav-clamdscan.timer
+  # Disable ClamAV scan on boot which conflicts with the cronjob
+  - systemctl stop clamav-freshclam
+  - systemctl disable clamav-freshclam
+
   # Show authorised SSH keys
   - echo ">=== Authorised SSH keys... ===<"
   - cat ~mirrordaemon/.ssh/authorized_keys
