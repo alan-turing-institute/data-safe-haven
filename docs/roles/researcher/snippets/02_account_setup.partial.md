@@ -118,7 +118,7 @@ Please follow these steps carefully.
 
   The first time you log in you need to click **"Forgotten my password"**.
 
-  ```{image} user_guide/forgotten_password.png
+  ```{image} user_guide/account_setup_forgotten_password.png
   :alt: Forgotten my password
   :align: center
   ```
@@ -129,14 +129,14 @@ Please follow these steps carefully.
 
 - Fill out the requested CAPTCHA (your username should be pre-filled).
 
-  ```{image} user_guide/captcha.png
+  ```{image} user_guide/account_setup_captcha.png
   :alt: CAPTCHA
   :align: center
   ```
 
 - Confirm your phone number, which you provided to the {ref}`System Manager <role_system_manager>` when you registered for access to the environment.
 
-  ```{image} user_guide/verify_phone.png
+  ```{image} user_guide/account_setup_verify_phone.png
   :alt: Verify phone number
   :align: center
   ```
@@ -171,21 +171,21 @@ Please follow these steps carefully.
 
 - Enter your password into the `Enter new password` and `Confirm new password` fields.
 
-  ```{image} user_guide/new_password.png
+  ```{image} user_guide/account_setup_new_password.png
   :alt: New password
   :align: center
   ```
 
 - Then continue to the next step
 
-  ```{image} user_guide/new_password_sign_in.png
+  ```{image} user_guide/account_setup_new_password_sign_in.png
   :alt: Click to continue
   :align: center
   ```
 
 - Log into your account when prompted and at this point you will be asked for additional security verification.
 
-  ```{image} user_guide/more_information_required.png
+  ```{image} user_guide/account_setup_more_information_required.png
   :alt: Click to continue
   :align: center
   ```
@@ -200,14 +200,14 @@ This is known as multi-factor authentication (MFA).
 
 - In order to set up MFA you will need to enter your phone number
 
-  ```{image} user_guide/additional_security_verification.png
+  ```{image} user_guide/account_setup_mfa_additional_security_verification.png
   :alt: Additional security verification
   :align: center
   ```
 
 - Once you click next you will receive a phone call straight away.
 
-  ```{image} user_guide/verifying_phone.png
+  ```{image} user_guide/account_setup_mfa_verifying_phone.png
   :alt: Verifying phone number
   :align: center
   ```
@@ -218,21 +218,21 @@ This is known as multi-factor authentication (MFA).
 
 - After following the instructions you will see the following screen
 
-  ```{image} user_guide/verified_phone.png
+  ```{image} user_guide/account_setup_mfa_verified_phone.png
   :alt: Verified phone number
   :align: center
   ```
 
 - Click `Next` to register this phone number for MFA
 
-  ```{image} user_guide/registered_phone.png
+  ```{image} user_guide/account_setup_mfa_registered_phone.png
   :alt: Registered phone number
   :align: center
   ```
 
 - You should now see the Security Information dashboard that lists all your verified MFA methods
 
-  ```{image} user_guide/mfa_dashboard_phone_only.png
+  ```{image} user_guide/account_setup_mfa_dashboard_phone_only.png
   :alt: Registered phone number
   :align: center
   ```
@@ -241,14 +241,14 @@ This is known as multi-factor authentication (MFA).
 
 - If you want to use the Microsoft Authenticator app for MFA (which will work if you have wifi but no phone signal) then click on `+ Add sign-in method` and select `Authenticator app`
 
-  ```{image} user_guide/add_authenticator_app.png
+  ```{image} user_guide/account_setup_mfa_add_authenticator_app.png
   :alt: Add Authenticator app
   :align: center
   ```
 
 - This will prompt you to download the `Microsoft Authenticator` phone app.
 
-  ```{image} user_guide/download_authenticator_app.png
+  ```{image} user_guide/account_setup_mfa_download_authenticator_app.png
   :alt: Add Authenticator app
   :align: center
   ```
@@ -263,7 +263,7 @@ This is known as multi-factor authentication (MFA).
   - Select `Add an account`
   - Select `Work or School account`
 
-  ```{image} user_guide/allow_notifications.png
+  ```{image} user_guide/account_setup_mfa_allow_notifications.png
   :alt: Allow Authenticator notifications
   :align: center
   ```
@@ -275,28 +275,28 @@ This is known as multi-factor authentication (MFA).
 - The next prompt will give you a QR code to scan, like the one shown below
   - Scan the QR code on the screen
 
-  ```{image} user_guide/app_qrcode.png
+  ```{image} user_guide/account_setup_mfa_app_qrcode.png
   :alt: Setup Authenticator app
   :align: center
   ```
 
 - Once this is completed, Microsoft will send you a test notification to respond to
 
-  ```{image} user_guide/authenticator_app_test.png
+  ```{image} user_guide/account_setup_mfa_authenticator_app_test.png
   :alt: Authenticator app test notification
   :align: center
   ```
 
 - When you click `Approve` on the phone notification, you will get the following message in your browser
 
-  ```{image} user_guide/authenticator_app_approved.png
+  ```{image} user_guide/account_setup_mfa_authenticator_app_approved.png
   :alt: Authenticator app test approved
   :align: center
   ```
 
 - You should now be returned to the Security Information dashboard that lists two verified MFA methods
 
-  ```{image} user_guide/mfa_dashboard_two_methods.png
+  ```{image} user_guide/account_setup_mfa_dashboard_two_methods.png
   :alt: Registered MFA methods
   :align: center
   ```
