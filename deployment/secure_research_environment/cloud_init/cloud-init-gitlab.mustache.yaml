@@ -40,6 +40,21 @@ write_files:
       EOS
       git_data_dirs({ "default" => { "path" => "/data" } })
 
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
+
   - path: "/opt/configuration/set_dns.sh"
     permissions: "0500"
     content: |

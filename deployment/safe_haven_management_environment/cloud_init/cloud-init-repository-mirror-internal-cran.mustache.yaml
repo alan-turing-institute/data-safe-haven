@@ -38,6 +38,21 @@ write_files:
     content: |
       Acquire::http::Proxy "http://{{monitoring.updateServers.linux.ip}}:8000";
 
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
+
   - path: /var/local/cran-mirror-apache.conf
     permissions: "0644"
     content: |

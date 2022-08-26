@@ -31,6 +31,21 @@ write_files:
           options(repos = r)
       })
 
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
+
   - path: "/etc/systemd/system/ingress.mount"
     permissions: "0644"
     content: |

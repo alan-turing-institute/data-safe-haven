@@ -26,6 +26,21 @@ write_files:
     content: |
       {{nexus_nginx.mustache.conf}}
 
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
+
   - path: "/usr/local/bin/configure-nexus"
     permissions: "0755"
     content: |

@@ -59,6 +59,21 @@ write_files:
       # Run both jobs on every reboot
       @reboot mirrordaemon ~mirrordaemon/pull_then_push.sh
 
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
+
   - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
     permissions: "0600"
 

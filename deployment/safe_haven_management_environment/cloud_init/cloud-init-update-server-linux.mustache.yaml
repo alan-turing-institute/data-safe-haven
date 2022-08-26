@@ -1,6 +1,21 @@
 #cloud-config
 
 write_files:
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
+
   - path: "/etc/squid-deb-proxy/mirror-dstdomain.acl.d/20-data-safe-haven"
     content: |
       # Additional mirror domains that are allowed by this cache

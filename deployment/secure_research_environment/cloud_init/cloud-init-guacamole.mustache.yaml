@@ -17,6 +17,21 @@ write_files:
       # Run user synchronisation every 10 minutes
       */10 * * * * root /opt/pg-ldap-sync/synchronise_database.sh
 
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
+
   - path: "/opt/guacamole/docker-compose.yaml"
     permissions: "0400"
     content: |
