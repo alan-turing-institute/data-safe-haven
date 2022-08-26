@@ -159,8 +159,9 @@ function Deploy-LinuxVirtualMachine {
             $vmConfig = Set-AzVMSourceImage -VM $vmConfig -Id $ImageId
         } elseif ($ImageSku) {
             if ($ImageSku -eq "Ubuntu-22.04") {
+                # Note that we cannot move 'Ubuntu-latest' to 22.04 until migrating to Azure Monitor Agent https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration
+                Add-LogMessage -Level Warning "Note that Ubuntu 22.04 is not supported by the Azure Log Analytics Agent used to manage automatic updates. Please consider using Ubuntu 20.04."
                 $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer 0001-com-ubuntu-server-jammy -Skus "22_04-LTS" -Version "latest"
-            # Note that we cannot move 'Ubuntu-latest' to 22.04 until migrating to Azure Monitor Agent https://docs.microsoft.com/en-us/azure/azure-monitor/agents/azure-monitor-agent-migration
             } elseif (($ImageSku -eq "Ubuntu-20.04") -or ($ImageSku -eq "Ubuntu-latest")) {
                 $vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName Canonical -Offer 0001-com-ubuntu-server-focal -Skus "20_04-LTS" -Version "latest"
             } elseif ($ImageSku -eq "Ubuntu-18.04") {
