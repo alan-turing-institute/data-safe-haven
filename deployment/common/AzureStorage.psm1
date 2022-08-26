@@ -5,13 +5,13 @@ Import-Module $PSScriptRoot/AzureNetwork -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 
-# Create storage container if it does not exist
-# ---------------------------------------------
+# Clear contents of storage container if it exists
+# ------------------------------------------------
 function Clear-StorageContainer {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container to deploy")]
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container")]
         [string]$Name,
-        [Parameter(Mandatory = $true, HelpMessage = "Storage account to deploy into")]
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account container belongs to")]
         [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
     )
     Add-LogMessage -Level Info "Clearing contents of storage container '$Name'..."
