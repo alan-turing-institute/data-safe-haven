@@ -157,6 +157,11 @@ write_files:
 packages:
   - adcli
   - auditd
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - gcc
   - krb5-user
   - ldap-utils

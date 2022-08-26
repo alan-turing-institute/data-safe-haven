@@ -21,6 +21,11 @@ apt:
 
 # List of packages to install with apt-get
 packages:
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - openssh-server
   - python3-pip
   - python3-venv

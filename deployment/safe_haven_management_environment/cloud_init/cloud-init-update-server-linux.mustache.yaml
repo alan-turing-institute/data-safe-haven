@@ -27,6 +27,11 @@ ntp:
 
 # Install necessary apt packages
 packages:
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - squid-deb-proxy
 package_update: true
 package_upgrade: true

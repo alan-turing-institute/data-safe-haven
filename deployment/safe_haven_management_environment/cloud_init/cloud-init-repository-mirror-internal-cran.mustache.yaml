@@ -21,9 +21,14 @@ apt:
 
 # List of packages to install with apt-get
 packages:
+  - apache2
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - openssh-server
   - rsync
-  - apache2
 package_update: true
 package_upgrade: true
 

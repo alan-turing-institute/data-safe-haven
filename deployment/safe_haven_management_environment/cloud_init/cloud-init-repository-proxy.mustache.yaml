@@ -55,6 +55,11 @@ apt:
 
 # Install necessary apt packages
 packages:
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - docker.io
   - docker-compose
   - python3-requests

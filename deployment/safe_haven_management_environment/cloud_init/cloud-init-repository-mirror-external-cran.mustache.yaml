@@ -21,6 +21,11 @@ apt:
 
 # List of packages to install with apt-get
 packages:
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - openssh-server
   - rsync
 package_update: true

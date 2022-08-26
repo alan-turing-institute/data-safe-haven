@@ -116,6 +116,11 @@ apt:
 packages:
   - auditd
   - blobfuse
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - docker.io
   - docker-compose
 package_update: true

@@ -72,6 +72,11 @@ apt:
 # Install necessary apt packages
 packages:
   - auditd
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - docker.io
   - docker-compose
   - gcc

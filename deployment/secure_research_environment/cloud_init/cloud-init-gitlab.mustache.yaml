@@ -71,6 +71,11 @@ packages:
   - apt-transport-https
   - auditd
   - ca-certificates
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
   - curl
   - gitlab-ce
   - gnupg
