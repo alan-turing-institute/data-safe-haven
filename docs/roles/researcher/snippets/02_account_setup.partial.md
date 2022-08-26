@@ -194,21 +194,18 @@ Please follow these steps carefully.
 
 The next step in setting up your account is to authenticate your account from your phone.
 This additional security verification is to make it harder for people to impersonate you and connect to the environment without permission.
+This is known as multi-factor authentication (MFA).
 
-- Choose how you would like to be contacted for the additional security verification.
+#### {{telephone_receiver}} Phone number registration
+
+- In order to set up MFA you will need to enter your phone number
 
   ```{image} user_guide/additional_security_verification.png
   :alt: Additional security verification
   :align: center
   ```
 
-  Follow the steps for {ref}`phone verification <user_guide_mfa_phone_option>` or {ref}`app verification <user_guide_mfa_app_option>` depending on which you selected
-
-(user_guide_mfa_phone_option)=
-
-- {{telephone_receiver}} **Phone option**:
-
-  If you choose to set up the authentication by phone call you will receive a call straight away.
+- Once you click next you will receive a phone call straight away.
 
   ```{image} user_guide/verifying_phone.png
   :alt: Verifying phone number
@@ -219,61 +216,94 @@ This additional security verification is to make it harder for people to imperso
   The call might say _press the pound key_ or _press the hash key_ both mean hit the `#` button.
   ```
 
+- After following the instructions you will see the following screen
+
   ```{image} user_guide/verified_phone.png
   :alt: Verified phone number
   :align: center
   ```
 
-  Click `Close` to return to the MFA dashboard.
+- Click `Next` to register this phone number for MFA
 
-(user_guide_mfa_app_option)=
+  ```{image} user_guide/registered_phone.png
+  :alt: Registered phone number
+  :align: center
+  ```
 
-- {{iphone}} **App option**:
+- You should now see the Security Information dashboard that lists all your verified MFA methods
 
-  Select the `Receive notifications for verification` radio button.
+  ```{image} user_guide/mfa_dashboard_phone_only.png
+  :alt: Registered phone number
+  :align: center
+  ```
 
-  Click `Set up` .
+#### {{iphone}} Authenticator app registration
 
-  Download the `Microsoft Authenticator` phone app via one of these links:
+- If you want to use the Microsoft Authenticator app for MFA (which will work if you have wifi but no phone signal) then click on `+ Add sign-in method` and select `Authenticator app`
 
+  ```{image} user_guide/add_authenticator_app.png
+  :alt: Add Authenticator app
+  :align: center
+  ```
+
+- This will prompt you to download the `Microsoft Authenticator` phone app.
+
+  ```{image} user_guide/download_authenticator_app.png
+  :alt: Add Authenticator app
+  :align: center
+  ```
+
+- You can click on the link in the prompt or follow the appropriate link for your phone here:
   - {{apple}} iOS: `https://bit.ly/iosauthenticator`
   - {{robot}} Android: `https://bit.ly/androidauthenticator`
   - {{bento_box}} Windows mobile: `https://bit.ly/windowsauthenticator`
+
+- You will now be prompted to open the app and:
+  - To allow notifications
+  - Select `Add an account`
+  - Select `Work or School account`
+
+  ```{image} user_guide/allow_notifications.png
+  :alt: Allow Authenticator notifications
+  :align: center
+  ```
 
   ```{important}
   You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
   ```
 
-  Open the `Microsoft Authenticator` app on your phone:
-
-  - Select `Add an account`
-  - Select `Work or School account`
+- The next prompt will give you a QR code to scan, like the one shown below
   - Scan the QR code on the screen
 
   ```{image} user_guide/app_qrcode.png
-  :alt: Setup MFA app
+  :alt: Setup Authenticator app
   :align: center
   ```
 
-  - Click `Next` to start verification. You will get a notification in your app that you have to respond to.
+- Once this is completed, Microsoft will send you a test notification to respond to
 
-  ```{image} user_guide/verified_app.png
-  :alt: Verified app
+  ```{image} user_guide/authenticator_app_test.png
+  :alt: Authenticator app test notification
   :align: center
   ```
 
-- Check that your MFA is completed.
+- When you click `Approve` on the phone notification, you will get the following message in your browser
 
-  ```{caution}
-  Confusingly the "save" button cannot be clicked, but if your phone or app appears on this screen you **are** set up for MFA.
-  ```
-
-  ```{image} user_guide/finalise_mfa.png
-  :alt: Finalise MFA setup
+  ```{image} user_guide/authenticator_app_approved.png
+  :alt: Authenticator app test approved
   :align: center
   ```
 
-  Close the browser once MFA is confirmed.
+- You should now be returned to the Security Information dashboard that lists two verified MFA methods
+
+  ```{image} user_guide/mfa_dashboard_two_methods.png
+  :alt: Registered MFA methods
+  :align: center
+  ```
+
+- Choose whichever you prefer to be your `Default sign-in methods`.
+
+- You have now finished setting up MFA and you can close your browser
 
 #### Troubleshooting MFA
 
