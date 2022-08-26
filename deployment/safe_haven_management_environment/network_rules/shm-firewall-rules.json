@@ -888,7 +888,6 @@
                             "archive.ubuntu.com",
                             "azure.archive.ubuntu.com",
                             "changelogs.ubuntu.com",
-                            "database.clamav.net",
                             "dbeaver.io",
                             "developer.download.nvidia.com",
                             "packagecloud.io",
@@ -896,6 +895,21 @@
                             "qgis.org",
                             "security.ubuntu.com",
                             "ubuntu.qgis.org"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalLinuxClamAVUpdate",
+                        "protocols": [
+                            "HTTP:80",
+                            "HTTPS:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "current.cvd.clamav.net",
+                            "database.clamav.net"
                         ],
                         "sourceAddresses": [
                             "*"

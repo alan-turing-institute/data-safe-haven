@@ -112,6 +112,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowExternalClamAVOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to external ClamAV servers",
+        "destinationAddressPrefix": ["104.16.218.84", "104.16.219.84"],
+        "destinationPortRange": ["53", "443"],
+        "direction": "Outbound",
+        "priority": 3300,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowWindowsUpdatesOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to Windows update servers",
