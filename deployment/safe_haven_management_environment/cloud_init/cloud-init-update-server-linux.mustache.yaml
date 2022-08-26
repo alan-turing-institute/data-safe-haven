@@ -1,6 +1,12 @@
 #cloud-config
 
 write_files:
+  - path: "/etc/clamav/clamd.conf"
+    permissions: "0644"
+    append: true
+    content: |
+      {{clamd.conf}}
+
   - path: "/etc/systemd/system/clamav-clamonacc.service"
     permissions: "0644"
     content: |
