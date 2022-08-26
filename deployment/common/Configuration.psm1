@@ -357,6 +357,7 @@ function Get-ShmConfig {
                     minute = "01"
                 }
                 weekly_system_updates    = [ordered]@{
+                    day    = "Tuesday"
                     hour   = "02"
                     minute = "02"
                 }

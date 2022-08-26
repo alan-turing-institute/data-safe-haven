@@ -635,6 +635,7 @@
           "minute": "01"
         },
         "weekly_system_updates": {
+          "day": "Tuesday",
           "hour": "02",
           "minute": "02"
         }

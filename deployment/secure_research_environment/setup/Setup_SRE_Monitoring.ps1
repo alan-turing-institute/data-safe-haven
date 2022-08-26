@@ -82,7 +82,7 @@ $null = Register-VmsWithAutomationSchedule -Account $account `
 $windowsWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                          -DayInterval 7 `
                                                          -Name "sre-$($config.sre.id)-windows-other".ToLower() `
-                                                         -StartDayOfWeek "Tuesday" `
+                                                         -StartDayOfWeek $config.shm.monitoring.schedule.weekly_system_updates.day `
                                                          -Time "$($config.shm.monitoring.schedule.weekly_system_updates.hour):$($config.shm.monitoring.schedule.weekly_system_updates.minute)" `
                                                          -TimeZone $localTimeZone
 $null = Register-VmsWithAutomationSchedule -Account $account `
@@ -95,7 +95,7 @@ $null = Register-VmsWithAutomationSchedule -Account $account `
 $linuxWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                        -DayInterval 7 `
                                                        -Name "sre-$($config.sre.id)-linux".ToLower() `
-                                                       -StartDayOfWeek "Tuesday" `
+                                                       -StartDayOfWeek $config.shm.monitoring.schedule.weekly_system_updates.day `
                                                        -Time "$($config.shm.monitoring.schedule.weekly_system_updates.hour):$($config.shm.monitoring.schedule.weekly_system_updates.minute)" `
                                                        -TimeZone $localTimeZone
 $null = Register-VmsWithAutomationSchedule -Account $account `
