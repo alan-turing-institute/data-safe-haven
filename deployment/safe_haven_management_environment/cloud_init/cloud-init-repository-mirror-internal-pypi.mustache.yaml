@@ -50,7 +50,7 @@ write_files:
     content: |
       {{clamd.conf}}
 
-  - path: "/etc/cron.d/clamav-update"
+  - path: "/etc/cron.d/clamav-freshclam"
     permissions: "0644"
     content: |
       # Run every day at a fixed time
@@ -234,7 +234,7 @@ runcmd:
   - systemctl enable clamav-clamonacc
   # Enable ClamAV daily scan
   - systemctl enable clamav-clamdscan.timer
-  # Disable ClamAV scan on boot which conflicts with the cronjob
+  # Disable ClamAV database update on boot
   - systemctl stop clamav-freshclam
   - systemctl disable clamav-freshclam
 
