@@ -18,6 +18,12 @@ write_files:
     content: |
       {{clamd.conf}}
 
+  - path: "/etc/cron.d/clamav-update"
+    permissions: "0644"
+    content: |
+      # Run every day at 01:01
+      01 01 * * * freshclam
+
   - path: "/etc/systemd/system/clamav-clamonacc.service"
     permissions: "0644"
     content: |
