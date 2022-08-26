@@ -784,7 +784,7 @@
         "proxies": {
           "many": {
             "adminPasswordSecretName": "shm-testa-vm-admin-password-many-repository-proxy-tier-2",
-            "applicationAdminPasswordSecretName": "application-admin-password-shm-testa-many-repository-proxy-tier-2",
+            "applicationAdminPasswordSecretName": "shm-testa-application-admin-password-many-repository-proxy-tier-2",
             "disks": {
               "os": {
                 "sizeGb": 32,
@@ -801,7 +801,7 @@
         "proxies": {
           "many": {
             "adminPasswordSecretName": "shm-testa-vm-admin-password-many-repository-proxy-tier-3",
-            "applicationAdminPasswordSecretName": "application-admin-password-shm-testa-many-repository-proxy-tier-3",
+            "applicationAdminPasswordSecretName": "shm-testa-application-admin-password-many-repository-proxy-tier-3",
             "disks": {
               "os": {
                 "sizeGb": 32,

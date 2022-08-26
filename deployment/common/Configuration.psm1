@@ -560,7 +560,7 @@ function Get-ShmConfig {
                     }
                 }
                 if ($LocalRepositoryType -eq "proxies") {
-                    $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository]["applicationAdminPasswordSecretName"] = "application-admin-password-${vmName}".ToLower()
+                    $shm.repositories["tier${tier}"][$LocalRepositoryType][$RemoteRepository]["applicationAdminPasswordSecretName"] = "shm-$($shm.id)-application-admin-password-${RemoteRepository}-repository-${LocalRepositoryShort}-tier-${tier}".ToLower()
                 }
             }
         }
