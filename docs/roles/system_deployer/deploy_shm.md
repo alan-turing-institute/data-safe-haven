@@ -89,7 +89,7 @@ The following core SHM properties are required - look in the `environment_config
   "timezone": "[Optional] Timezone in IANA format (e.g. 'Europe/London').",
   "azure": {
     "adminGroupName": "Azure Security Group that admins of this Safe Haven will belong to.",
-    "activeDirectoryTenantId": "Tenant ID for the Azure Active Directory containing users (see below for details on how to obtain this",
+    "activeDirectoryTenantId": "Tenant ID for the Azure Active Directory containing users (see below for details on how to obtain this).",
     "location": "Azure location to deploy the management environment into (e.g. 'uksouth').",
     "subscriptionName": "Azure subscription to deploy the management environment into."
   },
