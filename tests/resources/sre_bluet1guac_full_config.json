@@ -1,6 +1,7 @@
 {
   "shm": {
     "azureAdminGroupName": "Safe Haven Test Admins",
+    "azureAdTenantId": "1d93a235-0c16-4f39-adff-a550719bdb49",
     "dc": {
       "adDirectory": "C:\\ActiveDirectory",
       "disks": {
@@ -10,22 +11,22 @@
         }
       },
       "external_dns_resolver": "168.63.129.16",
-      "fqdn": "DC1-SHM-TESTB.testb.dsgroupdev.co.uk",
-      "hostname": "DC1-SHM-TESTB",
-      "hostnameLower": "dc1-shm-testb",
-      "hostnameUpper": "DC1-SHM-TESTB",
+      "fqdn": "DC1-SHM-BLUE.blue.develop.turingsafehaven.ac.uk",
+      "hostname": "DC1-SHM-BLUE",
+      "hostnameLower": "dc1-shm-blue",
+      "hostnameUpper": "DC1-SHM-BLUE",
       "installationDirectory": "C:\\Installation",
       "ip": "10.0.0.4",
-      "rg": "RG_SHM_TESTB_DC",
-      "safemodePasswordSecretName": "shm-testb-vm-safemode-password-dc",
-      "vmName": "DC1-SHM-TESTB",
+      "rg": "RG_SHM_BLUE_DC",
+      "safemodePasswordSecretName": "shm-blue-vm-safemode-password-dc",
+      "vmName": "DC1-SHM-BLUE",
       "vmSize": "Standard_D2s_v3"
     },
     "dcb": {
-      "fqdn": "DC2-SHM-TESTB.testb.dsgroupdev.co.uk",
-      "hostname": "DC2-SHM-TESTB",
+      "fqdn": "DC2-SHM-BLUE.blue.develop.turingsafehaven.ac.uk",
+      "hostname": "DC2-SHM-BLUE",
       "ip": "10.0.0.5",
-      "vmName": "DC2-SHM-TESTB"
+      "vmName": "DC2-SHM-BLUE"
     },
     "diskTypeDefault": "Standard_LRS",
     "dns": {
@@ -33,43 +34,43 @@
       "subscriptionName": "[Prod] Safe Haven Domains"
     },
     "domain": {
-      "dn": "DC=testb,DC=dsgroupdev,DC=co,DC=uk",
-      "fqdn": "testb.dsgroupdev.co.uk",
-      "fqdnLower": "testb.dsgroupdev.co.uk",
-      "fqdnUpper": "TESTB.DSGROUPDEV.CO.UK",
-      "netbiosName": "TESTB",
+      "dn": "DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk",
+      "fqdn": "blue.develop.turingsafehaven.ac.uk",
+      "fqdnLower": "blue.develop.turingsafehaven.ac.uk",
+      "fqdnUpper": "BLUE.DEVELOP.TURINGSAFEHAVEN.AC.UK",
+      "netbiosName": "BLUE",
       "ous": {
         "databaseServers": {
           "name": "Secure Research Environment Database Servers",
-          "path": "OU=Secure Research Environment Database Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+          "path": "OU=Secure Research Environment Database Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
         },
         "identityServers": {
           "name": "Safe Haven Identity Servers",
-          "path": "OU=Safe Haven Identity Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+          "path": "OU=Safe Haven Identity Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
         },
         "linuxServers": {
           "name": "Secure Research Environment Linux Servers",
-          "path": "OU=Secure Research Environment Linux Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+          "path": "OU=Secure Research Environment Linux Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
         },
         "rdsGatewayServers": {
           "name": "Secure Research Environment RDS Gateway Servers",
-          "path": "OU=Secure Research Environment RDS Gateway Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+          "path": "OU=Secure Research Environment RDS Gateway Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
         },
         "rdsSessionServers": {
           "name": "Secure Research Environment RDS Session Servers",
-          "path": "OU=Secure Research Environment RDS Session Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+          "path": "OU=Secure Research Environment RDS Session Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
         },
         "researchUsers": {
           "name": "Safe Haven Research Users",
-          "path": "OU=Safe Haven Research Users,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+          "path": "OU=Safe Haven Research Users,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
         },
         "securityGroups": {
           "name": "Safe Haven Security Groups",
-          "path": "OU=Safe Haven Security Groups,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+          "path": "OU=Safe Haven Security Groups,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
         },
         "serviceAccounts": {
           "name": "Safe Haven Service Accounts",
-          "path": "OU=Safe Haven Service Accounts,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+          "path": "OU=Safe Haven Service Accounts,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
         }
       },
       "securityGroups": {
@@ -84,40 +85,40 @@
       }
     },
     "firewall": {
-      "name": "FIREWALL-SHM-TESTB",
-      "routeTableName": "ROUTE-TABLE-SHM-TESTB"
+      "name": "FIREWALL-SHM-BLUE",
+      "routeTableName": "ROUTE-TABLE-SHM-BLUE"
     },
-    "id": "testb",
+    "id": "blue",
     "keyVault": {
-      "name": "kv-shm-testb",
-      "rg": "RG_SHM_TESTB_SECRETS",
+      "name": "kv-shm-blue",
+      "rg": "RG_SHM_BLUE_SECRETS",
       "secretNames": {
-        "aadEmergencyAdminPassword": "shm-testb-aad-emergency-admin-password",
-        "aadEmergencyAdminUsername": "shm-testb-aad-emergency-admin-username",
-        "buildImageAdminPassword": "shm-testb-buildimage-admin-password",
-        "buildImageAdminUsername": "shm-testb-buildimage-admin-username",
-        "domainAdminPassword": "shm-testb-domain-admin-password",
-        "domainAdminUsername": "shm-testb-domain-admin-username",
-        "vmAdminUsername": "shm-testb-vm-admin-username",
-        "vpnCaCertificate": "shm-testb-vpn-ca-cert",
-        "vpnCaCertificatePlain": "shm-testb-vpn-ca-cert-plain",
-        "vpnCaCertPassword": "shm-testb-vpn-ca-cert-password",
-        "vpnClientCertificate": "shm-testb-vpn-client-cert",
-        "vpnClientCertPassword": "shm-testb-vpn-client-cert-password"
+        "aadEmergencyAdminPassword": "shm-blue-aad-emergency-admin-password",
+        "aadEmergencyAdminUsername": "shm-blue-aad-emergency-admin-username",
+        "buildImageAdminPassword": "shm-blue-buildimage-admin-password",
+        "buildImageAdminUsername": "shm-blue-buildimage-admin-username",
+        "domainAdminPassword": "shm-blue-domain-admin-password",
+        "domainAdminUsername": "shm-blue-domain-admin-username",
+        "vmAdminUsername": "shm-blue-vm-admin-username",
+        "vpnCaCertificate": "shm-blue-vpn-ca-cert",
+        "vpnCaCertificatePlain": "shm-blue-vpn-ca-cert-plain",
+        "vpnCaCertPassword": "shm-blue-vpn-ca-cert-password",
+        "vpnClientCertificate": "shm-blue-vpn-client-cert",
+        "vpnClientCertPassword": "shm-blue-vpn-client-cert-password"
       }
     },
     "location": "uksouth",
     "monitoring": {
       "automationAccount": {
-        "name": "shm-testb-automation"
+        "name": "shm-blue-automation"
       },
       "loggingWorkspace": {
-        "name": "shm-testb-loganalytics"
+        "name": "shm-blue-loganalytics"
       },
       "privatelink": {
-        "name": "shm-testb-privatelinkscope"
+        "name": "shm-blue-privatelinkscope"
       },
-      "rg": "RG_SHM_TESTB_MONITORING",
+      "rg": "RG_SHM_BLUE_MONITORING",
       "updateServers": {
         "externalIpAddresses": {
           "azureAutomation": [
@@ -618,16 +619,16 @@
           ]
         },
         "linux": {
-          "adminPasswordSecretName": "shm-testb-vm-admin-password-linux-update-server",
+          "adminPasswordSecretName": "shm-blue-vm-admin-password-linux-update-server",
           "disks": {
             "os": {
               "sizeGb": "32",
               "type": "Standard_LRS"
             }
           },
-          "hostname": "LINUX-UPDATES-SHM-TESTB",
+          "hostname": "LINUX-UPDATES-SHM-BLUE",
           "ip": "10.0.3.4",
-          "vmName": "LINUX-UPDATES-SHM-TESTB",
+          "vmName": "LINUX-UPDATES-SHM-BLUE",
           "vmSize": "Standard_B2ms"
         },
         "schedule": {
@@ -643,12 +644,12 @@
         }
       }
     },
-    "name": "Turing Development Safe Haven B",
+    "name": "Turing Data Safe Haven (Blue)",
     "network": {
       "vnet": {
         "cidr": "10.0.0.0/21",
-        "name": "VNET_SHM_TESTB",
-        "rg": "RG_SHM_TESTB_NETWORKING",
+        "name": "VNET_SHM_BLUE",
+        "rg": "RG_SHM_BLUE_NETWORKING",
         "subnets": {
           "firewall": {
             "cidr": "10.0.2.0/24",
@@ -662,7 +663,7 @@
             "cidr": "10.0.0.0/24",
             "name": "IdentitySubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_IDENTITY",
+              "name": "NSG_SHM_BLUE_IDENTITY",
               "rules": "shm-nsg-rules-identity.json"
             }
           },
@@ -670,7 +671,7 @@
             "cidr": "10.0.1.0/24",
             "name": "MonitoringSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_MONITORING",
+              "name": "NSG_SHM_BLUE_MONITORING",
               "rules": "shm-nsg-rules-monitoring.json"
             }
           },
@@ -678,7 +679,7 @@
             "cidr": "10.0.3.0/24",
             "name": "UpdateServersSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_UPDATE_SERVERS",
+              "name": "NSG_SHM_BLUE_UPDATE_SERVERS",
               "rules": "shm-nsg-rules-update-servers.json"
             }
           }
@@ -686,14 +687,14 @@
       },
       "vnetRepositoriesTier2": {
         "cidr": "10.10.2.0/24",
-        "name": "VNET_SHM_TESTB_PACKAGE_REPOSITORIES_TIER_2",
-        "rg": "RG_SHM_TESTB_NETWORKING",
+        "name": "VNET_SHM_BLUE_PACKAGE_REPOSITORIES_TIER_2",
+        "rg": "RG_SHM_BLUE_NETWORKING",
         "subnets": {
           "deployment": {
             "cidr": "10.10.2.0/26",
             "name": "RepositoryDeploymentSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_REPOSITORY_DEPLOYMENT_TIER_2",
+              "name": "NSG_SHM_BLUE_REPOSITORY_DEPLOYMENT_TIER_2",
               "rules": "shm-nsg-rules-repository-deployment-tier2.json"
             }
           },
@@ -701,7 +702,7 @@
             "cidr": "10.10.2.64/26",
             "name": "RepositoryMirrorsExternalTier2Subnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_EXTERNAL_TIER2",
+              "name": "NSG_SHM_BLUE_REPOSITORY_MIRRORS_EXTERNAL_TIER2",
               "rules": "shm-nsg-rules-repository-mirrors-external-tier2.json"
             }
           },
@@ -709,7 +710,7 @@
             "cidr": "10.10.2.128/26",
             "name": "RepositoryMirrorsInternalTier2Subnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_INTERNAL_TIER2",
+              "name": "NSG_SHM_BLUE_REPOSITORY_MIRRORS_INTERNAL_TIER2",
               "rules": "shm-nsg-rules-repository-mirrors-internal-tier2.json"
             }
           },
@@ -717,7 +718,7 @@
             "cidr": "10.10.2.192/26",
             "name": "RepositoryProxiesTier2Subnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_REPOSITORY_PROXIES_TIER_2",
+              "name": "NSG_SHM_BLUE_REPOSITORY_PROXIES_TIER_2",
               "rules": "shm-nsg-rules-repository-proxies-tier2.json"
             }
           }
@@ -725,14 +726,14 @@
       },
       "vnetRepositoriesTier3": {
         "cidr": "10.10.3.0/24",
-        "name": "VNET_SHM_TESTB_PACKAGE_REPOSITORIES_TIER_3",
-        "rg": "RG_SHM_TESTB_NETWORKING",
+        "name": "VNET_SHM_BLUE_PACKAGE_REPOSITORIES_TIER_3",
+        "rg": "RG_SHM_BLUE_NETWORKING",
         "subnets": {
           "deployment": {
             "cidr": "10.10.3.0/26",
             "name": "RepositoryDeploymentSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_REPOSITORY_DEPLOYMENT_TIER_3",
+              "name": "NSG_SHM_BLUE_REPOSITORY_DEPLOYMENT_TIER_3",
               "rules": "shm-nsg-rules-repository-deployment-tier3.json"
             }
           },
@@ -740,7 +741,7 @@
             "cidr": "10.10.3.64/26",
             "name": "RepositoryMirrorsExternalTier3Subnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_EXTERNAL_TIER3",
+              "name": "NSG_SHM_BLUE_REPOSITORY_MIRRORS_EXTERNAL_TIER3",
               "rules": "shm-nsg-rules-repository-mirrors-external-tier3.json"
             }
           },
@@ -748,7 +749,7 @@
             "cidr": "10.10.3.128/26",
             "name": "RepositoryMirrorsInternalTier3Subnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_INTERNAL_TIER3",
+              "name": "NSG_SHM_BLUE_REPOSITORY_MIRRORS_INTERNAL_TIER3",
               "rules": "shm-nsg-rules-repository-mirrors-internal-tier3.json"
             }
           },
@@ -756,7 +757,7 @@
             "cidr": "10.10.3.192/26",
             "name": "RepositoryProxiesTier3Subnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_REPOSITORY_PROXIES_TIER_3",
+              "name": "NSG_SHM_BLUE_REPOSITORY_PROXIES_TIER_3",
               "rules": "shm-nsg-rules-repository-proxies-tier3.json"
             }
           }
@@ -767,21 +768,21 @@
       }
     },
     "nps": {
-      "adminPasswordSecretName": "shm-testb-vm-admin-password-nps",
+      "adminPasswordSecretName": "shm-blue-vm-admin-password-nps",
       "disks": {
         "os": {
           "sizeGb": "128",
           "type": "Standard_LRS"
         }
       },
-      "hostname": "NPS-SHM-TESTB",
+      "hostname": "NPS-SHM-BLUE",
       "installationDirectory": "C:\\Installation",
       "ip": "10.0.0.6",
-      "rg": "RG_SHM_TESTB_NPS",
-      "vmName": "NPS-SHM-TESTB",
+      "rg": "RG_SHM_BLUE_NPS",
+      "vmName": "NPS-SHM-BLUE",
       "vmSize": "Standard_D2s_v3"
     },
-    "nsgPrefix": "NSG_SHM_TESTB",
+    "nsgPrefix": "NSG_SHM_BLUE",
     "organisation": {
       "contactEmail": "safehavendevs@turing.ac.uk",
       "countryCode": "GB",
@@ -790,12 +791,12 @@
       "townCity": "London"
     },
     "repositories": {
-      "rg": "RG_SHM_TESTB_PACKAGE_REPOSITORIES",
+      "rg": "RG_SHM_BLUE_PACKAGE_REPOSITORIES",
       "tier2": {
         "proxies": {
           "many": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-many-repository-proxy-tier-2",
-            "applicationAdminPasswordSecretName": "shm-testb-application-admin-password-many-repository-proxy-tier-2",
+            "adminPasswordSecretName": "shm-blue-vm-admin-password-many-repository-proxy-tier-2",
+            "applicationAdminPasswordSecretName": "shm-blue-application-admin-password-many-repository-proxy-tier-2",
             "disks": {
               "os": {
                 "sizeGb": 32,
@@ -803,7 +804,7 @@
               }
             },
             "ipAddress": "10.10.2.198",
-            "vmName": "SHM-TESTB-MANY-REPOSITORY-PROXY-TIER-2",
+            "vmName": "SHM-BLUE-MANY-REPOSITORY-PROXY-TIER-2",
             "vmSize": "Standard_B2ms"
           }
         }
@@ -811,8 +812,8 @@
       "tier3": {
         "proxies": {
           "many": {
-            "adminPasswordSecretName": "shm-testb-vm-admin-password-many-repository-proxy-tier-3",
-            "applicationAdminPasswordSecretName": "shm-testb-application-admin-password-many-repository-proxy-tier-3",
+            "adminPasswordSecretName": "shm-blue-vm-admin-password-many-repository-proxy-tier-3",
+            "applicationAdminPasswordSecretName": "shm-blue-application-admin-password-many-repository-proxy-tier-3",
             "disks": {
               "os": {
                 "sizeGb": 32,
@@ -820,13 +821,13 @@
               }
             },
             "ipAddress": "10.10.3.198",
-            "vmName": "SHM-TESTB-MANY-REPOSITORY-PROXY-TIER-3",
+            "vmName": "SHM-BLUE-MANY-REPOSITORY-PROXY-TIER-3",
             "vmSize": "Standard_B2ms"
           }
         }
       }
     },
-    "rgPrefix": "RG_SHM_TESTB",
+    "rgPrefix": "RG_SHM_BLUE",
     "srdImage": {
       "bootdiagnostics": {
         "accountName": "vmimagesbootdiagcmtvwnes",
@@ -864,7 +865,7 @@
         "rg": "RG_VMIMAGES_STORAGE"
       },
       "keyVault": {
-        "name": "kv-shm-testb-images",
+        "name": "kv-shm-blue-images",
         "rg": "RG_VMIMAGES_SECRETS"
       },
       "location": "uksouth",
@@ -875,20 +876,20 @@
     },
     "storage": {
       "artifacts": {
-        "accountName": "shmtestbartifactsnaycqgw",
+        "accountName": "shmblueartifactsanoblwvs",
         "containers": {
           "shmArtifactsDC": "shm-artifacts-dc",
           "shmArtifactsNPS": "shm-artifacts-nps",
           "shmDesiredState": "shm-desired-state"
         },
-        "rg": "RG_SHM_TESTB_STORAGE"
+        "rg": "RG_SHM_BLUE_STORAGE"
       },
       "bootdiagnostics": {
-        "accountName": "shmtestbbootdiagsnaycqgw",
-        "rg": "RG_SHM_TESTB_STORAGE"
+        "accountName": "shmbluebootdiagsanoblwvs",
+        "rg": "RG_SHM_BLUE_STORAGE"
       },
       "persistentdata": {
-        "rg": "RG_SHM_TESTB_PERSISTENT_DATA"
+        "rg": "RG_SHM_BLUE_PERSISTENT_DATA"
       }
     },
     "storageTypeDefault": "Standard_GRS",
@@ -917,37 +918,37 @@
     "users": {
       "computerManagers": {
         "databaseServers": {
-          "name": "TESTB Database Servers Manager",
-          "passwordSecretName": "shm-testb-computer-manager-password-database-servers",
-          "samAccountName": "testbdatabasesrvrs"
+          "name": "BLUE Database Servers Manager",
+          "passwordSecretName": "shm-blue-computer-manager-password-database-servers",
+          "samAccountName": "bluedatabasesrvrs"
         },
         "identityServers": {
-          "name": "TESTB Identity Servers Manager",
-          "passwordSecretName": "shm-testb-computer-manager-password-identity-servers",
-          "samAccountName": "testbidentitysrvrs"
+          "name": "BLUE Identity Servers Manager",
+          "passwordSecretName": "shm-blue-computer-manager-password-identity-servers",
+          "samAccountName": "blueidentitysrvrs"
         },
         "linuxServers": {
-          "name": "TESTB Linux Servers Manager",
-          "passwordSecretName": "shm-testb-computer-manager-password-linux-servers",
-          "samAccountName": "testblinuxsrvrs"
+          "name": "BLUE Linux Servers Manager",
+          "passwordSecretName": "shm-blue-computer-manager-password-linux-servers",
+          "samAccountName": "bluelinuxsrvrs"
         },
         "rdsGatewayServers": {
-          "name": "TESTB RDS Gateway Manager",
-          "passwordSecretName": "shm-testb-computer-manager-password-rds-gateway-servers",
-          "samAccountName": "testbgatewaysrvrs"
+          "name": "BLUE RDS Gateway Manager",
+          "passwordSecretName": "shm-blue-computer-manager-password-rds-gateway-servers",
+          "samAccountName": "bluegatewaysrvrs"
         },
         "rdsSessionServers": {
-          "name": "TESTB RDS Session Servers Manager",
-          "passwordSecretName": "shm-testb-computer-manager-password-rds-session-servers",
-          "samAccountName": "testbsessionsrvrs"
+          "name": "BLUE RDS Session Servers Manager",
+          "passwordSecretName": "shm-blue-computer-manager-password-rds-session-servers",
+          "samAccountName": "bluesessionsrvrs"
         }
       },
       "serviceAccounts": {
         "aadLocalSync": {
-          "name": "TESTB Local AD Sync Administrator",
-          "passwordSecretName": "shm-testb-aad-localsync-password",
-          "samAccountName": "testblocaladsync",
-          "usernameSecretName": "shm-testb-aad-localsync-username"
+          "name": "BLUE Local AD Sync Administrator",
+          "passwordSecretName": "shm-blue-aad-localsync-password",
+          "samAccountName": "bluelocaladsync",
+          "usernameSecretName": "shm-blue-aad-localsync-username"
         }
       }
     },
@@ -962,16 +963,16 @@
       "disk": {
         "policy_name": "diskbackuppolicy"
       },
-      "rg": "RG_SHM_TESTB_SRE_T2GUAC_BACKUP",
+      "rg": "RG_SHM_BLUE_SRE_T1GUAC_BACKUP",
       "vault": {
-        "name": "bv-testb-sre-t2guac"
+        "name": "bv-blue-sre-t1guac"
       }
     },
     "databases": {
       "dbmssql": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-mssql",
-        "dbAdminPasswordSecretName": "sre-t2guac-db-admin-password-mssql",
-        "dbAdminUsernameSecretName": "sre-t2guac-db-admin-username-mssql",
+        "adminPasswordSecretName": "sre-t1guac-vm-admin-password-mssql",
+        "dbAdminPasswordSecretName": "sre-t1guac-db-admin-password-mssql",
+        "dbAdminUsernameSecretName": "sre-t1guac-db-admin-username-mssql",
         "disks": {
           "data": {
             "sizeGb": "1024",
@@ -983,18 +984,18 @@
           }
         },
         "enableSSIS": true,
-        "ip": "10.152.3.4",
+        "ip": "10.151.3.4",
         "port": "1433",
         "sku": "sqldev-gen2",
         "subnet": "databases",
         "type": "MSSQL",
-        "vmName": "MSSQL-T2GUAC",
+        "vmName": "MSSQL-T1GUAC",
         "vmSize": "Standard_DS2_v2"
       },
       "dbpostgresql": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-postgresql",
-        "dbAdminPasswordSecretName": "sre-t2guac-db-admin-password-postgresql",
-        "dbAdminUsernameSecretName": "sre-t2guac-db-admin-username-postgresql",
+        "adminPasswordSecretName": "sre-t1guac-vm-admin-password-postgresql",
+        "dbAdminPasswordSecretName": "sre-t1guac-db-admin-password-postgresql",
+        "dbAdminUsernameSecretName": "sre-t1guac-db-admin-username-postgresql",
         "disks": {
           "data": {
             "sizeGb": "1024",
@@ -1005,148 +1006,148 @@
             "type": "Standard_LRS"
           }
         },
-        "ip": "10.152.3.5",
+        "ip": "10.151.3.5",
         "port": "5432",
         "sku": "Ubuntu-latest",
         "subnet": "databases",
         "type": "PostgreSQL",
-        "vmName": "PSTGRS-T2GUAC",
+        "vmName": "PSTGRS-T1GUAC",
         "vmSize": "Standard_DS2_v2"
       },
-      "rg": "RG_SHM_TESTB_SRE_T2GUAC_DATABASES"
+      "rg": "RG_SHM_BLUE_SRE_T1GUAC_DATABASES"
     },
     "diskTypeDefault": "Standard_LRS",
     "domain": {
-      "dn": "DC=t2guac,DC=testb,DC=dsgroupdev,DC=co,DC=uk",
-      "fqdn": "t2guac.testb.dsgroupdev.co.uk",
-      "netbiosName": "T2GUAC",
+      "dn": "DC=t1guac,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk",
+      "fqdn": "t1guac.blue.develop.turingsafehaven.ac.uk",
+      "netbiosName": "T1GUAC",
       "securityGroups": {
         "dataAdministrators": {
-          "description": "SG T2GUAC Data Administrators",
-          "name": "SG T2GUAC Data Administrators"
+          "description": "SG T1GUAC Data Administrators",
+          "name": "SG T1GUAC Data Administrators"
         },
         "researchUsers": {
-          "description": "SG T2GUAC Research Users",
-          "name": "SG T2GUAC Research Users"
+          "description": "SG T1GUAC Research Users",
+          "name": "SG T1GUAC Research Users"
         },
         "systemAdministrators": {
-          "description": "SG T2GUAC System Administrators",
-          "name": "SG T2GUAC System Administrators"
+          "description": "SG T1GUAC System Administrators",
+          "name": "SG T1GUAC System Administrators"
         }
       }
     },
     "firewall": {
-      "routeTableName": "ROUTE-TABLE-SRE-T2GUAC"
+      "routeTableName": "ROUTE-TABLE-SRE-T1GUAC"
     },
-    "id": "t2guac",
+    "id": "t1guac",
     "keyVault": {
-      "name": "kv-testb-sre-t2guac",
-      "rg": "RG_SHM_TESTB_SRE_T2GUAC_SECRETS",
+      "name": "kv-blue-sre-t1guac",
+      "rg": "RG_SHM_BLUE_SRE_T1GUAC_SECRETS",
       "secretNames": {
-        "adminUsername": "sre-t2guac-vm-admin-username",
-        "letsEncryptCertificate": "sre-t2guac-lets-encrypt-certificate",
-        "npsSecret": "sre-t2guac-other-nps-secret"
+        "adminUsername": "sre-t1guac-vm-admin-username",
+        "letsEncryptCertificate": "sre-t1guac-lets-encrypt-certificate",
+        "npsSecret": "sre-t1guac-other-nps-secret"
       }
     },
     "location": "uksouth",
     "network": {
       "vnet": {
-        "cidr": "10.152.0.0/21",
-        "name": "VNET_SHM_TESTB_SRE_T2GUAC",
-        "rg": "RG_SHM_TESTB_SRE_T2GUAC_NETWORKING",
+        "cidr": "10.151.0.0/21",
+        "name": "VNET_SHM_BLUE_SRE_T1GUAC",
+        "rg": "RG_SHM_BLUE_SRE_T1GUAC_NETWORKING",
         "subnets": {
           "compute": {
-            "cidr": "10.152.4.0/24",
+            "cidr": "10.151.4.0/24",
             "name": "ComputeSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_SRE_T2GUAC_COMPUTE",
+              "name": "NSG_SHM_BLUE_SRE_T1GUAC_COMPUTE",
               "rules": "sre-nsg-rules-compute.json"
             }
           },
           "data": {
-            "cidr": "10.152.2.0/24",
+            "cidr": "10.151.2.0/24",
             "name": "PrivateDataSubnet"
           },
           "databases": {
-            "cidr": "10.152.3.0/24",
+            "cidr": "10.151.3.0/24",
             "name": "DatabasesSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_SRE_T2GUAC_DATABASES",
+              "name": "NSG_SHM_BLUE_SRE_T1GUAC_DATABASES",
               "rules": "sre-nsg-rules-databases.json"
             }
           },
           "deployment": {
-            "cidr": "10.152.0.0/24",
+            "cidr": "10.151.0.0/24",
             "name": "DeploymentSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_SRE_T2GUAC_DEPLOYMENT",
+              "name": "NSG_SHM_BLUE_SRE_T1GUAC_DEPLOYMENT",
               "rules": "sre-nsg-rules-deployment.json"
             }
           },
           "remoteDesktop": {
-            "cidr": "10.152.1.0/24",
+            "cidr": "10.151.1.0/24",
             "name": "RemoteDesktopSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_SRE_T2GUAC_GUACAMOLE",
+              "name": "NSG_SHM_BLUE_SRE_T1GUAC_GUACAMOLE",
               "rules": "sre-nsg-rules-guacamole.json"
             }
           },
           "webapps": {
-            "cidr": "10.152.5.0/24",
+            "cidr": "10.151.5.0/24",
             "name": "WebappsSubnet",
             "nsg": {
-              "name": "NSG_SHM_TESTB_SRE_T2GUAC_WEBAPPS",
+              "name": "NSG_SHM_BLUE_SRE_T1GUAC_WEBAPPS",
               "rules": "sre-nsg-rules-webapps.json"
             }
           }
         }
       }
     },
-    "nsgPrefix": "NSG_SHM_TESTB_SRE_T2GUAC",
+    "nsgPrefix": "NSG_SHM_BLUE_SRE_T1GUAC",
     "remoteDesktop": {
       "guacamole": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-guacamole",
-        "databaseAdminPasswordSecretName": "sre-t2guac-db-admin-password-guacamole",
+        "adminPasswordSecretName": "sre-t1guac-vm-admin-password-guacamole",
+        "databaseAdminPasswordSecretName": "sre-t1guac-db-admin-password-guacamole",
         "disks": {
           "os": {
             "sizeGb": "128",
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GUACAMOLE-SRE-T2GUAC.testb.dsgroupdev.co.uk",
-        "hostname": "GUACAMOLE-SRE-T2GUAC",
-        "ip": "10.152.1.4",
-        "vmName": "GUACAMOLE-SRE-T2GUAC",
+        "fqdn": "GUACAMOLE-SRE-T1GUAC.blue.develop.turingsafehaven.ac.uk",
+        "hostname": "GUACAMOLE-SRE-T1GUAC",
+        "ip": "10.151.1.4",
+        "vmName": "GUACAMOLE-SRE-T1GUAC",
         "vmSize": "Standard_DS2_v2"
       },
       "networkRules": {
-        "allowedSources": "193.60.220.253",
-        "copyAllowed": false,
-        "includeAzurePlatformDnsRule": true,
-        "outboundInternet": "Deny",
-        "pasteAllowed": false
+        "allowedSources": "Internet",
+        "copyAllowed": true,
+        "includeAzurePlatformDnsRule": false,
+        "outboundInternet": "Allow",
+        "pasteAllowed": true
       },
       "provider": "ApacheGuacamole",
-      "rg": "RG_SHM_TESTB_SRE_T2GUAC_REMOTE_DESKTOP"
+      "rg": "RG_SHM_BLUE_SRE_T1GUAC_REMOTE_DESKTOP"
     },
     "repositories": {
       "cran": {
-        "url": "http://10.10.2.198:80/repository/cran-proxy"
+        "url": "https://cran.r-project.org"
       },
       "network": {
-        "cidr": "10.10.2.0/24",
-        "name": "VNET_SHM_TESTB_PACKAGE_REPOSITORIES_TIER_2"
+        "cidr": null,
+        "name": null
       },
       "pypi": {
-        "host": "10.10.2.198",
-        "index": "http://10.10.2.198:80/repository/pypi-proxy",
-        "indexUrl": "http://10.10.2.198:80/repository/pypi-proxy/simple"
+        "host": "pypi.org",
+        "index": "https://pypi.org",
+        "indexUrl": "https://pypi.org/simple"
       }
     },
-    "rgPrefix": "RG_SHM_TESTB_SRE_T2GUAC",
-    "shortName": "sre-t2guac",
+    "rgPrefix": "RG_SHM_BLUE_SRE_T1GUAC",
+    "shortName": "sre-t1guac",
     "srd": {
-      "adminPasswordSecretName": "sre-t2guac-vm-admin-password-compute",
+      "adminPasswordSecretName": "sre-t1guac-vm-admin-password-compute",
       "disks": {
         "os": {
           "sizeGb": "default",
@@ -1157,7 +1158,7 @@
           "type": "StandardSSD_LRS"
         }
       },
-      "rg": "RG_SHM_TESTB_SRE_T2GUAC_COMPUTE",
+      "rg": "RG_SHM_BLUE_SRE_T1GUAC_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
         "version": "20.04.2022081900"
@@ -1177,7 +1178,7 @@
         "account": {
           "accessTier": "Cool",
           "allowedIpAddresses": "any",
-          "name": "testbt2guacartifactsnrza",
+          "name": "bluet1guacartifactsnrzab",
           "performance": "Standard_GRS",
           "storageKind": "BlobStorage"
         },
@@ -1185,34 +1186,34 @@
           "sreArtifactsRDS": "sre-artifacts-rds",
           "sreScriptsRDS": "sre-scripts-rds"
         },
-        "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE"
+        "rg": "RG_SHM_BLUE_SRE_T1GUAC_STORAGE"
       },
       "bootdiagnostics": {
-        "accountName": "testbt2guacbootdiagsnrza",
-        "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE"
+        "accountName": "bluet1guacbootdiagsnrzab",
+        "rg": "RG_SHM_BLUE_SRE_T1GUAC_STORAGE"
       },
       "persistentdata": {
         "account": {
           "accessTier": "Hot",
           "allowedIpAddresses": "193.60.220.253",
-          "name": "testbt2guacdatanrzabxpji",
+          "name": "bluet1guacdatanrzabxpjid",
           "performance": "Standard_GRS",
           "storageKind": "StorageV2"
         },
         "containers": {
           "backup": {
             "accessPolicyName": "readWrite",
-            "connectionSecretName": "sre-t2guac-data-backup-connection-readwrite",
+            "connectionSecretName": "sre-t1guac-data-backup-connection-readwrite",
             "mountType": "BlobSMB"
           },
           "egress": {
             "accessPolicyName": "readWrite",
-            "connectionSecretName": "sre-t2guac-data-egress-connection-readwrite",
+            "connectionSecretName": "sre-t1guac-data-egress-connection-readwrite",
             "mountType": "BlobSMB"
           },
           "ingress": {
             "accessPolicyName": "readOnly",
-            "connectionSecretName": "sre-t2guac-data-ingress-connection-readonly",
+            "connectionSecretName": "sre-t1guac-data-ingress-connection-readonly",
             "mountType": "BlobSMB"
           }
         }
@@ -1220,9 +1221,9 @@
       "userdata": {
         "account": {
           "accessTier": "Hot",
-          "name": "testbt2guacuserdatanrzab",
+          "name": "bluet1guacuserdatanrzabx",
           "performance": "Premium_ZRS",
-          "rg": "RG_SHM_TESTB_SRE_T2GUAC_STORAGE",
+          "rg": "RG_SHM_BLUE_SRE_T1GUAC_STORAGE",
           "storageKind": "FileStorage"
         },
         "containers": {
@@ -1241,7 +1242,7 @@
     },
     "storageTypeDefault": "Standard_GRS",
     "subscriptionName": "Data Safe Haven Development",
-    "tier": "2",
+    "tier": "1",
     "time": {
       "timezone": {
         "linux": "Europe/London",
@@ -1251,20 +1252,20 @@
     "users": {
       "serviceAccounts": {
         "ldapSearch": {
-          "name": "T2GUAC LDAP Search Service Account",
-          "passwordSecretName": "sre-t2guac-other-service-account-password-ldap-search",
-          "samAccountName": "t2guacldapsearch"
+          "name": "T1GUAC LDAP Search Service Account",
+          "passwordSecretName": "sre-t1guac-other-service-account-password-ldap-search",
+          "samAccountName": "t1guacldapsearch"
         },
         "postgres": {
-          "name": "T2GUAC Postgres DB Service Account",
-          "passwordSecretName": "sre-t2guac-db-service-account-password-postgres",
-          "samAccountName": "t2guacdbpostgres"
+          "name": "T1GUAC Postgres DB Service Account",
+          "passwordSecretName": "sre-t1guac-db-service-account-password-postgres",
+          "samAccountName": "t1guacdbpostgres"
         }
       }
     },
     "webapps": {
       "cocalc": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-cocalc",
+        "adminPasswordSecretName": "sre-t1guac-vm-admin-password-cocalc",
         "disks": {
           "data": {
             "sizeGb": "512",
@@ -1276,15 +1277,15 @@
           }
         },
         "dockerVersion": "latest",
-        "fqdn": "COCALC.t2guac.testb.dsgroupdev.co.uk",
+        "fqdn": "COCALC.t1guac.blue.develop.turingsafehaven.ac.uk",
         "hostname": "COCALC",
-        "ip": "10.152.5.7",
+        "ip": "10.151.5.7",
         "osVersion": "Ubuntu-latest",
-        "vmName": "COCALC-SRE-T2GUAC",
+        "vmName": "COCALC-SRE-T1GUAC",
         "vmSize": "Standard_D2s_v3"
       },
       "codimd": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-codimd",
+        "adminPasswordSecretName": "sre-t1guac-vm-admin-password-codimd",
         "codimd": {
           "dockerVersion": "2.4.1-cjk"
         },
@@ -1298,19 +1299,19 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "CODIMD.t2guac.testb.dsgroupdev.co.uk",
+        "fqdn": "CODIMD.t1guac.blue.develop.turingsafehaven.ac.uk",
         "hostname": "CODIMD",
-        "ip": "10.152.5.6",
+        "ip": "10.151.5.6",
         "osVersion": "Ubuntu-latest",
         "postgres": {
           "dockerVersion": "13.4-alpine",
-          "passwordSecretName": "sre-t2guac-other-codimd-password-postgresdb"
+          "passwordSecretName": "sre-t1guac-other-codimd-password-postgresdb"
         },
-        "vmName": "CODIMD-SRE-T2GUAC",
+        "vmName": "CODIMD-SRE-T1GUAC",
         "vmSize": "Standard_D2s_v3"
       },
       "gitlab": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-gitlab",
+        "adminPasswordSecretName": "sre-t1guac-vm-admin-password-gitlab",
         "disks": {
           "data": {
             "sizeGb": "512",
@@ -1321,15 +1322,15 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GITLAB.t2guac.testb.dsgroupdev.co.uk",
+        "fqdn": "GITLAB.t1guac.blue.develop.turingsafehaven.ac.uk",
         "hostname": "GITLAB",
-        "ip": "10.152.5.5",
+        "ip": "10.151.5.5",
         "osVersion": "Ubuntu-latest",
-        "rootPasswordSecretName": "sre-t2guac-other-gitlab-root-password",
-        "vmName": "GITLAB-SRE-T2GUAC",
+        "rootPasswordSecretName": "sre-t1guac-other-gitlab-root-password",
+        "vmName": "GITLAB-SRE-T1GUAC",
         "vmSize": "Standard_D2s_v3"
       },
-      "rg": "RG_SHM_TESTB_SRE_T2GUAC_WEBAPPS"
+      "rg": "RG_SHM_BLUE_SRE_T1GUAC_WEBAPPS"
     }
   }
 }
