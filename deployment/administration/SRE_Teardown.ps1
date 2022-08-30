@@ -90,7 +90,7 @@ try {
     $null = Remove-AzAutomationSoftwareUpdateConfiguration -Name "sre-$($config.sre.id.ToLower())-linux" -AutomationAccountName $config.shm.monitoring.automationAccount.name -ResourceGroupName $config.shm.monitoring.rg -ErrorAction Stop
     Add-LogMessage -Level Success "Removed update automation for SRE $sreId"
 } catch {
-    Add-LogMessage -Level Fatal "Failed to remove update automation for SRE $sreId!" -Exception $_.Exception
+    Add-LogMessage -Level Failure "Failed to remove update automation for SRE $sreId!" -Exception $_.Exception
 }
 
 
