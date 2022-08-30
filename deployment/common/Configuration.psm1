@@ -72,6 +72,7 @@ function Get-ShmConfig {
     # ----------------------------
     $shm = [ordered]@{
         azureAdminGroupName = $shmConfigBase.azure.adminGroupName
+        azureAdTenantId     = $shmConfigBase.azure.activeDirectoryTenantId
         id                  = $shmConfigBase.shmId
         location            = $shmConfigBase.azure.location
         name                = $shmConfigBase.name
