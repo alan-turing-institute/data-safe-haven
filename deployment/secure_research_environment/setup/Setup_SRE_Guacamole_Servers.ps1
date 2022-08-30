@@ -2,9 +2,7 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
-    [string]$sreId,
-    [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
-    [string]$tenantId
+    [string]$sreId
 )
 
 Import-Module Az.Accounts -ErrorAction Stop
@@ -70,7 +68,7 @@ Add-LogMessage -Level Info "Ensuring that '$azureAdApplicationName' is registere
 if (Get-MgContext) {
     Add-LogMessage -Level Info "Already authenticated against Microsoft Graph"
 } else {
-    Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
 }
 try {
     $application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'" -ErrorAction Stop
@@ -117,7 +115,7 @@ $config["guacamole"] = @{
     ldapSearchUserPassword = $ldapSearchPassword
     ldapUserFilter         = "(&(objectClass=user)(|(memberOf=CN=$($config.sre.domain.securityGroups.researchUsers.name),$($config.shm.domain.ous.securityGroups.path))(memberOf=CN=$($config.shm.domain.securityGroups.serverAdmins.name),$($config.shm.domain.ous.securityGroups.path))))"
     sslCiphers             = (Get-SslCipherSuites)["openssl"] | Join-String -Separator ":"
-    tenantId               = $tenantId
+    tenantId               = $config.shm.azureAdTenantId
 }
 $cloudInitYaml = Expand-MustacheTemplate -Template $cloudInitTemplate -Parameters $config
 
