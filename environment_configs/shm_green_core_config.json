@@ -4,9 +4,10 @@
     "domain": "green.develop.turingsafehaven.ac.uk",
     "timezone": "Europe/London",
     "azure": {
-        "subscriptionName": "Data Safe Haven Development",
-        "adminGroupName" : "Safe Haven Test Admins",
-        "location": "uksouth"
+        "activeDirectoryTenantId": "cb94a6f6-ef7a-42ab-bcad-4f0b887cfd3e",
+        "adminGroupName": "Safe Haven Test Admins",
+        "location": "uksouth",
+        "subscriptionName": "Data Safe Haven Development"
     },
     "organisation": {
         "name": "The Alan Turing Institute",

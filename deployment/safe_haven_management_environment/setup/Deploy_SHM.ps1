@@ -1,8 +1,6 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
-    [string]$shmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
-    [string]$tenantId
+    [string]$shmId
 )
 
 Import-Module Az.Accounts -ErrorAction Stop
@@ -27,7 +25,7 @@ if (Get-AzContext) {
 # --------------------------
 if (Get-MgContext) { Disconnect-MgGraph | Out-Null } # force a refresh of the Microsoft Graph token before starting
 Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph. Please sign in with an account with admin rights over the Azure Active Directory you plan to use."
-Connect-MgGraph -TenantId $tenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop | Out-Null
+Connect-MgGraph -TenantId $config.azureAdTenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop | Out-Null
 if (Get-MgContext) {
     Add-LogMessage -Level Success "Authenticated with Microsoft Graph as $((Get-MgContext).Account)"
 } else {
@@ -54,12 +52,12 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_DNS_Zone.p
 
 # Add the SHM domain to Azure Active Directory
 # --------------------------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_AAD_Domain.ps1')" -shmId $shmId -tenantId $tenantId }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_AAD_Domain.ps1')" -shmId $shmId }
 
 
 # Deploy the SHM KeyVault and register emergency user with AAD
 # ------------------------------------------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Key_Vault_And_Emergency_Admin.ps1')" -shmId $shmId -tenantId $tenantId }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Key_Vault_And_Emergency_Admin.ps1')" -shmId $shmId }
 
 
 # Setup SHM networking and VPN

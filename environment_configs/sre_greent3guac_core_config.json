@@ -4,13 +4,13 @@
     "shmId": "green",
     "subscriptionName": "Data Safe Haven Development",
     "ipPrefix": "10.153.0",
-    "inboundAccessFrom": ["193.60.220.253", "212.82.79.35"],
+    "inboundAccessFrom": ["193.60.220.240"],
     "outboundInternetAccess": "default",
     "computeVmImage": {
         "type": "Ubuntu",
         "version": "20.04.2022081900"
     },
-    "databases": ["MSSQL", "PostgreSQL"],
-    "dataAdminIpAddresses": ["193.60.220.253"],
-    "remoteDesktopProvider": "ApacheGuacamole"
+    "remoteDesktopProvider": "ApacheGuacamole",
+    "dataAdminIpAddresses": ["193.60.220.240"],
+    "databases": ["MSSQL", "PostgreSQL"]
 }

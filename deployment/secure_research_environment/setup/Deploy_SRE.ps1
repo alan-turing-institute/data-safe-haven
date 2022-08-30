@@ -2,9 +2,7 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
-    [string]$sreId,
-    [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
-    [string]$tenantId,
+    [string]$sreId
     [Parameter(Mandatory = $true, HelpMessage = "Array of sizes of SRDs to deploy. For example: 'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'")]
     [string[]]$VmSizes,
     [Parameter(Mandatory = $false, HelpMessage = "Remove any remnants of previous deployments of this SRE from the SHM")]
@@ -33,7 +31,7 @@ if (Get-AzContext) {
 # --------------------------
 if (Get-MgContext) { Disconnect-MgGraph | Out-Null } # force a refresh of the Microsoft Graph token before starting
 Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph. Please sign in with an account with admin rights over the Azure Active Directory you plan to use."
-Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop | Out-Null
+Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop | Out-Null
 if (Get-MgContext) {
     Add-LogMessage -Level Success "Authenticated with Microsoft Graph as $((Get-MgContext).Account)"
 } else {
@@ -89,7 +87,7 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Storage_Ac
 
 # Deploy Guacamole remote desktop
 # -------------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Guacamole_Servers.ps1')" -shmId $shmId -sreId $sreId -tenantId $tenantId }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Guacamole_Servers.ps1')" -shmId $shmId -sreId $sreId }
 
 
 # Update SSL certificate

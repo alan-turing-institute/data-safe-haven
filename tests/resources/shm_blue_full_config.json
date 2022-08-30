@@ -1,5 +1,6 @@
 {
   "azureAdminGroupName": "Safe Haven Test Admins",
+  "azureAdTenantId": "1d93a235-0c16-4f39-adff-a550719bdb49",
   "dc": {
     "adDirectory": "C:\\ActiveDirectory",
     "disks": {
@@ -9,22 +10,22 @@
       }
     },
     "external_dns_resolver": "168.63.129.16",
-    "fqdn": "DC1-SHM-TESTA.testa.dsgroupdev.co.uk",
-    "hostname": "DC1-SHM-TESTA",
-    "hostnameLower": "dc1-shm-testa",
-    "hostnameUpper": "DC1-SHM-TESTA",
+    "fqdn": "DC1-SHM-BLUE.blue.develop.turingsafehaven.ac.uk",
+    "hostname": "DC1-SHM-BLUE",
+    "hostnameLower": "dc1-shm-blue",
+    "hostnameUpper": "DC1-SHM-BLUE",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.4",
-    "rg": "RG_SHM_TESTA_DC",
-    "safemodePasswordSecretName": "shm-testa-vm-safemode-password-dc",
-    "vmName": "DC1-SHM-TESTA",
+    "rg": "RG_SHM_BLUE_DC",
+    "safemodePasswordSecretName": "shm-blue-vm-safemode-password-dc",
+    "vmName": "DC1-SHM-BLUE",
     "vmSize": "Standard_D2s_v3"
   },
   "dcb": {
-    "fqdn": "DC2-SHM-TESTA.testa.dsgroupdev.co.uk",
-    "hostname": "DC2-SHM-TESTA",
+    "fqdn": "DC2-SHM-BLUE.blue.develop.turingsafehaven.ac.uk",
+    "hostname": "DC2-SHM-BLUE",
     "ip": "10.0.0.5",
-    "vmName": "DC2-SHM-TESTA"
+    "vmName": "DC2-SHM-BLUE"
   },
   "diskTypeDefault": "Standard_LRS",
   "dns": {
@@ -32,43 +33,43 @@
     "subscriptionName": "[Prod] Safe Haven Domains"
   },
   "domain": {
-    "dn": "DC=testa,DC=dsgroupdev,DC=co,DC=uk",
-    "fqdn": "testa.dsgroupdev.co.uk",
-    "fqdnLower": "testa.dsgroupdev.co.uk",
-    "fqdnUpper": "TESTA.DSGROUPDEV.CO.UK",
-    "netbiosName": "TESTA",
+    "dn": "DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk",
+    "fqdn": "blue.develop.turingsafehaven.ac.uk",
+    "fqdnLower": "blue.develop.turingsafehaven.ac.uk",
+    "fqdnUpper": "BLUE.DEVELOP.TURINGSAFEHAVEN.AC.UK",
+    "netbiosName": "BLUE",
     "ous": {
       "databaseServers": {
         "name": "Secure Research Environment Database Servers",
-        "path": "OU=Secure Research Environment Database Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Secure Research Environment Database Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "identityServers": {
         "name": "Safe Haven Identity Servers",
-        "path": "OU=Safe Haven Identity Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Safe Haven Identity Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "linuxServers": {
         "name": "Secure Research Environment Linux Servers",
-        "path": "OU=Secure Research Environment Linux Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Secure Research Environment Linux Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "rdsGatewayServers": {
         "name": "Secure Research Environment RDS Gateway Servers",
-        "path": "OU=Secure Research Environment RDS Gateway Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Secure Research Environment RDS Gateway Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "rdsSessionServers": {
         "name": "Secure Research Environment RDS Session Servers",
-        "path": "OU=Secure Research Environment RDS Session Servers,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Secure Research Environment RDS Session Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "researchUsers": {
         "name": "Safe Haven Research Users",
-        "path": "OU=Safe Haven Research Users,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Safe Haven Research Users,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "securityGroups": {
         "name": "Safe Haven Security Groups",
-        "path": "OU=Safe Haven Security Groups,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Safe Haven Security Groups,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "serviceAccounts": {
         "name": "Safe Haven Service Accounts",
-        "path": "OU=Safe Haven Service Accounts,DC=testa,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Safe Haven Service Accounts,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       }
     },
     "securityGroups": {
@@ -83,40 +84,40 @@
     }
   },
   "firewall": {
-    "name": "FIREWALL-SHM-TESTA",
-    "routeTableName": "ROUTE-TABLE-SHM-TESTA"
+    "name": "FIREWALL-SHM-BLUE",
+    "routeTableName": "ROUTE-TABLE-SHM-BLUE"
   },
-  "id": "testa",
+  "id": "blue",
   "keyVault": {
-    "name": "kv-shm-testa",
-    "rg": "RG_SHM_TESTA_SECRETS",
+    "name": "kv-shm-blue",
+    "rg": "RG_SHM_BLUE_SECRETS",
     "secretNames": {
-      "aadEmergencyAdminPassword": "shm-testa-aad-emergency-admin-password",
-      "aadEmergencyAdminUsername": "shm-testa-aad-emergency-admin-username",
-      "buildImageAdminPassword": "shm-testa-buildimage-admin-password",
-      "buildImageAdminUsername": "shm-testa-buildimage-admin-username",
-      "domainAdminPassword": "shm-testa-domain-admin-password",
-      "domainAdminUsername": "shm-testa-domain-admin-username",
-      "vmAdminUsername": "shm-testa-vm-admin-username",
-      "vpnCaCertificate": "shm-testa-vpn-ca-cert",
-      "vpnCaCertificatePlain": "shm-testa-vpn-ca-cert-plain",
-      "vpnCaCertPassword": "shm-testa-vpn-ca-cert-password",
-      "vpnClientCertificate": "shm-testa-vpn-client-cert",
-      "vpnClientCertPassword": "shm-testa-vpn-client-cert-password"
+      "aadEmergencyAdminPassword": "shm-blue-aad-emergency-admin-password",
+      "aadEmergencyAdminUsername": "shm-blue-aad-emergency-admin-username",
+      "buildImageAdminPassword": "shm-blue-buildimage-admin-password",
+      "buildImageAdminUsername": "shm-blue-buildimage-admin-username",
+      "domainAdminPassword": "shm-blue-domain-admin-password",
+      "domainAdminUsername": "shm-blue-domain-admin-username",
+      "vmAdminUsername": "shm-blue-vm-admin-username",
+      "vpnCaCertificate": "shm-blue-vpn-ca-cert",
+      "vpnCaCertificatePlain": "shm-blue-vpn-ca-cert-plain",
+      "vpnCaCertPassword": "shm-blue-vpn-ca-cert-password",
+      "vpnClientCertificate": "shm-blue-vpn-client-cert",
+      "vpnClientCertPassword": "shm-blue-vpn-client-cert-password"
     }
   },
   "location": "uksouth",
   "monitoring": {
     "automationAccount": {
-      "name": "shm-testa-automation"
+      "name": "shm-blue-automation"
     },
     "loggingWorkspace": {
-      "name": "shm-testa-loganalytics"
+      "name": "shm-blue-loganalytics"
     },
     "privatelink": {
-      "name": "shm-testa-privatelinkscope"
+      "name": "shm-blue-privatelinkscope"
     },
-    "rg": "RG_SHM_TESTA_MONITORING",
+    "rg": "RG_SHM_BLUE_MONITORING",
     "updateServers": {
       "externalIpAddresses": {
         "azureAutomation": [
@@ -617,16 +618,16 @@
         ]
       },
       "linux": {
-        "adminPasswordSecretName": "shm-testa-vm-admin-password-linux-update-server",
+        "adminPasswordSecretName": "shm-blue-vm-admin-password-linux-update-server",
         "disks": {
           "os": {
             "sizeGb": "32",
             "type": "Standard_LRS"
           }
         },
-        "hostname": "LINUX-UPDATES-SHM-TESTA",
+        "hostname": "LINUX-UPDATES-SHM-BLUE",
         "ip": "10.0.3.4",
-        "vmName": "LINUX-UPDATES-SHM-TESTA",
+        "vmName": "LINUX-UPDATES-SHM-BLUE",
         "vmSize": "Standard_B2ms"
       },
       "schedule": {
@@ -642,12 +643,12 @@
       }
     }
   },
-  "name": "Turing Development Safe Haven A",
+  "name": "Turing Data Safe Haven (Blue)",
   "network": {
     "vnet": {
       "cidr": "10.0.0.0/21",
-      "name": "VNET_SHM_TESTA",
-      "rg": "RG_SHM_TESTA_NETWORKING",
+      "name": "VNET_SHM_BLUE",
+      "rg": "RG_SHM_BLUE_NETWORKING",
       "subnets": {
         "firewall": {
           "cidr": "10.0.2.0/24",
@@ -661,7 +662,7 @@
           "cidr": "10.0.0.0/24",
           "name": "IdentitySubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_IDENTITY",
+            "name": "NSG_SHM_BLUE_IDENTITY",
             "rules": "shm-nsg-rules-identity.json"
           }
         },
@@ -669,7 +670,7 @@
           "cidr": "10.0.1.0/24",
           "name": "MonitoringSubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_MONITORING",
+            "name": "NSG_SHM_BLUE_MONITORING",
             "rules": "shm-nsg-rules-monitoring.json"
           }
         },
@@ -677,7 +678,7 @@
           "cidr": "10.0.3.0/24",
           "name": "UpdateServersSubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_UPDATE_SERVERS",
+            "name": "NSG_SHM_BLUE_UPDATE_SERVERS",
             "rules": "shm-nsg-rules-update-servers.json"
           }
         }
@@ -685,14 +686,14 @@
     },
     "vnetRepositoriesTier2": {
       "cidr": "10.10.2.0/24",
-      "name": "VNET_SHM_TESTA_PACKAGE_REPOSITORIES_TIER_2",
-      "rg": "RG_SHM_TESTA_NETWORKING",
+      "name": "VNET_SHM_BLUE_PACKAGE_REPOSITORIES_TIER_2",
+      "rg": "RG_SHM_BLUE_NETWORKING",
       "subnets": {
         "deployment": {
           "cidr": "10.10.2.0/26",
           "name": "RepositoryDeploymentSubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_REPOSITORY_DEPLOYMENT_TIER_2",
+            "name": "NSG_SHM_BLUE_REPOSITORY_DEPLOYMENT_TIER_2",
             "rules": "shm-nsg-rules-repository-deployment-tier2.json"
           }
         },
@@ -700,7 +701,7 @@
           "cidr": "10.10.2.64/26",
           "name": "RepositoryMirrorsExternalTier2Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_REPOSITORY_MIRRORS_EXTERNAL_TIER2",
+            "name": "NSG_SHM_BLUE_REPOSITORY_MIRRORS_EXTERNAL_TIER2",
             "rules": "shm-nsg-rules-repository-mirrors-external-tier2.json"
           }
         },
@@ -708,7 +709,7 @@
           "cidr": "10.10.2.128/26",
           "name": "RepositoryMirrorsInternalTier2Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_REPOSITORY_MIRRORS_INTERNAL_TIER2",
+            "name": "NSG_SHM_BLUE_REPOSITORY_MIRRORS_INTERNAL_TIER2",
             "rules": "shm-nsg-rules-repository-mirrors-internal-tier2.json"
           }
         },
@@ -716,7 +717,7 @@
           "cidr": "10.10.2.192/26",
           "name": "RepositoryProxiesTier2Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_REPOSITORY_PROXIES_TIER_2",
+            "name": "NSG_SHM_BLUE_REPOSITORY_PROXIES_TIER_2",
             "rules": "shm-nsg-rules-repository-proxies-tier2.json"
           }
         }
@@ -724,14 +725,14 @@
     },
     "vnetRepositoriesTier3": {
       "cidr": "10.10.3.0/24",
-      "name": "VNET_SHM_TESTA_PACKAGE_REPOSITORIES_TIER_3",
-      "rg": "RG_SHM_TESTA_NETWORKING",
+      "name": "VNET_SHM_BLUE_PACKAGE_REPOSITORIES_TIER_3",
+      "rg": "RG_SHM_BLUE_NETWORKING",
       "subnets": {
         "deployment": {
           "cidr": "10.10.3.0/26",
           "name": "RepositoryDeploymentSubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_REPOSITORY_DEPLOYMENT_TIER_3",
+            "name": "NSG_SHM_BLUE_REPOSITORY_DEPLOYMENT_TIER_3",
             "rules": "shm-nsg-rules-repository-deployment-tier3.json"
           }
         },
@@ -739,7 +740,7 @@
           "cidr": "10.10.3.64/26",
           "name": "RepositoryMirrorsExternalTier3Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_REPOSITORY_MIRRORS_EXTERNAL_TIER3",
+            "name": "NSG_SHM_BLUE_REPOSITORY_MIRRORS_EXTERNAL_TIER3",
             "rules": "shm-nsg-rules-repository-mirrors-external-tier3.json"
           }
         },
@@ -747,7 +748,7 @@
           "cidr": "10.10.3.128/26",
           "name": "RepositoryMirrorsInternalTier3Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_REPOSITORY_MIRRORS_INTERNAL_TIER3",
+            "name": "NSG_SHM_BLUE_REPOSITORY_MIRRORS_INTERNAL_TIER3",
             "rules": "shm-nsg-rules-repository-mirrors-internal-tier3.json"
           }
         },
@@ -755,7 +756,7 @@
           "cidr": "10.10.3.192/26",
           "name": "RepositoryProxiesTier3Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTA_REPOSITORY_PROXIES_TIER_3",
+            "name": "NSG_SHM_BLUE_REPOSITORY_PROXIES_TIER_3",
             "rules": "shm-nsg-rules-repository-proxies-tier3.json"
           }
         }
@@ -766,21 +767,21 @@
     }
   },
   "nps": {
-    "adminPasswordSecretName": "shm-testa-vm-admin-password-nps",
+    "adminPasswordSecretName": "shm-blue-vm-admin-password-nps",
     "disks": {
       "os": {
         "sizeGb": "128",
         "type": "Standard_LRS"
       }
     },
-    "hostname": "NPS-SHM-TESTA",
+    "hostname": "NPS-SHM-BLUE",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.6",
-    "rg": "RG_SHM_TESTA_NPS",
-    "vmName": "NPS-SHM-TESTA",
+    "rg": "RG_SHM_BLUE_NPS",
+    "vmName": "NPS-SHM-BLUE",
     "vmSize": "Standard_D2s_v3"
   },
-  "nsgPrefix": "NSG_SHM_TESTA",
+  "nsgPrefix": "NSG_SHM_BLUE",
   "organisation": {
     "contactEmail": "safehavendevs@turing.ac.uk",
     "countryCode": "GB",
@@ -789,12 +790,12 @@
     "townCity": "London"
   },
   "repositories": {
-    "rg": "RG_SHM_TESTA_PACKAGE_REPOSITORIES",
+    "rg": "RG_SHM_BLUE_PACKAGE_REPOSITORIES",
     "tier2": {
       "proxies": {
         "many": {
-          "adminPasswordSecretName": "shm-testa-vm-admin-password-many-repository-proxy-tier-2",
-          "applicationAdminPasswordSecretName": "shm-testa-application-admin-password-many-repository-proxy-tier-2",
+          "adminPasswordSecretName": "shm-blue-vm-admin-password-many-repository-proxy-tier-2",
+          "applicationAdminPasswordSecretName": "shm-blue-application-admin-password-many-repository-proxy-tier-2",
           "disks": {
             "os": {
               "sizeGb": 32,
@@ -802,7 +803,7 @@
             }
           },
           "ipAddress": "10.10.2.198",
-          "vmName": "SHM-TESTA-MANY-REPOSITORY-PROXY-TIER-2",
+          "vmName": "SHM-BLUE-MANY-REPOSITORY-PROXY-TIER-2",
           "vmSize": "Standard_B2ms"
         }
       }
@@ -810,8 +811,8 @@
     "tier3": {
       "proxies": {
         "many": {
-          "adminPasswordSecretName": "shm-testa-vm-admin-password-many-repository-proxy-tier-3",
-          "applicationAdminPasswordSecretName": "shm-testa-application-admin-password-many-repository-proxy-tier-3",
+          "adminPasswordSecretName": "shm-blue-vm-admin-password-many-repository-proxy-tier-3",
+          "applicationAdminPasswordSecretName": "shm-blue-application-admin-password-many-repository-proxy-tier-3",
           "disks": {
             "os": {
               "sizeGb": 32,
@@ -819,13 +820,13 @@
             }
           },
           "ipAddress": "10.10.3.198",
-          "vmName": "SHM-TESTA-MANY-REPOSITORY-PROXY-TIER-3",
+          "vmName": "SHM-BLUE-MANY-REPOSITORY-PROXY-TIER-3",
           "vmSize": "Standard_B2ms"
         }
       }
     }
   },
-  "rgPrefix": "RG_SHM_TESTA",
+  "rgPrefix": "RG_SHM_BLUE",
   "srdImage": {
     "bootdiagnostics": {
       "accountName": "vmimagesbootdiagcmtvwnes",
@@ -863,7 +864,7 @@
       "rg": "RG_VMIMAGES_STORAGE"
     },
     "keyVault": {
-      "name": "kv-shm-testa-images",
+      "name": "kv-shm-blue-images",
       "rg": "RG_VMIMAGES_SECRETS"
     },
     "location": "uksouth",
@@ -874,20 +875,20 @@
   },
   "storage": {
     "artifacts": {
-      "accountName": "shmtestaartifactsnaycqgw",
+      "accountName": "shmblueartifactsanoblwvs",
       "containers": {
         "shmArtifactsDC": "shm-artifacts-dc",
         "shmArtifactsNPS": "shm-artifacts-nps",
         "shmDesiredState": "shm-desired-state"
       },
-      "rg": "RG_SHM_TESTA_STORAGE"
+      "rg": "RG_SHM_BLUE_STORAGE"
     },
     "bootdiagnostics": {
-      "accountName": "shmtestabootdiagsnaycqgw",
-      "rg": "RG_SHM_TESTA_STORAGE"
+      "accountName": "shmbluebootdiagsanoblwvs",
+      "rg": "RG_SHM_BLUE_STORAGE"
     },
     "persistentdata": {
-      "rg": "RG_SHM_TESTA_PERSISTENT_DATA"
+      "rg": "RG_SHM_BLUE_PERSISTENT_DATA"
     }
   },
   "storageTypeDefault": "Standard_GRS",
@@ -916,37 +917,37 @@
   "users": {
     "computerManagers": {
       "databaseServers": {
-        "name": "TESTA Database Servers Manager",
-        "passwordSecretName": "shm-testa-computer-manager-password-database-servers",
-        "samAccountName": "testadatabasesrvrs"
+        "name": "BLUE Database Servers Manager",
+        "passwordSecretName": "shm-blue-computer-manager-password-database-servers",
+        "samAccountName": "bluedatabasesrvrs"
       },
       "identityServers": {
-        "name": "TESTA Identity Servers Manager",
-        "passwordSecretName": "shm-testa-computer-manager-password-identity-servers",
-        "samAccountName": "testaidentitysrvrs"
+        "name": "BLUE Identity Servers Manager",
+        "passwordSecretName": "shm-blue-computer-manager-password-identity-servers",
+        "samAccountName": "blueidentitysrvrs"
       },
       "linuxServers": {
-        "name": "TESTA Linux Servers Manager",
-        "passwordSecretName": "shm-testa-computer-manager-password-linux-servers",
-        "samAccountName": "testalinuxsrvrs"
+        "name": "BLUE Linux Servers Manager",
+        "passwordSecretName": "shm-blue-computer-manager-password-linux-servers",
+        "samAccountName": "bluelinuxsrvrs"
       },
       "rdsGatewayServers": {
-        "name": "TESTA RDS Gateway Manager",
-        "passwordSecretName": "shm-testa-computer-manager-password-rds-gateway-servers",
-        "samAccountName": "testagatewaysrvrs"
+        "name": "BLUE RDS Gateway Manager",
+        "passwordSecretName": "shm-blue-computer-manager-password-rds-gateway-servers",
+        "samAccountName": "bluegatewaysrvrs"
       },
       "rdsSessionServers": {
-        "name": "TESTA RDS Session Servers Manager",
-        "passwordSecretName": "shm-testa-computer-manager-password-rds-session-servers",
-        "samAccountName": "testasessionsrvrs"
+        "name": "BLUE RDS Session Servers Manager",
+        "passwordSecretName": "shm-blue-computer-manager-password-rds-session-servers",
+        "samAccountName": "bluesessionsrvrs"
       }
     },
     "serviceAccounts": {
       "aadLocalSync": {
-        "name": "TESTA Local AD Sync Administrator",
-        "passwordSecretName": "shm-testa-aad-localsync-password",
-        "samAccountName": "testalocaladsync",
-        "usernameSecretName": "shm-testa-aad-localsync-username"
+        "name": "BLUE Local AD Sync Administrator",
+        "passwordSecretName": "shm-blue-aad-localsync-password",
+        "samAccountName": "bluelocaladsync",
+        "usernameSecretName": "shm-blue-aad-localsync-username"
       }
     }
   },

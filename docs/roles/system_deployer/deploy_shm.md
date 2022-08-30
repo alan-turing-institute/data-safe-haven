@@ -88,9 +88,10 @@ The following core SHM properties are required - look in the `environment_config
   "domain": "The fully qualified domain name for the management environment (e.g. 'project.turingsafehaven.ac.uk')",
   "timezone": "[Optional] Timezone in IANA format (e.g. 'Europe/London').",
   "azure": {
-    "subscriptionName": "Azure subscription to deploy the management environment into.",
     "adminGroupName": "Azure Security Group that admins of this Safe Haven will belong to.",
-    "location": "Azure location to deploy the management environment into (e.g. 'uksouth')."
+    "activeDirectoryTenantId": "Tenant ID for the Azure Active Directory containing users (see below for details on how to obtain this).",
+    "location": "Azure location to deploy the management environment into (e.g. 'uksouth').",
+    "subscriptionName": "Azure subscription to deploy the management environment into."
   },
   "organisation": {
     "name": "Name of your organisation, used when generating SSL certificates (e.g. 'The Alan Turing Institute')",
@@ -210,6 +211,8 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
   ```
 
   </details>
+
+- Ensure that you add this to the {ref}`configuration file <roles_system_deployer_shm_configuration_file>` for this SHM under `azure > activeDirectoryTenantId`.
 
 (roles_deploy_add_additional_admins)=
 
@@ -431,12 +434,11 @@ If you see a message about buying licences, you may need to refresh the page for
 ![Powershell: a few hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20hours) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
 ```powershell
-PS> ./Deploy_SHM.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID>
+PS> ./Deploy_SHM.ps1 -shmId <SHM ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
-- where `<AAD tenant ID>` is the {ref}`tenant ID <roles_deployer_aad_tenant_id>` for the AzureAD that you created during SHM deployment
 
 You will be prompted for credentials for:
 
@@ -483,11 +485,10 @@ If you see a message `You need to add the following NS records to the parent DNS
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
-PS> ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID>
+PS> ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<AAD tenant ID>` is the {ref}`tenant ID <roles_deployer_aad_tenant_id>` for this AAD
 
 ```{error}
 If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.
@@ -508,11 +509,10 @@ If it exhausts the number of retries a second time, wait an hour and try again.
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
-PS> ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID>
+PS> ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-- where `<AAD tenant ID>` is the {ref}`tenant ID <roles_deployer_aad_tenant_id>` for this AAD
 
 ```{error}
 If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.

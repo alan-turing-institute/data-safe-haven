@@ -1,5 +1,6 @@
 {
   "azureAdminGroupName": "Safe Haven Test Admins",
+  "azureAdTenantId": "cb94a6f6-ef7a-42ab-bcad-4f0b887cfd3e",
   "dc": {
     "adDirectory": "C:\\ActiveDirectory",
     "disks": {
@@ -9,22 +10,22 @@
       }
     },
     "external_dns_resolver": "168.63.129.16",
-    "fqdn": "DC1-SHM-TESTB.testb.dsgroupdev.co.uk",
-    "hostname": "DC1-SHM-TESTB",
-    "hostnameLower": "dc1-shm-testb",
-    "hostnameUpper": "DC1-SHM-TESTB",
+    "fqdn": "DC1-SHM-GREEN.green.develop.turingsafehaven.ac.uk",
+    "hostname": "DC1-SHM-GREEN",
+    "hostnameLower": "dc1-shm-green",
+    "hostnameUpper": "DC1-SHM-GREEN",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.4",
-    "rg": "RG_SHM_TESTB_DC",
-    "safemodePasswordSecretName": "shm-testb-vm-safemode-password-dc",
-    "vmName": "DC1-SHM-TESTB",
+    "rg": "RG_SHM_GREEN_DC",
+    "safemodePasswordSecretName": "shm-green-vm-safemode-password-dc",
+    "vmName": "DC1-SHM-GREEN",
     "vmSize": "Standard_D2s_v3"
   },
   "dcb": {
-    "fqdn": "DC2-SHM-TESTB.testb.dsgroupdev.co.uk",
-    "hostname": "DC2-SHM-TESTB",
+    "fqdn": "DC2-SHM-GREEN.green.develop.turingsafehaven.ac.uk",
+    "hostname": "DC2-SHM-GREEN",
     "ip": "10.0.0.5",
-    "vmName": "DC2-SHM-TESTB"
+    "vmName": "DC2-SHM-GREEN"
   },
   "diskTypeDefault": "Standard_LRS",
   "dns": {
@@ -32,43 +33,43 @@
     "subscriptionName": "[Prod] Safe Haven Domains"
   },
   "domain": {
-    "dn": "DC=testb,DC=dsgroupdev,DC=co,DC=uk",
-    "fqdn": "testb.dsgroupdev.co.uk",
-    "fqdnLower": "testb.dsgroupdev.co.uk",
-    "fqdnUpper": "TESTB.DSGROUPDEV.CO.UK",
-    "netbiosName": "TESTB",
+    "dn": "DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk",
+    "fqdn": "green.develop.turingsafehaven.ac.uk",
+    "fqdnLower": "green.develop.turingsafehaven.ac.uk",
+    "fqdnUpper": "GREEN.DEVELOP.TURINGSAFEHAVEN.AC.UK",
+    "netbiosName": "GREEN",
     "ous": {
       "databaseServers": {
         "name": "Secure Research Environment Database Servers",
-        "path": "OU=Secure Research Environment Database Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Secure Research Environment Database Servers,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "identityServers": {
         "name": "Safe Haven Identity Servers",
-        "path": "OU=Safe Haven Identity Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Safe Haven Identity Servers,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "linuxServers": {
         "name": "Secure Research Environment Linux Servers",
-        "path": "OU=Secure Research Environment Linux Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Secure Research Environment Linux Servers,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "rdsGatewayServers": {
         "name": "Secure Research Environment RDS Gateway Servers",
-        "path": "OU=Secure Research Environment RDS Gateway Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Secure Research Environment RDS Gateway Servers,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "rdsSessionServers": {
         "name": "Secure Research Environment RDS Session Servers",
-        "path": "OU=Secure Research Environment RDS Session Servers,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Secure Research Environment RDS Session Servers,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "researchUsers": {
         "name": "Safe Haven Research Users",
-        "path": "OU=Safe Haven Research Users,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Safe Haven Research Users,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "securityGroups": {
         "name": "Safe Haven Security Groups",
-        "path": "OU=Safe Haven Security Groups,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Safe Haven Security Groups,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
       "serviceAccounts": {
         "name": "Safe Haven Service Accounts",
-        "path": "OU=Safe Haven Service Accounts,DC=testb,DC=dsgroupdev,DC=co,DC=uk"
+        "path": "OU=Safe Haven Service Accounts,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       }
     },
     "securityGroups": {
@@ -83,40 +84,40 @@
     }
   },
   "firewall": {
-    "name": "FIREWALL-SHM-TESTB",
-    "routeTableName": "ROUTE-TABLE-SHM-TESTB"
+    "name": "FIREWALL-SHM-GREEN",
+    "routeTableName": "ROUTE-TABLE-SHM-GREEN"
   },
-  "id": "testb",
+  "id": "green",
   "keyVault": {
-    "name": "kv-shm-testb",
-    "rg": "RG_SHM_TESTB_SECRETS",
+    "name": "kv-shm-green",
+    "rg": "RG_SHM_GREEN_SECRETS",
     "secretNames": {
-      "aadEmergencyAdminPassword": "shm-testb-aad-emergency-admin-password",
-      "aadEmergencyAdminUsername": "shm-testb-aad-emergency-admin-username",
-      "buildImageAdminPassword": "shm-testb-buildimage-admin-password",
-      "buildImageAdminUsername": "shm-testb-buildimage-admin-username",
-      "domainAdminPassword": "shm-testb-domain-admin-password",
-      "domainAdminUsername": "shm-testb-domain-admin-username",
-      "vmAdminUsername": "shm-testb-vm-admin-username",
-      "vpnCaCertificate": "shm-testb-vpn-ca-cert",
-      "vpnCaCertificatePlain": "shm-testb-vpn-ca-cert-plain",
-      "vpnCaCertPassword": "shm-testb-vpn-ca-cert-password",
-      "vpnClientCertificate": "shm-testb-vpn-client-cert",
-      "vpnClientCertPassword": "shm-testb-vpn-client-cert-password"
+      "aadEmergencyAdminPassword": "shm-green-aad-emergency-admin-password",
+      "aadEmergencyAdminUsername": "shm-green-aad-emergency-admin-username",
+      "buildImageAdminPassword": "shm-green-buildimage-admin-password",
+      "buildImageAdminUsername": "shm-green-buildimage-admin-username",
+      "domainAdminPassword": "shm-green-domain-admin-password",
+      "domainAdminUsername": "shm-green-domain-admin-username",
+      "vmAdminUsername": "shm-green-vm-admin-username",
+      "vpnCaCertificate": "shm-green-vpn-ca-cert",
+      "vpnCaCertificatePlain": "shm-green-vpn-ca-cert-plain",
+      "vpnCaCertPassword": "shm-green-vpn-ca-cert-password",
+      "vpnClientCertificate": "shm-green-vpn-client-cert",
+      "vpnClientCertPassword": "shm-green-vpn-client-cert-password"
     }
   },
   "location": "uksouth",
   "monitoring": {
     "automationAccount": {
-      "name": "shm-testb-automation"
+      "name": "shm-green-automation"
     },
     "loggingWorkspace": {
-      "name": "shm-testb-loganalytics"
+      "name": "shm-green-loganalytics"
     },
     "privatelink": {
-      "name": "shm-testb-privatelinkscope"
+      "name": "shm-green-privatelinkscope"
     },
-    "rg": "RG_SHM_TESTB_MONITORING",
+    "rg": "RG_SHM_GREEN_MONITORING",
     "updateServers": {
       "externalIpAddresses": {
         "azureAutomation": [
@@ -617,16 +618,16 @@
         ]
       },
       "linux": {
-        "adminPasswordSecretName": "shm-testb-vm-admin-password-linux-update-server",
+        "adminPasswordSecretName": "shm-green-vm-admin-password-linux-update-server",
         "disks": {
           "os": {
             "sizeGb": "32",
             "type": "Standard_LRS"
           }
         },
-        "hostname": "LINUX-UPDATES-SHM-TESTB",
+        "hostname": "LINUX-UPDATES-SHM-GREEN",
         "ip": "10.0.3.4",
-        "vmName": "LINUX-UPDATES-SHM-TESTB",
+        "vmName": "LINUX-UPDATES-SHM-GREEN",
         "vmSize": "Standard_B2ms"
       },
       "schedule": {
@@ -642,12 +643,12 @@
       }
     }
   },
-  "name": "Turing Development Safe Haven B",
+  "name": "Turing Data Safe Haven (Green)",
   "network": {
     "vnet": {
       "cidr": "10.0.0.0/21",
-      "name": "VNET_SHM_TESTB",
-      "rg": "RG_SHM_TESTB_NETWORKING",
+      "name": "VNET_SHM_GREEN",
+      "rg": "RG_SHM_GREEN_NETWORKING",
       "subnets": {
         "firewall": {
           "cidr": "10.0.2.0/24",
@@ -661,7 +662,7 @@
           "cidr": "10.0.0.0/24",
           "name": "IdentitySubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_IDENTITY",
+            "name": "NSG_SHM_GREEN_IDENTITY",
             "rules": "shm-nsg-rules-identity.json"
           }
         },
@@ -669,7 +670,7 @@
           "cidr": "10.0.1.0/24",
           "name": "MonitoringSubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_MONITORING",
+            "name": "NSG_SHM_GREEN_MONITORING",
             "rules": "shm-nsg-rules-monitoring.json"
           }
         },
@@ -677,7 +678,7 @@
           "cidr": "10.0.3.0/24",
           "name": "UpdateServersSubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_UPDATE_SERVERS",
+            "name": "NSG_SHM_GREEN_UPDATE_SERVERS",
             "rules": "shm-nsg-rules-update-servers.json"
           }
         }
@@ -685,14 +686,14 @@
     },
     "vnetRepositoriesTier2": {
       "cidr": "10.10.2.0/24",
-      "name": "VNET_SHM_TESTB_PACKAGE_REPOSITORIES_TIER_2",
-      "rg": "RG_SHM_TESTB_NETWORKING",
+      "name": "VNET_SHM_GREEN_PACKAGE_REPOSITORIES_TIER_2",
+      "rg": "RG_SHM_GREEN_NETWORKING",
       "subnets": {
         "deployment": {
           "cidr": "10.10.2.0/26",
           "name": "RepositoryDeploymentSubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_REPOSITORY_DEPLOYMENT_TIER_2",
+            "name": "NSG_SHM_GREEN_REPOSITORY_DEPLOYMENT_TIER_2",
             "rules": "shm-nsg-rules-repository-deployment-tier2.json"
           }
         },
@@ -700,7 +701,7 @@
           "cidr": "10.10.2.64/26",
           "name": "RepositoryMirrorsExternalTier2Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_EXTERNAL_TIER2",
+            "name": "NSG_SHM_GREEN_REPOSITORY_MIRRORS_EXTERNAL_TIER2",
             "rules": "shm-nsg-rules-repository-mirrors-external-tier2.json"
           }
         },
@@ -708,7 +709,7 @@
           "cidr": "10.10.2.128/26",
           "name": "RepositoryMirrorsInternalTier2Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_INTERNAL_TIER2",
+            "name": "NSG_SHM_GREEN_REPOSITORY_MIRRORS_INTERNAL_TIER2",
             "rules": "shm-nsg-rules-repository-mirrors-internal-tier2.json"
           }
         },
@@ -716,7 +717,7 @@
           "cidr": "10.10.2.192/26",
           "name": "RepositoryProxiesTier2Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_REPOSITORY_PROXIES_TIER_2",
+            "name": "NSG_SHM_GREEN_REPOSITORY_PROXIES_TIER_2",
             "rules": "shm-nsg-rules-repository-proxies-tier2.json"
           }
         }
@@ -724,14 +725,14 @@
     },
     "vnetRepositoriesTier3": {
       "cidr": "10.10.3.0/24",
-      "name": "VNET_SHM_TESTB_PACKAGE_REPOSITORIES_TIER_3",
-      "rg": "RG_SHM_TESTB_NETWORKING",
+      "name": "VNET_SHM_GREEN_PACKAGE_REPOSITORIES_TIER_3",
+      "rg": "RG_SHM_GREEN_NETWORKING",
       "subnets": {
         "deployment": {
           "cidr": "10.10.3.0/26",
           "name": "RepositoryDeploymentSubnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_REPOSITORY_DEPLOYMENT_TIER_3",
+            "name": "NSG_SHM_GREEN_REPOSITORY_DEPLOYMENT_TIER_3",
             "rules": "shm-nsg-rules-repository-deployment-tier3.json"
           }
         },
@@ -739,7 +740,7 @@
           "cidr": "10.10.3.64/26",
           "name": "RepositoryMirrorsExternalTier3Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_EXTERNAL_TIER3",
+            "name": "NSG_SHM_GREEN_REPOSITORY_MIRRORS_EXTERNAL_TIER3",
             "rules": "shm-nsg-rules-repository-mirrors-external-tier3.json"
           }
         },
@@ -747,7 +748,7 @@
           "cidr": "10.10.3.128/26",
           "name": "RepositoryMirrorsInternalTier3Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_REPOSITORY_MIRRORS_INTERNAL_TIER3",
+            "name": "NSG_SHM_GREEN_REPOSITORY_MIRRORS_INTERNAL_TIER3",
             "rules": "shm-nsg-rules-repository-mirrors-internal-tier3.json"
           }
         },
@@ -755,7 +756,7 @@
           "cidr": "10.10.3.192/26",
           "name": "RepositoryProxiesTier3Subnet",
           "nsg": {
-            "name": "NSG_SHM_TESTB_REPOSITORY_PROXIES_TIER_3",
+            "name": "NSG_SHM_GREEN_REPOSITORY_PROXIES_TIER_3",
             "rules": "shm-nsg-rules-repository-proxies-tier3.json"
           }
         }
@@ -766,21 +767,21 @@
     }
   },
   "nps": {
-    "adminPasswordSecretName": "shm-testb-vm-admin-password-nps",
+    "adminPasswordSecretName": "shm-green-vm-admin-password-nps",
     "disks": {
       "os": {
         "sizeGb": "128",
         "type": "Standard_LRS"
       }
     },
-    "hostname": "NPS-SHM-TESTB",
+    "hostname": "NPS-SHM-GREEN",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.6",
-    "rg": "RG_SHM_TESTB_NPS",
-    "vmName": "NPS-SHM-TESTB",
+    "rg": "RG_SHM_GREEN_NPS",
+    "vmName": "NPS-SHM-GREEN",
     "vmSize": "Standard_D2s_v3"
   },
-  "nsgPrefix": "NSG_SHM_TESTB",
+  "nsgPrefix": "NSG_SHM_GREEN",
   "organisation": {
     "contactEmail": "safehavendevs@turing.ac.uk",
     "countryCode": "GB",
@@ -789,12 +790,12 @@
     "townCity": "London"
   },
   "repositories": {
-    "rg": "RG_SHM_TESTB_PACKAGE_REPOSITORIES",
+    "rg": "RG_SHM_GREEN_PACKAGE_REPOSITORIES",
     "tier2": {
       "proxies": {
         "many": {
-          "adminPasswordSecretName": "shm-testb-vm-admin-password-many-repository-proxy-tier-2",
-          "applicationAdminPasswordSecretName": "shm-testb-application-admin-password-many-repository-proxy-tier-2",
+          "adminPasswordSecretName": "shm-green-vm-admin-password-many-repository-proxy-tier-2",
+          "applicationAdminPasswordSecretName": "shm-green-application-admin-password-many-repository-proxy-tier-2",
           "disks": {
             "os": {
               "sizeGb": 32,
@@ -802,30 +803,83 @@
             }
           },
           "ipAddress": "10.10.2.198",
-          "vmName": "SHM-TESTB-MANY-REPOSITORY-PROXY-TIER-2",
+          "vmName": "SHM-GREEN-MANY-REPOSITORY-PROXY-TIER-2",
           "vmSize": "Standard_B2ms"
         }
       }
     },
     "tier3": {
-      "proxies": {
-        "many": {
-          "adminPasswordSecretName": "shm-testb-vm-admin-password-many-repository-proxy-tier-3",
-          "applicationAdminPasswordSecretName": "shm-testb-application-admin-password-many-repository-proxy-tier-3",
+      "mirrorsExternal": {
+        "cran": {
+          "adminPasswordSecretName": "shm-green-vm-admin-password-cran-repository-mirror-external-tier-3",
           "disks": {
+            "data": {
+              "sizeGb": 32,
+              "type": "Standard_LRS"
+            },
             "os": {
               "sizeGb": 32,
               "type": "Standard_LRS"
             }
           },
-          "ipAddress": "10.10.3.198",
-          "vmName": "SHM-TESTB-MANY-REPOSITORY-PROXY-TIER-3",
+          "ipAddress": "10.10.3.68",
+          "vmName": "SHM-GREEN-CRAN-REPOSITORY-MIRROR-EXTERNAL-TIER-3",
+          "vmSize": "Standard_B2ms"
+        },
+        "pypi": {
+          "adminPasswordSecretName": "shm-green-vm-admin-password-pypi-repository-mirror-external-tier-3",
+          "disks": {
+            "data": {
+              "sizeGb": 1024,
+              "type": "Standard_LRS"
+            },
+            "os": {
+              "sizeGb": 32,
+              "type": "Standard_LRS"
+            }
+          },
+          "ipAddress": "10.10.3.69",
+          "vmName": "SHM-GREEN-PYPI-REPOSITORY-MIRROR-EXTERNAL-TIER-3",
+          "vmSize": "Standard_B2ms"
+        }
+      },
+      "mirrorsInternal": {
+        "cran": {
+          "adminPasswordSecretName": "shm-green-vm-admin-password-cran-repository-mirror-internal-tier-3",
+          "disks": {
+            "data": {
+              "sizeGb": 32,
+              "type": "Standard_LRS"
+            },
+            "os": {
+              "sizeGb": 32,
+              "type": "Standard_LRS"
+            }
+          },
+          "ipAddress": "10.10.3.132",
+          "vmName": "SHM-GREEN-CRAN-REPOSITORY-MIRROR-INTERNAL-TIER-3",
+          "vmSize": "Standard_B2ms"
+        },
+        "pypi": {
+          "adminPasswordSecretName": "shm-green-vm-admin-password-pypi-repository-mirror-internal-tier-3",
+          "disks": {
+            "data": {
+              "sizeGb": 1024,
+              "type": "Standard_LRS"
+            },
+            "os": {
+              "sizeGb": 32,
+              "type": "Standard_LRS"
+            }
+          },
+          "ipAddress": "10.10.3.133",
+          "vmName": "SHM-GREEN-PYPI-REPOSITORY-MIRROR-INTERNAL-TIER-3",
           "vmSize": "Standard_B2ms"
         }
       }
     }
   },
-  "rgPrefix": "RG_SHM_TESTB",
+  "rgPrefix": "RG_SHM_GREEN",
   "srdImage": {
     "bootdiagnostics": {
       "accountName": "vmimagesbootdiagcmtvwnes",
@@ -863,7 +917,7 @@
       "rg": "RG_VMIMAGES_STORAGE"
     },
     "keyVault": {
-      "name": "kv-shm-testb-images",
+      "name": "kv-shm-green-images",
       "rg": "RG_VMIMAGES_SECRETS"
     },
     "location": "uksouth",
@@ -874,20 +928,20 @@
   },
   "storage": {
     "artifacts": {
-      "accountName": "shmtestbartifactsnaycqgw",
+      "accountName": "shmgreenartifactsnrzabxp",
       "containers": {
         "shmArtifactsDC": "shm-artifacts-dc",
         "shmArtifactsNPS": "shm-artifacts-nps",
         "shmDesiredState": "shm-desired-state"
       },
-      "rg": "RG_SHM_TESTB_STORAGE"
+      "rg": "RG_SHM_GREEN_STORAGE"
     },
     "bootdiagnostics": {
-      "accountName": "shmtestbbootdiagsnaycqgw",
-      "rg": "RG_SHM_TESTB_STORAGE"
+      "accountName": "shmgreenbootdiagsnrzabxp",
+      "rg": "RG_SHM_GREEN_STORAGE"
     },
     "persistentdata": {
-      "rg": "RG_SHM_TESTB_PERSISTENT_DATA"
+      "rg": "RG_SHM_GREEN_PERSISTENT_DATA"
     }
   },
   "storageTypeDefault": "Standard_GRS",
@@ -916,37 +970,37 @@
   "users": {
     "computerManagers": {
       "databaseServers": {
-        "name": "TESTB Database Servers Manager",
-        "passwordSecretName": "shm-testb-computer-manager-password-database-servers",
-        "samAccountName": "testbdatabasesrvrs"
+        "name": "GREEN Database Servers Manager",
+        "passwordSecretName": "shm-green-computer-manager-password-database-servers",
+        "samAccountName": "greendatabasesrvrs"
       },
       "identityServers": {
-        "name": "TESTB Identity Servers Manager",
-        "passwordSecretName": "shm-testb-computer-manager-password-identity-servers",
-        "samAccountName": "testbidentitysrvrs"
+        "name": "GREEN Identity Servers Manager",
+        "passwordSecretName": "shm-green-computer-manager-password-identity-servers",
+        "samAccountName": "greenidentitysrvrs"
       },
       "linuxServers": {
-        "name": "TESTB Linux Servers Manager",
-        "passwordSecretName": "shm-testb-computer-manager-password-linux-servers",
-        "samAccountName": "testblinuxsrvrs"
+        "name": "GREEN Linux Servers Manager",
+        "passwordSecretName": "shm-green-computer-manager-password-linux-servers",
+        "samAccountName": "greenlinuxsrvrs"
       },
       "rdsGatewayServers": {
-        "name": "TESTB RDS Gateway Manager",
-        "passwordSecretName": "shm-testb-computer-manager-password-rds-gateway-servers",
-        "samAccountName": "testbgatewaysrvrs"
+        "name": "GREEN RDS Gateway Manager",
+        "passwordSecretName": "shm-green-computer-manager-password-rds-gateway-servers",
+        "samAccountName": "greengatewaysrvrs"
       },
       "rdsSessionServers": {
-        "name": "TESTB RDS Session Servers Manager",
-        "passwordSecretName": "shm-testb-computer-manager-password-rds-session-servers",
-        "samAccountName": "testbsessionsrvrs"
+        "name": "GREEN RDS Session Servers Manager",
+        "passwordSecretName": "shm-green-computer-manager-password-rds-session-servers",
+        "samAccountName": "greensessionsrvrs"
       }
     },
     "serviceAccounts": {
       "aadLocalSync": {
-        "name": "TESTB Local AD Sync Administrator",
-        "passwordSecretName": "shm-testb-aad-localsync-password",
-        "samAccountName": "testblocaladsync",
-        "usernameSecretName": "shm-testb-aad-localsync-username"
+        "name": "GREEN Local AD Sync Administrator",
+        "passwordSecretName": "shm-green-aad-localsync-password",
+        "samAccountName": "greenlocaladsync",
+        "usernameSecretName": "shm-green-aad-localsync-username"
       }
     }
   },
