@@ -1,16 +1,16 @@
 {
-    "sreId": "t3guac",
-    "tier": "3",
+    "sreId": "t1guac",
+    "tier": "1",
     "shmId": "green",
     "subscriptionName": "Data Safe Haven Development",
-    "ipPrefix": "10.153.0",
-    "inboundAccessFrom": ["193.60.220.240"],
+    "ipPrefix": "10.151.0",
+    "inboundAccessFrom": "Internet",
     "outboundInternetAccess": "default",
     "computeVmImage": {
         "type": "Ubuntu",
         "version": "20.04.2022081900"
     },
     "remoteDesktopProvider": "ApacheGuacamole",
-    "dataAdminIpAddresses": ["193.60.220.240"],
+    "dataAdminIpAddresses": ["193.60.220.253"],
     "databases": ["MSSQL", "PostgreSQL"]
 }
