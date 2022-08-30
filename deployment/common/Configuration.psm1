@@ -950,15 +950,7 @@ function Get-SreConfig {
     # ------------------------------------------------------------------------------
     $config.sre.remoteDesktop.networkRules = [ordered]@{}
     # Inbound: which IPs can access the Safe Haven (if 'default' is given then apply sensible defaults)
-    if ($sreConfigBase.inboundAccessFrom -eq "default") {
-        if (@("0", "1").Contains($config.sre.tier)) {
-            $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
-        } elseif ($config.sre.tier -eq "2") {
-            $config.sre.remoteDesktop.networkRules.allowedSources = "193.60.220.253"
-        } elseif (@("3", "4").Contains($config.sre.tier)) {
-            $config.sre.remoteDesktop.networkRules.allowedSources = "193.60.220.240"
-        }
-    } elseif ($sreConfigBase.inboundAccessFrom -eq "anywhere") {
+    if (@("anywhere", "all", "internet").Contains($sreConfigBase.inboundAccessFrom.ToLower())) {
         $config.sre.remoteDesktop.networkRules.allowedSources = "Internet"
     } else {
         $config.sre.remoteDesktop.networkRules.allowedSources = @($sreConfigBase.inboundAccessFrom)
@@ -970,9 +962,9 @@ function Get-SreConfig {
         } elseif (@("2", "3", "4").Contains($config.sre.tier)) {
             $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
         }
-    } elseif (@("yes", "allow", "permit").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
+    } elseif (@("yes", "allow", "permit").Contains($sreConfigBase.outboundInternetAccess.ToLower())) {
         $config.sre.remoteDesktop.networkRules.outboundInternet = "Allow"
-    } elseif (@("no", "deny", "forbid").Contains($($sreConfigBase.outboundInternetAccess).ToLower())) {
+    } elseif (@("no", "deny", "forbid").Contains($sreConfigBase.outboundInternetAccess.ToLower())) {
         $config.sre.remoteDesktop.networkRules.outboundInternet = "Deny"
     } else {
         $config.sre.remoteDesktop.networkRules.outboundInternet = @($sreConfigBase.outboundInternet)
