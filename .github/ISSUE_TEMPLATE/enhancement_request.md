@@ -1,41 +1,31 @@
 ---
 name: Enhancement request
-about: Use this template for requested new features or extensions to existing features
+about: Request new features or upgrades to existing features
 title: "<short description of issue>"
 labels: "type: enhancement"
 assignees: ""
 ---
 
+## :white_check_mark: Checklist
+
 <!--
-Before opening an issue:
-- Make sure you are able to reproduce it on the [latest version](https://github.com/alan-turing-institute/data-safe-haven/releases)
-- Search the existing issues.
-- Refer to [our documentation](https://alan-turing-institute.github.io/data-safe-haven/).
-
-In order to help categorise your issue, please take the time to label it with at least one label from **each of** the following categories
-
-- type (bug; enhancement; documentation; question)
-- affected (developers; users)
-- severity (minor; medium; embarrassing; broken / unusable)
-
-Additionally, if you think this would be a good issue for newcomers to tackle then please add the `good first issue` label.
-
-:tada: Thank you!
+Before reporting a problem please check the following. Replace the empty checkboxes [ ] below with checked ones [x] accordingly.
 -->
 
-## :strawberry: Desired behaviour
+- [ ] I have searched open and closed issues for duplicates.
+- [ ] This is a request for a new feature in the Data Safe Haven or an upgrade to an existing feature.
+- [ ] The feature is still missing in the [latest version](https://github.com/alan-turing-institute/data-safe-haven/releases).
+- [ ] I have read through the [documentation](https://alan-turing-institute.github.io/data-safe-haven/).
+- [ ] This isn't an open-ended question (open a [discussion](https://github.com/alan-turing-institute/data-safe-haven/discussions) if it is).
+
+## :strawberry: Suggested change
 
 <!--
-A clear and concise description of what the behaviour should be when this issue is closed.
-
-Include specific tasks (if any) in the order in which they need to be done.
-- [ ] Task 1
-- [ ] Task 2
-- [ ] Task 3
+What would you like to see changed?
 -->
 
-## :steam_locomotive: Possible workarounds, remediations or solutions
+## :steam_locomotive: How could this be done?
 
 <!--
-Suggested way to implement the desired behaviour or to workaround its lack.
+Can you suggest how to implement the desired behaviour?
 -->
