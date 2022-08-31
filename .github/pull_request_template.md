@@ -1,17 +1,17 @@
+## :white_check_mark: Checklist
+
 <!--
 Thank you for your pull request!
 
 Before going any further, please review the [guidelines for contributing](../CONTRIBUTING.md) to this repository.
-
-- Make sure that you give your pull request a meaningful title (*e.g.* `Enable foobar integration` rather than `515 foobar`)
-- Make sure that you are targeting the **develop branch**
-- If this pull request is not ready to merge yet, please add `WIP:` to the beginning of the name as well as marking it as a **draft** pull request
-- Make sure that your branch is up-to-date with the **develop branch** (you probably started your branch from develop but it may have changed since then)
-- There is **no need** to use GitHub labels for pull requests. The issue(s) which this pull request is closing should have the appropriate labels.
-- Make sure that you have checked the formatting of any Powershell that you've added. You can do this with `./tests/AutoFormat_Powershell.ps1 -TargetPath <path to file or directory>`.
-
-:tada: Thank you!
+Replace the empty checkboxes [ ] below with checked ones [x] accordingly.
 -->
+
+- [ ] You have given your pull request a meaningful title (_e.g._ `Enable foobar integration` rather than `515 foobar`).
+- [ ] You are targeting the **develop branch**.
+- [ ] You have marked this pull request as a **draft** pull request if it is not ready to merge yet.
+- [ ] Your branch is up-to-date with the **develop branch** (you probably started your branch from `develop` but it may have changed since then).
+- [ ] You have run the Powershell code formatter. You can do this with `./tests/AutoFormat_Powershell.ps1 -TargetPath <path to file or directory>`.
 
 ### :arrow_heading_up: Summary
 
