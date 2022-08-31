@@ -214,9 +214,62 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 - Ensure that you add this to the {ref}`configuration file <roles_system_deployer_shm_configuration_file>` for this SHM under `azure > activeDirectoryTenantId`.
 
+(roles_deployer_shm_configure_dns)=
+
+## 4. {{door}} Register custom domain with Azure Active Directory
+
+### Configure DNS for the custom domain
+
+![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
+
+```powershell
+PS> ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
+```
+
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+
+````{error}
+If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
+
+<details><summary><b>Manual DNS configuration instructions</b></summary>
+
+- To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for `DNS Zone` and locate the DNS Zone with the SHM's domain.
+- The NS record will list four Azure name servers which must be duplicated to the parent DNS system.
+- If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
+  - The name should be set to the subdomain (e.g. `project`) or `@` if using a custom domain, and the values duplicated from above
+  - For example, for a new subdomain `project.turingsafehaven.ac.uk`, duplicate the NS records from the Azure DNS Zone `project.turingsafehaven.ac.uk` to the Azure DNS Zone for `turingsafehaven.ac.uk`, by creating a record set with name `project`
+    ```{image} deploy_shm/shm_subdomain_ns.png
+    :alt: Subdomain NS record
+    :align: center
+    ```
+- If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+</details>
+````
+
+### Add the SHM domain to the Azure Active Directory
+
+![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
+
+```powershell
+PS> ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID>
+```
+
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+- where `<AAD tenant ID>` is the {ref}`tenant ID <roles_deployer_aad_tenant_id>` for this AAD
+
+```{error}
+If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.
+```
+
+```{error}
+Due to delays with DNS propagation, the script may occasionally exhaust the maximum number of retries without managing to verify the domain.
+If this occurs, run the script again.
+If it exhausts the number of retries a second time, wait an hour and try again.
+```
+
 (roles_deploy_add_additional_admins)=
 
-## 4. {{hammer}} Create Azure Active Directory administrator accounts
+## 5. {{hammer}} Create Azure Active Directory administrator accounts
 
 A default external administrator account was automatically created for the user you were logged in as when you initially created the Azure AD.
 This user should also **not be used** for administering the Azure AD.
@@ -315,7 +368,7 @@ Make sure you have activated your account and **successfully logged in** with th
   - The `User principal name` field for this user will contain the **external domain** and will have `#EXT#` before the `@` sign (for example `alovelace_turing.ac.uk#EXT#@turingsafehaven.onmicrosoft.com`)
 - Click the `Delete user` icon in the menu bar at the top of the user list panel
 
-## 5. {{iphone}} Enable MFA and self-service password reset
+## 6. {{iphone}} Enable MFA and self-service password reset
 
 To enable self-service password reset (SSPR) and MFA-via-phone-call, you must have sufficient licences for all users.
 
@@ -429,7 +482,7 @@ If you see a message about buying licences, you may need to refresh the page for
     </details>
 
 (roles_deployer_deploy_shm)=
-## 6. {{computer}} Deploy SHM
+## 7. {{computer}} Deploy SHM
 
 ![Powershell: a few hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20hours) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
@@ -446,61 +499,6 @@ You will be prompted for credentials for:
 - a user with Global Administrator privileges over the Azure Active Active directory you set up earlier
 
 This will perform the following actions, which can be run individually if desired:
-
-(roles_deployer_shm_configure_dns)=
-<details>
-<summary><strong>Configure DNS for the custom domain</strong></summary>
-
-![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
-
-```powershell
-PS> ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
-```
-
-- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-
-````{error}
-If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
-
-<b>Manual DNS configuration instructions</b>
-
-- To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for `DNS Zone` and locate the DNS Zone with the SHM's domain.
-- The NS record will list four Azure name servers which must be duplicated to the parent DNS system.
-- If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
-  - The name should be set to the subdomain (e.g. `project`) or `@` if using a custom domain, and the values duplicated from above
-  - For example, for a new subdomain `project.turingsafehaven.ac.uk`, duplicate the NS records from the Azure DNS Zone `project.turingsafehaven.ac.uk` to the Azure DNS Zone for `turingsafehaven.ac.uk`, by creating a record set with name `project`
-    ```{image} deploy_shm/shm_subdomain_ns.png
-    :alt: Subdomain NS record
-    :align: center
-    ```
-- If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
-````
-
-</details>
-
-(roles_deployer_shm_setup_aad)=
-<details>
-<summary><strong>Add the SHM domain to the Azure Active Directory</strong></summary>
-
-![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
-
-```powershell
-PS> ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID>
-```
-
-- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-
-```{error}
-If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.
-```
-
-```{error}
-Due to delays with DNS propagation, the script may occasionally exhaust the maximum number of retries without managing to verify the domain.
-If this occurs, run the script again.
-If it exhausts the number of retries a second time, wait an hour and try again.
-```
-
-</details>
 
 (roles_deployer_shm_key_vault)=
 <details>
@@ -685,7 +683,7 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 </details>
 
 (deploy_shm_vpn)=
-## 7. {{station}} Configure VPN connection
+## 8. {{station}} Configure VPN connection
 
 ### Download a client VPN certificate for the Safe Haven Management network
 
@@ -759,7 +757,7 @@ You will need configure your antivirus software to make an exception.
 ```
 
 (roles_system_deployer_configure_domain_controllers)=
-## 8. {{house_with_garden}} Configure domain controllers
+## 9. {{house_with_garden}} Configure domain controllers
 
 (roles_system_deployer_shm_remote_desktop)=
 ### Configure the first domain controller via Remote Desktop
@@ -948,7 +946,7 @@ Once you're certain that you're adding a new user, make sure that the following 
   - If you changed this setting, click the `Save` icon
 
 (roles_system_deployer_configure_nps)=
-## 9. {{station}} Configure network policy server
+## 10. {{station}} Configure network policy server
 
 (roles_system_deployer_shm_remote_desktop_nps)=
 ### Configure the network policy server (NPS) via Remote Desktop
@@ -1057,7 +1055,7 @@ If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `
 </details>
 ```
 
-## 10. {{closed_lock_with_key}} Apply conditional access policies
+## 11. {{closed_lock_with_key}} Apply conditional access policies
 
 (roles_system_deployer_shm_require_mfa)=
 
@@ -1138,7 +1136,7 @@ Security defaults must be disabled in order to create this policy.
 This should have been done when creating a policy to {ref}`require MFA for all users <roles_system_deployer_shm_require_mfa>`.
 ```
 
-## 11. {{no_pedestrians}} Add MFA licences to any non-admin users
+## 12. {{no_pedestrians}} Add MFA licences to any non-admin users
 
 Administrator accounts can use MFA and reset their passwords without a licence needing to be assigned.
 However, when you create non-admin users they will need to be assigned an Azure Active Directory licence in order to reset their own password.
