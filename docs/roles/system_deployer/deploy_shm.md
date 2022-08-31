@@ -38,6 +38,7 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
   - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://apps.microsoft.com/store/detail/microsoft-remote-desktop/9WZDNCRFJ3PS)
   - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite remote desktop client
 - `OpenSSL`
+
   - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) a pre-compiled version can be installed using Homebrew: `brew install openssl`
   - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) binaries are [available here](https://wiki.openssl.org/index.php/Binaries).
 
@@ -105,8 +106,8 @@ The following core SHM properties are required - look in the `environment_config
     "resourceGroupName": "[Optional] Resource group which holds DNS records (e.g. RG_SHM_DNS_TEST)."
   },
   "repositoryType": {
-      "tier2": "[Optional] Whether to use 'mirror' or 'proxy' for tier-2 repositories (default is 'proxy').",
-      "tier3": "[Optional] Whether to use 'mirror' or 'proxy' for tier-3 repositories (default is 'proxy')."
+    "tier2": "[Optional] Whether to use 'mirror' or 'proxy' for tier-2 repositories (default is 'proxy').",
+    "tier3": "[Optional] Whether to use 'mirror' or 'proxy' for tier-3 repositories (default is 'proxy')."
   },
   "vmImages": {
     "subscriptionName": "[Optional] Azure subscription where VM images will be built (if not specified then the value from the 'azure' block will be used). Multiple Safe Haven deployments can share a single set of VM images in a common subscription if desired - this is what is done in the Turing deployment. If you are hoping to use images that have already been built for another Safe Haven deployment, make sure you specify this parameter accordingly.",
@@ -306,6 +307,10 @@ In particular, it should not be used as a shared admin account for routine admin
   - Set their usage location to the country you used when creating the Safe Haven Azure AD
   - Leave all other fields empty, including First name and Last name
   - Click `Create`
+    ```{image} deploy_shm/aad_create_admin.png
+    :alt: AAD create admin account
+    :align: center
+    ```
 - Add a mobile phone number for self-service password reset:
   - Navigate to `Users` and click on the account you have just created.
   - Edit the `Contact info` section and:
@@ -314,21 +319,25 @@ In particular, it should not be used as a shared admin account for routine admin
     - They will need to enter their number in **exactly this format** when performing a self-service password reset.
     - Do **not** add anything in the `Email` field here as this will prevent you from using the same email address for a user account
   - Click the `Save` icon at the top of the user details panel
-- Add an authentication email
-
+- Add authentication methods
   - Click `Authentication methods` in the left hand sidebar
   - Enter the user's mobile phone number in the `Phone` field, using the same format as above
     - Note that you do **not** need to fill out the `Alternate Phone` field
   - Enter the user's institutional email address in the `Email` field
+  - Ensure that you have registered **both** a phone number and an email address
   - Click the `Save` icon at the top of the panel
-    <details><summary><b>Screenshots</b></summary>
 
-    ```{image} deploy_shm/aad_create_admin.png
-    :alt: AAD create admin account
-    :align: center
-    ```
+### Register allowed authentication methods
 
-    </details>
+- When you have finished creating administrator accounts, you will need to ensure that they are able to set their own passwords
+- From the Azure portal, navigate to the AAD you have created.
+- Click `Manage > Password Reset` on the left-hand sidebar
+- Click `Manage > Authentication methods` on the left-hand sidebar
+- Ensure that both `Email` and `Mobile phone` are enabled
+  ```{image} deploy_shm/aad_authentication_methods.png
+  :alt: AAD create admin account
+  :align: center
+  ```
 
 ### Activate and configure your new internal admin account
 
@@ -342,7 +351,8 @@ The other administrators you have just set up can activate their accounts by fol
 - Go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) in an **incognito / private browsing** tab
 - Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)
 - Click the `Forgotten my password` link
-- Enter the captcha text and press next
+- Enter the CAPTCHA text and press next
+  - If you get a message about not being registered for self-service password reset, this indicates that you have not registered both a phone number and an email address in Azure Active Directory
 - Enter your mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
 - Enter the code that was texted to your phone
 - Enter a new password
@@ -482,6 +492,7 @@ If you see a message about buying licences, you may need to refresh the page for
     </details>
 
 (roles_deployer_deploy_shm)=
+
 ## 7. {{computer}} Deploy SHM
 
 ![Powershell: a few hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20hours) at {{file_folder}} `./deployment/secure_research_environment/setup`
@@ -501,6 +512,7 @@ You will be prompted for credentials for:
 This will perform the following actions, which can be run individually if desired:
 
 (roles_deployer_shm_key_vault)=
+
 <details>
 <summary><strong>Deploy Key Vault for SHM secrets and create an emergency admin account</strong></summary>
 
@@ -526,6 +538,7 @@ Do not use this account unless absolutely required!
 </details>
 
 (roles_deployer_shm_vnet_gateway)=
+
 <details>
 <summary><strong>Deploy network and VPN gateway</strong></summary>
 
@@ -558,6 +571,7 @@ If you cannot see these resource groups:
 </details>
 
 (roles_system_deployer_shm_deploy_logging)=
+
 <details>
 <summary><strong>Deploy monitoring</strong></summary>
 
@@ -572,6 +586,7 @@ PS> ./Setup_SHM_Monitoring.ps1 -shmId <SHM ID>
 </details>
 
 (roles_system_deployer_shm_deploy_firewall)=
+
 <details>
 <summary><strong>Deploy firewall</strong></summary>
 
@@ -586,6 +601,7 @@ PS> ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
 </details>
 
 (roles_system_deployer_shm_deploy_update_servers)=
+
 <details>
 <summary><strong>Deploy update servers</strong></summary>
 
@@ -600,6 +616,7 @@ PS> ./Setup_SHM_Update Servers.ps1 -shmId <SHM ID>
 </details>
 
 (roles_deployer_shm_domain_controllers)=
+
 <details>
 <summary><strong>Deploy domain controllers</strong></summary>
 
@@ -630,6 +647,7 @@ If you cannot see these resource groups:
 </details>
 
 (roles_system_deployer_shm_deploy_nps)=
+
 <details>
 <summary><strong>Deploy network policy server</strong></summary>
 
@@ -649,6 +667,7 @@ Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > E
 </details>
 
 (roles_system_deployer_shm_deploy_mirrors)=
+
 <details>
 <summary><strong>Deploy local package repositories</strong></summary>
 
@@ -683,6 +702,7 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 </details>
 
 (deploy_shm_vpn)=
+
 ## 8. {{station}} Configure VPN connection
 
 ### Download a client VPN certificate for the Safe Haven Management network
@@ -757,9 +777,11 @@ You will need configure your antivirus software to make an exception.
 ```
 
 (roles_system_deployer_configure_domain_controllers)=
+
 ## 9. {{house_with_garden}} Configure domain controllers
 
 (roles_system_deployer_shm_remote_desktop)=
+
 ### Configure the first domain controller via Remote Desktop
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
@@ -936,6 +958,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 - From the Azure portal, navigate to the AAD you have created.
 - Select `Password reset` from the left hand menu
 - Select `On-premises integration` from the left hand side bar
+
   - Ensure `Write back passwords to your on-premises directory` is set to yes.
 
     ```{image} deploy_shm/enable_password_writeback.png
@@ -946,9 +969,11 @@ Once you're certain that you're adding a new user, make sure that the following 
   - If you changed this setting, click the `Save` icon
 
 (roles_system_deployer_configure_nps)=
+
 ## 10. {{station}} Configure network policy server
 
 (roles_system_deployer_shm_remote_desktop_nps)=
+
 ### Configure the network policy server (NPS) via Remote Desktop
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
@@ -1116,7 +1141,7 @@ Therefore we will block access for all users other than Global Administrators.
     - **Exclude**:
       - Check `Directory roles`
       - In the drop-down menu select `Global administrator`.
-    This will ensure that only the administrator accounts you created in {ref}`the previous section <roles_deploy_add_additional_admins>` are able to access the portal.
+        This will ensure that only the administrator accounts you created in {ref}`the previous section <roles_deploy_add_additional_admins>` are able to access the portal.
   - Under `Cloud apps or actions` select `Cloud apps` in the drop-down menu and set:
     - **Include**:
       - Select `Select apps`
@@ -1153,9 +1178,9 @@ However, when you create non-admin users they will need to be assigned an Azure 
 - Click `Licences` in the left hand sidebar
 - Click `All products` in the left hand sidebar
 - Click the relevant licence product [`Azure Active Directory Premium P1` (production) or `Azure Active Directory Premium P2` (test)]
-- Click `Licensed users` in the left hand  sidebar
+- Click `Licensed users` in the left hand sidebar
 - Click the `+Assign` icon in the top bar above the list of user licence assignments
-- Click `+ Add users and groups` under ``Users and groups``
+- Click `+ Add users and groups` under `Users and groups`
 - Click on the users you want to assign licences to
 - Click `Select`
 - Click `Review + Assign`
