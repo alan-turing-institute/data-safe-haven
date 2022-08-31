@@ -187,10 +187,10 @@ function Remove-AllResourceGroups {
                 Add-LogMessage -Level Success "Removed resource group $_"
             }
         } catch {
-            $null  # ignore errors
+            $lastException = $_.Exception
         }
     }
-    Add-LogMessage -Level Fatal "Failed to remove all requested resource groups!"
+    Add-LogMessage -Level Fatal "Failed to remove all requested resource groups!" -Exception $lastException
 }
 Export-ModuleMember -Function Remove-AllResourceGroups
 
