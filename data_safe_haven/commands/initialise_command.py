@@ -37,28 +37,41 @@ class InitialiseCommand(LoggingMixin, Command):
             else:
                 project_base_path = pathlib.Path.cwd().resolve()
                 self.warning("No --project option was provided")
-                if not self.log_confirm(f"Do you want to use the default project location (<fg=green>{project_base_path}</>)?", False):
+                if not self.log_confirm(
+                    f"Do you want to use the default project location (<fg=green>{project_base_path}</>)?",
+                    False,
+                ):
                     sys.exit(0)
 
             # Request admin_group if not provided
             admin_group = self.option("admin-group")
             while not admin_group:
-                admin_group = self.log_ask("Please enter the ID for an Azure group containing all administrators:", None)
+                admin_group = self.log_ask(
+                    "Please enter the ID for an Azure group containing all administrators:",
+                    None,
+                )
 
             # Request location if not provided
             location = self.option("location")
             while not location:
-                location = self.log_ask("Please enter the Azure location to deploy resources into:", None)
+                location = self.log_ask(
+                    "Please enter the Azure location to deploy resources into:", None
+                )
 
             # Request deployment_name if not provided
             deployment_name = self.option("deployment-name")
             while not deployment_name:
-                deployment_name = self.log_ask("Please enter the name for this Data Safe Haven deployment:", None)
+                deployment_name = self.log_ask(
+                    "Please enter the name for this Data Safe Haven deployment:", None
+                )
 
             # Request subscription_name if not provided
             subscription_name = self.option("subscription")
             while not subscription_name:
-                subscription_name = self.log_ask("Please enter the Azure subscription to deploy resources into:", None)
+                subscription_name = self.log_ask(
+                    "Please enter the Azure subscription to deploy resources into:",
+                    None,
+                )
 
             # Load settings from dotfiles
             settings = DotFileSettings(
@@ -78,7 +91,9 @@ class InitialiseCommand(LoggingMixin, Command):
 
             # Ensure that the project directory exists
             if not project_base_path.exists():
-                self.info(f"Creating project directory '<fg=green>{project_base_path}</>'.")
+                self.info(
+                    f"Creating project directory '<fg=green>{project_base_path}</>'."
+                )
                 project_base_path.mkdir(parents=True)
             settings_path = settings.write(project_base_path)
             self.info(f"Saved project settings to '<fg=green>{settings_path}</>'.")

@@ -1,4 +1,7 @@
 """Command-line application for deploying a Data Safe Haven from project files"""
+# Standard library imports
+import ipaddress
+
 # Third party imports
 from cleo import Command
 import yaml
@@ -34,12 +37,7 @@ class DeploySHMCommand(LoggingMixin, Command):
                     "Unable to load project settings. Please run this command from inside the project directory."
                 )
             config = Config(settings.name, settings.subscription_name)
-
-            # Request FQDN if not provided
-            while not config.shm.fqdn:
-                config.shm.fqdn = self.log_ask(
-                    "Please enter the domain that SHM users will belong to:", None
-                )
+            self.add_missing_values(config)
 
             # Deploy infrastructure with Pulumi
             infrastructure = PulumiInterface(config, "SHM")
@@ -59,3 +57,28 @@ class DeploySHMCommand(LoggingMixin, Command):
             )
             for line in error_msg.split("\n"):
                 self.error(line)
+
+    def add_missing_values(self, config: Config) -> None:
+        """Request any missing config values and add them to the config"""
+        # Request FQDN if not provided
+        while not config.shm.fqdn:
+            config.shm.fqdn = self.log_ask(
+                "Please enter the domain that SHM users will belong to:", None
+            )
+
+        # Request FQDN if not provided
+        while not config.shm.admin_ip_addresses:
+            self.info(
+                "We need to know any IP addresses or ranges that your system deployers and administrators will be connecting from."
+            )
+            self.info(
+                "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
+            )
+            admin_ip_addresses = self.log_ask(
+                "Space-separated administrator IP addresses and ranges:", None
+            )
+            config.shm.admin_ip_addresses = [
+                str(ipaddress.ip_network(ipv4))
+                for ipv4 in admin_ip_addresses.split()
+                if ipv4
+            ]
