@@ -3,7 +3,10 @@
 from cleo import Command
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenException, DataSafeHavenInputException
+from data_safe_haven.exceptions import (
+    DataSafeHavenException,
+    DataSafeHavenInputException,
+)
 from data_safe_haven.mixins import LoggingMixin
 from .deploy_shm_command import DeploySHMCommand
 from .deploy_sre_command import DeploySRECommand
@@ -26,7 +29,9 @@ class DeployCommand(LoggingMixin, Command):
             elif self.argument("deployment-type") == "sre":
                 command = DeploySRECommand()
             else:
-                raise DataSafeHavenInputException(f"Argument '{self.argument('deployment-type')}' cannot be interpreted as a deployment type.")
+                raise DataSafeHavenInputException(
+                    f"Argument '{self.argument('deployment-type')}' cannot be interpreted as a deployment type."
+                )
             command._args = self._args
             command._io = self._io
             command.handle()

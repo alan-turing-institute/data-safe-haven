@@ -1,7 +1,11 @@
 """Deploy Data Safe Haven Management environment with Pulumi"""
 # Third party imports
 import pulumi
-from pulumi_azure_native import network, resources
+from pulumi_azure_native import resources
+
+# Local imports
+from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
+
 
 class DeclarativeSHM:
     """Deploy Data Safe Haven Management environment with Pulumi"""
@@ -14,21 +18,20 @@ class DeclarativeSHM:
         self.secrets = pulumi.Config()
 
         # Define resource groups
-        rg_identity = resources.ResourceGroup(
-            "rg_identity",
-            resource_group_name=f"rg-shm-{self.cfg.shm.name}-identity",
+        rg_users = resources.ResourceGroup(
+            "rg_users",
+            resource_group_name=f"rg-shm-{self.cfg.shm.name}-users",
         )
         rg_networking = resources.ResourceGroup(
             "rg_networking",
             resource_group_name=f"rg-shm-{self.cfg.shm.name}-networking",
         )
 
-
-        # Define SHM DNS
-        dns_zone = network.Zone(
-            "dns_zone",
-            location="Global",
-            resource_group_name=rg_networking.name,
-            zone_name=self.cfg.shm.fqdn,
-            zone_type="Public"
+        # Deploy SHM networking
+        networking = SHMNetworkingComponent(
+            self.cfg.shm.name,
+            SHMNetworkingProps(
+                fqdn=self.cfg.shm.fqdn,
+                resource_group_name=rg_networking.name,
+            ),
         )

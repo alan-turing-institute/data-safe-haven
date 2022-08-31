@@ -5,7 +5,10 @@ import yaml
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
-from data_safe_haven.exceptions import DataSafeHavenException, DataSafeHavenInputException
+from data_safe_haven.exceptions import (
+    DataSafeHavenException,
+    DataSafeHavenInputException,
+)
 from data_safe_haven.pulumi import PulumiInterface
 from data_safe_haven.mixins import LoggingMixin
 
@@ -27,12 +30,16 @@ class DeploySHMCommand(LoggingMixin, Command):
             try:
                 settings = DotFileSettings()
             except DataSafeHavenInputException:
-                raise DataSafeHavenInputException("Unable to load project settings. Please run this command from inside the project directory.")
+                raise DataSafeHavenInputException(
+                    "Unable to load project settings. Please run this command from inside the project directory."
+                )
             config = Config(settings.name, settings.subscription_name)
 
             # Request FQDN if not provided
             while not config.shm.fqdn:
-                config.shm.fqdn = self.log_ask("Please enter the domain that SHM users will belong to:", None)
+                config.shm.fqdn = self.log_ask(
+                    "Please enter the domain that SHM users will belong to:", None
+                )
 
             # Deploy infrastructure with Pulumi
             infrastructure = PulumiInterface(config, "SHM")
@@ -47,6 +54,8 @@ class DeploySHMCommand(LoggingMixin, Command):
             config.upload()
 
         except DataSafeHavenException as exc:
-            error_msg = f"Could not deploy Data Safe Haven Management environment.\n{str(exc)}"
+            error_msg = (
+                f"Could not deploy Data Safe Haven Management environment.\n{str(exc)}"
+            )
             for line in error_msg.split("\n"):
                 self.error(line)
