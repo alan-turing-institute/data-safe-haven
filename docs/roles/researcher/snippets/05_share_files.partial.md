@@ -25,7 +25,7 @@ The contents of `/data/` will be **identical** on all SRDs in your SRE.
 For example, if your group requests a GPU-enabled machine, this will contain an identical `/data/` folder.
 
 ```{tip}
-If you are participating in a Turing Data Study Group you will find example slides and document templates in the `/data/` drive.
+If you are using the Data Safe Haven as part of an organised event, you might find example slides or document templates in the `/data/` drive.
 ```
 
 #### Shared space: `/shared/`
