@@ -7,7 +7,7 @@ There are several shared areas on the SRD that all collaborators within a resear
 - [input data](#input-data-data): `/data/`
 - [shared space](#shared-space-shared): `/shared/`
 - [scratch space](#scratch-space-scratch): `/scratch/`
-- [backup space](#shared-space-backup): `/backup/`
+- [backup space](#backup-space-backup): `/backup/`
 - [output resources](#output-resources-output): `/output/`
 
 #### Input data: `/data/`
