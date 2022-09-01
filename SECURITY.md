@@ -51,11 +51,11 @@ coordinate any public release with us.
 
 ### Guidance
 You must NOT:
-* Break any applicable law or regulations.
-* Access unnecessary, excessive or significant amounts of data.
-* Modify data in any organisation's systems or services.
-* Use high-intensity invasive or destructive scanning tools to find vulnerabilities.
-* Attempt or report any form of denial of service, e.g. overwhelming a service with a
+- Break any applicable law or regulations.
+- Access unnecessary, excessive or significant amounts of data.
+- Modify data in any organisation's systems or services.
+- Use high-intensity invasive or destructive scanning tools to find vulnerabilities.
+- Attempt or report any form of denial of service, e.g. overwhelming a service with a
 high volume of requests.
-* Disrupt any organisation's services or systems. 
+- Disrupt any organisation's services or systems. 
 
