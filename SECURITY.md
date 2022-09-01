@@ -22,10 +22,12 @@ according to this policy. However, we do not offer monetary rewards for vulnerab
 disclosures.
 
 ### Reporting
+
 If you believe you have found a security vulnerability, please submit your report to us
 using the following email: safehavendevs@turing.ac.uk
 
 In your report please include details of:
+
 - The area / component of the Data Safe Haven where the vulnerability can be observed.
 - A brief description of the type of vulnerability, for example; “unexpected outbound data access” or "privilege escalation to admin user".
 - Steps to reproduce. These should be a benign, non-destructive, proof of concept. This
@@ -33,6 +35,7 @@ helps to ensure that the report can be triaged quickly and accurately. It also r
 the likelihood of duplicate reports, or malicious exploitation of some vulnerabilities.
 
 ### What to expect
+
 After you have submitted your report, we will respond to your report within 5 working
 days and aim to triage your report within 10 working days. We’ll also aim to keep you
 informed of our progress.
@@ -45,17 +48,18 @@ days. This allows our teams to focus on the remediation.
 We will notify you when the reported vulnerability is remediated, and you may be
 invited to confirm that the solution covers the vulnerability adequately.
 
-Once your vulnerability has been resolved, we welcome requests to disclose your 
-report. We’d like to unify guidance to affected users, so please do continue to 
+Once your vulnerability has been resolved, we welcome requests to disclose your
+report. We’d like to unify guidance to affected users, so please do continue to
 coordinate any public release with us.
 
 ### Guidance
+
 You must NOT:
+
 - Break any applicable law or regulations.
 - Access unnecessary, excessive or significant amounts of data.
 - Modify data in any organisation's systems or services.
 - Use high-intensity invasive or destructive scanning tools to find vulnerabilities.
 - Attempt or report any form of denial of service, e.g. overwhelming a service with a
 high volume of requests.
-- Disrupt any organisation's services or systems. 
-
+- Disrupt any organisation's services or systems.
