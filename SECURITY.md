@@ -30,9 +30,7 @@ In your report please include details of:
 
 - The area / component of the Data Safe Haven where the vulnerability can be observed.
 - A brief description of the type of vulnerability, for example; “unexpected outbound data access” or "privilege escalation to admin user".
-- Steps to reproduce. These should be a benign, non-destructive, proof of concept. This
-helps to ensure that the report can be triaged quickly and accurately. It also reduces
-the likelihood of duplicate reports, or malicious exploitation of some vulnerabilities.
+- Steps to reproduce. These should be a benign, non-destructive, proof of concept. This helps to ensure that the report can be triaged quickly and accurately. It also reduces the likelihood of duplicate reports, or malicious exploitation of some vulnerabilities.
 
 ### What to expect
 
@@ -60,6 +58,5 @@ You must NOT:
 - Access unnecessary, excessive or significant amounts of data.
 - Modify data in any organisation's systems or services.
 - Use high-intensity invasive or destructive scanning tools to find vulnerabilities.
-- Attempt or report any form of denial of service, e.g. overwhelming a service with a
-high volume of requests.
+- Attempt or report any form of denial of service, e.g. overwhelming a service with a high volume of requests.
 - Disrupt any organisation's services or systems.
