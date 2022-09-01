@@ -81,7 +81,7 @@ $null = Register-VmsWithAutomationSchedule -Account $account `
 # Create Windows VM other updates schedule
 $windowsWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                          -DayInterval 7 `
-                                                         -Name "sre-$($config.sre.id)-windows-other".ToLower() `
+                                                         -Name "sre-$($config.sre.id)-windows-updates".ToLower() `
                                                          -StartDayOfWeek $config.shm.monitoring.updateServers.schedule.weekly_system_updates.day `
                                                          -Time "$($config.shm.monitoring.updateServers.schedule.weekly_system_updates.hour):$($config.shm.monitoring.updateServers.schedule.weekly_system_updates.minute)" `
                                                          -TimeZone $localTimeZone
@@ -94,7 +94,7 @@ $null = Register-VmsWithAutomationSchedule -Account $account `
 # Create Linux VM update schedule
 $linuxWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                        -DayInterval 7 `
-                                                       -Name "sre-$($config.sre.id)-linux".ToLower() `
+                                                       -Name "sre-$($config.sre.id)-linux-updates".ToLower() `
                                                        -StartDayOfWeek $config.shm.monitoring.updateServers.schedule.weekly_system_updates.day `
                                                        -Time "$($config.shm.monitoring.updateServers.schedule.weekly_system_updates.hour):$($config.shm.monitoring.updateServers.schedule.weekly_system_updates.minute)" `
                                                        -TimeZone $localTimeZone
