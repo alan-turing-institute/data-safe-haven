@@ -6,7 +6,6 @@
 
 architecture/index.md
 security_decisions/index.md
-certifications/index.md
 ```
 
 ## Overview
@@ -36,6 +35,3 @@ This includes reasoning for our choices but also highlights potential limitation
 
 [Security](security_decisions/index.md)
 : Decisions about data security and the default controls at each SRE tier.
-
-[Certifications](certifications/index.md)
-: Details about certifications that the Data Safe Haven has achieved or is aiming to achieve.
