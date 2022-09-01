@@ -833,9 +833,9 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 - Login as the **SRE standard user** into an SRD via remote desktop web client
 - Open up a terminal
-- Add a file to `backup`
+- Add a file to `/backup`
 - Wait for 5 minutes then alter the file contents
-- As the {ref}`role_system_manager` use the instructions in the {ref}`role_system_manager_administrator_guide` to restore the file from backup
+- As the {ref}`role_system_manager` use the instructions in the {ref}`role_system_manager_administrator_guide` to restore the folder to its previous state.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -852,4 +852,30 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 :align: center
 ```
 </details>
+````
+
+#### Add a file that is removed after restore
+
+- Login as the **SRE standard user** into an SRD via remote desktop web client
+- Open up a terminal
+- Add a file to `/data`
+- As the {ref}`role_system_manager` use the instructions in the {ref}`role_system_manager_administrator_guide` to restore the folder to its previous state.
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+
+The file is no longer present.
+````
+
+#### Delete a file that is replaced after restore
+
+- Login as the **SRE standard user** into an SRD via remote desktop web client
+- Open up a terminal
+- Remove a file from `/output`
+- As the {ref}`role_system_manager` use the instructions in the {ref}`role_system_manager_administrator_guide` to restore the folder to its previous state.
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+
+The file has been restored with its previous contents.
 ````
