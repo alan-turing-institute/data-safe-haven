@@ -522,7 +522,7 @@ it and enroll the new disk into the backup system.
 - Navigate to the resource group where the new disk has been created
 - Select the virtual machine that the old disk is attached to and click `Disks` in the left-hand menu
 - Take note of the old disks `LUN`
-- Remove the old disk by clicking the 'X' at the righy-hand side of the disk table
+- Remove the old disk by clicking the 'X' at the right-hand side of the disk table
 - Click `Save`
 - Click `Attach existing disks` and select the disk you restored
 - Ensure the restored disk has the same 'LUN' as the old disk
