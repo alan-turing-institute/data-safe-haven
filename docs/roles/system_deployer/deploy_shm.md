@@ -295,49 +295,54 @@ In particular, it should not be used as a shared admin account for routine admin
 
 - From the Azure portal, navigate to the AAD you have created.
 - Click `Users` in the left hand sidebar and click on the `+New user` icon in the top menu above the list of users.
-- Create an internal admin user:
-  - User name: `aad.admin.firstname.lastname@<SHM domain>`
-  - Name: `AAD Admin - Firstname Lastname`
-  - Leave `Auto-generate password` set.
-    Users will be able to reset their passwords on first login and it is good security practice for admins not to know user passwords.
-  - Click the `User` link in the `Roles` field and make the user an administrator:
-    - Search for `Global Administrator`
-    - Check `Global Administrator`
-    - Click the `Select` button
-  - Set their usage location to the country you used when creating the Safe Haven Azure AD
-  - Leave all other fields empty, including First name and Last name
-  - Click `Create`
-    ```{image} deploy_shm/aad_create_admin.png
-    :alt: AAD create admin account
-    :align: center
-    ```
-- Add a mobile phone number for self-service password reset:
-  - Navigate to `Users` and click on the account you have just created.
-  - Edit the `Contact info` section and:
-    - Add the the user's mobile phone number to the `Mobile phone` field.
-      Make sure to prefix it with the country code and **do not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
-    - They will need to enter their number in **exactly this format** when performing a self-service password reset.
-    - Do **not** add anything in the `Email` field here as this will prevent you from using the same email address for a user account
-  - Click the `Save` icon at the top of the user details panel
-- Add authentication methods
-  - Click `Authentication methods` in the left hand sidebar
-  - Enter the user's mobile phone number in the `Phone` field, using the same format as above
-    - Note that you do **not** need to fill out the `Alternate Phone` field
-  - Enter the user's institutional email address in the `Email` field
-  - Ensure that you have registered **both** a phone number and an email address
-  - Click the `Save` icon at the top of the panel
+
+#### Create an internal admin user:
+
+- User name: `aad.admin.firstname.lastname@<SHM domain>`
+- Name: `AAD Admin - Firstname Lastname`
+- Leave `Auto-generate password` set. Users will be able to reset their passwords on first login and it is good security practice for admins not to know user passwords.
+- Click the `User` link in the `Roles` field and make the user an administrator:
+  - Search for `Global Administrator`
+  - Check `Global Administrator`
+  - Click the `Select` button
+- Set their usage location to the country you used when creating the Safe Haven Azure AD
+- Leave all other fields empty, including First name and Last name
+- Click `Create`
+
+```{image} deploy_shm/aad_create_admin.png
+:alt: AAD create admin account
+:align: center
+```
+
+#### Add authentication methods for self-service password reset
+
+- Navigate to `Users` and click on the account you have just created.
+- Click on `Properties` and then edit the `Contact info` section.
+  - Add the the user's mobile phone number to the `Mobile phone` field.
+    Make sure to prefix it with the country code and **do not include** the leading zero (e.g. `+44 7700900000`).
+  - They will need to enter their number in **exactly this format** when performing a self-service password reset.
+  - Do **not** add anything in the `Email` field here as this will prevent you from using the same email address for a user account.
+  - Click the `Save` icon in top panel.
+- In the left-hand sidebar click `Authentication methods`.
+  - Enter the user's mobile phone number in the `Phone` field, using the same format as above.
+    - Note that you do **not** need to fill out the `Alternate Phone` field.
+  - Enter the user's institutional email address in the `Email` field.
+  - Ensure that you have registered **both** a phone number and an email address.
+  - Click the `Save` icon in top panel.
 
 ### Register allowed authentication methods
 
-- When you have finished creating administrator accounts, you will need to ensure that they are able to set their own passwords
+When you have finished creating administrator accounts, you will need to ensure that they are able to set their own passwords
+
 - From the Azure portal, navigate to the AAD you have created.
 - Click `Manage > Password Reset` on the left-hand sidebar
 - Click `Manage > Authentication methods` on the left-hand sidebar
 - Ensure that both `Email` and `Mobile phone` are enabled
-  ```{image} deploy_shm/aad_authentication_methods.png
-  :alt: AAD create admin account
-  :align: center
-  ```
+
+```{image} deploy_shm/aad_authentication_methods.png
+:alt: AAD create admin account
+:align: center
+```
 
 ### Activate and configure your new internal admin account
 
