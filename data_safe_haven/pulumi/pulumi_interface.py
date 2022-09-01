@@ -22,7 +22,13 @@ from data_safe_haven.mixins import LoggingMixin
 class PulumiInterface(LoggingMixin):
     """Interact with infrastructure using Pulumi"""
 
-    def __init__(self, config: Config, deployment_type: str, *args: Optional[Any], **kwargs: Optional[Any]):
+    def __init__(
+        self,
+        config: Config,
+        deployment_type: str,
+        *args: Optional[Any],
+        **kwargs: Optional[Any],
+    ):
         super().__init__(*args, **kwargs)
         self.cfg = config
         self.env_ = None
@@ -34,7 +40,9 @@ class PulumiInterface(LoggingMixin):
             self.program = DeclarativeSRE(config)
             self.work_dir = pathlib.Path.cwd() / "pulumi" / f"sre-srename"
         else:
-            raise DataSafeHavenPulumiException(f"Deployment type '{deployment_type}' was not recognised.")
+            raise DataSafeHavenPulumiException(
+                f"Deployment type '{deployment_type}' was not recognised."
+            )
 
     @property
     def local_stack_path(self):
@@ -45,7 +53,8 @@ class PulumiInterface(LoggingMixin):
     def env(self):
         if not self.env_:
             backend_storage_account_key = self.cfg.storage_account_key(
-                self.cfg.backend.resource_group_name, self.cfg.backend.storage_account_name
+                self.cfg.backend.resource_group_name,
+                self.cfg.backend.storage_account_name,
             )
             self.env_ = {
                 "AZURE_STORAGE_ACCOUNT": self.cfg.backend.storage_account_name,
@@ -58,9 +67,7 @@ class PulumiInterface(LoggingMixin):
     def stack(self):
         """Load the Pulumi stack, creating if needed."""
         if not self.stack_:
-            self.info(
-                f"Creating/loading stack <fg=green>{self.cfg.shm.name}</>."
-            )
+            self.info(f"Creating/loading stack <fg=green>{self.cfg.shm.name}</>.")
             self.stack_ = automation.create_or_select_stack(
                 project_name="data_safe_haven",
                 stack_name=self.cfg.shm.name,
@@ -174,7 +181,9 @@ class PulumiInterface(LoggingMixin):
             self.info(f"Refreshing stack <fg=green>{self.stack.name}</>.")
             self.stack.refresh(color="always")
         except automation.errors.CommandError as exc:
-            raise DataSafeHavenPulumiException(f"Pulumi refresh failed.\n{str(exc)}") from exc
+            raise DataSafeHavenPulumiException(
+                f"Pulumi refresh failed.\n{str(exc)}"
+            ) from exc
 
     def secret(self, name):
         """Read a secret from the Pulumi stack."""
@@ -188,7 +197,9 @@ class PulumiInterface(LoggingMixin):
     def set_config_options(self):
         """Set Pulumi config options"""
         self.ensure_config("azure-native:location", self.cfg.azure.location)
-        self.ensure_config("azure-native:subscriptionId", self.cfg.azure.subscription_id)
+        self.ensure_config(
+            "azure-native:subscriptionId", self.cfg.azure.subscription_id
+        )
 
     def teardown(self):
         """Teardown the infrastructure deployed with Pulumi."""

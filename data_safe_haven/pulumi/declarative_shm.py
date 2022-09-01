@@ -5,6 +5,7 @@ from pulumi_azure_native import resources
 
 # Local imports
 from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
+from .components.shm_secrets import SHMSecretsComponent, SHMSecretsProps
 
 
 class DeclarativeSHM:
@@ -18,13 +19,15 @@ class DeclarativeSHM:
         self.secrets = pulumi.Config()
 
         # Define resource groups
-        rg_users = resources.ResourceGroup(
-            "rg_users",
-            resource_group_name=f"rg-shm-{self.cfg.shm.name}-users",
-        )
         rg_networking = resources.ResourceGroup(
             "rg_networking",
+            location=self.cfg.azure.location,
             resource_group_name=f"rg-shm-{self.cfg.shm.name}-networking",
+        )
+        rg_storage = resources.ResourceGroup(
+            "rg_storage",
+            location=self.cfg.azure.location,
+            resource_group_name=f"rg-shm-{self.cfg.shm.name}-storage",
         )
 
         # Deploy SHM networking
@@ -33,5 +36,16 @@ class DeclarativeSHM:
             SHMNetworkingProps(
                 fqdn=self.cfg.shm.fqdn,
                 resource_group_name=rg_networking.name,
+            ),
+        )
+
+        # Deploy SHM secrets
+        secrets = SHMSecretsComponent(
+            self.cfg.shm.name,
+            SHMSecretsProps(
+                admin_group_id=self.cfg.azure.admin_group_id,
+                location=self.cfg.azure.location,
+                resource_group_name=rg_storage.name,
+                tenant_id=self.cfg.azure.tenant_id,
             ),
         )
