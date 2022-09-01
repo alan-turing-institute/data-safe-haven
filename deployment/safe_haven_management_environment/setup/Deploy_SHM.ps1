@@ -45,16 +45,6 @@ $null = Set-AzContext -Subscription $config.dns.subscriptionName -ErrorAction St
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot '..' '..' 'CheckRequirements.ps1')" }
 
 
-# Setup SHM DNS zone
-# ------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_DNS_Zone.ps1')" -shmId $shmId }
-
-
-# Add the SHM domain to Azure Active Directory
-# --------------------------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_AAD_Domain.ps1')" -shmId $shmId }
-
-
 # Deploy the SHM KeyVault and register emergency user with AAD
 # ------------------------------------------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Key_Vault_And_Emergency_Admin.ps1')" -shmId $shmId }
