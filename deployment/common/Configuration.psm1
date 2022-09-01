@@ -333,7 +333,6 @@ function Get-ShmConfig {
                     @("104.131.190.124") + # dbeaver.io
                     @("152.199.20.126") + # developer.download.nvidia.com
                     @("104.18.26.123", "104.18.27.123") + # packages.gitlab.com
-                    @("52.52.144.96", "54.176.201.225") + # packagecloud.io
                     @("104.21.71.41", "144.76.174.102", "172.67.143.23") + # qgis.org
                     $microsoftIpAddresses # packages.microsoft.com, azure.archive.ubuntu.com
                 )
