@@ -7,6 +7,7 @@ There are several shared areas on the SRD that all collaborators within a resear
 - [input data](#input-data-data): `/data/`
 - [shared space](#shared-space-shared): `/shared/`
 - [scratch space](#scratch-space-scratch): `/scratch/`
+- [backup space](#shared-space-backup): `/backup/`
 - [output resources](#output-resources-output): `/output/`
 
 #### Input data: `/data/`
@@ -33,7 +34,6 @@ The `/shared/` folder should be used for any work that you want to share with yo
 Everyone in your group will be able to access it, and will have **read-and-write access**.
 
 The contents of `/shared/` will be **identical** on all SRDs in your SRE.
-For example, if your group requests a GPU-enabled machine, this will contain an identical `/shared/` folder.
 
 #### Scratch space: `/scratch/`
 
@@ -41,7 +41,15 @@ The `/scratch/` folder should be used for any work-in-progress that isn't ready 
 Although everyone in your group will have **read-and-write access**, you can create your own folders inside `/scratch` and choose your own permissions for them.
 
 The contents of `/scratch/` will be **different** on different VMs in your SRE.
-For example, if your group requests a GPU-enabled machine, this will have its own `/scratch/` folder.
+
+#### Backup space: `/backup/`
+
+The `/backup/` folder should be used for any work-in-progress that you want to have backed up.
+In the event of any accidental data loss, your system administrator can restore the `/backup` folder to the state it was in at an earlier time.
+This **cannot** be used to recover individual files - only the complete contents of the folder.
+Everyone in your group will have **read-and-write access** to all folders on `/backup`.
+
+The contents of `/backup/` will be **identical** on all SRDs in your SRE.
 
 #### Output resources: `/output/`
 
