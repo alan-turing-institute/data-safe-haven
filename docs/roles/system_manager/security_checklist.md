@@ -815,3 +815,67 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 ```
 </details>
 ````
+
+## 12. File backups
+
+### We claim:
+
+- The `data`, `backup` and `output` folders are backed up
+
+### Which means:
+
+- Administrators can restore these folders to their state at an earlier point in time.
+- This is done on for the whole folder, not on a per-file basis.
+
+### Verify by:
+
+#### Change a file then restore it
+
+- Login as the **SRE standard user** into an SRD via remote desktop web client
+- Open up a terminal
+- Add a file to `/backup`
+- Wait for 5 minutes then alter the file contents
+- As the {ref}`role_system_manager` use the instructions in the {ref}`role_system_manager_administrator_guide` to restore the folder to its previous state.
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+
+<details><summary>Original file contents are restored</summary>
+
+```{image} security_checklist/backup_incorrect.png
+:alt: Incorrect file
+:align: center
+```
+
+```{image} security_checklist/backup_correct.png
+:alt: Correct file
+:align: center
+```
+</details>
+````
+
+#### Add a file that is removed after restore
+
+- Login as the **SRE standard user** into an SRD via remote desktop web client
+- Open up a terminal
+- Add a file to `/data`
+- As the {ref}`role_system_manager` use the instructions in the {ref}`role_system_manager_administrator_guide` to restore the folder to its previous state.
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+
+The file is no longer present.
+````
+
+#### Delete a file that is replaced after restore
+
+- Login as the **SRE standard user** into an SRD via remote desktop web client
+- Open up a terminal
+- Remove a file from `/output`
+- As the {ref}`role_system_manager` use the instructions in the {ref}`role_system_manager_administrator_guide` to restore the folder to its previous state.
+
+````{attention}
+{{camera}} <b>Verify that:</b>
+
+The file has been restored with its previous contents.
+````
