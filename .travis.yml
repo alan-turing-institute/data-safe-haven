@@ -4,6 +4,13 @@ dist: focal
 
 language: shell
 
+# timeout uploading cache after 6 minutes (360 seconds)
+cache:
+  timeout: 360
+  directories:
+  # Linux Powershell module installation location
+    - $HOME/.local/share/powershell/Modules/ 
+
 jobs:
   include:
     - name: Test Powershell
