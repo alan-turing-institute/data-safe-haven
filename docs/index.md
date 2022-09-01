@@ -6,7 +6,6 @@
 
 introduction/index.md
 roles/index.md
-policies/index.md
 design/index.md
 ```
 
@@ -38,9 +37,6 @@ You can read them through in order or simply jump to the section that you are mo
   - if you want to [**deploy your own**](role_system_deployer) Data Safe Haven
   - if you want to [**upload sensitive data**](role_data_provider_representative) to a Data Safe Haven
   - if you need to [**analyse data**](role_researcher) in a Data Safe Haven that someone else has deployed
-
-- [**Policies**](policies/index.md)
-  - if you want details about our data governance and user management recommendations
 
 - [**Design**](design/index.md)
   - if you want details about the technical design of the Data Safe Haven
