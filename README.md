@@ -39,6 +39,11 @@ Follow the link from any release to view and clone this repository as at that re
 
 Read our [versioning scheme](VERSIONING.md) for how we number and label releases, as well as details of releases that have been used in production and releases that have undergone formal security evaluation.
 
+## :mailbox_with_mail: Vulnerability disclosure
+
+We value those who take the time and effort to report security vulnerabilities.
+If you believe you have found a security vulnerability, please report it as outlined in our [Security and vulnerability disclosure policy](SECURITY.md).
+
 ## :bow: Acknowledgements
 
 We are grateful for the following support for this project:
