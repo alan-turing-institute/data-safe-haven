@@ -58,7 +58,7 @@ jobs:
         shell: bash
         run: |
           git config --global advice.detachedHead false
-          for tag in $(git tag); do
+          for tag in $LATEST_STABLE; do
             echo -e "\n\n✨ Generating documention for ${tag} ✨"
             git checkout $tag
             # Reload Sphinx config from BACKUPDIR to get a consistent HTML style
@@ -71,7 +71,7 @@ jobs:
         shell: bash
         run: |
           FAILED=0
-          for tag in $(git tag); do
+          for tag in $LATEST_STABLE; do
             if [ -e "${{env.OUTPUTDIR}}/${tag}/index.html" ]; then
               echo "✅ $tag documentation built successfully"
             else
