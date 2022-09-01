@@ -16,17 +16,17 @@ jobs:
     - name: Test Powershell
       before_script:
         - sudo snap install powershell --classic
-        - pwsh -c "Install-Module -Force -Verbose -Name Az.Accounts"
-        - pwsh -c "Install-Module -Force -Verbose -Name Az.Compute"
-        - pwsh -c "Install-Module -Force -Verbose -Name Az.Dns"
-        - pwsh -c "Install-Module -Force -Verbose -Name Az.KeyVault"
-        - pwsh -c "Install-Module -Force -Verbose -Name Az.Network"
-        - pwsh -c "Install-Module -Force -Verbose -Name Az.OperationalInsights"
-        - pwsh -c "Install-Module -Force -Verbose -Name Az.RecoveryServices"
-        - pwsh -c "Install-Module -Force -Verbose -Name Az.Resources"
-        - pwsh -c "Install-Module -Force -Verbose -Name Az.Storage"
-        - pwsh -c "Install-Module -Force -Verbose -Name Pester"
-        - pwsh -c "Install-Module -Force -Verbose -Name PSScriptAnalyzer"
+        - pwsh -c "Install-Module -Verbose -Name Az.Accounts"
+        - pwsh -c "Install-Module -Verbose -Name Az.Compute"
+        - pwsh -c "Install-Module -Verbose -Name Az.Dns"
+        - pwsh -c "Install-Module -Verbose -Name Az.KeyVault"
+        - pwsh -c "Install-Module -Verbose -Name Az.Network"
+        - pwsh -c "Install-Module -Verbose -Name Az.OperationalInsights"
+        - pwsh -c "Install-Module -Verbose -Name Az.RecoveryServices"
+        - pwsh -c "Install-Module -Verbose -Name Az.Resources"
+        - pwsh -c "Install-Module -Verbose -Name Az.Storage"
+        - pwsh -c "Install-Module -Verbose -Name Pester"
+        - pwsh -c "Install-Module  -Verbose -Name PSScriptAnalyzer"
       script: pwsh -c "./tests/Run_Pester_Tests.ps1"
 
     - name: Lint JSON files
