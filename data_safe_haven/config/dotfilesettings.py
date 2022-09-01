@@ -9,9 +9,10 @@ import yaml
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenInputException
+from data_safe_haven.mixins import LoggingMixin
 
 
-class DotFileSettings:
+class DotFileSettings(LoggingMixin):
     """Load global and local settings from dotfiles with structure like the following
 
     azure:
@@ -29,8 +30,13 @@ class DotFileSettings:
     config_file_name = ".dshconfig"
 
     def __init__(
-        self, admin_group_id: str = None, location: str = None, name: str = None, subscription_name: str = None
+        self,
+        admin_group_id: str = None,
+        location: str = None,
+        name: str = None,
+        subscription_name: str = None,
     ):
+        super().__init__()
         try:
             # Load local dotfile settings (if any)
             local_dotfile = pathlib.Path.cwd() / self.config_file_name
@@ -62,14 +68,24 @@ class DotFileSettings:
         if subscription_name:
             self.subscription_name = subscription_name
 
-        # Check that all variables exist
-        if not all(
-            [self.admin_group_id, self.location, self.name, self.subscription_name]
-        ):
-            raise DataSafeHavenInputException(
-                f"Not enough information to initialise Data Safe Haven. Please provide subscription_name and location in one of the following ways\n"
-                + "- in the current directory .dshconfig\n"
-                + "- via command line arguments"
+        # Request any missing parameters
+        while not self.admin_group_id:
+            self.admin_group_id = self.log_ask(
+                "Please enter the ID for an Azure group containing all administrators:",
+                None,
+            )
+        while not self.location:
+            self.location = self.log_ask(
+                "Please enter the Azure location to deploy resources into:", None
+            )
+        while not self.name:
+            self.name = self.log_ask(
+                "Please enter the name for this Data Safe Haven deployment:", None
+            )
+        while not self.subscription_name:
+            self.subscription_name = self.log_ask(
+                "Please enter the Azure subscription to deploy resources into:",
+                None,
             )
 
     def write(self, directory: pathlib.Path) -> None:
@@ -81,7 +97,7 @@ class DotFileSettings:
                 "admin_group_id": self.admin_group_id,
                 "location": self.location,
                 "subscription_name": self.subscription_name,
-            }
+            },
         }
         filepath = (directory / self.config_file_name).resolve()
         with open(filepath, "w") as f_settings:

@@ -47,6 +47,7 @@ class Backend(LoggingMixin):
         """
         try:
             self.config.azure.subscription_id = self.azure_api.subscription_id
+            self.config.azure.tenant_id = self.azure_api.tenant_id
             resource_group = self.azure_api.ensure_resource_group(
                 location=self.config.azure.location,
                 resource_group_name=self.config.backend.resource_group_name,
@@ -85,7 +86,9 @@ class Backend(LoggingMixin):
                 key_name=self.config.backend.pulumi_encryption_key_name,
                 key_vault_name=keyvault.name,
             )
-            self.config.backend.pulumi_secrets_provider = pulumi_encryption_key.id.replace("https:", "azurekeyvault:")
+            self.config.backend.pulumi_secrets_provider = (
+                pulumi_encryption_key.id.replace("https:", "azurekeyvault:")
+            )
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create backend resources.\n{str(exc)}"
