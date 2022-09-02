@@ -29,9 +29,6 @@ The risks of under-classification include not only legal and financial sanction,
 
 Within this context, the Alan Turing Institute has developed a tiered sensitivity system for classifying projects that use sensitive data.
 
-[Sensitivity tiers](data_sensitivity_classification/sensitivity_tiers.md)
-: Details of the five sensitivity tiers that projects are classified into.
-
 [Classification process](data_sensitivity_classification/classification_process.md)
 : How to classify a project into one of our sensitivity tiers.
 

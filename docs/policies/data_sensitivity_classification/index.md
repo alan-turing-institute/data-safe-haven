@@ -4,13 +4,9 @@
 :hidden: true
 :maxdepth: 2
 
-sensitivity_tiers.md
 classification_process.md
 unconsented_data.md
 ```
-
-[Sensitivity tiers](sensitivity_tiers.md)
-: Details of the five sensitivity tiers that projects are classified into.
 
 [Classification process](classification_process.md)
 : How to classify a project into one of our sensitivity tiers.
