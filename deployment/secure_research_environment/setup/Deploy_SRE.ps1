@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
-    [string]$sreId
+    [string]$sreId,
     [Parameter(Mandatory = $true, HelpMessage = "Array of sizes of SRDs to deploy. For example: 'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'")]
     [string[]]$VmSizes,
     [Parameter(Mandatory = $false, HelpMessage = "Remove any remnants of previous deployments of this SRE from the SHM")]
