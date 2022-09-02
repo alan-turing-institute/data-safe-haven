@@ -4,7 +4,7 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import emoji
-from git import Repo
+import git
 
 
 # -- Project information -----------------------------------------------------
@@ -16,19 +16,13 @@ development_branch = "develop"
 
 # -- Customisation  -----------------------------------------------------------
 
-
-def tag2version(tag):
-    return tag.name
-
-
 # Find name of current version plus names of all tags
-repo = Repo(search_parent_directories=True)
+repo = git.Repo(search_parent_directories=True)
 repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
-tags = [t for t in repo.tags if t.commit == repo.head.commit]
-versions = [development_branch] + [tag2version(t) for t in repo.tags]
+versions = [development_branch] + [t.name for t in repo.tags]
 
 # The most recently released version, including alpha/beta/rc tags
-release = tag2version(tags[0]) if tags else development_branch
+latest_release = sorted(t.name for t in repo.tags)[-1]
 
 # Construct list of emoji substitutions
 emoji_codes = set(
@@ -46,8 +40,8 @@ emoji_codes = set(
 if "html_context" not in globals():
     html_context = dict()
 html_context["display_lower_left"] = True
-html_context["version"] = release
-html_context["current_version"] = release
+html_context["version"] = latest_release
+html_context["current_version"] = latest_release
 html_context["versions"] = [(v, f"/{repo_name}/{v}/index.html") for v in versions]
 # Downloadable PDFs
 html_context["downloads"] = [
