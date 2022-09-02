@@ -3,5 +3,5 @@ myst-parser==0.15.2
 Sphinx==4.3.0
 emoji==1.6.1
 pydata-sphinx-theme==0.7.2
-rinohtype==0.5.3
+rinohtype==0.5.4
 rinoh-typeface-symbola==0.1.1
