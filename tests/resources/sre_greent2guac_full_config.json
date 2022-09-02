@@ -1139,7 +1139,11 @@
           },
           "remoteDesktop": {
             "cidr": "10.152.1.0/24",
-            "name": "RemoteDesktopSubnet"
+            "name": "RemoteDesktopSubnet",
+            "nsg": {
+              "name": "NSG_SHM_GREEN_SRE_T2GUAC_GUACAMOLE",
+              "rules": "sre-nsg-rules-guacamole.json"
+            }
           },
           "webapps": {
             "cidr": "10.152.5.0/24",
@@ -1154,45 +1158,19 @@
     },
     "nsgPrefix": "NSG_SHM_GREEN_SRE_T2GUAC",
     "remoteDesktop": {
-      "appSessionHost": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-rds-sh1",
+      "guacamole": {
+        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-guacamole",
+        "databaseAdminPasswordSecretName": "sre-t2guac-db-admin-password-guacamole",
         "disks": {
           "os": {
             "sizeGb": "128",
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "APP-SRE-T2GUAC.green.develop.turingsafehaven.ac.uk",
-        "hostname": "APP-SRE-T2GUAC",
-        "ip": "10.152.1.5",
-        "nsg": {
-          "name": "NSG_SHM_GREEN_SRE_T2GUAC_RDS_SESSION_HOSTS",
-          "rules": "sre-nsg-rules-session-hosts.json"
-        },
-        "vmName": "APP-SRE-T2GUAC",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "gateway": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-rds-gateway",
-        "disks": {
-          "data": {
-            "sizeGb": "1023",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
-        },
-        "fqdn": "RDG-SRE-T2GUAC.green.develop.turingsafehaven.ac.uk",
-        "hostname": "RDG-SRE-T2GUAC",
-        "installationDirectory": "C:\\Installation",
+        "fqdn": "GUACAMOLE-SRE-T2GUAC.green.develop.turingsafehaven.ac.uk",
+        "hostname": "GUACAMOLE-SRE-T2GUAC",
         "ip": "10.152.1.4",
-        "nsg": {
-          "name": "NSG_SHM_GREEN_SRE_T2GUAC_RDS_SERVER",
-          "rules": "sre-nsg-rules-gateway.json"
-        },
-        "vmName": "RDG-SRE-T2GUAC",
+        "vmName": "GUACAMOLE-SRE-T2GUAC",
         "vmSize": "Standard_DS2_v2"
       },
       "networkRules": {
@@ -1202,7 +1180,7 @@
         "outboundInternet": "Deny",
         "pasteAllowed": false
       },
-      "provider": "MicrosoftRDS",
+      "provider": "ApacheGuacamole",
       "rg": "RG_SHM_GREEN_SRE_T2GUAC_REMOTE_DESKTOP"
     },
     "repositories": {
