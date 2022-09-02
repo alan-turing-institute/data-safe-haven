@@ -14,7 +14,7 @@ However, the processes and contractual agreements that the **Dataset Provider** 
 ## Bringing data into the environment
 
 ```{attention}
-Before starting any data ingress, make sure that you have gone through the {ref}`policy_data_classification_process`.
+Before starting any data ingress, make sure that you have gone through the {ref}`process_data_classification`.
 ```
 
 There are three methods of transferring data to the Data Safe Haven (in order of preference):

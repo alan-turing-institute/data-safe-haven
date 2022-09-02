@@ -22,8 +22,8 @@ It is the duty of the **Dataset Provider Representative** to manage this set of 
 {ref}`Security claims <design_security_claims>`
 : Claims that we make about the security of the Data Safe Haven.
 
-{ref}`Data classification guide <policy_data_classification_process>`
-: Step-by-step instructions on how to classify a work package into one of our security tiers.
+{ref}`Data classification guide <process_data_classification>`
+: How to classify a work package into one of our security tiers.
 
 [Data ingress](data_ingress.md)
 : What a **Dataset Provider Representative** needs to know about bringing data or software into the environment.

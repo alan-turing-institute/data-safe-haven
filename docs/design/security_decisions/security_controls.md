@@ -1,4 +1,4 @@
-(policy_technical_controls)=
+(design_security_controls)=
 
 # Technical controls
 
@@ -15,11 +15,19 @@ Our network security model distinguishes three levels of access networks for use
 - An `Institutional` network
 - An `Unrestricted` network (e.g. the open internet or any other non-`Restricted` or non-`Institutional` network)
 
+(design_restricted_network)=
+
+### Restricted network
+
 A `Restricted` network corresponds to a network managed by a trusted institution that can support additional controls such as restricting access to a narrower set of users, devices or locations.
 Access to SREs can be restricted such that access is only allowed by devices which are connected to a particular set of `Restricted` networks.
 Access to a particular SRE may be permitted from multiple `Restricted` networks at multiple trusted organisations.
 This can permit users from multiple organisations to access an SRE, as well permitting users to access the SRE while away from their home institution at another trusted institution.
 However, remote access to a `Restricted` network (for example via VPN) is not permitted.
+
+(design_institutional_network)=
+
+### Institutional network
 
 An `Institutional` network corresponds to a network managed by a trusted institution.
 Guest access may be permitted on such networks (e.g. eduroam), but these guests should be known users.
@@ -38,10 +46,18 @@ We define two types of devices that {ref}`Researchers <role_researcher>` might u
 - Managed devices
 - Open devices
 
+(design_managed_devices)=
+
+### Managed devices
+
 Managed devices are devices provided by a institution on which the user does not have administrator/root access, with the device instead administered by the institution's IT team.
 They have an extensive suite of research software installed.
 This includes the ability to install packages for standard programming environments without the need for administrator access.
 {ref}`Researchers <role_researcher>` can compile and run their own executables in user space (the portion of system memory in which user processes run).
+
+(design_open_devices)=
+
+### Open devices
 
 Open devices include personal devices such as researcher-owned laptops, but also include devices provided by an institution where the user has administrator/root access.
 These devices permit the easy use of a wider range of software than managed devices, as well as easier access to peripheral hardware.

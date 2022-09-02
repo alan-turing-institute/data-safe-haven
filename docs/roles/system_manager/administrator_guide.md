@@ -351,7 +351,7 @@ The following steps show how to generate a temporary write-only upload token tha
 Software ingress is performed in a similar manner to data.
 
 ```{important}
-Software ingress must go through the same {ref}`approval policy <policy_security_package_approval>` as is the case for data ingress, including sign-off from the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+Software ingress must go through the same approval process as is the case for data ingress, including sign-off from the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
 ```
 
 - Follow the same steps as for {ref}`data ingress <roles_system_manager_data_ingress>` above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours)

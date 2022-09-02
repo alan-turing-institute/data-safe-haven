@@ -12,7 +12,7 @@ Ensure that you check what the expectations of your {ref}`role_data_provider_rep
 ## Classification
 
 The first stage of bringing input code and data into the Data Safe Haven is to classify them.
-Make sure that you have followed the {ref}`same workflow <policy_data_classification_process>` and agreed on the security tier with your {ref}`role_data_provider_representative` and {ref}`role_referee` (if applicable).
+Make sure that you have followed the {ref}`same workflow <process_data_classification>` and agreed on the security tier with your {ref}`role_data_provider_representative` and {ref}`role_referee` (if applicable).
 
 ## Loading data into the environment
 

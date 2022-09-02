@@ -1,3 +1,5 @@
+(design_sre)=
+
 # Secure research environment design
 
 Each project within the Safe Haven has its own separate secure Secure Research Environment (SRE).
