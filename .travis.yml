@@ -66,7 +66,6 @@ jobs:
       before_script: |
         gem install html-proofer -v 3.19.0
         pip install -r docs/build/requirements.txt
-        ./docs/build/patches/patch_rinohtype.sh
       script: |
         DOCS_DIR=$(mktemp -d)
         ./docs/build/build_docs_instance.sh -p -d $DOCS_DIR -n develop
