@@ -6,7 +6,9 @@ param(
     [Parameter(Mandatory = $true, HelpMessage = "Array of sizes of SRDs to deploy. For example: 'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'")]
     [string[]]$VmSizes,
     [Parameter(Mandatory = $false, HelpMessage = "Remove any remnants of previous deployments of this SRE from the SHM")]
-    [switch]$Clean
+    [switch]$Clean,
+    [Parameter(Mandatory = $false, HelpMessage = "Use device authentication for connecting to Azure and Microsoft Graph")]
+    [switch]$UseDeviceAuthentication
 )
 
 Import-Module Az.Accounts -ErrorAction Stop
@@ -19,7 +21,11 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ----------------
 if (Get-AzContext) { Disconnect-AzAccount | Out-Null } # force a refresh of the Azure token before starting
 Add-LogMessage -Level Info "Attempting to authenticate with Azure. Please sign in with an account with admin rights over the subscriptions you plan to use."
-Connect-AzAccount -ErrorAction Stop | Out-Null
+if ($UseDeviceAuthentication) {
+    Connect-AzAccount -UseDeviceAuthentication -ErrorAction Stop
+} else {
+    Connect-AzAccount -ErrorAction Stop
+}
 if (Get-AzContext) {
     Add-LogMessage -Level Success "Authenticated with Azure as $((Get-AzContext).Account.Id)"
 } else {
@@ -38,7 +44,11 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # --------------------------
 if (Get-MgContext) { Disconnect-MgGraph | Out-Null } # force a refresh of the Microsoft Graph token before starting
 Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph. Please sign in with an account with admin rights over the Azure Active Directory you plan to use."
-Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop | Out-Null
+if ($UseDeviceAuthentication) {
+    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -UseDeviceAuthentication -ErrorAction Stop
+} else {
+    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+}
 if (Get-MgContext) {
     Add-LogMessage -Level Success "Authenticated with Microsoft Graph as $((Get-MgContext).Account)"
 } else {
