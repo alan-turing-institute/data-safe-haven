@@ -27,6 +27,13 @@ if (Get-AzContext) {
 }
 
 
+# Get config and original context before changing subscription
+# ------------------------------------------------------------
+$config = Get-SreConfig -shmId $shmId -sreId $sreId
+$originalContext = Get-AzContext
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+
+
 # Connect to Microsoft Graph
 # --------------------------
 if (Get-MgContext) { Disconnect-MgGraph | Out-Null } # force a refresh of the Microsoft Graph token before starting
@@ -37,13 +44,6 @@ if (Get-MgContext) {
 } else {
     Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
 }
-
-
-# Get config and original context before changing subscription
-# ------------------------------------------------------------
-$config = Get-SreConfig -shmId $shmId -sreId $sreId
-$originalContext = Get-AzContext
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Check that we are using the correct provider
