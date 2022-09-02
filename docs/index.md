@@ -4,7 +4,7 @@
 :hidden: true
 :maxdepth: 2
 
-introduction/index.md
+overview/index.md
 roles/index.md
 policies/index.md
 design/index.md
@@ -32,7 +32,7 @@ If this sounds interesting to you, take a look at our GitHub releases: [![Data S
 The documentation for this project covers several different topics.
 You can read them through in order or simply jump to the section that you are most interested in.
 
-- [**Introduction**](introduction/index.md)
+- [**Overview**](overview/index.md)
   - if you want an overview of what the Data Safe Haven project is about.
 
 - [**Roles**](roles/index.md)
