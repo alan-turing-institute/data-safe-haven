@@ -109,19 +109,23 @@ for version in repo_info.supported_versions:
             pdf_flag = ""
         proc = subprocess.run([os.path.join(current_file_dir, "build_docs_instance.sh"), "-d",temp_build_path, "-n", version, pdf_flag], capture_output=True)
         if proc.returncode:
-            print(f"Error when building docs for version '{version}'")
+            errStr = f"Error when building docs for version '{version}'"
+            print(errStr)
             print(f"stdout: {proc.stdout}")
             print(f"stderr: {proc.stderr}")
-            exit(1)
+            raise Exception(errStr)
 
     except:
-        # In case of encountring an error:
-        print(f"Error encountered during build for version '{version}'. Restoring original branch '{original_branch}'")
+        print(f"Error encountered during build for version '{version}'")
+    else:
+        print(f"Successfully built docs for version '{version}'")
+    finally:
+        # Revert to orginal branch in any case
+        print(f"Restoring original branch '{original_branch}'")
         # - Revert any changes made to current branch
         git.reset("--hard", "HEAD")
         git.clean("-fd")   
         # - Checkout original branch
-        print(f"Restoring original '{original_branch}' branch.")
         git.checkout(original_branch)
         raise
 

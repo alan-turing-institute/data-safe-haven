@@ -7,6 +7,7 @@ usage() {
     echo "  -d directory [required]         specify directory where backups are stored"
     echo "  -n name [required]              name of the version being built"
     echo "  -p                              also build PDF versions"
+    echo "  -s                              skip cleanup of any changes made during build (only use if handling this cleanup elsewhere)"
     exit 1
 }
 
@@ -26,6 +27,9 @@ while getopts "d:hn:p" option; do
         ;;
     p)
         make_pdf=1
+        ;;
+    s)
+        skip_cleanup=1
         ;;
     \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -59,5 +63,7 @@ echo "Moving output to ${output_directory}/${name}"
 mv docs/_output "${output_directory}/${name}"
 
 # Reset local changes
-git reset --hard HEAD
-git clean -fd
+if [ "$skip_cleanup" != "1" ]; then
+    git reset --hard HEAD
+    git clean -fd
+fi
