@@ -130,10 +130,6 @@ filedata = filedata.replace("{{latest_stable}}", repo_info.default_version)
 with open(os.path.join(temp_build_path, "index.html"),"w+") as file:
     file.write(filedata)
 
-# Check docs
-if not(skip_check_docs):
-    subprocess.run([os.path.join(current_file_dir, "check_docs.sh"), "-d", temp_build_path], check=True)
-
 # -- Restore original branch and copy docs to specified output directory --
 print(f"Documentation builds complete for all versions: {repo_info.supported_versions}")
 # Checkout original branch
@@ -142,4 +138,9 @@ git.checkout(original_branch)
 # Copy build documentaton to specified out put directory
 print(f"Copying build documentation to '{final_build_output_dir}'")
 shutil.copytree(temp_build_path, final_build_output_dir)
+
+# Check docs
+print("Checking docs...")
+if not(skip_check_docs):
+    subprocess.run([os.path.join(current_file_dir, "check_docs.sh"), "-d", final_build_output_dir], check=True)
 print("Done.")
