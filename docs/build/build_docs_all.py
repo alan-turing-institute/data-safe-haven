@@ -96,7 +96,9 @@ for version in repo_info.supported_versions:
 
         # Build docs for this version
         print(os.path.join(current_file_dir, "build_docs_instance.sh"))
-        subprocess.run([os.path.join(current_file_dir, "build_docs_instance.sh"), "-d",temp_build_path, "-n", version])
+        if version == repo_info.default_version:
+            pdf_flag = "-p"
+        subprocess.run([os.path.join(current_file_dir, "build_docs_instance.sh"), "-d",temp_build_path, "-n", version, pdf_flag])
     except:
         # In case of encountring an error:
         print(f"Error encountered during build for version '{version}'. Restoring original branch '{original_branch}'")
