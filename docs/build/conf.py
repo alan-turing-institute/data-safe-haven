@@ -41,7 +41,7 @@ emoji_codes = set(
 if "html_context" not in globals():
     html_context = dict()
 html_context["display_lower_left"] = True
-html_context["version"] = repo_info.default_version
+html_context["default_version"] = repo_info.default_version
 html_context["current_version"] = repo_info.default_version
 html_context["versions"] = [(v, f"../{v}/index.html") for v in repo_info.supported_versions]
 # Downloadable PDFs
