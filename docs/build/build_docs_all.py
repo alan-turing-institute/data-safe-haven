@@ -107,13 +107,7 @@ for version in repo_info.supported_versions:
             pdf_flag = "-p"
         else:
             pdf_flag = ""
-        proc = subprocess.run([os.path.join(current_file_dir, "build_docs_instance.sh"), "-d",temp_build_path, "-n", version, pdf_flag], capture_output=True)
-        if proc.returncode:
-            errStr = f"Error when building docs for version '{version}'"
-            print(errStr)
-            print(f"stdout: {proc.stdout}")
-            print(f"stderr: {proc.stderr}")
-            raise Exception(errStr)
+        subprocess.run([os.path.join(current_file_dir, "build_docs_instance.sh"), "-d", temp_build_path, "-n", version, pdf_flag], check=True)
 
     except:
         print(f"Error encountered during build for version '{version}'")
@@ -138,12 +132,7 @@ with open(os.path.join(temp_build_path, "index.html"),"w+") as file:
 
 # Check docs
 if not(skip_check_docs):
-    proc = subprocess.run([os.path.join(current_file_dir, "check_docs.sh"), "-d", temp_build_path], capture_output=True)
-    if proc.returncode:
-        print(f"Error when checking docs")
-        print(f"stdout: {proc.stdout}")
-        print(f"stderr: {proc.stderr}")
-        exit(1)
+    subprocess.run([os.path.join(current_file_dir, "check_docs.sh"), "-d", temp_build_path], check=True)
 
 # -- Restore original branch and copy docs to specified output directory --
 print(f"Documentation builds complete for all versions: {repo_info.supported_versions}")
