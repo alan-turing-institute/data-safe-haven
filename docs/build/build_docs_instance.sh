@@ -49,9 +49,9 @@ git diff --exit-code "**/*.md" ':(exclude)docs/README.md'
 # Build the docs
 make -C docs clean
 if [ "$make_pdf" = "1" ]; then
-    make -C docs html pdf
+    make -C docs html pdf BUILD_GIT_VERSION=${name}
 else
-    make -C docs html
+    make -C docs html BUILD_GIT_VERSION=${name}
 fi
 
 # Store docs in the output directory

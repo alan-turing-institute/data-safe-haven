@@ -24,6 +24,8 @@ author = "The Alan Turing Institute"
 print(f"Supported versions: {repo_info.supported_versions}")
 print(f"Default version: {repo_info.default_version}")
 
+env_build_git_version = os.getenv("BUILD_GIT_VERSION")
+
 
 # Construct list of emoji substitutions
 emoji_codes = set(
@@ -42,7 +44,7 @@ if "html_context" not in globals():
     html_context = dict()
 html_context["display_lower_left"] = True
 html_context["default_version"] = repo_info.default_version
-html_context["current_version"] = repo_info.default_version
+html_context["current_version"] = env_build_git_version
 html_context["versions"] = [(v, f"../{v}/index.html") for v in repo_info.supported_versions]
 # Downloadable PDFs
 html_context["downloads"] = [
