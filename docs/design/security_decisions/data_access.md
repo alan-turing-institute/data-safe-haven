@@ -2,7 +2,7 @@
 
 ## Admistrative access
 
-Access to all Data Safe Haven Azure resources is controlled via ` Azure Active Directory`` (Azure AD) and Role-Based Access Control (RBAC). Only members of the  `Safe Haven Administrators` security group have administrative access to any element of the Safe Haven.
+Access to all Data Safe Haven Azure resources is controlled via ` Azure Active Directory` (Azure AD) and Role-Based Access Control (RBAC). Only members of the  `Safe Haven Administrators` security group have administrative access to any element of the Safe Haven.
 
 ```{important}
 Membership of this security group should be limited to {ref}`system deployers <role_system_deployer>` and {ref}`system managers <role_system_manager>`.
