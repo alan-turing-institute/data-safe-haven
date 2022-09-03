@@ -138,7 +138,7 @@ with open(os.path.join(temp_build_path, "index.html"),"w+") as file:
 
 # Check docs
 if not(skip_check_docs):
-    proc = subprocess.run([os.path.join(current_file_dir, "check_docs.sh"), "-d", "temp_build_path"], capture_output=True)
+    proc = subprocess.run([os.path.join(current_file_dir, "check_docs.sh"), "-d", temp_build_path], capture_output=True)
     if proc.returncode:
         print(f"Error when checking docs")
         print(f"stdout: {proc.stdout}")
