@@ -20,11 +20,11 @@ development_branch = "develop"
 repo = git.Repo(search_parent_directories=True)
 repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
 versions = [development_branch] + [t.name for t in repo.tags]
-print("Versions: {0}", versions)
+print(f"Versions: {versions}")
 
 # The most recently released version, including alpha/beta/rc tags
 latest_release = sorted(t.name for t in repo.tags)[-1]
-print("Latest release: {0}", latest_release)
+print(f"Latest release: {latest_release}")
 
 # Construct list of emoji substitutions
 emoji_codes = set(
