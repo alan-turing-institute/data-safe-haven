@@ -14,14 +14,14 @@ This provides a centralised management facility, ensuring consistency across all
 Within the Management segment all authentication services are contained within a single virtual network (VNet).
 The Windows Servers are running Active Directory and are acting as Domain Controllers.
 They are configured within an Azure availability set to ensure maximum up time.
+The Domain Controllers run Azure AD Connect to synchronise user IDs to the AzureAD that is associated with the Management subscription.
 
 In addition to the Domain Controllers there is a Windows Network Policy server, this server provides Multifactor Authentication services to the Remote Desktop Servers hosted within the SREs.
 
-The NPS server is also running Azure AD Connect to synchronise user IDs to the AzureAD that is associated with the Management subscription.
 Network security is provided by Azure Network Security Groups that ensure that inbound connections are limited to Active Directory and RADIUS traffic.
 
 For management of the environment there is an Azure point-to-site (P2S) VPN service configured.
-Access to this is limited to the Data Safe Haven administration team and requires both a client certificate and administrative login credentials.
+Access to this is limited to the Data Safe Haven administration team.
 
 ## Package mirrors
 
