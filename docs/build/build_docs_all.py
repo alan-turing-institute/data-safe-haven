@@ -108,7 +108,14 @@ for version in repo_info.supported_versions:
         git.checkout(original_branch)
         raise
 
-# -- Restore original branc and chopy docs to specified output directory --
+# Write top-level index file to redirect to default version of docs
+with open(os.path.join(docs_dir, "build", "meta", "index.html"), "r") as file:
+    filedata = file.read()
+filedata = filedata.replace("{{latest_stable}}", repo_info.default_version)
+with open(os.path.join(temp_build_path, "index.html"),"w+") as file:
+    file.write(filedata)
+
+# -- Restore original branch and copy docs to specified output directory --
 print(f"Documentation builds complete for all versions: {repo_info.supported_versions}")
 # Checkout original branch
 print(f"Restoring original '{original_branch}' branch.")
