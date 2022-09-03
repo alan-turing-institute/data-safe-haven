@@ -2,7 +2,7 @@
 
 # Available software
 
-The Secure Research Desktops (SRDs) available in each SRE use the latest [Ubuntu LTS release](https://wiki.ubuntu.com/Releases).
+The Secure Research Desktops (SRDs) available in each SRE use the latest [Ubuntu LTS release](https://releases.ubuntu.com/).
 
 - When a Data Safe Haven is first deployed a reference virtual machine image is created that uses the **latest available version** of each required software packages.
 - Any packages installed using the `apt` package manager are further updated whenever a new desktop is deployed into any SRE.
