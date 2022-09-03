@@ -117,6 +117,7 @@ for version in repo_info.supported_versions:
 
     except:
         print(f"Error encountered during build for version '{version}'")
+        raise
     else:
         print(f"Successfully built docs for version '{version}'")
     finally:
@@ -127,7 +128,6 @@ for version in repo_info.supported_versions:
         git.clean("-fd")   
         # - Checkout original branch
         git.checkout(original_branch)
-        raise
 
 # Write top-level index file to redirect to default version of docs
 with open(os.path.join(docs_dir, "build", "meta", "index.html"), "r") as file:
