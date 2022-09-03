@@ -139,8 +139,8 @@ git.checkout(original_branch)
 print(f"Copying build documentation to '{final_build_output_dir}'")
 shutil.copytree(temp_build_path, final_build_output_dir)
 
-# Check docs
-print("Checking docs...")
-if not(skip_check_docs):
-    subprocess.run([os.path.join(current_file_dir, "check_docs.sh"), "-d", final_build_output_dir], check=True)
-print("Done.")
+# # Check docs
+# print("Checking docs...")
+# if not(skip_check_docs):
+#     subprocess.run([os.path.join(current_file_dir, "check_docs.sh"), "-d", final_build_output_dir, "-b", repo_info.repo_name], check=True)
+# print("Done.")
