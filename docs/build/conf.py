@@ -19,12 +19,17 @@ development_branch = "develop"
 # Find name of current version plus names of all tags
 repo = git.Repo(search_parent_directories=True)
 repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
-versions = [development_branch] + [t.name for t in repo.tags]
-print(f"Versions: {versions}")
+all_releases = sorted(t.name for t in repo.tags)
+earliest_supported_release = "v3.4.0"
+earliest_supported_release_idx = all_releases.index(earliest_supported_release)
+all_supported_releases = all_releases[earliest_supported_release_idx:]
+supported_versions = [development_branch] + all_supported_releases
+print(f"Supported versions: {supported_versions}")
 
-# The most recently released version, including alpha/beta/rc tags
-latest_release = sorted(t.name for t in repo.tags)[-1]
-print(f"Latest release: {latest_release}")
+# Set default version to disply documentation for latest version
+# default_version = all_supported_releases[-1] # Latest supported stable release
+default_version = development_branch
+print(f"Default version: {default_version}")
 
 # Construct list of emoji substitutions
 emoji_codes = set(
@@ -42,9 +47,9 @@ emoji_codes = set(
 if "html_context" not in globals():
     html_context = dict()
 html_context["display_lower_left"] = True
-html_context["version"] = latest_release
-html_context["current_version"] = latest_release
-html_context["versions"] = [(v, f"/{repo_name}/{v}/index.html") for v in versions]
+html_context["version"] = default_version
+html_context["current_version"] = default_version
+html_context["versions"] = [(v, f"/{repo_name}/{v}/index.html") for v in supported_versions]
 # Downloadable PDFs
 html_context["downloads"] = [
     (
