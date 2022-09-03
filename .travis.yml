@@ -4,6 +4,10 @@ dist: focal
 
 language: shell
 
+# Remove clone depth limit to ensure we have access to all tags from repo
+git:
+  depth: false
+
 # timeout uploading cache after 6 minutes (360 seconds)
 cache:
   timeout: 360
