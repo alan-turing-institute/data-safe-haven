@@ -4,32 +4,26 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import emoji
-import git
+import importlib.util
+import os
 
+# Reliably import local module, no matter how python script is called
+spec=importlib.util.spec_from_file_location("repo_info",
+    os.path.join(os.path.dirname(os.path.realpath(__file__)),"repo_info.py"))
+repo_info = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(repo_info)
 
 # -- Project information -----------------------------------------------------
 
 project = "Data Safe Haven"
 copyright = "2021, The Alan Turing Institute"
 author = "The Alan Turing Institute"
-development_branch = "develop"
 
 # -- Customisation  -----------------------------------------------------------
 
-# Find name of current version plus names of all tags
-repo = git.Repo(search_parent_directories=True)
-repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
-all_releases = sorted(t.name for t in repo.tags)
-earliest_supported_release = "v3.4.0"
-earliest_supported_release_idx = all_releases.index(earliest_supported_release)
-all_supported_releases = all_releases[earliest_supported_release_idx:]
-supported_versions = [development_branch] + all_supported_releases
-print(f"Supported versions: {supported_versions}")
+print(f"Supported versions: {repo_info.supported_versions}")
+print(f"Default version: {repo_info.default_version}")
 
-# Set default version to disply documentation for latest version
-# default_version = all_supported_releases[-1] # Latest supported stable release
-default_version = development_branch
-print(f"Default version: {default_version}")
 
 # Construct list of emoji substitutions
 emoji_codes = set(
@@ -47,33 +41,33 @@ emoji_codes = set(
 if "html_context" not in globals():
     html_context = dict()
 html_context["display_lower_left"] = True
-html_context["version"] = default_version
-html_context["current_version"] = default_version
-html_context["versions"] = [(v, f"/{repo_name}/{v}/index.html") for v in supported_versions]
+html_context["version"] = repo_info.default_version
+html_context["current_version"] = repo_info.default_version
+html_context["versions"] = [(v, f"/{repo_info.repo_name}/{v}/index.html") for v in repo_info.supported_versions]
 # Downloadable PDFs
 html_context["downloads"] = [
     (
         "User guide (Apache Guacamole)",
-        f"/{repo_name}/{development_branch}/pdf/data_safe_haven_user_guide_guacamole.pdf",
+        f"/{repo_info.repo_name}/{repo_info.development_branch}/pdf/data_safe_haven_user_guide_guacamole.pdf",
     ),
     (
         "User guide (Microsoft RDS)",
-        f"/{repo_name}/{development_branch}/pdf/data_safe_haven_user_guide_msrds.pdf",
+        f"/{repo_info.repo_name}/{repo_info.development_branch}/pdf/data_safe_haven_user_guide_msrds.pdf",
     ),
     (
         "Classification flowchart",
-        f"/{repo_name}/{development_branch}/pdf/data_classification_flow_full.pdf",
+        f"/{repo_info.repo_name}/{repo_info.development_branch}/pdf/data_classification_flow_full.pdf",
     ),
     (
         "Simplified classification  flowchart",
-        f"/{repo_name}/{development_branch}/pdf/data_classification_flow_simple.pdf",
+        f"/{repo_info.repo_name}/{repo_info.development_branch}/pdf/data_classification_flow_simple.pdf",
     ),
 ]
 # Add 'Edit on GitHub' link
 html_context["display_github"] = True
 html_context["github_user"] = "alan-turing-institute"
 html_context["github_repo"] = "data-safe-haven"
-html_context["github_version"] = development_branch
+html_context["github_version"] = repo_info.development_branch
 html_context["doc_path"] = "docs"
 
 
