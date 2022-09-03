@@ -22,9 +22,12 @@ parser.add_argument('--output-dir',
     help='Directory to store built documentation')
 parser.add_argument('--skip-pdfs', action='store_true',
     help='Skip building PDFs (use only for faster testing)')
+parser.add_argument('--skip-check-docs', action='store_true',
+    help='Skip checking docs (use only for faster testing)')
 args = parser.parse_args()
 final_build_output_dir = args.output_dir
 skip_pdfs = args.skip_pdfs
+skip_check_docs = args.skip_check_docs
 temp_dir = tempfile.TemporaryDirectory()
 
 
@@ -105,6 +108,7 @@ for version in repo_info.supported_versions:
         else:
             pdf_flag = ""
         subprocess.run([os.path.join(current_file_dir, "build_docs_instance.sh"), "-d",temp_build_path, "-n", version, pdf_flag])
+
     except:
         # In case of encountring an error:
         print(f"Error encountered during build for version '{version}'. Restoring original branch '{original_branch}'")
@@ -122,6 +126,10 @@ with open(os.path.join(docs_dir, "build", "meta", "index.html"), "r") as file:
 filedata = filedata.replace("{{latest_stable}}", repo_info.default_version)
 with open(os.path.join(temp_build_path, "index.html"),"w+") as file:
     file.write(filedata)
+
+# Check docs
+if not(skip_check_docs):
+    subprocess.run([os.path.join(current_file_dir, "check_docs.sh"), "-d", "temp_build_path"])
 
 # -- Restore original branch and copy docs to specified output directory --
 print(f"Documentation builds complete for all versions: {repo_info.supported_versions}")
