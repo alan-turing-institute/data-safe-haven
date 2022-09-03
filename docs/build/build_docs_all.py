@@ -18,11 +18,15 @@ spec.loader.exec_module(repo_info)
 parser = argparse.ArgumentParser(
     prog="python build_docs_all.py",
     description="Build documentation for all supported versions")
-parser.add_argument('output_dir',
+parser.add_argument('--output-dir',
     help='Directory to store built documentation')
+parser.add_argument('--skip-pdfs', action='store_true',
+    help='Skip building PDFs (use only for faster testing)')
 args = parser.parse_args()
 final_build_output_dir = args.output_dir
+skip_pdfs = args.skip_pdfs
 temp_dir = tempfile.TemporaryDirectory()
+
 
 # --- Ensure local repo is clean --
 if repo_info.repo.is_dirty(untracked_files=True):
@@ -96,8 +100,10 @@ for version in repo_info.supported_versions:
 
         # Build docs for this version
         print(os.path.join(current_file_dir, "build_docs_instance.sh"))
-        if version == repo_info.default_version:
+        if (version == repo_info.default_version and not(skip_pdfs)):
             pdf_flag = "-p"
+        else:
+            pdf_flag = ""
         subprocess.run([os.path.join(current_file_dir, "build_docs_instance.sh"), "-d",temp_build_path, "-n", version, pdf_flag])
     except:
         # In case of encountring an error:
