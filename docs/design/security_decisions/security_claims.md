@@ -33,7 +33,7 @@ The diagram below shows an overview of the security standards we're trying to me
 
 ### We claim:
 
-- The Data Safe Haven network is isolated from external connections (both {ref}`policy_tier_2` and {ref}`policy_tier_2`).
+- The Data Safe Haven network is isolated from external connections (both {ref}`policy_tier_2` and {ref}`policy_tier_3`).
 
 ### Which means:
 
