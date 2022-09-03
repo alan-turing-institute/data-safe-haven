@@ -24,7 +24,7 @@ Jump to the following sections:
   - [Project management through issues](#project-management-through-issues)
   - [Issues as conversations](#issues-as-conversations)
   - [Working in a private repository](#working-in-a-private-repository)
-  - [Who's involved in the project](#Whos-involved-in-the-project)
+  - [Who's involved in the project](#whos-involved-in-the-project)
   - [Make a change with a pull request](#making-a-change-with-a-pull-request)
 
 ## A DevOps development philosophy
@@ -215,7 +215,7 @@ Once you submit a [pull request](https://docs.github.com/en/pull-requests/collab
 
 A [review](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews) will probably consist of a few questions to help clarify the work you've done. Keep an eye on your github notifications and be prepared to join in that conversation.
 
-You can update your [fork][github-fork] of the data safe haven [repository](https://github.com/alan-turing-institute/data-safe-haven) and the pull request will automatically update with those changes. **You don't need to submit a new pull request when you make a change in response to a review.**
+You can update your [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) of the data safe haven [repository](https://github.com/alan-turing-institute/data-safe-haven) and the pull request will automatically update with those changes. **You don't need to submit a new pull request when you make a change in response to a review.**
 
 GitHub has a [nice introduction](https://docs.github.com/en/get-started/quickstart/github-flow) to the pull request workflow, but please [get in touch](#get-in-touch) if you have any questions :balloon:.
 
@@ -259,6 +259,10 @@ The following people have made one or more commits to the project:
 | Rachel Winstanley    | [@rwinstanley1](https://github.com/rwinstanley1)           | <rwinstanley@turing.ac.uk>            |
 | Warwick Wood         | [@warwick26](https://github.com/warwick26)                 | <wwood@turing.ac.uk>                  |
 | Kevin Xu             | [@kevinxufs](https://github.com/kevinxufs)                 | <kxu@turing.ac.uk>                    |
+
+## Get in touch
+
+You can get in touch with the development team at safehavendevs@turing.ac.uk.
 
 ## Thank you!
 
