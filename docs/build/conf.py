@@ -45,24 +45,24 @@ if "html_context" not in globals():
 html_context["display_lower_left"] = True
 html_context["default_version"] = repo_info.default_version
 html_context["current_version"] = env_build_git_version
-html_context["versions"] = [(v, f"../{v}/index.html") for v in repo_info.supported_versions]
+html_context["versions"] = [(v, f"/{repo_info.repo_name}/{v}/index.html") for v in repo_info.supported_versions]
 # Downloadable PDFs
 html_context["downloads"] = [
     (
         "User guide (Apache Guacamole)",
-        f"../{repo_info.development_branch}/pdf/data_safe_haven_user_guide_guacamole.pdf",
+        f"/{repo_info.repo_name}/{repo_info.development_branch}/pdf/data_safe_haven_user_guide_guacamole.pdf",
     ),
     (
         "User guide (Microsoft RDS)",
-        f"../{repo_info.development_branch}/pdf/data_safe_haven_user_guide_msrds.pdf",
+        f"/{repo_info.repo_name}/{repo_info.development_branch}/pdf/data_safe_haven_user_guide_msrds.pdf",
     ),
     (
         "Classification flowchart",
-        f"../{repo_info.development_branch}/pdf/data_classification_flow_full.pdf",
+        f"/{repo_info.repo_name}/{repo_info.development_branch}/pdf/data_classification_flow_full.pdf",
     ),
     (
         "Simplified classification  flowchart",
-        f"../{repo_info.development_branch}/pdf/data_classification_flow_simple.pdf",
+        f"/{repo_info.repo_name}/{repo_info.development_branch}/pdf/data_classification_flow_simple.pdf",
     ),
 ]
 # Add 'Edit on GitHub' link
