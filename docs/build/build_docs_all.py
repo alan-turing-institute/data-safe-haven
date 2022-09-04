@@ -1,8 +1,6 @@
 import argparse
-from codecs import ignore_errors
 import importlib.util
 import os
-import pathlib
 import shutil
 import subprocess
 import tempfile
@@ -95,10 +93,10 @@ for version in repo_info.supported_versions:
             shutil.move(os.path.join(docs_dir, "README.md"), os.path.join(docs_dir, "index.md"))
         elif os.path.exists(os.path.join(docs_dir, "DSG-user-documentation.md")):
             # Use docs DSG user documentation
-            shutil.move(os.path.join(docs_dir, "DSG-user-documentation.md"),os.path.join(docs_dir, "index.md"))
+            shutil.move(os.path.join(docs_dir, "DSG-user-documentation.md"), os.path.join(docs_dir, "index.md"))
         else:
             # Use empty index file
-            shutil.copy(os.path.join(branch_build_config_dir, "meta","index.empty.md"), os.path.join(docs_dir, "index.md"))
+            shutil.copy(os.path.join(branch_build_config_dir, "meta", "index.empty.md"), os.path.join(docs_dir, "index.md"))
 
         # Build docs for this version
         print(os.path.join(current_file_dir, "build_docs_instance.sh"))
