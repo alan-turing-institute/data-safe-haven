@@ -28,17 +28,18 @@ Once a user's involvement with a project or work package ends their access shoul
 We recommend requiring data security awareness training for the following categories of person:
 
 - Anyone with administrator access to the `Data Safe Haven` codebase. This is to ensure integrity of the code supply chain.
-- {ref}`System Managers <role_system_manager>` for any deployed Data Safe Haven.
+- {ref}`System Deployers <role_system_deployer>` deploying a Data Safe Haven.
+- {ref}`System Managers <role_system_manager>` administering a deployed Data Safe Haven.
 - Anyone who has administrator access to the Azure subscriptions hosting any deployed Data Safe Haven.
 - {ref}`Programme <role_programme_manager>` and {ref}`project managers <role_project_manager>`.
 - All {ref}`Researchers <role_researcher>` with access to any data in scope of the NHS Data Security and Protection Toolkit (DSPT) held in a Data Safe Haven.
 - {ref}`Data Provider Representatives <role_data_provider_representative>`, {ref}`Investigators <role_investigator>` and {ref}`Referees <role_referee>` for any project containing data in scope of DSPT.
 
 ```{hint}
-The exact requirements will depend on your organisation's data governance processes.
+The exact training requirements for each organisation will depend on their own information governance processes. 
 ```
 
 ## Data security incident process
 
 We recommend that {ref}`System Managers <role_system_manager>` follow the data security incident process of the {ref}`role_organisation_dsh_host`.
-You may additionally want to consider developing an additional data security policy specific to the Data Safe Haven on top of this.
+You may additionally want to consider developing an additional data security policy specific to your own Data Safe Haven instance on top of this.
