@@ -9,7 +9,7 @@ They choose their own password, which must meet password strength requirements, 
 
 ## Isolated network
 
-Our network security model distinguishes three levels of access networks for user devices.
+At the Turing our network security model distinguishes three levels of access networks for user devices.
 
 - A `Restricted` network
 - An `Institutional` network
@@ -22,7 +22,7 @@ Our network security model distinguishes three levels of access networks for use
 A `Restricted` network corresponds to a network managed by a trusted institution that can support additional controls such as restricting access to a narrower set of users, devices or locations.
 Access to SREs can be restricted such that access is only allowed by devices which are connected to a particular set of `Restricted` networks.
 Access to a particular SRE may be permitted from multiple `Restricted` networks at multiple trusted organisations.
-This can permit users from multiple organisations to access an SRE, as well permitting users to access the SRE while away from their home institution at another trusted institution.
+This can permit users from multiple organisations to access an SRE, as well as permitting users to access the SRE while away from their home institution at another trusted institution.
 However, remote access to a `Restricted` network (for example via VPN) is not permitted.
 
 (design_institutional_network)=
