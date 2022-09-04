@@ -44,65 +44,71 @@ Any of these controls can be relaxed or tightened by the {ref}`role_system_manag
 
 ```{important}
 {ref}`policy_tier_4` defaults are not discussed below as such environments are not currently supported by the Data Safe Haven.
+```
 
+```{important}
 While {ref}`policy_tier_0` and {ref}`policy_tier_1` are discussed below, at the Turing we do not generally use our Data Safe Haven for {ref}`policy_tier_0` or {ref}`policy_tier_1` environments.
-While SREs can be configured as {ref}`policy_tier_0` or {ref}`policy_tier_1`, with outbound internet access, we generally favour supporting researchers to apply sensible controls on organisational devices and standard cloud resources for such lower sensitivity projects.
+While SREs can be configured as {ref}`policy_tier_0` or {ref}`policy_tier_1`, we generally favour supporting researchers to apply sensible controls on organisational devices and standard cloud resources for such lower sensitivity projects.
 ```
 
 ### Inbound connections
 
 Access to the gateway is only permitted from defined IP addresses associated with specific networks at the host organisation or its partner institutes:
 
-- **{ref}`policy_tier_3`:** At the Turing, we permit access only from restricted networks, which are accessible only by a known subset of {ref}`Researchers <role_researcher>`.
-- **{ref}`policy_tier_2`:** At the Turing we permit access only from institutionally managed networks, which will generally be accessible to Researchers not authorised to access the Data Safe Haven and might also be accessible to non-Researchers.
-- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** We do not generally use our Data Sade Haven for {ref}`policy_tier_0` or {ref}`policy_tier_1` environments at the Turing. However, other organisations choosing to do so may wish to consider only allowing inbound internet access from a specific range of networks Researchers are known to work from.
+- **{ref}`policy_tier_3`:** Access is restricted to a defined set of IP addresses. At the Turing, we permit access only from a restricted set of networks, which are accessible only by a known subset of {ref}`Researchers <role_researcher>`.
+- **{ref}`policy_tier_2`:** Access is restricted to a defined set of IP addresses. At the Turing we permit access only from institutionally managed networks, which will generally be accessible to {ref}`Researchers <role_researcher>` not authorised to access the Data Safe Haven and might also be accessible to non-Researchers.
+- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** Access is permitted from any IP address by default. At the Turing we do not generally use our Data Safe Haven for {ref}`policy_tier_0` or {ref}`policy_tier_1`. Organisations choosing to do so may wish to consider only allowing inbound internet access from a specific range of networks {ref}`Researchers <role_researcher>` are known to work from.
 
 ```{caution}
-Unrestricting which IP addresses can connect to the gateway increases the risk of DDOS attacks.
+Having no restrictions on which IP addresses can connect to the gateway increases the risk of external attacks, many of which may be untargeted but might still result in a degradation of service.
 ```
 
 ### Outbound connections
 
-- **Tier 2/3:** outbound internet access from the SRE is blocked by network-level rules.
-- **Tier 0/1:** outbound internet access from the SRE is permitted.
-- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** We do not generally use our Data Sade Haven for {ref}`policy_tier_0` or {ref}`policy_tier_1` environments at the Turing. 
+- **{ref}`policy_tier_2` and {ref}`policy_tier_3`:** Outbound internet access from the SRE is blocked by network-level rules.
+- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** Outbound internet access from the SRE is permitted.
 
 ### User devices:
 
-- **Tier 3:** {ref}`Researchers <role_researcher>` must connect from a managed device where they have no admin access (eg. a host-provided Chromebook).
-- **Tier 0/1/2:** {ref}`Researchers <role_researcher>` can connect from their own devices.
+- **{ref}`policy_tier_3`:** At the Turing we only permit {ref}`Researchers <role_researcher>` to connect to {ref}`policy_tier_3` environments from a device managed by the Turing or a partner organisation. {ref}`Researchers <role_researcher>` must not have administrator access on such devices, the devices must have anti virus software installed and software on the devices must be regularly updated. At the Turing we have a restricted network that only permits access from Turing managed devices. When permitting access to {ref}`policy_tier_3` environments from partner networks we require that they can similarly restrict access to devices they manage.
+- **{ref}`policy_tier_0` to {ref}`policy_tier_2`:** {ref}`Researchers <role_researcher>` can connect from their own devices.
 
 ### Physical security:
 
-- **Tier 3:** {ref}`Researchers <role_researcher>` must only connect from dedicated secure spaces (eg. from a known office at the host institute) [NB. This may be relaxed depending on COVID restrictions]
-- **Tier 0/1/2:** {ref}`Researchers <role_researcher>` can connect from anywhere
+- **{ref}`policy_tier_3`:** {ref}`Researchers <role_researcher>` must only connect from dedicated medium security spaces with access restricted via card access or other means and the risk of "visual eavesdropping" by overlooking a device must be controlled (e.g. by device location, screen adaptation or desk partitions). At the Turing access is limited to such areas by policy. A {ref}`Researchers <role_researcher>` home or non-Turing office maybe considered a medium security space if sufficient care is taken to avoid "visual eavesdropping" by family or colleagues.
+- **{ref}`policy_tier_0` to {ref}`policy_tier_2`:** {ref}`Researchers <role_researcher>` can connect from anywhere.
 
 ### Data transfer from user device
 
-- **Tier 2/3:** Disabled between the user device and the remote secure environment. Copy-and-paste is also disabled.
-- **Tier 0/1:** Copy and paste is enabled, but file transfer is not possible without using a web-based file transfer service.
+- **{ref}`policy_tier_2` and {ref}`policy_tier_3`:** Copy-and-paste and file transfer between the SRE and the {ref}`Researchers <role_researcher>` device are disabled.
+- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** Copy and paste is enabled between the SRE and the {ref}`Researchers <role_researcher>` device is enabled but file transfer is not possible for non administrators.
 
 ```{note}
-Note that this means that eg. password managers cannot be used]
+Note that this means that eg. password managers cannot be used to autofill a {ref}`Researchers <role_researcher>`'s SRE login credentials.]
 ```
 
 ### Sign-off on bringing data into the environment:
 
-- **Tier 2/3:** {ref}`role_investigator`, {ref}`role_data_provider_representative` and {ref}`role_referee`.
-- **Tier 0/1:** {ref}`role_investigator` and `role_data_provider_representative`.
+- **{ref}`policy_tier_2` and {ref}`policy_tier_3`:** At the Turing all three of {ref}`role_investigator`, {ref}`role_data_provider_representative` and {ref}`role_referee` must agree the data is suitable for the environment Tier.
+- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** At the Turing both {ref}`role_investigator` and {ref}`role_data_provider_representative` must agree the data is suitable for the environment Tier.
+
+### Sign-off on bringing data out of the environment:
+
+- **{ref}`policy_tier_2` and {ref}`policy_tier_3`:** At the Turing all three of {ref}`role_investigator`, {ref}`role_data_provider_representative` and {ref}`role_referee` must agree the data is suitable for its destination before it is egressed from an SRE.
+- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** At the Turing both {ref}`role_investigator` and {ref}`role_data_provider_representative` must agree the data is suitable for its destination before it is egressed from an SRE.
 
 ### Sign-off on adding new users:
 
-- **Tier 3:** {ref}`role_investigator` and {ref}`role_referee`
-- **Tier 0/1/2:** {ref}`role_investigator`
+- **{ref}`policy_tier_3`:** At the Turing the {ref}`role_investigator` and {ref}`role_referee` must both authorise access to an SRE at {ref}`policy_tier_3`.
+- **{ref}`policy_tier_0` to {ref}`policy_tier_2`:** At the Turing the {ref}`role_investigator` can authorise access to an SRE at {ref}`policy_tier_0` to {ref}`policy_tier_2`.
 
 ### Sign-off on bringing external code/software into the environment:
 
-- **Tier 3:** {ref}`role_investigator` and {ref}`role_referee`
-- **Tier 0/1/2:** {ref}`role_investigator`
+- **{ref}`policy_tier_3`:** At the Turing both the {ref}`role_investigator` and {ref}`role_referee` must authorise the ingress of code or software to an SRE at {ref}`policy_tier_3`.
+- **{ref}`policy_tier_0` to {ref}`policy_tier_2`:**At the Turing the {ref}`role_investigator` can authorise ingress of code or software to an SRE at {ref}`policy_tier_0` to {ref}`policy_tier_2`.
 
 ### Python/R package availability:
 
-- **Tier 3:** A pre-agreed allowlist of packages from `CRAN` and `PyPI` (via local mirror).
-- **Tier 2:** Anything on `CRAN` or `PyPI` (via proxy or local mirror).
-- **Tier 0/1:** Direct access to any package repository.
+- **{ref}`policy_tier_3`:** A pre-agreed allowlist of packages from `CRAN` and `PyPI` (via proxy or local mirror).
+- **{ref}`policy_tier_2`:** Anything on `CRAN` or `PyPI` (via proxy or local mirror).
+- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** Direct access to any package repository.
