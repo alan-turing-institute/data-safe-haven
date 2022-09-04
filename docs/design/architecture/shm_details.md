@@ -23,12 +23,7 @@ Network security is provided by Azure Network Security Groups that ensure that i
 For management of the environment there is an Azure point-to-site (P2S) VPN service configured.
 Access to this is limited to the Data Safe Haven administration team.
 
-## Package mirrors
-
-```{image} architecture_mirrors.png
-:alt: Package mirrors
-:align: center
-```
+## Package proxies and mirrors
 
 For {ref}`policy_tier_2` and {ref}`policy_tier_3` SREs, a selection of Python and R packages can be provided via a set of servers that provide access to some or all of the PyPI or CRAN package servers.
 Depending on the configuration of the Data Safe Haven, these packages can be provided either via"
@@ -52,6 +47,11 @@ In the Turing's configuration, this would not provide any additional access for 
 However, the upstream package repository download endpoints to not allow any data to be uploaded to them, so an attacker would have to separately compromise the upstream package repositories to be able to egress any data through a compromised Data Safe Haven package proxy.
 
 ### Package mirror security
+
+```{image} architecture_mirrors.png
+:alt: Package mirrors
+:align: center
+```
 
 Package mirrors provide an additional level of isolation at the network level, deploying two paired mirror servers for each upstream package repository.
 
