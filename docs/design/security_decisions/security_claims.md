@@ -9,6 +9,11 @@ In this document we:
 
 The diagram below shows an overview of the security standards we're trying to meet for Data Safe Haven Secure Research Environments (SREs).
 
+```{caution}
+The Turing does not yet operate any {ref}`policy_tier_4` environments and so our suggested default controls for {ref}`policy_tier_4` environments are stil under development.
+Organisations are responsible for making their own decisions about the suitability of any of our default controls, but should be especially careful about doing so if considering using the Data Safe Haven for projects at the {ref}`policy_tier_4` sensitivity level.
+```
+
 ```{image} security_claims/recommended_controls.png
 :alt: Recommended security controls
 :align: center
