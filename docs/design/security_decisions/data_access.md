@@ -1,14 +1,19 @@
 # Data access
 
-## Admistrative access
+In this section we describe how access to the Data Safe Haven is controlled at the Turing.
+While much of the access control is provided by the technical controls configured when deploying a Data Safe Haven following our deployment guide.
+However some steps manual configuration steps are required and each organisation is responsible for verifying the Data Safe Haven is deployed as expected and that the deployed configuration effectively supports their own information governance policies and processes.
 
-Access to all Data Safe Haven Azure resources is controlled via ` Azure Active Directory` (Azure AD) and Role-Based Access Control (RBAC). Only members of the  `Safe Haven Administrators` security group have administrative access to any element of the Safe Haven.
+## Administrative access
+
+Access to all Data Safe Haven Azure resources is controlled via `Azure Active Directory` (Azure AD) and Role-Based Access Control (RBAC).
+By default, only members of a specific administrator security group have administrative access to any element of the Safe Haven.
 
 ```{important}
-Membership of this security group should be limited to {ref}`system deployers <role_system_deployer>` and {ref}`system managers <role_system_manager>`.
+Membership of the administrator security group should be limited to {ref}`system deployers <role_system_deployer>` and {ref}`system managers <role_system_manager>`.
 ```
 
-The following access is restricted to members of the `Safe Haven Administrators` security group:
+The following access is restricted to members of the administrator security group:
 
 ### Administrative access to the underlying Azure resources
 
@@ -20,21 +25,21 @@ These comprise the software defined infrastructure of the Data Safe Haven, such 
 - virtual machines
 - `Azure Active Directory`
 
-Access to the underlying Azure resources requires administrators to log into Azure
+Access to the underlying Azure resources requires administrators to log into Azure.
 
 ```{hint}
-We strongly recommend using institutional credentials that are separate from the Data Safe Haven `Azure Active Directory` together with multifactor authentication.
+Data Safe Haven administrator accounts should be separate from accounts used for any orther purpose, including accessing the Data Safe Haven in any other role (e.g. as a {ref}`Researcher <role_researcher>`)
+At the Turing Data Safe Haven administrator accounts are configured on a separate institutional `Azure Active Directory` to the Data Safe Haven `Azure Active Directory`.
+Other organisations may wish to follow the same model.
 ```
 
-### Administrative access to the Safe Haven Management (SHM) segment
+### Administrative access to the Data Safe Haven
 
-Used primarily to manage users and security groups within the Safe Haven, as well as to troubleshoot any authentication issues.
-Access is via an `Azure` point-to-site (P2S) VPN service, and requires both a client certificate and administrative login credentials.
+Administrators can access VMs within the Data Safe Haven via an `Azure` point-to-site (P2S) VPN service, and requires both a client certificate and administrative login credentials.
+This VPN is used to manage users and security groups and troubleshoot any issues with the SHM or SRE VMs.
 
-### Administrative access to all project SREs
-
-Used to troubleshoot any issues and ingress data and code following review.
-Access is via an `Azure` point-to-site (P2S) VPN service, and requires both a client certificate and administrative login credentials.
+At the Turing, administrators ingress and egress data and code by connecting directly to the Azure storage for an SRE using `Azure Storage Explorer` over a restricted connection.
+Connections are only permitted from Turing managed devices via the Turing's restricted network and administrators must authenticate using both their administrator credentials and multifactor authentication.
 
 ## Researcher access
 
