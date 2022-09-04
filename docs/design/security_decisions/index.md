@@ -18,7 +18,7 @@ We also detail the security stance of the different default tiered environments.
 : How access to sensitive data is controlled in the Data Safe Haven.
 
 [Data transfer](data_transfer.md)
-: How sensitive data is transfered into and out of the Data Safe Haven.
+: How sensitive data is transferred into and out of the Data Safe Haven.
 
 [Security claims](security_claims.md)
 : Claims that we make about the security of the Data Safe Haven.
