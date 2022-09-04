@@ -8,6 +8,10 @@ Our aim throughout has been to make the environments reproducible, usable, secur
 Use of the Data Safe Haven is not sufficient to guarantee the security of your data! It must be paired with appropriate informative governance requirements and user agreements.
 ```
 
+```{caution}
+Each organisation deploying their own instance of the Data Safe Haven is responsible for verifying their Data Safe Haven instance is deployed as expected and that the deployed configuration effectively supports their own information governance policies and processes.
+```
+
 ```{tip}
 In terms of the [Five Safes framework](https://ukdataservice.ac.uk/help/secure-lab/what-is-the-five-safes-framework/) the Data Safe Haven is aiming to be a Safe Setting.
 ```
