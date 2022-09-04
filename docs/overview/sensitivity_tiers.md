@@ -43,7 +43,7 @@ Non-technical restrictions related to information governance procedures may also
 - connections to the in-browser remote desktop can only be made from an agreed set of IP addresses
 - outbound connections to the internet from inside the environment are not possible
 - copy-and-paste between the environment and the user's device is not possible
-- a full replica of PyPI and CRAN is made available through a proxy or mirror server
+- access to all packages on PyPI and CRAN is made available through a proxy or mirror server
 
 Non-technical restrictions related to information governance procedures may also be applied according to your organisation's needs.
 
@@ -60,7 +60,7 @@ At the Turing connections to Tier 2 environments are only permitted from network
 Non-technical restrictions related to information governance procedures may also be applied according to your organisation's needs.
 
 At the Turing connections to Tier 3 environments are only permitted from medium security spaces.
-Such spaces control the possibility of unauthorised viewing by requiring card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) and screen adaptations or desk partitions in open-plan spaces if there is a high risk of "visual eavesdropping".
+Such spaces control the possibility of unauthorised viewing by requiring card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) and screen adaptations or desk partitions are used in open-plan spaces if there is a high risk of "visual eavesdropping".
 
 At the Turing connections to Tier 3 environments are also only permitted from managed devices (i.e. where the user is not an administrator) that have antivirus software installed and regular software updates applied.
 
