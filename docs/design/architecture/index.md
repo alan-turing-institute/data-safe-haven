@@ -8,7 +8,6 @@
 
 shm_details.md
 sre_details.md
-physical_resilence_and_availability.md
 ```
 
 The Data Safe Haven is designed to be deployed on the [Microsoft Azure](https://azure.microsoft.com/en-gb/) platform taking advantage of its cloud-computing infrastructure.

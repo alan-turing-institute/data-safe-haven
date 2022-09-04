@@ -5,7 +5,6 @@
 ```{toctree}
 :hidden:
 
-security_checklist.md
 administrator_guide.md
 ```
 

@@ -7,7 +7,6 @@
 data_access.md
 data_transfer.md
 security_claims.md
-security_controls.md
 security_defaults.md
 ```
 
