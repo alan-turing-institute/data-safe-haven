@@ -9,10 +9,6 @@ SOURCEDIR         = .
 CONFIGDIR         = build
 TARGETDIR         = _output
 
-BUILD_GIT_VERSION ?=
-
-export BUILD_GIT_VERSION
-
 # Determine which PDFs to build
 # If you want to add a PDF make the following changes
 # - Add <NAME>SOURCE and <NAME>TARGET variables

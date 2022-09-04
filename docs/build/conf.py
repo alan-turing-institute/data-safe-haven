@@ -4,28 +4,36 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import emoji
-import importlib.util
-import os
+import git
 
-# Reliably import local module, no matter how python script is called
-spec = importlib.util.spec_from_file_location("repo_info", os.path.join(os.path.dirname(os.path.realpath(__file__)), "repo_info.py"))
-repo_info = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(repo_info)
-git = repo_info.repo.git
 
 # -- Project information -----------------------------------------------------
 
 project = "Data Safe Haven"
 copyright = "2021, The Alan Turing Institute"
 author = "The Alan Turing Institute"
+development_branch = "develop"
+earliest_supported_release = "v3.4.0"
+
+
+# -- Git repository details
+repo = git.Repo(search_parent_directories=True)
+repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
+releases = sorted((t.name for t in repo.tags), reverse=True)
+supported_versions = releases[: releases.index(earliest_supported_release) + 1] + [
+    development_branch
+]
+default_version = supported_versions[0]  # Latest stable release
+current_version = next(  # Tag name if available otherwise branch name
+    (tag for tag in repo.tags if tag.commit == repo.head.commit), repo.active_branch
+).name
+
 
 # -- Customisation  -----------------------------------------------------------
 
-print(f"Supported versions: {repo_info.supported_versions}")
-print(f"Default version: {repo_info.default_version}")
-
-env_build_git_version = os.getenv("BUILD_GIT_VERSION")
-
+print(f"Supported versions: {supported_versions}")
+print(f"Default version: {default_version}")
+print(f"Current version: {current_version}")
 
 # Construct list of emoji substitutions
 emoji_codes = set(
@@ -43,40 +51,42 @@ emoji_codes = set(
 if "html_context" not in globals():
     html_context = dict()
 html_context["display_lower_left"] = True
-html_context["default_version"] = repo_info.default_version
-html_context["current_version"] = env_build_git_version
-html_context["versions"] = [(v, f"/{repo_info.repo_name}/{v}/index.html") for v in repo_info.supported_versions]
+html_context["default_version"] = default_version
+html_context["current_version"] = current_version
+html_context["versions"] = [
+    (v, f"/{repo_name}/{v}/index.html") for v in supported_versions
+]
 # Downloadable PDFs
-pdf_version = repo_info.default_version
-pdf_commit_hash = git.log("-1", "--format=format:%h", pdf_version)
-pdf_commit_date_time = git.log("-1", "--format=%cd", "--date=format:%d %b %Y @ %H:%M:%S (%z)", pdf_version)
-pdf_commit_date = git.log("-1", "--format=format:%cd", "--date=format:%d %b %Y", pdf_version)
-pdf_version_string = f"Version: {pdf_version} ({pdf_commit_hash})"
+pdf_commit_hash = repo.git.log("-1", "--format=format:%h", current_version)
+pdf_commit_date = repo.git.log(
+    "-1", "--format=format:%cd", "--date=format:%d %b %Y", current_version
+)
+pdf_version_string = f"Version: {current_version} ({pdf_commit_hash})"
 print(f"PDF version string: {pdf_version_string}")
 
 html_context["downloads"] = [
     (
         "User guide (Apache Guacamole)",
-        f"/{repo_info.repo_name}/{pdf_version}/pdf/data_safe_haven_user_guide_guacamole.pdf",
+        f"/{repo_name}/{current_version}/pdf/data_safe_haven_user_guide_guacamole.pdf",
     ),
     (
         "User guide (Microsoft RDS)",
-        f"/{repo_info.repo_name}/{pdf_version}/pdf/data_safe_haven_user_guide_msrds.pdf",
+        f"/{repo_name}/{current_version}/pdf/data_safe_haven_user_guide_msrds.pdf",
     ),
     (
         "Classification flowchart",
-        f"/{repo_info.repo_name}/{pdf_version}/pdf/data_classification_flow_full.pdf",
+        f"/{repo_name}/{current_version}/pdf/data_classification_flow_full.pdf",
     ),
     (
         "Simplified classification  flowchart",
-        f"/{repo_info.repo_name}/{pdf_version}/pdf/data_classification_flow_simple.pdf",
+        f"/{repo_name}/{current_version}/pdf/data_classification_flow_simple.pdf",
     ),
 ]
 # Add 'Edit on GitHub' link
 # html_context["display_github"] = True
 html_context["github_user"] = "alan-turing-institute"
 html_context["github_repo"] = "data-safe-haven"
-html_context["github_version"] = repo_info.development_branch
+html_context["github_version"] = development_branch
 html_context["doc_path"] = "docs"
 
 
@@ -112,7 +122,6 @@ html_theme = "pydata_sphinx_theme"
 
 # Options for the chosen theme
 html_theme_options = {
-    "use_edit_page_button": True,
     "icon_links": [
         {
             "name": "GitHub",
@@ -120,15 +129,13 @@ html_theme_options = {
             "icon": "fab fa-github-square",
             "type": "fontawesome",
         }
-   ],
+    ],
     "logo": {
         "image_light": "logo_turing_light.png",
         "image_dark": "logo_turing_dark.png",
     },
-    "page_sidebar_items": [
-        "edit-this-page",
-        "sourcelink"
-    ],
+    "page_sidebar_items": ["edit-this-page", "sourcelink"],
+    "use_edit_page_button": True,
 }
 
 # Set the left-hand sidebars
