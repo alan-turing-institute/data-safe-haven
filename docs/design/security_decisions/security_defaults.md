@@ -43,16 +43,19 @@ Any of these controls can be relaxed or tightened by the {ref}`role_system_manag
 ## Tier-specific
 
 ```{important}
-Tier 4 defaults are not discussed below as such environments are not currently supported by the Data Safe Haven.
+{ref}`policy_tier_4` defaults are not discussed below as such environments are not currently supported by the Data Safe Haven.
+
+While {ref}`policy_tier_0` and {ref}`policy_tier_1` are discussed below, at the Turing we do not generally use our Data Safe Haven for {ref}`policy_tier_0` or {ref}`policy_tier_1` environments.
+While SREs can be configured as {ref}`policy_tier_0` or {ref}`policy_tier_1`, with outbound internet access, we generally favour supporting researchers to apply sensible controls on organisational devices and standard cloud resources for such lower sensitivity projects.
 ```
 
 ### Inbound connections
 
 Access to the gateway is only permitted from defined IP addresses associated with specific networks at the host organisation or its partner institutes:
 
-- **Tier 3:** we recommend permitting access only from restricted networks, which are accessible only by a known subset of {ref}`Researchers <role_researcher>`.
-- **Tier 2:** we recommend permitting access only from institutionally managed networks, such as EduRoam, which might also be accessible by non-Researchers.
-- **Tier 0/1:** we recommend restricting access to IP addresses provided by researchers, but without restrictions about what these should correspond to.
+- **{ref}`policy_tier_3`:** At the Turing, we permit access only from restricted networks, which are accessible only by a known subset of {ref}`Researchers <role_researcher>`.
+- **{ref}`policy_tier_2`:** At the Turing we permit access only from institutionally managed networks, which will generally be accessible to Researchers not authorised to access the Data Safe Haven and might also be accessible to non-Researchers.
+- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** We do not generally use our Data Sade Haven for {ref}`policy_tier_0` or {ref}`policy_tier_1` environments at the Turing. However, other organisations choosing to do so may wish to consider only allowing inbound internet access from a specific range of networks Researchers are known to work from.
 
 ```{caution}
 Unrestricting which IP addresses can connect to the gateway increases the risk of DDOS attacks.
@@ -62,6 +65,7 @@ Unrestricting which IP addresses can connect to the gateway increases the risk o
 
 - **Tier 2/3:** outbound internet access from the SRE is blocked by network-level rules.
 - **Tier 0/1:** outbound internet access from the SRE is permitted.
+- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** We do not generally use our Data Sade Haven for {ref}`policy_tier_0` or {ref}`policy_tier_1` environments at the Turing. 
 
 ### User devices:
 
