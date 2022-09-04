@@ -32,8 +32,8 @@ emoji_codes = set(
     [
         emoji_code.replace(":", "")
         for emoji_list in (
-            emoji.EMOJI_UNICODE_ENGLISH.keys(),
-            emoji.EMOJI_ALIAS_UNICODE_ENGLISH.keys(),
+            emoji.unicode_codes.get_emoji_unicode_dict("en").keys(),
+            emoji.unicode_codes.get_aliases_unicode_dict().keys(),
         )
         for emoji_code in emoji_list
     ]
@@ -73,7 +73,7 @@ html_context["downloads"] = [
     ),
 ]
 # Add 'Edit on GitHub' link
-html_context["display_github"] = True
+# html_context["display_github"] = True
 html_context["github_user"] = "alan-turing-institute"
 html_context["github_repo"] = "data-safe-haven"
 html_context["github_version"] = repo_info.development_branch
@@ -113,12 +113,34 @@ html_theme = "pydata_sphinx_theme"
 # Options for the chosen theme
 html_theme_options = {
     "use_edit_page_button": True,
-    "logo_link": "index",
-    "github_url": f"https://github.com/{html_context['github_user']}/{html_context['github_repo']}",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": f"https://github.com/{html_context['github_user']}/{html_context['github_repo']}",
+            "icon": "fab fa-github-square",
+            "type": "fontawesome",
+        }
+   ],
+    "logo": {
+        "image_light": "logo_turing_light.png",
+        "image_dark": "logo_turing_dark.png",
+    },
+    "page_sidebar_items": [
+        "edit-this-page",
+        "sourcelink"
+    ],
 }
 
-# Location of logo and favicon
-html_logo = "_static/logo_turing.jpg"
+# Set the left-hand sidebars
+html_sidebars = {
+    "**": [
+        "search-field.html",
+        "sidebar-section-navigation.html",
+        "sidebar-versions.html",
+    ]
+}
+
+# Location of favicon
 html_favicon = "_static/favicon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -141,7 +163,7 @@ myst_enable_extensions = [
 
 # Emoji substitutions: replace {{emoji_name}} => unicode
 myst_substitutions = {
-    emoji_code: emoji.emojize(f":{emoji_code}:", use_aliases=True)
+    emoji_code: emoji.emojize(f":{emoji_code}:", language="alias")
     for emoji_code in emoji_codes
 }
 
