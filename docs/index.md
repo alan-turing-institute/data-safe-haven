@@ -5,9 +5,9 @@
 :maxdepth: 2
 
 overview/index.md
-roles/index.md
-processes/index.md
 design/index.md
+processes/index.md
+roles/index.md
 ```
 
 ```{image} static/scriberia_diagram.jpg
@@ -35,13 +35,13 @@ You can read them through in order or simply jump to the section that you are mo
 - [**Overview**](overview/index.md)
   - if you want an overview of what the Data Safe Haven project is about.
 
-- [**Roles**](roles/index.md)
-  - if you want to [**deploy your own**](role_system_deployer) Data Safe Haven
-  - if you want to [**upload sensitive data**](role_data_provider_representative) to a Data Safe Haven
-  - if you need to [**analyse data**](role_researcher) in a Data Safe Haven that someone else has deployed
+- [**Design**](design/index.md)
+  - if you want details about the technical design of the Data Safe Haven
 
 - [**Processes**](processes/index.md)
   - processes necessary to use the Data Safe Haven
 
-- [**Design**](design/index.md)
-  - if you want details about the technical design of the Data Safe Haven
+- [**Roles**](roles/index.md)
+  - if you want to [**deploy your own**](role_system_deployer) Data Safe Haven
+  - if you want to [**upload sensitive data**](role_data_provider_representative) to a Data Safe Haven
+  - if you need to [**analyse data**](role_researcher) in a Data Safe Haven that someone else has deployed
