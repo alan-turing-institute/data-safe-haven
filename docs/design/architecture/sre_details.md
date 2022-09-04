@@ -33,4 +33,4 @@ Connections to this are made via an SSL/TLS secured connection that requires the
 For {ref}`policy_tier_2` environments and above outbound internet access from within the SRE is blocked, access to the SRE remote desktop is only permitted from approved networks, and the remote desktop server prevents the copying of information into or out of the SRE.
 
 For management of the environment there is an Azure point-to-site (P2S) VPN service configured via the [Safe Haven Management (SHM)](shm_details.md) segment of the Data Safe Haven.
-Access to this is limited to the Data Safe Haven administration team and requires both a client certificate and administrative login credentials.
+Access to this is limited to the Data Safe Haven administration team.
