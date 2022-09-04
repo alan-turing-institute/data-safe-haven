@@ -7,8 +7,6 @@ In this document we:
 - Establish our current claims about the Data Safe Haven.
 - Establish what these security claims mean in terms of implementation.
 
-We have also prepared a {ref}`set of instructions <role_system_manager_security_checklist>` that will allow {ref}`System Managers <role_system_manager>` to **verify** these claims.
-
 The diagram below shows an overview of the security standards we're trying to meet for Data Safe Haven Secure Research Environments (SREs).
 
 ```{image} security_claims/recommended_controls.png
