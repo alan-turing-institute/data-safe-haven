@@ -68,9 +68,8 @@ At the Turing connections to Tier 3 environments are also only permitted from ma
 
 ## Tier 4
 
-**Tier 4** environments do not impose additional technical controls on top of what is required at {ref}`policy_tier_3`.
+The Data Safe Haven does not currently support environments suitable for the Tier 4 sensitivity level.
 
-Non-technical restrictions related to information governance procedures may also be applied according to your organisation's needs.
+The Turing has not yet worked with any projects at the Tier 4 sensitivity level and so has only done some limited thinking on what controls would be appropriate for such projects.
 
-The Turing does not currently operate any Tier 4 environments so has not thought through what additional controls it would impose at this Tier.
-However, it is likely that any such additional controls would include stronger restrictions on the physical spaces from which Tier 4 environments could be accessed.
+However, it is likely that such additional controls would at minimum include stronger restrictions on the physical spaces from which Tier 4 environments could be accessed.
