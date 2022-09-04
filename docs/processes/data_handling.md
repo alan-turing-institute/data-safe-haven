@@ -36,7 +36,7 @@ We recommend requiring data security awareness training for the following catego
 - {ref}`Data Provider Representatives <role_data_provider_representative>`, {ref}`Investigators <role_investigator>` and {ref}`Referees <role_referee>` for any project containing data in scope of DSPT.
 
 ```{hint}
-The exact training requirements for each organisation will depend on their own information governance processes. 
+The exact training requirements for each organisation will depend on their own information governance processes.
 ```
 
 ## Data security incident process
