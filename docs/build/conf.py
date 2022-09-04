@@ -49,8 +49,9 @@ html_context["versions"] = [(v, f"/{repo_info.repo_name}/{v}/index.html") for v 
 # Downloadable PDFs
 pdf_version = repo_info.default_version
 pdf_commit_hash = git.log("-1", "--format=format:%h", pdf_version)
-pdf_commit_date = git.log("-1", "--format=format:%cD", pdf_version)
-pdf_version_string = f"Version: {pdf_version}\nDate: {pdf_commit_date}\nCommit: {pdf_commit_hash}"
+pdf_commit_date_time = git.log("-1", "--format=%cd", "--date=format:%d %b %Y @ %H:%M:%S (%z)", pdf_version)
+pdf_commit_date = git.log("-1", "--format=format:%cd", "--date=format:%d %b %Y", pdf_version)
+pdf_version_string = f"Version: {pdf_version} ({pdf_commit_hash})"
 print(f"PDF version string: {pdf_version_string}")
 
 html_context["downloads"] = [
@@ -152,7 +153,8 @@ rinoh_documents = [
         doc="roles/researcher/user_guide_guacamole",
         target="pdf/data_safe_haven_user_guide_guacamole",
         title="Data Safe Haven User Guide\nApache Guacamole",
-        subtitle=f"{pdf_version_string}",
+        subtitle=pdf_version_string,
+        date=pdf_commit_date,
         author=author,
         template="emoji_support.rtt",
     ),
@@ -160,7 +162,8 @@ rinoh_documents = [
         doc="roles/researcher/user_guide_msrds",
         target="pdf/data_safe_haven_user_guide_msrds",
         title="Data Safe Haven User Guide\nMicrosoft Remote Desktop",
-        subtitle=f"{pdf_version_string}",
+        subtitle=pdf_version_string,
+        date=pdf_commit_date,
         author=author,
         template="emoji_support.rtt",
     ),
