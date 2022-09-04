@@ -2,9 +2,10 @@
 
 # Classification process
 
-We assume that projects are divided into {ref}`work packages <classification_work_packages>`.
-Each project may have one or more {ref}`work packages <classification_work_packages>`.
+At the Turing we divide projects into {ref}`work packages <classification_work_packages>`.
+Each project may have one or more {ref}`work packages <classification_work_packages>`, each of which will have an associated classification.
 The sensitivity of any {ref}`work package <classification_work_packages>` depends on both the sensitivity of the underlying data and the work that will be carried out on that data.
+Research for a given {ref}`work package <classification_work_packages>`must only be undertaken in an environment suitable to the classification of the {ref}`work package <classification_work_packages>` and with the associated non-technical information governance controls in place.
 
 (classification_work_packages)=
 
@@ -39,6 +40,7 @@ To classify the data to be used in a project, each role representative will go t
 
 The {ref}`role_data_provider_representative` and {ref}`role_investigator` should classify each work package, based on a clear understanding of the what the work involves.
 These two people should agree on a classification before the work can proceed.
+For {ref}`policy_tier_2` and {ref}`policy_tier_3` {ref}`work packages <classification_work_packages>` the {ref}`role_referee` must also agree on the classification.
 This classification will indicate which security controls should be applied when initialising the {ref}`Secure Research Environment <design_sre>` for the project.
 
-In this documentation we will assume that the outcome of the classification is one of the {ref}`default sensitivity tiers <policy_classification_sensitivity_tiers>` although your organisation may classify projects differently and require different technical and non-technical controls.
+In this documentation we will assume that the outcome of the classification is one of our {ref}`sensitivity tiers <policy_classification_sensitivity_tiers>` although your organisation may classify projects differently and require different technical and non-technical controls.
