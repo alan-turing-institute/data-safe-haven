@@ -46,6 +46,7 @@ Non-technical restrictions related to information governance procedures may also
 - a full replica of PyPI and CRAN is made available through a proxy or mirror server
 
 Non-technical restrictions related to information governance procedures may also be applied according to your organisation's needs.
+
 At the Turing connections to Tier 2 environments are only permitted from networks managed by the Turing or one of it's organisational partners.
 
 (policy_tier_3)=
@@ -57,14 +58,19 @@ At the Turing connections to Tier 2 environments are only permitted from network
 - a partial replica of agreed PyPI and CRAN packages is made available through a proxy or mirror server
 
 Non-technical restrictions related to information governance procedures may also be applied according to your organisation's needs.
+
 At the Turing connections to Tier 3 environments are only permitted from medium security spaces.
 Such spaces control the possibility of unauthorised viewing by requiring card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) and screen adaptations or desk partitions in open-plan spaces if there is a high risk of "visual eavesdropping".
+
+At the Turing connections to Tier 3 environments are also only permitted from managed devices (i.e. where the user is not an administrator) that have antivirus software installed and regular software updates applied.
 
 (policy_tier_4)=
 
 ## Tier 4
 
 **Tier 4** environments do not impose additional technical controls on top of what is required at {ref}`policy_tier_3`.
+
 Non-technical restrictions related to information governance procedures may also be applied according to your organisation's needs.
+
 The Turing does not currently operate any Tier 4 environments so has not thought through what additional controls it would impose at this Tier.
 However, it is likely that any such additional controls would include stronger restrictions on the physical spaces from which Tier 4 environments could be accessed.
