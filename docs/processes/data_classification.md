@@ -2,10 +2,16 @@
 
 # Classification process
 
-At the Turing we divide projects into {ref}`work packages <classification_work_packages>`.
-Each project may have one or more {ref}`work packages <classification_work_packages>`, each of which will have an associated classification.
-The sensitivity of any {ref}`work package <classification_work_packages>` depends on both the sensitivity of the underlying data and the work that will be carried out on that data.
-Research for a given {ref}`work package <classification_work_packages>`must only be undertaken in an environment suitable to the classification of the {ref}`work package <classification_work_packages>` and with the associated non-technical information governance controls in place.
+Here we give an overview of the data classification process operated by the Turing, utilising our `sensitivity tiers <policy_classification_sensitivity_tiers>`.
+
+```{caution}
+While organisations deploying their own Data Safe Haven instance are free to take inspiration from the Turing's information governance processes, each organisation is responsible for instituting their own information governance processes appropriate to their own contexts.
+```
+
+Projects are divided into {ref}`work packages <classification_work_packages>`.
+Each project may have one or more {ref}`work packages <classification_work_packages>`, each of which will have an associated `sensitivity tier <policy_classification_sensitivity_tiers>`.
+The sensitivity of any {ref}`work package <classification_work_packages>` depends on both the `sensitivity tier <policy_classification_sensitivity_tiers>` of the underlying data and the work that will be carried out on that data.
+Research for a given {ref}`work package <classification_work_packages>`must only be undertaken in an environment suitable to the `sensitivity tier <policy_classification_sensitivity_tiers>` of the {ref}`work package <classification_work_packages>` and with the associated non-technical information governance controls in place.
 
 (classification_work_packages)=
 
