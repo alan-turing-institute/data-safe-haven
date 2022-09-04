@@ -2,7 +2,7 @@
 
 The Turing operates the following data transfer protocol for {ref}`policy_tier_2` and {ref}`policy_tier_3` Secure Research Environments within its Data Safe Haven instance.
 
-```{warning}
+```{caution}
 The Turing does not yet operate any {ref}`policy_tier_4` environments and has not evaluated whether this process would be suitable for such environments.
 ```
 
