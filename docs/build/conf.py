@@ -11,6 +11,7 @@ import os
 spec = importlib.util.spec_from_file_location("repo_info", os.path.join(os.path.dirname(os.path.realpath(__file__)), "repo_info.py"))
 repo_info = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(repo_info)
+git = repo_info.repo.git
 
 # -- Project information -----------------------------------------------------
 
@@ -46,22 +47,28 @@ html_context["default_version"] = repo_info.default_version
 html_context["current_version"] = env_build_git_version
 html_context["versions"] = [(v, f"/{repo_info.repo_name}/{v}/index.html") for v in repo_info.supported_versions]
 # Downloadable PDFs
+pdf_version = repo_info.default_version
+pdf_commit_hash = git.log("-1", "--format=format:%h", pdf_version)
+pdf_commit_date = git.log("-1", "--format=format:%cD", pdf_version)
+pdf_version_string = f"Version: {pdf_version}\nDate: {pdf_commit_date}\nCommit: {pdf_commit_hash}"
+print(f"PDF version string: {pdf_version_string}")
+
 html_context["downloads"] = [
     (
         "User guide (Apache Guacamole)",
-        f"/{repo_info.repo_name}/{repo_info.default_version}/pdf/data_safe_haven_user_guide_guacamole.pdf",
+        f"/{repo_info.repo_name}/{pdf_version}/pdf/data_safe_haven_user_guide_guacamole.pdf",
     ),
     (
         "User guide (Microsoft RDS)",
-        f"/{repo_info.repo_name}/{repo_info.default_version}/pdf/data_safe_haven_user_guide_msrds.pdf",
+        f"/{repo_info.repo_name}/{pdf_version}/pdf/data_safe_haven_user_guide_msrds.pdf",
     ),
     (
         "Classification flowchart",
-        f"/{repo_info.repo_name}/{repo_info.default_version}/pdf/data_classification_flow_full.pdf",
+        f"/{repo_info.repo_name}/{pdf_version}/pdf/data_classification_flow_full.pdf",
     ),
     (
         "Simplified classification  flowchart",
-        f"/{repo_info.repo_name}/{repo_info.default_version}/pdf/data_classification_flow_simple.pdf",
+        f"/{repo_info.repo_name}/{pdf_version}/pdf/data_classification_flow_simple.pdf",
     ),
 ]
 # Add 'Edit on GitHub' link
@@ -144,16 +151,16 @@ rinoh_documents = [
     dict(
         doc="roles/researcher/user_guide_guacamole",
         target="pdf/data_safe_haven_user_guide_guacamole",
-        title="Data Safe Haven User Guide",
-        subtitle="Apache Guacamole",
+        title="Data Safe Haven User Guide\nApache Guacamole",
+        subtitle=f"{pdf_version_string}",
         author=author,
         template="emoji_support.rtt",
     ),
     dict(
         doc="roles/researcher/user_guide_msrds",
         target="pdf/data_safe_haven_user_guide_msrds",
-        title="Data Safe Haven User Guide",
-        subtitle="Microsoft RDS",
+        title="Data Safe Haven User Guide\nMicrosoft Remote Desktop",
+        subtitle=f"{pdf_version_string}",
         author=author,
         template="emoji_support.rtt",
     ),
