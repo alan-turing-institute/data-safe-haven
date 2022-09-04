@@ -31,7 +31,7 @@ We recommend requiring data security awareness training for the following catego
 - {ref}`System Managers <role_system_manager>` for any deployed Data Safe Haven.
 - Anyone who has administrator access to the Azure subscriptions hosting any deployed Data Safe Haven.
 - {ref}`Programme <role_programme_manager>` and {ref}`project managers <role_project_manager>`.
-- All {ref}`Researchers <role_researcher>` with access to any data in scope of DSPT held in a Data Safe Haven.
+- All {ref}`Researchers <role_researcher>` with access to any data in scope of the NHS Data Security and Protection Toolkit (DSPT) held in a Data Safe Haven.
 - {ref}`Data Provider Representatives <role_data_provider_representative>`, {ref}`Investigators <role_investigator>` and {ref}`Referees <role_referee>` for any project containing data in scope of DSPT.
 
 ```{hint}
