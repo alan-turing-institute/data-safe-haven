@@ -14,4 +14,4 @@ _latest_supported_release = _all_supported_releases[0]
 
 # Set default version to disply documentation for latest version
 # default_version = latest_supported_release # Latest supported stable release
-default_version = development_branch # Latest commit from development branch
+default_version = development_branch  # Latest commit from development branch

@@ -8,8 +8,7 @@ import importlib.util
 import os
 
 # Reliably import local module, no matter how python script is called
-spec=importlib.util.spec_from_file_location("repo_info",
-    os.path.join(os.path.dirname(os.path.realpath(__file__)),"repo_info.py"))
+spec = importlib.util.spec_from_file_location("repo_info", os.path.join(os.path.dirname(os.path.realpath(__file__)), "repo_info.py"))
 repo_info = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(repo_info)
 

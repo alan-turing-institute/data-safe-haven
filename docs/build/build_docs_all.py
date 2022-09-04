@@ -9,8 +9,7 @@ import tempfile
 
 # Reliably import local module, no matter how python script is called
 current_file_dir = os.path.dirname(os.path.realpath(__file__))
-spec=importlib.util.spec_from_file_location("repo_info",
-    os.path.join(current_file_dir, "repo_info.py"))
+spec = importlib.util.spec_from_file_location("repo_info", os.path.join(current_file_dir, "repo_info.py"))
 repo_info = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(repo_info)
 
@@ -19,11 +18,11 @@ parser = argparse.ArgumentParser(
     prog="python build_docs_all.py",
     description="Build documentation for all supported versions")
 parser.add_argument('--output-dir',
-    help='Directory to store built documentation')
+                    help='Directory to store built documentation')
 parser.add_argument('--skip-pdfs', action='store_true',
-    help='Skip building PDFs (use only for faster testing)')
+                    help='Skip building PDFs (use only for faster testing)')
 parser.add_argument('--skip-check-docs', action='store_true',
-    help='Skip checking docs (use only for faster testing)')
+                    help='Skip checking docs (use only for faster testing)')
 args = parser.parse_args()
 final_build_output_dir = args.output_dir
 skip_pdfs = args.skip_pdfs
@@ -78,8 +77,8 @@ for version in repo_info.supported_versions:
         git.checkout(version)
 
         # Restore Sphinx docs build configuration from backup for consistent style,
-        # clearing any existing build configuration directory content first. 
-        if(os.path.exists(branch_build_config_dir)):
+        # clearing any existing build configuration directory content first.
+        if (os.path.exists(branch_build_config_dir)):
             shutil.rmtree(branch_build_config_dir)
         shutil.copytree(build_config_backup_path, branch_build_config_dir)
 
@@ -93,23 +92,23 @@ for version in repo_info.supported_versions:
             True
         elif os.path.exists(os.path.join(docs_dir, "README.md")):
             # Use docs README
-            shutil.move(os.path.join(docs_dir, "README.md"),os.path.join(docs_dir, "index.md"))
+            shutil.move(os.path.join(docs_dir, "README.md"), os.path.join(docs_dir, "index.md"))
         elif os.path.exists(os.path.join(docs_dir, "DSG-user-documentation.md")):
             # Use docs DSG user documentation
             shutil.move(os.path.join(docs_dir, "DSG-user-documentation.md"),os.path.join(docs_dir, "index.md"))
         else:
             # Use empty index file
-            shutil.copy(os.path.join(branch_build_config_dir,"meta","index.empty.md"),os.path.join(docs_dir,"index.md"))
+            shutil.copy(os.path.join(branch_build_config_dir, "meta","index.empty.md"), os.path.join(docs_dir, "index.md"))
 
         # Build docs for this version
         print(os.path.join(current_file_dir, "build_docs_instance.sh"))
-        if (version == repo_info.default_version and not(skip_pdfs)):
+        if (version == repo_info.default_version and not (skip_pdfs)):
             pdf_flag = "-p"
         else:
             pdf_flag = ""
         subprocess.run([os.path.join(current_file_dir, "build_docs_instance.sh"), "-d", temp_build_path, "-n", version, pdf_flag], check=True)
 
-    except:
+    except subprocess.CalledProcessError:
         print(f"Error encountered during build for version '{version}'")
         raise
     else:
@@ -119,7 +118,7 @@ for version in repo_info.supported_versions:
         print(f"Restoring original branch '{original_branch}'")
         # - Revert any changes made to current branch
         git.reset("--hard", "HEAD")
-        git.clean("-fd")   
+        git.clean("-fd")
         # - Checkout original branch
         git.checkout(original_branch)
 
@@ -127,7 +126,7 @@ for version in repo_info.supported_versions:
 with open(os.path.join(docs_dir, "build", "meta", "index.html"), "r") as file:
     filedata = file.read()
 filedata = filedata.replace("{{latest_stable}}", repo_info.default_version)
-with open(os.path.join(temp_build_path, "index.html"),"w+") as file:
+with open(os.path.join(temp_build_path, "index.html"), "w+") as file:
     file.write(filedata)
 
 # -- Restore original branch and copy docs to specified output directory --
