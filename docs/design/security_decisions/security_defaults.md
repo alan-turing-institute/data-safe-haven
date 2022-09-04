@@ -42,7 +42,7 @@ Any of these controls can be relaxed or tightened by the {ref}`role_system_manag
 
 ## Tier-specific
 
-```{important}
+```{caution}
 {ref}`policy_tier_4` defaults are not discussed below as such environments are not currently supported by the Data Safe Haven.
 ```
 
