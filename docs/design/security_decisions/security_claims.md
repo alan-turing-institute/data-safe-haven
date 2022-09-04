@@ -65,7 +65,7 @@ The diagram below shows an overview of the security standards we're trying to me
 - Medium security research spaces control the possibility of unauthorised viewing.
 - Card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) is required.
 - Screen adaptations or desk partitions can be adopted in open-plan spaces if there is a high risk of "visual eavesdropping".
-- Firewall rules for the Environments can permit access only from Restricted network IP ranges corresponding to these research spaces.
+- Firewall rules for the Environments can permit access only from `Restricted` network IP ranges corresponding to these research spaces.
 
 ## 5. Remote connections
 
@@ -159,9 +159,9 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 ### We claim:
 
-- An `Azure Firewall` ensures that the administrator VMs have the minimal level of internet access required to function.
+- An `Azure Firewall` ensures that all VMs within the safe haven have the minimal level of internet access required to function.
 
 ### Which means:
 
-- Whilst all user access VMs are entirely blocked off from the internet, this is not the case for administrator access VMs such as the SHM-DC, SRE DATA server.
-- An Azure Firewall governs the internet access provided to these VMs, limiting them mostly to downloading Windows updates.
+- Research accessible SRD VMs can only access a limited set of domains required for managing software and virus definition updates.
+- Administrator accessible VMs can access additional domains required to perform their functionality (e.g. user authentication, providing SRD VMs access to authorised packages)
