@@ -34,6 +34,31 @@ jobs:
         - pwsh -c "Install-Module  -Verbose -Name PSScriptAnalyzer"
       script: pwsh -c "./tests/Run_Pester_Tests.ps1"
 
+    - name: Lint HTML documentation
+      language: ruby
+      rvm: 3.0.3
+      before_script: |
+        gem install html-proofer -v 3.19.0
+        pip install -r docs/build/requirements.txt
+      script: |
+        DOCS_DIR=$(mktemp -d)
+        ./docs/build/build_docs_instance.sh -p -d $DOCS_DIR -n develop
+        for tag in $(git tag); do
+          mkdir -p ${DOCS_DIR}/${tag}
+          echo "<html></html>" > ${DOCS_DIR}/${tag}/index.html
+        done
+        export LC_CTYPE="C.UTF-8"
+        htmlproofer ${DOCS_DIR}/develop \
+          --allow-hash-href \
+          --check-favicon \
+          --check-html \
+          --check-img-http \
+          --enforce-https \
+          --file-ignore "/_static/" \
+          --http-status-ignore "403,429" \
+          --url-swap "^\/data-safe-haven:/.." \
+          --url-ignore "/github.com\/alan-turing-institute\/data-safe-haven/,/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//"
+
     - name: Lint JSON files
       language: node_js
       node_js: node
@@ -63,31 +88,6 @@ jobs:
           test $? -eq 0 && echo "✅ YAML linting succeeded for $yamlfile" || echo "❌ YAML linting failed for $yamlfile"
         done
         rm .mustache_config.json expanded.yaml
-
-    - name: Lint HTML documentation
-      language: ruby
-      rvm: 3.0.3
-      before_script: |
-        gem install html-proofer -v 3.19.0
-        pip install -r docs/build/requirements.txt
-      script: |
-        DOCS_DIR=$(mktemp -d)
-        ./docs/build/build_docs_instance.sh -p -d $DOCS_DIR -n develop
-        for tag in $(git tag); do
-          mkdir -p ${DOCS_DIR}/${tag}
-          echo "<html></html>" > ${DOCS_DIR}/${tag}/index.html
-        done
-        export LC_CTYPE="C.UTF-8"
-        htmlproofer ${DOCS_DIR}/develop \
-          --allow-hash-href \
-          --check-favicon \
-          --check-html \
-          --check-img-http \
-          --enforce-https \
-          --file-ignore "/_static/" \
-          --http-status-ignore "403,429" \
-          --url-swap "^\/data-safe-haven:/.." \
-          --url-ignore "/github.com\/alan-turing-institute\/data-safe-haven/,/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//"
 
     - name: Lint Ansible scripts
       addons:
