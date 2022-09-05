@@ -24,9 +24,10 @@ supported_versions = releases[: releases.index(earliest_supported_release) + 1] 
     development_branch
 ]
 default_version = supported_versions[0]  # Latest stable release
-current_version = next(  # Tag name if available otherwise branch name
-    (tag for tag in repo.tags if tag.commit == repo.head.commit), repo.active_branch
-).name
+current_version = (
+    [tag for tag in repo.tags if tag.commit == repo.head.commit] +
+    [branch for branch in repo.branches if branch.commit == repo.head.commit]
+)[0].name  # Tag or branch name
 
 
 # -- Customisation  -----------------------------------------------------------
