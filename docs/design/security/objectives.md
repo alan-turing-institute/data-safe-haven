@@ -1,6 +1,6 @@
 (design_security_claims)=
 
-# Security Objectives
+# Security objectives
 
 The diagram below shows an overview of the security standards we're trying to meet for Secure Research Environments (SREs) hosted at the Turing.
 

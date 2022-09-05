@@ -8,7 +8,6 @@
 
 shm_details.md
 sre_details.md
-security_objectives.md
 ```
 
 The Data Safe Haven is designed to be deployed on the [Microsoft Azure](https://azure.microsoft.com/en-gb/) platform taking advantage of its cloud-computing infrastructure.
@@ -34,6 +33,3 @@ Although all SREs are peered with the SHM, they are not able to connect directly
 
 [Secure Research Environment (SRE)](sre_details.md)
 : details about the design of the SRE component
-
-[Security objectives](security_objectives.md)
-: details about the security objectives we're trying to meet at each sensitivity tier

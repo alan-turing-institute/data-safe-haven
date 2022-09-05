@@ -1,4 +1,4 @@
-# Default security configuration
+# Turing security configuration
 
 Each secure research environment (SRE) belongs to one of five {ref}`project sensitivity tiers <policy_classification_sensitivity_tiers>`.
 Depending on which tier a particular SRE belongs to, the following security controls are applied by default.

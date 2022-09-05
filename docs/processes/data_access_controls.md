@@ -1,4 +1,4 @@
-# Data access
+# Data access controls
 
 In this section we describe how access to the Data Safe Haven is controlled at the Turing.
 While much of the access control is provided by the technical controls configured when deploying a Data Safe Haven following our deployment guide.

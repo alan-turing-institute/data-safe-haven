@@ -5,7 +5,7 @@
 :maxdepth: 2
 
 architecture/index.md
-security_objectives.md
+security/index.md
 ```
 
 ## Decisions and constraints
@@ -21,5 +21,5 @@ Each organisation deploying their own instance of the Data Safe Haven is respons
 [Architecture](architecture/index.md)
 : How the Data Safe Haven infrastructure is designed.
 
-[Security objectives](security_objectives.md)
-: Details about the security objectives we're trying to meet at each sensitivity tier
+[Security](security/index.md)
+: Details about the security objectives we're trying to meet and how we try to do so
