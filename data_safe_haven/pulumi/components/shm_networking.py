@@ -57,7 +57,7 @@ class SHMNetworkingComponent(ComponentResource):
     def __init__(
         self, name: str, props: SHMNetworkingProps, opts: ResourceOptions = None
     ):
-        super().__init__("dsh:shmnetworking:SHMNetworkingComponent", name, {}, opts)
+        super().__init__("dsh:shm_networking:SHMNetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         # Set address prefixes from ranges
@@ -145,5 +145,6 @@ class SHMNetworkingComponent(ComponentResource):
         )
 
         # Register outputs
+        self.subnet_users_iprange = subnet_users_iprange
         self.resource_group_name = Output.from_input(props.resource_group_name)
         self.virtual_network = virtual_network

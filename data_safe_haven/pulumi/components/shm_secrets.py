@@ -27,7 +27,7 @@ class SHMSecretsComponent(ComponentResource):
     """Deploy SHM secrets with Pulumi"""
 
     def __init__(self, name: str, props: SHMSecretsProps, opts: ResourceOptions = None):
-        super().__init__("dsh:shmsecrets:SHMSecretsComponent", name, {}, opts)
+        super().__init__("dsh:shm_secrets:SHMSecretsComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         # Define SHM KeyVault
