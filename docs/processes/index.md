@@ -7,6 +7,7 @@
 data_handling.md
 data_classification.md
 data_ingress.md
+data_egress.md
 data_access_controls.md
 data_transfer_protocol.md
 ```
@@ -19,6 +20,9 @@ data_transfer_protocol.md
 
 [Data ingress](data_ingress.md)
 : An overview of the processes for bringing data or software into a Secure Research Environment within the Turing's Data Safe Haven instance. Other organisations may have their own processes for data ingress.
+
+[Data egress](data_egress.md)
+: An overview of the processes for bringing data or software out of a Secure Research Environment within the Turing's Data Safe Haven instance. Other organisations may have their own processes for data egress.
 
 [Data access controls](data_access_controls.md)
 : How to bring data into a Secure Research Environment

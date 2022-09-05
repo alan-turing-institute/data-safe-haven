@@ -4,8 +4,6 @@
 
 ```{toctree}
 :hidden:
-
-data_egress.md
 ```
 
 The Dataset Provider is the organisation who provided the dataset under analysis.
@@ -25,6 +23,3 @@ It is the duty of the **Dataset Provider Representative** to manage this set of 
 
 {ref}`Data classification guide <process_data_classification>`
 : How we classify a work package into one of our security tiers at the Turing.
-
-[Data egress](data_egress.md)
-: An overview of the processes for bringing data or software out of a Secure Research Environment within the Turing's Data Safe Haven instance. Other organisations may have their own processes for data egress.
