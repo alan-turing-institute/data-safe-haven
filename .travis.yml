@@ -13,7 +13,7 @@ cache:
   timeout: 360
   directories:
   # Linux Powershell module installation location
-    - $HOME/.local/share/powershell/Modules/ 
+    - $HOME/.local/share/powershell/Modules/
 
 jobs:
   include:
@@ -42,7 +42,11 @@ jobs:
         pip install -r docs/build/requirements.txt
       script: |
         DOCS_DIR=$(mktemp -d)
-        ./docs/build/build_docs_instance.sh -p -d $DOCS_DIR -n develop
+        # Make develop docs
+        make -C docs clean
+        make -C docs html
+        mv ./docs/_output $DOCS_DIR/develop
+        # Simulate other tags
         for tag in $(git tag); do
           mkdir -p ${DOCS_DIR}/${tag}
           echo "<html></html>" > ${DOCS_DIR}/${tag}/index.html
