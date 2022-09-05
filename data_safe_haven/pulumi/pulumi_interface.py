@@ -33,6 +33,7 @@ class PulumiInterface(LoggingMixin):
         self.cfg = config
         self.env_ = None
         self.stack_ = None
+        self.options = {}
         if deployment_type == "SHM":
             self.program = DeclarativeSHM(config)
             self.work_dir = pathlib.Path.cwd() / "pulumi" / f"shm-{config.shm.name}"
@@ -80,12 +81,26 @@ class PulumiInterface(LoggingMixin):
             )
         return self.stack_
 
+    def add_option(self, name: str, value: str) -> None:
+        """Add a public configuration option"""
+        self.options[name] = (value, False)
+
+    def add_secret(self, name: str, value: str) -> None:
+        """Add a secret configuration option"""
+        self.options[name] = (value, True)
+
+    def apply_config_options(self):
+        """Set Pulumi config options"""
+        for name, (value, is_secret) in self.options.items():
+            self.ensure_config(name, value, is_secret)
+        self.options = {}
+
     def deploy(self):
         """Deploy the infrastructure with Pulumi."""
         self.initialise_workdir()
         self.login()
         self.install_plugins()
-        self.set_config_options()
+        self.apply_config_options()
         self.refresh()
         self.preview()
         self.update()
@@ -193,13 +208,6 @@ class PulumiInterface(LoggingMixin):
             raise DataSafeHavenPulumiException(
                 f"Secret '{name}' was not found."
             ) from exc
-
-    def set_config_options(self):
-        """Set Pulumi config options"""
-        self.ensure_config("azure-native:location", self.cfg.azure.location)
-        self.ensure_config(
-            "azure-native:subscriptionId", self.cfg.azure.subscription_id
-        )
 
     def teardown(self):
         """Teardown the infrastructure deployed with Pulumi."""

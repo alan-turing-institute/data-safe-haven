@@ -14,6 +14,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.pulumi import PulumiInterface
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.helpers import password
 
 
 class DeploySHMCommand(LoggingMixin, Command):
@@ -41,6 +42,11 @@ class DeploySHMCommand(LoggingMixin, Command):
 
             # Deploy infrastructure with Pulumi
             infrastructure = PulumiInterface(config, "SHM")
+            infrastructure.add_option("azure-native:location", config.azure.location)
+            infrastructure.add_option(
+                "azure-native:subscriptionId", config.azure.subscription_id
+            )
+            infrastructure.add_secret("vm-password-primary-dc", password(20))
             infrastructure.deploy()
 
             # Add Pulumi output information to the config file

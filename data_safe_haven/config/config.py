@@ -13,7 +13,6 @@ import yaml
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-# from data_safe_haven.helpers import AzureApi
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
@@ -124,16 +123,6 @@ class Config(LoggingMixin, AzureMixin):
             raise DataSafeHavenAzureException(
                 f"Configuration file could not be downloaded from '{backend_storage_account_name}'\n{str(exc)}."
             ) from exc
-
-    # def get_secret(self, name: str) -> str:
-    #     """Get secret value"""
-    #     azure_api = AzureApi(self.subscription_name)
-    #     return azure_api.get_keyvault_secret(self.backend.key_vault_name, name)
-
-    # def set_secret(self, name: str, value: str) -> None:
-    #     """Set secret value"""
-    #     azure_api = AzureApi(self.subscription_name)
-    #     azure_api.set_keyvault_secret(self.backend.key_vault_name, name, value)
 
     def storage_account_key(
         self, backend_resource_group_name: str, backend_storage_account_name: str

@@ -66,10 +66,11 @@ class DeclarativeSHM:
         # Deploy update servers
 
         # Deploy domain controllers
+
         domain_controllers = SHMDomainControllersComponent(
             self.cfg.shm.name,
             SHMDomainControllersProps(
-                admin_password="t3stPassWord",
+                admin_password=self.secrets.require("vm-password-primary-dc"),
                 ip_address_private=str(networking.subnet_users_iprange.available()[0]),
                 location=self.cfg.azure.location,
                 resource_group_name=rg_users.name,
