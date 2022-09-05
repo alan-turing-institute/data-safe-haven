@@ -42,15 +42,8 @@ jobs:
         pip install -r docs/build/requirements.txt
       script: |
         DOCS_DIR=$(mktemp -d)
-        # Make develop docs
-        make -C docs clean
-        make -C docs html
-        mv ./docs/_output $DOCS_DIR/develop
-        # Simulate other tags
-        for tag in $(git tag); do
-          mkdir -p ${DOCS_DIR}/${tag}
-          echo "<html></html>" > ${DOCS_DIR}/${tag}/index.html
-        done
+        # Make docs for all supported versions
+        python ./docs/build/build_docs_all.py --output-dir ${DOCS_DIR}
         export LC_CTYPE="C.UTF-8"
         htmlproofer ${DOCS_DIR}/develop \
           --allow-hash-href \
