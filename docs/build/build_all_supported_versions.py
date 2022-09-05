@@ -46,14 +46,18 @@ config_backup_dir = pathlib.Path(temp_dir.name) / "build_config"
 # Get git repository details
 repo = git.Repo(search_parent_directories=True)
 repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
-current_branch = repo.active_branch.name
-# Load all releases since 'earliest_supported_release'
+
+# Load all release since earliest_supported_release
 releases = sorted((t.name for t in repo.tags), reverse=True)
 supported_versions = (
     releases[: releases.index(earliest_supported_release) + 1]
     + [development_branch]
 )
 default_version = supported_versions[0]  # Latest stable release
+current_version = (
+    [tag for tag in repo.tags if tag.commit == repo.head.commit]
+    + [branch for branch in repo.branches if branch.commit == repo.head.commit]
+)[0].name  # Tag or branch name
 
 # --- Ensure local repo is clean --
 if repo.is_dirty(untracked_files=True):
