@@ -43,7 +43,7 @@ jobs:
       script: |
         DOCS_DIR=$(mktemp -d)
         # Make docs for all supported versions
-        python ./docs/build/build_docs_all.py --output-dir ${DOCS_DIR}
+        python ./docs/build/build_all_supported_versions.py --output-dir ${DOCS_DIR}
         export LC_CTYPE="C.UTF-8"
         htmlproofer ${DOCS_DIR}/develop \
           --allow-hash-href \
