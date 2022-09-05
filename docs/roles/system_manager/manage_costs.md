@@ -46,19 +46,6 @@ On your **deployment machine**.
 If the Azure subscription that you have deployed into runs out of credit, the SHM and/or SRE will be shutdown automatically.
 ```
 
-## {{package}} Updating repository package allowlists
-
-For a {ref}`policy_tier_3` SRE only the packages named in the allowlists at `environment_configs/package_lists/` can be installed by users.
-
-To update the allowlists on an SHM, you should use the `SHM_Package_Repository_Update_Allowlists.ps1` script.
-
-```powershell
-PS> /deployment/administration/SHM_Package_Repository_Update_Allowlists.ps1 -shmId <SHM ID>
-```
-
-By default, this script will use the allowlists present in `environment_configs/package_lists/` but you may use the `-allowlistDirectory` option to specify another directory containing the allowlists.
-It is assumed that the allowlists will have the same names as those in in `environment_configs/package_lists/`.
-
 ## {{anger}} Tear down SHM package mirrors
 
 During normal usage of the SHM, you should not need to tear down the package mirrors.

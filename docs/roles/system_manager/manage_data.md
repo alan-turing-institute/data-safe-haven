@@ -245,3 +245,16 @@ On your **deployment machine**.
   ./SRE_Enroll_Disk_Backup.ps1 -shmId <SHM ID> -sreId <SRE ID> -resourceGroup
   <resource group name> -diskName <disk name>
   ```
+
+## {{package}} Updating allowed repository packages
+
+For a {ref}`policy_tier_3` SRE only the packages named in the allowlists at `environment_configs/package_lists/` can be installed by users.
+
+To update the allowlists on an SHM, you should use the `SHM_Package_Repository_Update_Allowlists.ps1` script.
+
+```powershell
+PS> /deployment/administration/SHM_Package_Repository_Update_Allowlists.ps1 -shmId <SHM ID>
+```
+
+By default, this script will use the allowlists present in `environment_configs/package_lists/` but you may use the `-allowlistDirectory` option to specify another directory containing the allowlists.
+It is assumed that the allowlists will have the same names as those in in `environment_configs/package_lists/`.
