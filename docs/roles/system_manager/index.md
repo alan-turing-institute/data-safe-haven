@@ -5,11 +5,23 @@
 ```{toctree}
 :hidden:
 
-administrator_guide.md
+manage_users.md
+manage_data.md
+manage_costs.md
+manage_deployments.md
 ```
 
 Members of technical staff responsible for configuration and maintenance of the Safe Haven.
 Typically these might be members of an institutional IT team.
 
-[Safe Haven administrator guide](administrator_guide.md)
-: Instructions for administrators of a Safe Haven. Includes user management and some troubleshooting steps.
+[Managing users](manage_users.md)
+: How to manage users for a Data Safe Haven as an administrator.
+
+[Managing data](manage_data.md)
+: How to manage data for a Data Safe Haven as an administrator.
+
+[Managing costs](manage_costs.md)
+: How to manage Azure costs for a Data Safe Haven as an administrator.
+
+[Removing deployed components](manage_deployments.md)
+: Removing an SRE or a complete, deployment Data Safe Haven as an administrator.
