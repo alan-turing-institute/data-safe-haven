@@ -1,7 +1,7 @@
 These steps ensure that you have created a non-privileged user account that you can use for testing.
 You must ensure that you have assigned a licence to this user in the Azure Active Directory so that MFA will work correctly.
 
-You should have already set up a non-privileged user account upon setting up the SHM, when {ref}`validating the active directory synchronisation <deploy_shm_validate_aadsync>`, but you may wish to set up another or verify that you have set one up already:
+You should have already set up a non-privileged user account upon setting up the SHM, when {ref}`validating the active directory synchronisation <deploy_shm>`, but you may wish to set up another or verify that you have set one up already:
 
 <details>
 <summary><strong>Set up a non-privileged user account</strong></summary>
@@ -9,7 +9,7 @@ You should have already set up a non-privileged user account upon setting up the
 ![Remote: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=five%20minutes)
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the connection details that you previously used to {ref}`log into this VM <roles_system_deployer_shm_remote_desktop>`.
-- Follow the {ref}`user creation instructions <deploy_shm_validate_aadsync>` from the {ref}`SHM deployment guide <deploy_shm>` (everything under the `Validate Active Directory synchronisation` header). In brief these involve:
+- Follow the user creation instructions from the {ref}`SHM deployment guide <deploy_shm>` (everything under the `Validate Active Directory synchronisation` header). In brief these involve:
   - adding your details (ie. your first name, last name, phone number etc.) to a user details CSV file.
   - running `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>` in a Powershell command window with elevated privileges.
 - This will create a user in the local Active Directory on the SHM domain controller and start the process of synchronisation to the Azure Active Directory, which will take around 5 minutes.

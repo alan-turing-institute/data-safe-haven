@@ -57,7 +57,7 @@ This information will be available in the email you received with your connectio
 
 #### Data security training requirements
 
-Depending on your project, you may be required to undertake {ref}`data security awareness training <policy_data_security_training>`.
+Depending on your project, you may be required to undertake {ref}`data security awareness training <process_data_security_training>`.
 
 ```{tip}
 Check with your designated contact to see whether this is the case for you.

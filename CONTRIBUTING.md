@@ -24,7 +24,7 @@ Jump to the following sections:
   - [Project management through issues](#project-management-through-issues)
   - [Issues as conversations](#issues-as-conversations)
   - [Working in a private repository](#working-in-a-private-repository)
-  - [Who's involved in the project](#Whos-involved-in-the-project)
+  - [Who's involved in the project](#whos-involved-in-the-project)
   - [Make a change with a pull request](#making-a-change-with-a-pull-request)
 
 ## A DevOps development philosophy
@@ -215,7 +215,7 @@ Once you submit a [pull request](https://docs.github.com/en/pull-requests/collab
 
 A [review](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews) will probably consist of a few questions to help clarify the work you've done. Keep an eye on your github notifications and be prepared to join in that conversation.
 
-You can update your [fork][github-fork] of the data safe haven [repository](https://github.com/alan-turing-institute/data-safe-haven) and the pull request will automatically update with those changes. **You don't need to submit a new pull request when you make a change in response to a review.**
+You can update your [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) of the data safe haven [repository](https://github.com/alan-turing-institute/data-safe-haven) and the pull request will automatically update with those changes. **You don't need to submit a new pull request when you make a change in response to a review.**
 
 GitHub has a [nice introduction](https://docs.github.com/en/get-started/quickstart/github-flow) to the pull request workflow, but please [get in touch](#get-in-touch) if you have any questions :balloon:.
 
@@ -225,40 +225,44 @@ As some users have `GitHub` IDs that make it a little difficult to know who they
 
 The following people have made one or more commits to the project:
 
-| Name                 | GitHub ID                                                  | Email                                 |
-| -------------------- | ---------------------------------------------------------- | ------------------------------------- |
-| Daniel Allen         | [@sysdan](https://github.com/sysdan)                       | <dallen@turing.ac.uk>                 |
-| Diego Arenas         | [@darenasc](https://github.com/darenasc)                   | <darenasc@gmail.com>                  |
-| David Beavan         | [@DavidBeavan](https://github.com/DavidBeavan)             | <dbeavan@turing.ac.uk>                |
-| Alvaro Cabrejas Egea | [@ACabrejas](https://github.com/ACabrejas)                 | <acabrejasegea@turing.ac.uk>          |
-| Ian Carter           | [@getcarter21](https://github.com/getcarter21)             | <icarter@turing.ac.uk>                |
-| Ed Chalstrey         | [@edwardchalstrey1](https://github.com/edwardchalstrey1)   | <echalstrey@turing.ac.uk>             |
-| Rob Clarke           | [@RobC-CTL](https://github.com/RobC-CTL)                   | <rob.clarke@coriniumtech.com>         |
-| James Cunningham     | [@james-c](https://github.com/james-c)                     | <james.a.cunningham@manchester.ac.uk> |
-| Tom Doel             | [@tomdoel](https://github.com/tomdoel)                     | <tom.doel@codechoreography.co.uk>     |
-| Chris Edsall         | [@christopheredsall](https://github.com/christopheredsall) | <chris.edsall@bristol.ac.uk>          |
-| Oliver Forrest       | [@oforrest](https://github.com/oforrest)                   | <oforrest@turing.ac.uk>               |
-| Oscar Giles          | [@OscartGiles](https://github.com/OscartGiles)             | <ogiles@turing.ac.uk>                 |
-| James Hetherington   | [@jamespjh](https://github.com/jamespjh)                   | <jhetherington@turing.ac.uk>          |
-| Tim Hobson           | [@thobson88](https://github.com/thobson88)                 | <thobson@turing.ac.uk>                |
-| George Holmes        | [@ens-george-holmes](https://github.com/ens-george-holmes) | <George.Holmes@Ensono.com>            |
-| Catherine Lawrence   | [@cathiest](https://github.com/cathiest)                   | <clawrence@turing.ac.uk>              |
-| Tomas Lazauskas      | [@tomaslaz](https://github.com/tomaslaz)                   | <tlazauskas@turing.ac.uk>             |
-| Jim Madge            | [@JimMadge](https://github.com/JimMadge)                   | <jmadge@turing.ac.uk>                 |
-| Jules Manser         | [@JulesMarz](https://github.com/JulesMarz)                 | <jmanser@turing.ac.uk>                |
-| Miguel Morin         | [@miguelmorin](https://github.com/miguelmorin)             | <mmorin@turing.ac.uk>                 |
-| Federico Nanni       | [@fedenanni](https://github.com/fedenanni)                 | <fnanni@turing.ac.uk>                 |
-| Guillaume Noell      | [@gn5](https://github.com/gn5)                             | <gn5@sanger.ac.uk>                    |
-| Martin O'Reilly      | [@martintoreilly](https://github.com/martintoreilly)       | <moreilly@turing.ac.uk>               |
-| Jack Roberts         | [@jack89roberts](https://github.com/jack89roberts)         | <jroberts@turing.ac.uk>               |
-| James Robinson       | [@jemrobinson](https://github.com/jemrobinson)             | <jrobinson@turing.ac.uk>              |
-| Brett Todd           | [@ens-brett-todd](https://github.com/ens-brett-todd)       | <Brett.Todd@Ensono.com>               |
-| Sebastian Vollmer    | [@vollmersj](https://github.com/vollmersj)                 | <svollmer@turing.ac.uk>               |
-| Ben Walden           | [@bw-faststream](https://github.com/bw-faststream)         | <bwalden@turing.ac.uk>                |
-| Kirstie Whitaker     | [@KirstieJane](https://github.com/KirstieJane)             | <kwhitaker@turing.ac.uk>              |
-| Rachel Winstanley    | [@rwinstanley1](https://github.com/rwinstanley1)           | <rwinstanley@turing.ac.uk>            |
-| Warwick Wood         | [@warwick26](https://github.com/warwick26)                 | <wwood@turing.ac.uk>                  |
-| Kevin Xu             | [@kevinxufs](https://github.com/kevinxufs)                 | <kxu@turing.ac.uk>                    |
+| Name                 | GitHub ID                                                  |
+| -------------------- | ---------------------------------------------------------- |
+| Daniel Allen         | [@sysdan](https://github.com/sysdan)                       |
+| Diego Arenas         | [@darenasc](https://github.com/darenasc)                   |
+| David Beavan         | [@DavidBeavan](https://github.com/DavidBeavan)             |
+| Alvaro Cabrejas Egea | [@ACabrejas](https://github.com/ACabrejas)                 |
+| Ian Carter           | [@getcarter21](https://github.com/getcarter21)             |
+| Ed Chalstrey         | [@edwardchalstrey1](https://github.com/edwardchalstrey1)   |
+| Rob Clarke           | [@RobC-CTL](https://github.com/RobC-CTL)                   |
+| James Cunningham     | [@james-c](https://github.com/james-c)                     |
+| Tom Doel             | [@tomdoel](https://github.com/tomdoel)                     |
+| Chris Edsall         | [@christopheredsall](https://github.com/christopheredsall) |
+| Oliver Forrest       | [@oforrest](https://github.com/oforrest)                   |
+| Oscar Giles          | [@OscartGiles](https://github.com/OscartGiles)             |
+| James Hetherington   | [@jamespjh](https://github.com/jamespjh)                   |
+| Tim Hobson           | [@thobson88](https://github.com/thobson88)                 |
+| George Holmes        | [@ens-george-holmes](https://github.com/ens-george-holmes) |
+| Catherine Lawrence   | [@cathiest](https://github.com/cathiest)                   |
+| Tomas Lazauskas      | [@tomaslaz](https://github.com/tomaslaz)                   |
+| Jim Madge            | [@JimMadge](https://github.com/JimMadge)                   |
+| Jules Manser         | [@JulesMarz](https://github.com/JulesMarz)                 |
+| Miguel Morin         | [@miguelmorin](https://github.com/miguelmorin)             |
+| Federico Nanni       | [@fedenanni](https://github.com/fedenanni)                 |
+| Guillaume Noell      | [@gn5](https://github.com/gn5)                             |
+| Martin O'Reilly      | [@martintoreilly](https://github.com/martintoreilly)       |
+| Jack Roberts         | [@jack89roberts](https://github.com/jack89roberts)         |
+| James Robinson       | [@jemrobinson](https://github.com/jemrobinson)             |
+| Brett Todd           | [@ens-brett-todd](https://github.com/ens-brett-todd)       |
+| Sebastian Vollmer    | [@vollmersj](https://github.com/vollmersj)                 |
+| Ben Walden           | [@bw-faststream](https://github.com/bw-faststream)         |
+| Kirstie Whitaker     | [@KirstieJane](https://github.com/KirstieJane)             |
+| Rachel Winstanley    | [@rwinstanley1](https://github.com/rwinstanley1)           |
+| Warwick Wood         | [@warwick26](https://github.com/warwick26)                 |
+| Kevin Xu             | [@kevinxufs](https://github.com/kevinxufs)                 |
+
+## Get in touch
+
+You can get in touch with the development team at safehavendevs@turing.ac.uk.
 
 ## Thank you!
 
