@@ -156,8 +156,8 @@ with open(os.path.join(combined_output_dir, "index.html"), "w+") as file:
 # -- Restore original branch and copy docs to specified output directory --
 print(f"Documentation builds complete for all versions: {supported_versions}")
 # Checkout original branch
-print(f"Restoring original '{current_branch}' branch.")
-repo.git.checkout(current_branch)
+print(f"Restoring original '{current_version}' branch.")
+repo.git.checkout(current_version)
 temp_dir.cleanup()
 
 # Check that all versions have built
