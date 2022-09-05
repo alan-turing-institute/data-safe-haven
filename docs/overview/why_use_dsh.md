@@ -25,7 +25,6 @@ This makes it easy to deploy an isolated secure environment for each project.
 Our deployments are reproducible, since they rely on running scripts controlled by a single configuration file.
 This gives configurability while minimising human error at deployment time.
 
-
 (why_usable)=
 
 ## Usable
@@ -42,7 +41,6 @@ They also have access to database and file storage and locally-hosted collaborat
 Role-based access controls are used to determine which users can perform which actions.
 Connectivity is kept to a minimum between different parts of the Data Safe Haven and outwards to the wider internet.
 
-
 (why_cloud_native)=
 
 ## Cloud-native
@@ -50,13 +48,12 @@ Connectivity is kept to a minimum between different parts of the Data Safe Haven
 The scalability and resilience of modern cloud-computing providers allows anyone to easily use our code to deploy their own Safe Haven.
 Currently, we only support Microsoft Azure, but we are hoping to look at other providers in future.
 
-
 (why_open_source)=
 
 ## Open source
+
 The Data Safe Haven is released under the [MIT licence](https://opensource.org/licenses/MIT).
 This means that that any person or organisation is welcome to extend the code base and adapt it to their particular context.
-
 
 ## Is the Data Safe Haven suitable for you?
 

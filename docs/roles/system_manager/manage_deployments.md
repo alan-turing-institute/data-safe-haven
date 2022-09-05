@@ -24,7 +24,6 @@ On your **deployment machine**.
 
 - If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 
-
 ## {{end}} Remove a complete Safe Haven
 
 ### {{collision}} Tear down any attached SREs
