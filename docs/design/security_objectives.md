@@ -1,23 +1,20 @@
 (design_security_claims)=
 
-# Security claims
+# Security Objectives
 
-In this document we:
-
-- Establish our current claims about the Data Safe Haven.
-- Establish what these security claims mean in terms of implementation.
-
-The diagram below shows an overview of the security standards we're trying to meet for Data Safe Haven Secure Research Environments (SREs).
+The diagram below shows an overview of the security standards we're trying to meet for Secure Research Environments (SREs) hosted at the Turing.
 
 ```{caution}
 The Turing does not yet operate any {ref}`policy_tier_4` environments and so our suggested default controls for {ref}`policy_tier_4` environments are still under development.
 Organisations are responsible for making their own decisions about the suitability of any of our default controls, but should be especially careful about doing so if considering using the Data Safe Haven for projects at the {ref}`policy_tier_4` sensitivity level.
 ```
 
-```{image} security_claims/recommended_controls.png
+```{image} recommended_controls.png
 :alt: Recommended security controls
 :align: center
 ```
+
+Below we outline how we attempt to meet this requirements
 
 ## 1. Multifactor authentication and password strength
 

@@ -105,7 +105,7 @@ Note that this means that eg. password managers cannot be used to autofill a {re
 ### Sign-off on bringing external code/software into the environment:
 
 - **{ref}`policy_tier_3`:** At the Turing both the {ref}`role_investigator` and {ref}`role_referee` must authorise the ingress of code or software to an SRE at {ref}`policy_tier_3`.
-- **{ref}`policy_tier_0` to {ref}`policy_tier_2`:**At the Turing the {ref}`role_investigator` can authorise ingress of code or software to an SRE at {ref}`policy_tier_0` to {ref}`policy_tier_2`.
+- **{ref}`policy_tier_0` to {ref}`policy_tier_2`:** At the Turing the {ref}`role_investigator` can authorise ingress of code or software to an SRE at {ref}`policy_tier_0` to {ref}`policy_tier_2`.
 
 ### Python/R package availability:
 

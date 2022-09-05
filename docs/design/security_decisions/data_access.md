@@ -2,7 +2,7 @@
 
 In this section we describe how access to the Data Safe Haven is controlled at the Turing.
 While much of the access control is provided by the technical controls configured when deploying a Data Safe Haven following our deployment guide.
-However some steps manual configuration steps are required and each organisation is responsible for verifying the Data Safe Haven is deployed as expected and that the deployed configuration effectively supports their own information governance policies and processes.
+However some manual configuration steps are required and each organisation is responsible for verifying the Data Safe Haven is deployed as expected and that the deployed configuration effectively supports their own information governance policies and processes.
 
 ## Administrative access
 
