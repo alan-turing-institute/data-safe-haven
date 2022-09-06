@@ -15,7 +15,7 @@ This includes reasoning for our choices but also highlights potential limitation
 In addition to describing the architecture and technical security controls configured when deploying a Data Safe Haven following our deployment guide, we also share some of the information governance policies and processes we use to manage the security of our Data Safe Haven instance at the Turing.
 
 ```{warning}
-Each organisation deploying their own instance of the Data Safe Haven is responsible for verifying their Data Safe Haven instance is deployed as expected and that the deployed configuration effectively supports their own information governance policies and processes.
+Each organisation deploying their own instance of the Data Safe Haven is responsible for verifying their Data Safe Haven instance is deployed and operates as expected and that the deployed configuration effectively supports the purpose for which they have deployed the Data Safe Haven and their own information governance policies and processes.
 ```
 
 [Architecture](architecture/index.md)
