@@ -10,6 +10,7 @@ from .components.shm_domain_controllers import (
     SHMDomainControllersComponent,
     SHMDomainControllersProps,
 )
+from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
 
 
 class DeclarativeSHM:
@@ -27,6 +28,11 @@ class DeclarativeSHM:
             "rg_networking",
             location=self.cfg.azure.location,
             resource_group_name=f"rg-shm-{self.cfg.shm.name}-networking",
+        )
+        rg_monitoring = resources.ResourceGroup(
+            "rg_monitoring",
+            location=self.cfg.azure.location,
+            resource_group_name=f"rg-shm-{self.cfg.shm.name}-monitoring",
         )
         rg_storage = resources.ResourceGroup(
             "rg_storage",
@@ -60,6 +66,13 @@ class DeclarativeSHM:
         )
 
         # Deploy SHM monitoring
+        automation = SHMMonitoringComponent(
+            self.cfg.shm.name,
+            SHMMonitoringProps(
+                location=self.cfg.azure.location,
+                resource_group_name=rg_monitoring.name,
+            ),
+        )
 
         # Deploy firewall
 
