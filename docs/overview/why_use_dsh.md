@@ -52,7 +52,7 @@ Currently, we only support Microsoft Azure, but we are hoping to look at other p
 
 ## Open source
 
-The Data Safe Haven is released under the [MIT licence](https://opensource.org/licenses/MIT).
+The Data Safe Haven is released under the [BSD 3-Clause Licence](https://opensource.org/licenses/BSD-3-Clause).
 This means that that any person or organisation is welcome to extend the code base and adapt it to their particular context.
 
 ## Is the Data Safe Haven suitable for you?

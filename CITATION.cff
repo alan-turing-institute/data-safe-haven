@@ -68,7 +68,7 @@ authors:
     family-names: Noell
   - given-names: David
     family-names: Beavan
-license: MIT
+license: BSD-3-Clause
 keywords:
   - "trusted research environment"
   - "infrastructure as code"
