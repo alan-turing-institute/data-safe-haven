@@ -38,6 +38,7 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
   - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://apps.microsoft.com/store/detail/microsoft-remote-desktop/9WZDNCRFJ3PS)
   - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite remote desktop client
 - `OpenSSL`
+
   - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) a pre-compiled version can be installed using Homebrew: `brew install openssl`
   - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) binaries are [available here](https://wiki.openssl.org/index.php/Binaries).
 
@@ -105,8 +106,8 @@ The following core SHM properties are required - look in the `environment_config
     "resourceGroupName": "[Optional] Resource group which holds DNS records (e.g. RG_SHM_DNS_TEST)."
   },
   "repositoryType": {
-      "tier2": "[Optional] Whether to use 'mirror' or 'proxy' for tier-2 repositories (default is 'proxy').",
-      "tier3": "[Optional] Whether to use 'mirror' or 'proxy' for tier-3 repositories (default is 'proxy')."
+    "tier2": "[Optional] Whether to use 'mirror' or 'proxy' for tier-2 repositories (default is 'proxy').",
+    "tier3": "[Optional] Whether to use 'mirror' or 'proxy' for tier-3 repositories (default is 'proxy')."
   },
   "vmImages": {
     "subscriptionName": "[Optional] Azure subscription where VM images will be built (if not specified then the value from the 'azure' block will be used). Multiple Safe Haven deployments can share a single set of VM images in a common subscription if desired - this is what is done in the Turing deployment. If you are hoping to use images that have already been built for another Safe Haven deployment, make sure you specify this parameter accordingly.",
@@ -214,9 +215,62 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 - Ensure that you add this to the {ref}`configuration file <roles_system_deployer_shm_configuration_file>` for this SHM under `azure > activeDirectoryTenantId`.
 
+(roles_deployer_shm_configure_dns)=
+
+## 4. {{door}} Register custom domain with Azure Active Directory
+
+### Configure DNS for the custom domain
+
+![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
+
+```powershell
+PS> ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
+```
+
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+
+````{error}
+If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
+
+<details><summary><b>Manual DNS configuration instructions</b></summary>
+
+- To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for `DNS Zone` and locate the DNS Zone with the SHM's domain.
+- The NS record will list four Azure name servers which must be duplicated to the parent DNS system.
+- If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
+  - The name should be set to the subdomain (e.g. `project`) or `@` if using a custom domain, and the values duplicated from above
+  - For example, for a new subdomain `project.turingsafehaven.ac.uk`, duplicate the NS records from the Azure DNS Zone `project.turingsafehaven.ac.uk` to the Azure DNS Zone for `turingsafehaven.ac.uk`, by creating a record set with name `project`
+    ```{image} deploy_shm/shm_subdomain_ns.png
+    :alt: Subdomain NS record
+    :align: center
+    ```
+- If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
+</details>
+````
+
+### Add the SHM domain to the Azure Active Directory
+
+![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
+
+```powershell
+PS> ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID> -tenantId <AAD tenant ID>
+```
+
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+- where `<AAD tenant ID>` is the {ref}`tenant ID <roles_deployer_aad_tenant_id>` for this AAD
+
+```{error}
+If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.
+```
+
+```{error}
+Due to delays with DNS propagation, the script may occasionally exhaust the maximum number of retries without managing to verify the domain.
+If this occurs, run the script again.
+If it exhausts the number of retries a second time, wait an hour and try again.
+```
+
 (roles_deploy_add_additional_admins)=
 
-## 4. {{hammer}} Create Azure Active Directory administrator accounts
+## 5. {{hammer}} Create Azure Active Directory administrator accounts
 
 A default external administrator account was automatically created for the user you were logged in as when you initially created the Azure AD.
 This user should also **not be used** for administering the Azure AD.
@@ -241,41 +295,54 @@ In particular, it should not be used as a shared admin account for routine admin
 
 - From the Azure portal, navigate to the AAD you have created.
 - Click `Users` in the left hand sidebar and click on the `+New user` icon in the top menu above the list of users.
-- Create an internal admin user:
-  - User name: `aad.admin.firstname.lastname@<SHM domain>`
-  - Name: `AAD Admin - Firstname Lastname`
-  - Leave `Auto-generate password` set.
-    Users will be able to reset their passwords on first login and it is good security practice for admins not to know user passwords.
-  - Click the `User` link in the `Roles` field and make the user an administrator:
-    - Search for `Global Administrator`
-    - Check `Global Administrator`
-    - Click the `Select` button
-  - Set their usage location to the country you used when creating the Safe Haven Azure AD
-  - Leave all other fields empty, including First name and Last name
-  - Click `Create`
-- Add a mobile phone number for self-service password reset:
-  - Navigate to `Users` and click on the account you have just created.
-  - Edit the `Contact info` section and:
-    - Add the the user's mobile phone number to the `Mobile phone` field.
-      Make sure to prefix it with the country code and **do not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
-    - They will need to enter their number in **exactly this format** when performing a self-service password reset.
-    - Do **not** add anything in the `Email` field here as this will prevent you from using the same email address for a user account
-  - Click the `Save` icon at the top of the user details panel
-- Add an authentication email
 
-  - Click `Authentication methods` in the left hand sidebar
-  - Enter the user's mobile phone number in the `Phone` field, using the same format as above
-    - Note that you do **not** need to fill out the `Alternate Phone` field
-  - Enter the user's institutional email address in the `Email` field
-  - Click the `Save` icon at the top of the panel
-    <details><summary><b>Screenshots</b></summary>
+#### Create an internal admin user:
 
-    ```{image} deploy_shm/aad_create_admin.png
-    :alt: AAD create admin account
-    :align: center
-    ```
+- User name: `aad.admin.firstname.lastname@<SHM domain>`
+- Name: `AAD Admin - Firstname Lastname`
+- Leave `Auto-generate password` set. Users will be able to reset their passwords on first login and it is good security practice for admins not to know user passwords.
+- Click the `User` link in the `Roles` field and make the user an administrator:
+  - Search for `Global Administrator`
+  - Check `Global Administrator`
+  - Click the `Select` button
+- Set their usage location to the country you used when creating the Safe Haven Azure AD
+- Leave all other fields empty, including First name and Last name
+- Click `Create`
 
-    </details>
+```{image} deploy_shm/aad_create_admin.png
+:alt: AAD create admin account
+:align: center
+```
+
+#### Add authentication methods for self-service password reset
+
+- Navigate to `Users` and click on the account you have just created.
+- Click on `Properties` and then edit the `Contact info` section.
+  - Add the the user's mobile phone number to the `Mobile phone` field.
+    Make sure to prefix it with the country code and **do not include** the leading zero (e.g. `+44 7700900000`).
+  - They will need to enter their number in **exactly this format** when performing a self-service password reset.
+  - Do **not** add anything in the `Email` field here as this will prevent you from using the same email address for a user account.
+  - Click the `Save` icon in top panel.
+- In the left-hand sidebar click `Authentication methods`.
+  - Enter the user's mobile phone number in the `Phone` field, using the same format as above.
+    - Note that you do **not** need to fill out the `Alternate Phone` field.
+  - Enter the user's institutional email address in the `Email` field.
+  - Ensure that you have registered **both** a phone number and an email address.
+  - Click the `Save` icon in top panel.
+
+### Register allowed authentication methods
+
+When you have finished creating administrator accounts, you will need to ensure that they are able to set their own passwords
+
+- From the Azure portal, navigate to the AAD you have created.
+- Click `Manage > Password Reset` on the left-hand sidebar
+- Click `Manage > Authentication methods` on the left-hand sidebar
+- Ensure that both `Email` and `Mobile phone` are enabled
+
+```{image} deploy_shm/aad_authentication_methods.png
+:alt: AAD create admin account
+:align: center
+```
 
 ### Activate and configure your new internal admin account
 
@@ -289,7 +356,8 @@ The other administrators you have just set up can activate their accounts by fol
 - Go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) in an **incognito / private browsing** tab
 - Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)
 - Click the `Forgotten my password` link
-- Enter the captcha text and press next
+- Enter the CAPTCHA text and press next
+  - If you get a message about not being registered for self-service password reset, this indicates that you have not registered both a phone number and an email address in Azure Active Directory
 - Enter your mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
 - Enter the code that was texted to your phone
 - Enter a new password
@@ -315,120 +383,8 @@ Make sure you have activated your account and **successfully logged in** with th
   - The `User principal name` field for this user will contain the **external domain** and will have `#EXT#` before the `@` sign (for example `alovelace_turing.ac.uk#EXT#@turingsafehaven.onmicrosoft.com`)
 - Click the `Delete user` icon in the menu bar at the top of the user list panel
 
-## 5. {{iphone}} Enable MFA and self-service password reset
-
-To enable self-service password reset (SSPR) and MFA-via-phone-call, you must have sufficient licences for all users.
-
-### Add licences that support self-service password reset
-
-![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
-
-Click the heading that applies to you to expand the instructions for that scenario.
-
-<details><summary><b>Test deployments</b></summary>
-
-**For testing** you can enable a free trial of the P2 License (NB. it can take a while for these to appear on your AAD).
-You can activate the trial while logged in as your deafult guest administrator account.
-
-- From the Azure portal, navigate to the AAD you have created.
-- Click on `Licences` in the left hand sidebar
-- Click on `All products` in the left hand sidebar
-- Click on the `+Try/Buy` text above the empty product list and add a suitable licence product.
-  - Expand the `Free trial` arrow under `Azure AD Premium P2`
-  - Click the `Activate` button
-  - Wait for the `Azure Active Directory Premium P2` licence to appear on the list of `All Products` (this could take several minutes)
-
-</details>
-
-<details><summary><b>Production deployments</b></summary>
-
-**For production** you should buy P1 licences.
-This requires you to be logged in with an **native** Global Administrator account.
-As activating self-service password reset requires active MFA licences, this is one of the rare occasions you will need to use the emergency access admin account.
-
-- Switch to the the **emergency administrator** account:
-  - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
-  - Enter `aad.admin.emergency.access@<SHM domain>` as the username
-  - Open a new browser tab and go to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
-  - Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD).
-    Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
-  - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Subscriptions`
-  - Click on the Safe Haven SHM subscription
-  - Click on `Resource Groups` in the left hand sidebar then `RG_SHM_<SHM ID>_SECRETS`
-  - Click on the `kv-shm-<shm id>` Key Vault
-  - Click on `Secrets` in the left hand sidebar
-  - Click on the `shm-<shm id>-aad-emergency-admin-password` secret
-  - Click on the entry in the `Current version` section
-  - Click on the clipboard icon next to the `Secret value` field
-  - The emergency admin account password in now in your clipboard
-  - Switch back to the browser tab with the Azure login page
-  - Paste the password you copied from the Key Vault
-  - Click the `Sign in` button
-- Click the `Purchase services` link in the information panel above the trial options.
-- In the "Microsoft 365 Admin Centre" portal that opens:
-  - Expand the `Billing` section of the left hand side bar
-  - Click on `Purchase services`
-  - Scroll down the list of products and select `Azure Active Directory Premium P1` and click `Buy`
-  - Select `Pay monthly`
-  - Enter the number of licences required.
-  - Leave `automatically assign all of your users with no licences` checked
-  - Click `Check out now`
-  - Enter the address of the organisation running the Safe Haven on the next screen
-  - Click next and enter payment details when requested
-- Switch back to your original administrator account
-  - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
-  - Log in as the user you used to create the Safe Haven Azure AD
-  </details>
-
-### Enable self-service password reset
-
-![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
-
-- Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory.
-  The name of the current directory is under your username in the top right corner of the Azure portal screen.
-  To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-- Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
-- Click `Password reset` in the left hand sidebar
-- Set the `Self service password reset enabled` toggle to `All`
-
-  ```{image} deploy_shm/aad_sspr.png
-  :alt: AAD self-service password reset
-  :align: center
-  ```
-
-- Click the `Save` icon
-
-```{error}
-If you see a message about buying licences, you may need to refresh the page for the password reset option to show.
-```
-
-### Configure MFA on Azure Active Directory
-
-![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
-
-- From the Azure portal, navigate to the AAD you have created.
-- Click `Users` in the left hand sidebar
-- Click the `Per-user MFA` icon in the top bar of the users list.
-- Click on `Service settings` at the top of the panel
-- Configure MFA as follows:
-
-  - In the `App passwords` section select `Do not allow users to create app passwords to sign in to non-browser apps`
-  - Ensure the `Verification options` are set as follows:
-    - **check** `Call to phone` and `Notification through mobile app` (`Call to phone` is not available with a trial P2 licence)
-    - **uncheck** `Text message to phone` and `Verification code from mobile app or hardware token`
-  - In `Remember multi-factor authentication` section
-    - ensure `Allow users to remember multi-factor authentication on devices they trust` is **unchecked**
-  - Click "Save" and close window
-    <details><summary><b>Screenshots</b></summary>
-
-    ```{image} deploy_shm/aad_mfa_settings.png
-    :alt: AAD MFA settings
-    :align: center
-    ```
-
-    </details>
-
 (roles_deployer_deploy_shm)=
+
 ## 6. {{computer}} Deploy SHM
 
 ![Powershell: a few hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20hours) at {{file_folder}} `./deployment/secure_research_environment/setup`
@@ -447,62 +403,8 @@ You will be prompted for credentials for:
 
 This will perform the following actions, which can be run individually if desired:
 
-(roles_deployer_shm_configure_dns)=
-<details>
-<summary><strong>Configure DNS for the custom domain</strong></summary>
-
-![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
-
-```powershell
-PS> ./Setup_SHM_DNS_Zone.ps1 -shmId <SHM ID>
-```
-
-- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-
-````{error}
-If you see a message `You need to add the following NS records to the parent DNS system for...` you will need to add the NS records manually to the parent's DNS system, as follows:
-
-<b>Manual DNS configuration instructions</b>
-
-- To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for `DNS Zone` and locate the DNS Zone with the SHM's domain.
-- The NS record will list four Azure name servers which must be duplicated to the parent DNS system.
-- If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
-  - The name should be set to the subdomain (e.g. `project`) or `@` if using a custom domain, and the values duplicated from above
-  - For example, for a new subdomain `project.turingsafehaven.ac.uk`, duplicate the NS records from the Azure DNS Zone `project.turingsafehaven.ac.uk` to the Azure DNS Zone for `turingsafehaven.ac.uk`, by creating a record set with name `project`
-    ```{image} deploy_shm/shm_subdomain_ns.png
-    :alt: Subdomain NS record
-    :align: center
-    ```
-- If the parent domain is outside of Azure, create NS records in the registrar for the new domain with the same value as the NS records in the new Azure DNS Zone for the domain.
-````
-
-</details>
-
-(roles_deployer_shm_setup_aad)=
-<details>
-<summary><strong>Add the SHM domain to the Azure Active Directory</strong></summary>
-
-![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
-
-```powershell
-PS> ./Setup_SHM_AAD_Domain.ps1 -shmId <SHM ID>
-```
-
-- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-
-```{error}
-If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.
-```
-
-```{error}
-Due to delays with DNS propagation, the script may occasionally exhaust the maximum number of retries without managing to verify the domain.
-If this occurs, run the script again.
-If it exhausts the number of retries a second time, wait an hour and try again.
-```
-
-</details>
-
 (roles_deployer_shm_key_vault)=
+
 <details>
 <summary><strong>Deploy Key Vault for SHM secrets and create an emergency admin account</strong></summary>
 
@@ -528,6 +430,7 @@ Do not use this account unless absolutely required!
 </details>
 
 (roles_deployer_shm_vnet_gateway)=
+
 <details>
 <summary><strong>Deploy network and VPN gateway</strong></summary>
 
@@ -560,6 +463,7 @@ If you cannot see these resource groups:
 </details>
 
 (roles_system_deployer_shm_deploy_logging)=
+
 <details>
 <summary><strong>Deploy monitoring</strong></summary>
 
@@ -574,6 +478,7 @@ PS> ./Setup_SHM_Monitoring.ps1 -shmId <SHM ID>
 </details>
 
 (roles_system_deployer_shm_deploy_firewall)=
+
 <details>
 <summary><strong>Deploy firewall</strong></summary>
 
@@ -588,6 +493,7 @@ PS> ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
 </details>
 
 (roles_system_deployer_shm_deploy_update_servers)=
+
 <details>
 <summary><strong>Deploy update servers</strong></summary>
 
@@ -602,6 +508,7 @@ PS> ./Setup_SHM_Update Servers.ps1 -shmId <SHM ID>
 </details>
 
 (roles_deployer_shm_domain_controllers)=
+
 <details>
 <summary><strong>Deploy domain controllers</strong></summary>
 
@@ -632,6 +539,7 @@ If you cannot see these resource groups:
 </details>
 
 (roles_system_deployer_shm_deploy_nps)=
+
 <details>
 <summary><strong>Deploy network policy server</strong></summary>
 
@@ -651,6 +559,7 @@ Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > E
 </details>
 
 (roles_system_deployer_shm_deploy_mirrors)=
+
 <details>
 <summary><strong>Deploy local package repositories</strong></summary>
 
@@ -685,6 +594,7 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 </details>
 
 (deploy_shm_vpn)=
+
 ## 7. {{station}} Configure VPN connection
 
 ### Download a client VPN certificate for the Safe Haven Management network
@@ -759,9 +669,11 @@ You will need configure your antivirus software to make an exception.
 ```
 
 (roles_system_deployer_configure_domain_controllers)=
+
 ## 8. {{house_with_garden}} Configure domain controllers
 
 (roles_system_deployer_shm_remote_desktop)=
+
 ### Configure the first domain controller via Remote Desktop
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
@@ -938,6 +850,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 - From the Azure portal, navigate to the AAD you have created.
 - Select `Password reset` from the left hand menu
 - Select `On-premises integration` from the left hand side bar
+
   - Ensure `Write back passwords to your on-premises directory` is set to yes.
 
     ```{image} deploy_shm/enable_password_writeback.png
@@ -947,10 +860,125 @@ Once you're certain that you're adding a new user, make sure that the following 
 
   - If you changed this setting, click the `Save` icon
 
+## 9. {{iphone}} Enable MFA and self-service password reset
+
+To enable self-service password reset (SSPR) and MFA-via-phone-call, you must have sufficient licences for all users.
+
+### Add licences that support self-service password reset
+
+![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+
+Click the heading that applies to you to expand the instructions for that scenario.
+
+<details><summary><b>Test deployments</b></summary>
+
+**For testing** you can enable a free trial of the P2 License (NB. it can take a while for these to appear on your AAD).
+You can activate the trial while logged in as your deafult guest administrator account.
+
+- From the Azure portal, navigate to the AAD you have created.
+- Click on `Licences` in the left hand sidebar
+- Click on `All products` in the left hand sidebar
+- Click on the `+Try/Buy` text above the empty product list and add a suitable licence product.
+  - Expand the `Free trial` arrow under `Azure AD Premium P2`
+  - Click the `Activate` button
+  - Wait for the `Azure Active Directory Premium P2` licence to appear on the list of `All Products` (this could take several minutes)
+
+</details>
+
+<details><summary><b>Production deployments</b></summary>
+
+**For production** you should buy P1 licences.
+This requires you to be logged in with an **native** Global Administrator account.
+As activating self-service password reset requires active MFA licences, this is one of the rare occasions you will need to use the emergency access admin account.
+
+- Switch to the the **emergency administrator** account:
+  - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
+  - Enter `aad.admin.emergency.access@<SHM domain>` as the username
+  - Open a new browser tab and go to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
+  - Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD).
+    Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
+  - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Subscriptions`
+  - Click on the Safe Haven SHM subscription
+  - Click on `Resource Groups` in the left hand sidebar then `RG_SHM_<SHM ID>_SECRETS`
+  - Click on the `kv-shm-<shm id>` Key Vault
+  - Click on `Secrets` in the left hand sidebar
+  - Click on the `shm-<shm id>-aad-emergency-admin-password` secret
+  - Click on the entry in the `Current version` section
+  - Click on the clipboard icon next to the `Secret value` field
+  - The emergency admin account password in now in your clipboard
+  - Switch back to the browser tab with the Azure login page
+  - Paste the password you copied from the Key Vault
+  - Click the `Sign in` button
+- Click the `Purchase services` link in the information panel above the trial options.
+- In the "Microsoft 365 Admin Centre" portal that opens:
+  - Expand the `Billing` section of the left hand side bar
+  - Click on `Purchase services`
+  - Scroll down the list of products and select `Azure Active Directory Premium P1` and click `Buy`
+  - Select `Pay monthly`
+  - Enter the number of licences required.
+  - Leave `automatically assign all of your users with no licences` checked
+  - Click `Check out now`
+  - Enter the address of the organisation running the Safe Haven on the next screen
+  - Click next and enter payment details when requested
+- Switch back to your original administrator account
+  - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
+  - Log in as the user you used to create the Safe Haven Azure AD
+  </details>
+
+### Enable self-service password reset
+
+![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
+
+- Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory.
+  The name of the current directory is under your username in the top right corner of the Azure portal screen.
+  To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
+- Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
+- Click `Password reset` in the left hand sidebar
+- Set the `Self service password reset enabled` toggle to `All`
+
+  ```{image} deploy_shm/aad_sspr.png
+  :alt: AAD self-service password reset
+  :align: center
+  ```
+
+- Click the `Save` icon
+
+```{error}
+If you see a message about buying licences, you may need to refresh the page for the password reset option to show.
+```
+
+### Configure MFA on Azure Active Directory
+
+![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+
+- From the Azure portal, navigate to the AAD you have created.
+- Click `Users` in the left hand sidebar
+- Click the `Per-user MFA` icon in the top bar of the users list.
+- Click on `Service settings` at the top of the panel
+- Configure MFA as follows:
+
+  - In the `App passwords` section select `Do not allow users to create app passwords to sign in to non-browser apps`
+  - Ensure the `Verification options` are set as follows:
+    - **check** `Call to phone` and `Notification through mobile app` (`Call to phone` is not available with a trial P2 licence)
+    - **uncheck** `Text message to phone` and `Verification code from mobile app or hardware token`
+  - In `Remember multi-factor authentication` section
+    - ensure `Allow users to remember multi-factor authentication on devices they trust` is **unchecked**
+  - Click "Save" and close window
+    <details><summary><b>Screenshots</b></summary>
+
+    ```{image} deploy_shm/aad_mfa_settings.png
+    :alt: AAD MFA settings
+    :align: center
+    ```
+
+    </details>
+
 (roles_system_deployer_configure_nps)=
-## 9. {{station}} Configure network policy server
+
+## 10. {{station}} Configure network policy server
 
 (roles_system_deployer_shm_remote_desktop_nps)=
+
 ### Configure the network policy server (NPS) via Remote Desktop
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
@@ -1057,7 +1085,7 @@ If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `
 </details>
 ```
 
-## 10. {{closed_lock_with_key}} Apply conditional access policies
+## 11. {{closed_lock_with_key}} Apply conditional access policies
 
 (roles_system_deployer_shm_require_mfa)=
 
@@ -1118,7 +1146,7 @@ Therefore we will block access for all users other than Global Administrators.
     - **Exclude**:
       - Check `Directory roles`
       - In the drop-down menu select `Global administrator`.
-    This will ensure that only the administrator accounts you created in {ref}`the previous section <roles_deploy_add_additional_admins>` are able to access the portal.
+        This will ensure that only the administrator accounts you created in {ref}`the previous section <roles_deploy_add_additional_admins>` are able to access the portal.
   - Under `Cloud apps or actions` select `Cloud apps` in the drop-down menu and set:
     - **Include**:
       - Select `Select apps`
@@ -1138,7 +1166,7 @@ Security defaults must be disabled in order to create this policy.
 This should have been done when creating a policy to {ref}`require MFA for all users <roles_system_deployer_shm_require_mfa>`.
 ```
 
-## 11. {{no_pedestrians}} Add MFA licences to any non-admin users
+## 12. {{no_pedestrians}} Add MFA licences to any non-admin users
 
 Administrator accounts can use MFA and reset their passwords without a licence needing to be assigned.
 However, when you create non-admin users they will need to be assigned an Azure Active Directory licence in order to reset their own password.
@@ -1155,9 +1183,9 @@ However, when you create non-admin users they will need to be assigned an Azure 
 - Click `Licences` in the left hand sidebar
 - Click `All products` in the left hand sidebar
 - Click the relevant licence product [`Azure Active Directory Premium P1` (production) or `Azure Active Directory Premium P2` (test)]
-- Click `Licensed users` in the left hand  sidebar
+- Click `Licensed users` in the left hand sidebar
 - Click the `+Assign` icon in the top bar above the list of user licence assignments
-- Click `+ Add users and groups` under ``Users and groups``
+- Click `+ Add users and groups` under `Users and groups`
 - Click on the users you want to assign licences to
 - Click `Select`
 - Click `Review + Assign`

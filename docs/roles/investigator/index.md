@@ -7,7 +7,6 @@
 
 data_ingress.md
 data_egress.md
-request_software_package.md
 ```
 
 The research project lead, this individual is responsible for ensuring that project staff comply with the Environment's security policies.
@@ -19,8 +18,8 @@ These concerns are not relevant to decide who should act as **Investigator** - i
 The **Investigator** must be able and willing to accept responsibility for the conduct of the project and its members.
 ```
 
-{ref}`Data classification guide <policy_data_classification_process>`
-: Step-by-step instructions on how to classify a work package into one of our security tiers.
+{ref}`Data classification guide <process_data_classification>`
+: How to classify a work package into one of our security tiers.
 
 [Data ingress](data_ingress.md)
 : What an **Investigator** needs to know about bringing data or software into the environment.
@@ -30,9 +29,3 @@ The **Investigator** must be able and willing to accept responsibility for the c
 
 {ref}`User guide <role_researcher_user_guide_guacamole>`
 : Step-by-step instructions for using an existing Safe Haven.
-
-{ref}`Software package allowlist policy <policy_software_package_approval>`
-: Guidance on our policy for approving software packages.
-
-[Software requests](request_software_package.md)
-: Fill out this form and send it to your {ref}`role_system_manager` to request the installation of new software in your SRE.

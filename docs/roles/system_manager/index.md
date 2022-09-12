@@ -5,18 +5,23 @@
 ```{toctree}
 :hidden:
 
-security_checklist.md
-administrator_guide.md
+manage_users.md
+manage_data.md
+manage_costs.md
+manage_deployments.md
 ```
 
 Members of technical staff responsible for configuration and maintenance of the Safe Haven.
 Typically these might be members of an institutional IT team.
 
-[Security checklist](security_checklist.md)
-: Use this checklist to validate that your deployment meets the {ref}`security standards <design_security_claims>` that we claim.
+[Managing users](manage_users.md)
+: How to manage users for a Data Safe Haven as an administrator.
 
-[Safe Haven administrator guide](administrator_guide.md)
-: Instructions for administrators of a Safe Haven. Includes user management and some troubleshooting steps.
+[Managing data](manage_data.md)
+: How to manage data for a Data Safe Haven as an administrator.
 
-{ref}`Software package allowlist policy <policy_software_package_approval>`
-: Guidance on our policy for approving software packages.
+[Managing costs](manage_costs.md)
+: How to manage Azure costs for a Data Safe Haven as an administrator.
+
+[Removing deployed components](manage_deployments.md)
+: Removing an SRE or a complete, deployment Data Safe Haven as an administrator.
