@@ -11,7 +11,7 @@ roles/index.md
 ```
 
 ```{image} static/scriberia_diagram.jpg
-:alt: Project summary
+:alt: Data Safe Haven cartoon by Scriberia for The Alan Turing Institute
 :align: center
 ```
 
