@@ -22,4 +22,4 @@ Each organisation deploying their own instance of the Data Safe Haven is respons
 : How the Data Safe Haven infrastructure is designed.
 
 [Security](security/index.md)
-: Details about the security objectives we're trying to meet and how we try to do so
+: Details about the security configuration used at the Alan Turing Institute
