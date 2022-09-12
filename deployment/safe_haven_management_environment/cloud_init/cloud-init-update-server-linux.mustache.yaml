@@ -16,7 +16,7 @@ write_files:
     permissions: "0644"
     content: |
       # Run every day at a fixed time
-      {{monitoring.schedule.daily_definition_updates.minute}} {{monitoring.schedule.daily_definition_updates.hour}} * * * freshclam
+      {{monitoring.updateServers.schedule.daily_definition_updates.minute}} {{monitoring.updateServers.schedule.daily_definition_updates.hour}} * * * freshclam
 
   - path: "/etc/systemd/system/clamav-clamonacc.service"
     permissions: "0644"

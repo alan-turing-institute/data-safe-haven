@@ -21,7 +21,7 @@ write_files:
     permissions: "0644"
     content: |
       # Run every day at a fixed time
-      {{shm.monitoring.schedule.daily_definition_updates.minute}} {{shm.monitoring.schedule.daily_definition_updates.hour}} * * * freshclam
+      {{shm.monitoring.updateServers.schedule.daily_definition_updates.minute}} {{shm.monitoring.updateServers.schedule.daily_definition_updates.hour}} * * * freshclam
 
   - path: "/etc/cron.d/ldap-db-sync"
     permissions: "0644"

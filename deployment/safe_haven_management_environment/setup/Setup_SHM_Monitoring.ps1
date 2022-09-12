@@ -93,7 +93,7 @@ $localTimeZone = Get-TimeZone -Id $config.time.timezone.linux
 # Create Windows VM virus definitions update schedule
 $windowsDailySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                         -Name "shm-$($config.id)-windows-definitions".ToLower() `
-                                                        -Time "$($config.monitoring.schedule.daily_definition_updates.hour):$($config.monitoring.schedule.daily_definition_updates.minute)" `
+                                                        -Time "$($config.monitoring.updateServers.schedule.daily_definition_updates.hour):$($config.monitoring.updateServers.schedule.daily_definition_updates.minute)" `
                                                         -TimeZone $localTimeZone
 $null = Register-VmsWithAutomationSchedule -Account $account `
                                            -DurationHours 1 `
@@ -104,9 +104,9 @@ $null = Register-VmsWithAutomationSchedule -Account $account `
 # Create Windows VM other updates schedule
 $windowsWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                          -DayInterval 7 `
-                                                         -Name "shm-$($config.id)-windows-other".ToLower() `
-                                                         -StartDayOfWeek $config.monitoring.schedule.weekly_system_updates.day `
-                                                         -Time "$($config.monitoring.schedule.weekly_system_updates.hour):$($config.monitoring.schedule.weekly_system_updates.minute)" `
+                                                         -Name "shm-$($config.id)-windows-updates".ToLower() `
+                                                         -StartDayOfWeek $config.monitoring.updateServers.schedule.weekly_system_updates.day `
+                                                         -Time "$($config.monitoring.updateServers.schedule.weekly_system_updates.hour):$($config.monitoring.updateServers.schedule.weekly_system_updates.minute)" `
                                                          -TimeZone $localTimeZone
 $null = Register-VmsWithAutomationSchedule -Account $account `
                                            -DurationHours 3 `
@@ -117,9 +117,9 @@ $null = Register-VmsWithAutomationSchedule -Account $account `
 # Create Linux VM update schedule
 $linuxWeeklySchedule = Deploy-AutomationScheduleInDays -Account $account `
                                                        -DayInterval 7 `
-                                                       -Name "shm-$($config.id)-linux".ToLower() `
-                                                       -StartDayOfWeek $config.monitoring.schedule.weekly_system_updates.day `
-                                                       -Time "$($config.monitoring.schedule.weekly_system_updates.hour):$($config.monitoring.schedule.weekly_system_updates.minute)" `
+                                                       -Name "shm-$($config.id)-linux-updates".ToLower() `
+                                                       -StartDayOfWeek $config.monitoring.updateServers.schedule.weekly_system_updates.day `
+                                                       -Time "$($config.monitoring.updateServers.schedule.weekly_system_updates.hour):$($config.monitoring.updateServers.schedule.weekly_system_updates.minute)" `
                                                        -TimeZone $localTimeZone
 $null = Register-VmsWithAutomationSchedule -Account $account `
                                            -DurationHours 3 `
