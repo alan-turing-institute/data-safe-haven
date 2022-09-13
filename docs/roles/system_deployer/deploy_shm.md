@@ -159,7 +159,10 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 ## 3. {{file_folder}} Setup Azure Active Directory (AAD)
 
-**Note:** If you wish to reuse an existing Azure Active Directory you may skip the first step and continue to the next one: {ref}`getting the Azure AD tenant ID <roles_deployer_aad_tenant_id>`
+```{warning}
+If you wish to reuse an existing Azure Active Directory please make sure you remove any existing `Conditional Access Policies` by going to `Security > Conditional Access > Policies` and manually removing the `Restrict Azure Active Directory access` and `Require MFA` policies.
+You can then continue to the next step: {ref}`getting the Azure AD tenant ID <roles_deployer_aad_tenant_id>`.
+```
 
 ### Create a new Azure Active Directory
 
