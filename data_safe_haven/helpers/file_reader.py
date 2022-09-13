@@ -1,5 +1,6 @@
 """Read local files, handling template expansion if needed"""
 # Standard library imports
+import hashlib
 import pathlib
 
 # Third party imports
@@ -33,3 +34,6 @@ class FileReader(LoggingMixin):
     def file_contents_secret(self, mustache_values=None):
         """Read local file contents into a pulumi secret."""
         return Output.secret(self.file_contents(mustache_values))
+
+    def sha256(self):
+        return hashlib.sha256(self.file_contents().encode("utf-8")).hexdigest()

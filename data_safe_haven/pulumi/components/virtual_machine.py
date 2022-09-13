@@ -108,7 +108,7 @@ class VMComponent(ComponentResource):
     """Deploy SHM secrets with Pulumi"""
 
     def __init__(self, name: str, props: VMProps, opts: ResourceOptions = None):
-        super().__init__("dsh:vms:VMComponent", name, {}, opts)
+        super().__init__("dsh:virtual_machine:VMComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         # Retrieve existing resources
@@ -187,3 +187,4 @@ class VMComponent(ComponentResource):
         # Register outputs
         self.resource_group_name = Output.from_input(props.resource_group_name)
         self.virtual_machine = virtual_machine
+        self.vm_name = Output.from_input(props.vm_name)

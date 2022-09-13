@@ -66,7 +66,7 @@ class DeclarativeSHM:
         )
 
         # Deploy SHM monitoring
-        automation = SHMMonitoringComponent(
+        monitoring = SHMMonitoringComponent(
             self.cfg.shm.name,
             SHMMonitoringProps(
                 location=self.cfg.azure.location,
@@ -79,15 +79,19 @@ class DeclarativeSHM:
         # Deploy update servers
 
         # Deploy domain controllers
-
         domain_controllers = SHMDomainControllersComponent(
             self.cfg.shm.name,
             SHMDomainControllersProps(
                 admin_password=self.secrets.require("vm-password-primary-dc"),
-                ip_address_private=str(networking.subnet_users_iprange.available()[0]),
+                automation_account_registration_key=monitoring.automation_account_primary_key,
+                automation_account_registration_url=monitoring.automation_account_agentsvc_url,
+                automation_account_name=monitoring.automation_account.name,
+                automation_account_resource_group_name=monitoring.resource_group_name,
                 location=self.cfg.azure.location,
                 resource_group_name=rg_users.name,
+                subnet_ip_range=networking.subnet_users_iprange,
                 subnet_name="UsersSubnet",
+                subscription_name=self.cfg.subscription_name,
                 virtual_network_name=networking.virtual_network.name,
                 virtual_network_resource_group_name=networking.resource_group_name,
             ),

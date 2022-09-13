@@ -1,10 +1,13 @@
 """Backend for a Data Safe Haven environment"""
 # Standard library imports
+from contextlib import suppress
+import time
 from typing import Any, Sequence
 
 # Third party imports
 from azure.core.exceptions import (
     HttpResponseError,
+    ResourceExistsError,
     ResourceNotFoundError,
 )
 from azure.keyvault.certificates import (
@@ -14,6 +17,11 @@ from azure.keyvault.certificates import (
 )
 from azure.keyvault.keys import KeyClient, KeyVaultKey
 from azure.keyvault.secrets import SecretClient, KeyVaultSecret
+from azure.mgmt.automation import AutomationClient
+from azure.mgmt.automation.models import (
+    DscCompilationJobCreateParameters,
+    DscConfigurationAssociationProperty,
+)
 from azure.mgmt.keyvault import KeyVaultManagementClient
 from azure.mgmt.keyvault.models import Vault
 from azure.mgmt.msi import ManagedServiceIdentityClient
@@ -24,11 +32,11 @@ from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.storage.models import BlobContainer, StorageAccount
 
 # Local imports
-from data_safe_haven.mixins import AzureMixin, LoggingMixin
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInternalException,
 )
+from data_safe_haven.mixins import AzureMixin, LoggingMixin
 from .graph_api import GraphApi
 
 
@@ -37,6 +45,55 @@ class AzureApi(AzureMixin, LoggingMixin):
 
     def __init__(self, subscription_name: str, *args: Any, **kwargs: Any):
         super().__init__(subscription_name=subscription_name, *args, **kwargs)
+
+    def compile_desired_state(
+        self,
+        automation_account_name: str,
+        configuration_name: str,
+        location: str,
+        resource_group_name: str,
+    ) -> None:
+        """Ensure that a Powershell Desired State Configuration is compiled
+
+        Raises:
+            DataSafeHavenAzureException if the configuration could not be compiled
+        """
+        # Connect to Azure clients
+        automation_client = AutomationClient(self.credential, self.subscription_id)
+        # Begin creation
+        compilation_job_name = f"{configuration_name}-{time.time_ns()}"
+        with suppress(ResourceExistsError):
+            automation_client.dsc_compilation_job.begin_create(
+                resource_group_name=resource_group_name,
+                automation_account_name=automation_account_name,
+                compilation_job_name=compilation_job_name,
+                parameters=DscCompilationJobCreateParameters(
+                    name=compilation_job_name,
+                    location=location,
+                    configuration=DscConfigurationAssociationProperty(
+                        name=configuration_name
+                    ),
+                ),
+            )
+        # Poll until creation succeeds or fails
+        while True:
+            result = automation_client.dsc_compilation_job.get(
+                resource_group_name=resource_group_name,
+                automation_account_name=automation_account_name,
+                compilation_job_name=compilation_job_name,
+            )
+            time.sleep(10)
+            with suppress(AttributeError):
+                if (result.provisioning_state == "Succeeded") and (
+                    result.status == "Completed"
+                ):
+                    break
+                if (result.provisioning_state == "Suspended") and (
+                    result.status == "Suspended"
+                ):
+                    raise DataSafeHavenAzureException(
+                        f"Could not compile DSC '{configuration_name}'."
+                    )
 
     def ensure_azuread_application(
         self,

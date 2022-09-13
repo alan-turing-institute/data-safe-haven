@@ -34,6 +34,23 @@ class SHMMonitoringComponent(ComponentResource):
             opts=child_opts,
         )
 
+        automation_keys = automation.list_key_by_automation_account(
+            automation_account.name, resource_group_name=props.resource_group_name
+        )
+
         # Register outputs
         self.automation_account = automation_account
-        self.resource_group_name = Output.from_input(props.resource_group_name)
+        self.automation_account_jrds_url = (
+            automation_account.automation_hybrid_service_url
+        )
+        self.automation_account_agentsvc_url = Output.all(
+            automation_account.automation_hybrid_service_url
+        ).apply(
+            lambda args: args[0]
+            .replace("jrds", "agentsvc")
+            .replace("/automationAccounts/", "/accounts/")
+        )
+        self.automation_account_primary_key = Output.secret(
+            automation_keys.keys[0].value
+        )
+        self.resource_group_name = Output.secret(props.resource_group_name)

@@ -72,7 +72,7 @@ class DeploySHMCommand(LoggingMixin, Command):
                 "Please enter the domain that SHM users will belong to:", None
             )
 
-        # Request FQDN if not provided
+        # Request admin IP addresses if not provided
         while not config.shm.admin_ip_addresses:
             self.info(
                 "We need to know any IP addresses or ranges that your system deployers and administrators will be connecting from."
