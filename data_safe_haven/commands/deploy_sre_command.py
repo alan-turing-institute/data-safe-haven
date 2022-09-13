@@ -8,7 +8,10 @@ import yaml
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
-from data_safe_haven.exceptions import DataSafeHavenException, DataSafeHavenInputException
+from data_safe_haven.exceptions import (
+    DataSafeHavenException,
+    DataSafeHavenInputException,
+)
 from data_safe_haven.pulumi import PulumiInterface
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisioner
@@ -31,7 +34,9 @@ class DeploySRECommand(LoggingMixin, Command):
             try:
                 settings = DotFileSettings()
             except DataSafeHavenInputException:
-                raise DataSafeHavenInputException("Unable to load project settings. Please run this command from inside the project directory.")
+                raise DataSafeHavenInputException(
+                    "Unable to load project settings. Please run this command from inside the project directory."
+                )
             config = Config(settings.name, settings.subscription_name)
 
             # Deploy infrastructure with Pulumi

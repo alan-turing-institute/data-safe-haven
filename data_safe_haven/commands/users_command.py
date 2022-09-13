@@ -35,7 +35,9 @@ class UsersCommand(LoggingMixin, Command):
             self.initialise_logging(self.io.verbosity, self.option("output"))
 
             # Load the job configuration
-            config_path = self.option("config") if self.option("config") else "example.yaml"
+            config_path = (
+                self.option("config") if self.option("config") else "example.yaml"
+            )
             config = Config(config_path)
 
             # Check that the project directory exists
@@ -85,5 +87,9 @@ class UsersCommand(LoggingMixin, Command):
             # Upload config to blob storage
             config.upload()
         except DataSafeHavenException as exc:
-            for line in f"Could not manage users Data Safe Haven '{config.environment_name}'.\n{str(exc)}".split("\n"):
+            for (
+                line
+            ) in f"Could not manage users Data Safe Haven '{config.environment_name}'.\n{str(exc)}".split(
+                "\n"
+            ):
                 self.error(line)

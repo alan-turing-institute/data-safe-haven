@@ -69,7 +69,9 @@ class UserHandler(LoggingMixin, AzureMixin):
         try:
             user_data = []
             azuread_usernames = [user.preferred_username for user in self.azuread.users]
-            guacamole_usernames = [user.preferred_username for user in self.guacamole.users]
+            guacamole_usernames = [
+                user.preferred_username for user in self.guacamole.users
+            ]
             for username in sorted(set(azuread_usernames + guacamole_usernames)):
                 user_data.append(
                     [
@@ -85,7 +87,6 @@ class UserHandler(LoggingMixin, AzureMixin):
             raise DataSafeHavenUserHandlingException(
                 f"Could not list users.\n{str(exc)}"
             )
-
 
     def remove(self, user_names: Sequence[str]) -> None:
         """Remove AzureAD and Guacamole users
@@ -132,11 +133,15 @@ class UserHandler(LoggingMixin, AzureMixin):
 
             # Keep existing users with the same username
             azuread_users = [user for user in self.azuread.users if user in new_users]
-            guacamole_users = [user for user in self.guacamole.users if user in new_users]
+            guacamole_users = [
+                user for user in self.guacamole.users if user in new_users
+            ]
 
             # Add any new users
             azuread_users += [user for user in new_users if user not in azuread_users]
-            guacamole_users += [user for user in new_users if user not in guacamole_users]
+            guacamole_users += [
+                user for user in new_users if user not in guacamole_users
+            ]
 
             # Commit changes
             self.azuread.set(azuread_users)
