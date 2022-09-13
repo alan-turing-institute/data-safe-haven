@@ -67,7 +67,7 @@ At the Turing connections to Tier 3 environments are only permitted from `Restri
 
 ```{admonition} Physical spaces
 At the Turing connections to Tier 3 environments are only permitted from medium security spaces.
-Such spaces control the possibility of unauthorised viewing by requiring card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) and screen adaptations or desk partitions are used in open-plan spaces if there is a high risk of "visual eavesdropping".
+Such spaces control the possibility of unauthorised viewing by requiring card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) and screen adaptations or desk partitions are used in open-plan spaces if there is a high risk of unauthorised people viewing the user's screen.
 ```
 
 ```{admonition} Managed devices

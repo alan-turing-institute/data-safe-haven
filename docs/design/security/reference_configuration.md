@@ -46,7 +46,7 @@ The set of controls applied at the Alan Turing Institute are discussed here, tog
 
 - Medium security research spaces control the possibility of unauthorised viewing.
 - Card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) is required.
-- Screen adaptations or desk partitions can be adopted in open-plan spaces if there is a high risk of "visual eavesdropping".
+- Screen adaptations or desk partitions can be adopted in open-plan spaces if there is a high risk of unauthorised people viewing the user's screen.
 - Firewall rules for the SREs only permit access from `Restricted` network IP ranges corresponding to these research spaces.
 
 ### Implication:

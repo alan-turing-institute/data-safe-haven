@@ -75,7 +75,7 @@ Having no restrictions on which IP addresses can connect to the gateway increase
 
 ### Physical security:
 
-- **{ref}`policy_tier_3`:** {ref}`Researchers <role_researcher>` must only connect from dedicated medium security spaces with access restricted via card access or other means and the risk of "visual eavesdropping" by overlooking a device must be controlled (e.g. by device location, screen adaptation or desk partitions). At the Alan Turing Institute access is limited to such areas by policy. A {ref}`Researchers <role_researcher>` home or non-Turing office maybe considered a medium security space if sufficient care is taken to avoid "visual eavesdropping" by family or colleagues.
+- **{ref}`policy_tier_3`:** {ref}`Researchers <role_researcher>` must only connect from dedicated medium security spaces with access restricted via card access or other means and the risk of unauthorised people viewing the user's screen must be controlled (e.g. by device location, screen adaptation or desk partitions). At the Alan Turing Institute access is limited to such areas by policy. A {ref}`Researchers <role_researcher>` home or non-Turing office maybe considered a medium security space if sufficient care is taken to avoid unauthorised people, such as family or colleagues, viewing the user's screen.
 - **{ref}`policy_tier_0` to {ref}`policy_tier_2`:** {ref}`Researchers <role_researcher>` can connect from anywhere.
 
 ### Data transfer from user device
