@@ -13,7 +13,7 @@ project = "Data Safe Haven"
 copyright = "2021, The Alan Turing Institute"
 author = "The Alan Turing Institute"
 development_branch = "develop"
-earliest_supported_release = "v3.4.0"
+earliest_supported_release = "v4.0.0"
 
 
 # -- Git repository details
