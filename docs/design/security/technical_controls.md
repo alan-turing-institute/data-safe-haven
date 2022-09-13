@@ -33,7 +33,7 @@ Most of these controls can be relaxed or tightened by the {ref}`role_system_mana
 
 ### Data access
 
-- Data is stored in the cloud using Azure storage which only {ref}`System Managers <role_system_manager>` can access from outside the environment
+- Data is stored in Azure storage which only {ref}`System Managers <role_system_manager>` can access from outside the environment
 - {ref}`Researchers <role_researcher>` have read-only access to the data and only from inside the environment.
 
 ### Infrastructure access
