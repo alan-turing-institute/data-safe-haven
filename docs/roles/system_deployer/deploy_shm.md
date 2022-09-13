@@ -791,6 +791,10 @@ You do not need to close the installer window while waiting.
 If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
 ```
 
+```{error}
+If you get an error that the connection to Azure Active Directory could not be made, please check that you do not have any Conditional Access policies enabled on the Azure Active Directory that require MFA for the synchronisation account.
+```
+
 (roles_system_deployer_shm_aad_connect_rules)=
 
 #### Update Azure Active Directory Connect rules
