@@ -2,7 +2,7 @@
 
 # Managing data ingress and egress
 
-```important
+```{important}
 This document assumes that you already have access a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
