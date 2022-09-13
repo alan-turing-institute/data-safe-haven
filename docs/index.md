@@ -71,4 +71,4 @@ no guarantees regarding the safety, security or suitability of any instance(s) o
 the Data Safe Haven. The Turing assumes no responsibility for updating any of the content on this
 site; however, the underlying code and related materials may change from time to time with updates
 and it is the user's responsibility to keep abreast of these updates.
-<details>
+</details>
