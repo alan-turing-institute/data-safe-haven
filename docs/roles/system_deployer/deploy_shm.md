@@ -159,7 +159,10 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 ## 3. {{file_folder}} Setup Azure Active Directory (AAD)
 
-**Note:** If you wish to reuse an existing Azure Active Directory you may skip the first step and continue to the next one: {ref}`getting the Azure AD tenant ID <roles_deployer_aad_tenant_id>`
+```{warning}
+If you wish to reuse an existing Azure Active Directory please make sure you remove any existing `Conditional Access Policies` by going to `Security > Conditional Access > Policies` and manually removing the `Restrict Azure Active Directory access` and `Require MFA` policies.
+You can then continue to the next step: {ref}`getting the Azure AD tenant ID <roles_deployer_aad_tenant_id>`.
+```
 
 ### Create a new Azure Active Directory
 
@@ -786,6 +789,10 @@ If you have recently torn down another SHM linked to the same Azure Active Direc
 You need to wait for the `Azure Active Directory` to fully disconnect - this can take up to 72 hours but is typically sooner.
 You do not need to close the installer window while waiting.
 If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
+```
+
+```{error}
+If you get an error that the connection to Azure Active Directory could not be made, please check that you do not have any Conditional Access policies enabled on the Azure Active Directory that require MFA for the synchronisation account.
 ```
 
 (roles_system_deployer_shm_aad_connect_rules)=
