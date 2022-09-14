@@ -857,7 +857,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Select `Password reset` from the left hand menu
 - Select `On-premises integration` from the left hand side bar
 
-  - Ensure `Write back passwords to your on-premises directory` is set to yes.
+  - Ensure `Enable password writeback for synced users` is ticked.
 
     ```{image} deploy_shm/enable_password_writeback.png
     :alt: Enable password writeback
