@@ -10,7 +10,7 @@
         "type": "Ubuntu",
         "version": "20.04.2022081900"
     },
-    "remoteDesktopProvider": "ApacheGuacamole",
+    "remoteDesktopProvider": "MicrosoftRDS",
     "dataAdminIpAddresses": ["193.60.220.240"],
     "databases": ["MSSQL", "PostgreSQL"]
 }

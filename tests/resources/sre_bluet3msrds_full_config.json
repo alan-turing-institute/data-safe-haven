@@ -1084,11 +1084,7 @@
           },
           "remoteDesktop": {
             "cidr": "10.163.1.0/24",
-            "name": "RemoteDesktopSubnet",
-            "nsg": {
-              "name": "NSG_SHM_BLUE_SRE_T3MSRDS_GUACAMOLE",
-              "rules": "sre-nsg-rules-guacamole.json"
-            }
+            "name": "RemoteDesktopSubnet"
           },
           "webapps": {
             "cidr": "10.163.5.0/24",
@@ -1103,19 +1099,45 @@
     },
     "nsgPrefix": "NSG_SHM_BLUE_SRE_T3MSRDS",
     "remoteDesktop": {
-      "guacamole": {
-        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-guacamole",
-        "databaseAdminPasswordSecretName": "sre-t3msrds-db-admin-password-guacamole",
+      "appSessionHost": {
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-rds-sh1",
         "disks": {
           "os": {
             "sizeGb": "128",
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GUACAMOLE-SRE-T3MSRDS.blue.develop.turingsafehaven.ac.uk",
-        "hostname": "GUACAMOLE-SRE-T3MSRDS",
+        "fqdn": "APP-SRE-T3MSRDS.blue.develop.turingsafehaven.ac.uk",
+        "hostname": "APP-SRE-T3MSRDS",
+        "ip": "10.163.1.5",
+        "nsg": {
+          "name": "NSG_SHM_BLUE_SRE_T3MSRDS_RDS_SESSION_HOSTS",
+          "rules": "sre-nsg-rules-session-hosts.json"
+        },
+        "vmName": "APP-SRE-T3MSRDS",
+        "vmSize": "Standard_DS2_v2"
+      },
+      "gateway": {
+        "adminPasswordSecretName": "sre-t3msrds-vm-admin-password-rds-gateway",
+        "disks": {
+          "data": {
+            "sizeGb": "1023",
+            "type": "Standard_LRS"
+          },
+          "os": {
+            "sizeGb": "128",
+            "type": "Standard_LRS"
+          }
+        },
+        "fqdn": "RDG-SRE-T3MSRDS.blue.develop.turingsafehaven.ac.uk",
+        "hostname": "RDG-SRE-T3MSRDS",
+        "installationDirectory": "C:\\Installation",
         "ip": "10.163.1.4",
-        "vmName": "GUACAMOLE-SRE-T3MSRDS",
+        "nsg": {
+          "name": "NSG_SHM_BLUE_SRE_T3MSRDS_RDS_SERVER",
+          "rules": "sre-nsg-rules-gateway.json"
+        },
+        "vmName": "RDG-SRE-T3MSRDS",
         "vmSize": "Standard_DS2_v2"
       },
       "networkRules": {
@@ -1125,7 +1147,7 @@
         "outboundInternet": "Deny",
         "pasteAllowed": false
       },
-      "provider": "ApacheGuacamole",
+      "provider": "MicrosoftRDS",
       "rg": "RG_SHM_BLUE_SRE_T3MSRDS_REMOTE_DESKTOP"
     },
     "repositories": {
