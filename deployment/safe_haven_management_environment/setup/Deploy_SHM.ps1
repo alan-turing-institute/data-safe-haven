@@ -65,14 +65,14 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Monitoring
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Firewall.ps1')" -shmId $shmId }
 
 
-# Setup SHM update servers
-# ------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Update_Servers.ps1')" -shmId $shmId }
-
-
 # Setup SHM domain controllers
 # ----------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_DC.ps1')" -shmId $shmId }
+
+
+# Setup SHM update servers
+# ------------------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Update_Servers.ps1')" -shmId $shmId }
 
 
 # Setup SHM network policy server
