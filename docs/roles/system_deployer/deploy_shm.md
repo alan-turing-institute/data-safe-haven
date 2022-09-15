@@ -494,21 +494,6 @@ PS> ./Setup_SHM_Firewall.ps1 -shmId <SHM ID>
 
 </details>
 
-(roles_system_deployer_shm_deploy_update_servers)=
-
-<details>
-<summary><strong>Deploy update servers</strong></summary>
-
-![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
-
-```powershell
-PS> ./Setup_SHM_Update_Servers.ps1 -shmId <SHM ID>
-```
-
-- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-
-</details>
-
 (roles_deployer_shm_domain_controllers)=
 
 <details>
@@ -537,6 +522,21 @@ If you cannot see these resource groups:
 - Click on your username in the top right corner of the Azure portal screen and ensure that your SHM subscription (see `shm_<SHM ID>_core_config.json`) is one of the selections.
 - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Resource groups`.
 ```
+
+</details>
+
+(roles_system_deployer_shm_deploy_update_servers)=
+
+<details>
+<summary><strong>Deploy update servers</strong></summary>
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
+
+```powershell
+PS> ./Setup_SHM_Update_Servers.ps1 -shmId <SHM ID>
+```
+
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 
 </details>
 
