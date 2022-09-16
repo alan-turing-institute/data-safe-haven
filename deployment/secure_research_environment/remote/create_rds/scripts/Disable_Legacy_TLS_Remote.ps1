@@ -82,12 +82,14 @@ Write-Output "Disabling any disallowed ciphersuites..."
 foreach ($disallowedCipher in $disallowedCiphers) {
     # Note that running Disable-TlsCipherSuite on eg. TLS_DHE_RSA_WITH_AES_128_CCM will also disable TLS_DHE_RSA_WITH_AES_128_CCM_8
     # Disable-TlsCipherSuite raises an error if the suite is already disabled. Therefore suites are enabled before being disabled.
-    Enable-TlsCipherSuite -Name $disallowedCipher
-    Disable-TlsCipherSuite -Name $disallowedCipher
-    if ($?) {
-        Write-Output " [o] Disabled '$disallowedCipher' suite."
-    } else {
-        Write-Output " [x] Failed to ensure '$disallowedCipher' suite is disabled."
+    if (Get-TlsCipherSuite -Name $disallowedCipher) {
+        Enable-TlsCipherSuite -Name $disallowedCipher
+        Disable-TlsCipherSuite -Name $disallowedCipher
+        if ($?) {
+            Write-Output " [o] Disabled '$disallowedCipher' suite."
+        } else {
+            Write-Output " [x] Failed to ensure '$disallowedCipher' suite is disabled."
+        }
     }
 }
 
