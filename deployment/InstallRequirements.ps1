@@ -13,3 +13,4 @@ Install-Module -Name Powershell-Yaml -RequiredVersion 0.4.2 -Repository PSGaller
 Install-Module -Name Az.Monitor -RequiredVersion 3.0.1 -Repository PSGallery
 Install-Module -Name Az.OperationalInsights -RequiredVersion 3.1.0 -Repository PSGallery
 Install-Module -Name Az.Accounts -RequiredVersion 2.9.0 -Repository PSGallery
+Install-Module -Name PSScriptAnalyzer -RequiredVersion 1.19.1 -Repository PSGallery
