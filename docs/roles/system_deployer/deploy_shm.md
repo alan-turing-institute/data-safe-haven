@@ -31,6 +31,10 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
   ```powershell
   PS> ./deployment/CheckRequirements.ps1
   ```
+  To install the required modules run
+  ```powershell
+  PS> ./deployment/InstallRequirements.ps1
+  ```
   ````
 
 - `Microsoft Remote Desktop`

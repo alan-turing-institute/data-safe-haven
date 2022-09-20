@@ -1,0 +1,15 @@
+Install-Module -Name Az.MonitoringSolutions -RequiredVersion 0.1.0 -Repository PSGallery
+Install-Module -Name Az.Compute -RequiredVersion 4.29.0 -Repository PSGallery
+Install-Module -Name Poshstache -RequiredVersion 0.1.10 -Repository PSGallery
+Install-Module -Name Az.DataProtection -RequiredVersion 0.4.0 -Repository PSGallery
+Install-Module -Name Az.Network -RequiredVersion 4.18.0 -Repository PSGallery
+Install-Module -Name Az.Resources -RequiredVersion 6.0.1 -Repository PSGallery
+Install-Module -Name Microsoft.Graph -RequiredVersion 1.5.0 -Repository PSGallery
+Install-Module -Name Az.KeyVault -RequiredVersion 4.6.0 -Repository PSGallery
+Install-Module -Name Az.Storage -RequiredVersion 4.7.0 -Repository PSGallery
+Install-Module -Name Az.RecoveryServices -RequiredVersion 5.4.1 -Repository PSGallery
+Install-Module -Name Az.Automation -RequiredVersion 1.7.3 -Repository PSGallery
+Install-Module -Name Powershell-Yaml -RequiredVersion 0.4.2 -Repository PSGallery
+Install-Module -Name Az.Monitor -RequiredVersion 3.0.1 -Repository PSGallery
+Install-Module -Name Az.OperationalInsights -RequiredVersion 3.1.0 -Repository PSGallery
+Install-Module -Name Az.Accounts -RequiredVersion 2.9.0 -Repository PSGallery
