@@ -6,7 +6,7 @@ from typing import Any, Optional
 from data_safe_haven.config import Config, DotFileSettings
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.helpers import AzureApi
+from data_safe_haven.external import AzureApi
 
 
 class Backend(LoggingMixin):

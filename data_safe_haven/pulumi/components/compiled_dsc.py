@@ -14,7 +14,7 @@ from pulumi.dynamic import (
 )
 
 # Local imports
-from data_safe_haven.helpers import AzureApi
+from data_safe_haven.external import AzureApi
 
 
 class CompiledDscProps:

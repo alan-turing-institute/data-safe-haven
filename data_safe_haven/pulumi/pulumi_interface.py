@@ -15,7 +15,8 @@ from .declarative_shm import DeclarativeSHM
 from .declarative_sre import DeclarativeSRE
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
-from data_safe_haven.helpers import AzureApi, password
+from data_safe_haven.external import AzureApi
+from data_safe_haven.helpers import password
 from data_safe_haven.mixins import LoggingMixin
 
 

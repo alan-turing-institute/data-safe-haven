@@ -16,7 +16,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphException,
 )
 from data_safe_haven.mixins import LoggingMixin
-from .types import JSONType
+from data_safe_haven.helpers import JSONType
 
 
 class GraphApi(LoggingMixin):
