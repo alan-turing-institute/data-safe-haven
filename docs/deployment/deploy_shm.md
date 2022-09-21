@@ -900,7 +900,7 @@ As activating self-service password reset requires active MFA licences, this is 
 - Switch to the the **emergency administrator** account:
   - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
   - Enter `aad.admin.emergency.access@<SHM domain>` as the username
-  - Open a new browser tab and go to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
+  - Open a new browser tab and go to the [Azure Portal](https://portal.azure.com/)
   - Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD).
     Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
   - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Subscriptions`
