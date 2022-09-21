@@ -1,3 +1,5 @@
+(design_turing_security_configuration)=
+
 # Turing security configuration
 
 The set of controls applied at the Alan Turing Institute are discussed here, together with their implications.

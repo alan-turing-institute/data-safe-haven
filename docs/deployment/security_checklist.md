@@ -7,7 +7,7 @@ This security checklist is used by the Alan Turing Institute to evaluate complia
 Organisations are responsible for making their own decisions about the suitability of any of our default controls and should treat this checklist as an example, not a template to follow.
 ```
 
-In this check list we aim to **evaluate** our deployment against the {ref}`security objectives stated here <design_security_objectives>`.
+In this check list we aim to **evaluate** our deployment against the {ref}`security configuration <design_turing_security_configuration>` that we apply at the Alan Turing Institute.
 The security checklist currently focuses on checks that can evaluate these security requirements for {ref}`policy_tier_2` (or greater) SREs (with some steps noted as specific to a tier):
 
 ## How to use this checklist
@@ -49,16 +49,16 @@ The following users will be needed for this checklist
 
 ## 1. Multifactor authentication and password strength
 
-### We claim:
-
-- Users are required to authenticate with Multi-factor Authentication (MFA) in order to access the secure analysis environment.
-- Passwords are strong
-
-### Which means:
+### Turing configuration setting:
 
 - Users must set up MFA before accessing the secure analysis environment.
 - Users cannot access the environment without MFA.
 - Users are required/advised to create passwords of a certain strength.
+
+### Implication:
+
+- Users are required to authenticate with Multi-factor Authentication (MFA) in order to access the secure analysis environment.
+- Passwords are strong
 
 ### Verify by:
 
@@ -205,16 +205,16 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 
 ## 2. Isolated Network
 
-### We claim:
-
-- The Data Safe Haven network is isolated from external connections (both {ref}`policy_tier_2` and {ref}`policy_tier_2`)
-
-### Which means:
+### Turing configuration setting:
 
 - {ref}`Researchers <role_researcher>` cannot access any part of the network from outside the network.
 - VMs in the SHM are only accessible by {ref}`System Managers <role_system_manager>` using the management VPN.
 - Whilst in the network, one cannot use the internet to connect outside the network.
 - SREs in the same SHM are isolated from one another.
+
+### Implication:
+
+- The Data Safe Haven network is isolated from external connections (both {ref}`policy_tier_2` and {ref}`policy_tier_2`)
 
 ### Verify by:
 
@@ -313,15 +313,15 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 
 ## 3. User devices
 
-### We claim:
-
-- At {ref}`policy_tier_3`, only managed devices can connect to the Data Safe Haven environment.
-- At {ref}`policy_tier_2`, any device can connect to the Data Safe Haven environment (with VPN connection and correct credentials).
-
-### Which means:
+### Turing configuration setting:
 
 - Managed devices must be provided by an approved organisation and the user must not have administrator access to them.
 - Network rules for higher tier environments permit access only from IP ranges corresponding to `Restricted` networks that only permit managed devices to connect.
+
+### Implication:
+
+- At {ref}`policy_tier_3`, only managed devices can connect to the Data Safe Haven environment.
+- At {ref}`policy_tier_2`, any device can connect to the Data Safe Haven environment (with VPN connection and correct credentials).
 
 ### Verify by:
 
@@ -393,16 +393,16 @@ There are are network rules permitting access to the remote desktop gateway from
 
 ## 4. Physical security
 
-### We claim:
-
-- At {ref}`policy_tier_3` access is limited to certain secure physical spaces
-
-### Which means:
+### Turing configuration setting:
 
 - Medium security research spaces control the possibility of unauthorised viewing.
 - Card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) is required.
 - Screen adaptations or desk partitions can be adopted in open-plan spaces if there is a high risk of "visual eavesdropping".
 - Firewall rules for the Environments can permit access only from Restricted network IP ranges corresponding to these research spaces.
+
+### Implication:
+
+- At {ref}`policy_tier_3` access is limited to certain secure physical spaces
 
 ### Verify by:
 
@@ -434,13 +434,13 @@ Connection from within the secure physical space is possible.
 
 ## 5. Remote connections
 
-### We claim:
-
-- Connections can only be made via remote desktop ({ref}`policy_tier_2` and above)
-
-### Which means:
+### Turing configuration setting:
 
 - User can connect via remote desktop but cannot connect through other means such as `SSH`
+
+### Implication:
+
+- Connections can only be made via remote desktop ({ref}`policy_tier_2` and above)
 
 ### Verify by:
 
@@ -483,14 +483,14 @@ Connection from within the secure physical space is possible.
 
 ## 6. Copy-and-paste
 
-### We claim:
-
-- Copy and paste is disabled on the remote desktop
-
-### Which means:
+### Turing configuration setting:
 
 - Users cannot copy something from outside the network and paste it into the network.
 - Users cannot copy something from within the network and paste it outside the network.
+
+### Implication:
+
+- Copy and paste is disabled on the remote desktop
 
 ### Verify by:
 
@@ -524,12 +524,7 @@ Connection from within the secure physical space is possible.
 
 ## 7. Data ingress
 
-### We claim:
-
-- All data transfer to the Data Safe Haven should be via our secure data transfer process, which gives the {ref}`role_data_provider_representative` time-limited, write-only access to a dedicated data ingress volume from a specific location.
-- Data is stored securely until approved for user access.
-
-### Which means:
+### Turing configuration setting:
 
 - Prior to access to the ingress volume being provided, the {ref}`role_data_provider_representative` must provide the IP address(es) from which data will be uploaded and an email address to which a secure upload token can be sent.
 - Once these details have been received, the data ingress volume should be opened for data upload.
@@ -542,6 +537,11 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
   - This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.
 - The upload token expires after a time-limited upload window.
 - The upload token is transferred to the Dataset Provider via a secure email system.
+
+### Implication:
+
+- All data transfer to the Data Safe Haven should be via our secure data transfer process, which gives the {ref}`role_data_provider_representative` time-limited, write-only access to a dedicated data ingress volume from a specific location.
+- Data is stored securely until approved for user access.
 
 ### Verify by:
 
@@ -561,8 +561,6 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 ```
 
 #### Ensure that data ingress works only for connections from the accepted IP address range
-
-<!-- - Ensure that data ingress works for connections from within the accepted IP address and does not work for connections outside the IP address, even if the correct upload token is present. -->
 
 - As the {ref}`role_data_provider_representative`, ensure you're working from a device that has an allow-listed IP address
 - Using the secure upload token with write-only permissions and limited time period that you set up in the previous step, follow the {ref}`ingress instructions for the data provider <role_data_provider_representative_ingress>`
@@ -600,14 +598,14 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ## 8. Data egress
 
-### We claim:
-
-- SREs contain an `/output` volume, in which SRE users can store data designated for egress.
-
-### Which means::
+### Turing configuration setting:
 
 - Users can write to the `/output` volume
 - A {ref}`role_system_manager` can view and download data in the `/output` volume via `Azure Storage Explorer`.
+
+### Implication:
+
+- SREs contain an `/output` volume, in which SRE users can store data designated for egress.
 
 ### Verify by:
 
@@ -638,12 +636,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ## 9. Software ingress
 
-### We claim:
-
-- The base SRD provided in the SREs comes with a wide range of common data science software pre-installed, as well as package mirrors.
-- Additional software must be added separately via ingress.
-
-### Which means:
+### Turing configuration setting:
 
 - For {ref}`policy_tier_0` and {ref}`policy_tier_1` environments, outbound internet access means users can directly download their software from the internet.
 - For {ref}`policy_tier_2` or higher environments we use the secure data transfer process.
@@ -657,6 +650,11 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
     - The access is then revoked and the software is then reviewed.
     - If it passes review, the software is moved into the environment.
   - If the software requires administrator rights to install, a {ref}`role_system_manager` must do this. Otherwise, the researcher can do this themselves.
+
+### Implication:
+
+- The base SRD provided in the SREs comes with a wide range of common data science software pre-installed, as well as package mirrors.
+- Additional software must be added separately via ingress.
 
 ### Verify by:
 
@@ -698,15 +696,15 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ## 10. Software package repositories
 
-### We claim:
-
-- {ref}`policy_tier_2`: User can access all packages from PyPI/CRAN
-- {ref}`policy_tier_3`: User can only access approved packages from PyPI/CRAN. Allowed list is in `environment_configs/package_lists`
-
-### Which means::
+### Turing configuration setting::
 
 - {ref}`policy_tier_2`: The user can access any package from our mirrors. They can freely use these packages without restriction.
 - {ref}`policy_tier_3`: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowed list.
+
+### Implication:
+
+- {ref}`policy_tier_2`: User can access all packages from PyPI/CRAN
+- {ref}`policy_tier_3`: User can only access approved packages from PyPI/CRAN. Allowed list is in `environment_configs/package_lists`
 
 ### Verify by:
 
@@ -775,14 +773,14 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ## 11. Firewall controls
 
-### We claim:
-
-- An `Azure Firewall` ensures that the administrator VMs have the minimal level of internet access required to function.
-
-### Which means:
+### Turing configuration setting:
 
 - Whilst all user access VMs are entirely blocked off from the internet, this is not the case for administrator access VMs such as the SHM-DC, SRE DATA server.
 - An Azure Firewall governs the internet access provided to these VMs, limiting them mostly to downloading Windows updates.
+
+### Implication:
+
+- An `Azure Firewall` ensures that the administrator VMs have the minimal level of internet access required to function.
 
 ### Verify by:
 
