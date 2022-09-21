@@ -21,7 +21,7 @@ class DeploySRECommand(LoggingMixin, Command):
     """
     Deploy a Secure Research Environment using local configuration and project files
 
-    deploy-sre
+    sre
         {--o|output= : Path to an output log file}
     """
 

@@ -21,7 +21,7 @@ class DeploySHMCommand(LoggingMixin, Command):
     """
     Deploy a Data Safe Haven using local configuration and project files
 
-    deploy-shm
+    shm
         {--o|output= : Path to an output log file}
     """
 
