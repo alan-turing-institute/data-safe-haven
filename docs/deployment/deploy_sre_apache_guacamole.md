@@ -190,7 +190,7 @@ If you specify the same size more than once, you will create multiple SRDs of th
   - For example for `<safe haven domain> = project.turingsafehaven.ac.uk` and `<SRE ID> = sandbox` this would be `https://sandbox.project.turingsafehaven.ac.uk/`
 - You should see a screen like the following. If you do not, follow the **troubleshooting** instructions below.
 
-  ```{image} ../researcher/user_guide/guacamole_dashboard.png
+  ```{image} ../roles/researcher/user_guide/guacamole_dashboard.png
   :alt: Guacamole dashboard
   :align: center
   ```

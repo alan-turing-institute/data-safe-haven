@@ -23,7 +23,7 @@ Once the outputs are classified, the classification team should let the {ref}`ro
 ## Bringing data out of the environment
 
 Talk to your {ref}`role_system_manager` to discuss possible methods of bringing data out of the environments.
-It may be convenient to use [Azure Storage Explorer](https://azure.microsoft.com/en-us/features/storage-explorer/).
+It may be convenient to use [Azure Storage Explorer](https://azure.microsoft.com/en-us/products/storage/storage-explorer/).
 In this case you will not need log-in credentials, as your {ref}`role_system_manager` can provide a short-lived secure access token which will let you upload data.
 
 ```{tip}

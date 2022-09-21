@@ -28,7 +28,7 @@ Once a user's involvement with a project or work package ends their access shoul
 We recommend requiring data security awareness training for the following categories of person:
 
 - Anyone with administrator access to the `Data Safe Haven` codebase. This is to ensure integrity of the code supply chain.
-- {ref}`System Deployers <role_system_deployer>` deploying a Data Safe Haven.
+- Anyone responsible for deploying a Data Safe Haven.
 - {ref}`System Managers <role_system_manager>` administering a deployed Data Safe Haven.
 - Anyone who has administrator access to the Azure subscriptions hosting any deployed Data Safe Haven.
 - {ref}`Programme <role_programme_manager>` and {ref}`project managers <role_project_manager>`.

@@ -70,7 +70,7 @@ Software ingress must go through the same approval process as is the case for da
     ```
 
   - Leave this portal window open and move to the next step
-- Open `Azure Storage Explorer` ([download](https://azure.microsoft.com/en-us/features/storage-explorer/) it if you don't have it)
+- Open `Azure Storage Explorer` ([download](https://azure.microsoft.com/en-us/products/storage/storage-explorer/) it if you don't have it)
 - Click the socket image on the left hand side
 
   ```{image} ../data_provider_representative/azure_storage_explorer_connect.png

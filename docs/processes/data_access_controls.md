@@ -10,7 +10,7 @@ Access to all Data Safe Haven Azure resources is controlled via `Azure Active Di
 By default, only members of a specific administrator security group have administrative access to any element of the Safe Haven.
 
 ```{important}
-Membership of the administrator security group should be limited to {ref}`system deployers <role_system_deployer>` and {ref}`system managers <role_system_manager>`.
+Membership of the administrator security group should be limited to {ref}`system managers <role_system_manager>`.
 ```
 
 The following access is restricted to members of the administrator security group:

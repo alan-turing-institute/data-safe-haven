@@ -6,6 +6,7 @@
 
 overview/index.md
 design/index.md
+deployment/index.md
 processes/index.md
 roles/index.md
 ```
@@ -36,15 +37,17 @@ You can read them through in order or simply jump to the section that you are mo
   - if you want an overview of what the Data Safe Haven project is about.
 
 - [**Design**](design/index.md)
-  - if you want details about the technical design of the Data Safe Haven
+  - if you want details about the technical design of the Data Safe Haven.
+
+- [**Deployment**](deployment/index.md)
+  - if you want to deploy your own Data Safe Haven.
 
 - [**Processes**](processes/index.md)
-  - processes necessary to use the Data Safe Haven
+  - processes necessary to use the Data Safe Haven.
 
 - [**Roles**](roles/index.md)
-  - if you want to [**deploy your own**](role_system_deployer) Data Safe Haven
-  - if you want to [**upload sensitive data**](role_data_provider_representative) to a Data Safe Haven
-  - if you need to [**analyse data**](role_researcher) in a Data Safe Haven that someone else has deployed
+  - information about the different user roles in the Data Safe Haven.
+  - if you're using a Data Safe Haven that someone else has deployed then start here.
 
 ## Legal
 
