@@ -75,12 +75,6 @@ class Config(LoggingMixin, AzureMixin):
             self.backend.pulumi_encryption_key_name = "pulumi-encryption-key"
         if isinstance(self.pulumi.storage_container_name, dotmap.DotMap):
             self.pulumi.storage_container_name = "pulumi"
-        if isinstance(self.settings.allow_copy, dotmap.DotMap):
-            self.settings.allow_copy = False
-        if isinstance(self.settings.allow_paste, dotmap.DotMap):
-            self.settings.allow_paste = False
-        if isinstance(self.settings.timezone, dotmap.DotMap):
-            self.settings.timezone = "Europe/London"
         if isinstance(self.shm.name, dotmap.DotMap):
             self.shm.name = self.shm_name
 

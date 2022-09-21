@@ -4,6 +4,7 @@ import ipaddress
 
 # Third party imports
 from cleo import Command
+import pytz
 import yaml
 
 # Local imports
@@ -22,7 +23,9 @@ class DeploySHMCommand(LoggingMixin, Command):
     Deploy a Data Safe Haven using local configuration and project files
 
     shm
+        {--f|fqdn= : Domain that SHM users will belong to}
         {--o|output= : Path to an output log file}
+        {--t|timezone= : Timezone to use}
     """
 
     def handle(self):
@@ -71,10 +74,14 @@ class DeploySHMCommand(LoggingMixin, Command):
     def add_missing_values(self, config: Config) -> None:
         """Request any missing config values and add them to the config"""
         # Request FQDN if not provided
+        fqdn = self.option("fqdn")
         while not config.shm.fqdn:
-            config.shm.fqdn = self.log_ask(
-                "Please enter the domain that SHM users will belong to:", None
-            )
+            if fqdn:
+                config.shm.fqdn = fqdn
+            else:
+                fqdn = self.log_ask(
+                    "Please enter the domain that SHM users will belong to:", None
+                )
 
         # Request admin IP addresses if not provided
         while not config.shm.admin_ip_addresses:
@@ -92,3 +99,15 @@ class DeploySHMCommand(LoggingMixin, Command):
                 for ipv4 in admin_ip_addresses.split()
                 if ipv4
             ]
+
+        # Request timezone if not provided
+        timezone = self.option("timezone")
+        while not config.shm.timezone:
+            if timezone in pytz.all_timezones:
+                config.shm.timezone = timezone
+            else:
+                if timezone:
+                    self.error(f"Timezone '{timezone}' not recognised")
+                timezone = self.log_ask(
+                    "Please enter the timezone that this SHM will use (default: 'Europe/London'):", "Europe/London"
+                )
