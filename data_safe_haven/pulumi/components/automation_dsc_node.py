@@ -1,7 +1,8 @@
 """Register a VM as an Azure Automation DSC node"""
 # Standard library imports
-import datetime
 import pathlib
+import time
+from typing import Dict
 
 # Third party imports
 from pulumi import ComponentResource, Input, ResourceOptions
@@ -23,6 +24,7 @@ class AutomationDscNodeProps:
         automation_account_resource_group_name: Input[str],
         configuration_name: Input[str],
         dsc_file: Input[FileReader],
+        dsc_parameters: Input[Dict[str, str]],
         location: Input[str],
         subscription_name: Input[str],
         vm_name: Input[str],
@@ -37,6 +39,7 @@ class AutomationDscNodeProps:
         self.configuration_name = configuration_name
         self.dsc_file = dsc_file
         self.location = location
+        self.dsc_parameters = dsc_parameters
         self.subscription_name = subscription_name
         self.vm_name = vm_name
         self.vm_resource_group_name = vm_resource_group_name
@@ -69,13 +72,21 @@ class AutomationDscNode(ComponentResource):
                 type="embeddedContent",
                 value=props.dsc_file.file_contents(),
             ),
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    delete_before_replace=True, replace_on_changes=["source.hash"]
+                ),
+            ),
         )
         dsc_compiled = CompiledDsc(
             f"{self._name}_dsc_compiled",
             CompiledDscProps(
                 automation_account_name=props.automation_account_name,
                 configuration_name=dsc.name,
+                content_hash=props.dsc_file.sha256(),
                 location=props.location,
+                parameters=props.dsc_parameters,
                 resource_group_name=props.automation_account_resource_group_name,
                 subscription_name=props.subscription_name,
             ),
@@ -97,15 +108,12 @@ class AutomationDscNode(ComponentResource):
                     "RefreshFrequencyMins": 30,
                     "AllowModuleOverwrite": False,
                     "NodeConfigurationName": f"{props.configuration_name}.localhost",
-                    "Timestamp": datetime.datetime.utcnow().isoformat(
-                        timespec="seconds"
-                    ),
                 }
             },
             protected_settings={
                 "configurationArguments": {
                     "registrationKey": {
-                        "userName": "notused",
+                        "userName": f"notused{time.time()}",  # force refresh every time
                         "Password": props.automation_account_registration_key,
                     }
                 }

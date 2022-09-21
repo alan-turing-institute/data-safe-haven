@@ -11,6 +11,7 @@ class VMProps:
 
     def __init__(
         self,
+        admin_password: Input[str],
         ip_address_private: Input[str],
         location: Input[str],
         resource_group_name: Input[str],
@@ -19,8 +20,11 @@ class VMProps:
         virtual_network_resource_group_name: Input[str],
         vm_name: Input[str],
         vm_size: Input[str],
-        ip_address_public: Optional[Input[str]] = None,
+        admin_username: Optional[Input[str]] = None,
+        ip_address_public: Optional[Input[bool]] = None,
     ):
+        self.admin_password = admin_password
+        self.admin_username = admin_username if admin_username else "dshvmadmin"
         self.image_reference_args = None
         self.ip_address_private = ip_address_private
         self.ip_address_public = ip_address_public
@@ -48,14 +52,13 @@ class WindowsVMProps(VMProps):
 
     def __init__(
         self,
-        admin_password: Input[str],
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.os_profile_args = compute.OSProfileArgs(
-            admin_password=admin_password,
-            admin_username="dshadmin",
+            admin_password=self.admin_password,
+            admin_username=self.admin_username,
             computer_name=self.vm_name,
             windows_configuration=compute.WindowsConfigurationArgs(
                 enable_automatic_updates=True,
@@ -78,15 +81,14 @@ class LinuxVMProps(VMProps):
 
     def __init__(
         self,
-        admin_password: Input[str],
         b64cloudinit: Input[str],
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.os_profile_args = compute.OSProfileArgs(
-            admin_password=admin_password,
-            admin_username="dshadmin",
+            admin_password=self.admin_password,
+            admin_username=self.admin_username,
             computer_name=self.vm_name,
             custom_data=Output.secret(b64cloudinit),
             linux_configuration=compute.LinuxConfigurationArgs(
@@ -139,7 +141,7 @@ class VMComponent(ComponentResource):
             enable_accelerated_networking=True,
             ip_configurations=[
                 network.NetworkInterfaceIPConfigurationArgs(
-                    name="ipconfigsecureresearchdesktop",
+                    name=f"ipconfig{props.vm_name_underscored}".replace("_", ""),
                     private_ip_address=props.ip_address_private,
                     subnet=network.SubnetArgs(id=subnet.id),
                     **network_interface_ip_params,

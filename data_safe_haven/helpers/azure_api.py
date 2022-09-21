@@ -2,7 +2,7 @@
 # Standard library imports
 from contextlib import suppress
 import time
-from typing import Any, Sequence
+from typing import Any, Dict, Sequence
 
 # Third party imports
 from azure.core.exceptions import (
@@ -51,6 +51,7 @@ class AzureApi(AzureMixin, LoggingMixin):
         automation_account_name: str,
         configuration_name: str,
         location: str,
+        parameters: Dict[str, str],
         resource_group_name: str,
     ) -> None:
         """Ensure that a Powershell Desired State Configuration is compiled
@@ -73,6 +74,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                     configuration=DscConfigurationAssociationProperty(
                         name=configuration_name
                     ),
+                    parameters=parameters,
                 ),
             )
         # Poll until creation succeeds or fails
@@ -92,7 +94,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                     result.status == "Suspended"
                 ):
                     raise DataSafeHavenAzureException(
-                        f"Could not compile DSC '{configuration_name}'."
+                        f"Could not compile DSC '{configuration_name}'\n{result.exception}."
                     )
 
     def ensure_azuread_application(

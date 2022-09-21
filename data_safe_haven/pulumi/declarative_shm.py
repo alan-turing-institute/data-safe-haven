@@ -50,6 +50,7 @@ class DeclarativeSHM:
             self.cfg.shm.name,
             SHMNetworkingProps(
                 fqdn=self.cfg.shm.fqdn,
+                public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
                 resource_group_name=rg_networking.name,
             ),
         )
@@ -82,12 +83,20 @@ class DeclarativeSHM:
         domain_controllers = SHMDomainControllersComponent(
             self.cfg.shm.name,
             SHMDomainControllersProps(
-                admin_password=self.secrets.require("vm-password-primary-dc"),
                 automation_account_registration_key=monitoring.automation_account_primary_key,
                 automation_account_registration_url=monitoring.automation_account_agentsvc_url,
                 automation_account_name=monitoring.automation_account.name,
                 automation_account_resource_group_name=monitoring.resource_group_name,
+                domain_fqdn=self.cfg.shm.fqdn,
+                domain_netbios_name=self.cfg.shm.name[:15].upper(),
                 location=self.cfg.azure.location,
+                password_domain_admin=self.secrets.require("password-domain-admin"),
+                password_domain_azuread_connect=self.secrets.require(
+                    "password-domain-azure-ad-connect"
+                ),
+                password_domain_computer_manager=self.secrets.require(
+                    "password-domain-computer-manager"
+                ),
                 resource_group_name=rg_users.name,
                 subnet_ip_range=networking.subnet_users_iprange,
                 subnet_name="UsersSubnet",

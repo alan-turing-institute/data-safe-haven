@@ -42,11 +42,15 @@ class DeploySHMCommand(LoggingMixin, Command):
 
             # Deploy infrastructure with Pulumi
             infrastructure = PulumiInterface(config, "SHM")
+            # Set Azure options
             infrastructure.add_option("azure-native:location", config.azure.location)
             infrastructure.add_option(
                 "azure-native:subscriptionId", config.azure.subscription_id
             )
-            infrastructure.add_secret("vm-password-primary-dc", password(20))
+            # Add necessary secrets
+            infrastructure.add_secret("password-domain-admin", password(20))
+            infrastructure.add_secret("password-domain-azure-ad-connect", password(20))
+            infrastructure.add_secret("password-domain-computer-manager", password(20))
             infrastructure.deploy()
 
             # Add Pulumi output information to the config file

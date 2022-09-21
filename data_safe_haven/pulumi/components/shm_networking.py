@@ -14,6 +14,7 @@ class SHMNetworkingProps:
         self,
         fqdn: Input[str],
         resource_group_name: Input[str],
+        public_ip_range_admins: Input[Sequence[str]],
         ip_range_vnet: Optional[Input[Sequence[str]]] = [
             "10.0.0.0",
             "10.0.255.255",
@@ -48,6 +49,7 @@ class SHMNetworkingProps:
         self.ip_range_update_servers = ip_range_update_servers
         self.ip_range_users = ip_range_users
         self.fqdn = fqdn
+        self.public_ip_range_admins = public_ip_range_admins
         self.resource_group_name = resource_group_name
 
 
@@ -87,7 +89,20 @@ class SHMNetworkingComponent(ComponentResource):
             "nsg_users",
             network_security_group_name=f"nsg-shm-{self._name}-users",
             resource_group_name=props.resource_group_name,
-            security_rules=[],
+            security_rules=[
+                network.SecurityRuleArgs(
+                    access="Allow",
+                    description="Allow inbound RDS to domain controllers.",
+                    destination_address_prefix=str(subnet_users_iprange),
+                    destination_port_ranges=["3389"],
+                    direction="Inbound",
+                    name="AllowRDPInbound",
+                    priority=100,
+                    protocol="TCP",
+                    source_address_prefixes=props.public_ip_range_admins,
+                    source_port_range="*",
+                ),
+            ],
             opts=child_opts,
         )
 

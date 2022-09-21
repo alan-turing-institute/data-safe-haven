@@ -48,7 +48,7 @@ class Config(LoggingMixin, AzureMixin):
                 backend_storage_container_name,
             )
         # ... otherwise create a new DotMap
-        except (DataSafeHavenAzureException, ResourceNotFoundError):
+        except (DataSafeHavenAzureException, ResourceNotFoundError) as exc:
             self._map = dotmap.DotMap()
 
         # Update the map with local config variables

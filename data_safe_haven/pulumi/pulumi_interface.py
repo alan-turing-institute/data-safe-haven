@@ -150,10 +150,12 @@ class PulumiInterface(LoggingMixin):
 
     def initialise_workdir(self):
         """Create project directory if it does not exist and update local stack."""
-        self.info(f"Ensuring that {self.work_dir} exists...", no_newline=True)
+        self.info(
+            f"Ensuring that <fg=green>{self.work_dir}</> exists...", no_newline=True
+        )
         if not self.work_dir.exists():
             self.work_dir.mkdir(parents=True)
-        self.info(f"Ensured that {self.work_dir} exists.", overwrite=True)
+        self.info(f"Ensured that <fg=green>{self.work_dir}</> exists.", overwrite=True)
         # If stack information is saved in the config file then apply it here
         if "stack" in self.cfg.pulumi.keys():
             self.info(

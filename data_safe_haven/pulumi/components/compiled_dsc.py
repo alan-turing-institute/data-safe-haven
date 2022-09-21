@@ -1,7 +1,7 @@
 # Standard library imports
 import binascii
 import os
-from typing import Optional
+from typing import Dict, Optional
 
 # Third party imports
 from pulumi import Input, ResourceOptions
@@ -24,13 +24,17 @@ class CompiledDscProps:
         self,
         automation_account_name: Input[str],
         configuration_name: Input[str],
+        content_hash: Input[str],
         location: Input[str],
+        parameters: Input[Dict[str, str]],
         resource_group_name: Input[str],
         subscription_name: Input[str],
     ):
         self.automation_account_name = automation_account_name
         self.configuration_name = configuration_name
+        self.content_hash = content_hash
         self.location = location
+        self.parameters = parameters
         self.resource_group_name = resource_group_name
         self.subscription_name = subscription_name
 
@@ -41,13 +45,17 @@ class _CompiledDscProps:
     def __init__(
         self,
         automation_account_name: str,
+        content_hash: str,
         configuration_name: str,
         location: str,
+        parameters: Dict[str, str],
         resource_group_name: str,
     ):
         self.automation_account_name = automation_account_name
         self.configuration_name = configuration_name
+        self.content_hash = content_hash
         self.location = location
+        self.parameters = parameters
         self.resource_group_name = resource_group_name
 
 
@@ -60,6 +68,7 @@ class CompiledDscProvider(ResourceProvider):
             automation_account_name=props["automation_account_name"],
             configuration_name=props["configuration_name"],
             location=props["location"],
+            parameters=props["parameters"],
             resource_group_name=props["resource_group_name"],
         )
         return CreateResult(
@@ -78,9 +87,19 @@ class CompiledDscProvider(ResourceProvider):
         newProps: _CompiledDscProps,
     ) -> DiffResult:
         """As Python DSK does not support configuration deletion we cannot change or replace a configuration"""
+        replaces = []
+        # If the content hash changes then the resource must be replaced
+        if oldProps["content_hash"] != newProps["content_hash"]:
+            replaces = [
+                "automation_account_name",
+                "configuration_name",
+                "content_hash",
+                "location",
+                "resource_group_name",
+            ]
         return DiffResult(
             changes=True,  # always mark changes as needed
-            replaces=None,  # do not list what
+            replaces=replaces,  # list of inputs to replace
             stables=None,  # list of inputs that are constant
             delete_before_replace=False,  # delete the existing resource before replacing
         )
