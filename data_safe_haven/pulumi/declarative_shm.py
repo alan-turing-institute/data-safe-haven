@@ -16,8 +16,9 @@ from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProp
 class DeclarativeSHM:
     """Deploy Data Safe Haven Management environment with Pulumi"""
 
-    def __init__(self, config):
+    def __init__(self, config, stack_name):
         self.cfg = config
+        self.stack_name = stack_name
 
     def run(self):
         # Load pulumi configuration secrets
@@ -27,27 +28,27 @@ class DeclarativeSHM:
         rg_networking = resources.ResourceGroup(
             "rg_networking",
             location=self.cfg.azure.location,
-            resource_group_name=f"rg-shm-{self.cfg.shm.name}-networking",
+            resource_group_name=f"rg-{self.stack_name}-networking",
         )
         rg_monitoring = resources.ResourceGroup(
             "rg_monitoring",
             location=self.cfg.azure.location,
-            resource_group_name=f"rg-shm-{self.cfg.shm.name}-monitoring",
+            resource_group_name=f"rg-{self.stack_name}-monitoring",
         )
         rg_storage = resources.ResourceGroup(
             "rg_storage",
             location=self.cfg.azure.location,
-            resource_group_name=f"rg-shm-{self.cfg.shm.name}-storage",
+            resource_group_name=f"rg-{self.stack_name}-storage",
         )
         rg_users = resources.ResourceGroup(
             "rg_users",
             location=self.cfg.azure.location,
-            resource_group_name=f"rg-shm-{self.cfg.shm.name}-users",
+            resource_group_name=f"rg-{self.stack_name}-users",
         )
 
         # Deploy SHM networking
         networking = SHMNetworkingComponent(
-            self.cfg.shm.name,
+            self.stack_name,
             SHMNetworkingProps(
                 fqdn=self.cfg.shm.fqdn,
                 public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
@@ -57,7 +58,7 @@ class DeclarativeSHM:
 
         # Deploy SHM secrets
         secrets = SHMSecretsComponent(
-            self.cfg.shm.name,
+            self.stack_name,
             SHMSecretsProps(
                 admin_group_id=self.cfg.azure.admin_group_id,
                 location=self.cfg.azure.location,
@@ -68,7 +69,7 @@ class DeclarativeSHM:
 
         # Deploy SHM monitoring
         monitoring = SHMMonitoringComponent(
-            self.cfg.shm.name,
+            self.stack_name,
             SHMMonitoringProps(
                 location=self.cfg.azure.location,
                 resource_group_name=rg_monitoring.name,
@@ -81,14 +82,14 @@ class DeclarativeSHM:
 
         # Deploy domain controllers
         domain_controllers = SHMDomainControllersComponent(
-            self.cfg.shm.name,
+            self.stack_name,
             SHMDomainControllersProps(
                 automation_account_registration_key=monitoring.automation_account_primary_key,
                 automation_account_registration_url=monitoring.automation_account_agentsvc_url,
                 automation_account_name=monitoring.automation_account.name,
                 automation_account_resource_group_name=monitoring.resource_group_name,
                 domain_fqdn=self.cfg.shm.fqdn,
-                domain_netbios_name=self.cfg.shm.name[:15].upper(),
+                domain_netbios_name=self.stack_name[4:].upper(),  # drop initial 'shm-'
                 location=self.cfg.azure.location,
                 password_domain_admin=self.secrets.require("password-domain-admin"),
                 password_domain_azuread_connect=self.secrets.require(

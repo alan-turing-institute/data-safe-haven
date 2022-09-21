@@ -73,21 +73,21 @@ class SHMNetworkingComponent(ComponentResource):
         # Define NSGs
         nsg_monitoring = network.NetworkSecurityGroup(
             "nsg_monitoring",
-            network_security_group_name=f"nsg-shm-{self._name}-monitoring",
+            network_security_group_name=f"nsg-{self._name}-monitoring",
             resource_group_name=props.resource_group_name,
             security_rules=[],
             opts=child_opts,
         )
         nsg_update_servers = network.NetworkSecurityGroup(
             "nsg_update_servers",
-            network_security_group_name=f"nsg-shm-{self._name}-update-servers",
+            network_security_group_name=f"nsg-{self._name}-update-servers",
             resource_group_name=props.resource_group_name,
             security_rules=[],
             opts=child_opts,
         )
         nsg_users = network.NetworkSecurityGroup(
             "nsg_users",
-            network_security_group_name=f"nsg-shm-{self._name}-users",
+            network_security_group_name=f"nsg-{self._name}-users",
             resource_group_name=props.resource_group_name,
             security_rules=[
                 network.SecurityRuleArgs(
@@ -146,7 +146,7 @@ class SHMNetworkingComponent(ComponentResource):
                     ),
                 ),
             ],
-            virtual_network_name=f"vnet-shm-{self._name}",
+            virtual_network_name=f"vnet-{self._name}",
             opts=child_opts,
         )
 

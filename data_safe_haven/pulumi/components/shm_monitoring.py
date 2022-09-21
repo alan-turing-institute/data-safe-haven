@@ -26,9 +26,9 @@ class SHMMonitoringComponent(ComponentResource):
 
         automation_account = automation.AutomationAccount(
             "automationAccount",
-            automation_account_name=f"shm-{self._name}-automation",
+            automation_account_name=f"{self._name}-automation",
             location=props.location,
-            name=f"shm-{self._name}-automation",
+            name=f"{self._name}-automation",
             resource_group_name=props.resource_group_name,
             sku=automation.SkuArgs(name="Free"),
             opts=child_opts,

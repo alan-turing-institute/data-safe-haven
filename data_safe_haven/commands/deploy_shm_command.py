@@ -28,7 +28,7 @@ class DeploySHMCommand(LoggingMixin, Command):
         {--t|timezone= : Timezone to use}
     """
 
-    def handle(self):
+    def handle(self) -> None:
         try:
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
@@ -109,5 +109,6 @@ class DeploySHMCommand(LoggingMixin, Command):
                 if timezone:
                     self.error(f"Timezone '{timezone}' not recognised")
                 timezone = self.log_ask(
-                    "Please enter the timezone that this SHM will use (default: 'Europe/London'):", "Europe/London"
+                    "Please enter the timezone that this SHM will use (default: 'Europe/London'):",
+                    "Europe/London",
                 )

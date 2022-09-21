@@ -6,84 +6,62 @@ from typing import Optional, Sequence
 from pulumi import ComponentResource, Input, ResourceOptions, Output
 from pulumi_azure_native import network
 
-
-class AzureIPv4Range(ipaddress.IPv4Network):
-    """Azure-aware IPv4 address range"""
-
-    def __init__(self, ip_address_first: str, ip_address_last: str):
-        networks = list(
-            ipaddress.summarize_address_range(
-                ipaddress.ip_address(ip_address_first),
-                ipaddress.ip_address(ip_address_last),
-            )
-        )
-        if len(networks) != 1:
-            raise ValueError(
-                f"{ip_address_first}-{ip_address_last} cannot be expressed as a single network range."
-            )
-        super().__init__(networks[0])
-
-    def available(self):
-        """Azure reserves x.x.x.1 for the default gateway and (x.x.x.2, x.x.x.3) to map Azure DNS IPs."""
-        return list(self.hosts())[3:]
+# Local imports
+from data_safe_haven.helpers import AzureIPv4Range
 
 
-class NetworkProps:
-    """Properties for NetworkComponent"""
+class SRENetworkingProps:
+    """Properties for SRENetworkingComponent"""
 
     def __init__(
         self,
         resource_group_name: Input[str],
-        ip_range_vnet: Optional[Input[Sequence[str]]] = [
-            "10.0.0.0",
-            "10.0.255.255",
-        ],
-        ip_range_application_gateway: Optional[Input[Sequence[str]]] = [
-            "10.0.0.0",
-            "10.0.0.255",
-        ],
-        ip_range_guacamole_postgresql: Optional[Input[Sequence[str]]] = [
-            "10.0.2.0",
-            "10.0.2.127",
-        ],
-        ip_range_guacamole_containers: Optional[Input[Sequence[str]]] = [
-            "10.0.2.128",
-            "10.0.2.255",
-        ],
-        ip_range_secure_research_desktop: Optional[Input[Sequence[str]]] = [
-            "10.0.3.0",
-            "10.0.3.255",
-        ],
+        sre_index: Input[str],
     ):
-        self.ip_range_vnet = ip_range_vnet
-        self.ip_range_application_gateway = ip_range_application_gateway
-        self.ip_range_guacamole_postgresql = ip_range_guacamole_postgresql
-        self.ip_range_guacamole_containers = ip_range_guacamole_containers
-        self.ip_range_secure_research_desktop = ip_range_secure_research_desktop
         self.resource_group_name = resource_group_name
+        # VNet
+        self.ip_network_vnet = Output.from_input(sre_index).apply(
+            lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
+        )
+        self.ip_network_vnet_cidr = self.ip_network_vnet.apply(
+            lambda ip_range: str(ip_range)
+        )
+        # Application gateway subnet
+        self.ip_network_application_gateway = Output.from_input(sre_index).apply(
+            lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.0.255")
+        )
+        self.cidr_application_gateway = self.ip_network_application_gateway.apply(
+            lambda ip_range: str(ip_range)
+        )
+        # Guacamole containers subnet
+        self.ip_network_guacamole_containers = Output.from_input(sre_index).apply(
+            lambda index: AzureIPv4Range(f"10.{index}.1.0", f"10.{index}.1.127")
+        )
+        self.cidr_guacamole_containers = self.ip_network_guacamole_containers.apply(
+            lambda ip_range: str(ip_range)
+        )
+        # Guacamole PostgreSQL server subnet
+        self.ip_network_guacamole_postgresql = Output.from_input(sre_index).apply(
+            lambda index: AzureIPv4Range(f"10.{index}.1.128", f"10.{index}.1.255")
+        )
+        self.cidr_guacamole_postgresql = self.ip_network_guacamole_postgresql.apply(
+            lambda ip_range: str(ip_range)
+        )
+        # Secure research desktop subnet
+        self.ip_network_srds = Output.from_input(sre_index).apply(
+            lambda index: AzureIPv4Range(f"10.{index}.2.0", f"10.{index}.2.255")
+        )
+        self.cidr_srds = self.ip_network_srds.apply(lambda ip_range: str(ip_range))
 
 
-class NetworkComponent(ComponentResource):
+class SRENetworkingComponent(ComponentResource):
     """Deploy networking with Pulumi"""
 
-    def __init__(self, name: str, props: NetworkProps, opts: ResourceOptions = None):
-        super().__init__("dsh:network:NetworkComponent", name, {}, opts)
+    def __init__(
+        self, name: str, props: SRENetworkingProps, opts: ResourceOptions = None
+    ):
+        super().__init__("dsh:network:SRENetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
-
-        # Set address prefixes from ranges
-        ip_network_vnet = AzureIPv4Range(*props.ip_range_vnet)
-        ip_network_application_gateway = AzureIPv4Range(
-            *props.ip_range_application_gateway
-        )
-        ip_network_guacamole_postgresql = AzureIPv4Range(
-            *props.ip_range_guacamole_postgresql
-        )
-        ip_network_guacamole_containers = AzureIPv4Range(
-            *props.ip_range_guacamole_containers
-        )
-        ip_network_secure_research_desktop = AzureIPv4Range(
-            *props.ip_range_secure_research_desktop
-        )
 
         # Define NSGs
         nsg_application_gateway = network.NetworkSecurityGroup(
@@ -106,7 +84,7 @@ class NetworkComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access="Allow",
                     description="Allow gateway management traffic over the internet.",
-                    destination_address_prefix=str(ip_network_application_gateway),
+                    destination_address_prefix=props.cidr_application_gateway,
                     destination_port_range="65200-65535",
                     direction="Inbound",
                     name="AllowGatewayManagerInternetInbound",
@@ -118,7 +96,7 @@ class NetworkComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access="Allow",
                     description="Allow inbound internet to Application Gateway.",
-                    destination_address_prefix=str(ip_network_application_gateway),
+                    destination_address_prefix=props.cidr_application_gateway,
                     destination_port_ranges=["80", "443"],
                     direction="Inbound",
                     name="AllowInternetInbound",
@@ -150,7 +128,7 @@ class NetworkComponent(ComponentResource):
                     name="AllowGuacamoleSSHInbound",
                     priority=1000,
                     protocol="*",
-                    source_address_prefix=str(ip_network_guacamole_containers),
+                    source_address_prefix=props.cidr_guacamole_containers,
                     source_port_range="*",
                 ),
             ],
@@ -161,19 +139,19 @@ class NetworkComponent(ComponentResource):
         vnet = network.VirtualNetwork(
             "vnet",
             address_space=network.AddressSpaceArgs(
-                address_prefixes=[str(ip_network_vnet)],
+                address_prefixes=[props.ip_network_vnet_cidr],
             ),
             resource_group_name=props.resource_group_name,
             subnets=[  # Note that we need to define subnets inline or they will be destroyed/recreated on a new run
                 network.SubnetArgs(
-                    address_prefix=str(ip_network_application_gateway),
+                    address_prefix=props.cidr_application_gateway,
                     name="ApplicationGatewaySubnet",
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_application_gateway.id
                     ),
                 ),
                 network.SubnetArgs(
-                    address_prefix=str(ip_network_guacamole_postgresql),
+                    address_prefix=props.cidr_guacamole_postgresql,
                     name="GuacamoleDatabaseSubnet",
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_guacamole.id
@@ -181,7 +159,7 @@ class NetworkComponent(ComponentResource):
                     private_endpoint_network_policies="Disabled",
                 ),
                 network.SubnetArgs(
-                    address_prefix=str(ip_network_guacamole_containers),
+                    address_prefix=props.cidr_guacamole_containers,
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -195,7 +173,7 @@ class NetworkComponent(ComponentResource):
                     ),
                 ),
                 network.SubnetArgs(
-                    address_prefix=str(ip_network_secure_research_desktop),
+                    address_prefix=props.cidr_srds,
                     name="SecureResearchDesktopSubnet",
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_secure_research_desktop.id
@@ -207,14 +185,18 @@ class NetworkComponent(ComponentResource):
         )
 
         # Register outputs
-        self.ip_address_guacamole_container = Output.from_input(
-            str(ip_network_guacamole_containers.available()[0])
-        )
-        self.ip_address_guacamole_postgresql = Output.from_input(
-            str(ip_network_guacamole_postgresql.available()[0])
-        )
-        self.ip_addresses_srd = Output.from_input(
-            [str(ip) for ip in ip_network_secure_research_desktop.available()]
-        )
+        # self.ip_address_guacamole_container = (
+        #     props.ip_network_guacamole_containers.apply(
+        #         lambda ip_range: str(ip_range.available()[0])
+        #     )
+        # )
+        # self.ip_address_guacamole_postgresql = (
+        #     props.ip_network_guacamole_postgresql.apply(
+        #         lambda ip_range: str(ip_range.available()[0])
+        #     )
+        # )
+        # self.ip_addresses_srd = props.ip_network_srds.apply(
+        #     lambda ip_range: [str(ip) for ip in ip_range.available()]
+        # )
         self.resource_group_name = Output.from_input(props.resource_group_name)
         self.vnet = vnet

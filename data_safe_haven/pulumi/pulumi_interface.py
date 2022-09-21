@@ -27,6 +27,7 @@ class PulumiInterface(LoggingMixin):
         self,
         config: Config,
         deployment_type: str,
+        sre_name: str = None,
         *args: Optional[Any],
         **kwargs: Optional[Any],
     ):
@@ -36,11 +37,18 @@ class PulumiInterface(LoggingMixin):
         self.stack_ = None
         self.options = {}
         if deployment_type == "SHM":
-            self.program = DeclarativeSHM(config)
-            self.work_dir = pathlib.Path.cwd() / "pulumi" / f"shm-{config.shm.name}"
+            self.stack_name = f"shm-{config.shm.name}"
+            self.program = DeclarativeSHM(config, self.stack_name)
+            self.work_dir = pathlib.Path.cwd() / "pulumi" / self.stack_name
         elif deployment_type == "SRE":
-            self.program = DeclarativeSRE(config)
-            self.work_dir = pathlib.Path.cwd() / "pulumi" / f"sre-srename"
+            self.stack_name = f"shm-{config.shm.name}-sre-{sre_name}"
+            self.program = DeclarativeSRE(config, self.stack_name, sre_name)
+            self.work_dir = (
+                pathlib.Path.cwd()
+                / "pulumi"
+                / f"shm-{config.shm.name}"
+                / f"sre-{sre_name}"
+            )
         else:
             raise DataSafeHavenPulumiException(
                 f"Deployment type '{deployment_type}' was not recognised."
@@ -49,7 +57,7 @@ class PulumiInterface(LoggingMixin):
     @property
     def local_stack_path(self):
         """Return the local stack path"""
-        return self.work_dir / f"Pulumi.{self.cfg.shm.name}.yaml"
+        return self.work_dir / f"Pulumi.{self.stack_name}.yaml"
 
     @property
     def env(self):
@@ -69,10 +77,10 @@ class PulumiInterface(LoggingMixin):
     def stack(self):
         """Load the Pulumi stack, creating if needed."""
         if not self.stack_:
-            self.info(f"Creating/loading stack <fg=green>{self.cfg.shm.name}</>.")
+            self.info(f"Creating/loading stack <fg=green>{self.stack_name}</>.")
             self.stack_ = automation.create_or_select_stack(
                 project_name="data_safe_haven",
-                stack_name=self.cfg.shm.name,
+                stack_name=self.stack_name,
                 program=self.program.run,
                 opts=automation.LocalWorkspaceOptions(
                     secrets_provider=self.cfg.backend.pulumi_secrets_provider,
@@ -160,7 +168,7 @@ class PulumiInterface(LoggingMixin):
         # If stack information is saved in the config file then apply it here
         if "stack" in self.cfg.pulumi.keys():
             self.info(
-                f"Loading stack <fg=green>{self.cfg.shm.name}</> information from config"
+                f"Loading stack <fg=green>{self.stack_name}</> information from config"
             )
             stack_yaml = yaml.dump(self.cfg.pulumi.stack.toDict(), indent=2)
             with open(self.local_stack_path, "w") as f_stack:
@@ -228,32 +236,32 @@ class PulumiInterface(LoggingMixin):
         except automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException("Pulumi update failed.") from exc
 
-    def update_config(self):
-        """Add infrastructure settings to config"""
-        self.cfg.add_data(
-            {
-                "pulumi": {
-                    "outputs": {
-                        "guacamole": {
-                            "container_group_name": self.output(
-                                "guacamole_container_group_name"
-                            ),
-                            "postgresql_server_name": self.output(
-                                "guacamole_postgresql_server_name"
-                            ),
-                            "resource_group_name": self.output(
-                                "guacamole_resource_group_name"
-                            ),
-                        },
-                        "state": {
-                            "resource_group_name": self.output(
-                                "state_resource_group_name"
-                            ),
-                            "storage_account_name": self.output(
-                                "state_storage_account_name"
-                            ),
-                        },
-                    }
-                }
-            }
-        )
+    # def update_config(self):
+    #     """Add infrastructure settings to config"""
+    #     self.cfg.add_data(
+    #         {
+    #             "pulumi": {
+    #                 "outputs": {
+    #                     "guacamole": {
+    #                         "container_group_name": self.output(
+    #                             "guacamole_container_group_name"
+    #                         ),
+    #                         "postgresql_server_name": self.output(
+    #                             "guacamole_postgresql_server_name"
+    #                         ),
+    #                         "resource_group_name": self.output(
+    #                             "guacamole_resource_group_name"
+    #                         ),
+    #                     },
+    #                     "state": {
+    #                         "resource_group_name": self.output(
+    #                             "state_resource_group_name"
+    #                         ),
+    #                         "storage_account_name": self.output(
+    #                             "state_storage_account_name"
+    #                         ),
+    #                     },
+    #                 }
+    #             }
+    #         }
+    #     )

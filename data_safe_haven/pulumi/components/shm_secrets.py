@@ -95,7 +95,7 @@ class SHMSecretsComponent(ComponentResource):
                 tenant_id=props.tenant_id,
             ),
             resource_group_name=props.resource_group_name,
-            vault_name=f"kv-shm-{self._name[:9]}-secrets",  # maximum of 24 characters
+            vault_name=f"kv-{self._name[:13]}-secrets",  # maximum of 24 characters
         )
         # Register outputs
         self.resource_group_name = Output.from_input(props.resource_group_name)

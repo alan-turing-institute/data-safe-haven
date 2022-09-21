@@ -13,4 +13,5 @@ class DeployCommand(Command):
 
     deploy
     """
+
     commands = [DeploySHMCommand(), DeploySRECommand()]

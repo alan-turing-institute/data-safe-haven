@@ -39,7 +39,7 @@ class SHMDomainControllersProps:
             automation_account_resource_group_name
         )
         self.domain_fqdn = domain_fqdn
-        self.domain_netbios_name = domain_netbios_name
+        self.domain_netbios_name = domain_netbios_name[:15]  # maximum of 15 characters
         self.location = location
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect
@@ -82,7 +82,7 @@ class SHMDomainControllersComponent(ComponentResource):
                 subnet_name=props.subnet_name,
                 virtual_network_name=props.virtual_network_name,
                 virtual_network_resource_group_name=props.virtual_network_resource_group_name,
-                vm_name=f"shm-{self._name[:7]}-dc1",
+                vm_name=f"{self._name[:11]}-dc1",
                 vm_size="Standard_DS2_v2",
             ),
             opts=child_opts,
