@@ -20,7 +20,7 @@ In either case, the deploying team should ensure that the system is working as e
 We suggest developing a security checklist for deployers to work through - an example of one used at the Alan Turing Institute is shown below.
 
 [Safe Haven Management (SHM) deployment guide](deploy_shm.md)
-: deploy a single Safe Haven Management (SHM) segment. This will deploy the user management and software package mirrors.
+: deploy a single Safe Haven Management (SHM) segment. This will deploy infrastructure shared between projects such as user management and package mirrors/proxies.
 
 [Secure Research Desktop (SRD) build instructions](build_srd_image.md)
 : build and publish our "batteries included" Secure Research Desktop (SRD) virtual machine image. Instructions about how to customise this are also available here.
