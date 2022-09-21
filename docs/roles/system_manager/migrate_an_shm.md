@@ -10,7 +10,7 @@ This document assumes that you have already deployed a {ref}`Safe Haven Manageme
 This is a complex operation and may not always work. You may lose data or user accounts in the migration process.
 ```
 
-```{include} snippets/00_symbols.partial.md
+```{include} ../../deployment/snippets/00_symbols.partial.md
 :relative-images:
 ```
 

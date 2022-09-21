@@ -819,7 +819,7 @@ Note that you can use the same script after deploying an SRE to add users in bul
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
-- Add your details to create researcher accounts yourself and any other {ref}`deployers <role_system_deployer>`.
+- Add your details to create researcher accounts for yourself and any other deployers.
 
 ```{include} snippets/user_csv_format.partial.md
 :relative-images:
