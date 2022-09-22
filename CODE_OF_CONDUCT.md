@@ -1,7 +1,7 @@
 # Code of Conduct
 
 We value the participation of every member of our community and want to ensure that every contributor has an enjoyable and fulfilling experience.
-Accordingly, everyone who participates in the Turing Way project is expected to show respect and courtesy to other community members at all times.
+Accordingly, everyone who participates in the Data Safe Haven project project is expected to show respect and courtesy to other community members at all times.
 
 Martin O'Reilly, as PI of this project, and all project members, are dedicated to a ***harassment-free experience for everyone***, regardless of gender, gender identity and expression, sexual orientation, disability, physical appearance, body size, race, age or religion. **We do not tolerate harassment by and/or of members of our community in any form**.
 
@@ -16,15 +16,15 @@ The last part acknowledges all sources that this Code of Conduct has been built 
 
 ## Overview
 
-The Turing Way is a community-oriented and -led project.
+The Data Safe Haven project is a community-oriented and -led project.
 We value the involvement of everyone in the community.
 We are committed to creating a friendly and respectful place for learning, teaching and contributing.
 All participants in our in-person events and online communications are expected to show respect and courtesy to others at all times.
 
-To make clear what is expected, everyone participating in activities associated with the Turing Way project is required to conform to this Code of Conduct.
-This Code of Conduct applies to all spaces managed by the Turing Way project including, but not limited to, in-person focus groups and workshops, and communications online via GitHub.
+To make clear what is expected, everyone participating in activities associated with the Data Safe Haven project project is required to conform to this Code of Conduct.
+This Code of Conduct applies to all spaces managed by the Data Safe Haven project project including, but not limited to, in-person focus groups and workshops, and communications online via GitHub.
 
-The co lead-investigator of _The Turing Way_ - Dr. Martin O'Reilly and Dr. Kirstie Whitaker - are responsible for enforcing the Code of Conduct.
+Dr. Martin O'Reilly and Dr. Kirstie Whitaker - are responsible for enforcing the Code of Conduct.
 They can be contacted by [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk) respectively.  Please note that Kirstie is on Maternity leave for the rest of 2022, therefore your emails will be handled by Martin.
 
 Reports may be reviewed by other members of the core development team, unless there is a conflict of interest, and will be kept confidential.
@@ -32,13 +32,13 @@ Reports may be reviewed by other members of the core development team, unless th
 
 # Details
 
-The Turing Way team are dedicated to providing a welcoming and supportive environment for all people, regardless of background or identity.
+the Data Safe Haven project team are dedicated to providing a welcoming and supportive environment for all people, regardless of background or identity.
 As such, we do not tolerate behaviour that is disrespectful to our community members or that excludes, intimidates, or causes discomfort to others.
 We do not tolerate discrimination or harassment based on characteristics that include, but are not limited to: gender identity and expression, sexual orientation, disability, physical appearance, body size, citizenship, nationality, ethnic or social origin, pregnancy, familial status, veteran status, genetic information, religion or belief (or lack thereof), membership of a national minority, property, age, education, socio-economic status, technical choices, and experience level.
 
-Everyone who participates in the Turing Way project activities is required to conform to this Code of Conduct.
-This Code of Conduct applies to all spaces managed by the Turing Way project including, but not limited to, in person focus groups and workshops, and communications online via GitHub.
-By participating, contributors indicate their acceptance of the procedures by which the Turing Way project core development team resolves any Code of Conduct incidents, which may include storage and processing of their personal information.
+Everyone who participates in the Data Safe Haven project project activities is required to conform to this Code of Conduct.
+This Code of Conduct applies to all spaces managed by the Data Safe Haven project project including, but not limited to, in person focus groups and workshops, and communications online via GitHub.
+By participating, contributors indicate their acceptance of the procedures by which the Data Safe Haven project project core development team resolves any Code of Conduct incidents, which may include storage and processing of their personal information.
 
 ## 2.1 Expected Behaviour
 
@@ -107,7 +107,7 @@ A detailed enforcement policy is available in the Enforcement Manual below.
 
 # 4 Enforcement Manual
 
-This is the enforcement manual followed by the Turing Way project research team.
+This is the enforcement manual followed by the Data Safe Haven project project research team.
 It's used when we respond to an issue to make sure we're consistent and fair.
 Enforcement of the Code of Conduct should be respectful and not include any harassing behaviours.
 
@@ -124,7 +124,7 @@ As the community grows, we will seek to build a larger committee including membe
 ## 4.2 Urgent Situations: Acting Unilaterally
 
 If the incident involves physical danger, or involves a threat to anyone's safety (such as threats of violence), any member of the community may -- and should -- act unilaterally to protect the safety of any community member.
-This can include contacting law enforcement (or other local personnel) and speaking on behalf of the Turing Way team.
+This can include contacting law enforcement (or other local personnel) and speaking on behalf of the Data Safe Haven project team.
 
 If the act is ongoing, any community member may act immediately, before reaching consensus, to diffuse the situation.
 In ongoing situations, any member may at their discretion employ any of the tools available in this enforcement manual, including bans and blocks online, or removal from a physical space.
@@ -152,7 +152,7 @@ In the event that a resolution can't be determined in that time, a member of the
 ## 4.4 Resolutions
 
 The CoC committee will seek to agree on a resolution by consensus of all members investigating the report in question.
-If the committee cannot reach consensus and deadlocks for over a week, Dr Whitaker, as lead investigator of the Turing Way project, will break the tie.
+If the committee cannot reach consensus and deadlocks for over a week, Dr Whitaker, as lead investigator of the Data Safe Haven project project, will break the tie.
 If Dr Whitaker is unable to take part in the discussion due to a conflict of interest, Dr Ben Murton, as an external member of the CoC committee, will make the decision.
 
 Possible responses may include:
@@ -198,4 +198,4 @@ Citizen Lab based their Code of Conduct on the [xvzf Code of Conduct](http://xvz
 
 We really appreciate the work that all of the communities linked above have put into creating such a well considered process.
 
-This Code of Conduct is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0 CA) license which means you are free to share and adapt the work so long as the attribution to Martin O'Reilly and the Turing Way community is retained, along with the attribution to the Carpentries, the Alan Turing Institute Data Study Group organising team, Citizen Lab and the other resources.
+This Code of Conduct is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0 CA) license which means you are free to share and adapt the work so long as the attribution to Martin O'Reilly and the Data Safe Haven project community is retained, along with the attribution to the Carpentries, the Alan Turing Institute Data Study Group organising team, Citizen Lab and the other resources.
