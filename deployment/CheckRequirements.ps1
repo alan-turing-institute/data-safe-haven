@@ -55,6 +55,7 @@ foreach ($ModuleName in $ModuleVersionRequired.Keys) {
     if ($CurrentVersion -ge $RequiredVersion) {
         Add-LogMessage -Level Success "$ModuleName module version: $CurrentVersion"
     } elseif ($InstallMissing.IsPresent) {
+        Add-LogMessage -Level Info "Installing $ModuleName module version: $RequiredVersion..."
         Install-Module -Name $ModuleName -RequiredVersion $RequiredVersion -Repository $RepositoryName
     } else {
         Add-LogMessage -Level Warning "$ModuleName module version ($CurrentVersion) does not meet the minimum requirement: $RequiredVersion!"
