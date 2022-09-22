@@ -9,12 +9,12 @@ We are particularly motivated to support new and/or anxious collaborators, peopl
 
 To make clear what is expected, we ask all members of the community to conform to the following Code of Conduct.
 
-The Code of Conduct document has been written in 4 parts: [Overview](#1-Code-of-Conduct:-Overview), [Details](#2-Details), [Reporting](#3-Reporting) and [Enforcement](#4-Enforcement-Manual).
+The Code of Conduct document has been written in 4 parts: [Overview](#1-Overview), [Details](#2-Details), [Reporting](#3-Reporting) and [Enforcement](#4-Enforcement-Manual).
 
 The last part acknowledges all sources that this Code of Conduct has been built upon.
 
 
-## Overview
+## 1 Overview
 
 The Data Safe Haven project is a community-oriented and -led project.
 We value the involvement of everyone in the community.
@@ -30,7 +30,7 @@ They can be contacted by [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) [
 Reports may be reviewed by other members of the core development team, unless there is a conflict of interest, and will be kept confidential.
 
 
-# Details
+# 2 Details
 
 The Data Safe Haven project team are dedicated to providing a welcoming and supportive environment for all people, regardless of background or identity.
 As such, we do not tolerate behaviour that is disrespectful to our community members or that excludes, intimidates, or causes discomfort to others.
