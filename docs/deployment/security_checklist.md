@@ -133,7 +133,7 @@ Check that the **SRE standard user** is able to successfully set up MFA
 {{white_check_mark}} **Verify that:** user is guided to set up MFA
 ```
 
-- Set up MFA as per `{ref}the user guide instructions <roles_researcher_user_guide_setup_mfa>`.
+- Set up MFA as per {ref}`the user guide instructions <roles_researcher_user_guide_setup_mfa>`.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -214,7 +214,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 
 ### Implication:
 
-- The Data Safe Haven network is isolated from external connections (both {ref}`policy_tier_2` and {ref}`policy_tier_2`)
+- The Data Safe Haven network is isolated from external connections (both {ref}`policy_tier_2` and {ref}`policy_tier_3`)
 
 ### Verify by:
 
@@ -369,7 +369,7 @@ A device is able to connect to the environment if and only if it is managed (wit
 
 #### Network rules ({ref}`policy_tier_2` and above):
 
-There are are network rules permitting access to the remote desktop gateway from allow-listed IP addresses only
+There are network rules permitting access to the remote desktop gateway from allow-listed IP addresses only
 
 - Navigate to the NSG for this SRE in the portal:
   - {{bento_box}} **Microsoft Remote Desktop:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
