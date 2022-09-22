@@ -45,13 +45,13 @@ By participating, contributors indicate their acceptance of the procedures by wh
 We are confident that our community members will together build a supportive and collaborative atmosphere at our events and during online communications.
 The following bullet points set out explicitly what we hope you will consider to be appropriate community guidelines:
 
-* **Be respectful of different viewpoints and experiences**. Do not engage in homophobic, racist, transphobic, ageist, ableist, sexist, or otherwise exclusionary behaviour.
-* **Use welcoming and inclusive language**. Exclusionary comments or jokes, threats or violent language are not acceptable. Do not address others in an angry, intimidating, or demeaning manner. Be considerate of the ways the words you choose may impact others. Be patient and respectful of the fact that English is a second (or third or fourth!) language for some participants.
-* **Do not harass people**. Harassment includes unwanted physical contact, sexual attention, or repeated social contact. Know that consent is explicit, conscious and continuous—not implied. If you are unsure whether your behaviour towards another person is welcome, ask them. If someone tells you to stop, do so.
-* **Respect the privacy and safety of others**. Do not take photographs of others without their permission. Do not share other participant’s personal experiences without their express permission. Note that posting (or threatening to post) personally identifying information of others without their consent ("doxing") is a form of harassment.
-* **Be considerate of others’ participation**. Everyone should have an opportunity to be heard. In update sessions, please keep comments succinct so as to allow maximum engagement by all participants. Do not interrupt others on the basis of disagreement; hold such comments until they have finished speaking.
-* **Don’t be a bystander**. If you see something inappropriate happening, speak up. If you don't feel comfortable intervening but feel someone should, please feel free to ask a member of the Code of Conduct response team for support.
-* As an overriding general rule, please **be intentional in your actions and humble in your mistakes**.
+- **Be respectful of different viewpoints and experiences**. Do not engage in homophobic, racist, transphobic, ageist, ableist, sexist, or otherwise exclusionary behaviour.
+- **Use welcoming and inclusive language**. Exclusionary comments or jokes, threats or violent language are not acceptable. Do not address others in an angry, intimidating, or demeaning manner. Be considerate of the ways the words you choose may impact others. Be patient and respectful of the fact that English is a second (or third or fourth!) language for some participants.
+- **Do not harass people**. Harassment includes unwanted physical contact, sexual attention, or repeated social contact. Know that consent is explicit, conscious and continuous—not implied. If you are unsure whether your behaviour towards another person is welcome, ask them. If someone tells you to stop, do so.
+- **Respect the privacy and safety of others**. Do not take photographs of others without their permission. Do not share other participant’s personal experiences without their express permission. Note that posting (or threatening to post) personally identifying information of others without their consent ("doxing") is a form of harassment.
+- **Be considerate of others’ participation**. Everyone should have an opportunity to be heard. In update sessions, please keep comments succinct so as to allow maximum engagement by all participants. Do not interrupt others on the basis of disagreement; hold such comments until they have finished speaking.
+- **Don’t be a bystander**. If you see something inappropriate happening, speak up. If you don't feel comfortable intervening but feel someone should, please feel free to ask a member of the Code of Conduct response team for support.
+- As an overriding general rule, please **be intentional in your actions and humble in your mistakes**.
 
 All interactions should be professional regardless of platform: either online or in-person.
 See [this explanation of the four social rules](https://www.recurse.com/manual#sub-sec-social-rules) - no feigning surprise, no well-actually's, no back-seat driving, no subtle -isms - for further recommendations for inclusive behaviours.
@@ -60,19 +60,19 @@ See [this explanation of the four social rules](https://www.recurse.com/manual#s
 
 Examples of unacceptable behaviour by Data Safe Haven community members at any project event or platform include:
 
-* written or verbal comments which have the effect of excluding people on the basis of membership of any specific group
-* causing someone to fear for their safety, such as through stalking, following, or intimidation
-* violent threats or language directed against another person
-* the display of sexual or violent images
-* unwelcome sexual attention
-* nonconsensual or unwelcome physical contact
-* sustained disruption of talks, events or communications
-* insults or put downs
-* sexist, racist, homophobic, transphobic, ableist, or exclusionary jokes
-* excessive swearing
-* incitement to violence, suicide, or self-harm
-* continuing to initiate interaction (including photography or recording) with someone after being asked to stop
-* publication of private communication without consent
+- written or verbal comments which have the effect of excluding people on the basis of membership of any specific group
+- causing someone to fear for their safety, such as through stalking, following, or intimidation
+- violent threats or language directed against another person
+- the display of sexual or violent images
+- unwelcome sexual attention
+- nonconsensual or unwelcome physical contact
+- sustained disruption of talks, events or communications
+- insults or put downs
+- sexist, racist, homophobic, transphobic, ableist, or exclusionary jokes
+- excessive swearing
+- incitement to violence, suicide, or self-harm
+- continuing to initiate interaction (including photography or recording) with someone after being asked to stop
+- publication of private communication without consent
 
 ## 2.3 Consequences of Unacceptable Behaviour
 
@@ -115,9 +115,9 @@ Enforcement of the Code of Conduct should be respectful and not include any hara
 
 The Code of Conduct committee is:
 
-* Martin O'Reilly: moreilly@turing.ac.uk
-* Kirstie Whitaker: kwhitaker@turing.ac.uk
-* [INSERT EXTERNAL CONTACT]: [INSERT EXTERNAL CONTACT EMAIL]
+- Martin O'Reilly: moreilly@turing.ac.uk
+- Kirstie Whitaker: kwhitaker@turing.ac.uk
+- [INSERT EXTERNAL CONTACT]: [INSERT EXTERNAL CONTACT EMAIL]
 
 As the community grows, we will seek to build a larger committee including members outside of the core development team.
 
@@ -157,19 +157,19 @@ If Martin O'Reilly is unable to take part in the discussion due to a conflict of
 
 Possible responses may include:
 
-* A mediated conversation or agreement between the impacted community members.
-* A request for a verbal or written apology, public or private, from a community member.
-* A public announcement clarifying community responsibilities under the Code of Conduct.
-* Nothing, if the issue reported is not a violation or outside of the scope of this Code of Conduct.
-* A private in-person conversation between a member of the research team and the individual(s) involved.
+- A mediated conversation or agreement between the impacted community members.
+- A request for a verbal or written apology, public or private, from a community member.
+- A public announcement clarifying community responsibilities under the Code of Conduct.
+- Nothing, if the issue reported is not a violation or outside of the scope of this Code of Conduct.
+- A private in-person conversation between a member of the research team and the individual(s) involved.
   In this case, the person who has the conversation will provide a written summary for record keeping.
-* A private written reprimand from a member of the research team to the individual(s) involved.
+- A private written reprimand from a member of the research team to the individual(s) involved.
   In this case, the research team member will deliver that reprimand to the individual(s) over email, cc'ing Martin O'Reilly for record keeping.
-* A public announcement of an incident, ideally in the same venue that the violation occurred (such as on the listserv for a listserv violation; and GitHub for a GitHub violation).
+- A public announcement of an incident, ideally in the same venue that the violation occurred (such as on the listserv for a listserv violation; and GitHub for a GitHub violation).
   The committee may choose to publish this message elsewhere for posterity.
-* An imposed "time out" from online spaces.
+- An imposed "time out" from online spaces.
   Martin O'Reilly will communicate this "time out" to the individual(s) involved.
-* A permanent or temporary ban from some or all Data Safe Haven project spaces (like on GitHub, Slack, online calls or in-person events).
+- A permanent or temporary ban from some or all Data Safe Haven project spaces (like on GitHub, Slack, online calls or in-person events).
   The research team will maintain records of all such bans so that they may be reviewed in the future, extended to a Code of Conduct safety team as it is built, or otherwise maintained.
   If a member of the community is removed from an event they will not be reimbursed for any part of the event that they miss.
 
