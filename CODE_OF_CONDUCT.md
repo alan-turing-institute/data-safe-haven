@@ -40,7 +40,7 @@ Everyone who participates in the Data Safe Haven project activities is required 
 This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in person focus groups and workshops, and communications online via GitHub and the Slack workspace.
 By participating, contributors indicate their acceptance of the procedures by which the Data Safe Haven project core development team resolves any Code of Conduct incidents, which may include storage and processing of their personal information.
 
-## 2.1 Expected Behaviour
+### 2.1 Expected Behaviour
 
 We are confident that our community members will together build a supportive and collaborative atmosphere at our events and during online communications.
 The following bullet points set out explicitly what we hope you will consider to be appropriate community guidelines:
@@ -56,7 +56,7 @@ The following bullet points set out explicitly what we hope you will consider to
 All interactions should be professional regardless of platform: either online or in-person.
 See [this explanation of the four social rules](https://www.recurse.com/manual#sub-sec-social-rules) - no feigning surprise, no well-actually's, no back-seat driving, no subtle -isms - for further recommendations for inclusive behaviours.
 
-## 2.2 Unacceptable Behaviour
+### 2.2 Unacceptable Behaviour
 
 Examples of unacceptable behaviour by Data Safe Haven community members at any project event or platform include:
 
@@ -74,13 +74,13 @@ Examples of unacceptable behaviour by Data Safe Haven community members at any p
 - continuing to initiate interaction (including photography or recording) with someone after being asked to stop
 - publication of private communication without consent
 
-## 2.3 Consequences of Unacceptable Behaviour
+### 2.3 Consequences of Unacceptable Behaviour
 
 Participants who are asked to stop any inappropriate behaviour are expected to comply immediately.
 This applies to all Data Safe Haven community events and platforms, either online or in-person.
 If a participant engages in behaviour that violates this Code of Conduct, any member of the core development team may warn the offender, ask them to leave the event or platform (without refund), or impose any other appropriate sanctions (see the [enforcement manual](#4-enforcement-manual) for details).
 
-## 2.4 Feedback
+### 2.4 Feedback
 
 This Code of Conduct is not intended as a static set of rules by which everyone must abide.
 Rather, you are invited to make suggestions for updates or clarifications by contacting Dr Martin O'Reilly at [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) or by making a pull request to this document on GitHub.
@@ -91,27 +91,27 @@ Rather, you are invited to make suggestions for updates or clarifications by con
 
 If you feel able to, please contact Martin O'Reilly by email at [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk).
 
-## 3.2 Alternate contact points
+### 3.2 Alternate contact points
 
 If you do not feel comfortable contacting Martin O'Reilly, please report an incident to Kirstie Whitaker by email at [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk).
 
 Alternatively, if you would like to contact someone outside of the core development team, please contact [INSERT EXTERNAL CONTACT] by email at [[INSERT EXTERNAL CONTACT EMAIL]]().
 
-## 3.3 What to do if someone is in physical danger
+### 3.3 What to do if someone is in physical danger
 
 If you believe someone is in physical danger, please contact the appropriate emergency responders.
 
-## 3.4 Code of Conduct Enforcement
+### 3.4 Code of Conduct Enforcement
 
 A detailed enforcement policy is available in the Enforcement Manual below.
 
-# 4 Enforcement Manual
+## 4 Enforcement Manual
 
 This is the enforcement manual followed by the Data Safe Haven project research team.
 It's used when we respond to an issue to make sure we're consistent and fair.
 Enforcement of the Code of Conduct should be respectful and not include any harassing behaviours.
 
-## 4.1 The Code of Conduct Committee
+### 4.1 The Code of Conduct Committee
 
 The Code of Conduct committee is:
 
@@ -121,7 +121,7 @@ The Code of Conduct committee is:
 
 As the community grows, we will seek to build a larger committee including members outside of the core development team.
 
-## 4.2 Urgent Situations: Acting Unilaterally
+### 4.2 Urgent Situations: Acting Unilaterally
 
 If the incident involves physical danger, or involves a threat to anyone's safety (such as threats of violence), any member of the community may -- and should -- act unilaterally to protect the safety of any community member.
 This can include contacting law enforcement (or other local personnel) and speaking on behalf of the Data Safe Haven project team.
@@ -131,7 +131,7 @@ In ongoing situations, any member may at their discretion employ any of the tool
 
 In situations where an individual community member acts unilaterally, they must inform Martin O'Reilly as soon as possible, and report their actions for review within 24 hours.
 
-## 4.3 Less-Urgent Situations
+### 4.3 Less-Urgent Situations
 
 Upon receiving a report of an incident, the CoC committee will review the incident and determine, to the best of their ability:
 
@@ -149,7 +149,7 @@ The "de-anonymising key" will be kept in a separate file and only accessed to li
 The CoC committee will aim to have a resolution agreed upon within one week.
 In the event that a resolution can't be determined in that time, a member of the CoC committee will respond to the reporter(s) with an update and projected timeline for resolution.
 
-## 4.4 Resolutions
+### 4.4 Resolutions
 
 The CoC committee will seek to agree on a resolution by consensus of all members investigating the report in question.
 If the committee cannot reach consensus and deadlocks for over a week, Martin O'Reilly, as lead investigator of the Data Safe Haven project, will break the tie.
@@ -177,11 +177,11 @@ Once a resolution is agreed upon, but before it is enacted, a member of the CoC 
 The CoC committee member will ask if this resolution is acceptable, and must note feedback for the record.
 However, the CoC committee is not required to act on this feedback.
 
-## 4.5 Conflicts of Interest
+### 4.5 Conflicts of Interest
 
 In the event of any conflict of interest such that Martin O'Reilly is not able to evaluate or enforce the reported violation, [INSERT EXTERNAL CONTACT] will take Kirstie's place.
 
-# 5 Acknowledgement
+## 5 Acknowledgement
 
 This code is adapted from the [Carpentries Code of Conduct](https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html)  with sections from the [Alan Turing Institute Data Study Group Code of Conduct](https://docs.google.com/document/d/1iv2cizNPUwtEhHqaezAzjIoKkaIX02f7XbYmFMXDTGY/edit).
 Both are used under the creative commons attribution license.
