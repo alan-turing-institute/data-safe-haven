@@ -93,7 +93,7 @@ If you feel able to, please contact Martin O'Reilly by email at [moreilly@turing
 
 ## 3.2 Alternate contact points
 
-If you do not feel comfortable contacting Martin O'Reilly, please report an incident to Anna Krystalli by email at [a.krystalli@sheffield.ac.uk](mailto:a.krystalli@sheffield.ac.uk).
+If you do not feel comfortable contacting Martin O'Reilly, please report an incident to Kirstie Whitaker by email at [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk).
 
 Alternatively, if you would like to contact someone outside of the core development team, please contact [INSERT EXTERNAL CONTACT] by email at [[INSERT EXTERNAL CONTACT EMAIL]]().
 
@@ -116,7 +116,7 @@ Enforcement of the Code of Conduct should be respectful and not include any hara
 The Code of Conduct committee is:
 
 * Martin O'Reilly: moreilly@turing.ac.uk
-* Anna Krystalli: a.krystalli@sheffield.ac.uk
+* Kirstie Whitaker: kwhitaker@turing.ac.uk
 * [INSERT EXTERNAL CONTACT]: [INSERT EXTERNAL CONTACT EMAIL]
 
 As the community grows, we will seek to build a larger committee including members outside of the core development team.
