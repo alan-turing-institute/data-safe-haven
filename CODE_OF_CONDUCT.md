@@ -153,7 +153,7 @@ In the event that a resolution can't be determined in that time, a member of the
 
 The CoC committee will seek to agree on a resolution by consensus of all members investigating the report in question.
 If the committee cannot reach consensus and deadlocks for over a week, Martin O'Reilly, as lead investigator of the Data Safe Haven project project, will break the tie.
-If Martin O'Reilly is unable to take part in the discussion due to a conflict of interest, Dr [INSERT EXTERNAL CONTACT], as an external member of the CoC committee, will make the decision.
+If Martin O'Reilly is unable to take part in the discussion due to a conflict of interest, [INSERT EXTERNAL CONTACT], as an external member of the CoC committee, will make the decision.
 
 Possible responses may include:
 
