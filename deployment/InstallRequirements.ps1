@@ -20,6 +20,7 @@ $ModuleVersionRequired = @{
     "Microsoft.Graph"        = @("ge", "1.5.0")
     "Poshstache"             = @("ge", "0.1.10")
     "Powershell-Yaml"        = @("ge", "0.4.2")
+    "PSScriptAnalyzer"       = @("ge", "1.19.1")
 }
 
 # Powershell version
