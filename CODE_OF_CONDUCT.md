@@ -58,7 +58,7 @@ See [this explanation of the four social rules](https://www.recurse.com/manual#s
 
 ## 2.2 Unacceptable Behaviour
 
-Examples of unacceptable behaviour by Turing Way community members at any project event or platform include:
+Examples of unacceptable behaviour by Data Safe Haven community members at any project event or platform include:
 
 * written or verbal comments which have the effect of excluding people on the basis of membership of any specific group
 * causing someone to fear for their safety, such as through stalking, following, or intimidation
@@ -77,7 +77,7 @@ Examples of unacceptable behaviour by Turing Way community members at any projec
 ## 2.3 Consequences of Unacceptable Behaviour
 
 Participants who are asked to stop any inappropriate behaviour are expected to comply immediately.
-This applies to all Turing Way community events and platforms, either online or in-person.
+This applies to all Data Safe Haven community events and platforms, either online or in-person.
 If a participant engages in behaviour that violates this Code of Conduct, any member of the core development team may warn the offender, ask them to leave the event or platform (without refund), or impose any other appropriate sanctions (see the [enforcement manual](#4-enforcement-manual) for details).
 
 ## 2.4 Feedback
@@ -169,7 +169,7 @@ Possible responses may include:
   The committee may choose to publish this message elsewhere for posterity.
 * An imposed "time out" from online spaces.
   Martin O'Reilly will communicate this "time out" to the individual(s) involved.
-* A permanent or temporary ban from some or all Turing Way project spaces (like on GitHub, online calls or in-person events).
+* A permanent or temporary ban from some or all Data Safe Haven project spaces (like on GitHub, Slack, online calls or in-person events).
   The research team will maintain records of all such bans so that they may be reviewed in the future, extended to a Code of Conduct safety team as it is built, or otherwise maintained.
   If a member of the community is removed from an event they will not be reimbursed for any part of the event that they miss.
 
