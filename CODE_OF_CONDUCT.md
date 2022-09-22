@@ -9,7 +9,7 @@ We are particularly motivated to support new and/or anxious collaborators, peopl
 
 To make clear what is expected, we ask all members of the community to conform to the following Code of Conduct.
 
-The Code of Conduct document has been written in 4 parts: [Overview](#1-Overview), [Details](#2-Details), [Reporting](#3-Reporting) and [Enforcement](#4-Enforcement-Manual).
+The Code of Conduct document has been written in 4 parts: [Overview](#1-Overview), [Details](#2-Details), [Reporting](#3-incident-reporting-guidelines) and [Enforcement](#4-enforcement-manual).
 
 The last part acknowledges all sources that this Code of Conduct has been built upon.
 
