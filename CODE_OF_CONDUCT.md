@@ -95,7 +95,7 @@ If you feel able to, please contact Martin O'Reilly by email at [moreilly@turing
 
 If you do not feel comfortable contacting Martin O'Reilly, please report an incident to Anna Krystalli by email at [a.krystalli@sheffield.ac.uk](mailto:a.krystalli@sheffield.ac.uk).
 
-Alternatively, if you would like to contact someone outside of the core development team, please contact Ben Murton by email at [bmurton@turing.ac.uk](mailto:bmurton@turing.ac.uk).
+Alternatively, if you would like to contact someone outside of the core development team, please contact [INSERT EXTERNAL CONTACT] by email at [[INSERT EXTERNAL CONTACT EMAIL]]().
 
 ## 3.3 What to do if someone is in physical danger
 
@@ -117,7 +117,7 @@ The Code of Conduct committee is:
 
 * Martin O'Reilly: moreilly@turing.ac.uk
 * Anna Krystalli: a.krystalli@sheffield.ac.uk
-* Ben Murton: bmurton@turing.ac.uk
+* [INSERT EXTERNAL CONTACT]: [INSERT EXTERNAL CONTACT EMAIL]
 
 As the community grows, we will seek to build a larger committee including members outside of the core development team.
 
@@ -153,7 +153,7 @@ In the event that a resolution can't be determined in that time, a member of the
 
 The CoC committee will seek to agree on a resolution by consensus of all members investigating the report in question.
 If the committee cannot reach consensus and deadlocks for over a week, Dr Whitaker, as lead investigator of the Data Safe Haven project project, will break the tie.
-If Dr Whitaker is unable to take part in the discussion due to a conflict of interest, Dr Ben Murton, as an external member of the CoC committee, will make the decision.
+If Dr Whitaker is unable to take part in the discussion due to a conflict of interest, Dr [INSERT EXTERNAL CONTACT], as an external member of the CoC committee, will make the decision.
 
 Possible responses may include:
 
@@ -179,7 +179,7 @@ However, the CoC committee is not required to act on this feedback.
 
 ## 4.5 Conflicts of Interest
 
-In the event of any conflict of interest such that Dr Whitaker is not able to evaluate or enforce the reported violation, Ben Murton will take Kirstie's place.
+In the event of any conflict of interest such that Dr Whitaker is not able to evaluate or enforce the reported violation, [INSERT EXTERNAL CONTACT] will take Kirstie's place.
 
 # 5 Acknowledgement
 
