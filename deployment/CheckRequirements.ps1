@@ -1,3 +1,7 @@
+param (
+  [switch] $InstallMissing
+)
+
 Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
 
 # Requirements
@@ -32,6 +36,7 @@ if ($PowershellVersion -ge $PowershellVersionRequired) {
 }
 
 # Powershell modules
+$RepositoryName = "PSGallery"
 foreach ($ModuleName in $ModuleVersionRequired.Keys) {
     $RequirementType, $RequiredVersion = $ModuleVersionRequired[$ModuleName]
     if ($RequirementType -eq "eq") {
@@ -43,8 +48,10 @@ foreach ($ModuleName in $ModuleVersionRequired.Keys) {
     }
     if ($CurrentVersion -ge $RequiredVersion) {
         Add-LogMessage -Level Success "$ModuleName module version: $CurrentVersion"
-    } else {
-        $RepositoryName = "PSGallery"
+    } elseif ($InstallMissing.IsPresent) {
         Install-Module -Name $ModuleName -RequiredVersion $RequiredVersion -Repository $RepositoryName
+    } else {
+        Add-LogMessage -Level Info "Please update the $ModuleName module using: Install-Module -Name $ModuleName -RequiredVersion $RequiredVersion -Repository $RepositoryName"
+        Add-LogMessage -Level Fatal "$ModuleName module version ($CurrentVersion) does not meet the minimum requirement: $RequiredVersion!"
     }
 }
