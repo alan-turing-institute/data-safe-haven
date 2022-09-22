@@ -1,4 +1,3 @@
-(ch-coc)=
 # Code of Conduct
 
 We value the participation of every member of our community and want to ensure that every contributor has an enjoyable and fulfilling experience.
@@ -10,12 +9,12 @@ We are particularly motivated to support new and/or anxious collaborators, peopl
 
 To make clear what is expected, we ask all members of the community to conform to the following Code of Conduct.
 
-The Code of Conduct document has been written in 4 parts: {ref}`Overview <ch-coc-overview>`, {ref}`Details <ch-coc-details>`, {ref}`Reporting <ch-coc-reporting>` and {ref}`Enforcement <ch-coc-enforcement>`.
+The Code of Conduct document has been written in 4 parts: [Overview](#1-Code-of-Conduct:-Overview), [Details](#2-Details), [Reporting](#3-Reporting) and [Enforcement](#4-Enforcement-Manual).
 
 The last part acknowledges all sources that this Code of Conduct has been built upon.
 
-(ch-coc-overview)=
-## 1 Code of Conduct: Overview
+
+## Overview
 
 The Turing Way is a community-oriented and -led project.
 We value the involvement of everyone in the community.
@@ -31,8 +30,8 @@ If you prefer not to contact the project leads, you may also contact [Anna Kryst
 
 Reports may be reviewed by other members of the core development team, unless there is a conflict of interest, and will be kept confidential.
 
-(ch-coc-details)=
-# 2 Code of Conduct: Details
+
+# Details
 
 The Turing Way team are dedicated to providing a welcoming and supportive environment for all people, regardless of background or identity.
 As such, we do not tolerate behaviour that is disrespectful to our community members or that excludes, intimidates, or causes discomfort to others.
@@ -89,7 +88,6 @@ Rather, you are invited to make suggestions for updates or clarifications by con
 
 # 3 Incident Reporting Guidelines
 
-(ch-coc-reporting)=
 ## 3.1 Contact points
 
 If you feel able to, please contact Kirstie Whitaker by email at [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk).
@@ -108,7 +106,6 @@ If you believe someone is in physical danger, please contact the appropriate eme
 
 A detailed enforcement policy is available in the Enforcement Manual below.
 
-(ch-coc-enforcement)=
 # 4 Enforcement Manual
 
 This is the enforcement manual followed by the Turing Way project research team.
