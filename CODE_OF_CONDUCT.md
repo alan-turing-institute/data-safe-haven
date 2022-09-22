@@ -24,8 +24,8 @@ All participants in our in-person events and online communications are expected 
 To make clear what is expected, everyone participating in activities associated with the Turing Way project is required to conform to this Code of Conduct.
 This Code of Conduct applies to all spaces managed by the Turing Way project including, but not limited to, in-person focus groups and workshops, and communications online via GitHub.
 
-The co lead-investigator of _The Turing Way_ - Dr. Martin O'Reilly and Dr. Malvika Sharan - are responsible for enforcing the Code of Conduct.
-They can be contacted by [theturingway@gmail.com](mailto:theturingway@gmail.com).  Please note that Kirstie is on Maternity leave for the rest of 2022, therefore your emails will be handled by Malvika (you can directly contact her by emailing [msharan@turing.ac.uk](mailto:msharan@turing.ac.uk)).
+The co lead-investigator of _The Turing Way_ - Dr. Martin O'Reilly and Dr. Kirstie Whitaker - are responsible for enforcing the Code of Conduct.
+They can be contacted by [theturingway@gmail.com](mailto:theturingway@gmail.com).  Please note that Kirstie is on Maternity leave for the rest of 2022, therefore your emails will be handled by Malvika (you can directly contact her by emailing [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk)).
 If you prefer not to contact the project leads, you may also contact [Anna Krystalli](mailto:a.krystalli@sheffield.ac.uk), who is our ombudsperson.
 
 Reports may be reviewed by other members of the core development team, unless there is a conflict of interest, and will be kept confidential.
@@ -191,7 +191,7 @@ The Carpentries Code of Conduct was adapted from guidelines written by the [Djan
 Contributors to the the initial document are Adam Obeng, Aleksandra Pawlik, Bill Mills, Carol Willing, Erin Becker, Hilmar Lapp, Kara Woo, Karin Lagesen, Pauline Barmby, Sheila Miguez, Simon Waldman, and Tracy Teal. 
 In 2018, the Code of Conduct was revised to add a summary, straightforward examples of both beneficial and unwanted behaviors, and evaluating intent. 
 Reporting guidelines were also revised to include alternate contact points and a reporting form with the procedure was added. 
-Contributors of these revised documents are Ethan White, Kari L. Jordan, Karin Lagesen, Malvika Sharan, Samantha Ahern, and Simon Waldman. 
+Contributors of these revised documents are Ethan White, Kari L. Jordan, Karin Lagesen, Kirstie Whitaker, Samantha Ahern, and Simon Waldman. 
 Additional language was added by Otter Tech from the PyCon U.S. 2018 Code of Conduct (licensed CC BY 3.0).
 
 The Turing Institute Data Study Group Code of Conduct was heavily adapted from the [Citizen Lab Summer Institute 2017 Code of Conduct](https://citizenlab.ca/summerinstitute/codeofconduct.html) and used under a CC BY 2.5 CA license.
