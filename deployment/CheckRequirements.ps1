@@ -1,5 +1,6 @@
 param (
-  [switch] $InstallMissing
+  [Parameter(Mandatory = $false, HelpMessage = "If this is set, install any missing modules, otherwise warn.")]
+  [switch]$InstallMissing
 )
 
 Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
@@ -24,7 +25,6 @@ $ModuleVersionRequired = @{
     "Microsoft.Graph"        = @("ge", "1.5.0")
     "Poshstache"             = @("ge", "0.1.10")
     "Powershell-Yaml"        = @("ge", "0.4.2")
-    "PSScriptAnalyzer"       = @("ge", "1.19.1")
 }
 
 # Powershell version
@@ -44,7 +44,7 @@ foreach ($ModuleName in $ModuleVersionRequired.Keys) {
     } elseif ($RequirementType -eq "ge") {
         $CurrentVersion = (Get-Module $ModuleName -ListAvailable | Where-Object { $_.Version -ge $RequiredVersion } | Select-Object -First 1).Version
     } else {
-        Add-LogMessage -Level Fatal "Did not recognise requirement: $ModuleName $RequirementType $RequiredVersion"
+        Add-LogMessage -Level Fatal "Did not recognise requirement: '$ModuleName $RequirementType $RequiredVersion'"
     }
     if ($CurrentVersion -ge $RequiredVersion) {
         Add-LogMessage -Level Success "$ModuleName module version: $CurrentVersion"
