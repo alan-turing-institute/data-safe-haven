@@ -3,7 +3,7 @@
 We value the participation of every member of our community and want to ensure that every contributor has an enjoyable and fulfilling experience.
 Accordingly, everyone who participates in the Turing Way project is expected to show respect and courtesy to other community members at all times.
 
-Kirstie Whitaker, as PI of this project, and all project members, are dedicated to a ***harassment-free experience for everyone***, regardless of gender, gender identity and expression, sexual orientation, disability, physical appearance, body size, race, age or religion. **We do not tolerate harassment by and/or of members of our community in any form**.
+Martin O'Reilly, as PI of this project, and all project members, are dedicated to a ***harassment-free experience for everyone***, regardless of gender, gender identity and expression, sexual orientation, disability, physical appearance, body size, race, age or religion. **We do not tolerate harassment by and/or of members of our community in any form**.
 
 We are particularly motivated to support new and/or anxious collaborators, people who are looking to learn and develop their skills, and anyone who has experienced discrimination in the past.
 
@@ -24,7 +24,7 @@ All participants in our in-person events and online communications are expected 
 To make clear what is expected, everyone participating in activities associated with the Turing Way project is required to conform to this Code of Conduct.
 This Code of Conduct applies to all spaces managed by the Turing Way project including, but not limited to, in-person focus groups and workshops, and communications online via GitHub.
 
-The co lead-investigator of _The Turing Way_ - Dr. Kirstie Whitaker and Dr. Malvika Sharan - are responsible for enforcing the Code of Conduct.
+The co lead-investigator of _The Turing Way_ - Dr. Martin O'Reilly and Dr. Malvika Sharan - are responsible for enforcing the Code of Conduct.
 They can be contacted by [theturingway@gmail.com](mailto:theturingway@gmail.com).  Please note that Kirstie is on Maternity leave for the rest of 2022, therefore your emails will be handled by Malvika (you can directly contact her by emailing [msharan@turing.ac.uk](mailto:msharan@turing.ac.uk)).
 If you prefer not to contact the project leads, you may also contact [Anna Krystalli](mailto:a.krystalli@sheffield.ac.uk), who is our ombudsperson.
 
@@ -84,17 +84,17 @@ If a participant engages in behaviour that violates this Code of Conduct, any me
 ## 2.4 Feedback
 
 This Code of Conduct is not intended as a static set of rules by which everyone must abide.
-Rather, you are invited to make suggestions for updates or clarifications by contacting Dr Kirstie Whitaker at [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk) or by making a pull request to this document on GitHub.
+Rather, you are invited to make suggestions for updates or clarifications by contacting Dr Martin O'Reilly at [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) or by making a pull request to this document on GitHub.
 
 # 3 Incident Reporting Guidelines
 
 ## 3.1 Contact points
 
-If you feel able to, please contact Kirstie Whitaker by email at [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk).
+If you feel able to, please contact Martin O'Reilly by email at [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk).
 
 ## 3.2 Alternate contact points
 
-If you do not feel comfortable contacting Kirstie Whitaker, please report an incident to Anna Krystalli by email at [a.krystalli@sheffield.ac.uk](mailto:a.krystalli@sheffield.ac.uk).
+If you do not feel comfortable contacting Martin O'Reilly, please report an incident to Anna Krystalli by email at [a.krystalli@sheffield.ac.uk](mailto:a.krystalli@sheffield.ac.uk).
 
 Alternatively, if you would like to contact someone outside of the core development team, please contact Ben Murton by email at [bmurton@turing.ac.uk](mailto:bmurton@turing.ac.uk).
 
@@ -116,7 +116,7 @@ Enforcement of the Code of Conduct should be respectful and not include any hara
 
 The Code of Conduct committee is:
 
-* Kirstie Whitaker: kwhitaker@turing.ac.uk
+* Martin O'Reilly: moreilly@turing.ac.uk
 * Anna Krystalli: a.krystalli@sheffield.ac.uk
 * Ben Murton: bmurton@turing.ac.uk
 
@@ -130,7 +130,7 @@ This can include contacting law enforcement (or other local personnel) and speak
 If the act is ongoing, any community member may act immediately, before reaching consensus, to diffuse the situation.
 In ongoing situations, any member may at their discretion employ any of the tools available in this enforcement manual, including bans and blocks online, or removal from a physical space.
 
-In situations where an individual community member acts unilaterally, they must inform Kirstie Whitaker as soon as possible, and report their actions for review within 24 hours.
+In situations where an individual community member acts unilaterally, they must inform Martin O'Reilly as soon as possible, and report their actions for review within 24 hours.
 
 ## 4.3 Less-Urgent Situations
 
@@ -165,11 +165,11 @@ Possible responses may include:
 * A private in-person conversation between a member of the research team and the individual(s) involved.
   In this case, the person who has the conversation will provide a written summary for record keeping.
 * A private written reprimand from a member of the research team to the individual(s) involved.
-  In this case, the research team member will deliver that reprimand to the individual(s) over email, cc'ing Kirstie Whitaker for record keeping.
+  In this case, the research team member will deliver that reprimand to the individual(s) over email, cc'ing Martin O'Reilly for record keeping.
 * A public announcement of an incident, ideally in the same venue that the violation occurred (such as on the listserv for a listserv violation; and GitHub for a GitHub violation).
   The committee may choose to publish this message elsewhere for posterity.
 * An imposed "time out" from online spaces.
-  Kirstie Whitaker will communicate this "time out" to the individual(s) involved.
+  Martin O'Reilly will communicate this "time out" to the individual(s) involved.
 * A permanent or temporary ban from some or all Turing Way project spaces (like on GitHub, online calls or in-person events).
   The research team will maintain records of all such bans so that they may be reviewed in the future, extended to a Code of Conduct safety team as it is built, or otherwise maintained.
   If a member of the community is removed from an event they will not be reimbursed for any part of the event that they miss.
@@ -199,4 +199,4 @@ Citizen Lab based their Code of Conduct on the [xvzf Code of Conduct](http://xvz
 
 We really appreciate the work that all of the communities linked above have put into creating such a well considered process.
 
-This Code of Conduct is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0 CA) license which means you are free to share and adapt the work so long as the attribution to Kirstie Whitaker and the Turing Way community is retained, along with the attribution to the Carpentries, the Alan Turing Institute Data Study Group organising team, Citizen Lab and the other resources.
+This Code of Conduct is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0 CA) license which means you are free to share and adapt the work so long as the attribution to Martin O'Reilly and the Turing Way community is retained, along with the attribution to the Carpentries, the Alan Turing Institute Data Study Group organising team, Citizen Lab and the other resources.
