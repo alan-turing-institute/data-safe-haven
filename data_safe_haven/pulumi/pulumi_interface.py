@@ -15,8 +15,6 @@ from .declarative_shm import DeclarativeSHM
 from .declarative_sre import DeclarativeSRE
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
-from data_safe_haven.external import AzureApi
-from data_safe_haven.helpers import password
 from data_safe_haven.mixins import LoggingMixin
 
 
@@ -106,13 +104,19 @@ class PulumiInterface(LoggingMixin):
 
     def deploy(self):
         """Deploy the infrastructure with Pulumi."""
-        self.initialise_workdir()
-        self.login()
-        self.install_plugins()
-        self.apply_config_options()
-        self.refresh()
-        self.preview()
-        self.update()
+        try:
+            self.initialise_workdir()
+            self.login()
+            self.install_plugins()
+            self.apply_config_options()
+            self.refresh()
+            self.preview()
+            self.update()
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Pulumi deployment failed.\n{str(exc)}."
+            ) from exc
+
 
     def destroy(self):
         """Destroy deployed infrastructure."""
@@ -159,20 +163,25 @@ class PulumiInterface(LoggingMixin):
 
     def initialise_workdir(self):
         """Create project directory if it does not exist and update local stack."""
-        self.info(
-            f"Ensuring that <fg=green>{self.work_dir}</> exists...", no_newline=True
-        )
-        if not self.work_dir.exists():
-            self.work_dir.mkdir(parents=True)
-        self.info(f"Ensured that <fg=green>{self.work_dir}</> exists.", overwrite=True)
-        # If stack information is saved in the config file then apply it here
-        if "stack" in self.cfg.pulumi.keys():
+        try:
             self.info(
-                f"Loading stack <fg=green>{self.stack_name}</> information from config"
+                f"Ensuring that <fg=green>{self.work_dir}</> exists...", no_newline=True
             )
-            stack_yaml = yaml.dump(self.cfg.pulumi.stack.toDict(), indent=2)
-            with open(self.local_stack_path, "w") as f_stack:
-                f_stack.writelines(stack_yaml)
+            if not self.work_dir.exists():
+                self.work_dir.mkdir(parents=True)
+            self.info(f"Ensured that <fg=green>{self.work_dir}</> exists.", overwrite=True)
+            # If stack information is saved in the config file then apply it here
+            if "stack" in self.cfg.pulumi.keys():
+                self.info(
+                    f"Loading stack <fg=green>{self.stack_name}</> information from config"
+                )
+                stack_yaml = yaml.dump(self.cfg.pulumi.stack.toDict(), indent=2)
+                with open(self.local_stack_path, "w") as f_stack:
+                    f_stack.writelines(stack_yaml)
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Initialising Pulumi working directory failed.\n{str(exc)}."
+            ) from exc
 
     def install_plugins(self):
         """For inline programs, we must manage plugins ourselves."""
@@ -180,26 +189,38 @@ class PulumiInterface(LoggingMixin):
 
     def login(self):
         """Login to Pulumi."""
-        env_vars = " ".join([f"{k}={v}" for k, v in self.env.items()])
-        command = f"pulumi login azblob://{self.cfg.pulumi.storage_container_name}"
-        with subprocess.Popen(
-            f"{env_vars} {command}",
-            shell=True,
-            cwd=self.work_dir,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            encoding="UTF-8",
-        ) as process:
-            self.info(process.stdout.readline().strip())
+        try:
+            env_vars = " ".join([f"{k}={v}" for k, v in self.env.items()])
+            command = f"pulumi login azblob://{self.cfg.pulumi.storage_container_name}"
+            with subprocess.Popen(
+                f"{env_vars} {command}",
+                shell=True,
+                cwd=self.work_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                encoding="UTF-8",
+            ) as process:
+                self.info(process.stdout.readline().strip())
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Logging into Pulumi failed.\n{str(exc)}."
+            ) from exc
+
 
     def output(self, name):
         return self.stack.outputs()[name].value
 
     def preview(self):
         """Preview the Pulumi stack."""
-        with suppress(automation.errors.CommandError):
-            self.info(f"Previewing changes for stack <fg=green>{self.stack.name}</>.")
-            self.stack.preview(color="always", diff=True, on_output=self.info)
+        try:
+            with suppress(automation.errors.CommandError):
+                self.info(f"Previewing changes for stack <fg=green>{self.stack.name}</>.")
+                self.stack.preview(color="always", diff=True, on_output=self.info)
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Pulumi preview failed.\n{str(exc)}."
+            ) from exc
+
 
     def refresh(self):
         """Refresh the Pulumi stack."""
@@ -222,11 +243,17 @@ class PulumiInterface(LoggingMixin):
 
     def teardown(self):
         """Teardown the infrastructure deployed with Pulumi."""
-        self.initialise_workdir()
-        self.login()
-        self.install_plugins()
-        self.refresh()
-        self.destroy()
+        try:
+            self.initialise_workdir()
+            self.login()
+            self.install_plugins()
+            self.refresh()
+            self.destroy()
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Tearing down Pulumi infrastructure failed.\n{str(exc)}."
+            ) from exc
+
 
     def update(self):
         """Update deployed infrastructure."""

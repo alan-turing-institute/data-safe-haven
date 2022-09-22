@@ -16,7 +16,7 @@ from .components.secure_research_desktop import (
     SecureResearchDesktopProps,
 )
 from .components.state_storage import StateStorageComponent, StateStorageProps
-
+from data_safe_haven.helpers import alphanumeric, hash
 
 class DeclarativeSRE:
     """Deploy with Pulumi"""
@@ -57,13 +57,14 @@ class DeclarativeSRE:
             ),
         )
 
-        # # Define storage accounts
-        # state_storage = StateStorageComponent(
-        #     self.stack_name,
-        #     StateStorageProps(
-        #         resource_group_name=rg_state.name,
-        #     ),
-        # )
+        # Define storage accounts
+        state_storage = StateStorageComponent(
+            self.stack_name,
+            StateStorageProps(
+                resource_group_name=rg_state.name,
+                storage_name=alphanumeric(f"sre{self.sre_name}{hash(self.stack_name)}"),
+            ),
+        )
 
         # # Define containerised remote desktop gateway
         # guacamole = GuacamoleComponent(

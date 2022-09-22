@@ -2,6 +2,9 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import storage
 
+# Local imports
+from data_safe_haven.helpers import alphanumeric
+
 
 class StateStorageProps:
     """Properties for StateStorageComponent"""
@@ -9,8 +12,10 @@ class StateStorageProps:
     def __init__(
         self,
         resource_group_name: Input[str],
+        storage_name: Input[str],
     ):
         self.resource_group_name = resource_group_name
+        self.storage_name = storage_name
 
 
 class StateStorageComponent(ComponentResource):
@@ -20,21 +25,20 @@ class StateStorageComponent(ComponentResource):
         self, name: str, props: StateStorageProps, opts: ResourceOptions = None
     ):
         super().__init__("dsh:state_storage:StateStorageComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
 
+        # Deploy storage account
         storage_account = storage.StorageAccount(
             "storage_account_state",
-            account_name=f"st{self._name}state",
+            account_name=props.storage_name[:24], # maximum of 24 characters
             kind="StorageV2",
             resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name="Standard_LRS"),
-            opts=child_opts,
         )
 
+        # Retrieve storage account keys
         storage_account_keys = storage.list_storage_account_keys(
             account_name=storage_account.name,
             resource_group_name=props.resource_group_name,
-            opts=child_opts,
         )
 
         # Register outputs

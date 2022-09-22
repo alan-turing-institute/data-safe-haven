@@ -32,12 +32,12 @@ from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.storage.models import BlobContainer, StorageAccount
 
 # Local imports
+from .graph_api import GraphApi
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInternalException,
 )
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
-from .graph_api import GraphApi
 
 
 class AzureApi(AzureMixin, LoggingMixin):

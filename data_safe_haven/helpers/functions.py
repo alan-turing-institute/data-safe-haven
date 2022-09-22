@@ -1,6 +1,15 @@
 # Standard library imports
+import hashlib
 import secrets
 import string
+
+
+def alphanumeric(input: str) -> str:
+    return "".join(filter(lambda x: x in (string.ascii_letters + string.digits), input))
+
+
+def hash(input: str) -> str:
+    return hashlib.sha512(str.encode(input)).hexdigest()
 
 
 def hex_string(length: int) -> str:

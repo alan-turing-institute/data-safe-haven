@@ -13,8 +13,8 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.pulumi import PulumiInterface
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.pulumi import PulumiInterface
 from data_safe_haven.helpers import password
 
 
