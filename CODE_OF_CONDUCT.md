@@ -30,7 +30,7 @@ They can be contacted by [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) [
 Reports may be reviewed by other members of the core development team, unless there is a conflict of interest, and will be kept confidential.
 
 
-# 2 Details
+## 2 Details
 
 The Data Safe Haven project team are dedicated to providing a welcoming and supportive environment for all people, regardless of background or identity.
 As such, we do not tolerate behaviour that is disrespectful to our community members or that excludes, intimidates, or causes discomfort to others.
@@ -85,7 +85,7 @@ If a participant engages in behaviour that violates this Code of Conduct, any me
 This Code of Conduct is not intended as a static set of rules by which everyone must abide.
 Rather, you are invited to make suggestions for updates or clarifications by contacting Dr Martin O'Reilly at [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) or by making a pull request to this document on GitHub.
 
-# 3 Incident Reporting Guidelines
+## 3 Incident Reporting Guidelines
 
 ## 3.1 Contact points
 
