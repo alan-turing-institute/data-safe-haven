@@ -22,7 +22,7 @@ We are committed to creating a friendly and respectful place for learning, teach
 All participants in our in-person events and online communications are expected to show respect and courtesy to others at all times.
 
 To make clear what is expected, everyone participating in activities associated with the Data Safe Haven project is required to conform to this Code of Conduct.
-This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in-person focus groups and workshops, and communications online via GitHub and the Slack workspace.
+This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in-person meetings and workshops, and communications online via GitHub and the Slack workspace.
 
 Dr. Martin O'Reilly and Dr. Kirstie Whitaker - are responsible for enforcing the Code of Conduct.
 They can be contacted by [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk) respectively.  Please note that Kirstie is on Maternity leave for the rest of 2022, therefore your emails will be handled by Martin.
@@ -37,7 +37,7 @@ As such, we do not tolerate behaviour that is disrespectful to our community mem
 We do not tolerate discrimination or harassment based on characteristics that include, but are not limited to: gender identity and expression, sexual orientation, disability, physical appearance, body size, citizenship, nationality, ethnic or social origin, pregnancy, familial status, veteran status, genetic information, religion or belief (or lack thereof), membership of a national minority, property, age, education, socio-economic status, technical choices, and experience level.
 
 Everyone who participates in the Data Safe Haven project activities is required to conform to this Code of Conduct.
-This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in person focus groups and workshops, and communications online via GitHub and the Slack workspace.
+This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in person meetings and workshops, and communications online via GitHub and the Slack workspace.
 By participating, contributors indicate their acceptance of the procedures by which the Data Safe Haven project core development team resolves any Code of Conduct incidents, which may include storage and processing of their personal information.
 
 ### 2.1 Expected Behaviour
