@@ -1,7 +1,7 @@
 # Code of Conduct
 
 We value the participation of every member of our community and want to ensure that every contributor has an enjoyable and fulfilling experience.
-Accordingly, everyone who participates in the Data Safe Haven project project is expected to show respect and courtesy to other community members at all times.
+Accordingly, everyone who participates in the Data Safe Haven project is expected to show respect and courtesy to other community members at all times.
 
 Martin O'Reilly, as PI of this project, and all project members, are dedicated to a ***harassment-free experience for everyone***, regardless of gender, gender identity and expression, sexual orientation, disability, physical appearance, body size, race, age or religion. **We do not tolerate harassment by and/or of members of our community in any form**.
 
@@ -21,8 +21,8 @@ We value the involvement of everyone in the community.
 We are committed to creating a friendly and respectful place for learning, teaching and contributing.
 All participants in our in-person events and online communications are expected to show respect and courtesy to others at all times.
 
-To make clear what is expected, everyone participating in activities associated with the Data Safe Haven project project is required to conform to this Code of Conduct.
-This Code of Conduct applies to all spaces managed by the Data Safe Haven project project including, but not limited to, in-person focus groups and workshops, and communications online via GitHub and the Slack workspace.
+To make clear what is expected, everyone participating in activities associated with the Data Safe Haven project is required to conform to this Code of Conduct.
+This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in-person focus groups and workshops, and communications online via GitHub and the Slack workspace.
 
 Dr. Martin O'Reilly and Dr. Kirstie Whitaker - are responsible for enforcing the Code of Conduct.
 They can be contacted by [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk) respectively.  Please note that Kirstie is on Maternity leave for the rest of 2022, therefore your emails will be handled by Martin.
@@ -36,9 +36,9 @@ The Data Safe Haven project team are dedicated to providing a welcoming and supp
 As such, we do not tolerate behaviour that is disrespectful to our community members or that excludes, intimidates, or causes discomfort to others.
 We do not tolerate discrimination or harassment based on characteristics that include, but are not limited to: gender identity and expression, sexual orientation, disability, physical appearance, body size, citizenship, nationality, ethnic or social origin, pregnancy, familial status, veteran status, genetic information, religion or belief (or lack thereof), membership of a national minority, property, age, education, socio-economic status, technical choices, and experience level.
 
-Everyone who participates in the Data Safe Haven project project activities is required to conform to this Code of Conduct.
-This Code of Conduct applies to all spaces managed by the Data Safe Haven project project including, but not limited to, in person focus groups and workshops, and communications online via GitHub and the Slack workspace.
-By participating, contributors indicate their acceptance of the procedures by which the Data Safe Haven project project core development team resolves any Code of Conduct incidents, which may include storage and processing of their personal information.
+Everyone who participates in the Data Safe Haven project activities is required to conform to this Code of Conduct.
+This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in person focus groups and workshops, and communications online via GitHub and the Slack workspace.
+By participating, contributors indicate their acceptance of the procedures by which the Data Safe Haven project core development team resolves any Code of Conduct incidents, which may include storage and processing of their personal information.
 
 ## 2.1 Expected Behaviour
 
@@ -107,7 +107,7 @@ A detailed enforcement policy is available in the Enforcement Manual below.
 
 # 4 Enforcement Manual
 
-This is the enforcement manual followed by the Data Safe Haven project project research team.
+This is the enforcement manual followed by the Data Safe Haven project research team.
 It's used when we respond to an issue to make sure we're consistent and fair.
 Enforcement of the Code of Conduct should be respectful and not include any harassing behaviours.
 
@@ -152,7 +152,7 @@ In the event that a resolution can't be determined in that time, a member of the
 ## 4.4 Resolutions
 
 The CoC committee will seek to agree on a resolution by consensus of all members investigating the report in question.
-If the committee cannot reach consensus and deadlocks for over a week, Martin O'Reilly, as lead investigator of the Data Safe Haven project project, will break the tie.
+If the committee cannot reach consensus and deadlocks for over a week, Martin O'Reilly, as lead investigator of the Data Safe Haven project, will break the tie.
 If Martin O'Reilly is unable to take part in the discussion due to a conflict of interest, [INSERT EXTERNAL CONTACT], as an external member of the CoC committee, will make the decision.
 
 Possible responses may include:
