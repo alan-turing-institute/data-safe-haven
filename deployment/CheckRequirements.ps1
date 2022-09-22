@@ -44,7 +44,6 @@ foreach ($ModuleName in $ModuleVersionRequired.Keys) {
         Add-LogMessage -Level Success "$ModuleName module version: $CurrentVersion"
     } else {
         $RepositoryName = "PSGallery"
-        Add-LogMessage -Level Info "Please update the $ModuleName module using: Install-Module -Name $ModuleName -RequiredVersion $RequiredVersion -Repository $RepositoryName"
-        Add-LogMessage -Level Fatal "$ModuleName module version ($CurrentVersion) does not meet the minimum requirement: $RequiredVersion!"
+        Install-Module -Name $ModuleName -RequiredVersion $RequiredVersion -Repository $RepositoryName
     }
 }

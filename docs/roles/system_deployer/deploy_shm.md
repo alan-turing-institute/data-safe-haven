@@ -27,11 +27,7 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
 - `Powershell` cross-platform modules
 
   ````{tip}
-  Check whether you are missing any required modules by running
-  ```powershell
-  PS> ./deployment/CheckRequirements.ps1
-  ```
-  To install the required modules run
+  Check whether you are missing any required modules (will install any missing)
   ```powershell
   PS> ./deployment/InstallRequirements.ps1
   ```
