@@ -87,7 +87,7 @@ Rather, you are invited to make suggestions for updates or clarifications by con
 
 ## 3 Incident Reporting Guidelines
 
-## 3.1 Contact points
+### 3.1 Contact points
 
 If you feel able to, please contact Martin O'Reilly by email at [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk).
 
