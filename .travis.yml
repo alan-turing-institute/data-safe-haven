@@ -21,17 +21,7 @@ jobs:
       before_script:
         - sudo snap install powershell --classic
         - pwsh -c "Set-PSRepository -Name PSGallery -InstallationPolicy Trusted"
-        - pwsh -c "Install-Module -Verbose -Name Az.Accounts"
-        - pwsh -c "Install-Module -Verbose -Name Az.Compute"
-        - pwsh -c "Install-Module -Verbose -Name Az.Dns"
-        - pwsh -c "Install-Module -Verbose -Name Az.KeyVault"
-        - pwsh -c "Install-Module -Verbose -Name Az.Network"
-        - pwsh -c "Install-Module -Verbose -Name Az.OperationalInsights"
-        - pwsh -c "Install-Module -Verbose -Name Az.RecoveryServices"
-        - pwsh -c "Install-Module -Verbose -Name Az.Resources"
-        - pwsh -c "Install-Module -Verbose -Name Az.Storage"
-        - pwsh -c "Install-Module -Verbose -Name Pester"
-        - pwsh -c "Install-Module  -Verbose -Name PSScriptAnalyzer"
+        - pwsh deployment/CheckRequirements.ps1 -InstallMissing -IncludeDev
       script: pwsh -c "./tests/Run_Pester_Tests.ps1"
 
     - name: Lint HTML documentation
