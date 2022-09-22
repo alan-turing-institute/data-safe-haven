@@ -45,18 +45,14 @@ We recommend the following for the `inboundAccessFrom` setting
 - Tier 3 SREs: this should correspond to the **restricted networks** for all approved partner organisations. These should only permit connections from within medium security access controlled physical spaces and from managed devices (e.g. `Turing Secure`).
 ```
 
-```{admonition} Alan Turing Institute default
-Setting `inboundAccessFrom` to 'default' will use the default Turing network ranges.
-```
-
 ```{important}
 The `ipPrefix` must be unique for each SRE attached to the same SHM.
 It is **very** important that address spaces do not overlap in the environment as this will cause network faults.
 ```
 
 ```{admonition} Alan Turing Institute default
-Assign each SRE a `/21` subspace of the `10.0.0.0/24` private class A range, starting from `10.21.0.0`.
-This provides ample addresses for a SRE while avoiding the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.20.2.0-10.20.3.255`)
+We assign each SRE a `/21` subspace of the `10.0.0.0/24` private class A range, starting from `10.11.0.0`.
+This provides ample addresses for a SRE while avoiding the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.10.2.0-10.10.3.255`)
 ```
 
 ### (Optional) Verify code version

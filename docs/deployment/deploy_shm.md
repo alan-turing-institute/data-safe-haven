@@ -31,6 +31,10 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
   ```powershell
   PS> ./deployment/CheckRequirements.ps1
   ```
+  Either manually install each missing module or install them all with
+  ```powershell
+  PS> ./deployment/CheckRequirements.ps1 -InstallMissing
+  ```
   ````
 
 - `Microsoft Remote Desktop`
