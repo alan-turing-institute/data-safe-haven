@@ -45,7 +45,7 @@ Follow the guide to [data ingress](data_ingress.md) to bring all necessary code 
 
 ## Environment setup
 
-You should now contact your {ref}`role_system_manager` and get them to schedule a {ref}`role_system_deployer` to set up a new environment for this work package.
+You should now contact your {ref}`role_system_manager` and get them to schedule the deployment of a new environment for this work package.
 You will need to provide the {ref}`role_system_manager` with contact details (email address and phone number) for each of the participants in this work package.
 Work with the {ref}`role_investigator` and the {ref}`role_system_manager` to ensure that all participants are able to access the environment.
 If new participants are added or removed, ensure that the {ref}`role_system_manager` is made aware and updates access to the environment as appropriate.

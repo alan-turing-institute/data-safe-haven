@@ -819,7 +819,7 @@ Note that you can use the same script after deploying an SRE to add users in bul
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
-- Add your details to create researcher accounts yourself and any other {ref}`deployers <role_system_deployer>`.
+- Add your details to create researcher accounts for yourself and any other deployers.
 
 ```{include} snippets/user_csv_format.partial.md
 :relative-images:
@@ -900,7 +900,7 @@ As activating self-service password reset requires active MFA licences, this is 
 - Switch to the the **emergency administrator** account:
   - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
   - Enter `aad.admin.emergency.access@<SHM domain>` as the username
-  - Open a new browser tab and go to the [Azure Portal](https://azure.microsoft.com/en-gb/features/azure-portal/)
+  - Open a new browser tab and go to the [Azure Portal](https://portal.azure.com/)
   - Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD).
     Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
   - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Subscriptions`

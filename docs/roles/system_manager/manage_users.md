@@ -31,7 +31,7 @@ A helper script for doing this is already uploaded to the domain controller - yo
 
 On the **SHM domain controller (DC1)**.
 
-```{include} ../system_deployer/snippets/user_csv_format.partial.md
+```{include} ../../deployment/snippets/user_csv_format.partial.md
 :relative-images:
 ```
 

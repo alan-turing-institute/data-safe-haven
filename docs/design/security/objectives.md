@@ -1,4 +1,4 @@
-(design_security_claims)=
+(design_security_objectives)=
 
 # Security objectives
 

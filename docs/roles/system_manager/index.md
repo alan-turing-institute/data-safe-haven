@@ -8,6 +8,7 @@
 manage_users.md
 manage_data.md
 manage_costs.md
+migrate_an_shm.md
 manage_deployments.md
 ```
 
@@ -22,6 +23,9 @@ Typically these might be members of an institutional IT team.
 
 [Managing costs](manage_costs.md)
 : How to manage Azure costs for a Data Safe Haven as an administrator.
+
+[Migrating an existing SHM](migrate_an_shm.md)
+: How to migrate the contents of a previously-deployed SHM to a new one (advanced).
 
 [Removing deployed components](manage_deployments.md)
 : Removing an SRE or a complete, deployment Data Safe Haven as an administrator.
