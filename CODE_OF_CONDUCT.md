@@ -13,7 +13,6 @@ The Code of Conduct document has been written in 4 parts: [Overview](#1-Overview
 
 The last part acknowledges all sources that this Code of Conduct has been built upon.
 
-
 ## 1 Overview
 
 The Data Safe Haven project is a community-oriented and -led project.
@@ -28,7 +27,6 @@ Dr. Martin O'Reilly and Dr. Kirstie Whitaker - are responsible for enforcing the
 They can be contacted by [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk) respectively.  Please note that Kirstie is on Maternity leave for the rest of 2022, therefore your emails will be handled by Martin.
 
 Reports may be reviewed by other members of the core development team, unless there is a conflict of interest, and will be kept confidential.
-
 
 ## 2 Details
 
