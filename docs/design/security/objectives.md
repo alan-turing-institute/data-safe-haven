@@ -30,5 +30,5 @@ In order to configure your Data Safe Haven deployment according to your needs yo
 
 These are a mixture of technical, policy and physical controls.
 
-The built-in technical controls applied in the Data Safe Haven is [detailed here](built_in.md).
-The configuration used at the Alan Turing Institute is included [here](configuration.md) for reference.
+The built-in technical controls applied in the Data Safe Haven are detailed [here](technical_controls.md).
+The configuration used at the Alan Turing Institute is included [here](reference_configuration.md) for reference.

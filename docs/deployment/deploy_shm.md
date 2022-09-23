@@ -422,7 +422,7 @@ PS> ./Setup_SHM_Key_Vault_And_Emergency_Admin.ps1 -shmId <SHM ID>
 If you get an error like `Could not load file or assembly 'Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.19.8.16603, Culture=neutral PublicKeyToken=31bf3856ad364e35'. Could not find or load a specific file. (0x80131621)` then you may need to try again in a fresh `Powershell` terminal.
 ```
 
-Some (rare) operations that require you to be logged in as a **native** Global Administrator.
+Some (rare) operations require you to be logged in as a **native** Global Administrator.
 To support these rare cases, and to allow access to the Safe Haven Azure AD in the case of loss of access to personal administrator accounts (e.g. lost access to MFA), an **emergency access** administrator account has been created by the above script.
 
 ```{warning}
@@ -667,7 +667,7 @@ If so, click `More info -> Run anyway`.
 ```{error}
 ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) You may encounter a further warning along the lines of `Windows cannot access the specified device, path, or file`.
 This may mean that your antivirus is blocking the VPN client.
-You will need configure your antivirus software to make an exception.
+You will need to configure your antivirus software to make an exception.
 ```
 
 (roles_system_deployer_configure_domain_controllers)=
@@ -1109,7 +1109,7 @@ Before completing this step, **make sure you have confirmed you are able to succ
   - Select `My organization is using Conditional Access` and hit the `Save` button
 - Click `Security` in the left hand sidebar
 - Click `Conditional access` in the left hand sidebar
-- Click the `+New Policy` icon in the tob bar above the (empty) policy list
+- Click the `+New Policy` icon in the top bar above the (empty) policy list
 - Create a new policy as follows:
   - Set the name to `Require MFA`
   - Under `Users or workload identities` set the `Users and groups` condition to:

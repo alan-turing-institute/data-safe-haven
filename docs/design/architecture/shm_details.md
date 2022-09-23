@@ -29,7 +29,7 @@ For {ref}`policy_tier_2` and {ref}`policy_tier_3` SREs, a selection of Python an
 Depending on the configuration of the Data Safe Haven, these packages can be provided via either package proxies or package mirrors.
 
 - **Package proxies:** These make on-demand connections to the public package repositories for approved packages. The proxy server has access to all packages available on the upstream repositories but limits downstream access to the packages permitted for an SRE.
-- **Package mirrors**. These synchronise approved packages through a one-way airlock. This provides an additional level of security compared to package proxies. However, the mirrors must be regularly updated, which can take a long time when mirroring a large amount of package data.
+- **Package mirrors:** These synchronise approved packages through a one-way airlock. This provides an additional level of security compared to package proxies. However, the mirrors must be regularly updated, which can take a long time when mirroring a large amount of package data.
 
 {ref}`policy_tier_2` environments can access all packages available from the public PyPI and CRAN repositories.
 {ref}`policy_tier_3` environments can access only a pre-approved subset of PyPI or CRAN packages.
@@ -44,7 +44,7 @@ While the proxy server has access to all packages from the upstream repositories
 
 If the proxy server was compromised from an SRE, an attacker could access all packages available on the upstream package repositories.
 In the Turing's configuration, this would not provide any additional access for {ref}`policy_tier_2` environments, but would allow an attacker from a {ref}`policy_tier_3` environment to install packages not on the limited pre-approved package list.
-However, the upstream package repository download endpoints to not allow any data to be uploaded to them, so an attacker would have to separately compromise the upstream package repositories to be able to egress any data through a compromised package proxy.
+However, the upstream package repository download endpoints do not allow any data to be uploaded to them, so an attacker would have to separately compromise the upstream package repositories to be able to egress any data through a compromised package proxy.
 
 ### Package mirror security
 

@@ -23,7 +23,7 @@ There may be additional **data owner stakeholders** working at the **data owner*
 ```
 
 Next you should identify the {ref}`role_investigator` - the lead researcher with overall responsibility for the project.
-Finally, you should identify a {ref}`role_referee`, who able to provide an independent evaluation of the work package if needed.
+Finally, you should identify a {ref}`role_referee`, who will be able to provide an independent evaluation of the work package if needed.
 
 ## Review data governance arrangements
 

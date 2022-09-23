@@ -17,7 +17,7 @@ roles/index.md
 ```
 
 Many of the important questions we want to answer for society require the use of sensitive data.
-In order to effectively answer these questions, we need productive, secure environments to analyse the data.
+In order to effectively answer these questions, we need productive, secure environments to analyse that data.
 
 We have developed:
 

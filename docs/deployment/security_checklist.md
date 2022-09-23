@@ -42,7 +42,7 @@ The following users will be needed for this checklist
 - **SRE standard user** who is a member of the **SRE A** research users group
   - Create a new user **without** MFA
     - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but **do not** add them to any `SG <SRE ID> Research Users` group.
-    - Visit https://aka.ms/sspr in an incognito browser
+    - Visit [`https://aka.ms/sspr`](https://aka.ms/sspr) in an incognito browser
     - Attempt to login and reset password, but **do not complete MFA** (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
 - {ref}`role_system_manager` who has `Contributor` permissions (or higher) on the underlying Azure subscription
 - **Data provider** who has no accounts on the Safe Haven system

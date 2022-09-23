@@ -70,21 +70,21 @@ Having no restrictions on which IP addresses can connect to the gateway increase
 
 ### User devices:
 
-- **{ref}`policy_tier_3`:** At the Alan Turing Institute we only permit {ref}`Researchers <role_researcher>` to connect to {ref}`policy_tier_3` environments from a device managed by the Alan Turing Institute or a partner organisation. {ref}`Researchers <role_researcher>` must not have administrator access on such devices, the devices must have anti virus software installed and software on the devices must be regularly updated. At the Alan Turing Institute we have a restricted network that only permits access from Turing managed devices. When permitting access to {ref}`policy_tier_3` environments from partner networks we require that they can similarly restrict access to devices they manage.
+- **{ref}`policy_tier_3`:** At the Alan Turing Institute we only permit {ref}`Researchers <role_researcher>` to connect to {ref}`policy_tier_3` environments from a device managed by the Alan Turing Institute or a partner organisation. {ref}`Researchers <role_researcher>` must not have administrator access on such devices, the devices must have anti virus software installed, and software on the devices must be regularly updated. At the Alan Turing Institute we have a restricted network that only permits access from Turing managed devices. When permitting access to {ref}`policy_tier_3` environments from partner networks we require that they can similarly restrict access to devices they manage.
 - **{ref}`policy_tier_0` to {ref}`policy_tier_2`:** {ref}`Researchers <role_researcher>` can connect from their own devices.
 
 ### Physical security:
 
-- **{ref}`policy_tier_3`:** {ref}`Researchers <role_researcher>` must only connect from dedicated medium security spaces with access restricted via card access or other means and the risk of unauthorised people viewing the user's screen must be controlled (e.g. by device location, screen adaptation or desk partitions). At the Alan Turing Institute access is limited to such areas by policy. A {ref}`Researchers <role_researcher>` home or non-Turing office maybe considered a medium security space if sufficient care is taken to avoid unauthorised people, such as family or colleagues, viewing the user's screen.
+- **{ref}`policy_tier_3`:** {ref}`Researchers <role_researcher>` must only connect from dedicated medium security spaces with access restricted via card access or other means and the risk of unauthorised people viewing the user's screen must be controlled (e.g. by device location, screen adaptation or desk partitions). At the Alan Turing Institute access is limited to such areas by policy. A {ref}`Researcher's <role_researcher>` home or non-Turing office may be considered a medium security space if sufficient care is taken to avoid unauthorised people, such as family or colleagues, viewing the user's screen.
 - **{ref}`policy_tier_0` to {ref}`policy_tier_2`:** {ref}`Researchers <role_researcher>` can connect from anywhere.
 
 ### Data transfer from user device
 
-- **{ref}`policy_tier_2` and {ref}`policy_tier_3`:** Copy-and-paste and file transfer between the SRE and the {ref}`Researchers <role_researcher>` device are disabled.
-- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** Copy and paste is enabled between the SRE and the {ref}`Researchers <role_researcher>` device is enabled but file transfer is not possible for non administrators.
+- **{ref}`policy_tier_2` and {ref}`policy_tier_3`:** Copy-and-paste and file transfer between the SRE and the {ref}`Researcher's <role_researcher>` device are disabled.
+- **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** Copy and paste is enabled between the SRE and the {ref}`Researcher's <role_researcher>` device is enabled but file transfer is not possible for non administrators.
 
 ```{note}
-Note that this means that eg. password managers cannot be used to autofill a {ref}`Researchers <role_researcher>`'s SRE login credentials.]
+Note that this means that eg. password managers cannot be used to autofill a {ref}`Researcher's <role_researcher>` SRE login credentials.
 ```
 
 ### Sign-off on bringing data into the environment:
