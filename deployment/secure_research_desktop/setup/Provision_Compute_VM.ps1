@@ -3,7 +3,7 @@ param(
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804', 'Ubuntu2004' or 'Ubuntu2204' [default]")]
     [ValidateSet("Ubuntu1804", "Ubuntu2004", "Ubuntu2204")]
-    [string]$sourceImage = "Ubuntu2204",
+    [string]$sourceImage = "Ubuntu2004",
     [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
     [ValidateSet("default", "Standard_D4_v3", "Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_F4s_v2", "Standard_F8s_v2", "Standard_H8")]
     [string]$vmSize = "default"
