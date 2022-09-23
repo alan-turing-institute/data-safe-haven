@@ -9,13 +9,28 @@ We are particularly motivated to support new and/or anxious collaborators, peopl
 
 To make clear what is expected, we ask all members of the community to conform to the following Code of Conduct.
 
-The Code of Conduct document has been written in 4 parts: [Overview](#1-Overview), [Details](#2-Details), [Reporting](#3-incident-reporting-guidelines) and [Enforcement](#4-enforcement-manual).
+- [1 Introduction](#1-introduction)
+- [2 Code of Conduct](#2-code-of-conduct)
+  - [2.1 Expected Behaviour](#21-expected-behaviour)
+  - [2.2 Unacceptable Behaviour](#22-unacceptable-behaviour)
+  - [2.3 Consequences of Unacceptable Behaviour](#23-consequences-of-unacceptable-behaviour)
+  - [2.4 Feedback](#24-feedback)
+- [3 Incident Reporting Guidelines](#3-incident-reporting-guidelines)
+  - [3.1 Contact points](#31-contact-points)
+  - [3.2 Alternate contact points](#32-alternate-contact-points)
+  - [3.3 What to do if someone is in physical danger](#33-what-to-do-if-someone-is-in-physical-danger)
+  - [3.4 Code of Conduct Enforcement](#34-code-of-conduct-enforcement)
+- [4 Enforcement Manual](#4-enforcement-manual)
+  - [4.1 The Code of Conduct Committee](#41-the-code-of-conduct-committee)
+  - [4.2 Urgent Situations: Acting Unilaterally](#42-urgent-situations-acting-unilaterally)
+  - [4.3 Less-Urgent Situations](#43-less-urgent-situations)
+  - [4.4 Resolutions](#44-resolutions)
+  - [4.5 Conflicts of Interest](#45-conflicts-of-interest)
+- [5 Acknowledgements](#5-acknowledgements)
 
-The last part acknowledges all sources that this Code of Conduct has been built upon.
+## 1 Introduction
 
-## 1 Overview
-
-The Data Safe Haven project is a community-oriented and -led project.
+The Data Safe Haven is a community-oriented and -led project.
 We value the involvement of everyone in the community.
 We are committed to creating a friendly and respectful place for learning, teaching and contributing.
 All participants in our in-person events and online communications are expected to show respect and courtesy to others at all times.
@@ -28,7 +43,7 @@ They can be contacted by [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) [
 
 Reports may be reviewed by other members of the core development team, unless there is a conflict of interest, and will be kept confidential.
 
-## 2 Details
+## 2 Code of Conduct
 
 The Data Safe Haven project team are dedicated to providing a welcoming and supportive environment for all people, regardless of background or identity.
 As such, we do not tolerate behaviour that is disrespectful to our community members or that excludes, intimidates, or causes discomfort to others.
@@ -121,8 +136,8 @@ As the community grows, we will seek to build a larger committee including membe
 
 ### 4.2 Urgent Situations: Acting Unilaterally
 
-If the incident involves physical danger, or involves a threat to anyone's safety (such as threats of violence), any member of the community may -- and should -- act unilaterally to protect the safety of any community member.
-This can include contacting law enforcement (or other local personnel) and speaking on behalf of the Data Safe Haven project team.
+If the incident involves physical danger, or involves a threat to anyone's safety (e.g. threats of violence), any member of the community may -- and should -- act unilaterally to protect the safety of any community member.
+This can include contacting law enforcement (or other local personnel) and speaking on behalf of the Data Safe Haven team.
 
 If the act is ongoing, any community member may act immediately, before reaching consensus, to diffuse the situation.
 In ongoing situations, any member may at their discretion employ any of the tools available in this enforcement manual, including bans and blocks online, or removal from a physical space.
@@ -179,6 +194,6 @@ However, the CoC committee is not required to act on this feedback.
 
 In the event of any conflict of interest such that Martin O'Reilly is not able to evaluate or enforce the reported violation, [INSERT EXTERNAL CONTACT] will take Kirstie's place.
 
-## 5 Acknowledgement
+## 5 Acknowledgements
 
 This Code of Conduct is adapted from the [Turing Way Code of Conduct](https://github.com/alan-turing-institute/the-turing-way/blob/main/CODE_OF_CONDUCT.md), which is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0 CA) license.
