@@ -81,6 +81,7 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
   :alt: SRD connection failure
   :align: center
   ```
+  You can try again by clicking "Reconnect".
   ````
 
 - After verifying using MFA, you might get a security alert like this one. If you do, it is safe to tick the box and to click `Yes` .
