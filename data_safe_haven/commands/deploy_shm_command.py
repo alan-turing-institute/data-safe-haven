@@ -22,7 +22,7 @@ from data_safe_haven.helpers import password
 
 class DeploySHMCommand(LoggingMixin, Command):
     """
-    Deploy a Data Safe Haven using local configuration and project files
+    Deploy a Safe Haven Management component using local configuration files
 
     shm
         {--a|aad-tenant-id= : Tenant ID for the AzureAD where users will be created}
@@ -105,15 +105,16 @@ class DeploySHMCommand(LoggingMixin, Command):
         # Request admin IP addresses if not provided
         aad_tenant_id = self.option("aad-tenant-id")
         while not config.shm.aad_tenant_id:
-            if re.match(r"^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$", aad_tenant_id):
+            if re.match(
+                r"^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$",
+                aad_tenant_id,
+            ):
                 config.shm.aad_tenant_id = aad_tenant_id
             else:
                 self.info(
                     "We need to know the tenant ID for the AzureAD where users will be created, for example '10de18e7-b238-6f1e-a4ad-772708929203'."
                 )
-                aad_tenant_id = self.log_ask(
-                    "AzureAD tenant ID:", None
-                )
+                aad_tenant_id = self.log_ask("AzureAD tenant ID:", None)
 
         # Request admin IP addresses if not provided
         while not config.shm.admin_ip_addresses:

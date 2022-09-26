@@ -19,7 +19,7 @@ from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisi
 
 class DeploySRECommand(LoggingMixin, Command):
     """
-    Deploy a Secure Research Environment using local configuration and project files
+    Deploy a Secure Research Environment using local configuration files
 
     sre
         {name : Name of SRE to deploy}
@@ -48,9 +48,6 @@ class DeploySRECommand(LoggingMixin, Command):
                 config, "SRE", sre_name=self.argument("name")
             )
             infrastructure.deploy()
-            # # infrastructure.update_config()
-            print(f"sre_name: {infrastructure.output('sre_name')}")
-            print(f"sre_index: {infrastructure.output('sre_index')}")
 
             # Add Pulumi output information to the config file
             with open(infrastructure.local_stack_path, "r") as f_stack:
@@ -107,7 +104,7 @@ class DeploySRECommand(LoggingMixin, Command):
         except DataSafeHavenException as exc:
             for (
                 line
-            ) in f"Could not deploy Secure Research Environment.\n{str(exc)}".split(
+            ) in f"Could not deploy Secure Research Environment {self.argument('name')}.\n{str(exc)}".split(
                 "\n"
             ):
                 self.error(line)

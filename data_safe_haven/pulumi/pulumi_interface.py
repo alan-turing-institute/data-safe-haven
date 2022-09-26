@@ -2,6 +2,7 @@
 # Standard library imports
 from contextlib import suppress
 import pathlib
+import shutil
 import subprocess
 import time
 from typing import Any, Dict, Optional
@@ -140,6 +141,7 @@ class PulumiInterface(LoggingMixin):
                         time.sleep(10)
                     else:
                         raise
+            self.stack_.workspace.remove_stack(self.stack_name)
         except automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException("Pulumi destroy failed.") from exc
 
@@ -176,7 +178,9 @@ class PulumiInterface(LoggingMixin):
                 self.info(
                     f"Loading stack <fg=green>{self.stack_name}</> information from config"
                 )
-                stack_yaml = yaml.dump(self.cfg.pulumi.stacks[self.stack_name].toDict(), indent=2)
+                stack_yaml = yaml.dump(
+                    self.cfg.pulumi.stacks[self.stack_name].toDict(), indent=2
+                )
                 with open(self.local_stack_path, "w") as f_stack:
                     f_stack.writelines(stack_yaml)
         except Exception as exc:
@@ -233,6 +237,18 @@ class PulumiInterface(LoggingMixin):
                 f"Pulumi refresh failed.\n{str(exc)}"
             ) from exc
 
+    def remove_workdir(self) -> None:
+        """Remove project directory if it exists."""
+        try:
+            self.info(f"Removing <fg=green>{self.work_dir}</>...", no_newline=True)
+            if self.work_dir.exists():
+                shutil.rmtree(self.work_dir)
+            self.info(f"Removed <fg=green>{self.work_dir}</>.", overwrite=True)
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Removing Pulumi working directory failed.\n{str(exc)}."
+            ) from exc
+
     def secret(self, name: str) -> str:
         """Read a secret from the Pulumi stack."""
         try:
@@ -250,6 +266,7 @@ class PulumiInterface(LoggingMixin):
             self.install_plugins()
             self.refresh()
             self.destroy()
+            self.remove_workdir()
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Tearing down Pulumi infrastructure failed.\n{str(exc)}."
@@ -262,33 +279,3 @@ class PulumiInterface(LoggingMixin):
             self.evaluate(result.summary.result)
         except automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException("Pulumi update failed.") from exc
-
-    # def update_config(self):
-    #     """Add infrastructure settings to config"""
-    #     self.cfg.add_data(
-    #         {
-    #             "pulumi": {
-    #                 "outputs": {
-    #                     "guacamole": {
-    #                         "container_group_name": self.output(
-    #                             "guacamole_container_group_name"
-    #                         ),
-    #                         "postgresql_server_name": self.output(
-    #                             "guacamole_postgresql_server_name"
-    #                         ),
-    #                         "resource_group_name": self.output(
-    #                             "guacamole_resource_group_name"
-    #                         ),
-    #                     },
-    #                     "state": {
-    #                         "resource_group_name": self.output(
-    #                             "state_resource_group_name"
-    #                         ),
-    #                         "storage_account_name": self.output(
-    #                             "state_storage_account_name"
-    #                         ),
-    #                     },
-    #                 }
-    #             }
-    #         }
-    #     )
