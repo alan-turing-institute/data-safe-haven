@@ -146,7 +146,7 @@ Once you have created an image, it can be registered in the image gallery for fu
 ![Powershell: one hour](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=one%20hour) at {{file_folder}} `./deployment/secure_research_desktop/setup`
 
 ```powershell
-PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -vmName -imageName <Image name>
+PS> ./Register_Image_In_Gallery.ps1 -shmId <SHM ID> -imageName <Image name>
 ```
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SRE
