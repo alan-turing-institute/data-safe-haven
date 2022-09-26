@@ -15,6 +15,7 @@ class SHMNetworkingProps:
         fqdn: Input[str],
         resource_group_name: Input[str],
         public_ip_range_admins: Input[Sequence[str]],
+        record_domain_verification: Input[str],
         ip_range_vnet: Optional[Input[Sequence[str]]] = [
             "10.0.0.0",
             "10.0.255.255",
@@ -50,6 +51,7 @@ class SHMNetworkingProps:
         self.ip_range_users = ip_range_users
         self.fqdn = fqdn
         self.public_ip_range_admins = public_ip_range_admins
+        self.record_domain_verification = record_domain_verification
         self.resource_group_name = resource_group_name
 
 
@@ -158,8 +160,23 @@ class SHMNetworkingComponent(ComponentResource):
             zone_name=props.fqdn,
             zone_type="Public",
         )
+        dns_txt_record = network.RecordSet(
+            "dns_txt_record",
+            record_type="TXT",
+            relative_record_set_name="@",
+            resource_group_name=props.resource_group_name,
+            ttl=3600,
+            txt_records=[
+                network.TxtRecordArgs(
+                    value=[props.record_domain_verification],
+                )
+            ],
+            zone_name=dns_zone.name,
+            opts=child_opts,
+        )
 
         # Register outputs
+        self.dns_zone_nameservers = dns_zone.name_servers
         self.subnet_users_iprange = subnet_users_iprange
         self.resource_group_name = Output.from_input(props.resource_group_name)
         self.virtual_network = virtual_network

@@ -1,6 +1,7 @@
 """Command-line application for deploying a Data Safe Haven from project files"""
 # Standard library imports
 import ipaddress
+import re
 
 # Third party imports
 from cleo import Command
@@ -13,6 +14,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
+from data_safe_haven.external import GraphApi
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.pulumi import PulumiInterface
 from data_safe_haven.helpers import password
@@ -23,6 +25,7 @@ class DeploySHMCommand(LoggingMixin, Command):
     Deploy a Data Safe Haven using local configuration and project files
 
     shm
+        {--a|aad-tenant-id= : Tenant ID for the AzureAD where users will be created}
         {--f|fqdn= : Domain that SHM users will belong to}
         {--o|output= : Path to an output log file}
         {--t|timezone= : Timezone to use}
@@ -43,7 +46,14 @@ class DeploySHMCommand(LoggingMixin, Command):
             config = Config(settings.name, settings.subscription_name)
             self.add_missing_values(config)
 
-            # Deploy infrastructure with Pulumi
+            # Add the SHM domain to AzureAD as a custom domain
+            graph_api = GraphApi(
+                tenant_id=config.shm.aad_tenant_id,
+                default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
+            )
+            verification_record = graph_api.add_custom_domain(config.shm.fqdn)
+
+            # Deploy Azure infrastructure
             infrastructure = PulumiInterface(config, "SHM")
             # Set Azure options
             infrastructure.add_option("azure-native:location", config.azure.location)
@@ -54,7 +64,16 @@ class DeploySHMCommand(LoggingMixin, Command):
             infrastructure.add_secret("password-domain-admin", password(20))
             infrastructure.add_secret("password-domain-azure-ad-connect", password(20))
             infrastructure.add_secret("password-domain-computer-manager", password(20))
+            infrastructure.add_secret(
+                "verification-azuread-custom-domain", verification_record
+            )
+            # Deploy with Pulumi
             infrastructure.deploy()
+
+            # Add the SHM domain as a custom domain in AzureAD
+            verification_record = graph_api.verify_custom_domain(
+                config.shm.fqdn, infrastructure.output("fqdn_nameservers")
+            )
 
             # Add Pulumi output information to the config file
             with open(infrastructure.local_stack_path, "r") as f_stack:
@@ -81,6 +100,19 @@ class DeploySHMCommand(LoggingMixin, Command):
             else:
                 fqdn = self.log_ask(
                     "Please enter the domain that SHM users will belong to:", None
+                )
+
+        # Request admin IP addresses if not provided
+        aad_tenant_id = self.option("aad-tenant-id")
+        while not config.shm.aad_tenant_id:
+            if re.match(r"^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$", aad_tenant_id):
+                config.shm.aad_tenant_id = aad_tenant_id
+            else:
+                self.info(
+                    "We need to know the tenant ID for the AzureAD where users will be created, for example '10de18e7-b238-6f1e-a4ad-772708929203'."
+                )
+                aad_tenant_id = self.log_ask(
+                    "AzureAD tenant ID:", None
                 )
 
         # Request admin IP addresses if not provided

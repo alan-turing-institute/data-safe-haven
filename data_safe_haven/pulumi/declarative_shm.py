@@ -52,6 +52,9 @@ class DeclarativeSHM:
             SHMNetworkingProps(
                 fqdn=self.cfg.shm.fqdn,
                 public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
+                record_domain_verification=self.secrets.require(
+                    "verification-azuread-custom-domain"
+                ),
                 resource_group_name=rg_networking.name,
             ),
         )
@@ -106,3 +109,6 @@ class DeclarativeSHM:
                 virtual_network_resource_group_name=networking.resource_group_name,
             ),
         )
+
+        # Export values for later use
+        pulumi.export("fqdn_nameservers", networking.dns_zone_nameservers)

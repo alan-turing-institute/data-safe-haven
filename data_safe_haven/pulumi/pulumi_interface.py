@@ -4,7 +4,7 @@ from contextlib import suppress
 import pathlib
 import subprocess
 import time
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 # Third party imports
 from pulumi import automation
@@ -53,12 +53,12 @@ class PulumiInterface(LoggingMixin):
             )
 
     @property
-    def local_stack_path(self):
+    def local_stack_path(self) -> pathlib.Path:
         """Return the local stack path"""
         return self.work_dir / f"Pulumi.{self.stack_name}.yaml"
 
     @property
-    def env(self):
+    def env(self) -> Dict[str, Any]:
         if not self.env_:
             backend_storage_account_key = self.cfg.storage_account_key(
                 self.cfg.backend.resource_group_name,
@@ -72,7 +72,7 @@ class PulumiInterface(LoggingMixin):
         return self.env_
 
     @property
-    def stack(self):
+    def stack(self) -> automation.Stack:
         """Load the Pulumi stack, creating if needed."""
         if not self.stack_:
             self.info(f"Creating/loading stack <fg=green>{self.stack_name}</>.")
@@ -96,13 +96,13 @@ class PulumiInterface(LoggingMixin):
         """Add a secret configuration option"""
         self.options[name] = (value, True)
 
-    def apply_config_options(self):
+    def apply_config_options(self) -> None:
         """Set Pulumi config options"""
         for name, (value, is_secret) in self.options.items():
             self.ensure_config(name, value, is_secret)
         self.options = {}
 
-    def deploy(self):
+    def deploy(self) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
             self.initialise_workdir()
@@ -117,8 +117,7 @@ class PulumiInterface(LoggingMixin):
                 f"Pulumi deployment failed.\n{str(exc)}."
             ) from exc
 
-
-    def destroy(self):
+    def destroy(self) -> None:
         """Destroy deployed infrastructure."""
         try:
             # Note that the first iteration can fail due to failure to delete container NICs
@@ -144,7 +143,7 @@ class PulumiInterface(LoggingMixin):
         except automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException("Pulumi destroy failed.") from exc
 
-    def ensure_config(self, name, value, secret=False):
+    def ensure_config(self, name: str, value: str, secret: bool = False) -> None:
         """Ensure that config values have been set"""
         try:
             self.stack.get_config(name)
@@ -153,7 +152,7 @@ class PulumiInterface(LoggingMixin):
                 name, automation.ConfigValue(value=value, secret=secret)
             )
 
-    def evaluate(self, result):
+    def evaluate(self, result: str) -> None:
         """Evaluate a Pulumi operation."""
         if result == "succeeded":
             self.info("Pulumi operation <fg=green>succeeded</>.")
@@ -161,7 +160,7 @@ class PulumiInterface(LoggingMixin):
             self.error("Pulumi operation <fg=red>failed</>.")
             raise DataSafeHavenPulumiException("Pulumi operation failed.")
 
-    def initialise_workdir(self):
+    def initialise_workdir(self) -> None:
         """Create project directory if it does not exist and update local stack."""
         try:
             self.info(
@@ -169,7 +168,9 @@ class PulumiInterface(LoggingMixin):
             )
             if not self.work_dir.exists():
                 self.work_dir.mkdir(parents=True)
-            self.info(f"Ensured that <fg=green>{self.work_dir}</> exists.", overwrite=True)
+            self.info(
+                f"Ensured that <fg=green>{self.work_dir}</> exists.", overwrite=True
+            )
             # If stack information is saved in the config file then apply it here
             if "stack" in self.cfg.pulumi.keys():
                 self.info(
@@ -183,11 +184,11 @@ class PulumiInterface(LoggingMixin):
                 f"Initialising Pulumi working directory failed.\n{str(exc)}."
             ) from exc
 
-    def install_plugins(self):
+    def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
         self.stack.workspace.install_plugin("azure-native", "1.60.0")
 
-    def login(self):
+    def login(self) -> None:
         """Login to Pulumi."""
         try:
             env_vars = " ".join([f"{k}={v}" for k, v in self.env.items()])
@@ -206,23 +207,23 @@ class PulumiInterface(LoggingMixin):
                 f"Logging into Pulumi failed.\n{str(exc)}."
             ) from exc
 
-
-    def output(self, name):
+    def output(self, name: str) -> Any:
         return self.stack.outputs()[name].value
 
-    def preview(self):
+    def preview(self) -> None:
         """Preview the Pulumi stack."""
         try:
             with suppress(automation.errors.CommandError):
-                self.info(f"Previewing changes for stack <fg=green>{self.stack.name}</>.")
+                self.info(
+                    f"Previewing changes for stack <fg=green>{self.stack.name}</>."
+                )
                 self.stack.preview(color="always", diff=True, on_output=self.info)
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Pulumi preview failed.\n{str(exc)}."
             ) from exc
 
-
-    def refresh(self):
+    def refresh(self) -> None:
         """Refresh the Pulumi stack."""
         try:
             self.info(f"Refreshing stack <fg=green>{self.stack.name}</>.")
@@ -232,7 +233,7 @@ class PulumiInterface(LoggingMixin):
                 f"Pulumi refresh failed.\n{str(exc)}"
             ) from exc
 
-    def secret(self, name):
+    def secret(self, name: str) -> str:
         """Read a secret from the Pulumi stack."""
         try:
             return self.stack.get_config(name).value
@@ -241,7 +242,7 @@ class PulumiInterface(LoggingMixin):
                 f"Secret '{name}' was not found."
             ) from exc
 
-    def teardown(self):
+    def teardown(self) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
         try:
             self.initialise_workdir()
@@ -254,8 +255,7 @@ class PulumiInterface(LoggingMixin):
                 f"Tearing down Pulumi infrastructure failed.\n{str(exc)}."
             ) from exc
 
-
-    def update(self):
+    def update(self) -> None:
         """Update deployed infrastructure."""
         try:
             result = self.stack.up(color="always", on_output=self.info)

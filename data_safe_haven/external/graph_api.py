@@ -1,12 +1,13 @@
 """Interface to the Microsoft Graph API"""
 # Standard library imports
+from contextlib import suppress
 import datetime
-import json
 import requests
 import time
 from typing import Any, Sequence
 
 # Third party imports
+from dns import resolver
 from msal import ConfidentialClientApplication, PublicClientApplication
 
 # Local imports
@@ -15,8 +16,8 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalException,
     DataSafeHavenMicrosoftGraphException,
 )
-from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.helpers import JSONType
+from data_safe_haven.mixins import LoggingMixin
 
 
 class GraphApi(LoggingMixin):
@@ -64,6 +65,43 @@ class GraphApi(LoggingMixin):
             )
         else:
             self.token = self.create_token_administrator()
+
+    def add_custom_domain(self, domain_name: str) -> str:
+        """Add AzureAD custom domain
+
+        Returns:
+            str: Registration TXT record
+
+        Raises:
+            DataSafeHavenMicrosoftGraphException if domain could not be added
+        """
+        try:
+            # Create the AzureAD custom domain if it does not already exist
+            domains = self.read_domains()
+            domain_exists = any([domain["id"] == domain_name for domain in domains])
+            if not domain_exists:
+                response = self.http_post(
+                    f"{self.base_endpoint}/domains",
+                    json={"id": domain_name},
+                )
+            # Get the DNS verification records for the custom domain
+            response = self.http_get(
+                f"{self.base_endpoint}/domains/{domain_name}/verificationDnsRecords"
+            )
+            txt_records = [
+                record["text"]
+                for record in response.json()["value"]
+                if record["recordType"] == "Txt"
+            ]
+            if not txt_records:
+                raise DataSafeHavenMicrosoftGraphException(
+                    f"Could not retrieve verification DNS records for {domain_name}."
+                )
+            return txt_records[0]
+        except Exception as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not register domain '{domain_name}'.\n{str(exc)}"
+            ) from exc
 
     def add_user_to_group(
         self,
@@ -322,7 +360,7 @@ class GraphApi(LoggingMixin):
                     f"Could not initiate device login for scopes {self.default_scopes}."
                 )
             self.info(
-                f"Making changes to Azure Active Directory needs administrator approval."
+                f"Interacting with Azure Active Directory needs administrator approval."
             )
             self.info(
                 "Please sign-in with <fg=green>global administrator</> credentials for the Azure Active Directory where your users are stored."
@@ -758,4 +796,58 @@ class GraphApi(LoggingMixin):
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not remove user '{username}' from group '{group_name}'.\n{str(exc)}"
+            ) from exc
+
+    def verify_custom_domain(
+        self, domain_name: str, expected_nameservers: Sequence[str]
+    ) -> None:
+        """Verify AzureAD custom domain
+
+        Raises:
+            DataSafeHavenMicrosoftGraphException if domain could not be verified
+        """
+        try:
+            # Create the AzureAD custom domain if it does not already exist
+            domains = self.read_domains()
+            if not any([d["id"] == domain_name for d in domains]):
+                raise DataSafeHavenMicrosoftGraphException(
+                    f"Domain {domain_name} has not been added to AzureAD."
+                )
+            # Wait until domain delegation is complete
+            if not any([(d["id"] == domain_name and d["isVerified"]) for d in domains]):
+                while True:
+                    # Check whether all expected nameservers are active
+                    with suppress(resolver.NXDOMAIN):
+                        active_nameservers = [
+                            str(ns) for ns in resolver.resolve(domain_name, "NS")
+                        ]
+                        self.info("Checking domain verification status.")
+                        if all(
+                            [
+                                any([nameserver in n for n in active_nameservers])
+                                for nameserver in expected_nameservers
+                            ]
+                        ):
+
+                            break
+                    # Prompt user to set domain delegation manually
+                    self.info(
+                        f"To proceed you will need to delegate <fg=green>{domain_name}</> to Azure (https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain)"
+                    )
+                    self.info(
+                        f"You will need to delegate to the following nameservers: {', '.join([f'<fg=green>{n}</>' for n in expected_nameservers])}"
+                    )
+                    self.log_confirm(
+                        f"Have you delegated {domain_name} to the Azure nameservers above?",
+                        True,
+                    )
+                # Send verification request
+                response = self.http_post(
+                    f"{self.base_endpoint}/domains/{domain_name}/verify"
+                )
+                if not response.json()["isVerified"]:
+                    raise DataSafeHavenMicrosoftGraphException(response.content)
+        except Exception as exc:
+            raise DataSafeHavenMicrosoftGraphException(
+                f"Could not verify domain '{domain_name}'.\n{str(exc)}"
             ) from exc
