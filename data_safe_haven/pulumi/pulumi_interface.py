@@ -172,11 +172,11 @@ class PulumiInterface(LoggingMixin):
                 f"Ensured that <fg=green>{self.work_dir}</> exists.", overwrite=True
             )
             # If stack information is saved in the config file then apply it here
-            if "stack" in self.cfg.pulumi.keys():
+            if self.stack_name in self.cfg.pulumi.stacks.keys():
                 self.info(
                     f"Loading stack <fg=green>{self.stack_name}</> information from config"
                 )
-                stack_yaml = yaml.dump(self.cfg.pulumi.stack.toDict(), indent=2)
+                stack_yaml = yaml.dump(self.cfg.pulumi.stacks[self.stack_name].toDict(), indent=2)
                 with open(self.local_stack_path, "w") as f_stack:
                     f_stack.writelines(stack_yaml)
         except Exception as exc:

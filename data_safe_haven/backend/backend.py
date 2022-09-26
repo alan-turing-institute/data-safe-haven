@@ -1,4 +1,4 @@
-"""Azure backend for a Data Safe Haven environment"""
+"""Azure backend for a Data Safe Haven deployment"""
 # Standard library imports
 from typing import Any, Optional
 
@@ -10,7 +10,7 @@ from data_safe_haven.external import AzureApi
 
 
 class Backend(LoggingMixin):
-    """Azure backend for a Data Safe Haven environment"""
+    """Azure backend for a Data Safe Haven deployment"""
 
     def __init__(
         self, settings: DotFileSettings, *args: Optional[Any], **kwargs: Optional[Any]

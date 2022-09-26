@@ -55,7 +55,7 @@ class DeploySRECommand(LoggingMixin, Command):
             # Add Pulumi output information to the config file
             with open(infrastructure.local_stack_path, "r") as f_stack:
                 stack_yaml = yaml.safe_load(f_stack)
-            config.pulumi.stack = stack_yaml
+            config.pulumi.stacks[infrastructure.stack_name] = stack_yaml
 
             # Upload config to blob storage
             config.upload()
