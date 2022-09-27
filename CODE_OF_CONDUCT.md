@@ -128,6 +128,7 @@ The Code of Conduct committee is:
 - [Martin O'Reilly](https://www.turing.ac.uk/people/researchers/martin-oreilly) - [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) (**CoC lead**)
 - [Kirstie Whitaker](https://www.turing.ac.uk/people/researchers/kirstie-whitaker) - [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk) (_currently on maternity leave_)
 - [Arielle Bennett](https://www.turing.ac.uk/people/programme-management/arielle-bennett) - [abennett@turing.ac.uk](mailto:abennett@turing.ac.uk) (_replacement contact until Kirstie returns_)
+- [Harriet McCann](https://www.turing.ac.uk/people/business-team/harriet-mccann) - [hmccann@turing.ac.uk](mailto:hmccann@turing.ac.uk) (_external project contact_)
 
 As the community grows, we will seek to build a larger committee including members outside of the core development team.
 
