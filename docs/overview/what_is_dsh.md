@@ -4,7 +4,7 @@ Secure environments for analysis of sensitive datasets are essential for researc
 These environments are variously known as "data safe havens" or "trusted research environments" (TREs).
 
 It is essential that sensitive or confidential datasets are kept secure.
-This is helps ensure that the data analysis complies with data protection laws.
+This helps ensure that the analysis of such data complies with data protection laws.
 It also forms part of the "social licence" to carry out these analyses ethically and for worthwhile reasons.
 
 Creating and operating environments which are safe, efficient, productive and collaborative is a difficult task.

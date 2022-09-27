@@ -6,7 +6,7 @@
 :hidden:
 ```
 
-The Dataset Provider is the organisation who provided the dataset under analysis.
+The Dataset Provider is the organisation that provided the dataset under analysis.
 The **Dataset Provider Representative** is the contact person chosen by that organisation to liaise with the institution hosting the Data Safe Haven.
 They must be authorised to act on behalf of the Dataset Provider, especially when decisions need to be made about accessing the dataset.
 

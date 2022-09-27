@@ -3,7 +3,7 @@
 # Managing costs
 
 ```{important}
-This document assumes that you already have access a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
+This document assumes that you already have access to a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
 When and SHM and/or SRE is not being used, it can be cost-efficient to shut it down in order to save on some of the ongoing running costs.
@@ -33,7 +33,7 @@ PS> ./SHM_Manage_VMs.ps1 -shmId <shm id> -Action EnsureStopped -Group All
 
 ## {{boot}} Start up an SHM or SRE
 
-If you need to reboot an SHM or SRE that is not running, you can use the same scripts youused to shut them down, but changing the `-Action` flag to `EnsureStopped`, see below.
+If you need to reboot an SHM or SRE that is not running, you can use the same scripts you used to shut them down, but changing the `-Action` flag to `EnsureStopped`, see below.
 
 On your **deployment machine**.
 

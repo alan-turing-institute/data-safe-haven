@@ -48,7 +48,7 @@ The set of controls applied at the Alan Turing Institute are discussed here, tog
 
 - Medium security research spaces control the possibility of unauthorised viewing.
 - Card access or other means of restricting entry to only known researchers (such as the signing in of guests on a known list) is required.
-- Screen adaptations or desk partitions can be adopted in open-plan spaces if there is a high risk of unauthorised people viewing the user's screen.
+- Screen adaptations or desk partitions should be adopted in open-plan spaces if there is a high risk of unauthorised people viewing the user's screen.
 - Firewall rules for the SREs only permit access from `Restricted` network IP ranges corresponding to these research spaces.
 
 ### Implication:
@@ -89,7 +89,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 - Access to the ingress volume is restricted to a limited range of IP addresses associated with the **Dataset Provider** and the **host organisation**.
 - The {ref}`role_data_provider_representative` receives a write-only upload token.
   - This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data.
-  - This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.
+  - This provides protection against an unauthorised party accessing the data, even if they gain access to the upload token.
 - The upload token expires after a time-limited upload window.
 - The upload token is transferred to the Dataset Provider via a secure email system.
 

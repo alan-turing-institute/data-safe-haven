@@ -11,7 +11,7 @@ The first stage of egressing outputs is to classify them.
 This follows the {ref}`same workflow <process_data_classification>` as for {ref}`data ingress <process_data_ingress>`.
 
 ```{hint}
-Get the same people who ran the ingress classification process to do this - data provider representive, investigator and referee (optional).
+Get the same people who ran the ingress classification process to do this - {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (optional).
 ```
 
 ```{note}

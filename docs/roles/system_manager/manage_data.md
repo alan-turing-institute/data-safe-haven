@@ -3,7 +3,7 @@
 # Managing data ingress and egress
 
 ```{important}
-This document assumes that you already have access a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
+This document assumes that you already have access to a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
 (roles_system_manager_data_ingress)=
@@ -20,7 +20,7 @@ The following steps show how to generate a temporary write-only upload token tha
 
 - In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
 - Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
-- Click `Networking` under `Settings` and paste the data providers IP address as one of those allowed under the `Firewall` header, then hit the save icon in the top left
+- Click `Networking` under `Settings` and paste the data provider's IP address as one of those allowed under the `Firewall` header, then hit the save icon in the top left
 - From the `Overview` tab, click the link to `Containers` (in the middle of the page)
 - Click `ingress`
 - Click `Shared access signature` under `Settings` and do the following:
@@ -28,7 +28,7 @@ The following steps show how to generate a temporary write-only upload token tha
     - `Write`
     - `List`
   - Set a 24 hour time window in the `Start and expiry date/time` (or an appropriate length of time)
-  - Leave everything else as default click `Generate SAS token and URL`
+  - Leave everything else as default and click `Generate SAS token and URL`
   - Copy the `Blob SAS URL`
 - Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
 - The data provider should now be able to upload data by following {ref}`these instructions <process_data_ingress>`
@@ -248,7 +248,7 @@ On your **deployment machine**.
 
 ## {{package}} Updating allowed repository packages
 
-For a {ref}`policy_tier_3` SRE only the packages named in the allowlists at `environment_configs/package_lists/` can be installed by users.
+For a {ref}`policy_tier_3` SRE, only the packages named in the allowlists at `environment_configs/package_lists/` can be installed by users.
 
 To update the allowlists on an SHM, you should use the `SHM_Package_Repository_Update_Allowlists.ps1` script.
 
