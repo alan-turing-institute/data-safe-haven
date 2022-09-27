@@ -1,9 +1,12 @@
 # Code of Conduct
 
 We value the participation of every member of our community and want to ensure that every contributor has an enjoyable and fulfilling experience.
-Accordingly, everyone who participates in the Safe4 Haven project is expected to show respect and courtesy to other community members at all times.
+Accordingly, everyone who participates in the Data Safe Haven project is expected to show respect and courtesy to other community members at all times.
 
-Martin O'Reilly, as PI of this project, and all project members, are dedicated to a **_harassment-free experience for everyone_**, regardless of gender, gender identity and expression, sexual orientation, disability, physical appearance, body size, race, age or religion. **We do not tolerate harassment by and/or of members of our community in any form**.
+All project members, are dedicated to a ***harassment-free experience for everyone***, regardless of gender, gender identity and expression, sexual orientation, disability, physical appearance, body size, race, age or religion.
+**We do not tolerate harassment by and/or of members of our community in any form**.
+
+We are particularly motivated to support new and/or anxious collaborators, people who are looking to learn and develop their skills, and anyone who has experienced discrimination in the past.
 
 To make clear what is expected, we ask all members of the community to conform to the following Code of Conduct.
 
@@ -34,22 +37,19 @@ We are committed to creating a friendly and respectful place for learning, teach
 All participants in our in-person events and online communications are expected to show respect and courtesy to others at all times.
 
 To make clear what is expected, everyone participating in activities associated with the Data Safe Haven project is required to conform to this Code of Conduct.
-This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in-person meetings and workshops, and communications online via GitHub.
+This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in-person meetings and workshops, and communications online via GitHub and the Slack workspace.
 
-The lead investigator of the Data Safe Haven - Martin O'Reilly - is responsible for enforcing the Code of Conduct.
-He can be contacted by emailing [moreilly@turing.ac.uk](mailto:moeilly@turing.ac.uk).
-You may contact [Kirstie Whitaker](mailto:kwhitaker@turing.ac.uk) or [Ben Murton](mailto:bmurton@turing.ac.uk) if you would prefer not to contact Martin.
-
+The [Code of Conduct Committee](#41-the-code-of-conduct-committee) are responsible for enforcing the Code of Conduct.
 Reports may be reviewed by other members of the core development team, unless there is a conflict of interest, and will be kept confidential.
 
 ## 2 Code of Conduct
 
-The Data Safe Haven team are dedicated to providing a welcoming and supportive environment for all people, regardless of background or identity.
+The Data Safe Haven project team are dedicated to providing a welcoming and supportive environment for all people, regardless of background or identity.
 As such, we do not tolerate behaviour that is disrespectful to our community members or that excludes, intimidates, or causes discomfort to others.
 We do not tolerate discrimination or harassment based on characteristics that include, but are not limited to: gender identity and expression, sexual orientation, disability, physical appearance, body size, citizenship, nationality, ethnic or social origin, pregnancy, familial status, veteran status, genetic information, religion or belief (or lack thereof), membership of a national minority, property, age, education, socio-economic status, technical choices, and experience level.
 
 Everyone who participates in the Data Safe Haven project activities is required to conform to this Code of Conduct.
-This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in person focus groups and workshops, and communications online via GitHub.
+This Code of Conduct applies to all spaces managed by the Data Safe Haven project including, but not limited to, in person meetings and workshops, and communications online via GitHub and the Slack workspace.
 By participating, contributors indicate their acceptance of the procedures by which the Data Safe Haven project core development team resolves any Code of Conduct incidents, which may include storage and processing of their personal information.
 
 ### 2.1 Expected Behaviour
@@ -95,19 +95,17 @@ If a participant engages in behaviour that violates this Code of Conduct, any me
 ### 2.4 Feedback
 
 This Code of Conduct is not intended as a static set of rules by which everyone must abide.
-Rather, you are invited to make suggestions for updates or clarifications by contacting Martin O'Reilly at [moeilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) or by making a pull request to this document on GitHub.
+Rather, you are invited to make suggestions for updates or clarifications by making a pull request to this document on GitHub.
 
 ## 3 Incident Reporting Guidelines
 
 ### 3.1 Contact points
 
-If you feel able to, please contact Martin O'Reilly by email at [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk).
+If you feel able to, please contact one of the [Code of Conduct Committee](#41-the-code-of-conduct-committee) members by email.
 
 ### 3.2 Alternate contact points
 
-If you do not feel comfortable contacting Martin O'Reilly, please report an incident to Kirstie Whitaker by email at [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk).
-
-Alternatively, if you would like to contact someone outside of the core development team, please contact Ben Murton by email at [bmurton@turing.ac.uk](mailto:bmurton@turing.ac.uk).
+We are still looking for a contact outside of the core development team, please get in touch if you're interested.
 
 ### 3.3 What to do if someone is in physical danger
 
@@ -127,9 +125,9 @@ Enforcement of the Code of Conduct should be respectful and not include any hara
 
 The Code of Conduct committee is:
 
-- Martin O'Reilly: moreilly@turing.ac.uk
-- Kirstie Whitaker: kwhitaker@turing.ac.uk
-- Ben Murton: bmurton@turing.ac.uk
+- [Martin O'Reilly](https://www.turing.ac.uk/people/researchers/martin-oreilly) - [moreilly@turing.ac.uk](mailto:moreilly@turing.ac.uk) (**CoC lead**)
+- [Kirstie Whitaker](https://www.turing.ac.uk/people/researchers/kirstie-whitaker) - [kwhitaker@turing.ac.uk](mailto:kwhitaker@turing.ac.uk) (_currently on maternity leave_)
+- [Arielle Bennett](https://www.turing.ac.uk/people/programme-management/arielle-bennett) - [abennett@turing.ac.uk](mailto:abennett@turing.ac.uk) (_replacement contact until Kirstie returns_)
 
 As the community grows, we will seek to build a larger committee including members outside of the core development team.
 
@@ -141,7 +139,7 @@ This can include contacting law enforcement (or other local personnel) and speak
 If the act is ongoing, any community member may act immediately, before reaching consensus, to diffuse the situation.
 In ongoing situations, any member may at their discretion employ any of the tools available in this enforcement manual, including bans and blocks online, or removal from a physical space.
 
-In situations where an individual community member acts unilaterally, they must inform Martin O'Reilly as soon as possible, and report their actions for review within 24 hours.
+In situations where an individual community member acts unilaterally, they must inform [the Code of Conduct Committee](#41-the-code-of-conduct-committee) as soon as possible, and report their actions for review within 24 hours.
 
 ### 4.3 Less-Urgent Situations
 
@@ -164,8 +162,8 @@ In the event that a resolution can't be determined in that time, a member of the
 ### 4.4 Resolutions
 
 The CoC committee will seek to agree on a resolution by consensus of all members investigating the report in question.
-If the committee cannot reach consensus and deadlocks for over a week, Martin O'Reilly, as lead investigator of the Data Safe Haven project, will break the tie.
-If Martin is unable to take part in the discussion due to a conflict of interest, Dr Ben Murton, as an external member of the CoC committee, will make the decision.
+If the committee cannot reach consensus and deadlocks for over a week, the CoC lead, will break the tie.
+If the CoC lead is unable to take part in the discussion due to a conflict of interest, an external contact will be sought.
 
 Possible responses may include:
 
@@ -173,11 +171,17 @@ Possible responses may include:
 - A request for a verbal or written apology, public or private, from a community member.
 - A public announcement clarifying community responsibilities under the Code of Conduct.
 - Nothing, if the issue reported is not a violation or outside of the scope of this Code of Conduct.
-- A private in-person conversation between a member of the research team and the individual(s) involved. In this case, the person who has the conversation will provide a written summary for record keeping.
-- A private written reprimand from a member of the research team to the individual(s) involved. In this case, the research team member will deliver that reprimand to the individual(s) over email, cc'ing Martin O'Reilly for record keeping.
-- A public announcement of an incident, ideally in the same venue that the violation occurred (i.e. on the listserv for a listserv violation; GitHub for a GitHub violation, etc.). The committee may choose to publish this message elsewhere for posterity.
-- An imposed "time out" from online spaces. Martin O'Reilly will communicate this "time out" to the individual(s) involved.
-- A permanent or temporary ban from some or all Data Safe Haven project spaces (GitHub, in-person events etc). The research team will maintain records of all such bans so that they may be reviewed in the future, extended to a Code of Conduct safety team as it is built, or otherwise maintained. If a member of the community is removed from an event they will not be reimbursed for any part of the event that they miss.
+- A private in-person conversation between a member of the research team and the individual(s) involved.
+  In this case, the person who has the conversation will provide a written summary for record keeping.
+- A private written reprimand from a member of the research team to the individual(s) involved.
+  In this case, the research team member will deliver that reprimand to the individual(s) over email, cc'ing [the Code of Conduct Committee](#41-the-code-of-conduct-committee) for record keeping.
+- A public announcement of an incident, ideally in the same venue that the violation occurred (such as on the listserv for a listserv violation; and GitHub for a GitHub violation).
+  The committee may choose to publish this message elsewhere for posterity.
+- An imposed "time out" from online spaces.
+  [The Code of Conduct Committee](#41-the-code-of-conduct-committee) will communicate this "time out" to the individual(s) involved.
+- A permanent or temporary ban from some or all Data Safe Haven project spaces (like on GitHub, Slack, online calls or in-person events).
+  The research team will maintain records of all such bans so that they may be reviewed in the future, extended to a Code of Conduct safety team as it is built, or otherwise maintained.
+  If a member of the community is removed from an event they will not be reimbursed for any part of the event that they miss.
 
 Once a resolution is agreed upon, but before it is enacted, a member of the CoC committee will contact the original reporter and any other affected parties and explain the proposed resolution.
 The CoC committee member will ask if this resolution is acceptable, and must note feedback for the record.
@@ -185,19 +189,8 @@ However, the CoC committee is not required to act on this feedback.
 
 ### 4.5 Conflicts of Interest
 
-In the event of any conflict of interest such that Martin is not able to evaluate or enforce the reported violation, Ben Murton will take Martin's place.
+In the event of any conflict of interest such that one or more members of the [the Code of Conduct Committee](#41-the-code-of-conduct-committee) are unable to evaluate or enforce the reported violation, an external contact will take their place.
 
-## 5. Acknowledgements
+## 5 Acknowledgements
 
-This project has adopted this Code of Conduct from the [Turing Way Code of Conduct](https://github.com/alan-turing-institute/the-turing-way/blob/main/CODE_OF_CONDUCT.md), which is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0 CA) license, which means you are free to share and adapt the work so long as the attribution to Kirstie Whitaker and the Turing Way community is retained, along with the attribution to the Carpentries, the Alan Turing Institute Data Study Group organising team, Citizen Lab and the other resources.
-
-The Turing Way Code of Conduct was adapted from the [Carpentries Code of Conduct](https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html) with sections from the [Alan Turing Institute Data Study Group Code of Conduct](https://docs.google.com/document/d/1iv2cizNPUwtEhHqaezAzjIoKkaIX02f7XbYmFMXDTGY/edit).
-Both are used under the creative commons attribution license.
-
-The Carpentries Code of Conduct was adapted from guidelines written by the [Django Project](https://www.djangoproject.com/conduct/enforcement-manual/), which was itself based on the [Ada Initiative template](http://geekfeminism.wikia.com/wiki/Conference_anti-harassment/Responding_to_reports) and the [PyCon 2013 Procedure for Handling Harassment Incidents](https://us.pycon.org/2013/about/code-of-conduct/harassment-incidents/).
-Contributors to the Carpentries Code of Conduct were: Adam Obeng, Aleksandra Pawlik, Bill Mills, Carol Willing, Erin Becker, Hilmar Lapp, Kara Woo, Karin Lagesen, Pauline Barmby, Sheila Miguez, Simon Waldman, Tracy Teal.
-
-The Turing Institute Data Study Group Code of Conduct was heavily adapted from the [Citizen Lab Summer Institute 2017 Code of Conduct](https://citizenlab.ca/summerinstitute/codeofconduct.html) and used under a CC BY 2.5 CA license.
-Citizen Lab based their Code of Conduct on the [xvzf Code of Conduct](http://xvzf.io/), the [Contributor Covenant](http://contributor-covenant.org/), the [Django Code of Conduct and Reporting Guide](https://www.djangoproject.com/conduct/) and we are also grateful for [this guidance from Ada Initiative](http://geekfeminism.wikia.com/wiki/Conference_anti-harassment/Responding_to_reports).
-
-We really appreciate the work that all of the communities linked above have put into creating such a well considered process.
+This Code of Conduct is adapted from the [Turing Way Code of Conduct](https://github.com/alan-turing-institute/the-turing-way/blob/main/CODE_OF_CONDUCT.md), which is licensed under a [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0 CA) license.
