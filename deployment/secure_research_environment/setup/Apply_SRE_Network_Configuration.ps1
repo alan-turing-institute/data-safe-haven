@@ -5,9 +5,12 @@ param(
     [string]$sreId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
 
@@ -39,7 +42,11 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     Add-LogMessage -Level Info "Ensure Guacamole server is bound to correct NSG..."
     $remoteDesktopSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.remoteDesktop.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
     $nsgs["remoteDesktop"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.remoteDesktop.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-    $remoteDesktopSubnet = Set-SubnetNetworkSecurityGroup -Subnet $remoteDesktopSubnet -NetworkSecurityGroup $nsgs["remoteDesktop"] -ErrorAction Stop
+    if ($remoteDesktopSubnet.NetworkSecurityGroup.Id -eq $nsgs["remoteDesktop"].Id) {
+        Add-LogMessage -Level Info "Guacamole server is bound to NSG '$($nsgs["remoteDesktop"].Name)'"
+    } else {
+        Add-LogMessage -Level Fatal "Guacamole server is not bound to NSG '$($nsgs["remoteDesktop"].Name)'!"
+    }
 } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
     # RDS gateway
     Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
@@ -57,19 +64,31 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
 Add-LogMessage -Level Info "Ensure database servers are bound to correct NSG..."
 $databaseSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.databases.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
 $nsgs["databases"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-$databaseSubnet = Set-SubnetNetworkSecurityGroup -Subnet $databaseSubnet -NetworkSecurityGroup $nsgs["databases"] -ErrorAction Stop
+if ($databaseSubnet.NetworkSecurityGroup.Id -eq $nsgs["databases"].Id) {
+    Add-LogMessage -Level Info "Database servers are bound to NSG '$($nsgs["databases"].Name)'"
+} else {
+    Add-LogMessage -Level Fatal "Database servers are not bound to NSG '$($nsgs["databases"].Name)'!"
+}
 
 # Webapp servers
 Add-LogMessage -Level Info "Ensure webapp servers are bound to correct NSG..."
 $webappsSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.webapps.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
 $nsgs["webapps"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.webapps.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-$webappsSubnet = Set-SubnetNetworkSecurityGroup -Subnet $webappsSubnet -NetworkSecurityGroup $nsgs["webapps"] -ErrorAction Stop
+if ($webappsSubnet.NetworkSecurityGroup.Id -eq $nsgs["webapps"].Id) {
+    Add-LogMessage -Level Info "Webapp servers are bound to NSG '$($nsgs["webapps"].Name)'"
+} else {
+    Add-LogMessage -Level Fatal "Webapp servers are not bound to NSG '$($nsgs["webapps"].Name)'!"
+}
 
 # SRDs
 Add-LogMessage -Level Info "Ensure SRDs are bound to correct NSG..."
 $computeSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.compute.name -VirtualNetworkName $config.sre.network.vnet.name -ResourceGroupName $config.sre.network.vnet.rg
 $nsgs["compute"] = Get-AzNetworkSecurityGroup -Name $config.sre.network.vnet.subnets.compute.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-$computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $nsgs["compute"] -ErrorAction Stop
+if ($computeSubnet.NetworkSecurityGroup.Id -eq $nsgs["compute"].Id) {
+    Add-LogMessage -Level Info "SRDs are bound to NSG '$($nsgs["compute"].Name)'"
+} else {
+    Add-LogMessage -Level Fatal "SRDs are not bound to NSG '$($nsgs["compute"].Name)'!"
+}
 
 # Update remote desktop server NSG rules
 if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
@@ -109,7 +128,12 @@ Add-LogMessage -Level Info "Ensuring SRE is peered to correct package repository
 if (-not $config.sre.repositories.network.name) {
     Add-LogMessage -Level InfoSuccess "No package repository network is configured for SRE $($config.sre.id) [tier $($config.sre.tier)]. Nothing to do."
 } else {
-    Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name -Vnet1ResourceGroup $config.sre.network.vnet.rg -Vnet1SubscriptionName $config.sre.subscriptionName -Vnet2Name $config.sre.repositories.network.name -Vnet2ResourceGroup $config.shm.network.vnet.rg -Vnet2SubscriptionName $config.shm.subscriptionName
+    Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name `
+                    -Vnet1ResourceGroupName $config.sre.network.vnet.rg `
+                    -Vnet1SubscriptionName $config.sre.subscriptionName `
+                    -Vnet2Name $config.sre.repositories.network.name `
+                    -Vnet2ResourceGroupName $config.shm.network.vnet.rg `
+                    -Vnet2SubscriptionName $config.shm.subscriptionName
 }
 
 
@@ -118,7 +142,7 @@ if (-not $config.sre.repositories.network.name) {
 # Set PyPI and CRAN locations on the SRD
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
-$repositoryFacingVms = Get-AzVM | Where-Object { ($_.ResourceGroupName -eq $config.sre.srd.rg) -or ($_.Name -eq $config.sre.webapps.cocalc.vmName) }
+$repositoryFacingVms = Get-AzVM | Where-Object { ($_.ResourceGroupName -eq $config.sre.srd.rg) -or (($_.ResourceGroupName -eq $config.sre.webapps.rg) -and ($_.Name -eq $config.sre.webapps.cocalc.vmName)) }
 foreach ($VM in $repositoryFacingVms) {
     Add-LogMessage -Level Info "Ensuring that PyPI and CRAN locations are set correctly on $($VM.Name)"
     $params = @{
@@ -134,7 +158,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Block external DNS queries
 # --------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot Configure_External_DNS_Queries.ps1) -shmId $shmId -sreId $sreId"
+Invoke-Expression -Command "$(Join-Path $PSScriptRoot "Configure_External_DNS_Queries.ps1") -shmId $shmId -sreId $sreId"
 
 
 # Switch back to original subscription

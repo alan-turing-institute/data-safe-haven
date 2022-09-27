@@ -15,7 +15,9 @@ if (-not $(Get-Module -ListAvailable -Name Az)) { Install-Package Az -Force }
 if (-not $(Get-Module -ListAvailable -Name Communary.PASM)) { Install-Package Communary.PASM -Force }
 
 # Import modules
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
 Import-Module Communary.PASM -ErrorAction Stop
 Import-Module $PSScriptRoot/../deployment/common/Logging -Force -ErrorAction Stop
 

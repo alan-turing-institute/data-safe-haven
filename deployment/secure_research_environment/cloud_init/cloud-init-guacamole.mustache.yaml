@@ -1,10 +1,48 @@
 #cloud-config
 
 write_files:
+  - path: "/etc/apt/apt.conf.d/00proxy"
+    permissions: "0444"
+    content: |
+      Acquire::http::Proxy "http://{{shm.monitoring.updateServers.linux.ip}}:8000";
+
   - path: "/etc/audit/rules.d/audit.rules"
     permissions: "0400"
     content: |
       {{audit.rules}}
+
+  - path: "/etc/clamav/clamd.conf"
+    permissions: "0644"
+    append: true
+    content: |
+      {{clamd.conf}}
+
+  - path: "/etc/cron.d/clamav-freshclam"
+    permissions: "0644"
+    content: |
+      # Run every day at a fixed time
+      {{shm.monitoring.updateServers.schedule.daily_definition_updates.minute}} {{shm.monitoring.updateServers.schedule.daily_definition_updates.hour}} * * * freshclam
+
+  - path: "/etc/cron.d/ldap-db-sync"
+    permissions: "0644"
+    content: |
+      # Run user synchronisation every 10 minutes
+      */10 * * * * root /opt/pg-ldap-sync/synchronise_database.sh
+
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
 
   - path: "/opt/guacamole/docker-compose.yaml"
     permissions: "0400"
@@ -57,15 +95,16 @@ ntp:
 # Configure apt repositories
 apt:
   preserve_sources_list: true
-  sources:
-    docker.list:
-      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
 
 # Install necessary apt packages
 packages:
   - auditd
-  - docker-ce
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
+  - docker.io
   - docker-compose
   - gcc
   - libpq-dev
@@ -87,19 +126,37 @@ runcmd:
   - DEBIAN_FRONTEND=noninteractive
   - export DEBIAN_FRONTEND
 
-  # Install pg-ldap-sync
-  - echo ">=== Installing pg-ldap-sync... ===<"
-  - gem install pg-ldap-sync
-
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
   - apt-get -y autoremove
   - apt-get clean
+  - apt --fix-broken install
 
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
   - systemctl start auditd
   - systemctl enable auditd
+  - sleep 20
+  - systemctl status auditd
+
+  # Configure ClamAV
+  - echo ">=== Configure ClamAV... ===<"
+  # Allow unlimited recursion when scanning
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  # Enable ClamAV daemon
+  - systemctl enable clamav-daemon
+  # Enable ClamAV scan on access
+  - systemctl enable clamav-clamonacc
+  # Enable ClamAV daily scan
+  - systemctl enable clamav-clamdscan.timer
+  # Disable ClamAV database update on boot
+  - systemctl stop clamav-freshclam
+  - systemctl disable clamav-freshclam
+
+  # Install pg-ldap-sync
+  - echo ">=== Installing pg-ldap-sync... ===<"
+  - gem install pg-ldap-sync
 
   # Ensure that Docker is running and enabled at startup
   - echo ">=== Configuring Docker... ===<"
@@ -148,12 +205,6 @@ runcmd:
   # Add initial set of LDAP users with pg-ldap-sync
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"
   - /opt/pg-ldap-sync/synchronise_database.sh
-
-  # Schedule a sync every 5 minutes
-  - echo ">=== Scheduling database sync every 5 minutes... ===<"
-  - echo "*/5 * * * * root /opt/pg-ldap-sync/synchronise_database.sh" >> /etc/crontab
-  - tail -n 1 /etc/crontab
-
 
 # Shutdown so that we can tell when the job has finished by polling the VM state
 power_state:

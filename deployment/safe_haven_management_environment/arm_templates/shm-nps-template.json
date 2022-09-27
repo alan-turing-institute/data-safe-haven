@@ -1,129 +1,146 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "Administrator_User": {
-            "type": "string"
-        },
-        "Administrator_Password": {
-            "type": "securestring"
-        },
-        "BootDiagnostics_Account_Name": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter name of storage account used for boot diagnostics"
-            }
-        },
-        "Domain_Join_Password": {
+        "administratorPassword": {
             "type": "securestring",
             "metadata": {
-                "description": "Enter password for domain joining"
+                "description": "Password for domain administrator"
             }
         },
-        "Domain_Join_User": {
+        "administratorUsername": {
             "type": "string",
             "metadata": {
-                "description": "Enter username for domain joining"
+                "description": "Username for domain administrator"
             }
         },
-        "Domain_Name": {
-            "type": "string"
+        "bootDiagnosticsAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of storage account used for boot diagnostics"
+            }
         },
-        "NPS_Data_Disk_Size_GB": {
-            "type": "int"
-        },
-        "NPS_Data_Disk_Type": {
-            "type": "string"
-        },
-        "NPS_Host_Name": {
-            "type": "string"
-        },
-        "NPS_IP_Address": {
-            "type": "string"
-        },
-        "NPS_Os_Disk_Size_GB": {
-            "type": "int"
-        },
-        "NPS_Os_Disk_Type": {
-            "type": "string"
-        },
-        "NPS_VM_Name": {
-            "type": "string"
-        },
-        "NPS_VM_Size": {
-            "type": "string"
-        },
-        "OU_Path": {
+        "domainJoinOuPath": {
             "type": "string",
             "metadata": {
                 "description": "OU path to add this VM to"
             }
         },
-        "Virtual_Network_Name": {
-            "type": "string"
+        "domainJoinPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for domain joining"
+            }
         },
-        "Virtual_Network_Resource_Group": {
-            "type": "string"
+        "domainJoinUser": {
+            "type": "string",
+            "metadata": {
+                "description": "Username for domain joining"
+            }
         },
-        "Virtual_Network_Subnet": {
-            "type": "string"
+        "domainName": {
+            "type": "string",
+            "metadata": {
+                "Description": "Public domain name for the SHM"
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of virtual network to provision these VMs"
+            }
+        },
+        "virtualNetworkResourceGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of resource group that is associated with the virtual network above"
+            }
+        },
+        "virtualNetworkSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of subnet where you want to provision this VM"
+            }
+        },
+        "vmHostName": {
+            "type": "string",
+            "metadata": {
+                "description": "Hostname for NPS"
+            }
+        },
+        "vmName": {
+            "type": "string",
+            "metadata": {
+                "description": "VM name of NPS"
+            }
+        },
+        "vmOsDiskSizeGb": {
+            "type": "int",
+            "metadata": {
+                "description": "Size of NPS OS disk in GB"
+            }
+        },
+        "vmOsDiskType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of NPS OS disk"
+            }
+        },
+        "vmPrivateIpAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "Private IP address for NPS"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "VM size of NPS"
+            }
         }
     },
     "variables": {
-        "npsnic": "[concat(parameters('NPS_VM_Name'),'-','NIC')]",
-        "vnetID": "[resourceId(parameters('Virtual_Network_Resource_Group'), 'Microsoft.Network/virtualNetworks', parameters('Virtual_Network_Name'))]",
-        "subnet": "[concat(variables('vnetID'),'/subnets/', parameters('Virtual_Network_Subnet'))]"
+        "npsnic": "[concat(parameters('vmName'),'-','NIC')]",
+        "vnetID": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+        "subnetId": "[concat(variables('vnetID'),'/subnets/', parameters('virtualNetworkSubnetName'))]"
     },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('NPS_VM_Name')]",
-            "apiVersion": "2018-06-01",
+            "name": "[parameters('vmName')]",
+            "apiVersion": "2021-11-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "[parameters('NPS_VM_Size')]"
+                    "vmSize": "[parameters('vmSize')]"
                 },
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
-                        "sku": "2019-Datacenter",
+                        "sku": "2022-Datacenter",
                         "version": "latest"
                     },
                     "osDisk": {
                         "osType": "Windows",
-                        "name": "[concat(parameters('NPS_VM_Name'),'-OS-DISK')]",
+                        "name": "[concat(parameters('vmName'),'-OS-DISK')]",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "writeAcceleratorEnabled": false,
                         "managedDisk": {
-                            "storageAccountType": "[parameters('Nps_Os_Disk_Type')]"
+                            "storageAccountType": "[parameters('vmOsDiskType')]"
                         },
-                        "diskSizeGB": "[parameters('Nps_Os_Disk_Size_GB')]"
-                    },
-                    "dataDisks": [
-                        {
-                            "lun": 0,
-                            "name": "[concat(parameters('NPS_VM_Name'), '-DATA-DISK')]",
-                            "createOption": "Empty",
-                            "caching": "None",
-                            "writeAcceleratorEnabled": false,
-                            "managedDisk": {
-                                "storageAccountType": "[parameters('NPS_Data_Disk_Type')]"
-                            },
-                            "diskSizeGB": "[parameters('Nps_Data_Disk_Size_GB')]"
-                        }
-                    ]
+                        "diskSizeGB": "[parameters('vmOsDiskSizeGb')]"
+                    }
                 },
                 "osProfile": {
-                    "computerName": "[parameters('NPS_Host_Name')]",
-                    "adminUsername": "[parameters('Administrator_User')]",
-                    "adminPassword": "[parameters('Administrator_Password')]",
+                    "computerName": "[parameters('vmHostName')]",
+                    "adminUsername": "[parameters('administratorUsername')]",
+                    "adminPassword": "[parameters('administratorPassword')]",
                     "windowsConfiguration": {
-                        "provisionVMAgent": true,
-                        "enableAutomaticUpdates": true
+                        "enableAutomaticUpdates": false,
+                        "provisionVMAgent": true
                     },
                     "secrets": [],
                     "allowExtensionOperations": true
@@ -141,7 +158,7 @@
                 "diagnosticsProfile": {
                     "bootDiagnostics": {
                         "enabled": true,
-                        "storageUri": "[concat('https', '://', parameters('BootDiagnostics_Account_Name'), '.blob.core.windows.net', '/')]"
+                        "storageUri": "[concat('https', '://', parameters('bootDiagnosticsAccountName'), '.blob.core.windows.net', '/')]"
                     }
                 }
             },
@@ -152,7 +169,7 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('npsnic')]",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "2020-05-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -160,10 +177,10 @@
                         {
                         "name": "ipconfig1",
                         "properties": {
-                            "privateIPAddress": "[parameters('NPS_IP_Address')]",
+                            "privateIPAddress": "[parameters('vmPrivateIpAddress')]",
                             "privateIPAllocationMethod": "Static",
                             "subnet": {
-                                "id": "[variables('subnet')]"
+                                "id": "[variables('subnetId')]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
@@ -183,8 +200,8 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('NPS_VM_Name'), '/', 'bginfo')]",
-            "apiVersion": "2018-06-01",
+            "name": "[concat(parameters('vmName'), '/', 'bginfo')]",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "scale": null,
             "properties": {
@@ -194,17 +211,17 @@
                 "typeHandlerVersion": "2.1"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('NPS_VM_Name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
             ]
         },
         {
-            "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('NPS_VM_Name'),'/joindomain')]",
+            "name": "[concat(parameters('vmName'),'/joindomain')]",
+            "apiVersion": "2019-07-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('NPS_VM_Name'))]",
-                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('NPS_VM_Name'),'bginfo')]"
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'),'bginfo')]"
             ],
             "properties": {
                 "publisher": "Microsoft.Compute",
@@ -212,14 +229,14 @@
                 "typeHandlerVersion": "1.3",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "Name": "[parameters('Domain_Name')]",
-                    "OUPath": "[parameters('OU_Path')]",
-                    "User": "[concat(parameters('Domain_Name'), '\\', parameters('Domain_Join_User'))]",
+                    "Name": "[parameters('domainName')]",
+                    "OUPath": "[parameters('domainJoinOuPath')]",
+                    "User": "[concat(parameters('domainName'), '\\', parameters('domainJoinUser'))]",
                     "Restart": "true",
                     "Options": "3"
                 },
                 "protectedSettings": {
-                    "Password": "[parameters('Domain_Join_Password')]"
+                    "Password": "[parameters('domainJoinPassword')]"
                 }
             }
         }

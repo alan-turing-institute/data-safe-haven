@@ -3,9 +3,14 @@ param(
     [string]$shmId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureMonitor -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureOperationalInsights -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
@@ -17,10 +22,15 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 
 
+# Create resource group if it does not exist
+# ------------------------------------------
+$null = Deploy-ResourceGroup -Name $config.monitoring.rg -Location $config.location
+
+
 # Ensure that firewall subnet exists
 # ----------------------------------
-$VirtualNetwork = Get-AzVirtualNetwork -Name $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
-$null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $VirtualNetwork -AddressPrefix $config.network.vnet.subnets.firewall.cidr
+$vnetShm = Get-VirtualNetwork $config.network.vnet.name -ResourceGroupName $config.network.vnet.rg
+$null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualNetwork $vnetShm -AddressPrefix $config.network.vnet.subnets.firewall.cidr
 
 
 # Create the firewall with a public IP address
@@ -30,16 +40,14 @@ $null = Deploy-Subnet -Name $config.network.vnet.subnets.firewall.name -VirtualN
 $firewall = Deploy-Firewall -Name $config.firewall.name -ResourceGroupName $config.network.vnet.rg -Location $config.location -VirtualNetworkName $config.network.vnet.name
 
 
+# Create the logging workspace if it does not already exist
+# ---------------------------------------------------------
+$workspace = Deploy-LogAnalyticsWorkspace -Name $config.monitoring.loggingWorkspace.name -ResourceGroupName $config.monitoring.rg -Location $config.location
+
+
 # Enable logging for this firewall
 # --------------------------------
-Add-LogMessage -Level Info "Enable logging for this firewall"
-$workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
-$null = Set-AzDiagnosticSetting -ResourceId $firewall.Id -WorkspaceId $workspace.ResourceId -Enabled $true
-if ($?) {
-    Add-LogMessage -Level Success "Enabled logging to workspace '$($config.logging.workspaceName)'"
-} else {
-    Add-LogMessage -Level Fatal "Failed to enabled logging to workspace '$($config.logging.workspaceName)'!"
-}
+Set-LogAnalyticsDiagnostics -ResourceId $firewall.Id -ResourceName $firewall.Name -WorkspaceId $workspace.ResourceId
 
 
 # Create or retrieve the route table.
@@ -50,11 +58,8 @@ $routeTable = Deploy-RouteTable -Name $config.firewall.routeTableName -ResourceG
 
 # Set firewall rules from template
 # --------------------------------
-$workspace = Get-AzOperationalInsightsWorkspace -Name $config.logging.workspaceName -ResourceGroup $config.logging.rg
-$workspaceId = $workspace.CustomerId
 Add-LogMessage -Level Info "Setting firewall rules from template..."
 $config.firewall["privateIpAddress"] = $firewall.IpConfigurations.PrivateIpAddress
-$config.logging["workspaceId"] = $workspaceId
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" "shm-firewall-rules.json") -Parameters $config -AsHashtable
 $ruleNameFilter = "shm-$($config.id)"
 
@@ -72,12 +77,16 @@ foreach ($route in $rules.routes) {
 
 # Attach all subnets except the VPN gateway and firewall subnets to the firewall route table
 # ------------------------------------------------------------------------------------------
-$excludedSubnetNames = @($config.network.vnet.subnets.firewall.name, $config.network.vnet.subnets.gateway.name)
-foreach ($subnet in $VirtualNetwork.Subnets) {
-    if ($excludedSubnetNames.Contains($subnet.Name)) {
-        $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $null | Set-AzVirtualNetwork
-    } else {
-        $VirtualNetwork = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $VirtualNetwork -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
+$excludedSubnetNames = @($config.network.vnet.subnets.firewall.name, $config.network.vnet.subnets.gateway.name, $config.network.vnetRepositoriesTier2.subnets.deployment.name, $config.network.vnetRepositoriesTier3.subnets.deployment.name)
+$vnetRepositoriesTier2 = Get-VirtualNetwork -Name $config.network.vnetRepositoriesTier2.name -ResourceGroupName $config.network.vnetRepositoriesTier2.rg
+$vnetRepositoriesTier3 = Get-VirtualNetwork -Name $config.network.vnetRepositoriesTier3.name -ResourceGroupName $config.network.vnetRepositoriesTier3.rg
+foreach ($vnet in @($vnetShm, $vnetRepositoriesTier2, $vnetRepositoriesTier3)) {
+    foreach ($subnet in $vnet.Subnets) {
+        if ($excludedSubnetNames.Contains($subnet.Name)) {
+            $vnet = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnet -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $null | Set-AzVirtualNetwork
+        } else {
+            $vnet = Set-AzVirtualNetworkSubnetConfig -VirtualNetwork $vnet -Name $subnet.Name -AddressPrefix $subnet.AddressPrefix -RouteTable $routeTable | Set-AzVirtualNetwork
+        }
     }
 }
 

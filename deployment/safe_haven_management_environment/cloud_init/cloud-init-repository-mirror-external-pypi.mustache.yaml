@@ -1,0 +1,344 @@
+#cloud-config
+
+# We know that exactly one data disk will be attached to this VM and we currently start numbering from lun1
+disk_setup:
+  /dev/disk/azure/scsi1/lun1:
+    table_type: gpt
+    layout: true
+    overwrite: true
+
+fs_setup:
+  - device: /dev/disk/azure/scsi1/lun1
+    partition: 1
+    filesystem: ext4
+
+mounts:
+  - [/dev/disk/azure/scsi1/lun1-part1, /datadrive, ext4, "defaults,nofail"]
+
+# Configure apt repositories
+apt:
+  preserve_sources_list: true
+
+# List of packages to install with apt-get
+packages:
+  - auditd
+  - build-essential
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
+  - openssh-server
+  - python3-dev
+  - python3-pip
+  - python3-venv
+  - rsync
+package_update: true
+package_upgrade: true
+
+# Initialise an empty file `internal_mirror_ip_addresses.txt`
+# When internal mirrors are deployed, they add their IP address to this file
+# Whenever `push_to_internal_mirrors.sh` is run, it will try to rsync to all of the IP addresses in the file
+# NB. Since write_files runs before user creation, only pre-existing users can be assigned as file owners
+write_files:
+  - path: "/etc/apt/apt.conf.d/00proxy"
+    permissions: "0444"
+    content: |
+      Acquire::http::Proxy "http://{{monitoring.updateServers.linux.ip}}:8000";
+
+  - path: "/etc/audit/rules.d/audit.rules"
+    permissions: "0400"
+    content: |
+      {{audit.rules}}
+
+  - path: "/etc/bandersnatch.conf"
+    permissions: "0644"
+    content: |
+      [mirror]
+      ; The directory where the mirror data will be stored.
+      directory = /datadrive/mirrordaemon/pypi
+
+      ; Save JSON metadata into the web tree
+      ; URL/pypi/PKG_NAME/json (Symlink) -> URL/json/PKG_NAME
+      json = true
+
+      ; The PyPI server which will be mirrored.
+      master = https://pypi.org
+
+      ; The network socket timeout to use for all connections. The default of 10s is
+      ; deliberately low so the client will fail quickly and move on to the next package
+      ; instead of having the process hang. For this use-case we want to maximise the
+      ; number of packages that succeed.
+      timeout = 60
+
+      ; Whether to hash package indexes
+      ; Note that package index directory hashing is incompatible with pip
+      ; Recommended - the default of false for full pip/pypi compatibility.
+      hash-index = false
+
+      ; Number of worker threads to use for parallel downloads.
+      ; Recommendations for worker thread setting
+      ; - leave the default of 3 to avoid overloading the pypi master
+      ; - official servers located in data centers could run 10 workers
+      ; - anything beyond 10 is probably unreasonable and avoided by bandersnatch
+      workers = 6
+
+      ; Whether to stop a sync quickly after an error is found or whether to continue
+      ; syncing but not marking the sync as successful. Value should be "true" or
+      ; "false".
+      stop-on-error = false
+
+      ; Whether or not files that have been deleted on the master should be deleted here.
+      delete-packages = true
+
+      [plugins]
+      enabled =
+          exclude_platform
+
+      [blocklist]
+      platforms =
+          windows
+          macos
+          freebsd
+
+  - path: "/etc/clamav/clamd.conf"
+    permissions: "0644"
+    append: true
+    content: |
+      {{clamd.conf}}
+
+  - path: "/etc/cron.d/clamav-freshclam"
+    permissions: "0644"
+    content: |
+      # Run every day at a fixed time
+      {{monitoring.updateServers.schedule.daily_definition_updates.minute}} {{monitoring.updateServers.schedule.daily_definition_updates.hour}} * * * freshclam
+
+  - path: "/etc/cron.d/push-to-internal-mirrors"
+    permissions: "0644"
+    content: |
+      # Internal update (rsync) every day at 2am
+      0 2 * * * mirrordaemon ~mirrordaemon/push_to_internal_mirrors.sh
+
+  - path: "/etc/cron.d/pull-from-internet"
+    permissions: "0644"
+    content: |
+      # External update (rsync from CRAN) every 6 hours
+      0 */6 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh
+
+  - path: "/etc/cron.d/pull-then-push"
+    permissions: "0644"
+    content: |
+      # Run both jobs on every reboot
+      @reboot mirrordaemon ~mirrordaemon/pull_then_push.sh
+
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
+
+  - path: "/home/mirrordaemon/internal_mirror_ip_addresses.txt"
+    permissions: "0600"
+
+  - path: "/home/mirrordaemon/package_allowlist.txt"
+    permissions: "0600"
+    content: |
+      {{allowlist-full-python-pypi-tier3.list}}
+
+  - path: "/home/mirrordaemon/update_bandersnatch_config.py"
+    permissions: "0400"
+    content: |
+      #! /usr/bin/env python3
+      from collections import defaultdict
+
+      TIER="{{perInstance.tier}}"
+      config_sections = defaultdict(list)
+      section = "main"
+
+      # Load packages from allowlist
+      with open("/home/mirrordaemon/package_allowlist.txt", "r") as f_allowlist:
+          packages = [p for p in f_allowlist.read().splitlines() if p and not p.startswith("#")]
+
+      # Parse bandersnatch configuration into sections
+      with open("/etc/bandersnatch.conf", "r") as f_bandersnatch:
+          for line in f_bandersnatch.read().splitlines():
+              if line.startswith("[") and line.endswith("]"):
+                  section = line[1:-1]
+              if line:
+                  config_sections[section].append(line)
+
+      # Enable/disable allowlist depending on tier
+      config_sections["plugins"] = [p for p in config_sections["plugins"] if not "allowlist_project" in p]
+      if TIER == "tier2":
+          # Tier 2 mirrors should not have a allowlist section
+          config_sections.pop("allowlist", [])
+      else:
+          # If there is already a allowlist section then start by emptying it
+          config_sections["allowlist"] = ["[allowlist]", "packages ="]
+
+          # Ensure the that allowlist_project plugin is enabled
+          config_sections["plugins"].append("    allowlist_project")
+
+          # Add any allowed packages to this section
+          # Note that we need at least one package for package filtering to work. 'six' is minimal and safe.
+          if not packages:
+              packages = ["six"]
+          [config_sections["allowlist"].append("    {}".format(package)) for package in packages]
+
+      # Write the output bandersnatch configuration
+      with open("/etc/bandersnatch.conf", "w") as f_bandersnatch:
+          for section in config_sections.keys():
+              [f_bandersnatch.write(line + "\n") for line in config_sections[section]]
+              f_bandersnatch.write("\n")
+      print("Updated /etc/bandersnatch.conf to reflect /home/mirrordaemon/package_allowlist.txt")
+
+  - path: "/home/mirrordaemon/push_to_internal_mirrors.sh"
+    permissions: "0700"
+    content: |
+      #! /bin/bash
+      # rsync: make the destination look like the source
+      #   -p          preserve permissions
+      #   -r          recursive
+      #   -t          preserve times
+      #   -l          follow symlinks
+      #   -v          verbose
+      #   --delete    delete files present in destination but not source
+      #   --progress  show progress
+      echo "[PushToInternal] Found $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt | wc -l | xargs) internal mirrors" | tee >(logger -t SafeHaven)
+      for IP_ADDRESS in $(cat /home/mirrordaemon/internal_mirror_ip_addresses.txt); do
+          echo "[PushToInternal] Started pushing to the internal mirror at ${IP_ADDRESS}..." | tee >(logger -t SafeHaven)
+          START_TIME=$(date +%s)
+          rsync -prtlv --delete --progress /datadrive/mirrordaemon/pypi/* mirrordaemon@${IP_ADDRESS}:/datadrive/mirrordaemon/pypi 2>&1 | awk '{print "[PushToInternal] " $0}' | tee >(logger -t SafeHaven)
+          ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+          echo "[PushToInternal] Finished pushing to the internal mirror at $IP_ADDRESS after $ELAPSED" | tee >(logger -t SafeHaven)
+      done
+
+  - path: "/home/mirrordaemon/pull_from_internet.sh"
+    permissions: "0700"
+    content: |
+      #! /bin/bash
+      TIER="{{perInstance.tier}}"
+      echo "[PullFromInternet] Started pulling from the internet..." | tee >(logger -t SafeHaven)
+      START_TIME=$(date +%s)
+      if [ "$TIER" != "tier2" ]; then
+          installed_packages=$(ls -d /datadrive/mirrordaemon/pypi/web/simple/*/ | rev | cut -d'/' -f2 | rev | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] | sort)
+          cat /home/mirrordaemon/package_allowlist.txt | sed "s/[-_.]\+/-/g" | tr [A-Z] [a-z] > /tmp/package_allowlist
+          packages_to_delete=$(for package in $installed_packages; do if [ "$(grep -w -i $package /tmp/package_allowlist)" = "" ]; then echo $package; fi; done)
+          /usr/local/bin/bandersnatch delete $packages_to_delete 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
+          rm /tmp/package_allowlist 2> /dev/null
+      fi
+      /usr/local/bin/bandersnatch mirror 2>&1 | awk '{print "[PullFromInternet] " $0}' | tee >(logger -t SafeHaven)
+      ELAPSED=$(date -u -d "0 $(date +%s) seconds - $START_TIME seconds" +"%H:%M:%S")
+      echo "[PullFromInternet] Finished pulling from the internet after $ELAPSED" | tee >(logger -t SafeHaven)
+
+  - path: "/home/mirrordaemon/pull_then_push.sh"
+    permissions: "0700"
+    content: |
+      #! /bin/bash
+      source ~mirrordaemon/pull_from_internet.sh
+      source ~mirrordaemon/push_to_internal_mirrors.sh
+
+  - path: "/home/mirrordaemon/update_known_internal_mirrors.sh"
+    permissions: "0700"
+    content: |
+      {{update_known_internal_mirrors.sh}}
+
+# Add the SHM admin (default) and mirrordaemon users
+# lock_passwd: Lock the password to disable password login
+users:
+  - default
+  - name: mirrordaemon
+    lock_passwd: true
+    sudo: false
+
+# Set locale and timezone
+locale: en_GB.UTF-8
+timezone: {{time.timezone.linux}}
+
+# Set the NTP server
+# By default we use Google's NTP servers which are incompatible with other servers due to leap-second smearing
+ntp:
+  enabled: true
+  pools:
+    {{#time.ntp.serverAddresses}}
+    - {{.}}
+    {{/time.ntp.serverAddresses}}
+
+runcmd:
+  # Suppress apt prompts and warning messages
+  - DEBIAN_FRONTEND=noninteractive
+  - export DEBIAN_FRONTEND
+
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
+  - apt-get -y autoremove
+  - apt-get clean
+  - apt --fix-broken install
+
+  # Ensure that auditd is running and enabled at startup
+  - echo ">=== Enabling auditd services... ===<"
+  - systemctl start auditd
+  - systemctl enable auditd
+  - sleep 20
+  - systemctl status auditd
+
+  # Configure ClamAV
+  - echo ">=== Configure ClamAV... ===<"
+  # Allow unlimited recursion when scanning
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  # Enable ClamAV daemon
+  - systemctl enable clamav-daemon
+  # Enable ClamAV scan on access
+  - systemctl enable clamav-clamonacc
+  # Enable ClamAV daily scan
+  - systemctl enable clamav-clamdscan.timer
+  # Disable ClamAV database update on boot
+  - systemctl stop clamav-freshclam
+  - systemctl disable clamav-freshclam
+
+  # Set up and partition data disk
+  - echo ">=== Setting up local disk... ===<"
+  - mkdir -p /datadrive/mirrordaemon/pypi
+  - ls -alh /datadrive
+
+  # Install bandersnatch with pip
+  - echo ">=== Installing bandersnatch... ===<"
+  - pip3 install bandersnatch==4.2.0
+  - echo "Using bandersnatch from '$(which bandersnatch)'"
+
+  # Initialise allowlist if appropriate
+  - python3 /home/mirrordaemon/update_bandersnatch_config.py
+
+  # Fix permissions so that mirrordaemon owns its files
+  - mkdir -p /home/mirrordaemon/.ssh
+  - chown -R mirrordaemon:mirrordaemon /datadrive/mirrordaemon
+  - chown -R mirrordaemon:mirrordaemon ~mirrordaemon
+  - ls -alh ~mirrordaemon
+
+  # Generate SSH keys for connecting to the internal mirror
+  - echo ">=== Generating SSH keys for connecting to the internal mirror... ===<"
+  - cd /home/mirrordaemon/.ssh
+  - sudo -u mirrordaemon ssh-keygen -t rsa -b 2048 -N '' -f id_rsa
+  - ls -alh ~mirrordaemon/.ssh
+
+  # Print out some diagnostic information
+  - echo ">=== This server is currently aware of internal mirrors at the following locations ===<"
+  - cat /home/mirrordaemon/internal_mirror_ip_addresses.txt
+
+
+# Shutdown so that we can tell when the job has finished by polling the VM state
+power_state:
+  mode: poweroff
+  message: "Shutting down as a signal that setup is finished"
+  timeout: 30
+  condition: true

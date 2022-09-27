@@ -5,13 +5,15 @@ param(
     [string]$sreId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.KeyVault -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -103,11 +105,11 @@ foreach ($user in $serviceUsers.Keys) {
 Add-LogMessage -Level Info "[ ] Adding SRE users and groups to SHM..."
 $null = Set-AzContext -Subscription $config.shm.subscriptionName -ErrorAction Stop
 $params = @{
-    shmSystemAdministratorSgName = $config.shm.domain.securityGroups.serverAdmins.name
-    groupsB64                    = $groups | ConvertTo-Json -Depth 99 | ConvertTo-Base64
-    serviceUsersB64              = $serviceUsers | ConvertTo-Json -Depth 99 | ConvertTo-Base64
-    securityOuPath               = $config.shm.domain.ous.securityGroups.path
-    serviceOuPath                = $config.shm.domain.ous.serviceAccounts.path
+    ShmSystemAdministratorSgName = $config.shm.domain.securityGroups.serverAdmins.name
+    GroupsB64                    = $groups | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    ServiceUsersB64              = $serviceUsers | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    SecurityOuPath               = $config.shm.domain.ous.securityGroups.path
+    ServiceOuPath                = $config.shm.domain.ous.serviceAccounts.path
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Create_New_SRE_User_Service_Accounts_Remote.ps1"
 $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params

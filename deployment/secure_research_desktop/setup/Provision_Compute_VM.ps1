@@ -1,22 +1,26 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804' or 'Ubuntu2004' [default]")]
-    [ValidateSet("Ubuntu1804", "Ubuntu2004")]
+    [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804', 'Ubuntu2004' or 'Ubuntu2204' [default]")]
+    [ValidateSet("Ubuntu1804", "Ubuntu2004", "Ubuntu2204")]
     [string]$sourceImage = "Ubuntu2004",
     [Parameter(Mandatory = $false, HelpMessage = "VM size to use (e.g. 'Standard_E4_v3'. Using 'default' will use the value from the configuration file)")]
     [ValidateSet("default", "Standard_D4_v3", "Standard_E2_v3", "Standard_E4_v3", "Standard_E8_v3", "Standard_F4s_v2", "Standard_F8s_v2", "Standard_H8")]
     [string]$vmSize = "default"
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module Az.Resources -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
@@ -34,13 +38,17 @@ if ($vmSize -eq "default") { $vmSize = $config.srdImage.build.vm.size }
 
 # Select which source URN to base the build on
 # --------------------------------------------
-if ($sourceImage -eq "Ubuntu1804") {
-    $baseImageSku = "18.04-LTS"
-    $shortVersion = "1804"
-    Add-LogMessage -Level Warning "Note that '$sourceImage' is out-of-date. Please consider using a newer base Ubuntu version."
+if ($sourceImage -eq "Ubuntu2204") {
+    Add-LogMessage -Level Warning "Note that '$sourceImage' is not supported by the Azure Log Analytics Agent used to manage automatic updates. Please consider using Ubuntu 20.04."
+    $baseImageSku = "Ubuntu-22.04"
+    $shortVersion = "2204"
 } elseif ($sourceImage -eq "Ubuntu2004") {
-    $baseImageSku = "20.04-LTS"
+    $baseImageSku = "Ubuntu-20.04"
     $shortVersion = "2004"
+} elseif ($sourceImage -eq "Ubuntu1804") {
+    Add-LogMessage -Level Warning "Note that '$sourceImage' is out-of-date. Please consider using a newer base Ubuntu version."
+    $baseImageSku = "Ubuntu-18.04"
+    $shortVersion = "1804"
 } else {
     Add-LogMessage -Level Fatal "Did not recognise source image '$sourceImage'!"
 }
@@ -86,7 +94,7 @@ $subnet = Set-SubnetNetworkSecurityGroup -Subnet $subnet -NetworkSecurityGroup $
 # Load the cloud-init template then add resources and expand mustache placeholders
 # --------------------------------------------------------------------------------
 $config["dbeaver"] = @{
-    drivers = $(Get-Content -Raw -Path "../packages/dbeaver-driver-versions.json" | ConvertFrom-Json -AsHashtable)
+    drivers = $(Get-Content -Raw -Path (Join-Path $PSScriptRoot ".." "packages" "dbeaver-driver-versions.json" -Resolve) | ConvertFrom-Json -AsHashtable)
 }
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
 $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "packages")
@@ -98,7 +106,7 @@ $cloudInitTemplate = Expand-MustacheTemplate -Template $cloudInitTemplate -Param
 $buildVmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.srdImage.keyVault.name -SecretName $config.keyVault.secretNames.buildImageAdminUsername -DefaultValue "srdbuildadmin" -AsPlaintext
 $buildVmBootDiagnosticsAccount = Deploy-StorageAccount -Name $config.srdImage.bootdiagnostics.accountName -ResourceGroupName $config.srdImage.bootdiagnostics.rg -Location $config.srdImage.location
 $buildVmName = "Candidate${buildVmName}-$(Get-Date -Format "yyyyMMddHHmm")"
-$buildVmNic = Deploy-VirtualMachineNIC -Name "$buildVmName-NIC" -ResourceGroupName $config.srdImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.srdImage.location
+$buildVmNic = Deploy-NetworkInterface -Name "$buildVmName-NIC" -ResourceGroupName $config.srdImage.build.rg -Subnet $subnet -PublicIpAddressAllocation "Static" -Location $config.srdImage.location
 $adminPasswordName = "$($config.keyVault.secretNames.buildImageAdminPassword)-${buildVmName}"
 
 
@@ -126,11 +134,11 @@ $params = @{
     Location               = $config.srdImage.location
     NicId                  = $buildVmNic.Id
     OsDiskSizeGb           = $config.srdImage.build.vm.diskSizeGb
-    OsDiskType             = "Standard_LRS"
+    OsDiskType             = $config.srdImage.build.vm.diskType
     ResourceGroupName      = $config.srdImage.build.rg
     ImageSku               = $baseImageSku
 }
-$vm = Deploy-UbuntuVirtualMachine @params -NoWait
+$vm = Deploy-LinuxVirtualMachine @params -NoWait
 
 
 # Tag the VM with the git commit hash

@@ -27,6 +27,39 @@ function Write-InformationColoured {
 
 # Add a message to the log
 # ------------------------
+function Add-DeploymentLogMessages {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
+        $ResourceGroupName,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of deployment to track")]
+        $DeploymentName,
+        [Parameter(Mandatory = $true, HelpMessage = "Error messages from template deployment")]
+        [AllowNull()]
+        $ErrorDetails
+    )
+    $operations = Get-AzResourceGroupDeploymentOperation -ResourceGroupName $ResourceGroupName -DeploymentName $DeploymentName
+    foreach ($operation in $operations) {
+        $response = $operation.Properties.Response
+        foreach ($status in $response.content.Properties.instanceView.statuses) {
+            Add-LogMessage -Level Info "$($response.content.name): $($status.code)"
+            Write-Information -InformationAction "Continue" $status.message
+        }
+        foreach ($substatus in $response.content.Properties.instanceView.substatuses) {
+            Add-LogMessage -Level Info "$($response.content.name): $($substatus.code)"
+            Write-Information -InformationAction "Continue" $substatus.message
+        }
+    }
+    if ($ErrorDetails) {
+        foreach ($message in $ErrorDetails[0..2] ) {
+            Add-LogMessage -Level Failure "$message"
+        }
+    }
+}
+Export-ModuleMember -Function Add-DeploymentLogMessages
+
+
+# Add a message to the log
+# ------------------------
 function Add-LogMessage {
     param(
         [Parameter(Mandatory = $true)]
@@ -72,35 +105,3 @@ function Add-LogMessage {
     }
 }
 Export-ModuleMember -Function Add-LogMessage
-
-
-# Add a message to the log
-# ------------------------
-function Add-DeploymentLogMessages {
-    param(
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to deploy into")]
-        $ResourceGroupName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of deployment to track")]
-        $DeploymentName,
-        [Parameter(Mandatory = $true, HelpMessage = "Error messages from template deployment")]
-        $ErrorDetails
-    )
-    $operations = Get-AzResourceGroupDeploymentOperation -ResourceGroupName $ResourceGroupName -DeploymentName $DeploymentName
-    foreach ($operation in $operations) {
-        $response = $operation.Properties.Response
-        foreach ($status in $response.content.Properties.instanceView.statuses) {
-            Add-LogMessage -Level Info "$($response.content.name): $($status.code)"
-            Write-Information -InformationAction "Continue" $status.message
-        }
-        foreach ($substatus in $response.content.Properties.instanceView.substatuses) {
-            Add-LogMessage -Level Info "$($response.content.name): $($substatus.code)"
-            Write-Information -InformationAction "Continue" $substatus.message
-        }
-    }
-    if ($ErrorDetails) {
-        foreach ($message in $ErrorDetails[0..2] ) {
-            Add-LogMessage -Level Failure "$message"
-        }
-    }
-}
-Export-ModuleMember -Function Add-DeploymentLogMessages

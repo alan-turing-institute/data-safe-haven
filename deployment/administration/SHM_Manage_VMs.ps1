@@ -11,9 +11,9 @@ param(
     [switch]$ExcludeFirewall
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/AzureCompute -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 
 

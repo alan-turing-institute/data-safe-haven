@@ -2,15 +2,27 @@
 
 # Create files
 write_files:
+  - path: "/etc/apt/apt.conf.d/00proxy"
+    permissions: "0444"
+    content: |
+      Acquire::http::Proxy "http://{{shm.monitoring.updateServers.linux.ip}}:8000";
+
   - path: "/etc/audit/rules.d/audit.rules"
     permissions: "0400"
     content: |
       {{audit.rules}}
 
-  - path: "/opt/cocalc/docker-compose.yaml"
-    permissions: "0400"
+  - path: "/etc/clamav/clamd.conf"
+    permissions: "0644"
+    append: true
     content: |
-      {{cocalc_docker_compose.mustache.yaml}}
+      {{clamd.conf}}
+
+  - path: "/etc/cron.d/clamav-freshclam"
+    permissions: "0644"
+    content: |
+      # Run every day at a fixed time
+      {{shm.monitoring.updateServers.schedule.daily_definition_updates.minute}} {{shm.monitoring.updateServers.schedule.daily_definition_updates.hour}} * * * freshclam
 
   - path: "/etc/pip.conf"
     permissions: "0444"
@@ -30,6 +42,21 @@ write_files:
           r["CRAN"] <- "{{sre.repositories.cran.url}}"
           options(repos = r)
       })
+
+  - path: "/etc/systemd/system/clamav-clamonacc.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamonacc.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.service"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.service}}
+
+  - path: "/etc/systemd/system/clamav-clamdscan.timer"
+    permissions: "0644"
+    content: |
+      {{clamav-clamdscan.timer}}
 
   - path: "/etc/systemd/system/ingress.mount"
     permissions: "0644"
@@ -61,6 +88,16 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+
+  - path: "/opt/cocalc/docker-compose.yaml"
+    permissions: "0400"
+    content: |
+      {{cocalc_docker_compose.mustache.yaml}}
+
+  - path: "/opt/configuration/set_dns.sh"
+    permissions: "0500"
+    content: |
+      {{set_dns.mustache.sh}}
 
   - path: "/opt/mounts/ingress-credentials.secret"
     permissions: "0400"
@@ -98,10 +135,6 @@ ntp:
 apt:
   preserve_sources_list: true
   sources:
-    docker.list:
-      source: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88  # Docker Release (CE deb) <docker@docker.com>
-
     microsoft-general.list:
       source: "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
@@ -110,7 +143,12 @@ apt:
 packages:
   - auditd
   - blobfuse
-  - docker-ce
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
+  - docker.io
   - docker-compose
 package_update: true
 package_upgrade: true
@@ -147,15 +185,35 @@ runcmd:
 
   # Clean up installation
   - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
   - apt-get -y autoremove
   - apt-get clean
+  - apt --fix-broken install
 
   # Ensure that auditd is running and enabled at startup
   - echo ">=== Enabling auditd services... ===<"
   - systemctl start auditd
   - systemctl enable auditd
+  - sleep 20
+  - systemctl status auditd
+
+  # Configure ClamAV
+  - echo ">=== Configure ClamAV... ===<"
+  # Allow unlimited recursion when scanning
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  # Enable ClamAV daemon
+  - systemctl enable clamav-daemon
+  # Enable ClamAV scan on access
+  - systemctl enable clamav-clamonacc
+  # Enable ClamAV daily scan
+  - systemctl enable clamav-clamdscan.timer
+  # Disable ClamAV database update on boot
+  - systemctl stop clamav-freshclam
+  - systemctl disable clamav-freshclam
 
   # Check server settings
+  - echo ">=== DNS ===<"
+  - /opt/configuration/set_dns.sh
   - echo ">=== Hostname ===<"
   - hostnamectl
   - echo ">=== Date/time ===<"

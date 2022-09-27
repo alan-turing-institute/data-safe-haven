@@ -52,7 +52,7 @@
                         ]
                     },
                     {
-                        "name": "AllowExternalCRANPackageRSync",
+                        "name": "AllowExternalPackageRSyncCRAN",
                         "protocols": [
                             "TCP:873"
                         ],
@@ -60,10 +60,10 @@
                             "cran.r-project.org"
                         ],
                         "sourceAddresses": [
-                            "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
-                            "{{network.mirrorVnets.tier3.subnets.external.cidr}}"
+                            "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
+                            "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
                         ]
-                    }
+                    },
                 ]
             }
         }
@@ -78,210 +78,762 @@
                 },
                 "rules": [
                     {
-                        "name": "AllowWindowsUpdate",
+                        "name": "AllowExternalAzureADConnectOperations",
                         "protocols": [
-                            "http:80",
-                            "https:443"
+                            "HTTPS:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "windowsupdate.microsoft.com",
-                            "*.windowsupdate.microsoft.com",
-                            "*.windowsupdate.microsoft.com",
-                            "*.update.microsoft.com",
-                            "*.update.microsoft.com",
-                            "*.windowsupdate.com",
-                            "download.windowsupdate.com",
-                            "download.microsoft.com",
-                            "*.download.windowsupdate.com",
-                            "test.stats.update.microsoft.com",
-                            "ntservicepack.microsoft.com",
-                            "settings-win.data.microsoft.com",
-                            "v10.events.data.microsoft.com",
-                            "v10c.events.data.microsoft.com",
-                            "v10.vortex-win.data.microsoft.com"
-                        ],
-                        "sourceAddresses": [
-                            "*"
-                        ]
-                    },
-                    {
-                        "name": "AllowUbuntuUpdate",
-                        "protocols": [
-                            "http:80",
-                            "https:443"
-                       ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "database.clamav.net",
-                            "packages.microsoft.com",
-                            "download.mono-project.com",
-                            "developer.download.nvidia.com",
-                            "packagecloud.io",
-                            "apt.postgresql.org",
-                            "cloud.r-project.org",
-                            "archive.ubuntu.com",
-                            "azure.archive.ubuntu.com",
-                            "changelogs.ubuntu.com",
-                            "security.ubuntu.com"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.mirrorVnets.tier2.cidr}}",
-                            "{{network.mirrorVnets.tier3.cidr}}",
-                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
-                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowDocker",
-                        "protocols": [
-                            "https:443"
-                       ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "*.docker.com",
-                            "*.docker.io"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
-                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowCertificateStatusCheck",
-                        "protocols": [
-                            "http:80"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "ocsp.digicert.com",
-                            "crl3.digicert.com",
-                            "crl4.digicert.com",
-                            "crl.microsoft.com"
-                        ],
-                        "sourceAddresses": [
-                            "*"
-                        ]
-                    },
-                    {
-                        "name": "AllowNTP",
-                        "protocols": [
-                            "http:123"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            {{#time.ntp.serverFqdns}}
-                                "{{.}}",
-                            {{/time.ntp.serverFqdns}}
-                        ],
-                        "sourceAddresses": [
-                            "*"
-                        ]
-                    },
-                    {
-                        "name": "AllowLogAnalytics",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "{{logging.workspaceId}}.ods.opinsights.azure.com",
-                            "{{logging.workspaceId}}.oms.opinsights.azure.com",
-                            "{{logging.workspaceId}}.blob.core.windows.net",
-                            "{{logging.workspaceId}}.agentsvc.azure-automation.net"
-                        ],
-                        "sourceAddresses": [
-                            "*"
-                        ]
-                    },
-                    {
-                        "name": "AllowPyPIPackageInstallation",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "files.pythonhosted.org",
-                            "pypi.org"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
-                            "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
-                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
-                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowCRANPackageInstallation",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "cran.r-project.org"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.mirrorVnets.tier2.subnets.external.cidr}}",
-                            "{{network.mirrorVnets.tier3.subnets.external.cidr}}",
-                            "{{network.repositoryVnets.tier2.subnets.repository.cidr}}",
-                            "{{network.repositoryVnets.tier3.subnets.repository.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowAzureADLogin",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "login.microsoftonline.com",
-                            "secure.aadcdn.microsoftonline-p.com",
-                            "login.windows.net",
-                            "aadcdn.msftauth.net",
-                            "login.live.com"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.vnet.subnets.identity.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowAzureMFAConnectOperations",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "pfd.phonefactor.net",
-                            "pfd2.phonefactor.net",
-                            "css.phonefactor.net"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.vnet.subnets.identity.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowADConnectOperations",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
+                            "aadconnecthealth.azure.com",
+                            "adhsprodncuaadsynciadata.blob.core.windows.net",
+                            "adhsprodwcuaadsynciadata.blob.core.windows.net",
+                            "adhsprodweuaadsynciadata.blob.core.windows.net",
+                            "adhsprodweuehsyncia.servicebus.windows.net",
+                            "adhsprodwusaadsynciadata.blob.core.windows.net",
+                            "adhssyncprodpksweu.servicebus.windows.net",
                             "adminwebservice.microsoftonline.com",
-                            "passwordreset.microsoftonline.com",
-                            "*.blob.core.windows.net",
-                            "*.servicebus.windows.net",
-                            "*.events.data.microsoft.com",
-                            "*.aadconnecthealth.azure.com",
-                            "*.adhybridhealth.azure.com"
+                            "pksproddatastoreeus101.blob.core.windows.net",
+                            "pksproddatastoreeus102.blob.core.windows.net",
+                            "pksproddatastoreeus103.blob.core.windows.net",
+                            "pksproddatastoreeus104.blob.core.windows.net",
+                            "pksproddatastoreeus105.blob.core.windows.net",
+                            "pksproddatastoreeus106.blob.core.windows.net",
+                            "pksproddatastoreeus107.blob.core.windows.net",
+                            "pksproddatastoreeus108.blob.core.windows.net",
+                            "pksproddatastoreeus109.blob.core.windows.net",
+                            "pksproddatastoreeus111.blob.core.windows.net",
+                            "pksproddatastoreeus112.blob.core.windows.net",
+                            "pksproddatastoreeus113.blob.core.windows.net",
+                            "pksproddatastoreeus114.blob.core.windows.net",
+                            "pksproddatastoreeus115.blob.core.windows.net",
+                            "pksproddatastoreeus116.blob.core.windows.net",
+                            "pksproddatastoreeus117.blob.core.windows.net",
+                            "pksproddatastoreeus118.blob.core.windows.net",
+                            "pksproddatastoreeus119.blob.core.windows.net",
+                            "pksproddatastoreeus120.blob.core.windows.net",
+                            "pksproddatastorencu101.blob.core.windows.net",
+                            "pksproddatastorencu102.blob.core.windows.net",
+                            "pksproddatastorencu103.blob.core.windows.net",
+                            "pksproddatastorencu104.blob.core.windows.net",
+                            "pksproddatastoreneu101.blob.core.windows.net",
+                            "pksproddatastoreneu102.blob.core.windows.net",
+                            "pksproddatastoreneu103.blob.core.windows.net",
+                            "pksproddatastoreneu104.blob.core.windows.net",
+                            "pksproddatastoreneu105.blob.core.windows.net",
+                            "pksproddatastoreneu106.blob.core.windows.net",
+                            "pksproddatastoreneu107.blob.core.windows.net",
+                            "pksproddatastoreneu108.blob.core.windows.net",
+                            "pksproddatastoreneu109.blob.core.windows.net",
+                            "pksproddatastoreneu110.blob.core.windows.net",
+                            "pksproddatastoreneu111.blob.core.windows.net",
+                            "pksproddatastoreneu112.blob.core.windows.net",
+                            "pksproddatastoreneu113.blob.core.windows.net",
+                            "pksproddatastoreneu114.blob.core.windows.net",
+                            "pksproddatastoreneu115.blob.core.windows.net",
+                            "pksproddatastoreneu116.blob.core.windows.net",
+                            "pksproddatastoreneu117.blob.core.windows.net",
+                            "pksproddatastoreneu118.blob.core.windows.net",
+                            "pksproddatastoreneu119.blob.core.windows.net",
+                            "pksproddatastoreneu120.blob.core.windows.net",
+                            "pksproddatastoreweu101.blob.core.windows.net",
+                            "pksproddatastoreweu102.blob.core.windows.net",
+                            "pksproddatastoreweu103.blob.core.windows.net",
+                            "pksproddatastoreweu104.blob.core.windows.net",
+                            "pksproddatastoreweu105.blob.core.windows.net",
+                            "pksproddatastoreweu106.blob.core.windows.net",
+                            "pksproddatastoreweu107.blob.core.windows.net",
+                            "pksproddatastoreweu108.blob.core.windows.net",
+                            "pksproddatastoreweu109.blob.core.windows.net",
+                            "pksproddatastoreweu110.blob.core.windows.net",
+                            "pksproddatastoreweu111.blob.core.windows.net",
+                            "pksproddatastoreweu112.blob.core.windows.net",
+                            "pksproddatastoreweu113.blob.core.windows.net",
+                            "pksproddatastoreweu114.blob.core.windows.net",
+                            "pksproddatastoreweu115.blob.core.windows.net",
+                            "pksproddatastoreweu116.blob.core.windows.net",
+                            "pksproddatastoreweu117.blob.core.windows.net",
+                            "pksproddatastoreweu118.blob.core.windows.net",
+                            "pksproddatastoreweu119.blob.core.windows.net",
+                            "pksproddatastoreweu120.blob.core.windows.net",
+                            "pksproddatastorewus101.blob.core.windows.net",
+                            "pksproddatastorewus102.blob.core.windows.net",
+                            "pksproddatastorewus103.blob.core.windows.net",
+                            "pksproddatastorewus104.blob.core.windows.net",
+                            "pksproddatastorewus105.blob.core.windows.net",
+                            "pksproddatastorewus106.blob.core.windows.net",
+                            "pksproddatastorewus107.blob.core.windows.net",
+                            "pksproddatastorewus108.blob.core.windows.net",
+                            "pksproddatastorewus109.blob.core.windows.net",
+                            "pksproddatastorewus111.blob.core.windows.net",
+                            "pksproddatastorewus112.blob.core.windows.net",
+                            "pksproddatastorewus113.blob.core.windows.net",
+                            "pksproddatastorewus114.blob.core.windows.net",
+                            "pksproddatastorewus115.blob.core.windows.net",
+                            "pksproddatastorewus116.blob.core.windows.net",
+                            "pksproddatastorewus117.blob.core.windows.net",
+                            "pksproddatastorewus118.blob.core.windows.net",
+                            "pksproddatastorewus119.blob.core.windows.net",
+                            "pksproddatastorewus120.blob.core.windows.net",
+                            "s1.adhybridhealth.azure.com",
+                            "umwatson.events.data.microsoft.com",
+                            "v10.events.data.microsoft.com",
+                            "v20.events.data.microsoft.com"
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
                         ]
                     },
                     {
-                        "name": "AllowNPSConnectionsToAzureMFA",
+                        "name": "AllowExternalAzureADConnectPasswordReset",
                         "protocols": [
-                            "https:443"
+                            "HTTPS:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "g10-prod-ch3-003-sb.servicebus.windows.net",
+                            "g10-prod-ch3-004-sb.servicebus.windows.net",
+                            "g10-prod-ch3-005-sb.servicebus.windows.net",
+                            "g10-prod-ch3-006-sb.servicebus.windows.net",
+                            "g10-prod-ch3-007-sb.servicebus.windows.net",
+                            "g10-prod-sn3-003-sb.servicebus.windows.net",
+                            "g10-prod-sn3-004-sb.servicebus.windows.net",
+                            "g10-prod-sn3-005-sb.servicebus.windows.net",
+                            "g10-prod-sn3-006-sb.servicebus.windows.net",
+                            "g10-prod-sn3-007-sb.servicebus.windows.net",
+                            "g10-prod-sn3-009-sb.servicebus.windows.net",
+                            "g10-prod-sn3-010-sb.servicebus.windows.net",
+                            "g10-prod-sn3-011-sb.servicebus.windows.net",
+                            "g10-prod-sn3-012-sb.servicebus.windows.net",
+                            "g11-prod-ch3-003-sb.servicebus.windows.net",
+                            "g11-prod-ch3-004-sb.servicebus.windows.net",
+                            "g11-prod-ch3-005-sb.servicebus.windows.net",
+                            "g11-prod-ch3-006-sb.servicebus.windows.net",
+                            "g11-prod-ch3-007-sb.servicebus.windows.net",
+                            "g11-prod-sn3-003-sb.servicebus.windows.net",
+                            "g11-prod-sn3-004-sb.servicebus.windows.net",
+                            "g11-prod-sn3-005-sb.servicebus.windows.net",
+                            "g11-prod-sn3-006-sb.servicebus.windows.net",
+                            "g11-prod-sn3-007-sb.servicebus.windows.net",
+                            "g11-prod-sn3-009-sb.servicebus.windows.net",
+                            "g11-prod-sn3-010-sb.servicebus.windows.net",
+                            "g11-prod-sn3-011-sb.servicebus.windows.net",
+                            "g11-prod-sn3-012-sb.servicebus.windows.net",
+                            "g12-prod-ch3-003-sb.servicebus.windows.net",
+                            "g12-prod-ch3-004-sb.servicebus.windows.net",
+                            "g12-prod-ch3-005-sb.servicebus.windows.net",
+                            "g12-prod-ch3-006-sb.servicebus.windows.net",
+                            "g12-prod-ch3-007-sb.servicebus.windows.net",
+                            "g12-prod-sn3-003-sb.servicebus.windows.net",
+                            "g12-prod-sn3-004-sb.servicebus.windows.net",
+                            "g12-prod-sn3-005-sb.servicebus.windows.net",
+                            "g12-prod-sn3-006-sb.servicebus.windows.net",
+                            "g12-prod-sn3-007-sb.servicebus.windows.net",
+                            "g12-prod-sn3-009-sb.servicebus.windows.net",
+                            "g12-prod-sn3-010-sb.servicebus.windows.net",
+                            "g12-prod-sn3-011-sb.servicebus.windows.net",
+                            "g12-prod-sn3-012-sb.servicebus.windows.net",
+                            "g13-prod-ch3-003-sb.servicebus.windows.net",
+                            "g13-prod-ch3-004-sb.servicebus.windows.net",
+                            "g13-prod-ch3-005-sb.servicebus.windows.net",
+                            "g13-prod-ch3-006-sb.servicebus.windows.net",
+                            "g13-prod-ch3-007-sb.servicebus.windows.net",
+                            "g13-prod-sn3-003-sb.servicebus.windows.net",
+                            "g13-prod-sn3-004-sb.servicebus.windows.net",
+                            "g13-prod-sn3-005-sb.servicebus.windows.net",
+                            "g13-prod-sn3-006-sb.servicebus.windows.net",
+                            "g13-prod-sn3-007-sb.servicebus.windows.net",
+                            "g13-prod-sn3-009-sb.servicebus.windows.net",
+                            "g13-prod-sn3-010-sb.servicebus.windows.net",
+                            "g13-prod-sn3-011-sb.servicebus.windows.net",
+                            "g13-prod-sn3-012-sb.servicebus.windows.net",
+                            "g14-prod-ch3-003-sb.servicebus.windows.net",
+                            "g14-prod-ch3-004-sb.servicebus.windows.net",
+                            "g14-prod-ch3-005-sb.servicebus.windows.net",
+                            "g14-prod-ch3-006-sb.servicebus.windows.net",
+                            "g14-prod-ch3-007-sb.servicebus.windows.net",
+                            "g14-prod-sn3-003-sb.servicebus.windows.net",
+                            "g14-prod-sn3-004-sb.servicebus.windows.net",
+                            "g14-prod-sn3-005-sb.servicebus.windows.net",
+                            "g14-prod-sn3-006-sb.servicebus.windows.net",
+                            "g14-prod-sn3-007-sb.servicebus.windows.net",
+                            "g14-prod-sn3-009-sb.servicebus.windows.net",
+                            "g14-prod-sn3-010-sb.servicebus.windows.net",
+                            "g14-prod-sn3-011-sb.servicebus.windows.net",
+                            "g14-prod-sn3-012-sb.servicebus.windows.net",
+                            "g15-prod-ch3-003-sb.servicebus.windows.net",
+                            "g15-prod-ch3-004-sb.servicebus.windows.net",
+                            "g15-prod-ch3-005-sb.servicebus.windows.net",
+                            "g15-prod-ch3-006-sb.servicebus.windows.net",
+                            "g15-prod-ch3-007-sb.servicebus.windows.net",
+                            "g15-prod-sn3-003-sb.servicebus.windows.net",
+                            "g15-prod-sn3-004-sb.servicebus.windows.net",
+                            "g15-prod-sn3-005-sb.servicebus.windows.net",
+                            "g15-prod-sn3-006-sb.servicebus.windows.net",
+                            "g15-prod-sn3-007-sb.servicebus.windows.net",
+                            "g15-prod-sn3-009-sb.servicebus.windows.net",
+                            "g15-prod-sn3-010-sb.servicebus.windows.net",
+                            "g15-prod-sn3-011-sb.servicebus.windows.net",
+                            "g15-prod-sn3-012-sb.servicebus.windows.net",
+                            "g16-prod-ch3-003-sb.servicebus.windows.net",
+                            "g16-prod-ch3-004-sb.servicebus.windows.net",
+                            "g16-prod-ch3-006-sb.servicebus.windows.net",
+                            "g16-prod-ch3-007-sb.servicebus.windows.net",
+                            "g16-prod-sn3-003-sb.servicebus.windows.net",
+                            "g16-prod-sn3-004-sb.servicebus.windows.net",
+                            "g16-prod-sn3-005-sb.servicebus.windows.net",
+                            "g16-prod-sn3-006-sb.servicebus.windows.net",
+                            "g16-prod-sn3-007-sb.servicebus.windows.net",
+                            "g16-prod-sn3-010-sb.servicebus.windows.net",
+                            "g16-prod-sn3-011-sb.servicebus.windows.net",
+                            "g17-prod-ch3-003-sb.servicebus.windows.net",
+                            "g17-prod-ch3-004-sb.servicebus.windows.net",
+                            "g17-prod-ch3-006-sb.servicebus.windows.net",
+                            "g17-prod-ch3-007-sb.servicebus.windows.net",
+                            "g17-prod-sn3-003-sb.servicebus.windows.net",
+                            "g17-prod-sn3-004-sb.servicebus.windows.net",
+                            "g17-prod-sn3-005-sb.servicebus.windows.net",
+                            "g17-prod-sn3-006-sb.servicebus.windows.net",
+                            "g17-prod-sn3-007-sb.servicebus.windows.net",
+                            "g17-prod-sn3-010-sb.servicebus.windows.net",
+                            "g17-prod-sn3-011-sb.servicebus.windows.net",
+                            "g18-prod-ch3-003-sb.servicebus.windows.net",
+                            "g18-prod-ch3-004-sb.servicebus.windows.net",
+                            "g18-prod-ch3-006-sb.servicebus.windows.net",
+                            "g18-prod-ch3-007-sb.servicebus.windows.net",
+                            "g18-prod-sn3-003-sb.servicebus.windows.net",
+                            "g18-prod-sn3-004-sb.servicebus.windows.net",
+                            "g18-prod-sn3-005-sb.servicebus.windows.net",
+                            "g18-prod-sn3-006-sb.servicebus.windows.net",
+                            "g18-prod-sn3-007-sb.servicebus.windows.net",
+                            "g18-prod-sn3-010-sb.servicebus.windows.net",
+                            "g18-prod-sn3-011-sb.servicebus.windows.net",
+                            "g19-prod-ch3-003-sb.servicebus.windows.net",
+                            "g19-prod-ch3-004-sb.servicebus.windows.net",
+                            "g19-prod-ch3-006-sb.servicebus.windows.net",
+                            "g19-prod-ch3-007-sb.servicebus.windows.net",
+                            "g19-prod-sn3-003-sb.servicebus.windows.net",
+                            "g19-prod-sn3-004-sb.servicebus.windows.net",
+                            "g19-prod-sn3-005-sb.servicebus.windows.net",
+                            "g19-prod-sn3-006-sb.servicebus.windows.net",
+                            "g19-prod-sn3-007-sb.servicebus.windows.net",
+                            "g19-prod-sn3-010-sb.servicebus.windows.net",
+                            "g19-prod-sn3-011-sb.servicebus.windows.net",
+                            "g20-prod-ch3-003-sb.servicebus.windows.net",
+                            "g20-prod-ch3-004-sb.servicebus.windows.net",
+                            "g20-prod-ch3-006-sb.servicebus.windows.net",
+                            "g20-prod-ch3-007-sb.servicebus.windows.net",
+                            "g20-prod-sn3-003-sb.servicebus.windows.net",
+                            "g20-prod-sn3-004-sb.servicebus.windows.net",
+                            "g20-prod-sn3-005-sb.servicebus.windows.net",
+                            "g20-prod-sn3-006-sb.servicebus.windows.net",
+                            "g20-prod-sn3-007-sb.servicebus.windows.net",
+                            "g20-prod-sn3-010-sb.servicebus.windows.net",
+                            "g20-prod-sn3-011-sb.servicebus.windows.net",
+                            "g21-prod-ch3-003-sb.servicebus.windows.net",
+                            "g21-prod-ch3-004-sb.servicebus.windows.net",
+                            "g21-prod-ch3-006-sb.servicebus.windows.net",
+                            "g21-prod-ch3-007-sb.servicebus.windows.net",
+                            "g21-prod-sn3-003-sb.servicebus.windows.net",
+                            "g21-prod-sn3-004-sb.servicebus.windows.net",
+                            "g21-prod-sn3-005-sb.servicebus.windows.net",
+                            "g21-prod-sn3-006-sb.servicebus.windows.net",
+                            "g21-prod-sn3-007-sb.servicebus.windows.net",
+                            "g21-prod-sn3-010-sb.servicebus.windows.net",
+                            "g21-prod-sn3-011-sb.servicebus.windows.net",
+                            "g22-prod-ch3-003-sb.servicebus.windows.net",
+                            "g22-prod-ch3-004-sb.servicebus.windows.net",
+                            "g22-prod-ch3-006-sb.servicebus.windows.net",
+                            "g22-prod-ch3-007-sb.servicebus.windows.net",
+                            "g22-prod-sn3-003-sb.servicebus.windows.net",
+                            "g22-prod-sn3-004-sb.servicebus.windows.net",
+                            "g22-prod-sn3-005-sb.servicebus.windows.net",
+                            "g22-prod-sn3-006-sb.servicebus.windows.net",
+                            "g22-prod-sn3-007-sb.servicebus.windows.net",
+                            "g22-prod-sn3-010-sb.servicebus.windows.net",
+                            "g22-prod-sn3-011-sb.servicebus.windows.net",
+                            "g23-prod-ch3-003-sb.servicebus.windows.net",
+                            "g23-prod-ch3-004-sb.servicebus.windows.net",
+                            "g23-prod-ch3-006-sb.servicebus.windows.net",
+                            "g23-prod-ch3-007-sb.servicebus.windows.net",
+                            "g23-prod-sn3-003-sb.servicebus.windows.net",
+                            "g23-prod-sn3-004-sb.servicebus.windows.net",
+                            "g23-prod-sn3-005-sb.servicebus.windows.net",
+                            "g23-prod-sn3-006-sb.servicebus.windows.net",
+                            "g23-prod-sn3-007-sb.servicebus.windows.net",
+                            "g23-prod-sn3-010-sb.servicebus.windows.net",
+                            "g23-prod-sn3-011-sb.servicebus.windows.net",
+                            "g24-prod-ch3-003-sb.servicebus.windows.net",
+                            "g24-prod-ch3-004-sb.servicebus.windows.net",
+                            "g24-prod-ch3-006-sb.servicebus.windows.net",
+                            "g24-prod-ch3-007-sb.servicebus.windows.net",
+                            "g24-prod-sn3-003-sb.servicebus.windows.net",
+                            "g24-prod-sn3-004-sb.servicebus.windows.net",
+                            "g24-prod-sn3-005-sb.servicebus.windows.net",
+                            "g24-prod-sn3-006-sb.servicebus.windows.net",
+                            "g24-prod-sn3-007-sb.servicebus.windows.net",
+                            "g24-prod-sn3-010-sb.servicebus.windows.net",
+                            "g24-prod-sn3-011-sb.servicebus.windows.net",
+                            "g25-prod-ch3-003-sb.servicebus.windows.net",
+                            "g25-prod-ch3-004-sb.servicebus.windows.net",
+                            "g25-prod-ch3-006-sb.servicebus.windows.net",
+                            "g25-prod-ch3-007-sb.servicebus.windows.net",
+                            "g25-prod-sn3-003-sb.servicebus.windows.net",
+                            "g25-prod-sn3-004-sb.servicebus.windows.net",
+                            "g25-prod-sn3-005-sb.servicebus.windows.net",
+                            "g25-prod-sn3-006-sb.servicebus.windows.net",
+                            "g25-prod-sn3-007-sb.servicebus.windows.net",
+                            "g25-prod-sn3-010-sb.servicebus.windows.net",
+                            "g25-prod-sn3-011-sb.servicebus.windows.net",
+                            "g26-prod-ch3-003-sb.servicebus.windows.net",
+                            "g26-prod-ch3-004-sb.servicebus.windows.net",
+                            "g26-prod-ch3-006-sb.servicebus.windows.net",
+                            "g26-prod-ch3-007-sb.servicebus.windows.net",
+                            "g26-prod-sn3-003-sb.servicebus.windows.net",
+                            "g26-prod-sn3-004-sb.servicebus.windows.net",
+                            "g26-prod-sn3-005-sb.servicebus.windows.net",
+                            "g26-prod-sn3-006-sb.servicebus.windows.net",
+                            "g26-prod-sn3-007-sb.servicebus.windows.net",
+                            "g26-prod-sn3-010-sb.servicebus.windows.net",
+                            "g26-prod-sn3-011-sb.servicebus.windows.net",
+                            "g27-prod-ch3-003-sb.servicebus.windows.net",
+                            "g27-prod-ch3-004-sb.servicebus.windows.net",
+                            "g27-prod-ch3-006-sb.servicebus.windows.net",
+                            "g27-prod-ch3-007-sb.servicebus.windows.net",
+                            "g27-prod-sn3-003-sb.servicebus.windows.net",
+                            "g27-prod-sn3-004-sb.servicebus.windows.net",
+                            "g27-prod-sn3-005-sb.servicebus.windows.net",
+                            "g27-prod-sn3-006-sb.servicebus.windows.net",
+                            "g27-prod-sn3-007-sb.servicebus.windows.net",
+                            "g27-prod-sn3-010-sb.servicebus.windows.net",
+                            "g27-prod-sn3-011-sb.servicebus.windows.net",
+                            "g28-prod-ch3-003-sb.servicebus.windows.net",
+                            "g28-prod-ch3-004-sb.servicebus.windows.net",
+                            "g28-prod-ch3-006-sb.servicebus.windows.net",
+                            "g28-prod-ch3-007-sb.servicebus.windows.net",
+                            "g28-prod-sn3-003-sb.servicebus.windows.net",
+                            "g28-prod-sn3-004-sb.servicebus.windows.net",
+                            "g28-prod-sn3-005-sb.servicebus.windows.net",
+                            "g28-prod-sn3-006-sb.servicebus.windows.net",
+                            "g28-prod-sn3-007-sb.servicebus.windows.net",
+                            "g28-prod-sn3-010-sb.servicebus.windows.net",
+                            "g28-prod-sn3-011-sb.servicebus.windows.net",
+                            "g29-prod-ch3-003-sb.servicebus.windows.net",
+                            "g29-prod-ch3-004-sb.servicebus.windows.net",
+                            "g29-prod-ch3-006-sb.servicebus.windows.net",
+                            "g29-prod-ch3-007-sb.servicebus.windows.net",
+                            "g29-prod-sn3-003-sb.servicebus.windows.net",
+                            "g29-prod-sn3-004-sb.servicebus.windows.net",
+                            "g29-prod-sn3-005-sb.servicebus.windows.net",
+                            "g29-prod-sn3-006-sb.servicebus.windows.net",
+                            "g29-prod-sn3-007-sb.servicebus.windows.net",
+                            "g29-prod-sn3-010-sb.servicebus.windows.net",
+                            "g29-prod-sn3-011-sb.servicebus.windows.net",
+                            "g30-prod-ch3-003-sb.servicebus.windows.net",
+                            "g30-prod-ch3-004-sb.servicebus.windows.net",
+                            "g30-prod-ch3-006-sb.servicebus.windows.net",
+                            "g30-prod-ch3-007-sb.servicebus.windows.net",
+                            "g30-prod-sn3-003-sb.servicebus.windows.net",
+                            "g30-prod-sn3-004-sb.servicebus.windows.net",
+                            "g30-prod-sn3-005-sb.servicebus.windows.net",
+                            "g30-prod-sn3-006-sb.servicebus.windows.net",
+                            "g30-prod-sn3-007-sb.servicebus.windows.net",
+                            "g30-prod-sn3-010-sb.servicebus.windows.net",
+                            "g30-prod-sn3-011-sb.servicebus.windows.net",
+                            "g31-prod-ch3-003-sb.servicebus.windows.net",
+                            "g31-prod-ch3-004-sb.servicebus.windows.net",
+                            "g31-prod-ch3-006-sb.servicebus.windows.net",
+                            "g31-prod-ch3-007-sb.servicebus.windows.net",
+                            "g31-prod-sn3-003-sb.servicebus.windows.net",
+                            "g31-prod-sn3-004-sb.servicebus.windows.net",
+                            "g31-prod-sn3-005-sb.servicebus.windows.net",
+                            "g31-prod-sn3-006-sb.servicebus.windows.net",
+                            "g31-prod-sn3-007-sb.servicebus.windows.net",
+                            "g31-prod-sn3-010-sb.servicebus.windows.net",
+                            "g31-prod-sn3-011-sb.servicebus.windows.net",
+                            "g32-prod-ch3-003-sb.servicebus.windows.net",
+                            "g32-prod-ch3-004-sb.servicebus.windows.net",
+                            "g32-prod-ch3-006-sb.servicebus.windows.net",
+                            "g32-prod-ch3-007-sb.servicebus.windows.net",
+                            "g32-prod-sn3-003-sb.servicebus.windows.net",
+                            "g32-prod-sn3-004-sb.servicebus.windows.net",
+                            "g32-prod-sn3-005-sb.servicebus.windows.net",
+                            "g32-prod-sn3-006-sb.servicebus.windows.net",
+                            "g32-prod-sn3-007-sb.servicebus.windows.net",
+                            "g32-prod-sn3-010-sb.servicebus.windows.net",
+                            "g32-prod-sn3-011-sb.servicebus.windows.net",
+                            "g33-prod-ch3-003-sb.servicebus.windows.net",
+                            "g33-prod-ch3-004-sb.servicebus.windows.net",
+                            "g33-prod-ch3-006-sb.servicebus.windows.net",
+                            "g33-prod-ch3-007-sb.servicebus.windows.net",
+                            "g33-prod-sn3-003-sb.servicebus.windows.net",
+                            "g33-prod-sn3-004-sb.servicebus.windows.net",
+                            "g33-prod-sn3-005-sb.servicebus.windows.net",
+                            "g33-prod-sn3-006-sb.servicebus.windows.net",
+                            "g33-prod-sn3-007-sb.servicebus.windows.net",
+                            "g33-prod-sn3-010-sb.servicebus.windows.net",
+                            "g33-prod-sn3-011-sb.servicebus.windows.net",
+                            "g34-prod-ch3-003-sb.servicebus.windows.net",
+                            "g34-prod-ch3-004-sb.servicebus.windows.net",
+                            "g34-prod-ch3-006-sb.servicebus.windows.net",
+                            "g34-prod-ch3-007-sb.servicebus.windows.net",
+                            "g34-prod-sn3-003-sb.servicebus.windows.net",
+                            "g34-prod-sn3-004-sb.servicebus.windows.net",
+                            "g34-prod-sn3-005-sb.servicebus.windows.net",
+                            "g34-prod-sn3-006-sb.servicebus.windows.net",
+                            "g34-prod-sn3-007-sb.servicebus.windows.net",
+                            "g34-prod-sn3-010-sb.servicebus.windows.net",
+                            "g34-prod-sn3-011-sb.servicebus.windows.net",
+                            "g35-prod-ch3-003-sb.servicebus.windows.net",
+                            "g35-prod-ch3-004-sb.servicebus.windows.net",
+                            "g35-prod-ch3-006-sb.servicebus.windows.net",
+                            "g35-prod-ch3-007-sb.servicebus.windows.net",
+                            "g35-prod-sn3-003-sb.servicebus.windows.net",
+                            "g35-prod-sn3-004-sb.servicebus.windows.net",
+                            "g35-prod-sn3-005-sb.servicebus.windows.net",
+                            "g35-prod-sn3-006-sb.servicebus.windows.net",
+                            "g35-prod-sn3-007-sb.servicebus.windows.net",
+                            "g35-prod-sn3-010-sb.servicebus.windows.net",
+                            "g35-prod-sn3-011-sb.servicebus.windows.net",
+                            "g36-prod-ch3-003-sb.servicebus.windows.net",
+                            "g36-prod-ch3-004-sb.servicebus.windows.net",
+                            "g36-prod-ch3-006-sb.servicebus.windows.net",
+                            "g36-prod-ch3-007-sb.servicebus.windows.net",
+                            "g36-prod-sn3-003-sb.servicebus.windows.net",
+                            "g36-prod-sn3-004-sb.servicebus.windows.net",
+                            "g36-prod-sn3-005-sb.servicebus.windows.net",
+                            "g36-prod-sn3-006-sb.servicebus.windows.net",
+                            "g36-prod-sn3-007-sb.servicebus.windows.net",
+                            "g36-prod-sn3-010-sb.servicebus.windows.net",
+                            "g36-prod-sn3-011-sb.servicebus.windows.net",
+                            "g37-prod-ch3-003-sb.servicebus.windows.net",
+                            "g37-prod-ch3-004-sb.servicebus.windows.net",
+                            "g37-prod-ch3-006-sb.servicebus.windows.net",
+                            "g37-prod-ch3-007-sb.servicebus.windows.net",
+                            "g37-prod-sn3-003-sb.servicebus.windows.net",
+                            "g37-prod-sn3-004-sb.servicebus.windows.net",
+                            "g37-prod-sn3-005-sb.servicebus.windows.net",
+                            "g37-prod-sn3-006-sb.servicebus.windows.net",
+                            "g37-prod-sn3-007-sb.servicebus.windows.net",
+                            "g37-prod-sn3-010-sb.servicebus.windows.net",
+                            "g37-prod-sn3-011-sb.servicebus.windows.net",
+                            "g38-prod-ch3-003-sb.servicebus.windows.net",
+                            "g38-prod-ch3-004-sb.servicebus.windows.net",
+                            "g38-prod-ch3-006-sb.servicebus.windows.net",
+                            "g38-prod-ch3-007-sb.servicebus.windows.net",
+                            "g38-prod-sn3-003-sb.servicebus.windows.net",
+                            "g38-prod-sn3-004-sb.servicebus.windows.net",
+                            "g38-prod-sn3-005-sb.servicebus.windows.net",
+                            "g38-prod-sn3-006-sb.servicebus.windows.net",
+                            "g38-prod-sn3-007-sb.servicebus.windows.net",
+                            "g38-prod-sn3-010-sb.servicebus.windows.net",
+                            "g38-prod-sn3-011-sb.servicebus.windows.net",
+                            "g39-prod-ch3-003-sb.servicebus.windows.net",
+                            "g39-prod-ch3-004-sb.servicebus.windows.net",
+                            "g39-prod-ch3-006-sb.servicebus.windows.net",
+                            "g39-prod-ch3-007-sb.servicebus.windows.net",
+                            "g39-prod-sn3-003-sb.servicebus.windows.net",
+                            "g39-prod-sn3-004-sb.servicebus.windows.net",
+                            "g39-prod-sn3-005-sb.servicebus.windows.net",
+                            "g39-prod-sn3-006-sb.servicebus.windows.net",
+                            "g39-prod-sn3-007-sb.servicebus.windows.net",
+                            "g39-prod-sn3-010-sb.servicebus.windows.net",
+                            "g39-prod-sn3-011-sb.servicebus.windows.net",
+                            "g40-prod-ch3-003-sb.servicebus.windows.net",
+                            "g40-prod-ch3-007-sb.servicebus.windows.net",
+                            "g40-prod-sn3-003-sb.servicebus.windows.net",
+                            "g40-prod-sn3-004-sb.servicebus.windows.net",
+                            "g40-prod-sn3-005-sb.servicebus.windows.net",
+                            "g40-prod-sn3-006-sb.servicebus.windows.net",
+                            "g40-prod-sn3-007-sb.servicebus.windows.net",
+                            "g40-prod-sn3-010-sb.servicebus.windows.net",
+                            "g41-prod-ch3-003-sb.servicebus.windows.net",
+                            "g41-prod-ch3-007-sb.servicebus.windows.net",
+                            "g41-prod-sn3-003-sb.servicebus.windows.net",
+                            "g41-prod-sn3-004-sb.servicebus.windows.net",
+                            "g41-prod-sn3-005-sb.servicebus.windows.net",
+                            "g41-prod-sn3-006-sb.servicebus.windows.net",
+                            "g41-prod-sn3-007-sb.servicebus.windows.net",
+                            "g41-prod-sn3-010-sb.servicebus.windows.net",
+                            "g42-prod-ch3-003-sb.servicebus.windows.net",
+                            "g42-prod-ch3-007-sb.servicebus.windows.net",
+                            "g42-prod-sn3-003-sb.servicebus.windows.net",
+                            "g42-prod-sn3-004-sb.servicebus.windows.net",
+                            "g42-prod-sn3-005-sb.servicebus.windows.net",
+                            "g42-prod-sn3-006-sb.servicebus.windows.net",
+                            "g42-prod-sn3-007-sb.servicebus.windows.net",
+                            "g42-prod-sn3-010-sb.servicebus.windows.net",
+                            "g43-prod-ch3-003-sb.servicebus.windows.net",
+                            "g43-prod-ch3-007-sb.servicebus.windows.net",
+                            "g43-prod-sn3-003-sb.servicebus.windows.net",
+                            "g43-prod-sn3-004-sb.servicebus.windows.net",
+                            "g43-prod-sn3-005-sb.servicebus.windows.net",
+                            "g43-prod-sn3-006-sb.servicebus.windows.net",
+                            "g43-prod-sn3-007-sb.servicebus.windows.net",
+                            "g43-prod-sn3-010-sb.servicebus.windows.net",
+                            "g44-prod-ch3-003-sb.servicebus.windows.net",
+                            "g44-prod-ch3-007-sb.servicebus.windows.net",
+                            "g44-prod-sn3-003-sb.servicebus.windows.net",
+                            "g44-prod-sn3-004-sb.servicebus.windows.net",
+                            "g44-prod-sn3-005-sb.servicebus.windows.net",
+                            "g44-prod-sn3-006-sb.servicebus.windows.net",
+                            "g44-prod-sn3-007-sb.servicebus.windows.net",
+                            "g44-prod-sn3-010-sb.servicebus.windows.net",
+                            "g45-prod-ch3-003-sb.servicebus.windows.net",
+                            "g45-prod-ch3-007-sb.servicebus.windows.net",
+                            "g45-prod-sn3-003-sb.servicebus.windows.net",
+                            "g45-prod-sn3-004-sb.servicebus.windows.net",
+                            "g45-prod-sn3-005-sb.servicebus.windows.net",
+                            "g45-prod-sn3-006-sb.servicebus.windows.net",
+                            "g45-prod-sn3-007-sb.servicebus.windows.net",
+                            "g45-prod-sn3-010-sb.servicebus.windows.net",
+                            "g46-prod-ch3-003-sb.servicebus.windows.net",
+                            "g46-prod-ch3-007-sb.servicebus.windows.net",
+                            "g46-prod-sn3-003-sb.servicebus.windows.net",
+                            "g46-prod-sn3-004-sb.servicebus.windows.net",
+                            "g46-prod-sn3-005-sb.servicebus.windows.net",
+                            "g46-prod-sn3-006-sb.servicebus.windows.net",
+                            "g46-prod-sn3-007-sb.servicebus.windows.net",
+                            "g46-prod-sn3-010-sb.servicebus.windows.net",
+                            "g47-prod-ch3-003-sb.servicebus.windows.net",
+                            "g47-prod-ch3-007-sb.servicebus.windows.net",
+                            "g47-prod-sn3-003-sb.servicebus.windows.net",
+                            "g47-prod-sn3-004-sb.servicebus.windows.net",
+                            "g47-prod-sn3-005-sb.servicebus.windows.net",
+                            "g47-prod-sn3-006-sb.servicebus.windows.net",
+                            "g47-prod-sn3-007-sb.servicebus.windows.net",
+                            "g47-prod-sn3-010-sb.servicebus.windows.net",
+                            "g48-prod-ch3-003-sb.servicebus.windows.net",
+                            "g48-prod-ch3-007-sb.servicebus.windows.net",
+                            "g48-prod-sn3-003-sb.servicebus.windows.net",
+                            "g48-prod-sn3-004-sb.servicebus.windows.net",
+                            "g48-prod-sn3-005-sb.servicebus.windows.net",
+                            "g48-prod-sn3-006-sb.servicebus.windows.net",
+                            "g48-prod-sn3-010-sb.servicebus.windows.net",
+                            "g49-prod-ch3-003-sb.servicebus.windows.net",
+                            "g49-prod-ch3-007-sb.servicebus.windows.net",
+                            "g49-prod-sn3-003-sb.servicebus.windows.net",
+                            "g49-prod-sn3-004-sb.servicebus.windows.net",
+                            "g49-prod-sn3-005-sb.servicebus.windows.net",
+                            "g49-prod-sn3-006-sb.servicebus.windows.net",
+                            "g49-prod-sn3-010-sb.servicebus.windows.net",
+                            "g50-prod-ch3-003-sb.servicebus.windows.net",
+                            "g50-prod-ch3-007-sb.servicebus.windows.net",
+                            "g50-prod-sn3-003-sb.servicebus.windows.net",
+                            "g50-prod-sn3-004-sb.servicebus.windows.net",
+                            "g50-prod-sn3-005-sb.servicebus.windows.net",
+                            "g50-prod-sn3-006-sb.servicebus.windows.net",
+                            "g50-prod-sn3-010-sb.servicebus.windows.net",
+                            "g51-prod-ch3-003-sb.servicebus.windows.net",
+                            "g51-prod-ch3-007-sb.servicebus.windows.net",
+                            "g51-prod-sn3-003-sb.servicebus.windows.net",
+                            "g51-prod-sn3-004-sb.servicebus.windows.net",
+                            "g51-prod-sn3-005-sb.servicebus.windows.net",
+                            "g51-prod-sn3-006-sb.servicebus.windows.net",
+                            "g51-prod-sn3-010-sb.servicebus.windows.net",
+                            "g52-prod-ch3-003-sb.servicebus.windows.net",
+                            "g52-prod-ch3-007-sb.servicebus.windows.net",
+                            "g52-prod-sn3-003-sb.servicebus.windows.net",
+                            "g52-prod-sn3-004-sb.servicebus.windows.net",
+                            "g52-prod-sn3-005-sb.servicebus.windows.net",
+                            "g52-prod-sn3-006-sb.servicebus.windows.net",
+                            "g52-prod-sn3-010-sb.servicebus.windows.net",
+                            "g53-prod-ch3-003-sb.servicebus.windows.net",
+                            "g53-prod-ch3-007-sb.servicebus.windows.net",
+                            "g53-prod-sn3-003-sb.servicebus.windows.net",
+                            "g53-prod-sn3-004-sb.servicebus.windows.net",
+                            "g53-prod-sn3-005-sb.servicebus.windows.net",
+                            "g53-prod-sn3-006-sb.servicebus.windows.net",
+                            "g53-prod-sn3-010-sb.servicebus.windows.net",
+                            "g54-prod-ch3-003-sb.servicebus.windows.net",
+                            "g54-prod-ch3-007-sb.servicebus.windows.net",
+                            "g54-prod-sn3-003-sb.servicebus.windows.net",
+                            "g54-prod-sn3-004-sb.servicebus.windows.net",
+                            "g54-prod-sn3-005-sb.servicebus.windows.net",
+                            "g54-prod-sn3-006-sb.servicebus.windows.net",
+                            "g54-prod-sn3-010-sb.servicebus.windows.net",
+                            "g55-prod-ch3-003-sb.servicebus.windows.net",
+                            "g55-prod-ch3-007-sb.servicebus.windows.net",
+                            "g55-prod-sn3-003-sb.servicebus.windows.net",
+                            "g55-prod-sn3-004-sb.servicebus.windows.net",
+                            "g55-prod-sn3-005-sb.servicebus.windows.net",
+                            "g55-prod-sn3-006-sb.servicebus.windows.net",
+                            "g55-prod-sn3-010-sb.servicebus.windows.net",
+                            "g56-prod-ch3-003-sb.servicebus.windows.net",
+                            "g56-prod-ch3-007-sb.servicebus.windows.net",
+                            "g56-prod-sn3-003-sb.servicebus.windows.net",
+                            "g56-prod-sn3-004-sb.servicebus.windows.net",
+                            "g56-prod-sn3-005-sb.servicebus.windows.net",
+                            "g56-prod-sn3-006-sb.servicebus.windows.net",
+                            "g56-prod-sn3-010-sb.servicebus.windows.net",
+                            "g57-prod-ch3-003-sb.servicebus.windows.net",
+                            "g57-prod-ch3-007-sb.servicebus.windows.net",
+                            "g57-prod-sn3-003-sb.servicebus.windows.net",
+                            "g57-prod-sn3-004-sb.servicebus.windows.net",
+                            "g57-prod-sn3-005-sb.servicebus.windows.net",
+                            "g57-prod-sn3-006-sb.servicebus.windows.net",
+                            "g57-prod-sn3-010-sb.servicebus.windows.net",
+                            "g58-prod-ch3-003-sb.servicebus.windows.net",
+                            "g58-prod-ch3-007-sb.servicebus.windows.net",
+                            "g58-prod-sn3-003-sb.servicebus.windows.net",
+                            "g58-prod-sn3-004-sb.servicebus.windows.net",
+                            "g58-prod-sn3-005-sb.servicebus.windows.net",
+                            "g58-prod-sn3-006-sb.servicebus.windows.net",
+                            "g58-prod-sn3-010-sb.servicebus.windows.net",
+                            "g59-prod-ch3-003-sb.servicebus.windows.net",
+                            "g59-prod-ch3-007-sb.servicebus.windows.net",
+                            "g59-prod-sn3-003-sb.servicebus.windows.net",
+                            "g59-prod-sn3-004-sb.servicebus.windows.net",
+                            "g59-prod-sn3-005-sb.servicebus.windows.net",
+                            "g59-prod-sn3-006-sb.servicebus.windows.net",
+                            "g59-prod-sn3-010-sb.servicebus.windows.net",
+                            "g60-prod-ch3-003-sb.servicebus.windows.net",
+                            "g60-prod-ch3-007-sb.servicebus.windows.net",
+                            "g60-prod-sn3-003-sb.servicebus.windows.net",
+                            "g60-prod-sn3-004-sb.servicebus.windows.net",
+                            "g60-prod-sn3-005-sb.servicebus.windows.net",
+                            "g60-prod-sn3-006-sb.servicebus.windows.net",
+                            "g60-prod-sn3-010-sb.servicebus.windows.net",
+                            "g61-prod-ch3-003-sb.servicebus.windows.net",
+                            "g61-prod-ch3-007-sb.servicebus.windows.net",
+                            "g61-prod-sn3-003-sb.servicebus.windows.net",
+                            "g61-prod-sn3-004-sb.servicebus.windows.net",
+                            "g61-prod-sn3-005-sb.servicebus.windows.net",
+                            "g61-prod-sn3-006-sb.servicebus.windows.net",
+                            "g61-prod-sn3-010-sb.servicebus.windows.net",
+                            "g62-prod-ch3-003-sb.servicebus.windows.net",
+                            "g62-prod-ch3-007-sb.servicebus.windows.net",
+                            "g62-prod-sn3-003-sb.servicebus.windows.net",
+                            "g62-prod-sn3-004-sb.servicebus.windows.net",
+                            "g62-prod-sn3-005-sb.servicebus.windows.net",
+                            "g62-prod-sn3-006-sb.servicebus.windows.net",
+                            "g62-prod-sn3-010-sb.servicebus.windows.net",
+                            "g63-prod-ch3-003-sb.servicebus.windows.net",
+                            "g63-prod-ch3-007-sb.servicebus.windows.net",
+                            "g63-prod-sn3-003-sb.servicebus.windows.net",
+                            "g63-prod-sn3-004-sb.servicebus.windows.net",
+                            "g63-prod-sn3-005-sb.servicebus.windows.net",
+                            "g63-prod-sn3-006-sb.servicebus.windows.net",
+                            "g63-prod-sn3-010-sb.servicebus.windows.net",
+                            "g64-prod-sn3-010-sb.servicebus.windows.net",
+                            "g65-prod-sn3-010-sb.servicebus.windows.net",
+                            "g66-prod-sn3-010-sb.servicebus.windows.net",
+                            "g67-prod-sn3-010-sb.servicebus.windows.net",
+                            "g68-prod-sn3-010-sb.servicebus.windows.net",
+                            "g69-prod-sn3-010-sb.servicebus.windows.net",
+                            "g70-prod-sn3-010-sb.servicebus.windows.net",
+                            "g71-prod-sn3-010-sb.servicebus.windows.net",
+                            "g72-prod-sn3-010-sb.servicebus.windows.net",
+                            "g73-prod-sn3-010-sb.servicebus.windows.net",
+                            "g74-prod-sn3-010-sb.servicebus.windows.net",
+                            "g75-prod-sn3-010-sb.servicebus.windows.net",
+                            "g76-prod-sn3-010-sb.servicebus.windows.net",
+                            "g77-prod-sn3-010-sb.servicebus.windows.net",
+                            "g78-prod-sn3-010-sb.servicebus.windows.net",
+                            "g79-prod-sn3-010-sb.servicebus.windows.net",
+                            "g80-prod-sn3-010-sb.servicebus.windows.net",
+                            "g81-prod-sn3-010-sb.servicebus.windows.net",
+                            "g82-prod-sn3-010-sb.servicebus.windows.net",
+                            "g83-prod-sn3-010-sb.servicebus.windows.net",
+                            "g84-prod-sn3-010-sb.servicebus.windows.net",
+                            "g85-prod-sn3-010-sb.servicebus.windows.net",
+                            "g86-prod-sn3-010-sb.servicebus.windows.net",
+                            "g87-prod-sn3-010-sb.servicebus.windows.net",
+                            "g88-prod-sn3-010-sb.servicebus.windows.net",
+                            "g89-prod-sn3-010-sb.servicebus.windows.net",
+                            "g90-prod-sn3-010-sb.servicebus.windows.net",
+                            "g91-prod-sn3-010-sb.servicebus.windows.net",
+                            "g92-prod-sn3-010-sb.servicebus.windows.net",
+                            "g93-prod-sn3-010-sb.servicebus.windows.net",
+                            "g94-prod-sn3-010-sb.servicebus.windows.net",
+                            "g95-prod-sn3-010-sb.servicebus.windows.net",
+                            "passwordreset.microsoftonline.com",
+                            "ssprdedicatedsbprodncu.servicebus.windows.net",
+                            "ssprdedicatedsbprodscu.servicebus.windows.net"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalAzureADConnectSetup",
+                        "protocols": [
+                            "HTTPS:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "s1.adhybridhealth.azure.com",
+                            "management.azure.com",
+                            "policykeyservice.dc.ad.msft.net",
+                            "www.office.com"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalAzureADLogin",
+                        "protocols": [
+                            "HTTPS:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "aadcdn.msftauth.net",
+                            "login.live.com",
+                            "login.microsoftonline.com",
+                            "login.windows.net",
+                            "secure.aadcdn.microsoftonline-p.com"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalAzureAutomationOperations",
+                        "protocols": [
+                            "HTTPS:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "ac-jobruntimedata-prod-su1.azure-automation.net",
+                            "ae-jobruntimedata-prod-su1.azure-automation.net",
+                            "ase-jobruntimedata-prod-su1.azure-automation.net",
+                            "cc-jobruntimedata-prod-su1.azure-automation.net",
+                            "cid-jobruntimedata-prod-su1.azure-automation.net",
+                            "eus2-jobruntimedata-prod-su1.azure-automation.net",
+                            "jpe-jobruntimedata-prod-su1.azure-automation.net",
+                            "ne-jobruntimedata-prod-su1.azure-automation.net",
+                            "scus-jobruntimedata-prod-su1.azure-automation.net",
+                            "sea-jobruntimedata-prod-su1.azure-automation.net",
+                            "stzn-jobruntimedata-prod-su1.azure-automation.net",
+                            "uks-jobruntimedata-prod-su1.azure-automation.net",
+                            "usge-jobruntimedata-prod-su1.azure-automation.us",
+                            "wcus-jobruntimedata-prod-su1.azure-automation.net",
+                            "we-jobruntimedata-prod-su1.azure-automation.net",
+                            "wus2-jobruntimedata-prod-su1.azure-automation.net"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalAzureMFAConnectOperations",
+                        "protocols": [
+                            "HTTPS:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "css.phonefactor.net",
+                            "pfd.phonefactor.net",
+                            "pfd2.phonefactor.net"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalAzureMFAConnectSetup",
+                        "protocols": [
+                            "HTTPS:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
@@ -294,9 +846,126 @@
                         ]
                     },
                     {
-                        "name": "AllowMSOnlinePSModule",
+                        "name": "AllowExternalCertificateStatusCheck",
                         "protocols": [
-                            "https:443"
+                            "HTTP:80"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "crl.microsoft.com",
+                            "crl3.digicert.com",
+                            "crl4.digicert.com",
+                            "ocsp.digicert.com"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalGoogleNTP",
+                        "protocols": [
+                            "HTTP:123"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            {{#time.ntp.serverFqdns}}
+                                "{{.}}",
+                            {{/time.ntp.serverFqdns}}
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalLinuxUpdate",
+                        "protocols": [
+                            "HTTP:80",
+                            "HTTPS:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "apt.postgresql.org",
+                            "archive.ubuntu.com",
+                            "azure.archive.ubuntu.com",
+                            "changelogs.ubuntu.com",
+                            "dbeaver.io",
+                            "developer.download.nvidia.com",
+                            "packages.microsoft.com",
+                            "qgis.org",
+                            "security.ubuntu.com",
+                            "ubuntu.qgis.org"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalLinuxClamAVUpdate",
+                        "protocols": [
+                            "HTTP:80",
+                            "HTTPS:443"
+                       ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "current.cvd.clamav.net",
+                            "database.clamav.net.cdn.cloudflare.net",
+                            "database.clamav.net"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalPackageDownloadCRAN",
+                        "protocols": [
+                            "HTTPS:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "cran.r-project.org"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
+                            "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
+                            "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
+                            "{{network.vnetRepositoriesTier3.subnets.proxies.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalPackageDownloadPyPI",
+                        "protocols": [
+                            "HTTPS:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "files.pythonhosted.org",
+                            "pypi.org"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
+                            "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
+                            "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
+                            "{{network.vnetRepositoriesTier3.subnets.proxies.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalPowershellModuleInstallation",
+                        "protocols": [
+                            "HTTPS:443"
+                        ],
+                        "fqdnTags": [],
+                        "targetFqdns": [
+                            "psg-prod-eastus.azureedge.net",
+                            "www.powershellgallery.com"
+                        ],
+                        "sourceAddresses": [
+                            "{{network.vnet.subnets.identity.cidr}}"
+                        ]
+                    },
+                    {
+                        "name": "AllowExternalPowershellModuleMSOnlineConnections",
+                        "protocols": [
+                            "HTTPS:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
@@ -307,50 +976,36 @@
                         ]
                     },
                     {
-                        "name": "AllowPowershellModuleInstallation",
+                        "name": "AllowExternalWindowsUpdate",
                         "protocols": [
-                            "https:443"
+                            "HTTP:80",
+                            "HTTPS:443"
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
-                            "psg-prod-eastus.azureedge.net",
-                            "www.powershellgallery.com"
+                            "au.download.windowsupdate.com",
+                            "{{storage.artifacts.accountName}}.blob.core.windows.net",
+                            "ctldl.windowsupdate.com",
+                            "download.microsoft.com",
+                            "download.windowsupdate.com",
+                            "fe2cr.update.microsoft.com",
+                            "fe3cr.delivery.mp.microsoft.com",
+                            "geo-prod.do.dsp.mp.microsoft.com",
+                            "go.microsoft.com",
+                            "ntservicepack.microsoft.com",
+                            "onegetcdn.azureedge.net",
+                            "settings-win.data.microsoft.com",
+                            "slscr.update.microsoft.com",
+                            "test.stats.update.microsoft.com",
+                            "tlu.dl.delivery.mp.microsoft.com",
+                            "umwatson.events.data.microsoft.com",
+                            "v10.events.data.microsoft.com",
+                            "v10.vortex-win.data.microsoft.com",
+                            "v20.events.data.microsoft.com",
+                            "windowsupdate.microsoft.com"
                         ],
                         "sourceAddresses": [
-                            "{{dc.ip}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowADConnectSetup",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "management.azure.com",
-                            "*.adhybridhealth.azure.com",
-                            "www.office.com",
-                            "policykeyservice.dc.ad.msft.net"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.vnet.subnets.identity.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowAzureADLoginForADConnectAndMFAConnectSetup",
-                        "protocols": [
-                            "https:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "login.microsoftonline.com",
-                            "secure.aadcdn.microsoftonline-p.com",
-                            "login.windows.net",
-                            "aadcdn.msftauth.net",
-                            "login.live.com"
-                        ],
-                        "sourceAddresses": [
-                            "{{network.vnet.subnets.identity.cidr}}"
+                            "*"
                         ]
                     }
                 ]

@@ -5,14 +5,18 @@ param(
     [string]$sreId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/RemoteCommands -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
@@ -58,6 +62,7 @@ Add-LogMessage -Level Info "Constructing CoCalc cloud-init from template..."
 # Load the cloud-init template then add resources and expand mustache placeholders
 $cocalcCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-cocalc.mustache.yaml" | Get-Item | Get-Content -Raw
 $cocalcCloudInitTemplate = Expand-CloudInitResources -Template $cocalcCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$cocalcCloudInitTemplate = Expand-CloudInitResources -Template $cocalcCloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
 $cocalcCloudInitTemplate = Expand-MustacheTemplate -Template $cocalcCloudInitTemplate -Parameters $config
 # Deploy CoCalc VM
 $cocalcDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.cocalc.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.cocalc.disks.data.sizeGb -Type $config.sre.webapps.cocalc.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
@@ -77,7 +82,7 @@ $params = @{
     Size                   = $config.sre.webapps.cocalc.vmSize
     Subnet                 = $deploymentSubnet
 }
-$cocalcVm = Deploy-UbuntuVirtualMachine @params
+$cocalcVm = Deploy-LinuxVirtualMachine @params
 # Change subnets and IP address while CoCalc VM is off then restart
 Update-VMIpAddress -Name $cocalcVm.Name -ResourceGroupName $cocalcVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.cocalc.ip
 # Update DNS records for this VM
@@ -96,6 +101,7 @@ $config["codimd"] = @{
 }
 $codimdCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-codimd.mustache.yaml" | Get-Item | Get-Content -Raw
 $codimdCloudInitTemplate = Expand-CloudInitResources -Template $codimdCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$codimdCloudInitTemplate = Expand-CloudInitResources -Template $codimdCloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
 $codimdCloudInitTemplate = Expand-MustacheTemplate -Template $codimdCloudInitTemplate -Parameters $config
 # Deploy CodiMD VM
 $codimdDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.codimd.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.codimd.disks.data.sizeGb -Type $config.sre.webapps.codimd.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
@@ -115,7 +121,7 @@ $params = @{
     Size                   = $config.sre.webapps.codimd.vmSize
     Subnet                 = $deploymentSubnet
 }
-$codimdVm = Deploy-UbuntuVirtualMachine @params
+$codimdVm = Deploy-LinuxVirtualMachine @params
 # Change subnets and IP address while CodiMD VM is off then restart
 Update-VMIpAddress -Name $codimdVm.Name -ResourceGroupName $codimdVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.codimd.ip
 # Update DNS records for this VM
@@ -134,6 +140,7 @@ $config["gitlab"] = @{
 }
 $gitlabCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-gitlab.mustache.yaml" | Get-Item | Get-Content -Raw
 $gitlabCloudInitTemplate = Expand-CloudInitResources -Template $gitlabCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
+$gitlabCloudInitTemplate = Expand-CloudInitResources -Template $gitlabCloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
 $gitlabCloudInitTemplate = Expand-MustacheTemplate -Template $gitlabCloudInitTemplate -Parameters $config
 # Deploy GitLab VM
 $gitlabDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.gitlab.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.gitlab.disks.data.sizeGb -Type $config.sre.webapps.gitlab.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
@@ -153,7 +160,7 @@ $params = @{
     Size                   = $config.sre.webapps.gitlab.vmSize
     Subnet                 = $deploymentSubnet
 }
-$gitlabVm = Deploy-UbuntuVirtualMachine @params
+$gitlabVm = Deploy-LinuxVirtualMachine @params
 # Change subnets and IP address while GitLab VM is off then restart
 Update-VMIpAddress -Name $gitlabVm.Name -ResourceGroupName $gitlabVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.gitlab.ip
 # Update DNS records for this VM

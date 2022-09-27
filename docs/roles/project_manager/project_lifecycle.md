@@ -23,7 +23,7 @@ There may be additional **data owner stakeholders** working at the **data owner*
 ```
 
 Next you should identify the {ref}`role_investigator` - the lead researcher with overall responsibility for the project.
-Finally, you should identify a {ref}`role_referee`, who able to provide an independent evaluation of the work package if needed.
+Finally, you should identify a {ref}`role_referee`, who will be able to provide an independent evaluation of the work package if needed.
 
 ## Review data governance arrangements
 
@@ -39,13 +39,13 @@ An assessment should also be made of any potential exclusions of informed consen
 
 ## Classification and data ingress
 
-You should ensure that the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable) go through the {ref}`policy_data_classification_process`.
+You should ensure that the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable) go through the {ref}`process_data_classification`.
 At the end of this process they should have classified the work package into one of the Data Safe Haven security tiers.
 Follow the guide to [data ingress](data_ingress.md) to bring all necessary code and data into the secure research environment.
 
 ## Environment setup
 
-You should now contact your {ref}`role_system_manager` and get them to schedule a {ref}`role_system_deployer` to set up a new environment for this work package.
+You should now contact your {ref}`role_system_manager` and get them to schedule the deployment of a new environment for this work package.
 You will need to provide the {ref}`role_system_manager` with contact details (email address and phone number) for each of the participants in this work package.
 Work with the {ref}`role_investigator` and the {ref}`role_system_manager` to ensure that all participants are able to access the environment.
 If new participants are added or removed, ensure that the {ref}`role_system_manager` is made aware and updates access to the environment as appropriate.
@@ -54,6 +54,6 @@ If new participants are added or removed, ensure that the {ref}`role_system_mana
 
 At the end of the project, make sure that the project team identify all data or code that they want to egress from the environment.
 
-- ensure that the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable) go through the {ref}`policy_data_classification_process`.
+- ensure that the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable) go through the {ref}`process_data_classification`.
 - follow the guide to [data egress](data_egress.md) to bring all necessary code and data out of the secure research environment.
 - once this is done, let the {ref}`role_system_manager` know so that they can shut it down and securely delete all the contents of the secure research environment.

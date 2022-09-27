@@ -7,11 +7,13 @@ param(
     [string]$imageVersion = $null
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Resources -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -102,15 +104,14 @@ $targetRegions = @(
 )
 Add-LogMessage -Level Info "[ ] Preparing to replicate $($image.Name) across $($targetRegions.Length) regions as version $imageVersion of $imageDefinition..."
 Add-LogMessage -Level Warning "Please note, this may take around one hour to complete"
-$null = New-AzGalleryImageVersion `
-    -GalleryImageDefinitionName $imageDefinition `
-    -GalleryImageVersionName "$imageVersion" `
-    -GalleryName $config.srdImage.gallery.name `
-    -ResourceGroupName $config.srdImage.gallery.rg `
-    -Location $config.srdImage.location `
-    -TargetRegion $targetRegions  `
-    -Source $image.Id.ToString() `
-    -AsJob
+$null = New-AzGalleryImageVersion -GalleryImageDefinitionName $imageDefinition `
+                                  -GalleryImageVersionName "$imageVersion" `
+                                  -GalleryName $config.srdImage.gallery.name `
+                                  -Location $config.srdImage.location `
+                                  -ResourceGroupName $config.srdImage.gallery.rg `
+                                  -Source $image.Id.ToString() `
+                                  -TargetRegion $targetRegions  `
+                                  -AsJob
 $job = Get-Job -Command New-AzGalleryImageVersion | Sort-Object { $_.PSBeginTime } -Descending | Select-Object -First 1
 while ($job.State -ne "Completed") {
     $progress = [math]::min(100, $progress + 1)

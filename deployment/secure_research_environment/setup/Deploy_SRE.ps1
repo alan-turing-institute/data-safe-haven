@@ -3,12 +3,12 @@ param(
     [string]$shmId,
     [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
     [string]$sreId,
-    [Parameter(Mandatory = $true, HelpMessage = "Azure Active Directory tenant ID")]
-    [string]$tenantId,
     [Parameter(Mandatory = $true, HelpMessage = "Array of sizes of SRDs to deploy. For example: 'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'")]
     [string[]]$VmSizes,
     [Parameter(Mandatory = $false, HelpMessage = "Remove any remnants of previous deployments of this SRE from the SHM")]
-    [switch]$Clean
+    [switch]$Clean,
+    [Parameter(Mandatory = $false, HelpMessage = "Use device authentication for connecting to Azure and Microsoft Graph")]
+    [switch]$UseDeviceAuthentication
 )
 
 Import-Module Az.Accounts -ErrorAction Stop
@@ -21,23 +21,15 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ----------------
 if (Get-AzContext) { Disconnect-AzAccount | Out-Null } # force a refresh of the Azure token before starting
 Add-LogMessage -Level Info "Attempting to authenticate with Azure. Please sign in with an account with admin rights over the subscriptions you plan to use."
-Connect-AzAccount -ErrorAction Stop | Out-Null
+if ($UseDeviceAuthentication) {
+    Connect-AzAccount -UseDeviceAuthentication -ErrorAction Stop
+} else {
+    Connect-AzAccount -ErrorAction Stop
+}
 if (Get-AzContext) {
     Add-LogMessage -Level Success "Authenticated with Azure as $((Get-AzContext).Account.Id)"
 } else {
     Add-LogMessage -Level Fatal "Failed to authenticate with Azure"
-}
-
-
-# Connect to Microsoft Graph
-# --------------------------
-if (Get-MgContext) { Disconnect-MgGraph | Out-Null } # force a refresh of the Microsoft Graph token before starting
-Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph. Please sign in with an account with admin rights over the Azure Active Directory you plan to use."
-Connect-MgGraph -TenantId $tenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop | Out-Null
-if (Get-MgContext) {
-    Add-LogMessage -Level Success "Authenticated with Microsoft Graph as $((Get-MgContext).Account)"
-} else {
-    Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
 }
 
 
@@ -46,6 +38,22 @@ if (Get-MgContext) {
 $config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+
+
+# Connect to Microsoft Graph
+# --------------------------
+if (Get-MgContext) { Disconnect-MgGraph | Out-Null } # force a refresh of the Microsoft Graph token before starting
+Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph. Please sign in with an account with admin rights over the Azure Active Directory you plan to use."
+if ($UseDeviceAuthentication) {
+    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -UseDeviceAuthentication -ErrorAction Stop
+} else {
+    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+}
+if (Get-MgContext) {
+    Add-LogMessage -Level Success "Authenticated with Microsoft Graph as $((Get-MgContext).Account)"
+} else {
+    Add-LogMessage -Level Fatal "Failed to authenticate with Microsoft Graph"
+}
 
 
 # Check that we are using the correct provider
@@ -67,8 +75,8 @@ if ($Clean) {
 }
 
 
-# Register SRE with the SHM
-# -------------------------
+# Deploy the SRE KeyVault and register users with the SHM
+# -------------------------------------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Key_Vault_And_Users.ps1')" -shmId $shmId -sreId $sreId }
 
 
@@ -89,7 +97,7 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Storage_Ac
 
 # Deploy Guacamole remote desktop
 # -------------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Guacamole_Servers.ps1')" -shmId $shmId -sreId $sreId -tenantId $tenantId }
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Guacamole_Servers.ps1')" -shmId $shmId -sreId $sreId }
 
 
 # Update SSL certificate
@@ -131,9 +139,14 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Apply_SRE_Network_Co
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Firewall.ps1')" -shmId $shmId -sreId $sreId }
 
 
-# Configure logging
-# ------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Logging.ps1')" -shmId $shmId -sreId $sreId }
+# Configure monitoring
+# --------------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Monitoring.ps1')" -shmId $shmId -sreId $sreId }
+
+
+# Enable backup
+# -------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SRE_Backup.ps1')" -shmId $shmId -sreId $sreId }
 
 
 # Switch back to original subscription

@@ -127,7 +127,7 @@ or if you want to automatically switch to it whenever you are in the current dir
 ### {{gift}} Install R and python packages
 
 There are local copies of the `PyPI` and `CRAN` package repositories available within the SRE.
-You can install packages you need from these copies in the usual way, for example `pip install` and `packages.install` for Python and R respectively.
+You can install packages you need from these copies in the usual way, for example `pip install` and `install.packages` for Python and R respectively.
 
 ```{caution}
 You **will not** have access to install packages system-wide and will therefore need to install packages in a user directory.

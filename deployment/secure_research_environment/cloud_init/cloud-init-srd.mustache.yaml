@@ -21,6 +21,11 @@ mounts:
   - ["{{sre.storage.userdata.account.name}}.file.core.windows.net:/{{sre.storage.userdata.account.name}}/home", /home, nfs, "_netdev,sec=sys"]
 
 write_files:
+  - path: "/etc/apt/apt.conf.d/00proxy"
+    permissions: "0444"
+    content: |
+      Acquire::http::Proxy "http://{{shm.monitoring.updateServers.linux.ip}}:8000";
+
   - path: "/etc/audit/rules.d/audit.rules"
     permissions: "0400"
     content: |
@@ -55,9 +60,16 @@ write_files:
       OnAccessExcludeUname clamav
       OnAccessExcludeRootUID yes
 
-  - path: "/etc/crontab"
-    append: true
+  - path: "/etc/cron.d/clamav-freshclam"
+    permissions: "0644"
     content: |
+      # Run every day at a fixed time
+      {{shm.monitoring.updateServers.schedule.daily_definition_updates.minute}} {{shm.monitoring.updateServers.schedule.daily_definition_updates.hour}} * * * freshclam
+
+  - path: "/etc/cron.d/runonce"
+    permissions: "0644"
+    content: |
+      # Run on every reboot
       @reboot root /usr/local/bin/runonce | logger -t SafeHaven
 
   - path: "/etc/domain-join.secret"
@@ -101,9 +113,8 @@ write_files:
     permissions: "0500"
     content: |
       #! /bin/bash
-      echo ">=== Waiting for realm availability... ===<"
-      while [ "$(realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do sleep 1; done
       echo ">=== Joining domain '{{shm.domain.fqdnLower}}'... ===<"
+      while [ "$(/usr/sbin/realm discover {{shm.domain.fqdnLower}} 2> /dev/null | grep server-software | awk '{print $2}')" != "active-directory" ]; do echo "Waiting for realm availability..."; sleep 1; done
       echo "/opt/configuration/join_domain.sh '{{shm.domain.fqdnLower}}' '{{shm.domain.ous.linuxServers.path}}' '{{shm.users.computerManagers.linuxServers.samAccountName}}' '{{srd.hostname}}'"
       /opt/configuration/join_domain.sh "{{shm.domain.fqdnLower}}" "{{shm.domain.ous.linuxServers.path}}" "{{shm.users.computerManagers.linuxServers.samAccountName}}" "{{srd.hostname}}"
 
@@ -213,50 +224,48 @@ write_files:
   - path: "/etc/systemd/system/clamav-clamonacc.service"
     permissions: "0644"
     content: |
-      [Unit]
-      Description=ClamAV on access scanning daemon
-      Requires=clamav-daemon.service
-      After=clamav-daemon.service syslog.target network.target
-
-      [Service]
-      Type=simple
-      User=root
-      ExecStartPre=/bin/bash -c "while [ ! -S /var/run/clamav/clamd.ctl ]; do sleep 1; done"
-      ExecStart=/usr/bin/clamonacc --foreground=true
-      Restart=on-failure
-      RestartSec=30
-
-      [Install]
-      WantedBy=multi-user.target
+      {{clamav-clamonacc.service}}
 
   - path: "/etc/systemd/system/clamav-clamdscan.service"
     permissions: "0644"
     content: |
-      [Unit]
-      Description=ClamAV full system scan
-      Requires=clamav-daemon.service
-      After=clamav-daemon.service
-
-      [Service]
-      Type=oneshot
-      User=root
-      ExecStart=/usr/bin/clamdscan --fdpass --multiscan /
+      {{clamav-clamdscan.service}}
 
   - path: "/etc/systemd/system/clamav-clamdscan.timer"
     permissions: "0644"
     content: |
-      [Unit]
-      Description=Run ClamAV scan every week
+      {{clamav-clamdscan.timer}}
 
-      [Timer]
-      # Will run on every Monday at 00:00:00
-      OnCalendar=weekly
-      AccuracySec=1h
-      # Will run if a job was missed (e.g. due to system being powered down)
-      Persistent=true
+  - path: "/etc/systemd/system/backup.mount"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Mount unit for backup volume (via blobfuse)
+      Requires=network-online.target
+      After=network-online.target
+
+      [Mount]
+      What=/opt/configuration/mount-backup.sh
+      Where=/backup
+      Type=fuse
+      Options=_netdev
 
       [Install]
-      WantedBy=timers.target
+      WantedBy=network-online.target
+
+  - path: "/etc/systemd/system/backup.automount"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Automount blobfuse
+      ConditionPathExists=/backup
+
+      [Automount]
+      Where=/backup
+      TimeoutIdleSec=10
+
+      [Install]
+      WantedBy=multi-user.target
 
   - path: "/etc/systemd/system/data.mount"
     permissions: "0644"
@@ -365,13 +374,13 @@ write_files:
     content: |
       {{configure_pycharm.py}}
 
-  - path: "/opt/configuration/credentials-ingress.secret"
+  - path: "/opt/configuration/credentials-backup.secret"
     permissions: "0400"
     content: |
       accountName {{sre.storage.persistentdata.account.name}}
-      sasToken {{{srd.ingressContainerSasToken}}}
+      sasToken {{{srd.backupContainerSasToken}}}
       authType SAS
-      containerName ingress
+      containerName backup
 
   - path: "/opt/configuration/credentials-egress.secret"
     permissions: "0400"
@@ -380,6 +389,14 @@ write_files:
       sasToken {{{srd.egressContainerSasToken}}}
       authType SAS
       containerName egress
+
+  - path: "/opt/configuration/credentials-ingress.secret"
+    permissions: "0400"
+    content: |
+      accountName {{sre.storage.persistentdata.account.name}}
+      sasToken {{{srd.ingressContainerSasToken}}}
+      authType SAS
+      containerName ingress
 
   - path: "/opt/configuration/jdk-template.xml"
     permissions: "0400"
@@ -391,15 +408,15 @@ write_files:
     content: |
       {{join_domain.sh}}
 
-  - path: "/opt/configuration/mount-ingress.sh"
+  - path: "/opt/configuration/mount-backup.sh"
     permissions: "0500"
     content: |
       if [ ! "$(df -h | grep $1)" ]; then
-        BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-ingress"
+        BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-backup"
         rm -rf $BLOBFUSE_CACHE_DIR
         mkdir -p $BLOBFUSE_CACHE_DIR
         CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # set the cache size to half the size of /mnt which scales with VM size
-        /usr/bin/blobfuse $1 -o ro --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-ingress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
+        /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-backup.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
 
   - path: "/opt/configuration/mount-egress.sh"
@@ -411,6 +428,17 @@ write_files:
         mkdir -p $BLOBFUSE_CACHE_DIR
         CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # set the cache size to half the size of /mnt which scales with VM size
         /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-egress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
+      fi
+
+  - path: "/opt/configuration/mount-ingress.sh"
+    permissions: "0500"
+    content: |
+      if [ ! "$(df -h | grep $1)" ]; then
+        BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-ingress"
+        rm -rf $BLOBFUSE_CACHE_DIR
+        mkdir -p $BLOBFUSE_CACHE_DIR
+        CACHE_SPACE_MB=$(echo "$(df -BM | grep /mnt | awk '{print $2}' | sed 's/M//') / 2" | bc) # set the cache size to half the size of /mnt which scales with VM size
+        /usr/bin/blobfuse $1 -o ro --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-ingress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
 
   - path: "/usr/local/bin/runonce"
@@ -446,6 +474,14 @@ prefer_fqdn_over_hostname: true
 
 runcmd:
   - echo ">=== Beginning SRD configuration... ===<"
+
+  # Clean up installation
+  - echo ">=== Cleaning up apt-get packages... ===<"
+  - apt update
+  - apt-get -y autoremove
+  - apt-get clean
+  - apt --fix-broken install
+
   # Set permissions on scratch directory
   - chmod ugo+rwx /scratch
 
@@ -455,6 +491,20 @@ runcmd:
   - systemctl enable auditd
   - sleep 20
   - systemctl status auditd
+
+  # Configure ClamAV
+  - echo ">=== Configure ClamAV... ===<"
+  # Allow unlimited recursion when scanning
+  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
+  # Enable ClamAV daemon
+  - systemctl enable clamav-daemon
+  # Enable ClamAV scan on access
+  - systemctl enable clamav-clamonacc
+  # Enable ClamAV daily scan
+  - systemctl enable clamav-clamdscan.timer
+  # Disable ClamAV database update on boot
+  - systemctl stop clamav-freshclam
+  - systemctl disable clamav-freshclam
 
   # Configure services for realm joining
   - echo ">=== Configuring domain joining settings... ===<"
@@ -542,12 +592,14 @@ runcmd:
   - systemctl enable xrdp-sesman
 
   # Schedule mounting of data and output volumes, allowing non-root users to specify 'allow_other'
-  - echo ">=== Configure ingress and egress mounts... ===<"
+  - echo ">=== Configure ingress, egress and backup mounts... ===<"
   - grep -v "user_allow_other" /etc/fuse.conf > /etc/fuse.conf.tmp
   - echo "user_allow_other" >> /etc/fuse.conf.tmp
   - mv /etc/fuse.conf.tmp /etc/fuse.conf
+  - systemctl enable backup.mount
   - systemctl enable data.mount
   - systemctl enable output.mount
+  - systemctl enable backup.automount
   - systemctl enable data.automount
   - systemctl enable output.automount
 
@@ -555,21 +607,6 @@ runcmd:
   - echo ">=== Checking disk mounts... ===<"
   - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
   - mount -fav 2> /dev/null
-
-  # ClamAV update using freshclam. Note that the systemd unit must not be running when we update manually
-  - echo ">=== Update ClamAV... ===<"
-  - systemctl stop clamav-freshclam
-  - while true; do if [ "$(systemctl status clamav-freshclam | grep "Active" | cut -d ':' -f 2 | grep "inactive")" ]; then break; else sleep 1; fi; done
-  - sed -i 's/^MaxDirectoryRecursion .*/MaxDirectoryRecursion 0/' /etc/clamav/clamd.conf
-  - rm -f /var/lib/clamav/daily.cvd 2> /dev/null
-  - freshclam
-
-  # ClamAV: allow unlimited recursion when scanning; enable daemon, scan on access and periodic scan
-  - echo ">=== Enabling clamav services... ===<"
-  - systemctl enable clamav-daemon
-  - systemctl enable clamav-clamonacc
-  - systemctl enable clamav-clamdscan.timer
-  - systemctl enable clamav-freshclam
 
 final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 

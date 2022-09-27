@@ -24,6 +24,18 @@
         "sourcePortRange": "*"
     },
     {
+        "name": "AllowLinuxUpdatesOutbound",
+        "access": "Allow",
+        "description": "Allow outbound connections to Linux update servers",
+        "destinationAddressPrefix": "{{shm.network.vnet.subnets.updateServers.cidr}}",
+        "destinationPortRange": ["8000"],
+        "direction": "Outbound",
+        "priority": 900,
+        "protocol": "TCP",
+        "sourceAddressPrefix": "{{sre.network.vnet.subnets.deployment.cidr}}",
+        "sourcePortRange": "*"
+    },
+    {
         "name": "AllowExternalInternetOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to internet",

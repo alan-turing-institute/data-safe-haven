@@ -1,6 +1,42 @@
-Import-Module Az -ErrorAction Stop
-Import-Module $PSScriptRoot/Deployments -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module Az.Storage -ErrorAction Stop
+Import-Module $PSScriptRoot/AzureCompute -ErrorAction Stop
+Import-Module $PSScriptRoot/AzureNetwork -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
+
+
+# Clear contents of storage container if it exists
+# ------------------------------------------------
+function Clear-StorageContainer {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "Name of storage container")]
+        [string]$Name,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage account container belongs to")]
+        [Microsoft.Azure.Commands.Management.Storage.Models.PSStorageAccount]$StorageAccount
+    )
+    Add-LogMessage -Level Info "Clearing contents of storage container '$Name'..."
+    try {
+        $StorageContainer = Get-AzStorageContainer -Name $Name -Context $StorageAccount.Context -ErrorAction Stop
+        $blobs = @(Get-AzStorageBlob -Container $StorageContainer.Name -Context $sreStorageAccount.Context)
+        $numBlobs = $blobs.Length
+        if ($numBlobs -gt 0) {
+            Add-LogMessage -Level Info "[ ] Deleting $numBlobs blobs already in container '$($StorageContainer.Name)'..."
+            $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $StorageContainer.Name -Context $StorageAccount.Context -Force }
+            while ($numBlobs -gt 0) {
+                Start-Sleep -Seconds 5
+                $numBlobs = (Get-AzStorageBlob -Container $StorageContainer.Name -Context $StorageAccount.Context).Length
+            }
+            if ($?) {
+                Add-LogMessage -Level Success "Blob deletion succeeded for storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'"
+            } else {
+                Add-LogMessage -Level Fatal "Blob deletion failed for storage container '$Name' in storage account '$($StorageAccount.StorageAccountName)'!"
+            }
+        }
+    } catch {
+        Add-LogMessage -Level InfoSuccess "Storage container '$Name' does not exist in storage account '$($StorageAccount.StorageAccountName)'"
+    }
+}
+Export-ModuleMember -Function Clear-StorageContainer
 
 
 # Generate a new SAS policy
@@ -67,7 +103,7 @@ function Deploy-StorageAccount {
         [Parameter(Mandatory = $true, HelpMessage = "Location of resource group to deploy into")]
         [string]$Location,
         [Parameter(Mandatory = $false, HelpMessage = "SKU name of the storage account to deploy")]
-        [string]$SkuName = "Standard_LRS",
+        [string]$SkuName = "Standard_GRS",
         [Parameter(Mandatory = $false, HelpMessage = "Kind of storage account to deploy")]
         [ValidateSet("StorageV2", "BlobStorage", "BlockBlobStorage", "FileStorage")]
         [string]$Kind = "StorageV2",
@@ -119,8 +155,10 @@ function Deploy-StorageAccountEndpoint {
     # Allow a default if we're using a storage account that is only compatible with one storage type
     if ($StorageType -eq "Default") {
         if ($StorageAccount.Kind -eq "BlobStorage") { $StorageType = "Blob" }
-        if ($StorageAccount.Kind -eq "BlockBlobStorage") { $StorageType = "Blob" }
-        if ($StorageAccount.Kind -eq "FileStorage") { $StorageType = "File" }
+        elseif ($StorageAccount.Kind -eq "BlockBlobStorage") { $StorageType = "Blob" }
+        elseif ($StorageAccount.Kind -eq "FileStorage") { $StorageType = "File" }
+        elseif ($StorageAccount.Kind -eq "StorageV2") { $StorageType = "Blob" } # default to blob storage for StorageV2
+        else { Add-LogMessage -Level Fatal "Storage type must be specified as 'Blob' or 'File' for $($StorageAccount.Kind) storage accounts" }
     }
     # Validate that the storage type is compatible with this storage account
     if ((($StorageAccount.Kind -eq "BlobStorage") -and ($StorageType -ne "Blob")) -or
@@ -154,15 +192,13 @@ function Deploy-StorageAccountEndpoint {
         }
         Add-LogMessage -Level InfoSuccess "Private endpoint '$privateEndpointName' already exists for storage account '$($StorageAccount.StorageAccountName)'"
     } catch [Microsoft.Azure.Commands.Network.Common.NetworkCloudException] {
-        Add-LogMessage -Level Info "[ ] Creating private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'"
-        $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id -GroupId $StorageType
-        $success = $?
-        $privateEndpoint = New-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateLinkServiceConnection $privateEndpointConnection
-        $success = $success -and $?
-        if ($success) {
+        try {
+            Add-LogMessage -Level Info "[ ] Creating private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'"
+            $privateEndpointConnection = New-AzPrivateLinkServiceConnection -Name "${privateEndpointName}ServiceConnection" -PrivateLinkServiceId $StorageAccount.Id -GroupId $StorageType -ErrorAction Stop
+            $privateEndpoint = New-AzPrivateEndpoint -Name $privateEndpointName -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateLinkServiceConnection $privateEndpointConnection -ErrorAction Stop
             Add-LogMessage -Level Success "Created private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'"
-        } else {
-            Add-LogMessage -Level Fatal "Failed to create private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'!"
+        } catch {
+            Add-LogMessage -Level Fatal "Failed to create private endpoint '$privateEndpointName' for storage account '$($StorageAccount.StorageAccountName)'!" -Exception $_.Exception
         }
     }
     return $privateEndpoint
@@ -531,3 +567,33 @@ function Set-StorageNfsShareQuota {
     }
 }
 Export-ModuleMember -Function Set-StorageNfsShareQuota
+
+
+# Create an Azure blob from a URI
+# -------------------------------
+function Set-AzureStorageBlobFromUri {
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "URI to file to copy")]
+        [string]$FileUri,
+        [Parameter(Mandatory = $false, HelpMessage = "Filename to upload to")]
+        [string]$BlobFilename,
+        [Parameter(Mandatory = $true, HelpMessage = "Name of the destination container")]
+        [string]$StorageContainer,
+        [Parameter(Mandatory = $true, HelpMessage = "Storage context for the destination storage account")]
+        [Microsoft.Azure.Commands.Common.Authentication.Abstractions.IStorageContext]$StorageContext
+    )
+    # Note that Start-AzStorageBlobCopy exists but is asynchronous and can stall
+    if (-not $BlobFilename) {
+        $BlobFilename = $FileUri -split "/" | Select-Object -Last 1
+    }
+    $tempFolder = New-Item -Type Directory -Path (Join-Path ([System.IO.Path]::GetTempPath()) (New-Guid))
+    # Suppress progress bars
+    $ProgressPreferenceOld = $ProgressPreference
+    $ProgressPreference = "SilentlyContinue"
+    $null = Invoke-WebRequest -Uri $FileUri -OutFile (Join-Path $tempFolder $BlobFilename)
+    $null = Set-AzStorageBlobContent -Container $StorageContainer -Context $StorageContext -File (Join-Path $tempFolder $BlobFilename) -Force
+    $ProgressPreference = $ProgressPreferenceOld
+    # Remove temporary directory
+    Remove-Item -Recurse $tempFolder
+}
+Export-ModuleMember -Function Set-AzureStorageBlobFromUri

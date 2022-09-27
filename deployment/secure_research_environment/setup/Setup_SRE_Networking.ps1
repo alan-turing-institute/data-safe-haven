@@ -5,11 +5,11 @@ param(
     [string]$sreId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
@@ -39,12 +39,12 @@ $webappsSubnet = Deploy-Subnet -Name $config.sre.network.vnet.subnets.webapps.na
 # Peer repository vnet to SHM vnet
 # --------------------------------
 Set-VnetPeering -Vnet1Name $config.sre.network.vnet.name `
-                -Vnet1ResourceGroup $config.sre.network.vnet.rg `
+                -Vnet1ResourceGroupName $config.sre.network.vnet.rg `
                 -Vnet1SubscriptionName $config.sre.subscriptionName `
                 -Vnet2Name $config.shm.network.vnet.name `
-                -Vnet2ResourceGroup $config.shm.network.vnet.rg `
+                -Vnet2ResourceGroupName $config.shm.network.vnet.rg `
                 -Vnet2SubscriptionName $config.shm.subscriptionName `
-                -AllowRemoteGatewayFromVNet 2
+                -VNet2AllowRemoteGateway
 
 
 # Ensure that compute NSG exists with correct rules and attach it to the compute subnet
@@ -55,8 +55,8 @@ $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $computeNsg -Rules $
 $computeSubnet = Set-SubnetNetworkSecurityGroup -Subnet $computeSubnet -NetworkSecurityGroup $computeNsg
 
 
-# Ensure that database NSG exists with correct rules and attach it to the deployment subnet
-# -----------------------------------------------------------------------------------------
+# Ensure that database NSG exists with correct rules and attach it to the database subnet
+# ---------------------------------------------------------------------------------------
 $databasesNsg = Deploy-NetworkSecurityGroup -Name $config.sre.network.vnet.subnets.databases.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
 $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.databases.nsg.rules) -Parameters $config -AsHashtable
 $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $databasesNsg -Rules $rules

@@ -7,14 +7,19 @@ param(
     [switch]$Redeploy
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/RemoteCommands -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
@@ -87,27 +92,29 @@ foreach ($keyName in $config.sre.databases.Keys) {
         # Create SQL server from template
         Add-LogMessage -Level Info "Preparing to create SQL database $($databaseCfg.vmName) from template..."
         $params = @{
-            Administrator_Password       = $vmAdminPasswordSecure
-            Administrator_User           = $vmAdminUsername
-            BootDiagnostics_Account_Name = $config.sre.storage.bootdiagnostics.accountName
-            Data_Disk_Size               = $databaseCfg.disks.data.sizeGb
-            Data_Disk_Type               = $databaseCfg.disks.data.type
-            Db_Admin_Password            = $dbAdminPassword  # NB. This has to be in plaintext for the deployment to work correctly
-            Db_Admin_Username            = $dbAdminUsername
-            IP_Address                   = $deploymentIpAddress
-            OS_Disk_Size                 = $databaseCfg.disks.os.sizeGb
-            OS_Disk_Type                 = $databaseCfg.disks.os.type
-            Sql_Connection_Port          = $databaseCfg.port
-            Sql_Server_Name              = $databaseCfg.vmName
-            Sql_Server_Edition           = $databaseCfg.sku
-            SubnetResourceId             = $deploymentSubnet.Id
-            VM_Size                      = $databaseCfg.vmSize
+            administratorPassword           = $vmAdminPasswordSecure
+            administratorUsername           = $vmAdminUsername
+            bootDiagnosticsAccountName      = $config.sre.storage.bootdiagnostics.accountName
+            privateIpAddress                = $deploymentIpAddress
+            sqlDbAdministratorPassword      = $dbAdminPassword  # NB. This has to be in plaintext for the deployment to work correctly
+            sqlDbAdministratorUsername      = $dbAdminUsername
+            sqlServerConnectionPort         = $databaseCfg.port
+            sqlServerEdition                = $databaseCfg.sku
+            sqlServerName                   = $databaseCfg.vmName
+            virtualNetworkName              = $virtualNetwork.Name
+            virtualNetworkResourceGroupName = $config.sre.network.vnet.rg
+            virtualNetworkSubnetName        = $config.sre.network.vnet.subnets.deployment.name
+            vmDataDiskSizeGb                = $databaseCfg.disks.data.sizeGb
+            vmDataDiskType                  = $databaseCfg.disks.data.type
+            vmOsDiskSizeGb                  = $databaseCfg.disks.os.sizeGb
+            vmOsDiskType                    = $databaseCfg.disks.os.type
+            vmSize                          = $databaseCfg.vmSize
         }
-        Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -Params $params -ResourceGroupName $config.sre.databases.rg
+        Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-mssql2019-server-template.json") -TemplateParameters $params -ResourceGroupName $config.sre.databases.rg
 
         # Set locale, install updates and reboot
         Add-LogMessage -Level Info "Updating $($databaseCfg.vmName)..."
-        Invoke-WindowsConfigureAndUpdate -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.time.timezone.windows -NtpServer ($config.shm.time.ntp.serverAddresses)[0] -AdditionalPowershellModules @("SqlServer")
+        Invoke-WindowsConfiguration -VMName $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -TimeZone $config.sre.time.timezone.windows -NtpServer ($config.shm.time.ntp.serverAddresses)[0] -AdditionalPowershellModules @("SqlServer")
 
         # Change subnets and IP address while the VM is off
         Update-VMIpAddress -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -IpAddress $databaseCfg.ip
@@ -165,7 +172,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Deploy NIC and data disk
         $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
-        $networkCard = Deploy-VirtualMachineNIC -Name "$($databaseCfg.vmName)-NIC" -ResourceGroupName $config.sre.databases.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
+        $networkCard = Deploy-NetworkInterface -Name "$($databaseCfg.vmName)-NIC" -ResourceGroupName $config.sre.databases.rg -Subnet $deploymentSubnet -PrivateIpAddress $deploymentIpAddress -Location $config.sre.location
         $dataDisk = Deploy-ManagedDisk -Name "$($databaseCfg.vmName)-DATA-DISK" -SizeGB $databaseCfg.disks.data.sizeGb -Type $databaseCfg.disks.data.type -ResourceGroupName $config.sre.databases.rg -Location $config.sre.location
 
         # Construct the cloud-init file
@@ -174,6 +181,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
 
         # Insert additional files into the cloud-init template
         $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path $PSScriptRoot ".." "cloud_init" "resources")
+        $cloudInitTemplate = Expand-CloudInitResources -Template $cloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
 
         # Expand placeholders in the cloud-init file
         $config["postgres"] = @{
@@ -204,7 +212,7 @@ foreach ($keyName in $config.sre.databases.Keys) {
             ResourceGroupName      = $config.sre.databases.rg
             Size                   = $databaseCfg.vmSize
         }
-        $null = Deploy-UbuntuVirtualMachine @params
+        $null = Deploy-LinuxVirtualMachine @params
 
         # Change subnets and IP address while the VM is off - note that the domain join will happen on restart
         Update-VMIpAddress -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -Subnet $subnet -IpAddress $databaseCfg.ip

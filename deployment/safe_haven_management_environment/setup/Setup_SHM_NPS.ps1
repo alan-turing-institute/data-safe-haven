@@ -3,13 +3,18 @@ param(
     [string]$shmId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Storage -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/RemoteCommands -Force -ErrorAction Stop
 
 
 # Get config and original context before changing subscription
@@ -27,7 +32,6 @@ $null = Deploy-ResourceGroup -Name $config.nps.rg -Location $config.location
 # Retrieve passwords from the Key Vault
 # -------------------------------------
 Add-LogMessage -Level Info "Creating/retrieving secrets from Key Vault '$($config.keyVault.name)'..."
-$domainJoinUsername = $config.users.computerManagers.identityServers.samAccountName
 $domainJoinPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.users.computerManagers.identityServers.passwordSecretName -DefaultLength 20 -AsPlaintext
 $vmAdminUsername = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vmAdminUsername -DefaultValue "shm$($config.id)admin".ToLower() -AsPlaintext
 $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
@@ -37,91 +41,88 @@ $vmAdminPassword = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -Secr
 # ---------------------------------------------------------------------------------
 $null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
 $storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
-$storageContainerName = "shm-configuration-nps"
-$null = Deploy-StorageContainer -Name $storageContainerName -StorageAccount $storageAccount
+$null = Deploy-StorageContainer -Name $config.storage.artifacts.containers.shmArtifactsNPS -StorageAccount $storageAccount
 
 
 # Upload artifacts
 # ----------------
-Add-LogMessage -Level Info "Uploading artifacts to storage account '$($config.storage.artifacts.accountName)'..."
-Add-LogMessage -Level Info "[ ] Uploading network policy server (NPS) configuration files to blob storage"
-$success = $true
-foreach ($filePath in $(Get-ChildItem (Join-Path $PSScriptRoot ".." "remote" "create_nps" "artifacts") -Recurse)) {
-    $null = Set-AzStorageBlobContent -Container $storageContainerName -Context $storageAccount.Context -File $filePath -Force
+Add-LogMessage -Level Info "Uploading NPS artifacts to storage account '$($config.storage.artifacts.accountName)'..."
+try {
+    $success = $true
+    # Desired state
+    $dscPath = Join-Path $PSScriptRoot ".." "desired_state_configuration"
+    $null = Publish-AzVMDscConfiguration -ConfigurationPath (Join-Path $dscPath "NPSDesiredState.ps1") `
+                                         -ContainerName $config.storage.artifacts.containers.shmDesiredState `
+                                         -Force `
+                                         -ResourceGroupName $config.storage.artifacts.rg `
+                                         -SkipDependencyDetection `
+                                         -StorageAccountName $config.storage.artifacts.accountName
     $success = $success -and $?
-}
-if ($success) {
-    Add-LogMessage -Level Success "Uploaded NPS configuration files"
-} else {
-    Add-LogMessage -Level Fatal "Failed to upload NPS configuration files!"
-}
-Add-LogMessage -Level Info "[ ] Uploading MFA NPS troubleshooting script to blob storage"
-Start-AzStorageBlobCopy -AbsoluteUri https://raw.githubusercontent.com/Azure-Samples/azure-mfa-nps-extension-health-check/master/MFA_NPS_Troubleshooter.ps1 -DestContainer $storageContainerName -DestBlob "MFA_NPS_Troubleshooter.ps1" -DestContext $storageAccount.Context -Force
-if ($?) {
-    Add-LogMessage -Level Success "Uploaded MFA NPS troubleshooting script"
-} else {
-    Add-LogMessage -Level Fatal "Failed to upload MFA NPS troubleshooting script!"
+    # Local artifacts
+    foreach ($filePath in $(Get-ChildItem (Join-Path $dscPath "npsArtifacts") -Recurse)) {
+        $null = Set-AzStorageBlobContent -Container $config.storage.artifacts.containers.shmArtifactsNPS -Context $storageAccount.Context -File $filePath -Force
+        $success = $success -and $?
+    }
+    # Remote artifacts
+    $null = Set-AzureStorageBlobFromUri -FileUri "https://raw.githubusercontent.com/Azure-Samples/azure-mfa-nps-extension-health-check/master/MFA_NPS_Troubleshooter.ps1" -StorageContainer $config.storage.artifacts.containers.shmArtifactsNPS -StorageContext $storageAccount.Context
+    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/F/F/BFFB4F12-9C09-4DBC-A4AF-08E51875EEA9/NpsExtnForAzureMfaInstaller.exe" -StorageContainer $config.storage.artifacts.containers.shmArtifactsNPS -StorageContext $storageAccount.Context
+    if (-not $success) { throw }
+    Add-LogMessage -Level Success "Uploaded NPS artifacts to storage account '$($config.storage.artifacts.accountName)'"
+} catch {
+    Add-LogMessage -Level Fatal "Failed to upload NPS artifacts to storage account '$($config.storage.artifacts.accountName)'!"
 }
 
 
 # Deploy NPS from template
 # ------------------------
 Add-LogMessage -Level Info "Deploying network policy server (NPS) from template..."
-# NB. We do not currently use the dedicated service-servers computer management user.
-# This will need some deeper thought about which OU each VM should belong to.
 $params = @{
-    Administrator_Password         = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
-    Administrator_User             = $vmAdminUsername
-    BootDiagnostics_Account_Name   = $config.storage.bootdiagnostics.accountName
-    Domain_Join_Password           = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
-    Domain_Join_User               = $domainJoinUsername
-    Domain_Name                    = $config.domain.fqdn
-    NPS_Data_Disk_Size_GB          = [int]$config.nps.disks.data.sizeGb
-    NPS_Data_Disk_Type             = $config.nps.disks.data.type
-    NPS_Host_Name                  = $config.nps.hostname
-    NPS_IP_Address                 = $config.nps.ip
-    NPS_Os_Disk_Size_GB            = [int]$config.nps.disks.os.sizeGb
-    NPS_Os_Disk_Type               = $config.nps.disks.os.type
-    NPS_VM_Name                    = $config.nps.vmName
-    NPS_VM_Size                    = $config.nps.vmSize
-    OU_Path                        = $config.domain.ous.identityServers.path
-    Virtual_Network_Name           = $config.network.vnet.name
-    Virtual_Network_Resource_Group = $config.network.vnet.rg
-    Virtual_Network_Subnet         = $config.network.vnet.subnets.identity.name
+    administratorPassword           = (ConvertTo-SecureString $vmAdminPassword -AsPlainText -Force)
+    administratorUsername           = $vmAdminUsername
+    bootDiagnosticsAccountName      = $config.storage.bootdiagnostics.accountName
+    domainJoinOuPath                = $config.domain.ous.identityServers.path
+    domainJoinPassword              = (ConvertTo-SecureString $domainJoinPassword -AsPlainText -Force)
+    domainJoinUser                  = $config.users.computerManagers.identityServers.samAccountName
+    domainName                      = $config.domain.fqdn
+    virtualNetworkName              = $config.network.vnet.name
+    virtualNetworkResourceGroupName = $config.network.vnet.rg
+    virtualNetworkSubnetName        = $config.network.vnet.subnets.identity.name
+    vmHostName                      = $config.nps.hostname
+    vmName                          = $config.nps.vmName
+    vmOsDiskSizeGb                  = [int]$config.nps.disks.os.sizeGb
+    vmOsDiskType                    = $config.nps.disks.os.type
+    vmPrivateIpAddress              = $config.nps.ip
+    vmSize                          = $config.nps.vmSize
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -Params $params -ResourceGroupName $config.nps.rg
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "shm-nps-template.json") -TemplateParameters $params -ResourceGroupName $config.nps.rg
 
 
-# Run configuration script remotely
-# ---------------------------------
-Add-LogMessage -Level Info "Configuring NPS server '$($config.nps.vmName)'..."
+# Apply SHM NPS desired state
+# ---------------------------
+Add-LogMessage -Level Info "Installing desired state prerequisites on NPS..."
+$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath (Join-Path $dscPath "NPSBootstrap.ps1") -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -SuppressOutput
 $params = @{
-    installationDir = $config.nps.installationDirectory
+    ArtifactsBlobNamesB64         = Get-AzStorageBlob -Container $config.storage.artifacts.containers.shmArtifactsNPS -Context $storageAccount.Context | ForEach-Object { $_.Name } | ConvertTo-Json -Depth 99 | ConvertTo-Base64
+    ArtifactsBlobSasTokenB64      = (New-ReadOnlyStorageAccountSasToken -SubscriptionName $config.subscriptionName -ResourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName) | ConvertTo-Base64
+    ArtifactsStorageAccountName   = $config.storage.artifacts.accountName
+    ArtifactsStorageContainerName = $config.storage.artifacts.containers.shmArtifactsNPS
+    ArtifactsTargetDirectory      = $config.nps.installationDirectory
 }
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Prepare_NPS_Server.ps1"
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
-
-
-# Import conditional-access-policy settings
-# -----------------------------------------
-Add-LogMessage -Level Info "Copying NPS artifacts to '$($config.nps.vmName)'..."
-$blobNames = Get-AzStorageBlob -Container $storageContainerName -Context $storageAccount.Context | ForEach-Object { $_.Name }
-$artifactSasToken = New-ReadOnlyStorageAccountSasToken -subscriptionName $config.subscriptionName -resourceGroup $config.storage.artifacts.rg -AccountName $config.storage.artifacts.accountName
-$params = @{
-    blobNameArrayB64     = $blobNames | ConvertTo-Json -Depth 99 | ConvertTo-Base64
-    installationDir      = $config.nps.installationDirectory
-    sasTokenB64          = $artifactSasToken | ConvertTo-Base64
-    storageAccountName   = $config.storage.artifacts.accountName
-    storageContainerName = $storageContainerName
-}
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_nps" "scripts" "Import_NPS_Config.ps1"
-$null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -Parameter $params
+$null = Invoke-AzureVmDesiredState -ArchiveBlobName "NPSDesiredState.ps1.zip" `
+                                   -ArchiveContainerName $config.storage.artifacts.containers.shmDesiredState `
+                                   -ArchiveResourceGroupName $config.storage.artifacts.rg `
+                                   -ArchiveStorageAccountName $config.storage.artifacts.accountName `
+                                   -ConfigurationName "ConfigureNetworkPolicyServer" `
+                                   -ConfigurationParameters $params `
+                                   -VmLocation $config.location `
+                                   -VmName $config.nps.vmName `
+                                   -VmResourceGroupName $config.nps.rg
 
 
 # Set locale, install updates and reboot
 # --------------------------------------
 Add-LogMessage -Level Info "Updating NPS VM '$($config.nps.vmName)'..."
-Invoke-WindowsConfigureAndUpdate -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -TimeZone $config.time.timezone.windows -NtpServer ($config.time.ntp.serverAddresses)[0] -AdditionalPowershellModules "MSOnline"
+Invoke-WindowsConfiguration -VMName $config.nps.vmName -ResourceGroupName $config.nps.rg -TimeZone $config.time.timezone.windows -NtpServer ($config.time.ntp.serverAddresses)[0]
 
 
 # Switch back to original subscription

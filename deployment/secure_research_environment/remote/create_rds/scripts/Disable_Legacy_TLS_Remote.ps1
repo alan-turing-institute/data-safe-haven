@@ -77,12 +77,13 @@ $disallowedCiphers = Get-TlsCipherSuite | ForEach-Object { $_.Name } | Where-Obj
 
 # Disable all ciphers that are not in the allowed list
 # ----------------------------------------------------
+# By disabling before enabling, we ensure that this will not remove any ciphers that we want to keep.
 Write-Output "Disabling any disallowed ciphersuites..."
 foreach ($disallowedCipher in $disallowedCiphers) {
     # Note that running Disable-TlsCipherSuite on eg. TLS_DHE_RSA_WITH_AES_128_CCM will also disable TLS_DHE_RSA_WITH_AES_128_CCM_8
-    # We therefore check whether the cipher still exists before disabling it.
-    # By disabling before enabling, we ensure that this will not remove any ciphers that we want to keep.
+    # Disable-TlsCipherSuite raises an error if the suite is already disabled. Therefore suites are enabled before being disabled.
     if (Get-TlsCipherSuite -Name $disallowedCipher) {
+        Enable-TlsCipherSuite -Name $disallowedCipher
         Disable-TlsCipherSuite -Name $disallowedCipher
         if ($?) {
             Write-Output " [o] Disabled '$disallowedCipher' suite."

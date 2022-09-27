@@ -1,0 +1,16 @@
+{
+    "sreId": "t3msrds",
+    "tier": "3",
+    "shmId": "green",
+    "subscriptionName": "Data Safe Haven Development",
+    "ipPrefix": "10.163.0",
+    "inboundAccessFrom": ["193.60.220.240"],
+    "outboundInternetAccess": "default",
+    "computeVmImage": {
+        "type": "Ubuntu",
+        "version": "20.04.2022081900"
+    },
+    "remoteDesktopProvider": "MicrosoftRDS",
+    "dataAdminIpAddresses": ["193.60.220.240"],
+    "databases": ["MSSQL", "PostgreSQL"]
+}

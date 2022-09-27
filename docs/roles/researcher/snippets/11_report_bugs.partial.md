@@ -2,7 +2,7 @@
 
 The Data Safe Haven SRE has been developed in close collaboration with our users: you!
 
-We try to make the user experience as smooth as possible and this document has been greatly improved by feedback from projects participants and researchers going through the process for the first time.
+We try to make the user experience as smooth as possible and this document has been greatly improved by feedback from project participants and researchers going through the process for the first time.
 We are constantly working to improve the SRE and we really appreciate your input and support as we develop the infrastructure.
 
 ```{important}

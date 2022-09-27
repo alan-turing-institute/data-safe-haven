@@ -5,14 +5,22 @@ param(
     [string]$sreId
 )
 
-Import-Module Az -ErrorAction Stop
+Import-Module Az.Accounts -ErrorAction Stop
+Import-Module Az.Compute -ErrorAction Stop
+Import-Module Az.Dns -ErrorAction Stop
+Import-Module Az.Network -ErrorAction Stop
+Import-Module Az.Storage -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureDns -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureNetwork -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureResources -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/Cryptography -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Deployments -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Networking -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/Security -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/RemoteCommands -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 
 
@@ -32,8 +40,6 @@ if ($config.sre.remoteDesktop.provider -ne "MicrosoftRDS") {
 
 # Set constants used in this script
 # ---------------------------------
-$containerNameGateway = "sre-rds-gateway-scripts"
-$containerNameSessionHosts = "sre-rds-sh-packages"
 $vmNamePairs = @(("RDS Gateway", $config.sre.remoteDesktop.gateway.vmName),
                  ("RDS Session Host (App server)", $config.sre.remoteDesktop.appSessionHost.vmName))
 
@@ -84,165 +90,126 @@ $null = Deploy-ResourceGroup -Name $config.sre.remoteDesktop.rg -Location $confi
 # ------------------------
 Add-LogMessage -Level Info "Deploying RDS from template..."
 $params = @{
-    Administrator_User                    = $sreAdminUsername
-    BootDiagnostics_Account_Name          = $config.sre.storage.bootdiagnostics.accountName
-    Domain_Join_Password_Gateway          = (ConvertTo-SecureString $domainJoinGatewayPassword -AsPlainText -Force)
-    Domain_Join_Password_Session_Hosts    = (ConvertTo-SecureString $domainJoinSessionHostPassword -AsPlainText -Force)
-    Domain_Join_User_Gateway              = $config.shm.users.computerManagers.rdsGatewayServers.samAccountName
-    Domain_Join_User_Session_Hosts        = $config.shm.users.computerManagers.rdsSessionServers.samAccountName
-    Domain_Name                           = $config.shm.domain.fqdn
-    OU_Path_Gateway                       = $config.shm.domain.ous.rdsGatewayServers.path
-    OU_Path_Session_Hosts                 = $config.shm.domain.ous.rdsSessionServers.path
-    RDS_Gateway_Admin_Password            = (ConvertTo-SecureString $rdsGatewayAdminPassword -AsPlainText -Force)
-    RDS_Gateway_Data_Disk_Size_GB         = [int]$config.sre.remoteDesktop.gateway.disks.data.sizeGb
-    RDS_Gateway_Data_Disk_Type            = $config.sre.remoteDesktop.gateway.disks.data.type
-    RDS_Gateway_IP_Address                = $config.sre.remoteDesktop.gateway.ip
-    RDS_Gateway_Name                      = $config.sre.remoteDesktop.gateway.vmName
-    RDS_Gateway_NSG_Name                  = $config.sre.remoteDesktop.gateway.nsg.name
-    RDS_Gateway_Os_Disk_Size_GB           = [int]$config.sre.remoteDesktop.gateway.disks.os.sizeGb
-    RDS_Gateway_Os_Disk_Type              = $config.sre.remoteDesktop.gateway.disks.os.type
-    RDS_Gateway_Subnet_Name               = $config.sre.network.vnet.subnets.remoteDesktop.name
-    RDS_Gateway_VM_Size                   = $config.sre.remoteDesktop.gateway.vmSize
-    RDS_Session_Host_Apps_Admin_Password  = (ConvertTo-SecureString $rdsAppSessionHostAdminPassword -AsPlainText -Force)
-    RDS_Session_Host_Apps_IP_Address      = $config.sre.remoteDesktop.appSessionHost.ip
-    RDS_Session_Host_Apps_Name            = $config.sre.remoteDesktop.appSessionHost.vmName
-    RDS_Session_Host_Apps_Os_Disk_Size_GB = [int]$config.sre.remoteDesktop.appSessionHost.disks.os.sizeGb
-    RDS_Session_Host_Apps_Os_Disk_Type    = $config.sre.remoteDesktop.appSessionHost.disks.os.type
-    RDS_Session_Host_Apps_VM_Size         = $config.sre.remoteDesktop.appSessionHost.vmSize
-    RDS_Session_Host_Subnet_Name          = $config.sre.network.vnet.subnets.remoteDesktop.name
-    SRE_ID                                = $config.sre.id
-    Virtual_Network_Name                  = $config.sre.network.vnet.name
-    Virtual_Network_Resource_Group        = $config.sre.network.vnet.rg
+    administratorUsername                = $sreAdminUsername
+    bootDiagnosticsAccountName           = $config.sre.storage.bootdiagnostics.accountName
+    domainName                           = $config.shm.domain.fqdn
+    gatewayAdministratorPassword         = (ConvertTo-SecureString $rdsGatewayAdminPassword -AsPlainText -Force)
+    gatewayDataDiskSizeGb                = [int]$config.sre.remoteDesktop.gateway.disks.data.sizeGb
+    gatewayDataDiskType                  = $config.sre.remoteDesktop.gateway.disks.data.type
+    gatewayDomainJoinOuPath              = $config.shm.domain.ous.rdsGatewayServers.path
+    gatewayDomainJoinPassword            = (ConvertTo-SecureString $domainJoinGatewayPassword -AsPlainText -Force)
+    gatewayDomainJoinUser                = $config.shm.users.computerManagers.rdsGatewayServers.samAccountName
+    gatewayNsgName                       = $config.sre.remoteDesktop.gateway.nsg.name
+    gatewayOsDiskSizeGb                  = [int]$config.sre.remoteDesktop.gateway.disks.os.sizeGb
+    gatewayOsDiskType                    = $config.sre.remoteDesktop.gateway.disks.os.type
+    gatewayPrivateIpAddress              = $config.sre.remoteDesktop.gateway.ip
+    gatewayVmName                        = $config.sre.remoteDesktop.gateway.vmName
+    gatewayVmSize                        = $config.sre.remoteDesktop.gateway.vmSize
+    sessionHostAppsAdministratorPassword = (ConvertTo-SecureString $rdsAppSessionHostAdminPassword -AsPlainText -Force)
+    sessionHostAppsOsDiskSizeGb          = [int]$config.sre.remoteDesktop.appSessionHost.disks.os.sizeGb
+    sessionHostAppsOsDiskType            = $config.sre.remoteDesktop.appSessionHost.disks.os.type
+    sessionHostAppsPrivateIpAddress      = $config.sre.remoteDesktop.appSessionHost.ip
+    sessionHostAppsVmName                = $config.sre.remoteDesktop.appSessionHost.vmName
+    sessionHostAppsVmSize                = $config.sre.remoteDesktop.appSessionHost.vmSize
+    sessionHostsDomainJoinOuPath         = $config.shm.domain.ous.rdsSessionServers.path
+    sessionHostsDomainJoinPassword       = (ConvertTo-SecureString $domainJoinSessionHostPassword -AsPlainText -Force)
+    sessionHostsDomainJoinUser           = $config.shm.users.computerManagers.rdsSessionServers.samAccountName
+    virtualNetworkGatewaySubnetName      = $config.sre.network.vnet.subnets.remoteDesktop.name
+    virtualNetworkName                   = $config.sre.network.vnet.name
+    virtualNetworkResourceGroupName      = $config.sre.network.vnet.rg
+    virtualNetworkSessionHostsSubnetName = $config.sre.network.vnet.subnets.remoteDesktop.name
 }
-Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -Params $params -ResourceGroupName $config.sre.remoteDesktop.rg
-
-
-# Create blob containers in SRE storage account
-# ---------------------------------------------
-Add-LogMessage -Level Info "Creating blob storage containers in storage account '$($sreStorageAccount.StorageAccountName)'..."
-foreach ($containerName in ($containerNameGateway, $containerNameSessionHosts)) {
-    $null = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
-    $blobs = @(Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context)
-    $numBlobs = $blobs.Length
-    if ($numBlobs -gt 0) {
-        Add-LogMessage -Level Info "[ ] Deleting $numBlobs blobs aready in container '$containerName'..."
-        $blobs | ForEach-Object { Remove-AzStorageBlob -Blob $_.Name -Container $containerName -Context $sreStorageAccount.Context -Force }
-        while ($numBlobs -gt 0) {
-            Start-Sleep -Seconds 5
-            $numBlobs = (Get-AzStorageBlob -Container $containerName -Context $sreStorageAccount.Context).Length
-        }
-        if ($?) {
-            Add-LogMessage -Level Success "Blob deletion succeeded"
-        } else {
-            Add-LogMessage -Level Fatal "Blob deletion failed!"
-        }
-    }
-}
-
-
-# Upload RDS deployment scripts and installers to SRE storage
-# -----------------------------------------------------------
-Add-LogMessage -Level Info "Upload RDS deployment scripts to storage..."
-
-# Expand mustache template variables
-$config["rdsTemplates"] = @{
-    domainAdminUsername = $domainAdminUsername
-    ipAddressFirstSRD   = $ipAddressFirstSRD
-}
-# Expand deploy script
-$deployScriptLocalFilePath = (New-TemporaryFile).FullName
-$template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.mustache.ps1" | Get-Item | Get-Content -Raw
-Expand-MustacheTemplate -Template $template -Parameters $config | Out-File $deployScriptLocalFilePath
-# Expand server list XML
-$serverListLocalFilePath = (New-TemporaryFile).FullName
-$template = Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.mustache.xml" | Get-Item | Get-Content -Raw
-Expand-MustacheTemplate -Template $template -Parameters $config | Out-File $serverListLocalFilePath
-
-# Copy installers from SHM storage
-try {
-    Add-LogMessage -Level Info "[ ] Copying RDS installers to storage account '$($sreStorageAccount.StorageAccountName)'"
-    $blobs = Get-AzStorageBlob -Context $shmStorageAccount.Context -Container $containerNameSessionHosts -ErrorAction Stop
-    $null = $blobs | Start-AzStorageBlobCopy -Context $shmStorageAccount.Context -DestContext $sreStorageAccount.Context -DestContainer $containerNameSessionHosts -Force -ErrorAction Stop
-    Add-LogMessage -Level Success "File copying succeeded"
-} catch {
-    Add-LogMessage -Level Fatal "File copying failed!" -Exception $_.Exception
-}
-
-# Upload scripts
-try {
-    Add-LogMessage -Level Info "[ ] Uploading RDS gateway scripts to storage account '$($sreStorageAccount.StorageAccountName)'"
-    $null = Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $deployScriptLocalFilePath -Blob "Deploy_RDS_Environment.ps1" -Force -ErrorAction Stop
-    $null = Set-AzStorageBlobContent -Container $containerNameGateway -Context $sreStorageAccount.Context -File $serverListLocalFilePath -Blob "ServerList.xml" -Force -ErrorAction Stop
-    Add-LogMessage -Level Success "File uploading succeeded"
-} catch {
-    Add-LogMessage -Level Fatal "File uploading failed!" -Exception $_.Exception
-}
+Deploy-ArmTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "arm_templates" "sre-rds-template.json") -TemplateParameters $params -ResourceGroupName $config.sre.remoteDesktop.rg
 
 
 # Get public IP address of RDS gateway
 # ------------------------------------
 $rdsGatewayVM = Get-AzVM -ResourceGroupName $config.sre.remoteDesktop.rg -Name $config.sre.remoteDesktop.gateway.vmName
 $rdsGatewayPrimaryNicId = ($rdsGateWayVM.NetworkProfile.NetworkInterfaces | Where-Object { $_.Primary })[0].Id
-$rdsRgPublicIps = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.remoteDesktop.rg)
-$rdsGatewayPublicIp = ($rdsRgPublicIps | Where-Object { $_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*" }).IpAddress
+$rdsGatewayPublicIp = (Get-AzPublicIpAddress -ResourceGroupName $config.sre.remoteDesktop.rg | Where-Object { $_.IpConfiguration.Id -like "$rdsGatewayPrimaryNicId*" }).IpAddress
 
 
 # Add DNS records for RDS Gateway
 # -------------------------------
-$null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
-# Add DNS records to SRE DNS Zone
-Add-LogMessage -Level Info "Adding DNS record for RDS Gateway"
-$dnsTtlSeconds = 30
-# Set the A record for the SRE FQDN
-$recordName = "@"
-Add-LogMessage -Level Info "[ ] Setting 'A' record for gateway host to '$rdsGatewayPublicIp' in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
-Remove-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name $recordName -RecordType A -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Ipv4Address $rdsGatewayPublicIp)
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'A' record for gateway host"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'A' record for gateway host!"
+Deploy-DnsRecordCollection -PublicIpAddress $rdsGatewayPublicIp `
+                           -RecordNameA "@" `
+                           -RecordNameCAA "letsencrypt.org" `
+                           -RecordNameCName $serverHostname `
+                           -ResourceGroupName $config.shm.dns.rg `
+                           -SubscriptionName $config.shm.dns.subscriptionName `
+                           -TtlSeconds 30 `
+                           -ZoneName $config.sre.domain.fqdn
+
+
+# Create blob containers in SRE storage account
+# ---------------------------------------------
+Add-LogMessage -Level Info "Creating blob storage containers in storage account '$($sreStorageAccount.StorageAccountName)'..."
+foreach ($containerName in $config.sre.storage.artifacts.containers.Values) {
+    $null = Deploy-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
+    $null = Clear-StorageContainer -Name $containerName -StorageAccount $sreStorageAccount
 }
-# Set the CNAME record for the remote desktop server
-$serverHostname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
-Add-LogMessage -Level Info "[ ] Setting CNAME record for gateway host to point to the 'A' record in SRE $($config.sre.id) DNS zone ($($config.sre.domain.fqdn))"
-Remove-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name $serverHostname -RecordType CNAME -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -Cname $config.sre.domain.fqdn)
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'CNAME' record for gateway host"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'CNAME' record for gateway host!"
+
+
+# Upload RDS deployment scripts to SRE storage
+# --------------------------------------------
+Add-LogMessage -Level Info "Upload RDS deployment scripts to storage..."
+# Expand mustache template variables
+$config["rdsTemplates"] = @{
+    domainAdminUsername = $domainAdminUsername
+    ipAddressFirstSRD   = $ipAddressFirstSRD
 }
-# Set the CAA record for the SRE FQDN
-Add-LogMessage -Level Info "[ ] Setting CAA record for $($config.sre.domain.fqdn) to state that certificates will be provided by Let's Encrypt"
-Remove-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg
-$null = New-AzDnsRecordSet -Name "@" -RecordType CAA -ZoneName $config.sre.domain.fqdn -ResourceGroupName $config.shm.dns.rg -Ttl $dnsTtlSeconds -DnsRecords (New-AzDnsRecordConfig -CaaFlags 0 -CaaTag "issue" -CaaValue "letsencrypt.org")
-if ($?) {
-    Add-LogMessage -Level Success "Successfully set 'CAA' record for $($config.sre.domain.fqdn)"
-} else {
-    Add-LogMessage -Level Fatal "Failed to set 'CAA' record for $($config.sre.domain.fqdn)!"
+# Upload deploy script
+try {
+    Add-LogMessage -Level Info "[ ] Uploading RDS deployment script to storage account '$($sreStorageAccount.StorageAccountName)'"
+    $temporaryPath = (New-TemporaryFile).FullName
+    Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "Deploy_RDS_Environment.mustache.ps1") -Parameters $config | Out-File $temporaryPath
+    $null = Set-AzStorageBlobContent -Container $config.sre.storage.artifacts.containers.sreScriptsRDS -Context $sreStorageAccount.Context -File $temporaryPath -Blob "Deploy_RDS_Environment.ps1" -Force -ErrorAction Stop
+    Remove-Item -Path $temporaryPath
+} catch {
+    Add-LogMessage -Level Fatal "Uploading RDS deployment script failed!" -Exception $_.Exception
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
+# Upload deploy script
+try {
+    Add-LogMessage -Level Info "[ ] Uploading RDS server list to storage account '$($sreStorageAccount.StorageAccountName)'"
+    $temporaryPath = (New-TemporaryFile).FullName
+    Expand-MustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "remote" "create_rds" "templates" "ServerList.mustache.xml") -Parameters $config | Out-File $temporaryPath
+    $null = Set-AzStorageBlobContent -Container $config.sre.storage.artifacts.containers.sreScriptsRDS -Context $sreStorageAccount.Context -File $temporaryPath -Blob "ServerList.xml" -Force -ErrorAction Stop
+    Remove-Item -Path $temporaryPath
+} catch {
+    Add-LogMessage -Level Fatal "Uploading RDS server list failed!" -Exception $_.Exception
+}
+
+
+# Upload RDS package installers to SRE storage
+# --------------------------------------------
+Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($sreStorageAccount.StorageAccountName)'..."
+try {
+    # Chrome
+    $null = Set-AzureStorageBlobFromUri -FileUri "http://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi" -BlobFilename "GoogleChrome_x64.msi" -StorageContainer $config.sre.storage.artifacts.containers.sreArtifactsRDS -StorageContext $sreStorageAccount.Context
+    # PuTTY
+    $baseUri = "https://the.earth.li/~sgtatham/putty/latest/w64/"
+    $filename = $(Invoke-WebRequest -Uri $baseUri).Links | Where-Object { $_.href -like "*installer.msi" } | ForEach-Object { $_.href } | Select-Object -First 1
+    $version = ($filename -split "-")[2]
+    $null = Set-AzureStorageBlobFromUri -FileUri "$($baseUri.Replace('latest', $version))/$filename" -BlobFilename "PuTTY_x64.msi" -StorageContainer $config.sre.storage.artifacts.containers.sreArtifactsRDS -StorageContext $sreStorageAccount.Context
+    Add-LogMessage -Level Success "Uploaded Windows package installers"
+} catch {
+    Add-LogMessage -Level Fatal "Failed to upload Windows package installers!" -Exception $_.Exception
+}
 
 
 # Import files to RDS VMs
 # -----------------------
-$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "Importing files from storage to RDS VMs..."
 # Set correct list of packages from blob storage for each session host
 $blobfiles = @{}
 $vmNamePairs | ForEach-Object { $blobfiles[$_[1]] = @() }
-foreach ($blob in Get-AzStorageBlob -Container $containerNameSessionHosts -Context $sreStorageAccount.Context) {
-    if (($blob.Name -like "*GoogleChrome_x64.msi") -or ($blob.Name -like "*PuTTY_x64.msi")) {
-        $blobfiles[$config.sre.remoteDesktop.appSessionHost.vmName] += @{$containerNameSessionHosts = $blob.Name }
-    }
+foreach ($blob in Get-AzStorageBlob -Container $config.sre.storage.artifacts.containers.sreArtifactsRDS -Context $sreStorageAccount.Context) {
+    $blobfiles[$config.sre.remoteDesktop.appSessionHost.vmName] += @{$config.sre.storage.artifacts.containers.sreArtifactsRDS = $blob.Name }
 }
 # ... and for the gateway
-foreach ($blob in Get-AzStorageBlob -Container $containerNameGateway -Context $sreStorageAccount.Context) {
-    $blobfiles[$config.sre.remoteDesktop.gateway.vmName] += @{$containerNameGateway = $blob.Name }
+foreach ($blob in Get-AzStorageBlob -Container $config.sre.storage.artifacts.containers.sreScriptsRDS -Context $sreStorageAccount.Context) {
+    $blobfiles[$config.sre.remoteDesktop.gateway.vmName] += @{$config.sre.storage.artifacts.containers.sreScriptsRDS = $blob.Name }
 }
-$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
-
 # Copy software and/or scripts to RDS VMs
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Import_And_Install_Blobs.ps1"
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
@@ -262,6 +229,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $vmName -ResourceGroupName $config.sre.remoteDesktop.rg -Parameter $params
 }
 
+
 # Set locale, install updates and reboot
 # --------------------------------------
 foreach ($nameVMNameParamsPair in $vmNamePairs) {
@@ -270,7 +238,7 @@ foreach ($nameVMNameParamsPair in $vmNamePairs) {
     $params = @{}
     # The RDS Gateway needs the RDWebClientManagement Powershell module
     if ($name -eq "RDS Gateway") { $params["AdditionalPowershellModules"] = @("RDWebClientManagement") }
-    Invoke-WindowsConfigureAndUpdate -VMName $vmName -ResourceGroupName $config.sre.remoteDesktop.rg -TimeZone $config.sre.time.timezone.windows -NtpServer ($config.shm.time.ntp.serverAddresses)[0] @params
+    Invoke-WindowsConfiguration -VMName $vmName -ResourceGroupName $config.sre.remoteDesktop.rg -TimeZone $config.sre.time.timezone.windows -NtpServer ($config.shm.time.ntp.serverAddresses)[0] @params
 }
 
 

@@ -5,7 +5,7 @@ param(
     [string]$sreId = $null
 )
 
-Import-Module $PSScriptRoot/common/Configuration -ErrorAction Stop -Force
+Import-Module $PSScriptRoot/common/Configuration -Force -ErrorAction Stop
 
 
 # Generate and return the full config for the SHM or SRE

@@ -39,11 +39,11 @@ $EnableSSIS = [System.Convert]::ToBoolean($EnableSSIS)
 # Ensure that SSIS is enabled/disabled as requested
 # -------------------------------------------------
 if ($EnableSSIS) {
-    Write-Output "Ensuring that SSIS services (SSISTELEMETRY150, MsDtsServer150) are enabled on: '$serverName'"
-    Get-Service SSISTELEMETRY150, MsDtsServer150 | Start-Service -PassThru | Set-Service -StartupType Automatic
+    Write-Output "Ensuring that SSIS services (SSISTELEMETRY and MsDtsServer) are enabled on: '$serverName'"
+    Get-Service SSISTELEMETRY160, MsDtsServer160 | Start-Service -PassThru | Set-Service -StartupType Automatic
 } else {
-    Write-Output "Ensuring that SSIS services (SSISTELEMETRY150, MsDtsServer150) are disabled on: '$serverName'"
-    Get-Service SSISTELEMETRY150, MsDtsServer150 | Stop-Service -PassThru | Set-Service -StartupType Disabled
+    Write-Output "Ensuring that SSIS services (SSISTELEMETRY and MsDtsServer) are disabled on: '$serverName'"
+    Get-Service SSISTELEMETRY160, MsDtsServer160 | Stop-Service -PassThru | Set-Service -StartupType Disabled
 }
 if ($?) {
     Write-Output " [o] Successfully updated SSIS services state on: '$serverName'"

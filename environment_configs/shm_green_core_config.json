@@ -1,0 +1,30 @@
+{
+    "name": "Turing Data Safe Haven (Green)",
+    "shmId": "green",
+    "domain": "green.develop.turingsafehaven.ac.uk",
+    "timezone": "Europe/London",
+    "azure": {
+        "activeDirectoryTenantId": "cb94a6f6-ef7a-42ab-bcad-4f0b887cfd3e",
+        "adminGroupName": "Safe Haven Test Admins",
+        "location": "uksouth",
+        "subscriptionName": "Data Safe Haven Development"
+    },
+    "organisation": {
+        "name": "The Alan Turing Institute",
+        "townCity": "London",
+        "stateCountyRegion": "London",
+        "countryCode": "GB",
+        "contactEmail": "safehavendevs@turing.ac.uk"
+    },
+    "dnsRecords": {
+        "subscriptionName": "[Prod] Safe Haven Domains",
+        "resourceGroupName": "RG_SHM_DNS_TEST"
+    },
+    "repositoryType": {
+        "tier2": "proxy",
+        "tier3": "mirror"
+    },
+    "vmImages": {
+        "subscriptionName": "[Prod] Safe Haven VM Images"
+    }
+}
