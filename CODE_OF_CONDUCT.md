@@ -105,7 +105,7 @@ If you feel able to, please contact one of the [Code of Conduct Committee](#41-t
 
 ### 3.2 Alternate contact points
 
-We are still looking for a contact outside of the core development team, please get in touch if you're interested.
+If you would like to contact someone outside of the core development team, please contact the **external project contact** on the [Code of Conduct Committee](#41-the-code-of-conduct-committee).
 
 ### 3.3 What to do if someone is in physical danger
 
@@ -164,7 +164,7 @@ In the event that a resolution can't be determined in that time, a member of the
 
 The CoC committee will seek to agree on a resolution by consensus of all members investigating the report in question.
 If the committee cannot reach consensus and deadlocks for over a week, the CoC lead, will break the tie.
-If the CoC lead is unable to take part in the discussion due to a conflict of interest, an external contact will be sought.
+If the CoC lead is unable to take part in the discussion due to a conflict of interest, the external project contact will take their place.
 
 Possible responses may include:
 
@@ -190,7 +190,7 @@ However, the CoC committee is not required to act on this feedback.
 
 ### 4.5 Conflicts of Interest
 
-In the event of any conflict of interest such that one or more members of the [the Code of Conduct Committee](#41-the-code-of-conduct-committee) are unable to evaluate or enforce the reported violation, an external contact will take their place.
+In the event of any conflict of interest such that one or more members of the [the Code of Conduct Committee](#41-the-code-of-conduct-committee) are unable to evaluate or enforce the reported violation, they will recuse themselves from any discussion of the issue in question.
 
 ## 5 Acknowledgements
 
