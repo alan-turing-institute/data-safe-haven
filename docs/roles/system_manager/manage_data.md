@@ -103,7 +103,7 @@ For more info on shared SRE storage volumes, consult the {ref}`Safe Haven User G
 
 ### {{card_file_box}} Restoring blobs
 
-Blob containers in backed up storage accounts are protected by [operational backup](https://docs.microsoft.com/en-us/azure/backup/blob-backup-overview#how-operational-backup-works).
+Blob containers in backed up storage accounts are protected by [operational backup](https://learn.microsoft.com/en-us/azure/backup/blob-backup-overview#how-operational-backup-works).
 It is possible to restore the state of the blobs to an earlier point in time, up to twelve weeks in the past.
 
 The blob containers covered by the protection for each SRE are the
