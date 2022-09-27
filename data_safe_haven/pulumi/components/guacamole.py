@@ -7,6 +7,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
 # Local imports
+from .azuread_application import AzureADApplication, AzureADApplicationProps
 from .file_share_file import FileShareFile, FileShareFileProps
 from data_safe_haven.helpers import FileReader
 
@@ -16,28 +17,30 @@ class GuacamoleProps:
 
     def __init__(
         self,
-        aad_tenant_id: Input[str],
-        aad_application_id: Input[str],
+        aad_application_name: Input[str],
         aad_application_url: Input[str],
+        aad_auth_token: Input[str],
+        aad_tenant_id: Input[str],
         ip_address_container: Input[str],
-        ip_address_postgresql: Input[str],
-        postgresql_password: Input[str],
+        ip_address_database: Input[str],
+        database_password: Input[str],
         resource_group_name: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group: Input[str],
+        subnet_container_name: Input[str],
+        subnet_database_name: Input[str],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
-        postgresql_username: Optional[Input[str]] = "postgresadmin",
-        subnet_container_name: Optional[Input[str]] = "GuacamoleContainersSubnet",
-        subnet_database_name: Optional[Input[str]] = "GuacamoleDatabaseSubnet",
+        database_username: Optional[Input[str]] = "postgresadmin",
     ):
-        self.aad_tenant_id = aad_tenant_id
-        self.aad_application_id = aad_application_id
+        self.aad_application_name = aad_application_name
         self.aad_application_url = aad_application_url
+        self.aad_auth_token = aad_auth_token
+        self.aad_tenant_id = aad_tenant_id
         self.ip_address_container = ip_address_container
-        self.ip_address_postgresql = ip_address_postgresql
-        self.postgresql_username = postgresql_username
-        self.postgresql_password = postgresql_password
+        self.ip_address_database = ip_address_database
+        self.database_password = database_password
+        self.database_username = database_username
         self.resource_group_name = resource_group_name
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group = storage_account_resource_group
@@ -71,6 +74,17 @@ class GuacamoleComponent(ComponentResource):
         )
         storage_account_key_secret = Output.secret(storage_account_keys.keys[0].value)
 
+        # Define AzureAD application
+        guacamole_application = AzureADApplication(
+            "guacamole_application",
+            AzureADApplicationProps(
+                application_name=props.aad_application_name,
+                application_url=props.aad_application_url,
+                auth_token=props.aad_auth_token,
+            ),
+            opts=child_opts,
+        )
+
         # Define configuration file shares
         file_share_caddy = storage.FileShare(
             "file_share_guacamole_caddy",
@@ -87,8 +101,8 @@ class GuacamoleComponent(ComponentResource):
         postgresql_server = dbforpostgresql.Server(
             "postgresql_server",
             properties={
-                "administratorLogin": props.postgresql_username,
-                "administratorLoginPassword": props.postgresql_password,
+                "administratorLogin": props.database_username,
+                "administratorLoginPassword": props.database_password,
                 "infrastructureEncryption": "Disabled",
                 "minimalTlsVersion": "TLSEnforcementDisabled",
                 "publicNetworkAccess": "Disabled",
@@ -115,7 +129,7 @@ class GuacamoleComponent(ComponentResource):
             "postgresql_private_endpoint",
             custom_dns_configs=[
                 network.CustomDnsConfigPropertiesFormatArgs(
-                    ip_addresses=[props.ip_address_postgresql],
+                    ip_addresses=[props.ip_address_database],
                 )
             ],
             private_endpoint_name=f"endpoint-{self._name}-guacamole-db",
@@ -213,7 +227,7 @@ class GuacamoleComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_CLIENT_ID",
-                            value=props.aad_application_id,
+                            value=guacamole_application.application_id,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_ISSUER",
@@ -235,18 +249,18 @@ class GuacamoleComponent(ComponentResource):
                             name="POSTGRES_DATABASE", value="guacamole"
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_HOSTNAME", value=props.ip_address_postgresql
+                            name="POSTGRES_HOSTNAME", value=props.ip_address_database
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_PASSWORD",
-                            secure_value=props.postgresql_password,
+                            secure_value=props.database_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRESQL_SSL_MODE", value="require"
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_USER",
-                            value=f"{props.postgresql_username}@{postgresql_server_name}",
+                            value=f"{props.database_username}@{postgresql_server_name}",
                         ),
                     ],
                     ports=[
@@ -329,8 +343,9 @@ class GuacamoleComponent(ComponentResource):
             opts=child_opts,
         )
 
-        # Register outputs
-        self.container_group_ip = container_group.ip_address.ip
-        self.container_group_name = container_group.name
-        self.postgresql_server_name = postgresql_server.name
-        self.resource_group_name = Output.from_input(props.resource_group_name)
+        # # Register outputs
+        # self.guacamole_application = guacamole_application.application_id
+        # self.container_group_ip = container_group.ip_address.ip
+        # self.container_group_name = container_group.name
+        # self.postgresql_server_name = postgresql_server.name
+        # self.resource_group_name = Output.from_input(props.resource_group_name)

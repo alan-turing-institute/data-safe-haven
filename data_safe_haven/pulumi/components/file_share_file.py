@@ -6,8 +6,6 @@ from typing import Optional
 # Third party imports
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.fileshare import ShareFileClient, ShareDirectoryClient
-
-# import chevron
 from pulumi import Input, ResourceOptions
 from pulumi.dynamic import (
     Resource,
@@ -164,7 +162,8 @@ class FileShareFileProvider(ResourceProvider):
         oldProps: _FileShareFileProps,
         newProps: _FileShareFileProps,
     ) -> DiffResult:
-        """Updating is identical to creating."""
+        """Updating is deleting followed by creating."""
+        self.delete(id, oldProps)
         updated = self.create(newProps)
         return UpdateResult(outs={**updated.outs})
 

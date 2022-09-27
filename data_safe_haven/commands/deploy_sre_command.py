@@ -12,8 +12,10 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.pulumi import PulumiInterface
+from data_safe_haven.external import GraphApi
+from data_safe_haven.helpers import alphanumeric, password
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.pulumi import PulumiInterface
 from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisioner
 
 
@@ -43,9 +45,26 @@ class DeploySRECommand(LoggingMixin, Command):
             config = Config(settings.name, settings.subscription_name)
             self.add_missing_values(config)
 
+            # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
+            graph_api = GraphApi(
+                tenant_id=config.shm.aad_tenant_id,
+                default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
+            )
+
             # Deploy infrastructure with Pulumi
             infrastructure = PulumiInterface(
                 config, "SRE", sre_name=self.argument("name")
+            )
+            # Set Azure options
+            infrastructure.add_option("azure-native:location", config.azure.location)
+            infrastructure.add_option(
+                "azure-native:subscriptionId", config.azure.subscription_id
+            )
+            infrastructure.add_option("azure-native:tenantId", config.azure.tenant_id)
+            # Add necessary secrets
+            infrastructure.add_secret("password-guacamole-database-admin", password(20))
+            infrastructure.add_secret(
+                "token-azuread-graphapi", graph_api.token, replace=True
             )
             infrastructure.deploy()
 
@@ -112,10 +131,14 @@ class DeploySRECommand(LoggingMixin, Command):
     def add_missing_values(self, config: Config) -> None:
         """Request any missing config values and add them to the config"""
         # Create a config entry for this SRE if it does not exist
-        sre_name = self.argument("name")
+        sre_name = alphanumeric(self.argument("name"))
         if sre_name not in config.sre.keys():
             highest_index = max([0] + [sre.index for sre in config.sre.values()])
             config.sre[sre_name].index = highest_index + 1
+
+        # Set the FQDN
+        if "fqdn" not in config.sre[sre_name].keys():
+            config.sre[sre_name].fqdn = f"{sre_name}.{config.shm.fqdn}"
 
         # Set whether copying is allowed
         config.sre[sre_name].allow_copy = True if self.option("allow-copy") else False

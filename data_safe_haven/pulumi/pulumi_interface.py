@@ -89,18 +89,21 @@ class PulumiInterface(LoggingMixin):
             )
         return self.stack_
 
-    def add_option(self, name: str, value: str) -> None:
+    def add_option(self, name: str, value: str, replace: bool = False) -> None:
         """Add a public configuration option"""
-        self.options[name] = (value, False)
+        self.options[name] = (value, False, replace)
 
-    def add_secret(self, name: str, value: str) -> None:
-        """Add a secret configuration option"""
-        self.options[name] = (value, True)
+    def add_secret(self, name: str, value: str, replace: bool = False) -> None:
+        """Add a secret configuration option if it does not exist"""
+        self.options[name] = (value, True, replace)
 
     def apply_config_options(self) -> None:
         """Set Pulumi config options"""
-        for name, (value, is_secret) in self.options.items():
-            self.ensure_config(name, value, is_secret)
+        for name, (value, is_secret, replace) in self.options.items():
+            if replace:
+                self.set_config(name, value, is_secret)
+            else:
+                self.ensure_config(name, value, is_secret)
         self.options = {}
 
     def deploy(self) -> None:
@@ -146,13 +149,11 @@ class PulumiInterface(LoggingMixin):
             raise DataSafeHavenPulumiException("Pulumi destroy failed.") from exc
 
     def ensure_config(self, name: str, value: str, secret: bool = False) -> None:
-        """Ensure that config values have been set"""
+        """Ensure that config values have been set, setting them if they do not exist"""
         try:
             self.stack.get_config(name)
         except automation.errors.CommandError:
-            self.stack.set_config(
-                name, automation.ConfigValue(value=value, secret=secret)
-            )
+            self.set_config(name, value, secret)
 
     def evaluate(self, result: str) -> None:
         """Evaluate a Pulumi operation."""
@@ -257,6 +258,10 @@ class PulumiInterface(LoggingMixin):
             raise DataSafeHavenPulumiException(
                 f"Secret '{name}' was not found."
             ) from exc
+
+    def set_config(self, name: str, value: str, secret: bool = False) -> None:
+        """Set config values, overwriting any existing value."""
+        self.stack.set_config(name, automation.ConfigValue(value=value, secret=secret))
 
     def teardown(self) -> None:
         """Teardown the infrastructure deployed with Pulumi."""

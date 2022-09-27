@@ -18,6 +18,7 @@ from .components.secure_research_desktop import (
 from .components.state_storage import StateStorageComponent, StateStorageProps
 from data_safe_haven.helpers import alphanumeric, hash
 
+
 class DeclarativeSRE:
     """Deploy with Pulumi"""
 
@@ -33,18 +34,22 @@ class DeclarativeSRE:
         # Define resource groups
         rg_guacamole = resources.ResourceGroup(
             "rg_guacamole",
+            location=self.cfg.azure.location,
             resource_group_name=f"rg-{self.stack_name}-guacamole",
         )
         rg_networking = resources.ResourceGroup(
             "rg_networking",
+            location=self.cfg.azure.location,
             resource_group_name=f"rg-{self.stack_name}-networking",
         )
         rg_secure_research_desktop = resources.ResourceGroup(
             "rg_secure_research_desktop",
+            location=self.cfg.azure.location,
             resource_group_name=f"rg-{self.stack_name}-secure-research-desktop",
         )
         rg_state = resources.ResourceGroup(
             "rg_state",
+            location=self.cfg.azure.location,
             resource_group_name=f"rg-{self.stack_name}-state",
         )
 
@@ -66,23 +71,26 @@ class DeclarativeSRE:
             ),
         )
 
-        # # Define containerised remote desktop gateway
-        # guacamole = GuacamoleComponent(
-        #     self.stack_name,
-        #     GuacamoleProps(
-        #         aad_application_id=self.cfg.deployment.aad_app_id_guacamole,
-        #         aad_application_url=f"https://{self.cfg.environment.url}",
-        #         aad_tenant_id=self.cfg.azure.aad_tenant_id,
-        #         ip_address_container=networking.ip_address_guacamole_container,
-        #         ip_address_postgresql=networking.ip_address_guacamole_postgresql,
-        #         postgresql_password=self.secrets.get("guacamole-postgresql-password"),
-        #         resource_group_name=rg_guacamole.name,
-        #         storage_account_name=state_storage.account_name,
-        #         storage_account_resource_group=state_storage.resource_group_name,
-        #         virtual_network_resource_group_name=networking.resource_group_name,
-        #         virtual_network=networking.vnet,
-        #     ),
-        # )
+        # Define containerised remote desktop gateway
+        guacamole = GuacamoleComponent(
+            self.stack_name,
+            GuacamoleProps(
+                aad_application_name=f"sre-{self.sre_name}-azuread-guacamole",
+                aad_application_url=f"https://{self.cfg.sre[self.sre_name].fqdn}",
+                aad_auth_token=self.secrets.require("token-azuread-graphapi"),
+                aad_tenant_id=self.cfg.shm.aad_tenant_id,
+                database_password=self.secrets.get("password-guacamole-database-admin"),
+                ip_address_container=networking.guacamole_containers["ip_address"],
+                ip_address_database=networking.guacamole_database["ip_address"],
+                resource_group_name=rg_guacamole.name,
+                subnet_container_name=networking.guacamole_containers["subnet_name"],
+                subnet_database_name=networking.guacamole_database["subnet_name"],
+                storage_account_name=state_storage.account_name,
+                storage_account_resource_group=state_storage.resource_group_name,
+                virtual_network_resource_group_name=networking.resource_group_name,
+                virtual_network=networking.vnet,
+            ),
+        )
 
         # # Define containerised secure desktops
         # srd = SecureResearchDesktopComponent(

@@ -41,7 +41,7 @@ class GraphApi(LoggingMixin):
 
     def __init__(
         self,
-        tenant_id: str,
+        tenant_id: str = None,
         auth_token: str = None,
         application_id: str = None,
         application_secret: str = None,
@@ -147,7 +147,7 @@ class GraphApi(LoggingMixin):
         application_scopes: Sequence[str] = [],
         delegated_scopes: Sequence[str] = [],
         request_json: JSONType = None,
-    ) -> None:
+    ) -> JSONType:
         """Create an AzureAD application if it does not already exist
 
         Raises:
@@ -206,6 +206,7 @@ class GraphApi(LoggingMixin):
                     f"Created new application '<fg=green>{json_response['displayName']}</>'.",
                     overwrite=True,
                 )
+                return json_response
 
             # Grant admin consent for the requested scopes
             if application_scopes or delegated_scopes:
@@ -486,16 +487,14 @@ class GraphApi(LoggingMixin):
             DataSafeHavenMicrosoftGraphException if the application could not be deleted
         """
         try:
-            # Check that the application exists
-            application_oid = self.get_application_by_name(application_name)["id"]
-            if application_oid:
-                # Delete the application
+            # Delete the application if it exists
+            if application := self.get_application_by_name(application_name):
                 self.info(
                     f"Deleting application '<fg=green>{application_name}</>'...",
                     no_newline=True,
                 )
                 self.http_delete(
-                    f"{self.base_endpoint}/applications/{application_oid}",
+                    f"{self.base_endpoint}/applications/{application['id']}",
                 )
                 self.info(
                     f"Deleted application '<fg=green>{application_name}</>'.",
@@ -643,7 +642,6 @@ class GraphApi(LoggingMixin):
 
         Raises:
             DataSafeHavenMicrosoftGraphException if applications could not be loaded
-
         """
         try:
             return self.http_get(

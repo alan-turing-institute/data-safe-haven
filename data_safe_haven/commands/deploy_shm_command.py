@@ -60,6 +60,7 @@ class DeploySHMCommand(LoggingMixin, Command):
             infrastructure.add_option(
                 "azure-native:subscriptionId", config.azure.subscription_id
             )
+            infrastructure.add_option("azure-native:tenantId", config.azure.tenant_id)
             # Add necessary secrets
             infrastructure.add_secret("password-domain-admin", password(20))
             infrastructure.add_secret("password-domain-azure-ad-connect", password(20))
