@@ -139,6 +139,7 @@ class DeploySRECommand(LoggingMixin, Command):
         # Set the FQDN
         if "fqdn" not in config.sre[sre_name].keys():
             config.sre[sre_name].fqdn = f"{sre_name}.{config.shm.fqdn}"
+            config.sre[sre_name].subdomain = sre_name
 
         # Set whether copying is allowed
         config.sre[sre_name].allow_copy = True if self.option("allow-copy") else False

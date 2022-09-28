@@ -11,9 +11,14 @@ class SRENetworkingProps:
 
     def __init__(
         self,
+        fqdn: Input[str],
         resource_group_name: Input[str],
+        shm_zone_resource_group_name: Input[str],
+        shm_zone_name: Input[str],
         sre_index: Input[str],
+        subdomain: Input[str],
     ):
+        self.fqdn = fqdn
         self.resource_group_name = resource_group_name
         # VNet
         self.vnet_ip_range = Output.from_input(sre_index).apply(
@@ -50,6 +55,9 @@ class SRENetworkingProps:
         )
         self.srds_cidr = self.srds_ip_range.apply(lambda ip_range: str(ip_range))
         self.srds_subnet_name = "SecureResearchDesktopSubnet"
+        self.shm_zone_resource_group_name = shm_zone_resource_group_name
+        self.shm_zone_name = shm_zone_name
+        self.subdomain = subdomain
 
 
 class SRENetworkingComponent(ComponentResource):
@@ -182,13 +190,41 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
         )
 
-        # Register outputs
+        # Define SRE DNS zone
+        shm_dns_zone = network.get_zone(
+            resource_group_name=props.shm_zone_resource_group_name,
+            zone_name=props.shm_zone_name,
+        )
+        sre_dns_zone = network.Zone(
+            "sre_dns_zone",
+            location="Global",
+            resource_group_name=props.resource_group_name,
+            zone_name=props.fqdn,
+            zone_type="Public",
+        )
+        sre_ns_record = network.RecordSet(
+            "sre_ns_record",
+            ns_records=sre_dns_zone.name_servers.apply(
+                lambda servers: [network.NsRecordArgs(nsdname=ns) for ns in servers]
+            ),
+            record_type="NS",
+            relative_record_set_name=props.subdomain,
+            resource_group_name=props.shm_zone_resource_group_name,
+            ttl=3600,
+            zone_name=shm_dns_zone.name,
+            opts=child_opts,
+        )
+
+        # Extract useful variables
         ip_address_guacamole_container = props.guacamole_containers_ip_range.apply(
             lambda ip_range: str(ip_range.available()[0])
         )
         ip_address_guacamole_database = props.guacamole_database_ip_range.apply(
             lambda ip_range: str(ip_range.available()[0])
         )
+
+        # Register outputs
+        self.fqdn = Output.from_input(props.fqdn)
         self.guacamole_containers = {
             "ip_address": ip_address_guacamole_container,
             "subnet_name": props.guacamole_containers_subnet_name,
@@ -197,8 +233,5 @@ class SRENetworkingComponent(ComponentResource):
             "ip_address": ip_address_guacamole_database,
             "subnet_name": props.guacamole_database_subnet_name,
         }
-        # self.ip_addresses_srd = props.srds_ip_range.apply(
-        #     lambda ip_range: [str(ip) for ip in ip_range.available()]
-        # )
         self.resource_group_name = Output.from_input(props.resource_group_name)
         self.vnet = vnet

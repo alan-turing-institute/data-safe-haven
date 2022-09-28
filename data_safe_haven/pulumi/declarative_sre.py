@@ -57,8 +57,12 @@ class DeclarativeSRE:
         networking = SRENetworkingComponent(
             self.stack_name,
             SRENetworkingProps(
+                fqdn=self.cfg.sre[self.sre_name].fqdn,
                 resource_group_name=rg_networking.name,
+                shm_zone_resource_group_name=f"rg-shm-{self.cfg.shm.name}-networking",
+                shm_zone_name=self.cfg.shm.fqdn,
                 sre_index=self.cfg.sre[self.sre_name].index,
+                subdomain=self.cfg.sre[self.sre_name].subdomain,
             ),
         )
 
