@@ -2,13 +2,19 @@
 # Standard library imports
 from contextlib import suppress
 import datetime
+from io import UnsupportedOperation
+import pathlib
 import requests
 import time
 from typing import Any, Sequence
 
 # Third party imports
 from dns import resolver
-from msal import ConfidentialClientApplication, PublicClientApplication
+from msal import (
+    ConfidentialClientApplication,
+    PublicClientApplication,
+    SerializableTokenCache,
+)
 
 # Local imports
 from data_safe_haven.exceptions import (
@@ -18,6 +24,22 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.helpers import JSONType
 from data_safe_haven.mixins import LoggingMixin
+
+
+class LocalTokenCache(SerializableTokenCache):
+    def __init__(self, token_cache_filename):
+        super().__init__()
+        self.token_cache_filename = token_cache_filename
+        try:
+            if self.token_cache_filename.exists():
+                with open(self.token_cache_filename, "r") as f_token:
+                    self.deserialize(f_token.read())
+        except (FileNotFoundError, UnsupportedOperation):
+            self.deserialize({})
+
+    def __del__(self):
+        with open(self.token_cache_filename, "w") as f_token:
+            f_token.write(self.serialize())
 
 
 class GraphApi(LoggingMixin):
@@ -347,31 +369,40 @@ class GraphApi(LoggingMixin):
         Raises:
             DataSafeHavenMicrosoftGraphException if the token could not be created
         """
+        result = None
         try:
-            # Use the default application
+            # Load local token cache
+            local_token_cache = LocalTokenCache(pathlib.Path.home() / ".msal_cache")
+            # Use the Powershell application by default as this should be pre-installed
             app = PublicClientApplication(
-                client_id="14d82eec-204b-4c2f-b7e8-296a70dab67e",  # this is the Powershell client id
-                # client_id="04b07795-8ddb-461a-bbee-02f9e1bf7b46",  # this is the Azure CLI client id
                 authority=f"https://login.microsoftonline.com/{self.tenant_id}",
+                client_id="14d82eec-204b-4c2f-b7e8-296a70dab67e",  # this is the Powershell client id
+                token_cache=local_token_cache,
             )
-            # Initiate device code flow
-            flow = app.initiate_device_flow(scopes=self.default_scopes)
-            if "user_code" not in flow:
-                raise DataSafeHavenMicrosoftGraphException(
-                    f"Could not initiate device login for scopes {self.default_scopes}."
+            # Attempt to load token from cache
+            if accounts := app.get_accounts():
+                result = app.acquire_token_silent(
+                    self.default_scopes, account=accounts[0]
                 )
-            self.info(
-                f"Interacting with Azure Active Directory needs administrator approval."
-            )
-            self.info(
-                "Please sign-in with <fg=green>global administrator</> credentials for the Azure Active Directory where your users are stored."
-            )
-            self.info(
-                "Note that the sign-in screen will prompt you to sign-in to <fg=blue>Microsoft Graph Powershell</> - this is expected."
-            )
-            self.info(flow["message"])
-            # Block until a response is received
-            result = app.acquire_token_by_device_flow(flow)
+            # Initiate device code flow
+            if not result:
+                flow = app.initiate_device_flow(scopes=self.default_scopes)
+                if "user_code" not in flow:
+                    raise DataSafeHavenMicrosoftGraphException(
+                        f"Could not initiate device login for scopes {self.default_scopes}."
+                    )
+                self.info(
+                    f"Administrator approval is needed in order to interact with Azure Active Directory."
+                )
+                self.info(
+                    f"Please sign-in with <fg=green>global administrator</> credentials for Azure Active Directory <fg=green>{self.tenant_id}</>."
+                )
+                self.info(
+                    "Note that the sign-in screen will prompt you to sign-in to <fg=blue>Microsoft Graph Powershell</> - this is expected."
+                )
+                self.info(flow["message"])
+                # Block until a response is received
+                result = app.acquire_token_by_device_flow(flow)
             return result["access_token"]
         except Exception as exc:
             error_description = f"Could not create access token"
