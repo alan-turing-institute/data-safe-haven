@@ -1,10 +1,6 @@
-# Standard library imports
-from typing import Optional, Sequence
-
 # Third party imports
 from pulumi import ComponentResource, Input, ResourceOptions, Output
 from pulumi_azure_native import keyvault
-from data_safe_haven.helpers import AzureIPv4Range
 
 
 class SHMSecretsProps:

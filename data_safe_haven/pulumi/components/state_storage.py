@@ -2,9 +2,6 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import storage
 
-# Local imports
-from data_safe_haven.helpers import alphanumeric
-
 
 class StateStorageProps:
     """Properties for StateStorageComponent"""

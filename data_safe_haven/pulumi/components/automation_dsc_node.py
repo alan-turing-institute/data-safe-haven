@@ -10,7 +10,7 @@ from pulumi_azure_native import automation, compute
 
 # Local imports
 from data_safe_haven.helpers import FileReader
-from .compiled_dsc import CompiledDsc, CompiledDscProps
+from ..dynamic.compiled_dsc import CompiledDsc, CompiledDscProps
 
 
 class AutomationDscNodeProps:

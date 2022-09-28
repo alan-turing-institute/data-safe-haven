@@ -118,7 +118,7 @@ class PulumiInterface(LoggingMixin):
             self.update()
         except Exception as exc:
             raise DataSafeHavenPulumiException(
-                f"Pulumi deployment failed.\n{str(exc)}."
+                f"Pulumi deployment failed.\n{str(exc)}"
             ) from exc
 
     def destroy(self) -> None:

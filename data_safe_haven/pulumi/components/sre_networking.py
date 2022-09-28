@@ -1,7 +1,3 @@
-# Standard library imports
-import ipaddress
-from typing import Optional, Sequence
-
 # Third party imports
 from pulumi import ComponentResource, Input, ResourceOptions, Output
 from pulumi_azure_native import network

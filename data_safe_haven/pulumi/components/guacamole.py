@@ -7,8 +7,8 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
 # Local imports
-from .azuread_application import AzureADApplication, AzureADApplicationProps
-from .file_share_file import FileShareFile, FileShareFileProps
+from ..dynamic.azuread_application import AzureADApplication, AzureADApplicationProps
+from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 from data_safe_haven.helpers import FileReader
 
 
