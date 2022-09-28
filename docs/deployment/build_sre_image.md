@@ -66,10 +66,8 @@ if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which a
 
 ### Adding a new Python package
 
-- Add the name of the package as it appears on `PyPI` to each of the package lists (supported Python versions only):
-  - `deployment/secure_research_desktop/packages/packages-python-pypi-36.list`
-  - `deployment/secure_research_desktop/packages/packages-python-pypi-37.list`
-  - `deployment/secure_research_desktop/packages/packages-python-pypi-38.list`
+- Add the name of the package as it appears on `PyPI` to the package list:
+  - `deployment/secure_research_desktop/packages/packages-python.yaml`
 - If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then add an entry to the appropriate section in `deployment/secure_research_desktop/packages/python-requirements.json`
 - You should also add this package to the **allow list** used by {ref}`policy_tier_3` package mirrors in `environment_configs/package_lists/allowlist-core-python-pypi-tier3.list`
 
