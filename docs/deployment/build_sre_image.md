@@ -68,7 +68,7 @@ if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which a
 
 - Add the name of the package as it appears on `PyPI` to the package list:
   - `deployment/secure_research_desktop/packages/packages-python.yaml`
-- If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then add an entry to the appropriate section in `deployment/secure_research_desktop/packages/python-requirements.json`
+  - If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then make sure to specify this
 - You should also add this package to the **allow list** used by {ref}`policy_tier_3` package mirrors in `environment_configs/package_lists/allowlist-core-python-pypi-tier3.list`
 
 ### Adding a new R package
