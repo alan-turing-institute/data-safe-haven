@@ -22,6 +22,8 @@ from azure.mgmt.automation.models import (
     DscCompilationJobCreateParameters,
     DscConfigurationAssociationProperty,
 )
+from azure.mgmt.dns import DnsManagementClient
+from azure.mgmt.dns.models import RecordSet, TxtRecord
 from azure.mgmt.keyvault import KeyVaultManagementClient
 from azure.mgmt.keyvault.models import Vault
 from azure.mgmt.msi import ManagedServiceIdentityClient
@@ -178,6 +180,49 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Could not ensure that AzureAD group '{group_name}' exists.\n{str(exc)}"
             ) from exc
 
+    def ensure_dns_txt_record(
+        self,
+        record_name: str,
+        record_value: str,
+        resource_group_name: str,
+        zone_name: str,
+    ) -> RecordSet:
+        """Ensure that a DNS record exists in a DNS zone
+
+        Returns:
+            RecordSet: The DNS record set
+
+        Raises:
+            DataSafeHavenAzureException if the record could not be created
+        """
+        try:
+            # Connect to Azure clients
+            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+
+            # Ensure that record exists
+            self.info(
+                f"Ensuring that DNS record {record_name} exists in zone {zone_name}...",
+                no_newline=True,
+            )
+            record_set = dns_client.record_sets.create_or_update(
+                parameters=RecordSet(
+                    ttl=30, txt_records=[TxtRecord(value=[record_value])]
+                ),
+                record_type="TXT",
+                relative_record_set_name=record_name,
+                resource_group_name=resource_group_name,
+                zone_name=zone_name,
+            )
+            self.info(
+                f"Ensured that DNS record {record_name} exists in zone {zone_name}.",
+                overwrite=True,
+            )
+            return record_set
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to create DNS record {record_name} in zone {zone_name}.\n{str(exc)}"
+            ) from exc
+
     def ensure_keyvault(
         self,
         admin_group_id: str,
@@ -260,56 +305,6 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Failed to create key vault {key_vault_name}.\n{str(exc)}"
             ) from exc
 
-    def ensure_keyvault_certificate(
-        self,
-        certificate_name: str,
-        certificate_url: str,
-        key_vault_name: str,
-    ) -> KeyVaultCertificate:
-        """Ensure that a self-signed certificate exists in the KeyVault
-
-        Returns:
-            str: The certificate secret ID
-
-        Raises:
-            DataSafeHavenAzureException if the existence of the certificate could not be verified
-        """
-        try:
-            # Connect to Azure clients
-            certificate_client = CertificateClient(
-                vault_url=f"https://{key_vault_name}.vault.azure.net",
-                credential=self.credential,
-            )
-
-            # Ensure that certificate exists
-            self.info(
-                f"Ensuring that certificate <fg=green>{certificate_url}</> exists...",
-                no_newline=True,
-            )
-            policy = CertificatePolicy(
-                issuer_name="Self",
-                subject=f"CN={certificate_url}",
-                exportable=True,
-                key_type="RSA",
-                key_size=2048,
-                reuse_key=False,
-                enhanced_key_usage=["1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2"],
-                validity_in_months=12,
-            )
-            poller = certificate_client.begin_create_certificate(
-                certificate_name=certificate_name, policy=policy
-            )
-            certificate = poller.result()
-            self.info(
-                f"Ensured that certificate <fg=green>{certificate_url}</> exists.",
-                overwrite=True,
-            )
-            return certificate
-        except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Failed to create certificate '{certificate_url}'."
-            ) from exc
-
     def ensure_keyvault_key(
         self,
         key_name: str,
@@ -382,6 +377,56 @@ class AzureApi(AzureMixin, LoggingMixin):
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create secret {secret_name}.\n{str(exc)}"
+            ) from exc
+
+    def ensure_keyvault_self_signed_certificate(
+        self,
+        certificate_name: str,
+        certificate_url: str,
+        key_vault_name: str,
+    ) -> KeyVaultCertificate:
+        """Ensure that a self-signed certificate exists in the KeyVault
+
+        Returns:
+            KeyVaultCertificate: The self-signed certificate
+
+        Raises:
+            DataSafeHavenAzureException if the existence of the certificate could not be verified
+        """
+        try:
+            # Connect to Azure clients
+            certificate_client = CertificateClient(
+                vault_url=f"https://{key_vault_name}.vault.azure.net",
+                credential=self.credential,
+            )
+
+            # Ensure that certificate exists
+            self.info(
+                f"Ensuring that certificate <fg=green>{certificate_url}</> exists...",
+                no_newline=True,
+            )
+            policy = CertificatePolicy(
+                issuer_name="Self",
+                subject=f"CN={certificate_url}",
+                exportable=True,
+                key_type="RSA",
+                key_size=2048,
+                reuse_key=False,
+                enhanced_key_usage=["1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2"],
+                validity_in_months=12,
+            )
+            poller = certificate_client.begin_create_certificate(
+                certificate_name=certificate_name, policy=policy
+            )
+            certificate = poller.result()
+            self.info(
+                f"Ensured that certificate <fg=green>{certificate_url}</> exists.",
+                overwrite=True,
+            )
+            return certificate
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to create certificate '{certificate_url}'."
             ) from exc
 
     def ensure_managed_identity(
@@ -568,6 +613,125 @@ class AzureApi(AzureMixin, LoggingMixin):
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to retrieve secret {secret_name}."
+            ) from exc
+
+    def import_keyvault_certificate(
+        self,
+        certificate_name: str,
+        certificate_contents: bytes,
+        key_vault_name: str,
+    ) -> KeyVaultCertificate:
+        """Import a signed certificate to in the KeyVault
+
+        Returns:
+            KeyVaultCertificate: The imported certificate
+
+        Raises:
+            DataSafeHavenAzureException if the existence of the certificate could not be verified
+        """
+        try:
+            # Connect to Azure clients
+            certificate_client = CertificateClient(
+                vault_url=f"https://{key_vault_name}.vault.azure.net",
+                credential=self.credential,
+            )
+
+            # Ensure that certificate exists
+            self.info(
+                f"Importing certificate <fg=green>{certificate_name}</>...",
+                no_newline=True,
+            )
+            certificate = certificate_client.import_certificate(
+                certificate_name=certificate_name,
+                certificate_bytes=certificate_contents,
+                enabled=True,
+            )
+            self.info(
+                f"Imported certificate <fg=green>{certificate_name}</>.",
+                overwrite=True,
+            )
+            return certificate
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to import certificate '{certificate_name}'."
+            ) from exc
+
+    def remove_dns_txt_record(
+        self,
+        record_name: str,
+        resource_group_name: str,
+        zone_name: str,
+    ) -> None:
+        """Remove a DNS record if it exists in a DNS zone
+
+        Raises:
+            DataSafeHavenAzureException if the record could not be removed
+        """
+        try:
+            # Connect to Azure clients
+            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+
+            # Ensure that record is removed
+            self.info(
+                f"Ensuring that DNS record {record_name} is removed from zone {zone_name}...",
+                no_newline=True,
+            )
+            dns_client.record_sets.delete(
+                record_type="TXT",
+                relative_record_set_name=record_name,
+                resource_group_name=resource_group_name,
+                zone_name=zone_name,
+            )
+            self.info(
+                f"Ensured that DNS record {record_name} is removed from zone {zone_name}.",
+                overwrite=True,
+            )
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to remove DNS record {record_name} from zone {zone_name}.\n{str(exc)}"
+            ) from exc
+
+    def remove_keyvault_certificate(
+        self,
+        certificate_name: str,
+        key_vault_name: str,
+    ) -> None:
+        """Ensure that a self-signed certificate exists in the KeyVault
+
+        Raises:
+            DataSafeHavenAzureException if the existence of the certificate could not be verified
+        """
+        try:
+            # Connect to Azure clients
+            certificate_client = CertificateClient(
+                vault_url=f"https://{key_vault_name}.vault.azure.net",
+                credential=self.credential,
+            )
+
+            # Remove certificate if it exists
+            self.info(
+                f"Removing certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>...",
+                no_newline=True,
+            )
+            # Attempt to delete the certificate, catching the error if it does not exist
+            with suppress(ResourceNotFoundError):
+                # Start by attempting to purge in case the certificate has been manually deleted
+                with suppress(HttpResponseError):
+                    certificate_client.purge_deleted_certificate(certificate_name)
+                # Now delete and keep polling until done
+                poller = certificate_client.begin_delete_certificate(certificate_name)
+                while not poller.done():
+                    poller.wait(10)
+                # Purge the deleted certificate
+                with suppress(HttpResponseError):
+                    certificate_client.purge_deleted_certificate(certificate_name)
+            self.info(
+                f"Removed certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>...",
+                overwrite=True,
+            )
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to remove certificate '{certificate_name}' from Key Vault '{key_vault_name}'.",
             ) from exc
 
     def remove_resource_group(self, resource_group_name: str) -> None:

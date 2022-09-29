@@ -10,11 +10,12 @@ from .components.application_gateway import (
 )
 from .components.dns import DnsComponent, DnsProps
 from .components.guacamole import GuacamoleComponent, GuacamoleProps
-from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
 from .components.secure_research_desktop import (
     SecureResearchDesktopComponent,
     SecureResearchDesktopProps,
 )
+from .components.sre_key_vault import SREKeyVaultComponent, SREKeyVaultProps
+from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
 from .components.state_storage import StateStorageComponent, StateStorageProps
 from data_safe_haven.helpers import alphanumeric, hash
 
@@ -47,10 +48,10 @@ class DeclarativeSRE:
             location=self.cfg.azure.location,
             resource_group_name=f"rg-{self.stack_name}-secure-research-desktop",
         )
-        rg_state = resources.ResourceGroup(
-            "rg_state",
+        rg_storage = resources.ResourceGroup(
+            "rg_storage",
             location=self.cfg.azure.location,
-            resource_group_name=f"rg-{self.stack_name}-state",
+            resource_group_name=f"rg-{self.stack_name}-storage",
         )
 
         # Define networking
@@ -70,8 +71,23 @@ class DeclarativeSRE:
         state_storage = StateStorageComponent(
             self.stack_name,
             StateStorageProps(
-                resource_group_name=rg_state.name,
+                resource_group_name=rg_storage.name,
                 storage_name=alphanumeric(f"sre{self.sre_name}{hash(self.stack_name)}"),
+            ),
+        )
+
+        # Define storage accounts
+        key_vault = SREKeyVaultComponent(
+            self.stack_name,
+            SREKeyVaultProps(
+                admin_group_id=self.cfg.azure.admin_group_id,
+                fqdn=self.cfg.sre[self.sre_name].fqdn,
+                key_vault_resource_group_name=rg_storage.name,
+                location=self.cfg.azure.location,
+                networking_resource_group_name=rg_networking.name,
+                subscription_name=self.cfg.subscription_name,
+                sre_name=self.sre_name,
+                tenant_id=self.cfg.azure.tenant_id,
             ),
         )
 

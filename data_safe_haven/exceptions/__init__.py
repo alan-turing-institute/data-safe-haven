@@ -14,6 +14,10 @@ class DataSafeHavenInternalException(DataSafeHavenException):
     pass
 
 
+class DataSafeHavenSSLException(DataSafeHavenException):
+    pass
+
+
 class DataSafeHavenAzureException(DataSafeHavenCloudException):
     pass
 
