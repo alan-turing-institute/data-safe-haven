@@ -66,7 +66,7 @@ class SRENetworkingComponent(ComponentResource):
     def __init__(
         self, name: str, props: SRENetworkingProps, opts: ResourceOptions = None
     ):
-        super().__init__("dsh:network:SRENetworkingComponent", name, {}, opts)
+        super().__init__("dsh:sre:SRENetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         # Define NSGs

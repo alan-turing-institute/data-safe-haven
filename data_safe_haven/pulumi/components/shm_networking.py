@@ -61,7 +61,7 @@ class SHMNetworkingComponent(ComponentResource):
     def __init__(
         self, name: str, props: SHMNetworkingProps, opts: ResourceOptions = None
     ):
-        super().__init__("dsh:shm_networking:SHMNetworkingComponent", name, {}, opts)
+        super().__init__("dsh:shm:SHMNetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         # Set address prefixes from ranges

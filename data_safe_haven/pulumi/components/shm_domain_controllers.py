@@ -63,7 +63,7 @@ class SHMDomainControllersComponent(ComponentResource):
         self, name: str, props: SHMDomainControllersProps, opts: ResourceOptions = None
     ):
         super().__init__(
-            "dsh:shm_domain_controllers:SHMDomainControllersComponent", name, {}, opts
+            "dsh:shm:SHMDomainControllersComponent", name, {}, opts
         )
         child_opts = ResourceOptions(parent=self)
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"

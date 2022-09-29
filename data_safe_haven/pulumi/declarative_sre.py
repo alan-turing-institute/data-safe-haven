@@ -16,7 +16,7 @@ from .components.secure_research_desktop import (
 )
 from .components.sre_key_vault import SREKeyVaultComponent, SREKeyVaultProps
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
-from .components.state_storage import StateStorageComponent, StateStorageProps
+from .components.sre_state_storage import SREStateStorageComponent, SREStateStorageProps
 from data_safe_haven.helpers import alphanumeric, hash
 
 
@@ -68,9 +68,9 @@ class DeclarativeSRE:
         )
 
         # Define storage accounts
-        state_storage = StateStorageComponent(
+        state_storage = SREStateStorageComponent(
             self.stack_name,
-            StateStorageProps(
+            SREStateStorageProps(
                 resource_group_name=rg_storage.name,
                 storage_name=alphanumeric(f"sre{self.sre_name}{hash(self.stack_name)}"),
             ),

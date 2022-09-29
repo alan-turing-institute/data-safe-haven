@@ -3,7 +3,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import storage
 
 
-class StateStorageProps:
+class SREStateStorageProps:
     """Properties for StateStorageComponent"""
 
     def __init__(
@@ -15,13 +15,13 @@ class StateStorageProps:
         self.storage_name = storage_name
 
 
-class StateStorageComponent(ComponentResource):
+class SREStateStorageComponent(ComponentResource):
     """Deploy container state storage with Pulumi"""
 
     def __init__(
-        self, name: str, props: StateStorageProps, opts: ResourceOptions = None
+        self, name: str, props: SREStateStorageProps, opts: ResourceOptions = None
     ):
-        super().__init__("dsh:state_storage:StateStorageComponent", name, {}, opts)
+        super().__init__("dsh:sre:StateStorageComponent", name, {}, opts)
 
         # Deploy storage account
         storage_account = storage.StorageAccount(

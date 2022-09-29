@@ -35,7 +35,7 @@ class ApplicationGatewayComponent(ComponentResource):
         self, name: str, props: ApplicationGatewayProps, opts: ResourceOptions = None
     ):
         super().__init__(
-            "dsh:application_gateway:ApplicationGatewayComponent", name, {}, opts
+            "dsh:sre:ApplicationGatewayComponent", name, {}, opts
         )
         child_opts = ResourceOptions(parent=self)
 

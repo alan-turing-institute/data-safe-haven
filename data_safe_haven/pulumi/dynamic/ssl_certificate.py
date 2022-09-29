@@ -167,7 +167,7 @@ class SSLCertificate(Resource):
         props: SSLCertificateProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        self._resource_type_name = "ssl:SSLCertificate"  # set resource type
+        self._resource_type_name = "dsh:SSLCertificate"  # set resource type
         super().__init__(
             SSLCertificateProvider(),
             name,

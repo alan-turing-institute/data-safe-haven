@@ -26,7 +26,7 @@ class DnsComponent(ComponentResource):
     """Deploy DNS zones and records with Pulumi"""
 
     def __init__(self, name: str, props: DnsProps, opts: ResourceOptions = None):
-        super().__init__("dsh:dns:DnsComponent", name, {}, opts)
+        super().__init__("dsh:sre:DnsComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         dns_zone = network.Zone(

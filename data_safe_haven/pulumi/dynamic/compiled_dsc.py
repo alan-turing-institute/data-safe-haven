@@ -123,5 +123,5 @@ class CompiledDsc(Resource):
         props: CompiledDscProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        self._resource_type_name = "desired_state:CompiledDsc"  # set resource type
+        self._resource_type_name = "dsh:CompiledDsc"  # set resource type
         super().__init__(CompiledDscProvider(), name, {**vars(props)}, opts)

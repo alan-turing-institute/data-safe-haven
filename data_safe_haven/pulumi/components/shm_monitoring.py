@@ -21,7 +21,7 @@ class SHMMonitoringComponent(ComponentResource):
     def __init__(
         self, name: str, props: SHMMonitoringProps, opts: ResourceOptions = None
     ):
-        super().__init__("dsh:shm_monitoring:SHMMonitoringComponent", name, {}, opts)
+        super().__init__("dsh:shm:SHMMonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         automation_account = automation.AutomationAccount(

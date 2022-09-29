@@ -133,7 +133,7 @@ class AzureADApplication(Resource):
         props: AzureADApplicationProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        self._resource_type_name = "graph:AzureADApplication"  # set resource type
+        self._resource_type_name = "dsh:AzureADApplication"  # set resource type
         super().__init__(
             AzureADApplicationProvider(),
             name,

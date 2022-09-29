@@ -51,7 +51,7 @@ class AutomationDscNode(ComponentResource):
     def __init__(
         self, name: str, props: AutomationDscNodeProps, opts: ResourceOptions = None
     ):
-        super().__init__("dsh:automation_dsc_node:AutomationDscNode", name, {}, opts)
+        super().__init__("dsh:common:AutomationDscNode", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 

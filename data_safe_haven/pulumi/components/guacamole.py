@@ -54,7 +54,7 @@ class GuacamoleComponent(ComponentResource):
     """Deploy Guacamole with Pulumi"""
 
     def __init__(self, name: str, props: GuacamoleProps, opts: ResourceOptions = None):
-        super().__init__("dsh:guacamole:GuacamoleComponent", name, {}, opts)
+        super().__init__("dsh:sre:GuacamoleComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         # Retrieve existing resources

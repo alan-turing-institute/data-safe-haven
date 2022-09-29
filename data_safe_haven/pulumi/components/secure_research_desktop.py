@@ -63,7 +63,7 @@ class SecureResearchDesktopComponent(ComponentResource):
     def __init__(
         self, name: str, props: SecureResearchDesktopProps, opts: ResourceOptions = None
     ):
-        super().__init__("dsh:srd:SecureResearchDesktopComponent", name, {}, opts)
+        super().__init__("dsh:sre:SecureResearchDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         # Deploy a variable number of VMs depending on the input parameters

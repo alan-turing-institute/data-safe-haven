@@ -106,19 +106,20 @@ class FileShareFileProvider(ResourceProvider):
         newProps: _FileShareFileProps,
     ) -> DiffResult:
         """Calculate diff between old and new state"""
-        replaces = []
-        # If any of the following are changed then the resource must be replaced
-        for property in [
-            "destination_path",
-            "share_name",
-            "file_contents",
-            "storage_account_name",
-        ]:
-            if (property not in oldProps) or (oldProps[property] != newProps[property]):
-                replaces.append(property)
+        # List any values that were not present in oldProps or have been changed
+        # Exclude "storage_account_key" which should not trigger a diff
+        altered_props = [
+            property
+            for property in [
+                key
+                for key in dict(newProps).keys()
+                if key not in ("storage_account_key")
+            ]
+            if (property not in oldProps) or (oldProps[property] != newProps[property])
+        ]
         return DiffResult(
-            changes=(oldProps != newProps),  # changes are needed
-            replaces=replaces,  # replacement is needed
+            changes=(altered_props != []),  # changes are needed
+            replaces=altered_props,  # replacement is needed
             stables=None,  # list of inputs that are constant
             delete_before_replace=True,  # delete the existing resource before replacing
         )
@@ -175,5 +176,5 @@ class FileShareFile(Resource):
         props: FileShareFileProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        self._resource_type_name = "storage:FileShareFile"  # set resource type
+        self._resource_type_name = "dsh:FileShareFile"  # set resource type
         super().__init__(FileShareFileProvider(), name, {**vars(props)}, opts)
