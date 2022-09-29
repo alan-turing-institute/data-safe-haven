@@ -196,7 +196,7 @@ class GuacamoleComponent(ComponentResource):
             ),
         )
 
-        # Define the container group with guacd and guacamole
+        # Define the container group with guacd, guacamole and caddy
         container_group = containerinstance.ContainerGroup(
             "container_group_guacamole",
             container_group_name=f"container-{self._name}-guacamole",

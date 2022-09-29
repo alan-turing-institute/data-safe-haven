@@ -225,6 +225,9 @@ class SRENetworkingComponent(ComponentResource):
 
         # Register outputs
         self.fqdn = Output.from_input(props.fqdn)
+        self.application_gateway = {
+            "subnet_name": props.application_gateway_subnet_name,
+        }
         self.guacamole_containers = {
             "ip_address": ip_address_guacamole_container,
             "subnet_name": props.guacamole_containers_subnet_name,

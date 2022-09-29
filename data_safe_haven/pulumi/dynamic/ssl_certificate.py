@@ -4,7 +4,7 @@ import os
 from typing import Optional
 
 # Third party imports
-from pulumi import Input, ResourceOptions
+from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import (
     Resource,
     ResourceProvider,
@@ -88,23 +88,24 @@ class SSLCertificateProvider(ResourceProvider):
             )
             # Request a signed certificate
             certificate = client.request_certificate()
-            # Key Vault requires us to prepend the private key and remove double line-breaks
-            full_certificate = (private_key + b"\n" + certificate).replace(
-                b"\n\n", b"\n"
-            )
+            # Key Vault requires us to prepend the private key
+            full_certificate = private_key + b"\n" + certificate
             # Add certificate to KeyVault
-            azure_api.import_keyvault_certificate(
+            kvcert = azure_api.import_keyvault_certificate(
                 certificate_name=props["certificate_secret_name"],
                 certificate_contents=full_certificate,
                 key_vault_name=props["key_vault_name"],
             )
+            outputs = {
+                "secret_id": kvcert.secret_id,
+            }
         except Exception as exc:
             raise DataSafeHavenSSLException(
                 f"Failed to create SSL certificate <fg=green>{props['certificate_secret_name']}</> for <fg=green>{props['domain_name']}</>."
             ) from exc
         return CreateResult(
             f"SSLCertificate-{binascii.b2a_hex(os.urandom(16)).decode('utf-8')}",
-            outs=dict(**props),
+            outs=dict(**outputs, **props),
         )
 
     def delete(self, id: str, props: _SSLCertificateProps):
@@ -141,8 +142,8 @@ class SSLCertificateProvider(ResourceProvider):
             if (property not in oldProps) or (oldProps[property] != newProps[property])
         ]
         return DiffResult(
-            changes=True,  # (altered_props != []),  # changes are needed
-            replaces=[],  # replacement is needed
+            changes=(altered_props != []),  # changes are needed
+            replaces=altered_props,  # replacement is needed
             stables=None,  # list of inputs that are constant
             delete_before_replace=True,  # delete the existing resource before replacing
         )
@@ -161,6 +162,8 @@ class SSLCertificateProvider(ResourceProvider):
 
 
 class SSLCertificate(Resource):
+    secret_id: Output[str]
+
     def __init__(
         self,
         name: str,
@@ -171,6 +174,6 @@ class SSLCertificate(Resource):
         super().__init__(
             SSLCertificateProvider(),
             name,
-            {**vars(props)},
+            {"secret_id": None, **vars(props)},
             opts,
         )

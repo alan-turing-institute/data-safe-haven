@@ -4,15 +4,15 @@ import pulumi
 from pulumi_azure_native import resources
 
 # Local imports
-from .components.application_gateway import (
-    ApplicationGatewayComponent,
-    ApplicationGatewayProps,
-)
 from .components.dns import DnsComponent, DnsProps
 from .components.guacamole import GuacamoleComponent, GuacamoleProps
 from .components.secure_research_desktop import (
     SecureResearchDesktopComponent,
     SecureResearchDesktopProps,
+)
+from .components.sre_application_gateway import (
+    SREApplicationGatewayComponent,
+    SREApplicationGatewayProps,
 )
 from .components.sre_key_vault import SREKeyVaultComponent, SREKeyVaultProps
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
@@ -81,13 +81,27 @@ class DeclarativeSRE:
             self.stack_name,
             SREKeyVaultProps(
                 admin_group_id=self.cfg.azure.admin_group_id,
-                fqdn=self.cfg.sre[self.sre_name].fqdn,
                 key_vault_resource_group_name=rg_storage.name,
                 location=self.cfg.azure.location,
                 networking_resource_group_name=rg_networking.name,
                 subscription_name=self.cfg.subscription_name,
+                sre_fqdn=self.cfg.sre[self.sre_name].fqdn,
                 sre_name=self.sre_name,
                 tenant_id=self.cfg.azure.tenant_id,
+            ),
+        )
+
+        # Define frontend application gateway
+        application_gateway = SREApplicationGatewayComponent(
+            self.stack_name,
+            SREApplicationGatewayProps(
+                ip_address_guacamole=networking.guacamole_containers["ip_address"],
+                key_vault_certificate_id=key_vault.certificate_secret_id,
+                key_vault_identity=key_vault.managed_identity.id,
+                resource_group_name=rg_networking.name,
+                subnet_name=networking.application_gateway["subnet_name"],
+                url_guacamole=key_vault.sre_fqdn,
+                virtual_network_name=networking.vnet.name,
             ),
         )
 
@@ -131,19 +145,6 @@ class DeclarativeSRE:
         #         virtual_network_resource_group_name=networking.resource_group_name,
         #         virtual_network=networking.vnet,
         #         vm_sizes=self.cfg.environment.vm_sizes,
-        #     ),
-        # )
-
-        # # Define frontend application gateway
-        # application_gateway = ApplicationGatewayComponent(
-        #     self.stack_name,
-        #     ApplicationGatewayProps(
-        #         hostname_guacamole=self.cfg.environment.url,
-        #         ip_address_guacamole=guacamole.container_group_ip,
-        #         key_vault_certificate_id=self.cfg.deployment.certificate_id,
-        #         key_vault_identity=f"/subscriptions/{self.cfg.azure.subscription_id}/resourceGroups/{self.cfg.backend.resource_group_name}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{self.cfg.backend.identity_name}",
-        #         resource_group_name=rg_networking.name,
-        #         virtual_network=networking.vnet,
         #     ),
         # )
 

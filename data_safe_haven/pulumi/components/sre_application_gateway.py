@@ -6,37 +6,38 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 
-class ApplicationGatewayProps:
-    """Properties for ApplicationGatewayComponent"""
+class SREApplicationGatewayProps:
+    """Properties for SREApplicationGatewayComponent"""
 
     def __init__(
         self,
-        hostname_guacamole: Input[str],
         ip_address_guacamole: Input[str],
         key_vault_certificate_id: Input[str],
         key_vault_identity: Input[str],
         resource_group_name: Input[str],
-        virtual_network: Input[network.VirtualNetwork],
-        subnet_name: Optional[Input[str]] = "ApplicationGatewaySubnet",
+        subnet_name: Input[str],
+        url_guacamole: Input[str],
+        virtual_network_name: Input[str],
     ):
-        self.hostname_guacamole = hostname_guacamole
         self.key_vault_certificate_id = key_vault_certificate_id
-        self.key_vault_identity = key_vault_identity
         self.ip_address_guacamole = ip_address_guacamole
         self.resource_group_name = resource_group_name
         self.subnet_name = subnet_name
-        self.virtual_network = virtual_network
+        self.url_guacamole = url_guacamole
+        self.virtual_network_name = virtual_network_name
+        # Unwrap key vault identity so that it has type Output[dict(str, Any)] not dict(Output[str], Any)
+        self.user_assigned_identities = Output.from_input(key_vault_identity).apply(
+            lambda identity: {identity: {}}
+        )
 
 
-class ApplicationGatewayComponent(ComponentResource):
+class SREApplicationGatewayComponent(ComponentResource):
     """Deploy application gateway with Pulumi"""
 
     def __init__(
-        self, name: str, props: ApplicationGatewayProps, opts: ResourceOptions = None
+        self, name: str, props: SREApplicationGatewayProps, opts: ResourceOptions = None
     ):
-        super().__init__(
-            "dsh:sre:ApplicationGatewayComponent", name, {}, opts
-        )
+        super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         # Retrieve existing resource group and subnet
@@ -44,7 +45,7 @@ class ApplicationGatewayComponent(ComponentResource):
         snet_application_gateway = network.get_subnet_output(
             subnet_name="ApplicationGatewaySubnet",
             resource_group_name=props.resource_group_name,
-            virtual_network_name=props.virtual_network.name,
+            virtual_network_name=props.virtual_network_name,
         )
 
         # Define public IP address
@@ -63,6 +64,7 @@ class ApplicationGatewayComponent(ComponentResource):
             "application_gateway",
             application_gateway_name=application_gateway_name,
             backend_address_pools=[
+                # Guacamole private IP address
                 network.ApplicationGatewayBackendAddressPoolArgs(
                     backend_addresses=[
                         network.ApplicationGatewayBackendAddressArgs(
@@ -118,7 +120,7 @@ class ApplicationGatewayComponent(ComponentResource):
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendPorts/appGatewayFrontendHttp",
                         )
                     ),
-                    host_name=props.hostname_guacamole,
+                    host_name=props.url_guacamole,
                     name="GuacamoleHttpListener",
                     protocol="Http",
                 ),
@@ -135,7 +137,7 @@ class ApplicationGatewayComponent(ComponentResource):
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendPorts/appGatewayFrontendHttps",
                         )
                     ),
-                    host_name=props.hostname_guacamole,
+                    host_name=props.url_guacamole,
                     name="GuacamoleHttpsListener",
                     protocol="Https",
                     ssl_certificate=network.SubResourceArgs(
@@ -153,10 +155,8 @@ class ApplicationGatewayComponent(ComponentResource):
                 ),
             ],
             identity=network.ManagedServiceIdentityArgs(
-                type="UserAssigned",
-                user_assigned_identities={
-                    props.key_vault_identity: {},
-                },
+                type=network.ResourceIdentityType.USER_ASSIGNED,
+                user_assigned_identities=props.user_assigned_identities,
             ),
             redirect_configurations=[
                 # Guacamole HTTP redirect
@@ -269,5 +269,4 @@ class ApplicationGatewayComponent(ComponentResource):
         )
 
         # Register outputs
-        self.public_ip_address = public_ip.ip_address
         self.resource_group_name = Output.from_input(props.resource_group_name)
