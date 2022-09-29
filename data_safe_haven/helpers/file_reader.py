@@ -8,7 +8,6 @@ import chevron
 
 # Local imports
 from data_safe_haven.mixins import LoggingMixin
-from pulumi import Output
 
 
 class FileReader(LoggingMixin):
@@ -30,10 +29,6 @@ class FileReader(LoggingMixin):
             else:
                 contents = source_file.read()
         return contents
-
-    def file_contents_secret(self, mustache_values=None):
-        """Read local file contents into a pulumi secret."""
-        return Output.secret(self.file_contents(mustache_values))
 
     def sha256(self):
         return hashlib.sha256(self.file_contents().encode("utf-8")).hexdigest()

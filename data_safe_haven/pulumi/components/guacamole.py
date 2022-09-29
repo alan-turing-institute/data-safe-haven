@@ -96,6 +96,21 @@ class GuacamoleComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Upload Caddyfile
+        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
+        reader = FileReader(resources_path / "guacamole" / "caddy" / "Caddyfile")
+        caddyfile = FileShareFile(
+            f"{self._name}/guacamole/caddy/{reader.name}",
+            FileShareFileProps(
+                destination_path=reader.name,
+                share_name=file_share_caddy.name,
+                file_contents=Output.secret(reader.file_contents),
+                storage_account_key=storage_account_key_secret,
+                storage_account_name=props.storage_account_name,
+            ),
+            opts=child_opts,
+        )
+
         # Define a PostgreSQL server
         postgresql_server_name = f"postgresql-{self._name}-guacamole"
         postgresql_server = dbforpostgresql.Server(
@@ -325,21 +340,6 @@ class GuacamoleComponent(ComponentResource):
                     name="guacamole-caddy-config",
                 ),
             ],
-            opts=child_opts,
-        )
-
-        # Upload Caddyfile
-        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
-        reader = FileReader(resources_path / "guacamole" / "caddy" / "Caddyfile")
-        caddyfile = FileShareFile(
-            f"{self._name}/guacamole/caddy/{reader.name}",
-            FileShareFileProps(
-                destination_path=reader.name,
-                share_name=file_share_caddy.name,
-                file_contents=reader.file_contents_secret(),
-                storage_account_key=storage_account_key_secret,
-                storage_account_name=props.storage_account_name,
-            ),
             opts=child_opts,
         )
 
