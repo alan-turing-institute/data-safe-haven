@@ -45,14 +45,6 @@ class SHMMonitoringComponent(ComponentResource):
                 "6.2.0",
                 "60b7cc2c578248f23c5b871b093db268a1c1bd89f5ccafc45d9a65c3f0621dca",
             ),
-            "DnsServerDsc": (
-                "3.0.0",
-                "439bfba11cac20de8fae98d44de118f9a45f6e76ce01e0562f82784d389532bc",
-            ),
-            "NetworkingDsc": (
-                "9.0.0",
-                "c49b7059256f768062cdcf7e133cf52a806c7eb95eb34bfdd65f7cbca92d6a82",
-            ),
             "PSModulesDsc": (
                 "1.0.13.0",
                 "b970d3ef7f3694e49993ec434fd166befe493ccaf418b9a79281dda2e230603b",
@@ -90,6 +82,7 @@ class SHMMonitoringComponent(ComponentResource):
             .replace("jrds", "agentsvc")
             .replace("/automationAccounts/", "/accounts/")
         )
+        self.automation_account_modules = list(modules.keys())
         self.automation_account_primary_key = Output.secret(
             automation_keys.keys[0].value
         )

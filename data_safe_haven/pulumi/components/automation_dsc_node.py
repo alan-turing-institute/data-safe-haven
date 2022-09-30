@@ -2,7 +2,7 @@
 # Standard library imports
 import pathlib
 import time
-from typing import Dict
+from typing import Dict, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, ResourceOptions
@@ -25,6 +25,7 @@ class AutomationDscNodeProps:
         configuration_name: Input[str],
         dsc_file: Input[FileReader],
         dsc_parameters: Input[Dict[str, str]],
+        dsc_required_modules: Input[Sequence[str]],
         location: Input[str],
         subscription_name: Input[str],
         vm_name: Input[str],
@@ -40,6 +41,7 @@ class AutomationDscNodeProps:
         self.dsc_file = dsc_file
         self.location = location
         self.dsc_parameters = dsc_parameters
+        self.dsc_required_modules = dsc_required_modules
         self.subscription_name = subscription_name
         self.vm_name = vm_name
         self.vm_resource_group_name = vm_resource_group_name
@@ -88,6 +90,7 @@ class AutomationDscNode(ComponentResource):
                 location=props.location,
                 parameters=props.dsc_parameters,
                 resource_group_name=props.automation_account_resource_group_name,
+                required_modules=props.dsc_required_modules,
                 subscription_name=props.subscription_name,
             ),
             opts=ResourceOptions.merge(child_opts, ResourceOptions(depends_on=[dsc])),

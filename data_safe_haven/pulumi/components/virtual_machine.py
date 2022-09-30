@@ -154,7 +154,7 @@ class VMComponent(ComponentResource):
 
         # Define virtual machine
         virtual_machine = compute.VirtualMachine(
-            "virtualMachine",
+            self._name,
             hardware_profile=compute.HardwareProfileArgs(
                 vm_size=props.vm_size,
             ),

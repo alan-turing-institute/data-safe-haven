@@ -1,7 +1,7 @@
 # Standard library imports
 import binascii
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, Sequence
 
 # Third party imports
 from pulumi import Input, ResourceOptions
@@ -28,6 +28,7 @@ class CompiledDscProps:
         location: Input[str],
         parameters: Input[Dict[str, str]],
         resource_group_name: Input[str],
+        required_modules: Input[Sequence[str]],
         subscription_name: Input[str],
     ):
         self.automation_account_name = automation_account_name
@@ -36,6 +37,7 @@ class CompiledDscProps:
         self.location = location
         self.parameters = parameters
         self.resource_group_name = resource_group_name
+        self.required_modules = required_modules
         self.subscription_name = subscription_name
 
 
@@ -59,6 +61,8 @@ class _CompiledDscProps:
         self.location = location
         self.parameters = parameters
         self.resource_group_name = resource_group_name
+        self.required_modules = required_modules
+        self.subscription_name = subscription_name
 
 
 class CompiledDscProvider(ResourceProvider):

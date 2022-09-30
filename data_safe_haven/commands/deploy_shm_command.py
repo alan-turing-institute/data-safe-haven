@@ -106,7 +106,7 @@ class DeploySHMCommand(LoggingMixin, Command):
         # Request admin IP addresses if not provided
         aad_tenant_id = self.option("aad-tenant-id")
         while not config.shm.aad_tenant_id:
-            if re.match(
+            if aad_tenant_id and re.match(
                 r"^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$",
                 aad_tenant_id,
             ):

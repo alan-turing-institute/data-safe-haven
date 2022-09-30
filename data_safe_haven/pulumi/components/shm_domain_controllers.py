@@ -1,5 +1,6 @@
 # Standard library import
 import pathlib
+from typing import Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, ResourceOptions, Output
@@ -15,9 +16,10 @@ class SHMDomainControllersProps:
 
     def __init__(
         self,
+        automation_account_modules: Input[Sequence[str]],
+        automation_account_name: Input[str],
         automation_account_registration_key: Input[str],
         automation_account_registration_url: Input[str],
-        automation_account_name: Input[str],
         automation_account_resource_group_name: Input[str],
         domain_fqdn: Input[str],
         domain_netbios_name: Input[str],
@@ -32,9 +34,10 @@ class SHMDomainControllersProps:
         virtual_network_name: Input[str],
         virtual_network_resource_group_name: Input[str],
     ):
+        self.automation_account_modules = automation_account_modules
+        self.automation_account_name = automation_account_name
         self.automation_account_registration_url = automation_account_registration_url
         self.automation_account_registration_key = automation_account_registration_key
-        self.automation_account_name = automation_account_name
         self.automation_account_resource_group_name = (
             automation_account_resource_group_name
         )
@@ -62,9 +65,7 @@ class SHMDomainControllersComponent(ComponentResource):
     def __init__(
         self, name: str, props: SHMDomainControllersProps, opts: ResourceOptions = None
     ):
-        super().__init__(
-            "dsh:shm:SHMDomainControllersComponent", name, {}, opts
-        )
+        super().__init__("dsh:shm:SHMDomainControllersComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 
@@ -113,6 +114,7 @@ class SHMDomainControllersComponent(ComponentResource):
                     "DomainName": props.domain_fqdn,
                     "DomainNetBios": props.domain_netbios_name,
                 },
+                dsc_required_modules=props.automation_account_modules,
                 location=props.location,
                 subscription_name=props.subscription_name,
                 vm_name=primary_domain_controller.vm_name,

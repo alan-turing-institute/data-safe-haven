@@ -55,6 +55,7 @@ class AzureApi(AzureMixin, LoggingMixin):
         location: str,
         parameters: Dict[str, str],
         resource_group_name: str,
+        required_modules: Sequence[str],
     ) -> None:
         """Ensure that a Powershell Desired State Configuration is compiled
 
@@ -63,6 +64,24 @@ class AzureApi(AzureMixin, LoggingMixin):
         """
         # Connect to Azure clients
         automation_client = AutomationClient(self.credential, self.subscription_id)
+        # Wait until all modules are available
+        while True:
+            available_modules = automation_client.module.list_by_automation_account(
+                resource_group_name, automation_account_name
+            )
+            available_module_names = [
+                module.name
+                for module in available_modules
+                if module.provisioning_state == "Succeeded"
+            ]
+            if all(
+                [
+                    (module_name in available_module_names)
+                    for module_name in required_modules
+                ]
+            ):
+                break
+            time.sleep(10)
         # Begin creation
         compilation_job_name = f"{configuration_name}-{time.time_ns()}"
         with suppress(ResourceExistsError):

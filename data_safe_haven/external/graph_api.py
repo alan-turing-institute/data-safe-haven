@@ -177,7 +177,8 @@ class GraphApi(LoggingMixin):
         """
         try:
             # Check for an existing application
-            if self.get_application_by_name(application_name):
+            json_response = self.get_application_by_name(application_name)
+            if json_response:
                 self.info(
                     f"Application '<fg=green>{application_name}</>' already exists."
                 )
@@ -228,8 +229,6 @@ class GraphApi(LoggingMixin):
                     f"Created new application '<fg=green>{json_response['displayName']}</>'.",
                     overwrite=True,
                 )
-                return json_response
-
             # Grant admin consent for the requested scopes
             if application_scopes or delegated_scopes:
                 application_id = self.get_id_from_application_name(application_name)
@@ -254,6 +253,8 @@ class GraphApi(LoggingMixin):
                             if self.read_application_permissions(application_sp["id"]):
                                 break
                         time.sleep(10)
+            # Return JSON representation of the AzureAD application
+            return json_response
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not create application '{application_name}'.\n{str(exc)}"
