@@ -11,7 +11,7 @@ import tempfile
 
 # Set git repository details
 development_branch = "develop"
-earliest_supported_release = "v3.4.0"
+earliest_supported_release = "v4.0.0"
 
 # --- Parse arguments ---
 parser = argparse.ArgumentParser(
