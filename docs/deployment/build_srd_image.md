@@ -109,6 +109,7 @@ PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
 ```{note}
 - Although the `./Provision_Compute_VM.ps1` script will finish running in a few minutes, the build itself will take several hours.
 - We recommend **monitoring** the build by accessing the machine using `ssh` (the ssh info should be printed at the end of the Provision_Compute_VM.ps1 script) and either reading through the full build log at `/var/log/cloud-init-output.log` or running the summary script using `/opt/verification/analyse_build.py`.
+- **NB.** You will need to connect from an approved administrator IP address
 - **NB.** the VM will automatically shutdown at the end of the cloud-init process - if you want to analyse the build after this point, you will need to turn it back on in the `Azure` portal.
 ```
 
