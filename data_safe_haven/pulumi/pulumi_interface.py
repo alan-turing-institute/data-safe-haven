@@ -8,7 +8,7 @@ import time
 from typing import Any, Dict, Optional
 
 # Third party imports
-from pulumi import automation
+import pulumi
 import yaml
 
 # Local imports
@@ -73,15 +73,15 @@ class PulumiInterface(LoggingMixin):
         return self.env_
 
     @property
-    def stack(self) -> automation.Stack:
+    def stack(self) -> pulumi.automation.Stack:
         """Load the Pulumi stack, creating if needed."""
         if not self.stack_:
             self.info(f"Creating/loading stack <fg=green>{self.stack_name}</>.")
-            self.stack_ = automation.create_or_select_stack(
+            self.stack_ = pulumi.automation.create_or_select_stack(
                 project_name="data_safe_haven",
                 stack_name=self.stack_name,
                 program=self.program.run,
-                opts=automation.LocalWorkspaceOptions(
+                opts=pulumi.automation.LocalWorkspaceOptions(
                     secrets_provider=self.cfg.backend.pulumi_secrets_provider,
                     work_dir=self.work_dir,
                     env_vars=self.env,
@@ -131,7 +131,7 @@ class PulumiInterface(LoggingMixin):
                     result = self.stack.destroy(color="always", on_output=self.info)
                     self.evaluate(result.summary.result)
                     break
-                except automation.errors.CommandError as exc:
+                except pulumi.automation.errors.CommandError as exc:
                     if any(
                         [
                             error in str(exc)
@@ -145,14 +145,14 @@ class PulumiInterface(LoggingMixin):
                     else:
                         raise
             self.stack_.workspace.remove_stack(self.stack_name)
-        except automation.errors.CommandError as exc:
+        except pulumi.automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException("Pulumi destroy failed.") from exc
 
     def ensure_config(self, name: str, value: str, secret: bool = False) -> None:
         """Ensure that config values have been set, setting them if they do not exist"""
         try:
             self.stack.get_config(name)
-        except automation.errors.CommandError:
+        except pulumi.automation.errors.CommandError:
             self.set_config(name, value, secret)
 
     def evaluate(self, result: str) -> None:
@@ -218,7 +218,7 @@ class PulumiInterface(LoggingMixin):
     def preview(self) -> None:
         """Preview the Pulumi stack."""
         try:
-            with suppress(automation.errors.CommandError):
+            with suppress(pulumi.automation.errors.CommandError):
                 self.info(
                     f"Previewing changes for stack <fg=green>{self.stack.name}</>."
                 )
@@ -233,7 +233,7 @@ class PulumiInterface(LoggingMixin):
         try:
             self.info(f"Refreshing stack <fg=green>{self.stack.name}</>.")
             self.stack.refresh(color="always")
-        except automation.errors.CommandError as exc:
+        except pulumi.automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException(
                 f"Pulumi refresh failed.\n{str(exc)}"
             ) from exc
@@ -254,14 +254,16 @@ class PulumiInterface(LoggingMixin):
         """Read a secret from the Pulumi stack."""
         try:
             return self.stack.get_config(name).value
-        except automation.errors.CommandError as exc:
+        except pulumi.automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException(
                 f"Secret '{name}' was not found."
             ) from exc
 
     def set_config(self, name: str, value: str, secret: bool = False) -> None:
         """Set config values, overwriting any existing value."""
-        self.stack.set_config(name, automation.ConfigValue(value=value, secret=secret))
+        self.stack.set_config(
+            name, pulumi.automation.ConfigValue(value=value, secret=secret)
+        )
 
     def teardown(self) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
@@ -282,5 +284,5 @@ class PulumiInterface(LoggingMixin):
         try:
             result = self.stack.up(color="always", on_output=self.info)
             self.evaluate(result.summary.result)
-        except automation.errors.CommandError as exc:
+        except pulumi.automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException("Pulumi update failed.") from exc
