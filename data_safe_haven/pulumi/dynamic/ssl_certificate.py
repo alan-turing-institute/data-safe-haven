@@ -131,15 +131,16 @@ class SSLCertificateProvider(ResourceProvider):
     def diff(
         self,
         id: str,
-        oldProps: _SSLCertificateProps,
-        newProps: _SSLCertificateProps,
+        old_props: _SSLCertificateProps,
+        new_props: _SSLCertificateProps,
     ) -> DiffResult:
         """Calculate diff between old and new state"""
-        # List any values that were not present in oldProps or have been changed
+        # List any values that were not present in old_props or have been changed
         altered_props = [
             property
-            for property in dict(newProps).keys()
-            if (property not in oldProps) or (oldProps[property] != newProps[property])
+            for property in dict(new_props).keys()
+            if (property not in old_props)
+            or (old_props[property] != new_props[property])
         ]
         return DiffResult(
             changes=(altered_props != []),  # changes are needed
@@ -151,13 +152,13 @@ class SSLCertificateProvider(ResourceProvider):
     def update(
         self,
         id: str,
-        oldProps: _SSLCertificateProps,
-        newProps: _SSLCertificateProps,
+        old_props: _SSLCertificateProps,
+        new_props: _SSLCertificateProps,
     ) -> DiffResult:
         """Updating is deleting followed by creating."""
-        # Note that we need to use the auth token from newProps
-        self.delete(id, oldProps)
-        updated = self.create(newProps)
+        # Note that we need to use the auth token from new_props
+        self.delete(id, old_props)
+        updated = self.create(new_props)
         return UpdateResult(outs={**updated.outs})
 
 

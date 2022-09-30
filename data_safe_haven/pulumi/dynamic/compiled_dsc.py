@@ -50,6 +50,8 @@ class _CompiledDscProps:
         location: str,
         parameters: Dict[str, str],
         resource_group_name: str,
+        required_modules: Sequence[str],
+        subscription_name: str,
     ):
         self.automation_account_name = automation_account_name
         self.configuration_name = configuration_name
@@ -70,6 +72,7 @@ class CompiledDscProvider(ResourceProvider):
             location=props["location"],
             parameters=props["parameters"],
             resource_group_name=props["resource_group_name"],
+            required_modules=props["required_modules"],
         )
         return CreateResult(
             f"CompiledDsc-{binascii.b2a_hex(os.urandom(16)).decode('utf-8')}",
@@ -83,23 +86,20 @@ class CompiledDscProvider(ResourceProvider):
     def diff(
         self,
         id: str,
-        oldProps: _CompiledDscProps,
-        newProps: _CompiledDscProps,
+        old_props: _CompiledDscProps,
+        new_props: _CompiledDscProps,
     ) -> DiffResult:
         """As Python DSK does not support configuration deletion we cannot change or replace a configuration"""
-        replaces = []
-        # If the content hash changes then the resource must be replaced
-        if oldProps["content_hash"] != newProps["content_hash"]:
-            replaces = [
-                "automation_account_name",
-                "configuration_name",
-                "content_hash",
-                "location",
-                "resource_group_name",
-            ]
+        # List any values that were not present in old_props or have been changed
+        altered_props = [
+            property
+            for property in dict(new_props).keys()
+            if (property not in old_props)
+            or (old_props[property] != new_props[property])
+        ]
         return DiffResult(
-            changes=True,  # always mark changes as needed
-            replaces=replaces,  # list of inputs to replace
+            changes=(altered_props != []),  # always mark changes as needed
+            replaces=altered_props,  # list of inputs to replace
             stables=None,  # list of inputs that are constant
             delete_before_replace=False,  # delete the existing resource before replacing
         )
@@ -107,12 +107,12 @@ class CompiledDscProvider(ResourceProvider):
     def update(
         self,
         id: str,
-        oldProps: _CompiledDscProps,
-        newProps: _CompiledDscProps,
+        old_props: _CompiledDscProps,
+        new_props: _CompiledDscProps,
     ) -> DiffResult:
         """Updating is deleting followed by creating."""
-        self.delete(id, oldProps)
-        updated = self.create(newProps)
+        self.delete(id, old_props)
+        updated = self.create(new_props)
         return UpdateResult(outs={**updated.outs})
 
 

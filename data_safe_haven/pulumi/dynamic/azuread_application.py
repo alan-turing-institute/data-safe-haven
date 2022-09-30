@@ -92,18 +92,23 @@ class AzureADApplicationProvider(ResourceProvider):
     def diff(
         self,
         id: str,
-        oldProps: _AzureADApplicationProps,
-        newProps: _AzureADApplicationProps,
+        old_props: _AzureADApplicationProps,
+        new_props: _AzureADApplicationProps,
     ) -> DiffResult:
         """Calculate diff between old and new state"""
-        replaces = []
-        # If any of the following are changed then the resource must be replaced
-        for property in ("application_name", "application_url"):
-            if (property not in oldProps) or (oldProps[property] != newProps[property]):
-                replaces.append(property)
+        # List any values that were not present in old_props or have been changed
+        # Exclude "auth_token" which should not trigger a diff
+        altered_props = [
+            property
+            for property in [
+                key for key in dict(new_props).keys() if key not in ("auth_token")
+            ]
+            if (property not in old_props)
+            or (old_props[property] != new_props[property])
+        ]
         return DiffResult(
-            changes=(replaces != []),  # changes are needed
-            replaces=replaces,  # replacement is needed
+            changes=(altered_props != []),  # changes are needed
+            replaces=altered_props,  # replacement is needed
             stables=None,  # list of inputs that are constant
             delete_before_replace=True,  # delete the existing resource before replacing
         )
@@ -111,15 +116,15 @@ class AzureADApplicationProvider(ResourceProvider):
     def update(
         self,
         id: str,
-        oldProps: _AzureADApplicationProps,
-        newProps: _AzureADApplicationProps,
+        old_props: _AzureADApplicationProps,
+        new_props: _AzureADApplicationProps,
     ) -> DiffResult:
         """Updating is deleting followed by creating."""
-        # Note that we need to use the auth token from newProps
-        props = {**oldProps}
-        props["auth_token"] = newProps["auth_token"]
+        # Note that we need to use the auth token from new_props
+        props = {**old_props}
+        props["auth_token"] = new_props["auth_token"]
         self.delete(id, props)
-        updated = self.create(newProps)
+        updated = self.create(new_props)
         return UpdateResult(outs={**updated.outs})
 
 

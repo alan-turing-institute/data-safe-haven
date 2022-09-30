@@ -102,20 +102,21 @@ class FileShareFileProvider(ResourceProvider):
     def diff(
         self,
         id: str,
-        oldProps: _FileShareFileProps,
-        newProps: _FileShareFileProps,
+        old_props: _FileShareFileProps,
+        new_props: _FileShareFileProps,
     ) -> DiffResult:
         """Calculate diff between old and new state"""
-        # List any values that were not present in oldProps or have been changed
+        # List any values that were not present in old_props or have been changed
         # Exclude "storage_account_key" which should not trigger a diff
         altered_props = [
             property
             for property in [
                 key
-                for key in dict(newProps).keys()
+                for key in dict(new_props).keys()
                 if key not in ("storage_account_key")
             ]
-            if (property not in oldProps) or (oldProps[property] != newProps[property])
+            if (property not in old_props)
+            or (old_props[property] != new_props[property])
         ]
         return DiffResult(
             changes=(altered_props != []),  # changes are needed
@@ -160,12 +161,12 @@ class FileShareFileProvider(ResourceProvider):
     def update(
         self,
         id: str,
-        oldProps: _FileShareFileProps,
-        newProps: _FileShareFileProps,
+        old_props: _FileShareFileProps,
+        new_props: _FileShareFileProps,
     ) -> DiffResult:
         """Updating is deleting followed by creating."""
-        self.delete(id, oldProps)
-        updated = self.create(newProps)
+        self.delete(id, old_props)
+        updated = self.create(new_props)
         return UpdateResult(outs={**updated.outs})
 
 
