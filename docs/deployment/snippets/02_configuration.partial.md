@@ -21,8 +21,8 @@ The following core SRE properties are required - look in the `environment_config
   "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
   "shmId": "The <SHM ID> that you decided on above (eg. 'testa').",
   "subscriptionName": "Azure subscription that the SRE will be deployed into.",
-  "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. See below for suggestion on how to set this",
-  "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. See below for suggestion on how to set this.",
+  "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. See Alan Turing Institute default below for suggestion on how to set this",
+  "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. See tip default below for suggestion on how to set this.",
   "outboundInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either ('Yes', 'Allow', 'Permit'), ('No', 'Deny', 'Forbid') or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
   "computeVmImage": {
     "type": "The name of the SRD image (most commonly 'Ubuntu')",
@@ -50,9 +50,9 @@ The `ipPrefix` must be unique for each SRE attached to the same SHM.
 It is **very** important that address spaces do not overlap in the environment as this will cause network faults.
 ```
 
-```{admonition} Alan Turing Institute default
+```{admonition} c for 
 We assign each SRE a `/21` subspace of the `10.0.0.0/24` private class A range, starting from `10.11.0.0`.
-This provides ample addresses for a SRE while avoiding the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.10.2.0-10.10.3.255`)
+This provides ample addresses for a SRE while avoiding the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.10.2.0-10.10.3.255`). When choosing the 
 ```
 
 ### (Optional) Verify code version
