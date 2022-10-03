@@ -50,9 +50,14 @@ The `ipPrefix` must be unique for each SRE attached to the same SHM.
 It is **very** important that address spaces do not overlap in the environment as this will cause network faults.
 ```
 
-```{admonition} `ipPrefix` suggestion
-When choosing the `ipPrefix` for the SRE, we typically assign each SRE a `/21` range, starting from `10.11.0.0` by default (2,048 possible IP addresses in the range 10.11.0.0 to 10.11.7.255). Choose an IP address from this range that hasn't already been used by an existing SRE. This range provides ample addresses for a SRE while avoiding the space already occupied by the SHM (by default `10.0.0.0 - 10.0.7.255`) and the mirrors (by default `10.10.2.0-10.10.3.255`).
-If you set a different range for the SHM, you could find an IP by converting 10.X.0.0/21 (replacing X with a higher number from 11 to 255) from CIDR to IP range (e.g. using https://www.ipaddressguide.com/cidr)
+```{important}
+Each SRE needs a range of 2048 IP address (a `/21` range in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)) in a [private IP range](https://en.wikipedia.org/wiki/Private_network#Private_IPv4_addresses).
+It is important that the range chosen doesn't overlap with the SHM (by default `10.0.0.0 - 10.0.7.255`), the package repositories (by default `10.10.2.0-10.10.3.255`) or any other SRE.
+You may find [this tool](https://www.ipaddressguide.com/cidr) helpful to convert between IP address ranges and CIDRs.
+```
+
+```{admonition} Alan Turing Institute default
+We assign consecutive `/21` ranges starting from `10.11.0.0/21` (ie. the first three SREs will use `10.11.0.0/21`, `10.11.8.0/21` and `10.11.16.0/21`).
 ```
 
 ### (Optional) Verify code version
