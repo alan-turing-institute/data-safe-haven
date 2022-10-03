@@ -50,9 +50,9 @@ The `ipPrefix` must be unique for each SRE attached to the same SHM.
 It is **very** important that address spaces do not overlap in the environment as this will cause network faults.
 ```
 
-```{admonition} c for 
+```{admonition} Alan Turing Institute default for `ipPrefix`
 We assign each SRE a `/21` subspace of the `10.0.0.0/24` private class A range, starting from `10.11.0.0`.
-This provides ample addresses for a SRE while avoiding the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.10.2.0-10.10.3.255`). When choosing the 
+This provides ample addresses for a SRE while avoiding the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.10.2.0-10.10.3.255`). When choosing the `ipPrefix` for the SRE, we typically convert 10.11.0.0/21 (or replacing 11 with a higher number) from CIDR to IP range (e.g. using https://www.ipaddressguide.com/cidr) and select an IP from this range that hasn't already been used by an existing SRE.
 ```
 
 ### (Optional) Verify code version
