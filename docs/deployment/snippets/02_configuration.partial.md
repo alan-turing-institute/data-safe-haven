@@ -46,12 +46,7 @@ We recommend the following for the `inboundAccessFrom` setting
 ```
 
 ```{important}
-The `ipPrefix` must be unique for each SRE attached to the same SHM.
-It is **very** important that address spaces do not overlap in the environment as this will cause network faults.
-```
-
-```{important}
-Each SRE needs a range of 2048 IP address (a `/21` range in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)) in a [private IP range](https://en.wikipedia.org/wiki/Private_network#Private_IPv4_addresses).
+The `ipPrefix` must be unique for each SRE attached to the same SHM. Each SRE needs a range of 2048 IP address (a `/21` range in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)) in a [private IP range](https://en.wikipedia.org/wiki/Private_network#Private_IPv4_addresses).
 It is important that the range chosen doesn't overlap with the SHM (by default `10.0.0.0 - 10.0.7.255`), the package repositories (by default `10.10.2.0-10.10.3.255`) or any other SRE.
 You may find [this tool](https://www.ipaddressguide.com/cidr) helpful to convert between IP address ranges and CIDRs.
 ```
