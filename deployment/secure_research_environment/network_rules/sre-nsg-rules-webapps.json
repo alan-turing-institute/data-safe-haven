@@ -24,14 +24,14 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowDomainJoinedClientsUdpOutbound",
+        "name": "AllowLDAPClientsOutbound",
         "access": "Allow",
-        "description": "Allow LDAP client requests over UDP.",
+        "description": "Allow LDAP client requests over UDP and TCP.",
         "destinationAddressPrefix": "{{shm.network.vnet.subnets.identity.cidr}}",
         "destinationPortRange": ["389"],
         "direction": "Outbound",
         "priority": 1000,
-        "protocol": "UDP",
+        "protocol": "*",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
         "sourcePortRange": "*"
     },
