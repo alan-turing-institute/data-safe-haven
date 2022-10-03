@@ -51,8 +51,8 @@ It is **very** important that address spaces do not overlap in the environment a
 ```
 
 ```{admonition} `ipPrefix` suggestion
-When choosing the `ipPrefix` for the SRE, we typically convert 10.11.0.0/21 (or replacing 11 with a higher number up to 255) from CIDR to IP range (e.g. using https://www.ipaddressguide.com/cidr) and select an IP from this range that hasn't already been used by an existing SRE. What this does is assign each SRE a `/21` range, starting from `10.11.0.0` (2,048 possible options).
-This provides ample addresses for a SRE while avoiding the space already occupied by the SHM (by default `10.0.0.0 - 10.0.7.255`) and the mirrors (by default `10.10.2.0-10.10.3.255`). 
+When choosing the `ipPrefix` for the SRE, we typically assign each SRE a `/21` range, starting from `10.11.0.0` by default (2,048 possible IP addresses in the range 10.11.0.0 to 10.11.7.255). Choose an IP address from this range that hasn't already been used by an existing SRE. This range provides ample addresses for a SRE while avoiding the space already occupied by the SHM (by default `10.0.0.0 - 10.0.7.255`) and the mirrors (by default `10.10.2.0-10.10.3.255`).
+If you set a different range for the SHM, you could find an IP by converting 10.X.0.0/21 (replacing X with a higher number from 11 to 255) from CIDR to IP range (e.g. using https://www.ipaddressguide.com/cidr)
 ```
 
 ### (Optional) Verify code version
