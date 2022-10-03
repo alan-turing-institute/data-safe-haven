@@ -100,10 +100,10 @@ function Deploy-RoleAssignment {
                                            -ErrorAction SilentlyContinue
     }
     if ($Assignment) {
-        Add-LogMessage -Level InfoSuccess "Role assignment already exists"
+        Add-LogMessage -Level InfoSuccess "Role assignment '$RoleDefinitionName' over '$($ResourceType ? $ResourceName : $ResourceGroupName)' already exists"
     } else {
         try {
-            Add-LogMessage -Level Info "[ ] Creating role assignment"
+            Add-LogMessage -Level Info "[ ] Creating role assignment '$RoleDefinitionName' over '$($ResourceType ? $ResourceName : $ResourceGroupName)'..."
             if ($ResourceType) {
                 $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
                                                    -RoleDefinitionName $RoleDefinitionName `
@@ -117,9 +117,9 @@ function Deploy-RoleAssignment {
                                                    -ResourceGroupName $ResourceGroupName `
                                                    -ErrorAction Stop
             }
-            Add-LogMessage -Level Success "Successfully created role assignment"
+            Add-LogMessage -Level Success "Successfully created role assignment '$RoleDefinitionName' over '$($ResourceType ? $ResourceName : $ResourceGroupName)'"
         } catch {
-            Add-LogMessage -Level Fatal "Failed to create role assignment" -Exception $_.Exception
+            Add-LogMessage -Level Fatal "Failed to create role assignment '$RoleDefinitionName' over '$($ResourceType ? $ResourceName : $ResourceGroupName)'" -Exception $_.Exception
         }
     }
     return $Assignment
