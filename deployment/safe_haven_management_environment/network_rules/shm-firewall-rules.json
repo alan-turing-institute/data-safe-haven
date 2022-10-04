@@ -890,13 +890,14 @@
                             "changelogs.ubuntu.com",
                             "dbeaver.io",
                             "developer.download.nvidia.com",
+                            "packages.gitlab.com",
                             "packages.microsoft.com",
                             "qgis.org",
                             "security.ubuntu.com",
                             "ubuntu.qgis.org"
                         ],
                         "sourceAddresses": [
-                            "*"
+                            "{{network.vnet.subnets.updateServers.cidr}}"
                         ]
                     },
                     {
