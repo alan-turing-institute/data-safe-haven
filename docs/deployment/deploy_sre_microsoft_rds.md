@@ -84,14 +84,14 @@ PS> ./Setup_SRE_Remote_Desktop.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 ```{error}
 If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them.
-If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and {ref}`attempt to run this step again <deploy_sre_microsoft_deploy_remote_desktop>`.
+If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_REMOTE_DESKTOP` resource group for this SRE and {ref}`attempt to run this step again <deploy_sre_microsoft_deploy_remote_desktop>`.
 ```
 
 ### {{satellite}} Configure RDS webclient
 
 ![Remote: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=twenty%20minutes)
 
-- Navigate to the **RDS Gateway** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS > RDG-SRE-<SRE ID>` and note the `Private IP address` for this VM
+- Navigate to the **RDS Gateway** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_REMOTE_DESKTOP > RDG-SRE-<SRE ID>` and note the `Private IP address` for this VM
 - Log into the **RDS Gateway** (`RDG-SRE-<SRE ID>`) VM using this `private IP address` together with the same `<admin login>` and `<admin password>` that you used to {ref}`log into the SHM domain controller <roles_system_deployer_shm_remote_desktop>`.
 - Run the following command on the RDS VM to configure the remote desktop environment
 
