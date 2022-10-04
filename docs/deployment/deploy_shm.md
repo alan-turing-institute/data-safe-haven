@@ -841,7 +841,7 @@ PS> C:\Installation\CreateUsers.ps1 <path_to_user_details_file>
 ![Azure AD: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20seconds)
 
 - Click `Users > All users` and confirm that the new user is shown in the user list.
-- The new user account should have the `Directory synced` field set to `Yes`
+- The new user account should have the `On-premises sync enabled` field set to `Yes`
 
 ```{error}
 If you get the message `New-ADUser: The specified account already exists` you should first check to see whether that user actually does already exist!
