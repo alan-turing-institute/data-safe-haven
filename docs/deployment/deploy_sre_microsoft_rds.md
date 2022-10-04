@@ -91,7 +91,7 @@ If this does not work, please try deleting everything that has been deployed int
 
 ![Remote: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=twenty%20minutes)
 
-- Navigate to the **RDS Gateway** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS > RDG-SRE-<SRE ID>` and note the `Private IP address` for this VM
+- Navigate to the **RDS Gateway** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_SRE_<SRE ID>_REMOTE_DESKTOP > RDG-SRE-<SRE ID>` and note the `Private IP address` for this VM
 - Log into the **RDS Gateway** (`RDG-SRE-<SRE ID>`) VM using this `private IP address` together with the same `<admin login>` and `<admin password>` that you used to {ref}`log into the SHM domain controller <roles_system_deployer_shm_remote_desktop>`.
 - Run the following command on the RDS VM to configure the remote desktop environment
 
