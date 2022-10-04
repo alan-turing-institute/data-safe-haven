@@ -14,10 +14,10 @@ We recommend [this Markdown cheat sheet](https://github.com/adam-p/markdown-here
 ### {{unlock}} Access CodiMD
 
 You can access `CodiMD` from an internet browser from the SRD using the desktop shortcut.
-Login with your long-form username `firstname.lastname@<username domain>` and `password`.
+Login with username `firstname.lastname` (the domain is not needed) and `password` .
 
 ````{note}
-Our example user, Ada Lovelace would enter `ada.lovelace@projects.turingsafehaven.ac.uk` in the `Username` box, enter her password and then click `Sign in` .
+Our example user, Ada Lovelace would enter `ada.lovelace` in the `Username` box, enter her password and then click `Sign in` .
 
 ```{image} user_guide/codimd_logon.png
 :alt: CodiMD login

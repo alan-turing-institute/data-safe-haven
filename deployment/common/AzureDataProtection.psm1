@@ -71,25 +71,36 @@ function Deploy-DataProtectionBackupInstance {
     if ($instance) {
         Add-LogMessage -Level InfoSuccess "Backup instance for '$DataSourceName' already exists"
     } else {
-        try {
-            Add-LogMessage -Level Info "[ ] Creating backup instance for '$DataSourceName'"
-            $initialisation = Initialize-AzDataProtectionBackupInstance -DatasourceType $DataSourceMap[$DataSourceType] `
-                                                                        -DatasourceLocation $DataSourceLocation `
-                                                                        -PolicyId $BackupPolicyId `
-                                                                        -DatasourceId $DataSourceId `
-                                                                        -ErrorAction Stop
-            if ($DataSourceType -eq 'disk') {
-                # Set resource group to hold snapshots
-                $backup_rg_id = (Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -eq $ResourceGroupName }).ResourceId
-                $initialisation.Property.PolicyInfo.PolicyParameter.DataStoreParametersList[0].ResourceGroupId = $backup_rg_id
+        $success = $False
+        $maxTries = 5
+        for ($attempt = 1; $attempt -le $maxTries; $attempt++) {
+            try {
+                Add-LogMessage -Level Info "[ ] Creating backup instance for '$DataSourceName'"
+                $initialisation = Initialize-AzDataProtectionBackupInstance -DatasourceType $DataSourceMap[$DataSourceType] `
+                                                                            -DatasourceLocation $DataSourceLocation `
+                                                                            -PolicyId $BackupPolicyId `
+                                                                            -DatasourceId $DataSourceId `
+                                                                            -ErrorAction Stop
+                if ($DataSourceType -eq 'disk') {
+                    # Set resource group to hold snapshots
+                    $backup_rg_id = (Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -eq $ResourceGroupName }).ResourceId
+                    $initialisation.Property.PolicyInfo.PolicyParameter.DataStoreParametersList[0].ResourceGroupId = $backup_rg_id
+                }
+                $instance = New-AzDataProtectionBackupInstance -ResourceGroupName $ResourceGroupName `
+                                                               -VaultName $VaultName `
+                                                               -BackupInstance $initialisation `
+                                                               -ErrorAction Stop
+                Add-LogMessage -Level Success "Successfully created backup instance for '$DataSourceName'"
+                $success = $True
+                break
+            } catch {
+                Add-LogMessage -Level Info "[x] Creating backup instance for '$DataSourceName' failed. Attempt [$attempt/$maxTries]."
+                $ErrorMessage = $_.Exception
             }
-            $instance = New-AzDataProtectionBackupInstance -ResourceGroupName $ResourceGroupName `
-                                                           -VaultName $VaultName `
-                                                           -BackupInstance $initialisation `
-                                                           -ErrorAction Stop
-            Add-LogMessage -Level Success "Successfully deployed backup instance for '$DataSourceName'"
-        } catch {
-            Add-LogMessage -Level Fatal "Failed to deploy backup instance for '$DataSourceName'" -Exception $_.Exception
+        }
+        # Throw an exception if backup instance could not be created
+        if (-not $success) {
+            Add-LogMessage -Level Fatal "Failed to create backup instance for '$DataSourceName'!`n${ErrorMessage}"
         }
     }
     return $instance

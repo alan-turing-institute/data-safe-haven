@@ -255,7 +255,8 @@ If you can see an empty screen with `Work resources` but no app icons, your user
 - Test `CoCalc` by clicking on the `CoCalc` app icon.
   - You should receive an MFA request to your phone or authentication app.
   - Once you have approved the sign in, you should see a Chrome window with the CoCalc login page.
-  - Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
+  - You will get a warning about a `Potential Security Risk` related to a self-signed certificate. It is safe to trust this by selecting `Advanced > Accept the risk and continue`.
+  - Create a new username and password and use this to log in.
 - Test `CodiMD` by clicking on the `CodiMD` app icon.
   - You should receive an MFA request to your phone or authentication app.
   - Once you have approved the sign in, you should see a Chrome window with the GitLab login page.
