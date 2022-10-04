@@ -84,7 +84,7 @@ PS> ./Setup_SRE_Remote_Desktop.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 ```{error}
 If you encounter errors with the deployment of the remote desktop servers, re-running `Setup_SRE_Remote_Desktop.ps1` should fix them.
-If this does not work, please try deleting everything that has been deployed into the `RG_SHM_<SHM ID>_SRE_<SRE ID>_RDS` resource group for this SRE and {ref}`attempt to run this step again <deploy_sre_microsoft_deploy_remote_desktop>`.
+If this does not work, please try deleting everything that has been deployed into the `projectRG_SHM_<SHM ID>_SRE_<SRE ID>_REMOTE_DESKTOP` resource group for this SRE and {ref}`attempt to run this step again <deploy_sre_microsoft_deploy_remote_desktop>`.
 ```
 
 ### {{satellite}} Configure RDS webclient
