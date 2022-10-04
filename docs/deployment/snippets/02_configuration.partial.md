@@ -21,8 +21,8 @@ The following core SRE properties are required - look in the `environment_config
   "tier": "The data classification tier for the SRE. This controls the outbound network restrictions on the SRE and which mirror set the SRE is peered with",
   "shmId": "The <SHM ID> that you decided on above (eg. 'testa').",
   "subscriptionName": "Azure subscription that the SRE will be deployed into.",
-  "ipPrefix": "The three octet IP address prefix for the Class A range used by the management environment. See below for suggestion on how to set this",
-  "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. See below for suggestion on how to set this.",
+  "ipPrefix": "The three octet IP address prefix for the Class A range used by the SRE. See suggestion below on how to set this",
+  "inboundAccessFrom": "A comma-separated string of IP ranges (addresses or CIDR ranges) from which access to the RDS webclient is permitted. See tip default below for suggestion on how to set this.",
   "outboundInternetAccess": "Whether to allow outbound internet access from inside the remote desktop environment. Either ('Yes', 'Allow', 'Permit'), ('No', 'Deny', 'Forbid') or 'default' (for Tier 0 and 1 'Allow' otherwise 'Deny')",
   "computeVmImage": {
     "type": "The name of the SRD image (most commonly 'Ubuntu')",
@@ -30,8 +30,8 @@ The following core SRE properties are required - look in the `environment_config
   },
   "remoteDesktopProvider": "Which remote desktop provider to use. Either 'ApacheGuacamole' (recommended, tiers 0-3) or 'MicrosoftRDS' (tiers 2-3 only)",
   "azureAdminGroupName": "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
-  "dataAdminIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using to transfer sensitive data to/from the secure Azure storage area (if not specified then Turing IP addresses will be used).",
-  "databases": "[Optional] A list of one or more database flavours from the following list ('MSSQL', 'PostgreSQL'). For example ['MSSQL', 'PostgreSQL'] would deploy both an MS-SQL and a PostgreSQL database.",
+  "dataAdminIpAddresses": "A list of one or more IP addresses which admins will be using to transfer sensitive data to/from the secure Azure storage area (if not specified then Turing IP addresses will be used).",
+  "databases": "A list of one or more database flavours from the following list ('MSSQL', 'PostgreSQL'). For example ['MSSQL', 'PostgreSQL'] would deploy both an MS-SQL and a PostgreSQL database.",
   "deploymentIpAddresses": "[Optional] A list of one or more IP addresses which admins will be using when deploying the SRE (if not specified then deployment commands from any IP address will be permitted).",
   "domain": "[Optional] The fully qualified domain name for the SRE. If not specified then <SRE ID>.<SHM domain> will be used.",
   "overrides": "[Optional, Advanced] Do not use this unless you know what you're doing! If you want to override any of the default settings, you can do so by creating the same JSON structure that would be found in the final config file and nesting it under this entry. For example, to change the name of the Key Vault secret containing the MSSQL admin password, you could use something like: 'sre: { databases: { dbmssql: { adminPasswordSecretName: my-password-name } } }'"
@@ -46,13 +46,14 @@ We recommend the following for the `inboundAccessFrom` setting
 ```
 
 ```{important}
-The `ipPrefix` must be unique for each SRE attached to the same SHM.
-It is **very** important that address spaces do not overlap in the environment as this will cause network faults.
+The `ipPrefix` must be unique for each SRE attached to the same SHM. Each SRE needs a range of 2048 IP address (a `/21` range in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)) in a [private IP range](https://en.wikipedia.org/wiki/Private_network#Private_IPv4_addresses).
+The config itself expects the first three digits denoting the range (e.g. `"ipPrefix": "10.11.0.0"` rather than `"ipPrefix": "10.11.0.0/21"`)
+It is important that the range chosen doesn't overlap with the SHM (by default `10.0.0.0 - 10.0.7.255`), the package repositories (by default `10.10.2.0-10.10.3.255`) or any other SRE.
+You may find [this tool](https://www.ipaddressguide.com/cidr) helpful to convert between IP address ranges and CIDRs.
 ```
 
 ```{admonition} Alan Turing Institute default
-We assign each SRE a `/21` subspace of the `10.0.0.0/24` private class A range, starting from `10.11.0.0`.
-This provides ample addresses for a SRE while avoiding the space already occupied by the SHM `10.0.1.0 - 10.0.7.255` and the mirrors (`10.10.2.0-10.10.3.255`)
+We assign consecutive `/21` ranges starting from `10.11.0.0/21` (ie. the first three SREs will use `10.11.0.0/21`, `10.11.8.0/21` and `10.11.16.0/21`).
 ```
 
 ### (Optional) Verify code version

@@ -9,9 +9,9 @@ Replace the empty checkboxes [ ] below with checked ones [x] accordingly.
 
 - [ ] You have given your pull request a meaningful title (_e.g._ `Enable foobar integration` rather than `515 foobar`).
 - [ ] You are targeting the **develop branch**.
-- [ ] You have marked this pull request as a **draft** pull request if it is not ready to merge yet.
 - [ ] Your branch is up-to-date with the **develop branch** (you probably started your branch from `develop` but it may have changed since then).
-- [ ] You have run the Powershell code formatter. You can do this with `./tests/AutoFormat_Powershell.ps1 -TargetPath <path to file or directory>`.
+- [ ] If-and-only-if your changes are not yet ready to merge, you have marked this pull request as a **draft** pull request and added '[WIP]' to the title.
+- [ ] If-and-only-if you have changed any Powershell code, you have run the code formatter. You can do this with `./tests/AutoFormat_Powershell.ps1 -TargetPath <path to file or directory>`.
 
 ### :arrow_heading_up: Summary
 
@@ -32,4 +32,5 @@ If your pull request will close any open issues (hopefully it will!) then add `C
 - Document any manual tests that you have carried out (*e.g.* deploying a new SHM and/or SRE) and confirm which commit you did this with
 - Note that automated tests will be run as part of the CI process and will block this PR until they pass.
 - Additionally, a successful code review may be required before this PR can be merged.
+- If this pull request only changed documentation you can simply state 'Documentation only' here.
 -->
