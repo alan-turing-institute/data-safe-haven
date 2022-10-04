@@ -52,6 +52,7 @@ services:
             - /etc/localtime:/etc/localtime:ro
             - /etc/timezone:/etc/timezone:ro
         environment:
+            # Parameters are here: https://github.com/apache/guacamole-client/blob/master/guacamole-docker/bin/start.sh
             GUACD_HOSTNAME: guacd
             LOGBACK_LEVEL: debug
             POSTGRES_HOSTNAME: postgres
@@ -61,7 +62,7 @@ services:
             OPENID_AUTHORIZATION_ENDPOINT: https://login.microsoftonline.com/{{guacamole.tenantId}}/oauth2/v2.0/authorize
             OPENID_JWKS_ENDPOINT: https://login.microsoftonline.com/{{guacamole.tenantId}}/discovery/v2.0/keys
             OPENID_ISSUER: https://login.microsoftonline.com/{{guacamole.tenantId}}/v2.0
-            OPENID_USERNAME_CLAIM_TYPE: email
+            OPENID_USERNAME_CLAIM_TYPE: preferred_username
             OPENID_CLIENT_ID: {{guacamole.applicationId}}
             OPENID_REDIRECT_URI: https://{{sre.domain.fqdn}}
         restart: always

@@ -237,7 +237,8 @@ If you see an error like the following when attempting to log in, it is likely t
 - Connect to the remote desktop [using the instructions above](#test-the-apache-guacamole-remote-desktop)
 - Test `CoCalc` by clicking on the `CoCalc` desktop icon.
   - This should open a web browser inside the remote desktop
-  - Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
+  - You will get a warning about a `Potential Security Risk` related to a self-signed certificate. It is safe to trust this by selecting `Advanced > Accept the risk and continue`.
+  - Create a new username and password and use this to log in.
 - Test `CodiMD` by clicking on the `CodiMD` desktop icon.
   - This should open a web browser inside the remote desktop
   - Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.

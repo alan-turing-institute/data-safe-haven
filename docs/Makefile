@@ -16,13 +16,6 @@ TARGETDIR         = _output
 # - Add a '<NAME>TARGET:  <NAME>SOURCE' rule
 # - Edit conf.py if you want them to be downloadable
 PDFTARGETDIR               = $(TARGETDIR)/pdf
-# Classification flowcharts
-CLASSIFICATIONFULLSOURCE   = $(shell find . -type f -name "data_classification_flowchart_full.pdf")
-CLASSIFICATIONFULLTARGET   = $(PDFTARGETDIR)/data_classification_flow_full.pdf
-CLASSIFICATIONSIMPLESOURCE = $(shell find . -type f -name "data_classification_flowchart_simplified.pdf")
-CLASSIFICATIONSIMPLETARGET = $(PDFTARGETDIR)/data_classification_flow_simple.pdf
-# List of PDFs to build
-PDFTARGETS                 = $(CLASSIFICATIONFULLTARGET) $(CLASSIFICATIONSIMPLETARGET)
 
 # Put help first so that "make" without argument is like "make help".
 help:
@@ -30,17 +23,11 @@ help:
 
 .PHONY: help Makefile
 
-# Build from existing PDF
-$(CLASSIFICATIONFULLTARGET): $(CLASSIFICATIONFULLSOURCE)
-$(CLASSIFICATIONSIMPLETARGET): $(CLASSIFICATIONSIMPLESOURCE)
+# 'all' will make HTML and PDFs
+all: html pdf
 
-# Build rule for copying PDFs
-$(CLASSIFICATIONFULLTARGET) $(CLASSIFICATIONSIMPLETARGET):
-	@mkdir -p $(PDFTARGETDIR)
-	@if [ "$^" ]; then cp $^ $@; echo "Copied existing PDF $^ to $@"; fi
-
-# Build local PDF targets then call rinoh
-pdf: $(PDFTARGETS)
+# Use rinoh (via Sphinx) to build PDFs from Markdown
+pdf:
 	make rinoh
 	rm $(PDFTARGETDIR)/*.rtc
 	rm $(PDFTARGETDIR)/*.stylelog

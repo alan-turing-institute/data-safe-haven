@@ -14,8 +14,14 @@ When you set up your Data Safe Haven, you should think carefully about the secur
 - analysis environments
 
 The Data Safe Haven supports five sensitivity tiers out-of-the-box.
-These are discussed further in our [design choices](https://arxiv.org/abs/1908.08737) preprint.
-A summary of the technical controls imposed by the Data Safe Haven codebase follows below.
+A summary of the technical controls imposed at each tier by the Data Safe Haven codebase follows below.
+
+```{hint}
+The tiers used in the Data Safe Haven codebase are based on ideas from our [design choices](https://arxiv.org/abs/1908.08737) preprint.
+The preprint goes into further detail about the different tiers and outlines one possible classification scheme.
+
+Note that your organisation may classify projects differently and require different technical and non-technical controls.
+```
 
 (policy_tier_0)=
 

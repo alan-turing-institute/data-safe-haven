@@ -76,14 +76,6 @@ html_context["downloads"] = [
         "User guide (Microsoft RDS)",
         f"/{repo_name}/{current_version}/pdf/data_safe_haven_user_guide_msrds.pdf",
     ),
-    (
-        "Classification flowchart",
-        f"/{repo_name}/{current_version}/pdf/data_classification_flow_full.pdf",
-    ),
-    (
-        "Simplified classification  flowchart",
-        f"/{repo_name}/{current_version}/pdf/data_classification_flow_simple.pdf",
-    ),
 ]
 # Add 'Edit on GitHub' link
 # html_context["display_github"] = True
