@@ -9,6 +9,7 @@ manage_users.md
 manage_data.md
 manage_costs.md
 migrate_an_shm.md
+manage_webapps.md
 manage_deployments.md
 ```
 
@@ -26,6 +27,9 @@ Typically these might be members of an institutional IT team.
 
 [Migrating an existing SHM](migrate_an_shm.md)
 : How to migrate the contents of a previously-deployed SHM to a new one (advanced).
+
+[Managing web applications](manage_webapps.md)
+: How to access virtual machines hosting web applications
 
 [Removing deployed components](manage_deployments.md)
 : Removing an SRE or a complete, deployment Data Safe Haven as an administrator.
