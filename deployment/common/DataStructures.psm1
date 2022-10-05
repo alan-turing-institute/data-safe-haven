@@ -151,6 +151,8 @@ function ConvertTo-SortedHashtable {
         $OutputHashtable = [ordered]@{}
         $Sortable.GetEnumerator() | Sort-Object -Property "Name" | ForEach-Object { $OutputHashtable.Add($_.Key, $(ConvertTo-SortedHashtable -Sortable $_.Value)) }
         return $OutputHashtable
+    } elseif ($Sortable -is [System.Object[]]) {
+        return @($Sortable | ForEach-Object { ConvertTo-SortedHashtable $_ })
     } else {
         return $Sortable
     }
