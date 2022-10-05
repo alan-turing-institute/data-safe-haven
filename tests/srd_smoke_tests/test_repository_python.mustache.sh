@@ -5,7 +5,7 @@
 # - *not* pre-installed
 # - on the tier-3 list (so we can test all tiers)
 # - alphabetically early and late (so we can test the progress of the mirror synchronisation)
-installable_packages=("{{SmokeTests.PyPIPackage0}}" "{{SmokeTests.PyPIPackage1}}")
+installable_packages=("{{SmokeTests.PyPIPackageFirst}}" "{{SmokeTests.PyPIPackageLast}}")
 uninstallable_packages=("awscli")
 
 # Set up a virtual environment for testing
