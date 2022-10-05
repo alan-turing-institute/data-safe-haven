@@ -44,10 +44,7 @@ $deploymentSubnet = Get-Subnet -Name $config.sre.network.vnet.subnets.deployment
 
 # Create each database defined in the config file
 # -----------------------------------------------
-foreach ($keyName in $config.sre.databases.Keys) {
-    if ($config.sre.databases[$keyName] -isnot [System.Collections.IDictionary]) { continue }
-    $databaseCfg = $config.sre.databases[$keyName]
-
+foreach ($databaseCfg in $config.sre.databases.instances) {
     # Check whether this database VM has already been deployed
     # --------------------------------------------------------
     if (Get-AzVM -Name $databaseCfg.vmName -ResourceGroupName $config.sre.databases.rg -ErrorAction SilentlyContinue) {
