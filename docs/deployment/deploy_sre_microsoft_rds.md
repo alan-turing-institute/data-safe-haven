@@ -305,6 +305,10 @@ If you get multiple MFA requests with no change in the `Opening ports` message, 
 - Alternatively, this can happen if the NPS secret stored in the Key Vault is too long. We found that a 20 character secret caused problems but the (default) 12 character secret works.
 ```
 
+```{error}
+Should there be any issues using the web apps (e.g. unable to log in, or log in page not appearing) you can inspect the build log and access the console for the relevant VMs following the guide for {ref}`System Managers <administrator_manage_webapps>`
+````
+
 ## 8. {{baseball}} Deploy databases
 
 ```{include} snippets/08_databases.partial.md
