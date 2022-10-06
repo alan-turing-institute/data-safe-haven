@@ -11,12 +11,12 @@ done
 
 if [ "$db_type" == "mssql" ]; then
     db_name="master"
-    port="{{sre.databases.dbmssql.port}}"
-    server_name="{{sre.databases.dbmssql.vmName}}.{{shm.domain.fqdn}}"
+    port="{{SmokeTests.MSSQLPort}}"
+    server_name="{{SmokeTests.MSSQLVMName}}.{{shm.domain.fqdn}}"
 elif [ "$db_type" == "postgres" ]; then
     db_name="postgres"
-    port="{{sre.databases.dbpostgresql.port}}"
-    server_name="{{sre.databases.dbpostgresql.vmName}}.{{shm.domain.fqdn}}"
+    port="{{SmokeTests.PostgreSQLPort}}"
+    server_name="{{SmokeTests.PostgreSQLVMName}}.{{shm.domain.fqdn}}"
 else
     echo "Did not recognise database type '$db_type'"
 fi

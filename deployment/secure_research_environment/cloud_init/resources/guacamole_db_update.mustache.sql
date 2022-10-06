@@ -89,6 +89,7 @@ FROM
 ON CONFLICT DO NOTHING;
 
 /* Ensure that all users are added to the correct group */
+DELETE FROM guacamole_user_group_member;
 INSERT INTO guacamole_user_group_member (user_group_id, member_entity_id)
 SELECT guacamole_user_group.user_group_id, guac_user.entity_id
 FROM
@@ -117,6 +118,7 @@ FROM
 ON CONFLICT DO NOTHING;
 
 /* Assign connection permissions to each group */
+DELETE FROM guacamole_connection_permission;
 INSERT INTO guacamole_connection_permission (entity_id, connection_id, permission)
     SELECT entity_id, connection_id, permission::guacamole_object_permission_type
     FROM

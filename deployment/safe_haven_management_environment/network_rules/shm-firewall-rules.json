@@ -888,15 +888,17 @@
                             "archive.ubuntu.com",
                             "azure.archive.ubuntu.com",
                             "changelogs.ubuntu.com",
+                            "d20rj4el6vkp4c.cloudfront.net",
                             "dbeaver.io",
                             "developer.download.nvidia.com",
+                            "packages.gitlab.com",
                             "packages.microsoft.com",
                             "qgis.org",
                             "security.ubuntu.com",
                             "ubuntu.qgis.org"
                         ],
                         "sourceAddresses": [
-                            "*"
+                            "{{network.vnet.subnets.updateServers.cidr}}"
                         ]
                     },
                     {

@@ -6,6 +6,8 @@ write_files:
     permissions: "0444"
     content: |
       Acquire::http::Proxy "http://{{shm.monitoring.updateServers.linux.ip}}:8000";
+      Acquire::https::Proxy "http://{{shm.monitoring.updateServers.linux.ip}}:8000";
+
 
   - path: "/etc/audit/rules.d/audit.rules"
     permissions: "0400"

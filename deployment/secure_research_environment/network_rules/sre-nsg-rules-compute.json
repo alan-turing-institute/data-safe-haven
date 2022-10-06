@@ -47,18 +47,24 @@
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
+    {{#sre.databases.enabled}}
     {
         "name": "AllowDatabasesSubnetOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to the databases subnet",
         "destinationAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
-        "destinationPortRange": ["{{sre.databases.dbmssql.port}}", "{{sre.databases.dbpostgresql.port}}"],
+        "destinationPortRange": [
+            {{#sre.databases.instances}}
+                "{{port}}",
+            {{/sre.databases.instances}}
+        ],
         "direction": "Outbound",
         "priority": 500,
         "protocol": "*",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
+    {{/sre.databases.enabled}}
     {
         "name": "AllowWebappsSubnetOutbound",
         "access": "Allow",

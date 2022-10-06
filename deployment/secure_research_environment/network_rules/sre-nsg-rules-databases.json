@@ -1,16 +1,22 @@
 [
+    {{#sre.databases.enabled}}
     {
         "name": "AllowComputeSubnetInbound",
         "access": "Allow",
         "description": "Allow inbound connections from the compute subnet",
         "destinationAddressPrefix": "{{sre.network.vnet.subnets.databases.cidr}}",
-        "destinationPortRange": ["{{sre.databases.dbmssql.port}}", "{{sre.databases.dbpostgresql.port}}"],
+        "destinationPortRange": [
+            {{#sre.databases.instances}}
+                "{{port}}",
+            {{/sre.databases.instances}}
+        ],
         "direction": "Inbound",
         "priority": 500,
         "protocol": "*",
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.compute.cidr}}",
         "sourcePortRange": "*"
     },
+    {{/sre.databases.enabled}}
     {
         "name": "DenyAdminVPNInbound",
         "access": "Deny",

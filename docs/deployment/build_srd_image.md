@@ -66,11 +66,9 @@ if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which a
 
 ### Adding a new Python package
 
-- Add the name of the package as it appears on `PyPI` to each of the package lists (supported Python versions only):
-  - `deployment/secure_research_desktop/packages/packages-python-pypi-36.list`
-  - `deployment/secure_research_desktop/packages/packages-python-pypi-37.list`
-  - `deployment/secure_research_desktop/packages/packages-python-pypi-38.list`
-- If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then add an entry to the appropriate section in `deployment/secure_research_desktop/packages/python-requirements.json`
+- Add the name of the package as it appears on `PyPI` to the package list:
+  - `deployment/secure_research_desktop/packages/packages-python.yaml`
+  - If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then make sure to specify this
 - You should also add this package to the **allow list** used by {ref}`policy_tier_3` package mirrors in `environment_configs/package_lists/allowlist-core-python-pypi-tier3.list`
 
 ### Adding a new R package
@@ -110,8 +108,9 @@ PS> ./Provision_Compute_VM.ps1 -shmId <SHM ID>
 
 ```{note}
 - Although the `./Provision_Compute_VM.ps1` script will finish running in a few minutes, the build itself will take several hours.
-- We recommend **monitoring** the build by accessing the machine using `ssh` and either reading through the full build log at `/var/log/cloud-init-output.log` or running the summary script using `/opt/verification/analyse_build.py`.
-- Note that the VM will automatically shutdown at the end of the cloud-init process - if you want to analyse the build after this point, you will need to turn it back on in the `Azure` portal.
+- We recommend **monitoring** the build by accessing the machine using `ssh` (the ssh info should be printed at the end of the Provision_Compute_VM.ps1 script) and either reading through the full build log at `/var/log/cloud-init-output.log` or running the summary script using `/opt/verification/analyse_build.py`.
+- **NB.** You will need to connect from an approved administrator IP address
+- **NB.** the VM will automatically shutdown at the end of the cloud-init process - if you want to analyse the build after this point, you will need to turn it back on in the `Azure` portal.
 ```
 
 ```{error}

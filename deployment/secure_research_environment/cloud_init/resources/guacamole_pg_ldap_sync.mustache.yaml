@@ -22,7 +22,7 @@ ldap_users:
   # LDAP filter defining which LDAP users should be synchronized
   filter: {{{guacamole.ldapUserFilter}}}
   # this attribute is used as PG role name. It is 'sAMAccountName@domain'
-  name_attribute: mail
+  name_attribute: userPrincipalName
   # lowercase name for use as PG role name
   lowercase_name: false
 

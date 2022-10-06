@@ -69,6 +69,11 @@ write_files:
     content: |
       {{guacamole_synchronise_database.sh}}
 
+  - path: "/opt/postgresql/scripts/db_permissions.sql"
+    permissions: "0444"
+    content: |
+      {{guacamole_db_permissions.sql}}
+
   - path: "/opt/postgresql/scripts/db_update.sql"
     permissions: "0444"
     content: |
