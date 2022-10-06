@@ -250,13 +250,21 @@ Copy-Item (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages
 Copy-Item (Join-Path $PSScriptRoot ".." ".." ".." "tests" "srd_smoke_tests") -Filter *.* -Destination (Join-Path $localSmokeTestDir "tests") -Recurse
 # Expand mustache templates
 $PythonYaml = (ConvertFrom-Yaml (Get-Content -Raw (Join-Path $PSScriptRoot ".." ".." "secure_research_desktop" "packages" "packages-python.yaml")))
+$MssqlConfig = $config.sre.databases.instances | Where-Object { $_.type -eq "MSSQL" } | Select-Object -First 1
+$PostgresqlConfig = $config.sre.databases.instances | Where-Object { $_.type -eq "PostgreSQL" } | Select-Object -First 1
 $config["SmokeTests"] = [ordered]@{
-    PyPIPackage0 = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-python-pypi-tier3.list") -Head 1
-    PyPIPackage1 = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-python-pypi-tier3.list") -Tail 1
-    Python_v0    = $PythonYaml["versions"][0]
-    Python_v1    = $PythonYaml["versions"][1]
-    Python_v2    = $PythonYaml["versions"][2]
-    TestFailures = $config.sre.tier -ge 3 ? 1 : 0
+    MSSQLExists      = $MssqlConfig.Count -gt 0
+    MSSQLPort        = $MssqlConfig ? $MssqlConfig.port : ""
+    MSSQLVMName      = $MssqlConfig ? $MssqlConfig.vmName : ""
+    PostgreSQLExists = $PostgresqlConfig.Count -gt 0
+    PostgreSQLPort   = $PostgresqlConfig ? $PostgresqlConfig.port : ""
+    PostgreSQLVMName = $PostgresqlConfig ? $PostgresqlConfig.vmName : ""
+    PyPIPackageFirst = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-python-pypi-tier3.list") -Head 1
+    PyPIPackageLast  = Get-Content (Join-Path $PSScriptRoot ".." ".." ".." "environment_configs" "package_lists" "allowlist-full-python-pypi-tier3.list") -Tail 1
+    Python_v0        = $PythonYaml["versions"][0]
+    Python_v1        = $PythonYaml["versions"][1]
+    Python_v2        = $PythonYaml["versions"][2]
+    TestFailures     = $config.sre.tier -ge 3 ? 1 : 0
 }
 foreach ($MustacheFilePath in (Get-ChildItem -Path $localSmokeTestDir -Include *.mustache.* -File -Recurse)) {
     $ExpandedFilePath = $MustacheFilePath -replace ".mustache.", "."

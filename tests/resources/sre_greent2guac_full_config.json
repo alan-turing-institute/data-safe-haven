@@ -1160,51 +1160,54 @@
       }
     },
     "databases": {
-      "dbmssql": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-mssql",
-        "dbAdminPasswordSecretName": "sre-t2guac-db-admin-password-mssql",
-        "dbAdminUsernameSecretName": "sre-t2guac-db-admin-username-mssql",
-        "disks": {
-          "data": {
-            "sizeGb": "1024",
-            "type": "Standard_LRS"
+      "enabled": true,
+      "instances": [
+        {
+          "adminPasswordSecretName": "sre-t2guac-vm-admin-password-mssql",
+          "dbAdminUsernameSecretName": "sre-t2guac-db-admin-username-mssql",
+          "dbAdminPasswordSecretName": "sre-t2guac-db-admin-password-mssql",
+          "vmName": "MSSQL-T2GUAC",
+          "type": "MSSQL",
+          "ip": "10.152.3.4",
+          "port": "1433",
+          "sku": "sqldev-gen2",
+          "subnet": "databases",
+          "vmSize": "Standard_DS2_v2",
+          "disks": {
+            "data": {
+              "sizeGb": "1024",
+              "type": "Standard_LRS"
+            },
+            "os": {
+              "sizeGb": "128",
+              "type": "Standard_LRS"
+            }
           },
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
-          }
+          "enableSSIS": true
         },
-        "enableSSIS": true,
-        "ip": "10.152.3.4",
-        "port": "1433",
-        "sku": "sqldev-gen2",
-        "subnet": "databases",
-        "type": "MSSQL",
-        "vmName": "MSSQL-T2GUAC",
-        "vmSize": "Standard_DS2_v2"
-      },
-      "dbpostgresql": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-postgresql",
-        "dbAdminPasswordSecretName": "sre-t2guac-db-admin-password-postgresql",
-        "dbAdminUsernameSecretName": "sre-t2guac-db-admin-username-postgresql",
-        "disks": {
-          "data": {
-            "sizeGb": "1024",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "128",
-            "type": "Standard_LRS"
+        {
+          "adminPasswordSecretName": "sre-t2guac-vm-admin-password-postgresql",
+          "dbAdminUsernameSecretName": "sre-t2guac-db-admin-username-postgresql",
+          "dbAdminPasswordSecretName": "sre-t2guac-db-admin-password-postgresql",
+          "vmName": "PSTGRS-T2GUAC",
+          "type": "PostgreSQL",
+          "ip": "10.152.3.5",
+          "port": "5432",
+          "sku": "Ubuntu-latest",
+          "subnet": "databases",
+          "vmSize": "Standard_DS2_v2",
+          "disks": {
+            "data": {
+              "sizeGb": "1024",
+              "type": "Standard_LRS"
+            },
+            "os": {
+              "sizeGb": "128",
+              "type": "Standard_LRS"
+            }
           }
-        },
-        "ip": "10.152.3.5",
-        "port": "5432",
-        "sku": "Ubuntu-latest",
-        "subnet": "databases",
-        "type": "PostgreSQL",
-        "vmName": "PSTGRS-T2GUAC",
-        "vmSize": "Standard_DS2_v2"
-      },
+        }
+      ],
       "rg": "RG_SHM_GREEN_SRE_T2GUAC_DATABASES"
     },
     "diskTypeDefault": "Standard_LRS",
