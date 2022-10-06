@@ -19,7 +19,7 @@ Describe "SHM configuration file check" {
 
         # Load test config
         Mock Write-Information {} # we mock Write-Information here as we expect output from the `Get-SreConfig` call
-        $testConfig = Get-ShmConfig -shmId $ConfigId
+        $testConfig = Get-ShmConfig -shmId $ConfigId | ConvertTo-SortedHashtable
 
         # Compare the two configs as JSON strings
         # Note that we could use `Test-Equality` from the `Functional` module here, but that would not tell us *where* any differences are

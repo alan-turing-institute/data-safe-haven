@@ -1059,7 +1059,9 @@ function Get-SreConfig {
     # Databases
     # ---------
     $config.sre.databases = [ordered]@{
-        rg = "$($config.sre.rgPrefix)_DATABASES".ToUpper()
+        rg        = "$($config.sre.rgPrefix)_DATABASES".ToUpper()
+        enabled   = $False
+        instances = @()
     }
     $dbConfig = @{
         MSSQL      = @{port = "1433"; prefix = "MSSQL"; sku = "sqldev-gen2" }
@@ -1070,7 +1072,8 @@ function Get-SreConfig {
         if (-not @($dbConfig.Keys).Contains($databaseType)) {
             Add-LogMessage -Level Fatal "Database type '$databaseType' was not recognised!"
         }
-        $config.sre.databases["db$($databaseType.ToLower())"] = [ordered]@{
+        $databasePorts += $dbConfig[$databaseType].port
+        $config.sre.databases.instances += [ordered]@{
             adminPasswordSecretName   = "$($config.sre.shortName)-vm-admin-password-$($databaseType.ToLower())"
             dbAdminUsernameSecretName = "$($config.sre.shortName)-db-admin-username-$($databaseType.ToLower())"
             dbAdminPasswordSecretName = "$($config.sre.shortName)-db-admin-password-$($databaseType.ToLower())"
@@ -1092,7 +1095,8 @@ function Get-SreConfig {
                 }
             }
         }
-        if ($databaseType -eq "MSSQL") { $config.sre.databases["db$($databaseType.ToLower())"]["enableSSIS"] = $true }
+        $config.sre.databases.enabled = $True
+        if ($databaseType -eq "MSSQL") { $config.sre.databases.instances[-1].enableSSIS = $true }
         $ipOffset += 1
     }
 

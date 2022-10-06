@@ -129,6 +129,7 @@ test_python_virtual_environments() {
 
 # Databases
 # ---------
+{{#SmokeTests.MSSQLExists}}
 # Test MS SQL database
 @test "MS SQL database (Python)" {
     run bash tests/test_databases.sh -d mssql -l python
@@ -138,7 +139,9 @@ test_python_virtual_environments() {
     run bash tests/test_databases.sh -d mssql -l R
     assert_output --partial 'All database tests passed'
 }
+{{/SmokeTests.MSSQLExists}}
 
+{{#SmokeTests.PostgreSQLExists}}
 # Test Postgres database
 @test "Postgres database (Python)" {
     run bash tests/test_databases.sh -d postgres -l python
@@ -148,6 +151,7 @@ test_python_virtual_environments() {
     run bash tests/test_databases.sh -d postgres -l R
     assert_output --partial 'All database tests passed'
 }
+{{/SmokeTests.PostgreSQLExists}}
 
 
 # Mounted drives
