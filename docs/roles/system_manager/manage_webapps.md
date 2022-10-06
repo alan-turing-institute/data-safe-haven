@@ -14,7 +14,7 @@ However, it is possible for the virtual machine hosting the web app servers to s
 
 In the rest of this document, `<SHM ID>` is the {ref}`Secure Management Environment ID<roles_deployer_shm_id>` for the SHM, and `<SRE ID>` is the {ref}`Secure Research Environment ID<roles_deployer_sre_id>` for the SRE. 
 
-### Checking build logs
+## Checking build logs
 
 An initial step could be to check the build logs of the virtual machine to ascertain whether any clear errors occurred during the process (e.g. the installation of the server software may have failed).
 
@@ -36,13 +36,18 @@ PS> ./Setup_SRE_WebApp_Servers.ps1
 
 If the reason for failure is less clear, accessing the command line interface directly may help.
 
-### Accessing the console
+## Accessing the console
 
-- Retrieve the login details for the web app virtual machines from the SRE key vault. From the `Azure` portal, navigate to the Resource Group `RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS`
-- Click on the keyvault `kv-<SHM ID>_SRE_<SRE ID>`
-- From the menu on the left, select `Secrets`
-- All web app virtual machines share the same `<admin username>`, found in the `sre-<SRE ID>-vm-admin-username` secret.
+Console access to the web app VMs can be achieved through the `Azure` portal. All VMs share the same `<admin username>`, but each has its own `<admin password>`, which will need to be retrieved from the `SRE` key vault before accessing the console.
+
+- From the `Azure` portal, navigate to the Resource Group `RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS`
+- Click on the `SRE` keyvault `kv-<SHM ID>_SRE_<SRE ID>`
+- From the menu on the left, select `Secrets` from the `Objects` section.
+- All web app VMs share the same `<admin username>`, found in the `sre-<SRE ID>-vm-admin-username` secret.
 - Each web app has its own `<admin password>`, found in the `sre-<SRE ID>-vm-admin-password-<WEB APP>` secret.
+
+Once you have the `<admin username>` and `<admin password>`, you will be able to log in to the VM console as follows:
+
 - From the `Azure` portal, navigate to the web app resource group `RG_SHM_<SHM ID>_SRE_<SRE ID>_WEBAPPS`.
 - Click on the relevant VM (e.g. `COCALC-SRE-<SRE ID>`)
 - From the menu on the left, scroll down to the `Help` section and select `Serial console`
