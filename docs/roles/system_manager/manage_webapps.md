@@ -12,7 +12,7 @@ In principle, these should require no further direct interaction. Researchers us
 
 However, it is possible for the virtual machine hosting the web app servers to successfully start without the web app servers themselves actually running. For example, Researchers using an `SRD` may find that the web apps are unavailable, or do not successfully authenticate log-in attempts. In such cases, command line access to the virtual machines hosting the web app servers may help to diagnose and resolve problems.
 
-In the rest of this document, `<SHM ID>` is the {ref}`Secure Management Environment ID<roles_deployer_shm_id>` for the SHM, and `<SRE ID>` is the {ref}`Secure Research Environment ID<roles_deployer_sre_id>` for the SRE. 
+In the rest of this document, `<SHM ID>` is the {ref}`Secure Management Environment ID <roles_deployer_shm_id>` for the SHM, and `<SRE ID>` is the {ref}`Secure Research Environment ID <roles_deployer_sre_id>` for the SRE.
 
 ## Checking build logs
 
@@ -30,13 +30,14 @@ From the log, you may be able to determine whether and why part of the build pro
 - Redeploy the web app servers using `Powershell` locally
 
 ![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
+
 ```powershell
 PS> ./Setup_SRE_WebApp_Servers.ps1
 ```
 
 If the reason for failure is less clear, accessing the command line interface directly may help.
 
-## Accessing the console
+## Accessing the VM console
 
 Console access to the web app VMs can be achieved through the `Azure` portal. All VMs share the same `<admin username>`, but each has its own `<admin password>`, which will need to be retrieved from the `SRE` key vault before accessing the console.
 
