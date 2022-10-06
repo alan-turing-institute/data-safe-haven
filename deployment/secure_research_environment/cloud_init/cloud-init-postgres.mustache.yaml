@@ -58,7 +58,7 @@ write_files:
     permissions: "0644"
     content: |
       # Run user synchronisation every 10 minutes
-      */10 * * * * postgres pg_ldap_sync -c /etc/postgresql/12/main/pg-ldap-sync.yaml -vv
+      */10 * * * * postgres /usr/local/bin/pg_ldap_sync -vvv -c /etc/postgresql/12/main/pg-ldap-sync.yaml 2>&1 | logger -t SafeHaven
 
   - path: "/etc/cron.d/runonce"
     permissions: "0644"
