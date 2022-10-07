@@ -5,6 +5,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import emoji
 import git
+import os
 
 
 # -- Project information -----------------------------------------------------
@@ -138,9 +139,10 @@ html_sidebars = {
     "**": [
         "search-field.html",
         "sidebar-section-navigation.html",
-        "sidebar-versions.html",
     ]
 }
+if not os.getenv("DISABLE_VERSION_LINKS"):
+    html_sidebars["**"] += "sidebar-versions.html"
 
 # Location of favicon
 html_favicon = "_static/favicon.ico"
