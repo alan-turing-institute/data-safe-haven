@@ -3,6 +3,7 @@
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
+import datetime
 import emoji
 import git
 import os
@@ -11,7 +12,7 @@ import os
 # -- Project information -----------------------------------------------------
 
 project = "Data Safe Haven"
-copyright = "CC-BY-4.0 2022, The Alan Turing Institute."
+copyright = f"CC-BY-4.0 {datetime.date.today().year}, The Alan Turing Institute."
 author = "The Alan Turing Institute"
 development_branch = "develop"
 earliest_supported_release = "v4.0.0"
@@ -29,12 +30,16 @@ default_version = supported_versions[0]  # Latest stable release
 current_version = (
     [tag.name for tag in repo.tags if tag.commit == repo.head.commit]
     + [branch.name for branch in repo.branches if branch.commit == repo.head.commit]
-    + [repo.head.commit]
+    + [str(repo.head.commit)]
 )[0]  # Tag or branch name or commit ID if no name is available
+current_commit_hash = repo.head.commit.hexsha
+current_commit_date = repo.head.commit.authored_datetime.strftime(r"%d %b %Y")
+del repo  # all unpickleable objects must be deleted
 
 
 # -- Customisation  -----------------------------------------------------------
 
+# Extracted repository variables
 print(f"Supported versions: {supported_versions}")
 print(f"Default version: {default_version}")
 print(f"Current version: {current_version}")
@@ -61,13 +66,8 @@ html_context["versions"] = [
     (v, f"/{repo_name}/{v}/index.html") for v in supported_versions
 ]
 # Downloadable PDFs
-pdf_commit_hash = repo.git.log("-1", "--format=format:%h", current_version)
-pdf_commit_date = repo.git.log(
-    "-1", "--format=format:%cd", "--date=format:%d %b %Y", current_version
-)
-pdf_version_string = f"Version: {current_version} ({pdf_commit_hash})"
+pdf_version_string = f"Version: {current_version} ({current_commit_hash})"
 print(f"PDF version string: {pdf_version_string}")
-
 html_context["downloads"] = [
     (
         "User guide (Apache Guacamole)",
@@ -79,7 +79,6 @@ html_context["downloads"] = [
     ),
 ]
 # Add 'Edit on GitHub' link
-# html_context["display_github"] = True
 html_context["github_user"] = "alan-turing-institute"
 html_context["github_repo"] = "data-safe-haven"
 html_context["github_version"] = development_branch
@@ -109,6 +108,7 @@ exclude_patterns = [
     ".DS_Store",
     "**/*.partial.md",
 ]
+
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -142,7 +142,7 @@ html_sidebars = {
     ]
 }
 if not os.getenv("DISABLE_VERSION_LINKS"):
-    html_sidebars["**"] += "sidebar-versions.html"
+    html_sidebars["**"] += ["sidebar-versions.html"]
 
 # Location of favicon
 html_favicon = "_static/favicon.ico"
@@ -180,7 +180,7 @@ rinoh_documents = [
         target="pdf/data_safe_haven_user_guide_guacamole",
         title="Data Safe Haven User Guide\nApache Guacamole",
         subtitle=pdf_version_string,
-        date=pdf_commit_date,
+        date=current_commit_date,
         author=author,
         template="emoji_support.rtt",
     ),
@@ -189,7 +189,7 @@ rinoh_documents = [
         target="pdf/data_safe_haven_user_guide_msrds",
         title="Data Safe Haven User Guide\nMicrosoft Remote Desktop",
         subtitle=pdf_version_string,
-        date=pdf_commit_date,
+        date=current_commit_date,
         author=author,
         template="emoji_support.rtt",
     ),
