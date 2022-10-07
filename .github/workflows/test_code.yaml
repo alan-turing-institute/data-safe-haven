@@ -1,0 +1,37 @@
+---
+name: Test code
+
+# Run workflow on pushes to matching branches
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [develop, move-travis-to-github-actions]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  test_powershell:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install requirements
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          deployment/CheckRequirements.ps1 -InstallMissing -IncludeDev
+      - name: Test PowerShell
+        shell: pwsh
+        run: ./tests/Run_Pester_Tests.ps1
+
+  test_markdown_links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install requirements
+        shell: bash
+        run: npm install -g markdown-link-check
+      - name: Test Markdown for dead links
+        shell: bash
+        run: find . -name "*.md" | xargs -n 1 markdown-link-check -p -c .markdownlinkcheck.json
+        continue-on-error: true
