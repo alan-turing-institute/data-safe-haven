@@ -12,7 +12,7 @@ git:
 cache:
   timeout: 360
   directories:
-  # Linux Powershell module installation location
+    # Linux Powershell module installation location
     - $HOME/.local/share/powershell/Modules/
 
 jobs:
