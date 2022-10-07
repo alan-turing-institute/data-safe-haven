@@ -1,4 +1,4 @@
-name: cffconvert
+name: Validate citation
 
 on:
   push:
