@@ -4,7 +4,7 @@ name: Lint code
 # Run workflow on pushes to matching branches
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: [develop, move-travis-to-github-actions]
+    branches: [develop]
   pull_request:
     branches: [develop]
 
