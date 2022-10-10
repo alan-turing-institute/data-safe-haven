@@ -1,0 +1,123 @@
+---
+name: Lint code
+
+# Run workflow on pushes to matching branches
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  lint_html:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Get tags
+        run: git fetch --tags origin
+      - name: Install requirements
+        shell: bash
+        run: |
+          sudo gem install html-proofer -v 4.4.1
+          pip install -r docs/build/requirements.txt
+      - name: Generate HTML documention
+        shell: bash
+        run: |
+          DISABLE_VERSION_LINKS=1 make -C docs html
+      - name: Lint HTML
+        shell: bash
+        run: |
+          htmlproofer docs/_output \
+            --allow-missing-href=true \
+            --enforce-https=true \
+            --ignore-files "/_static/" \
+            --ignore-status-codes "502,503" \
+            --ignore-urls "/github.com\/alan-turing-institute\/data-classification-app/,/www.turing.ac.uk/"
+
+  lint_json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install requirements
+        shell: bash
+        run: npm install -g jsonlint mustache
+      - name: Lint JSON
+        shell: bash
+        run: |
+          echo "{}" > mustache_config.json
+          find . -name "*.json" | xargs -n 1 mustache mustache_config.json | jsonlint --quiet --compact
+
+  lint_markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install requirements
+        shell: bash
+        run: sudo gem install mdl
+      - name: Lint Markdown
+        run: mdl --style .mdlstyle.rb .
+
+  lint_powershell:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install requirements
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module PSScriptAnalyzer
+      - name: Lint PowerShell
+        shell: pwsh
+        run: Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary
+
+  lint_python:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install requirements
+        shell: bash
+        run: pip install flake8
+      - name: Lint Python
+        shell: bash
+        run: flake8 . --statistics --count
+
+  lint_shell:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install requirements
+        shell: bash
+        run: sudo apt install shellcheck
+      - name: Lint shell
+        shell: bash
+        run: find . -name "*.sh" | xargs shellcheck --format gcc --severity error
+
+  lint_yaml:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install requirements
+        shell: bash
+        run: |
+          npm install -g mustache
+      - name: Expand mustache templates
+        shell: bash
+        run: |
+          echo '{"array": ["dummy"], "variable": "dummy"}' > .mustache_config.json
+          for yamlfile in $(find . -name "*.yml" -o -name "*.yaml"); do
+            sed "s|{{\([/#]\)[^}]*}}|{{\1array}}|g" $yamlfile > expanded.yaml  # replace mustache arrays
+            sed -i "s|{{[^#/].\{1,\}}}|{{variable}}|g" expanded.yaml           # replace mustache variables
+            mustache .mustache_config.json expanded.yaml > $yamlfile           # perform mustache expansion overwriting file
+          done
+      - name: Lint YAML
+        uses: karancode/yamllint-github-action@dd59165b84d90d37fc919c3c7dd84c7e37cd6bfb  # this is 2.0.0
+        with:
+          yamllint_strict: true
+          yamllint_comment: false

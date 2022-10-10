@@ -184,6 +184,8 @@ If you specify the same size more than once, you will create multiple SRDs of th
 :relative-images:
 ```
 
+(deploy_sre_apache_guacamole_test_remote_desktop)=
+
 ### {{pear}} Test the Apache Guacamole remote desktop
 
 - Launch a local web browser on your **deployment machine** and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
@@ -234,7 +236,7 @@ If you see an error like the following when attempting to log in, it is likely t
 
 ### {{snowflake}} Test CoCalc, CodiMD and GitLab servers
 
-- Connect to the remote desktop [using the instructions above](#test-the-apache-guacamole-remote-desktop)
+- Connect to the remote desktop {ref}`using the instructions above <deploy_sre_apache_guacamole_test_remote_desktop>`
 - Test `CoCalc` by clicking on the `CoCalc` desktop icon.
   - This should open a web browser inside the remote desktop
   - You will get a warning about a `Potential Security Risk` related to a self-signed certificate. It is safe to trust this by selecting `Advanced > Accept the risk and continue`.

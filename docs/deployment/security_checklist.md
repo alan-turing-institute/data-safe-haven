@@ -563,7 +563,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 #### Ensure that data ingress works only for connections from the accepted IP address range
 
 - As the {ref}`role_data_provider_representative`, ensure you're working from a device that has an allow-listed IP address
-- Using the secure upload token with write-only permissions and limited time period that you set up in the previous step, follow the {ref}`ingress instructions for the data provider <role_data_provider_representative_ingress>`
+- Using the secure upload token with write-only permissions and limited time period that you set up in the previous step, follow the ingress instructions for the {ref}`data provider <role_data_provider_representative>`
 
 ```{attention}
 {{white_check_mark}} **Verify that:** writing succeeds by uploading a file
