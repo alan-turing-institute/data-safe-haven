@@ -34,7 +34,6 @@ from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.storage.models import BlobContainer, StorageAccount
 
 # Local imports
-from .graph_api import GraphApi
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInternalException,
@@ -117,87 +116,6 @@ class AzureApi(AzureMixin, LoggingMixin):
                     raise DataSafeHavenAzureException(
                         f"Could not compile DSC '{configuration_name}'\n{result.exception}."
                     )
-
-    def ensure_azuread_application(
-        self,
-        aad_application_short_name: str,
-        environment_name: str,
-        graph_api: GraphApi,
-        key_vault_name: str,
-        application_scopes: Sequence[str] = [],
-        delegated_scopes: Sequence[str] = [],
-    ) -> str:
-        """Ensure that an AzureAD application is registered
-
-        Returns:
-            str: The AzureAD application ID
-
-        Raises:
-            DataSafeHavenAzureException if the existence of the application could not be verified
-        """
-        try:
-            aad_application_name = (
-                f"sre-{environment_name}-azuread-{aad_application_short_name}"
-            )
-            graph_api.create_application(
-                aad_application_name,
-                application_scopes=application_scopes,
-                delegated_scopes=delegated_scopes,
-            )
-            aad_application_id = graph_api.get_id_from_application_name(
-                aad_application_name
-            )
-            self.ensure_keyvault_secret(
-                key_vault_name,
-                f"aad-application-id-{aad_application_name}",
-                aad_application_id,
-            )
-            try:
-                application_secret_name = (
-                    f"aad-application-secret-{aad_application_name}"
-                )
-                application_secret = self.get_keyvault_secret(
-                    key_vault_name, application_secret_name
-                )
-            except DataSafeHavenAzureException:
-                application_secret = graph_api.create_application_secret(
-                    f"SRE {environment_name} AzureAD {aad_application_short_name} secret",
-                    aad_application_name,
-                )
-            self.ensure_keyvault_secret(
-                key_vault_name, application_secret_name, application_secret
-            )
-            self.info(
-                f"Ensured that application <fg=green>{aad_application_name}</> exists."
-            )
-            return aad_application_id
-        except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Could not ensure that application '{aad_application_name}' exists.\n{str(exc)}"
-            ) from exc
-
-    def ensure_azuread_group(
-        self, graph_api: GraphApi, group_name: str, group_id: str
-    ) -> None:
-        """Ensure that an AzureAD group is registered
-
-        Raises:
-            DataSafeHavenAzureException if the existence of the group could not be verified
-        """
-        try:
-            self.info(
-                f"Ensuring that group <fg=green>{group_name}</> exists...",
-                no_newline=True,
-            )
-            graph_api.create_group(group_name, group_id, verbose=False)
-            self.info(
-                f"Ensured that group <fg=green>{group_name}</> exists.",
-                overwrite=True,
-            )
-        except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Could not ensure that AzureAD group '{group_name}' exists.\n{str(exc)}"
-            ) from exc
 
     def ensure_dns_txt_record(
         self,
