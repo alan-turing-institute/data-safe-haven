@@ -3,7 +3,7 @@ from pulumi import ComponentResource, Input, ResourceOptions, Output
 from pulumi_azure_native import keyvault, managedidentity
 
 # Local imports
-from ..dynamic.ssl_certificate import SSLCertificateProps, SSLCertificate
+from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 
 
 class SREKeyVaultProps:
@@ -143,6 +143,7 @@ class SREKeyVaultComponent(ComponentResource):
                 networking_resource_group_name=props.networking_resource_group_name,
                 subscription_name=props.subscription_name,
             ),
+            opts=child_opts,
         )
 
         # Register outputs

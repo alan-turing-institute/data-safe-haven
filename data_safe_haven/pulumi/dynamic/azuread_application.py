@@ -77,7 +77,7 @@ class AzureADApplicationProvider(ResourceProvider):
             outs=dict(**outputs, **props),
         )
 
-    def delete(self, id: str, props: _AzureADApplicationProps):
+    def delete(self, id: str, props: _AzureADApplicationProps) -> None:
         """Delete an AzureAD application."""
         try:
             graph_api = GraphApi(

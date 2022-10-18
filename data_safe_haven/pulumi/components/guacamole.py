@@ -18,7 +18,7 @@ class GuacamoleProps:
     def __init__(
         self,
         aad_application_name: Input[str],
-        aad_application_url: Input[str],
+        aad_application_fqdn: Input[str],
         aad_auth_token: Input[str],
         aad_tenant_id: Input[str],
         ip_address_container: Input[str],
@@ -34,7 +34,9 @@ class GuacamoleProps:
         database_username: Optional[Input[str]] = "postgresadmin",
     ):
         self.aad_application_name = aad_application_name
-        self.aad_application_url = aad_application_url
+        self.aad_application_url = Output.from_input(aad_application_fqdn).apply(
+            lambda fqdn: f"https://{fqdn}"
+        )
         self.aad_auth_token = aad_auth_token
         self.aad_tenant_id = aad_tenant_id
         self.ip_address_container = ip_address_container
@@ -104,7 +106,7 @@ class GuacamoleComponent(ComponentResource):
             FileShareFileProps(
                 destination_path=reader.name,
                 share_name=file_share_caddy.name,
-                file_contents=Output.secret(reader.file_contents),
+                file_contents=Output.secret(reader.file_contents()),
                 storage_account_key=storage_account_key_secret,
                 storage_account_name=props.storage_account_name,
             ),
@@ -342,10 +344,3 @@ class GuacamoleComponent(ComponentResource):
             ],
             opts=child_opts,
         )
-
-        # # Register outputs
-        # self.guacamole_application = guacamole_application.application_id
-        # self.container_group_ip = container_group.ip_address.ip
-        # self.container_group_name = container_group.name
-        # self.postgresql_server_name = postgresql_server.name
-        # self.resource_group_name = Output.from_input(props.resource_group_name)

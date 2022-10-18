@@ -15,8 +15,8 @@ from pulumi.dynamic import (
 import simple_acme_dns
 
 # Local imports
-from data_safe_haven.external import AzureApi
 from data_safe_haven.exceptions import DataSafeHavenSSLException
+from data_safe_haven.external import AzureApi
 
 
 class SSLCertificateProps:
@@ -68,7 +68,7 @@ class SSLCertificateProvider(ResourceProvider):
             )
             # Generate private key and CSR
             private_key = client.generate_private_key(key_type="rsa2048")
-            csr = client.generate_csr()
+            client.generate_csr()
             # Request DNS verification tokens and add them to the DNS record
             azure_api = AzureApi(props["subscription_name"])
             for token in client.request_verification_tokens():
@@ -79,13 +79,10 @@ class SSLCertificateProvider(ResourceProvider):
                     zone_name=props["domain_name"],
                 )
             # Wait for DNS propagation to complete
-            result = client.check_dns_propagation(
-                timeout=1,
-                interval=5,
-                authoritative=False,
-                round_robin=True,
-                verbose=False,
-            )
+            if not client.check_dns_propagation(
+                authoritative=False, round_robin=True, verbose=False
+            ):
+                raise DataSafeHavenSSLException("DNS propagation failed")
             # Request a signed certificate
             certificate = client.request_certificate()
             # Key Vault requires us to prepend the private key
@@ -108,7 +105,7 @@ class SSLCertificateProvider(ResourceProvider):
             outs=dict(**outputs, **props),
         )
 
-    def delete(self, id: str, props: _SSLCertificateProps):
+    def delete(self, id: str, props: _SSLCertificateProps) -> None:
         """Delete an SSL certificate."""
         try:
             # Remove the DNS record

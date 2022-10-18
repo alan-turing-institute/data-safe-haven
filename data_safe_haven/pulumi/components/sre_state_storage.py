@@ -26,7 +26,7 @@ class SREStateStorageComponent(ComponentResource):
         # Deploy storage account
         storage_account = storage.StorageAccount(
             "storage_account_state",
-            account_name=props.storage_name[:24], # maximum of 24 characters
+            account_name=props.storage_name[:24],  # maximum of 24 characters
             kind="StorageV2",
             resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name="Standard_LRS"),

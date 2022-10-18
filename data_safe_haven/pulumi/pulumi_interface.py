@@ -232,7 +232,8 @@ class PulumiInterface(LoggingMixin):
         """Refresh the Pulumi stack."""
         try:
             self.info(f"Refreshing stack <fg=green>{self.stack.name}</>.")
-            self.stack.refresh(color="always")
+            # Note that we disable parallelisation which can cause deadlock
+            self.stack.refresh(color="always", parallel=1)
         except pulumi.automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException(
                 f"Pulumi refresh failed.\n{str(exc)}"

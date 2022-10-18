@@ -110,10 +110,12 @@ class DeclarativeSRE:
             self.stack_name,
             GuacamoleProps(
                 aad_application_name=f"sre-{self.sre_name}-azuread-guacamole",
-                aad_application_url=f"https://{self.cfg.sre[self.sre_name].fqdn}",
+                aad_application_fqdn=key_vault.sre_fqdn,
                 aad_auth_token=self.secrets.require("token-azuread-graphapi"),
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
-                database_password=self.secrets.get("password-guacamole-database-admin"),
+                database_password=self.secrets.require(
+                    "password-guacamole-database-admin"
+                ),
                 ip_address_container=networking.guacamole_containers["ip_address"],
                 ip_address_database=networking.guacamole_database["ip_address"],
                 resource_group_name=rg_guacamole.name,
