@@ -528,6 +528,30 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Failed to create storage container <fg=green>{container_name}."
             ) from exc
 
+    def get_keyvault_certificate(
+        self, certificate_name: str, key_vault_name: str
+    ) -> KeyVaultCertificate:
+        """Read a certificate from the KeyVault
+
+        Returns:
+            KeyVaultCertificate: The certificate
+
+        Raises:
+            DataSafeHavenAzureException if the secret could not be read
+        """
+        # Connect to Azure clients
+        certificate_client = CertificateClient(
+            vault_url=f"https://{key_vault_name}.vault.azure.net",
+            credential=self.credential,
+        )
+        # Ensure that certificate exists
+        try:
+            return certificate_client.get_certificate(certificate_name)
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to retrieve certificate {certificate_name}."
+            ) from exc
+
     def get_keyvault_secret(
         self, key_vault_name: str, secret_name: str
     ) -> KeyVaultSecret:
@@ -543,7 +567,7 @@ class AzureApi(AzureMixin, LoggingMixin):
         secret_client = SecretClient(
             f"https://{key_vault_name}.vault.azure.net", self.credential
         )
-        # Ensure that key exists
+        # Ensure that secret exists
         try:
             secret = secret_client.get_secret(secret_name)
             return secret.value
@@ -572,17 +596,23 @@ class AzureApi(AzureMixin, LoggingMixin):
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
                 credential=self.credential,
             )
-
-            # Ensure that certificate exists
+            # Import the certificate, overwriting any existing certificate with the same name
             self.info(
                 f"Importing certificate <fg=green>{certificate_name}</>...",
                 no_newline=True,
             )
-            certificate = certificate_client.import_certificate(
-                certificate_name=certificate_name,
-                certificate_bytes=certificate_contents,
-                enabled=True,
-            )
+            while True:
+                try:
+                    # Attempt to import this certificate into the keyvault
+                    certificate = certificate_client.import_certificate(
+                        certificate_name=certificate_name,
+                        certificate_bytes=certificate_contents,
+                        enabled=True,
+                    )
+                    break
+                except ResourceExistsError:
+                    # Purge any existing deleted certificate with the same name
+                    self.purge_keyvault_certificate(certificate_name, key_vault_name)
             self.info(
                 f"Imported certificate <fg=green>{certificate_name}</>.",
                 overwrite=True,
@@ -591,6 +621,46 @@ class AzureApi(AzureMixin, LoggingMixin):
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to import certificate '{certificate_name}'."
+            ) from exc
+
+    def purge_keyvault_certificate(
+        self,
+        certificate_name: str,
+        key_vault_name: str,
+    ) -> None:
+        """Purge a deleted certificate from the KeyVault
+
+        Raises:
+            DataSafeHavenAzureException if the existence of the certificate could not be verified
+        """
+        try:
+            # Connect to Azure clients
+            certificate_client = CertificateClient(
+                vault_url=f"https://{key_vault_name}.vault.azure.net",
+                credential=self.credential,
+            )
+            # Ensure that record is removed
+            self.info(
+                f"Purging certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>...",
+                no_newline=True,
+            )
+            # Purge the certificate
+            with suppress(HttpResponseError):
+                certificate_client.purge_deleted_certificate(certificate_name)
+            # Wait until certificate no longer exists
+            while True:
+                try:
+                    time.sleep(10)
+                    certificate_client.get_deleted_certificate(certificate_name)
+                except ResourceNotFoundError:
+                    break
+            self.info(
+                f"Purged certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>.",
+                overwrite=True,
+            )
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to remove certificate '{certificate_name}' from Key Vault '{key_vault_name}'.",
             ) from exc
 
     def remove_dns_txt_record(
@@ -607,7 +677,6 @@ class AzureApi(AzureMixin, LoggingMixin):
         try:
             # Connect to Azure clients
             dns_client = DnsManagementClient(self.credential, self.subscription_id)
-
             # Ensure that record is removed
             self.info(
                 f"Ensuring that DNS record {record_name} is removed from zone {zone_name}...",
@@ -633,7 +702,7 @@ class AzureApi(AzureMixin, LoggingMixin):
         certificate_name: str,
         key_vault_name: str,
     ) -> None:
-        """Ensure that a self-signed certificate exists in the KeyVault
+        """Remove a certificate from the KeyVault
 
         Raises:
             DataSafeHavenAzureException if the existence of the certificate could not be verified
@@ -644,7 +713,6 @@ class AzureApi(AzureMixin, LoggingMixin):
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
                 credential=self.credential,
             )
-
             # Remove certificate if it exists
             self.info(
                 f"Removing certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>...",
@@ -663,9 +731,11 @@ class AzureApi(AzureMixin, LoggingMixin):
                 with suppress(HttpResponseError):
                     certificate_client.purge_deleted_certificate(certificate_name)
             self.info(
-                f"Removed certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>...",
+                f"Removed certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>.",
                 overwrite=True,
             )
+        except ResourceNotFoundError:
+            pass
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to remove certificate '{certificate_name}' from Key Vault '{key_vault_name}'.",

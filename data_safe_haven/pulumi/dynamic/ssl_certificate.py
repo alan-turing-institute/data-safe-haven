@@ -4,6 +4,12 @@ import os
 from typing import Optional
 
 # Third party imports
+from cryptography.hazmat.primitives.serialization import (
+    load_pem_private_key,
+    NoEncryption,
+    pkcs12,
+)
+from cryptography.x509 import load_pem_x509_certificate
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import (
     Resource,
@@ -67,7 +73,7 @@ class SSLCertificateProvider(ResourceProvider):
                 new_account=True,
             )
             # Generate private key and CSR
-            private_key = client.generate_private_key(key_type="rsa2048")
+            private_key_bytes = client.generate_private_key(key_type="rsa2048")
             client.generate_csr()
             # Request DNS verification tokens and add them to the DNS record
             azure_api = AzureApi(props["subscription_name"])
@@ -84,13 +90,30 @@ class SSLCertificateProvider(ResourceProvider):
             ):
                 raise DataSafeHavenSSLException("DNS propagation failed")
             # Request a signed certificate
-            certificate = client.request_certificate()
-            # Key Vault requires us to prepend the private key
-            full_certificate = private_key + b"\n" + certificate
+            certificate_bytes = client.request_certificate()
+            # Although KeyVault will accept a PEM certificate (where we simply
+            # prepend the private key) we need a PFX certificate for
+            # compatibility with ApplicationGateway
+            private_key = load_pem_private_key(private_key_bytes, None)
+            all_certs = [
+                load_pem_x509_certificate(data)
+                for data in certificate_bytes.split(b"\n\n")
+            ]
+            certificate = [
+                cert for cert in all_certs if props["domain_name"] in str(cert.subject)
+            ][0]
+            ca_certs = [cert for cert in all_certs if cert != certificate]
+            pfx_bytes = pkcs12.serialize_key_and_certificates(
+                props["certificate_secret_name"].encode("utf-8"),
+                private_key,
+                certificate,
+                ca_certs,
+                NoEncryption(),
+            )
             # Add certificate to KeyVault
             kvcert = azure_api.import_keyvault_certificate(
                 certificate_name=props["certificate_secret_name"],
-                certificate_contents=full_certificate,
+                certificate_contents=pfx_bytes,
                 key_vault_name=props["key_vault_name"],
             )
             outputs = {

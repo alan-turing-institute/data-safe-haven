@@ -102,7 +102,7 @@ class SREKeyVaultComponent(ComponentResource):
                         tenant_id=props.tenant_id,
                     ),
                     keyvault.AccessPolicyEntryArgs(
-                        object_id=sre_key_vault_reader.client_id,
+                        object_id=sre_key_vault_reader.principal_id,
                         permissions=keyvault.PermissionsArgs(
                             certificates=[
                                 "get",

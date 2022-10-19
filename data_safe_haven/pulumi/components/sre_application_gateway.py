@@ -143,7 +143,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                     ssl_certificate=network.SubResourceArgs(
                         id=Output.concat(
                             resource_group.id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/sslCertificates/sslcert",
+                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/sslCertificates/letsencryptcertificate",
                         ),
                     ),
                     ssl_profile=network.SubResourceArgs(
@@ -231,7 +231,7 @@ class SREApplicationGatewayComponent(ComponentResource):
             ssl_certificates=[
                 network.ApplicationGatewaySslCertificateArgs(
                     key_vault_secret_id=props.key_vault_certificate_id,
-                    name="sslcert",
+                    name="letsencryptcertificate",
                 ),
             ],
             ssl_profiles=[
