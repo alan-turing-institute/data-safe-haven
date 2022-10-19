@@ -1,21 +1,20 @@
 # Standard library imports
-import binascii
-import os
-from typing import Optional
+from contextlib import suppress
+from typing import Dict, Optional
 
 # Third party imports
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import (
-    Resource,
-    ResourceProvider,
     CreateResult,
     DiffResult,
+    Resource,
     UpdateResult,
 )
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphException
 from data_safe_haven.external import GraphApi
+from .dsh_resource_provider import DshResourceProvider
 
 
 class AzureADApplicationProps:
@@ -32,23 +31,22 @@ class AzureADApplicationProps:
         self.auth_token = auth_token
 
 
-class _AzureADApplicationProps:
-    """Unwrapped version of AzureADApplicationProps"""
+class AzureADApplicationProvider(DshResourceProvider):
+    @staticmethod
+    def refresh(props: Dict[str, str]) -> Dict[str, str]:
+        outs = dict(**props)
+        with suppress(Exception):
+            graph_api = GraphApi(auth_token=outs["auth_token"])
+            if json_response := graph_api.get_application_by_name(
+                outs["application_name"]
+            ):
+                outs["object_id"] = json_response["id"]
+                outs["application_id"] = json_response["appId"]
+        return outs
 
-    def __init__(
-        self,
-        application_name: str,
-        application_url: str,
-        auth_token: str,
-    ):
-        self.application_name = application_name
-        self.application_url = application_url
-        self.auth_token = auth_token
-
-
-class AzureADApplicationProvider(ResourceProvider):
-    def create(self, props: _AzureADApplicationProps) -> CreateResult:
+    def create(self, props: Dict[str, str]) -> CreateResult:
         """Create new AzureAD application."""
+        outs = dict(**props)
         try:
             graph_api = GraphApi(
                 auth_token=props["auth_token"],
@@ -64,20 +62,18 @@ class AzureADApplicationProvider(ResourceProvider):
                     "signInAudience": "AzureADMyOrg",
                 },
             )
-            outputs = {
-                "object_id": json_response["id"],
-                "application_id": json_response["appId"],
-            }
+            outs["object_id"] = json_response["id"]
+            outs["application_id"] = json_response["appId"]
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
-                f"Failed to create application <fg=green>{props['application_name']}</> in AzureAD."
+                f"Failed to create application <fg=green>{props['application_name']}</> in AzureAD.\n{str(exc)}"
             ) from exc
         return CreateResult(
-            f"AzureADApplication-{binascii.b2a_hex(os.urandom(16)).decode('utf-8')}",
-            outs=dict(**outputs, **props),
+            f"AzureADApplication-{props['application_name']}",
+            outs=outs,
         )
 
-    def delete(self, id: str, props: _AzureADApplicationProps) -> None:
+    def delete(self, id_: str, props: Dict[str, str]) -> None:
         """Delete an AzureAD application."""
         try:
             graph_api = GraphApi(
@@ -86,44 +82,30 @@ class AzureADApplicationProvider(ResourceProvider):
             graph_api.delete_application(props["application_name"])
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
-                f"Failed to delete application <fg=green>{props['application_name']}</> from AzureAD."
+                f"Failed to delete application <fg=green>{props['application_name']}</> from AzureAD.\n{str(exc)}"
             ) from exc
 
     def diff(
         self,
-        id: str,
-        old_props: _AzureADApplicationProps,
-        new_props: _AzureADApplicationProps,
+        id_: str,
+        old_props: Dict[str, str],
+        new_props: Dict[str, str],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
-        # List any values that were not present in old_props or have been changed
         # Exclude "auth_token" which should not trigger a diff
-        altered_props = [
-            property
-            for property in [
-                key for key in dict(new_props).keys() if key not in ("auth_token")
-            ]
-            if (property not in old_props)
-            or (old_props[property] != new_props[property])
-        ]
-        return DiffResult(
-            changes=(altered_props != []),  # changes are needed
-            replaces=altered_props,  # replacement is needed
-            stables=None,  # list of inputs that are constant
-            delete_before_replace=True,  # delete the existing resource before replacing
-        )
+        return self.partial_diff(old_props, new_props, ["auth_token"])
 
     def update(
         self,
-        id: str,
-        old_props: _AzureADApplicationProps,
-        new_props: _AzureADApplicationProps,
+        id_: str,
+        old_props: Dict[str, str],
+        new_props: Dict[str, str],
     ) -> DiffResult:
         """Updating is deleting followed by creating."""
         # Note that we need to use the auth token from new_props
         props = {**old_props}
         props["auth_token"] = new_props["auth_token"]
-        self.delete(id, props)
+        self.delete(id_, props)
         updated = self.create(new_props)
         return UpdateResult(outs={**updated.outs})
 

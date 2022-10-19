@@ -1,28 +1,29 @@
 # Standard library imports
-import binascii
-import os
-from typing import Optional
+from contextlib import suppress
+from typing import Dict, Optional
 
 # Third party imports
+from acme.errors import ValidationError
 from cryptography.hazmat.primitives.serialization import (
     load_pem_private_key,
     NoEncryption,
     pkcs12,
 )
 from cryptography.x509 import load_pem_x509_certificate
-from pulumi import Input, Output, ResourceOptions
+from pulumi import Input, Output, ResourceOptions, log
 from pulumi.dynamic import (
-    Resource,
-    ResourceProvider,
     CreateResult,
     DiffResult,
-    UpdateResult,
+    Resource,
 )
 import simple_acme_dns
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenSSLException
+from data_safe_haven.exceptions import (
+    DataSafeHavenSSLException,
+)
 from data_safe_haven.external import AzureApi
+from .dsh_resource_provider import DshResourceProvider
 
 
 class SSLCertificateProps:
@@ -43,25 +44,21 @@ class SSLCertificateProps:
         self.subscription_name = subscription_name
 
 
-class _SSLCertificateProps:
-    """Unwrapped version of SSLCertificateProps"""
+class SSLCertificateProvider(DshResourceProvider):
+    @staticmethod
+    def refresh(props: Dict[str, str]) -> Dict[str, str]:
+        outs = dict(**props)
+        with suppress(Exception):
+            azure_api = AzureApi(outs["subscription_name"])
+            certificate = azure_api.get_keyvault_certificate(
+                outs["certificate_secret_name"], outs["key_vault_name"]
+            )
+            outs["secret_id"] = certificate.secret_id
+        return outs
 
-    def __init__(
-        self,
-        domain_name: str,
-        key_vault_name: str,
-        networking_resource_group_name: str,
-        subscription_name: str,
-    ):
-        self.domain_name = domain_name.lower()
-        self.key_vault_name = key_vault_name
-        self.networking_resource_group_name = networking_resource_group_name
-        self.subscription_name = subscription_name
-
-
-class SSLCertificateProvider(ResourceProvider):
-    def create(self, props: _SSLCertificateProps) -> CreateResult:
+    def create(self, props: Dict[str, str]) -> CreateResult:
         """Create new SSL certificate."""
+        outs = dict(**props)
         try:
             # Note that we must set the key to RSA-2048 before generating the CSR
             # The default is ecdsa-with-SHA25, which Azure Key Vault cannot read
@@ -90,7 +87,13 @@ class SSLCertificateProvider(ResourceProvider):
             ):
                 raise DataSafeHavenSSLException("DNS propagation failed")
             # Request a signed certificate
-            certificate_bytes = client.request_certificate()
+            try:
+                certificate_bytes = client.request_certificate()
+            except ValidationError as exc:
+                raise DataSafeHavenSSLException(
+                    f"ACME validation error:\n"
+                    + "\n".join([str(auth_error) for auth_error in exc.failed_authzrs])
+                )
             # Although KeyVault will accept a PEM certificate (where we simply
             # prepend the private key) we need a PFX certificate for
             # compatibility with ApplicationGateway
@@ -116,19 +119,17 @@ class SSLCertificateProvider(ResourceProvider):
                 certificate_contents=pfx_bytes,
                 key_vault_name=props["key_vault_name"],
             )
-            outputs = {
-                "secret_id": kvcert.secret_id,
-            }
+            outs["secret_id"] = kvcert.secret_id
         except Exception as exc:
             raise DataSafeHavenSSLException(
-                f"Failed to create SSL certificate <fg=green>{props['certificate_secret_name']}</> for <fg=green>{props['domain_name']}</>."
+                f"Failed to create SSL certificate <fg=green>{props['certificate_secret_name']}</> for <fg=green>{props['domain_name']}</>.\n{str(exc)}"
             ) from exc
         return CreateResult(
-            f"SSLCertificate-{binascii.b2a_hex(os.urandom(16)).decode('utf-8')}",
-            outs=dict(**outputs, **props),
+            f"SSLCertificate-{props['certificate_secret_name']}",
+            outs=outs,
         )
 
-    def delete(self, id: str, props: _SSLCertificateProps) -> None:
+    def delete(self, id_: str, props: Dict[str, str]) -> None:
         """Delete an SSL certificate."""
         try:
             # Remove the DNS record
@@ -145,41 +146,17 @@ class SSLCertificateProvider(ResourceProvider):
             )
         except Exception as exc:
             raise DataSafeHavenSSLException(
-                f"Failed to delete SSL certificate <fg=green>{props['certificate_secret_name']}</> for <fg=green>{props['domain_name']}</>."
+                f"Failed to delete SSL certificate <fg=green>{props['certificate_secret_name']}</> for <fg=green>{props['domain_name']}</>.\n{str(exc)}"
             ) from exc
 
     def diff(
         self,
-        id: str,
-        old_props: _SSLCertificateProps,
-        new_props: _SSLCertificateProps,
+        id_: str,
+        old_props: Dict[str, str],
+        new_props: Dict[str, str],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
-        # List any values that were not present in old_props or have been changed
-        altered_props = [
-            property
-            for property in dict(new_props).keys()
-            if (property not in old_props)
-            or (old_props[property] != new_props[property])
-        ]
-        return DiffResult(
-            changes=(altered_props != []),  # changes are needed
-            replaces=altered_props,  # replacement is needed
-            stables=None,  # list of inputs that are constant
-            delete_before_replace=True,  # delete the existing resource before replacing
-        )
-
-    def update(
-        self,
-        id: str,
-        old_props: _SSLCertificateProps,
-        new_props: _SSLCertificateProps,
-    ) -> DiffResult:
-        """Updating is deleting followed by creating."""
-        # Note that we need to use the auth token from new_props
-        self.delete(id, old_props)
-        updated = self.create(new_props)
-        return UpdateResult(outs={**updated.outs})
+        return self.partial_diff(old_props, new_props, [])
 
 
 class SSLCertificate(Resource):
