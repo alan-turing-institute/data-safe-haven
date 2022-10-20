@@ -93,7 +93,7 @@ The following core SHM properties are required - look in the `environment_config
   "domain": "The fully qualified domain name for the management environment (e.g. 'project.turingsafehaven.ac.uk')",
   "timezone": "[Optional] Timezone in IANA format (e.g. 'Europe/London').",
   "azure": {
-    "adminGroupName": "Azure Security Group that admins of this Safe Haven will belong to.",
+    "adminGroupName": "Azure Security Group that admins of this Safe Haven will belong to (see below for details).",
     "activeDirectoryTenantId": "Tenant ID for the Azure Active Directory containing users (see below for details on how to obtain this).",
     "location": "Azure location to deploy the management environment into (e.g. 'uksouth').",
     "subscriptionName": "Azure subscription to deploy the management environment into."
@@ -126,6 +126,7 @@ The following core SHM properties are required - look in the `environment_config
 - This configuration file is also used when deploying an SRE environment.
 - We recommend that you set the fully qualified domain name to `<SHM ID>.<some domain that you control>`.
 - This may require purchasing a dedicated domain so follow your organisation's guidance.
+- You must ensure that the group specifed in `azure.adminGroupName` exists in the AzureAD for the tenant that you will be deploying into. Depending on your setup, this may be different from the AzureAD where your users are created.
 ```
 
 ```{admonition} Alan Turing Institute default
