@@ -5,10 +5,12 @@ import string
 
 
 def alphanumeric(input: str) -> str:
+    """Strip any characters that are not letters or numbers from a string."""
     return "".join(filter(lambda x: x in (string.ascii_letters + string.digits), input))
 
 
 def hash(input: str) -> str:
+    """Return the SHA512 hash of a string as a string."""
     return hashlib.sha512(str.encode(input)).hexdigest()
 
 

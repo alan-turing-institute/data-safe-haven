@@ -1,9 +1,9 @@
 # Third party imports
 from pulumi import ComponentResource, Input, ResourceOptions, Output
-from pulumi_azure_native import network
+from pulumi_azure_native import network, resources
 
 # Local imports
-from data_safe_haven.helpers import AzureIPv4Range
+from data_safe_haven.helpers import AzureIPv4Range, alphanumeric
 
 
 class SRENetworkingProps:
@@ -11,15 +11,13 @@ class SRENetworkingProps:
 
     def __init__(
         self,
-        fqdn: Input[str],
-        resource_group_name: Input[str],
+        location: Input[str],
+        shm_fqdn: Input[str],
         shm_zone_resource_group_name: Input[str],
         shm_zone_name: Input[str],
         sre_index: Input[str],
-        subdomain: Input[str],
     ):
-        self.fqdn = fqdn
-        self.resource_group_name = resource_group_name
+        self.location = location
         # VNet
         self.vnet_ip_range = Output.from_input(sre_index).apply(
             lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
@@ -55,25 +53,37 @@ class SRENetworkingProps:
         )
         self.srds_cidr = self.srds_ip_range.apply(lambda ip_range: str(ip_range))
         self.srds_subnet_name = "SecureResearchDesktopSubnet"
+        self.shm_fqdn = shm_fqdn
         self.shm_zone_resource_group_name = shm_zone_resource_group_name
         self.shm_zone_name = shm_zone_name
-        self.subdomain = subdomain
 
 
 class SRENetworkingComponent(ComponentResource):
     """Deploy networking with Pulumi"""
 
     def __init__(
-        self, name: str, props: SRENetworkingProps, opts: ResourceOptions = None
+        self,
+        name: str,
+        stack_name: str,
+        sre_name: str,
+        props: SRENetworkingProps,
+        opts: ResourceOptions = None,
     ):
         super().__init__("dsh:sre:SRENetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
+        # Deploy resource group
+        resource_group = resources.ResourceGroup(
+            f"{self._name}_resource_group",
+            location=props.location,
+            resource_group_name=f"rg-{stack_name}-networking",
+        )
+
         # Define NSGs
         nsg_application_gateway = network.NetworkSecurityGroup(
-            "nsg_application_gateway",
-            network_security_group_name=f"nsg-{self._name}-application-gateway",
-            resource_group_name=props.resource_group_name,
+            f"{self._name}_nsg_application_gateway",
+            network_security_group_name=f"nsg-{stack_name}-application-gateway",
+            resource_group_name=resource_group.name,
             security_rules=[
                 network.SecurityRuleArgs(
                     access="Allow",
@@ -115,15 +125,15 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
         )
         nsg_guacamole = network.NetworkSecurityGroup(
-            "nsg_guacamole",
-            network_security_group_name=f"nsg-{self._name}-guacamole",
-            resource_group_name=props.resource_group_name,
+            f"{self._name}_nsg_guacamole",
+            network_security_group_name=f"nsg-{stack_name}-guacamole",
+            resource_group_name=resource_group.name,
             opts=child_opts,
         )
         nsg_secure_research_desktop = network.NetworkSecurityGroup(
-            "nsg_secure_research_desktop",
-            network_security_group_name=f"nsg-{self._name}-secure-research-desktop",
-            resource_group_name=props.resource_group_name,
+            f"{self._name}_nsg_secure_research_desktop",
+            network_security_group_name=f"nsg-{stack_name}-secure-research-desktop",
+            resource_group_name=resource_group.name,
             security_rules=[
                 network.SecurityRuleArgs(
                     access="Allow",
@@ -142,12 +152,12 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Define the virtual network with inline subnets
-        vnet = network.VirtualNetwork(
-            "vnet",
+        virtual_network = network.VirtualNetwork(
+            f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
                 address_prefixes=[props.vnet_cidr],
             ),
-            resource_group_name=props.resource_group_name,
+            resource_group_name=resource_group.name,
             subnets=[  # Note that we need to define subnets inline or they will be destroyed/recreated on a new run
                 network.SubnetArgs(
                     address_prefix=props.application_gateway_cidr,
@@ -186,7 +196,7 @@ class SRENetworkingComponent(ComponentResource):
                     ),
                 ),
             ],
-            virtual_network_name=f"vnet-{self._name}",
+            virtual_network_name=f"vnet-{stack_name}",
             opts=child_opts,
         )
 
@@ -195,15 +205,31 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=props.shm_zone_resource_group_name,
             zone_name=props.shm_zone_name,
         )
+        sre_subdomain = alphanumeric(sre_name)
+        sre_fqdn = Output.from_input(props.shm_fqdn).apply(
+            lambda parent: f"{sre_subdomain}.{parent}"
+        )
         sre_dns_zone = network.Zone(
-            "sre_dns_zone",
+            f"{self._name}_dns_zone",
             location="Global",
-            resource_group_name=props.resource_group_name,
-            zone_name=props.fqdn,
+            resource_group_name=resource_group.name,
+            zone_name=sre_fqdn,
             zone_type="Public",
         )
+        sre_ns_record = network.RecordSet(
+            f"{self._name}_ns_record",
+            ns_records=sre_dns_zone.name_servers.apply(
+                lambda servers: [network.NsRecordArgs(nsdname=ns) for ns in servers]
+            ),
+            record_type="NS",
+            relative_record_set_name=sre_subdomain,
+            resource_group_name=props.shm_zone_resource_group_name,
+            ttl=3600,
+            zone_name=shm_dns_zone.name,
+            opts=child_opts,
+        )
         sre_caa_record = network.RecordSet(
-            "sre_caa_record",
+            f"{self._name}_caa_record",
             caa_records=[
                 network.CaaRecordArgs(
                     flags=0,
@@ -213,21 +239,9 @@ class SRENetworkingComponent(ComponentResource):
             ],
             record_type="CAA",
             relative_record_set_name="@",
-            resource_group_name=props.resource_group_name,
+            resource_group_name=resource_group.name,
             ttl=30,
             zone_name=sre_dns_zone.name,
-            opts=child_opts,
-        )
-        sre_ns_record = network.RecordSet(
-            "sre_ns_record",
-            ns_records=sre_dns_zone.name_servers.apply(
-                lambda servers: [network.NsRecordArgs(nsdname=ns) for ns in servers]
-            ),
-            record_type="NS",
-            relative_record_set_name=props.subdomain,
-            resource_group_name=props.shm_zone_resource_group_name,
-            ttl=3600,
-            zone_name=shm_dns_zone.name,
             opts=child_opts,
         )
 
@@ -240,7 +254,6 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Register outputs
-        self.fqdn = Output.from_input(props.fqdn)
         self.application_gateway = {
             "subnet_name": props.application_gateway_subnet_name,
         }
@@ -252,5 +265,6 @@ class SRENetworkingComponent(ComponentResource):
             "ip_address": ip_address_guacamole_database,
             "subnet_name": props.guacamole_database_subnet_name,
         }
-        self.resource_group_name = Output.from_input(props.resource_group_name)
-        self.vnet = vnet
+        self.resource_group_name = resource_group.name
+        self.sre_fqdn = sre_dns_zone.name
+        self.virtual_network = virtual_network

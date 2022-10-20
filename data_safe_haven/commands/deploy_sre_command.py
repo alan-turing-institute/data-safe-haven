@@ -68,7 +68,7 @@ class DeploySRECommand(LoggingMixin, Command):
             )
             infrastructure.deploy()
 
-            # Add Pulumi output information to the config file
+            # Add Pulumi infrastructure information to the config file
             with open(infrastructure.local_stack_path, "r") as f_stack:
                 stack_yaml = yaml.safe_load(f_stack)
             config.pulumi.stacks[infrastructure.stack_name] = stack_yaml
@@ -102,7 +102,7 @@ class DeploySRECommand(LoggingMixin, Command):
             # postgres_script_path = (
             #     pathlib.Path(__file__).parent.parent
             #     / "resources"
-            #     / "guacamole"
+            #     / "remote-desktop"
             #     / "postgresql"
             # )
             # postgres_provisioner.execute_scripts(
@@ -135,11 +135,6 @@ class DeploySRECommand(LoggingMixin, Command):
         if sre_name not in config.sre.keys():
             highest_index = max([0] + [sre.index for sre in config.sre.values()])
             config.sre[sre_name].index = highest_index + 1
-
-        # Set the FQDN
-        if "fqdn" not in config.sre[sre_name].keys():
-            config.sre[sre_name].fqdn = f"{sre_name}.{config.shm.fqdn}"
-            config.sre[sre_name].subdomain = sre_name
 
         # Set whether copying is allowed
         config.sre[sre_name].allow_copy = True if self.option("allow-copy") else False

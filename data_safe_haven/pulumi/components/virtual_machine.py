@@ -124,7 +124,7 @@ class VMComponent(ComponentResource):
         network_interface_ip_params = {}
         if props.ip_address_public:
             public_ip = network.PublicIPAddress(
-                f"public_ip_{props.vm_name_underscored}",
+                f"{self._name}_public_ip",
                 public_ip_address_name=f"{props.vm_name}-public-ip",
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,
@@ -137,7 +137,7 @@ class VMComponent(ComponentResource):
 
         # Define network card
         network_interface = network.NetworkInterface(
-            f"network_interface_{props.vm_name_underscored}",
+            f"{self._name}_network_interface",
             enable_accelerated_networking=True,
             ip_configurations=[
                 network.NetworkInterfaceIPConfigurationArgs(

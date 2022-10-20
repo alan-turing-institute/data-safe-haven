@@ -35,7 +35,12 @@ class SREApplicationGatewayComponent(ComponentResource):
     """Deploy application gateway with Pulumi"""
 
     def __init__(
-        self, name: str, props: SREApplicationGatewayProps, opts: ResourceOptions = None
+        self,
+        name: str,
+        stack_name: str,
+        sre_name: str,
+        props: SREApplicationGatewayProps,
+        opts: ResourceOptions = None,
     ):
         super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
@@ -50,8 +55,8 @@ class SREApplicationGatewayComponent(ComponentResource):
 
         # Define public IP address
         public_ip = network.PublicIPAddress(
-            "ag_public_ip",
-            public_ip_address_name=f"ag-{self._name}-public-ip",
+            f"{self._name}_public_ip",
+            public_ip_address_name=f"ag-{stack_name}-public-ip",
             public_ip_allocation_method="Static",
             resource_group_name=props.resource_group_name,
             sku=network.PublicIPAddressSkuArgs(name="Standard"),
@@ -59,9 +64,9 @@ class SREApplicationGatewayComponent(ComponentResource):
         )
 
         # Define application gateway
-        application_gateway_name = f"ag-{self._name}-entrypoint"
+        application_gateway_name = f"ag-{stack_name}-entrypoint"
         application_gateway = network.ApplicationGateway(
-            "application_gateway",
+            f"{self._name}_application_gateway",
             application_gateway_name=application_gateway_name,
             backend_address_pools=[
                 # Guacamole private IP address

@@ -4,6 +4,7 @@ from typing import Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, ResourceOptions, Output
+from pulumi_azure_native import resources
 
 # Local
 from .virtual_machine import VMComponent, WindowsVMProps
@@ -27,7 +28,6 @@ class SHMDomainControllersProps:
         password_domain_computer_manager: Input[str],
         password_domain_admin: Input[str],
         password_domain_azuread_connect: Input[str],
-        resource_group_name: Input[str],
         subnet_ip_range: Input[AzureIPv4Range],
         subnet_name: Input[str],
         subscription_name: Input[str],
@@ -51,7 +51,6 @@ class SHMDomainControllersProps:
         self.username_domain_computer_manager = "dshcomputermanager"
         self.username_domain_azuread_connect = "dshazureadsync"
         self.username_domain_admin = "dshdomainadmin"
-        self.resource_group_name = resource_group_name
         self.subnet_ip_range = subnet_ip_range
         self.subnet_name = subnet_name
         self.subscription_name = subscription_name
@@ -63,27 +62,39 @@ class SHMDomainControllersComponent(ComponentResource):
     """Deploy SHM secrets with Pulumi"""
 
     def __init__(
-        self, name: str, props: SHMDomainControllersProps, opts: ResourceOptions = None
+        self,
+        name: str,
+        stack_name: str,
+        shm_name: str,
+        props: SHMDomainControllersProps,
+        opts: ResourceOptions = None,
     ):
         super().__init__("dsh:shm:SHMDomainControllersComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 
+        # Deploy resource group
+        resource_group = resources.ResourceGroup(
+            f"{self._name}_resource_group",
+            location=props.location,
+            resource_group_name=f"rg-{stack_name}-users",
+        )
+
         # Create the DC
         # We use the domain admin credentials here as the VM admin is promoted to domain admin when setting up the domain
         primary_domain_controller = VMComponent(
-            "primary_domain_controller",
+            f"{self._name}_primary_domain_controller",
             WindowsVMProps(
                 admin_password=props.password_domain_admin,
                 admin_username=props.username_domain_admin,
                 ip_address_public=True,
                 ip_address_private=str(props.subnet_ip_range.available()[0]),
                 location=props.location,
-                resource_group_name=props.resource_group_name,
+                resource_group_name=resource_group.name,
                 subnet_name=props.subnet_name,
                 virtual_network_name=props.virtual_network_name,
                 virtual_network_resource_group_name=props.virtual_network_resource_group_name,
-                vm_name=f"{self._name[:11]}-dc1",
+                vm_name=f"{stack_name[:11]}-dc1",
                 vm_size="Standard_DS2_v2",
             ),
             opts=child_opts,
@@ -96,7 +107,7 @@ class SHMDomainControllersComponent(ComponentResource):
             / f"{dsc_configuration_name}.ps1"
         )
         primary_domain_controller_dsc_node = AutomationDscNode(
-            "primary_domain_controller_automation_node",
+            f"{self._name}_primary_domain_controller_dsc_node",
             AutomationDscNodeProps(
                 automation_account_name=props.automation_account_name,
                 automation_account_registration_key=props.automation_account_registration_key,
@@ -118,7 +129,7 @@ class SHMDomainControllersComponent(ComponentResource):
                 location=props.location,
                 subscription_name=props.subscription_name,
                 vm_name=primary_domain_controller.vm_name,
-                vm_resource_group_name=props.resource_group_name,
+                vm_resource_group_name=resource_group.name,
             ),
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(depends_on=[primary_domain_controller])
@@ -126,4 +137,4 @@ class SHMDomainControllersComponent(ComponentResource):
         )
 
         # Register outputs
-        self.resource_group_name = Output.from_input(props.resource_group_name)
+        self.resource_group_name = Output.from_input(resource_group.name)

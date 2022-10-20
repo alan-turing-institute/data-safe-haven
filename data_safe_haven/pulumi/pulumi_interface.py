@@ -36,22 +36,15 @@ class PulumiInterface(LoggingMixin):
         self.stack_ = None
         self.options = {}
         if deployment_type == "SHM":
-            self.stack_name = f"shm-{config.shm.name}"
-            self.program = DeclarativeSHM(config, self.stack_name)
-            self.work_dir = pathlib.Path.cwd() / "pulumi" / self.stack_name
+            self.program = DeclarativeSHM(config, config.shm.name)
         elif deployment_type == "SRE":
-            self.stack_name = f"shm-{config.shm.name}-sre-{sre_name}"
-            self.program = DeclarativeSRE(config, self.stack_name, sre_name)
-            self.work_dir = (
-                pathlib.Path.cwd()
-                / "pulumi"
-                / f"shm-{config.shm.name}"
-                / f"sre-{sre_name}"
-            )
+            self.program = DeclarativeSRE(config, config.shm.name, sre_name)
         else:
             raise DataSafeHavenPulumiException(
                 f"Deployment type '{deployment_type}' was not recognised."
             )
+        self.stack_name = self.program.stack_name
+        self.work_dir = self.program.work_dir(pathlib.Path.cwd() / "pulumi")
 
     @property
     def local_stack_path(self) -> pathlib.Path:

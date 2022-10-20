@@ -3,7 +3,7 @@ from typing import Optional, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, ResourceOptions, Output
-from pulumi_azure_native import network
+from pulumi_azure_native import network, resources
 from data_safe_haven.helpers import AzureIPv4Range
 
 
@@ -13,7 +13,7 @@ class SHMNetworkingProps:
     def __init__(
         self,
         fqdn: Input[str],
-        resource_group_name: Input[str],
+        location: Input[str],
         public_ip_range_admins: Input[Sequence[str]],
         record_domain_verification: Input[str],
         ip_range_vnet: Optional[Input[Sequence[str]]] = [
@@ -50,19 +50,31 @@ class SHMNetworkingProps:
         self.ip_range_update_servers = ip_range_update_servers
         self.ip_range_users = ip_range_users
         self.fqdn = fqdn
+        self.location = location
         self.public_ip_range_admins = public_ip_range_admins
         self.record_domain_verification = record_domain_verification
-        self.resource_group_name = resource_group_name
 
 
 class SHMNetworkingComponent(ComponentResource):
     """Deploy SHM networking with Pulumi"""
 
     def __init__(
-        self, name: str, props: SHMNetworkingProps, opts: ResourceOptions = None
+        self,
+        name: str,
+        stack_name: str,
+        shm_name: str,
+        props: SHMNetworkingProps,
+        opts: ResourceOptions = None,
     ):
         super().__init__("dsh:shm:SHMNetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
+
+        # Deploy resource group
+        resource_group = resources.ResourceGroup(
+            f"{self._name}_resource_group",
+            location=props.location,
+            resource_group_name=f"rg-{stack_name}-networking",
+        )
 
         # Set address prefixes from ranges
         virtual_network_iprange = AzureIPv4Range(*props.ip_range_vnet)
@@ -74,23 +86,23 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Define NSGs
         nsg_monitoring = network.NetworkSecurityGroup(
-            "nsg_monitoring",
-            network_security_group_name=f"nsg-{self._name}-monitoring",
-            resource_group_name=props.resource_group_name,
+            f"{self._name}_nsg_monitoring",
+            network_security_group_name=f"nsg-{stack_name}-monitoring",
+            resource_group_name=resource_group.name,
             security_rules=[],
             opts=child_opts,
         )
         nsg_update_servers = network.NetworkSecurityGroup(
-            "nsg_update_servers",
-            network_security_group_name=f"nsg-{self._name}-update-servers",
-            resource_group_name=props.resource_group_name,
+            f"{self._name}_nsg_update_servers",
+            network_security_group_name=f"nsg-{stack_name}-update-servers",
+            resource_group_name=resource_group.name,
             security_rules=[],
             opts=child_opts,
         )
         nsg_users = network.NetworkSecurityGroup(
-            "nsg_users",
-            network_security_group_name=f"nsg-{self._name}-users",
-            resource_group_name=props.resource_group_name,
+            f"{self._name}_nsg_users",
+            network_security_group_name=f"nsg-{stack_name}-users",
+            resource_group_name=resource_group.name,
             security_rules=[
                 network.SecurityRuleArgs(
                     access="Allow",
@@ -110,11 +122,11 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Define the virtual network with inline subnets
         virtual_network = network.VirtualNetwork(
-            "virtual_network",
+            f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
                 address_prefixes=[str(virtual_network_iprange)],
             ),
-            resource_group_name=props.resource_group_name,
+            resource_group_name=resource_group.name,
             subnets=[  # Note that we need to define subnets inline or they will be destroyed/recreated on a new run
                 network.SubnetArgs(
                     address_prefix=str(subnet_firewall_iprange),
@@ -148,20 +160,20 @@ class SHMNetworkingComponent(ComponentResource):
                     ),
                 ),
             ],
-            virtual_network_name=f"vnet-{self._name}",
+            virtual_network_name=f"vnet-{stack_name}",
             opts=child_opts,
         )
 
         # Define SHM DNS zone
         dns_zone = network.Zone(
-            "dns_zone",
+            f"{self._name}_dns_zone",
             location="Global",
-            resource_group_name=props.resource_group_name,
+            resource_group_name=resource_group.name,
             zone_name=props.fqdn,
             zone_type="Public",
         )
         caa_record = network.RecordSet(
-            "dns_caa_record",
+            f"{self._name}_caa_record",
             caa_records=[
                 network.CaaRecordArgs(
                     flags=0,
@@ -171,16 +183,16 @@ class SHMNetworkingComponent(ComponentResource):
             ],
             record_type="CAA",
             relative_record_set_name="@",
-            resource_group_name=props.resource_group_name,
+            resource_group_name=resource_group.name,
             ttl=30,
             zone_name=dns_zone.name,
             opts=child_opts,
         )
-        dns_txt_record = network.RecordSet(
-            "dns_txt_record",
+        domain_verification_record = network.RecordSet(
+            f"{self._name}_domain_verification_record",
             record_type="TXT",
             relative_record_set_name="@",
-            resource_group_name=props.resource_group_name,
+            resource_group_name=resource_group.name,
             ttl=3600,
             txt_records=[
                 network.TxtRecordArgs(
@@ -194,5 +206,5 @@ class SHMNetworkingComponent(ComponentResource):
         # Register outputs
         self.dns_zone_nameservers = dns_zone.name_servers
         self.subnet_users_iprange = subnet_users_iprange
-        self.resource_group_name = Output.from_input(props.resource_group_name)
+        self.resource_group_name = Output.from_input(resource_group.name)
         self.virtual_network = virtual_network

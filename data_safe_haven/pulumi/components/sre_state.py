@@ -1,55 +1,83 @@
 # Third party imports
 from pulumi import ComponentResource, Input, ResourceOptions, Output
-from pulumi_azure_native import keyvault, managedidentity
+from pulumi_azure_native import keyvault, managedidentity, resources, storage
 
 # Local imports
 from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
+from data_safe_haven.helpers import alphanumeric, hash
 
 
-class SREKeyVaultProps:
-    """Properties for SREKeyVaultComponent"""
+class SREStateProps:
+    """Properties for SREStateComponent"""
 
     def __init__(
         self,
         admin_group_id: Input[str],
-        key_vault_resource_group_name: Input[str],
+        admin_email_address: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         subscription_name: Input[str],
         sre_fqdn: Input[str],
-        sre_name: Input[str],
         tenant_id: Input[str],
     ):
+        self.admin_email_address = admin_email_address
         self.admin_group_id = admin_group_id
-        self.key_vault_resource_group_name = key_vault_resource_group_name
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
-        self.subscription_name = subscription_name
         self.sre_fqdn = sre_fqdn
-        self.sre_name = sre_name
+        self.subscription_name = subscription_name
         self.tenant_id = tenant_id
 
 
-class SREKeyVaultComponent(ComponentResource):
-    """Deploy SRE secrets with Pulumi"""
+class SREStateComponent(ComponentResource):
+    """Deploy SRE state with Pulumi"""
 
     def __init__(
-        self, name: str, props: SREKeyVaultProps, opts: ResourceOptions = None
+        self,
+        name: str,
+        stack_name: str,
+        sre_name: str,
+        props: SREStateProps,
+        opts: ResourceOptions = None,
     ):
-        super().__init__("dsh:sre:SREKeyVaultComponent", name, {}, opts)
+        super().__init__("dsh:sre:SREStateComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
-        # Define Key Vault reader
-        sre_key_vault_reader = managedidentity.UserAssignedIdentity(
-            "sre_key_vault_reader",
+        # Deploy resource group
+        resource_group = resources.ResourceGroup(
+            f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=props.key_vault_resource_group_name,
-            resource_name_=f"sre-{props.sre_name}-key-vault-reader",
+            resource_group_name=f"rg-{stack_name}-state",
+        )
+
+        # Deploy storage account
+        storage_account = storage.StorageAccount(
+            f"{self._name}_storage_account_state",
+            account_name=alphanumeric(f"sre{sre_name}{hash(stack_name)}")[
+                :24
+            ],  # maximum of 24 characters
+            kind="StorageV2",
+            resource_group_name=resource_group.name,
+            sku=storage.SkuArgs(name="Standard_LRS"),
+        )
+
+        # Retrieve storage account keys
+        storage_account_keys = storage.list_storage_account_keys(
+            account_name=storage_account.name,
+            resource_group_name=resource_group.name,
+        )
+
+        # Define Key Vault reader
+        key_vault_reader = managedidentity.UserAssignedIdentity(
+            f"{self._name}_key_vault_reader",
+            location=props.location,
+            resource_group_name=resource_group.name,
+            resource_name_=f"id-{stack_name}-key-vault-reader",
         )
 
         # Define SRE KeyVault
-        vault = keyvault.Vault(
-            "vault",
+        key_vault = keyvault.Vault(
+            f"{self._name}_key_vault",
             location=props.location,
             properties=keyvault.VaultPropertiesArgs(
                 access_policies=[
@@ -102,7 +130,7 @@ class SREKeyVaultComponent(ComponentResource):
                         tenant_id=props.tenant_id,
                     ),
                     keyvault.AccessPolicyEntryArgs(
-                        object_id=sre_key_vault_reader.principal_id,
+                        object_id=key_vault_reader.principal_id,
                         permissions=keyvault.PermissionsArgs(
                             certificates=[
                                 "get",
@@ -129,17 +157,19 @@ class SREKeyVaultComponent(ComponentResource):
                 ),
                 tenant_id=props.tenant_id,
             ),
-            resource_group_name=props.key_vault_resource_group_name,
-            vault_name=f"kv-sre-{props.sre_name[:9]}-secrets",  # maximum of 24 characters
+            resource_group_name=resource_group.name,
+            vault_name=f"kv-sre-{sre_name[:11]}-state",  # maximum of 24 characters
         )
 
         # Define SSL certificate for this FQDN
+
         certificate = SSLCertificate(
-            "ssl_certificate",
+            f"{self._name}_ssl_certificate",
             SSLCertificateProps(
-                certificate_secret_name="ssl-certificate-fqdn",
+                certificate_secret_name="ssl-certificate-sre-remote-desktop",
                 domain_name=props.sre_fqdn,
-                key_vault_name=vault.name,
+                admin_email_address=props.admin_email_address,
+                key_vault_name=key_vault.name,
                 networking_resource_group_name=props.networking_resource_group_name,
                 subscription_name=props.subscription_name,
             ),
@@ -147,9 +177,9 @@ class SREKeyVaultComponent(ComponentResource):
         )
 
         # Register outputs
+        self.access_key = Output.secret(storage_account_keys.keys[0].value)
+        self.account_name = Output.from_input(storage_account.name)
         self.certificate_secret_id = certificate.secret_id
-        self.managed_identity = sre_key_vault_reader
-        self.resource_group_name = Output.from_input(
-            props.key_vault_resource_group_name
-        )
+        self.managed_identity = key_vault_reader
+        self.resource_group_name = resource_group.name
         self.sre_fqdn = Output.from_input(props.sre_fqdn)
