@@ -844,34 +844,33 @@ class GraphApi(LoggingMixin):
                     f"Domain {domain_name} has not been added to AzureAD."
                 )
             # Wait until domain delegation is complete
-            if not any([(d["id"] == domain_name and d["isVerified"]) for d in domains]):
-                while True:
-                    # Check whether all expected nameservers are active
-                    with suppress(resolver.NXDOMAIN):
-                        active_nameservers = [
-                            str(ns) for ns in resolver.resolve(domain_name, "NS")
+            while True:
+                # Check whether all expected nameservers are active
+                with suppress(resolver.NXDOMAIN):
+                    active_nameservers = [
+                        str(ns) for ns in resolver.resolve(domain_name, "NS")
+                    ]
+                    self.info("Checking domain verification status.")
+                    if all(
+                        [
+                            any([nameserver in n for n in active_nameservers])
+                            for nameserver in expected_nameservers
                         ]
-                        self.info("Checking domain verification status.")
-                        if all(
-                            [
-                                any([nameserver in n for n in active_nameservers])
-                                for nameserver in expected_nameservers
-                            ]
-                        ):
-
-                            break
-                    # Prompt user to set domain delegation manually
-                    self.info(
-                        f"To proceed you will need to delegate <fg=green>{domain_name}</> to Azure (https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain)"
-                    )
-                    self.info(
-                        f"You will need to delegate to the following nameservers: {', '.join([f'<fg=green>{n}</>' for n in expected_nameservers])}"
-                    )
-                    self.log_confirm(
-                        f"Have you delegated {domain_name} to the Azure nameservers above?",
-                        True,
-                    )
-                # Send verification request
+                    ):
+                        break
+                # Prompt user to set domain delegation manually
+                self.info(
+                    f"To proceed you will need to delegate <fg=green>{domain_name}</> to Azure (https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain)"
+                )
+                self.info(
+                    f"You will need to delegate to the following nameservers: {', '.join([f'<fg=green>{n}</>' for n in expected_nameservers])}"
+                )
+                self.log_confirm(
+                    f"Have you delegated {domain_name} to the Azure nameservers above?",
+                    True,
+                )
+            # Send verification request if needed
+            if not any([(d["id"] == domain_name and d["isVerified"]) for d in domains]):
                 response = self.http_post(
                     f"{self.base_endpoint}/domains/{domain_name}/verify"
                 )

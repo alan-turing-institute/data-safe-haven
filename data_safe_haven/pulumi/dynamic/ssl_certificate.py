@@ -33,12 +33,14 @@ class SSLCertificateProps:
         self,
         certificate_secret_name: Input[str],
         domain_name: Input[str],
+        admin_email_address: Input[str],
         key_vault_name: Input[str],
         networking_resource_group_name: Input[str],
         subscription_name: Input[str],
     ):
         self.certificate_secret_name = certificate_secret_name
         self.domain_name = domain_name
+        self.admin_email_address = admin_email_address
         self.key_vault_name = key_vault_name
         self.networking_resource_group_name = networking_resource_group_name
         self.subscription_name = subscription_name
@@ -64,7 +66,7 @@ class SSLCertificateProvider(DshResourceProvider):
             # The default is ecdsa-with-SHA25, which Azure Key Vault cannot read
             client = simple_acme_dns.ACMEClient(
                 domains=[props["domain_name"]],
-                email="test@example.com",
+                email=props["admin_email_address"],
                 directory="https://acme-staging-v02.api.letsencrypt.org/directory",
                 nameservers=["8.8.8.8", "1.1.1.1"],
                 new_account=True,

@@ -202,6 +202,22 @@ class SRENetworkingComponent(ComponentResource):
             zone_name=props.fqdn,
             zone_type="Public",
         )
+        sre_caa_record = network.RecordSet(
+            "sre_caa_record",
+            caa_records=[
+                network.CaaRecordArgs(
+                    flags=0,
+                    tag="issue",
+                    value="letsencrypt.org",
+                )
+            ],
+            record_type="CAA",
+            relative_record_set_name="@",
+            resource_group_name=props.resource_group_name,
+            ttl=30,
+            zone_name=sre_dns_zone.name,
+            opts=child_opts,
+        )
         sre_ns_record = network.RecordSet(
             "sre_ns_record",
             ns_records=sre_dns_zone.name_servers.apply(

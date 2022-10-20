@@ -160,6 +160,22 @@ class SHMNetworkingComponent(ComponentResource):
             zone_name=props.fqdn,
             zone_type="Public",
         )
+        caa_record = network.RecordSet(
+            "dns_caa_record",
+            caa_records=[
+                network.CaaRecordArgs(
+                    flags=0,
+                    tag="issue",
+                    value="letsencrypt.org",
+                )
+            ],
+            record_type="CAA",
+            relative_record_set_name="@",
+            resource_group_name=props.resource_group_name,
+            ttl=30,
+            zone_name=dns_zone.name,
+            opts=child_opts,
+        )
         dns_txt_record = network.RecordSet(
             "dns_txt_record",
             record_type="TXT",

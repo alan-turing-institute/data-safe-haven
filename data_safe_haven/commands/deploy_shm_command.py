@@ -117,6 +117,18 @@ class DeploySHMCommand(LoggingMixin, Command):
                 )
                 aad_tenant_id = self.log_ask("AzureAD tenant ID:", None)
 
+        # Request admin email address if not provided
+        while not config.shm.admin_email_address:
+            self.info(
+                "We need to know an email address that your system deployers and administrators can be contacted on."
+            )
+            self.info(
+                "Please enter a single email address, for example 'sherlock@holmes.com'."
+            )
+            admin_email_address = self.log_ask("Administrator email address:", None)
+            if admin_email_address:
+                config.shm.admin_email_address = str(admin_email_address).strip()
+
         # Request admin IP addresses if not provided
         while not config.shm.admin_ip_addresses:
             self.info(
