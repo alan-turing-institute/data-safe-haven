@@ -1,5 +1,6 @@
+"""Pulumi component for SHM monitoring"""
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions, Output
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, resources
 
 

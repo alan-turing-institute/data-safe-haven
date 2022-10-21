@@ -4,9 +4,9 @@ from typing import Any, Optional
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
-from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.external import AzureApi
+from data_safe_haven.mixins import LoggingMixin
 
 
 class Backend(LoggingMixin):

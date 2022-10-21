@@ -1,3 +1,4 @@
+"""Pulumi base dynamic component."""
 # Standard library imports
 from typing import Any, Dict, Sequence
 
@@ -16,9 +17,6 @@ from data_safe_haven.exceptions import DataSafeHavenNotImplementedException
 
 
 class DshResourceProvider(ResourceProvider):
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
-
     @staticmethod
     def partial_diff(
         old_props: Dict[str, str],
@@ -62,7 +60,7 @@ class DshResourceProvider(ResourceProvider):
             "DshResourceProvider::create() must be implemented"
         )
 
-    def delete(self, id: str, props: Dict[str, str]) -> None:
+    def delete(self, id_: str, props: Dict[str, str]) -> None:
         """Delete the resource."""
         raise DataSafeHavenNotImplementedException(
             "DshResourceProvider::delete() must be implemented"

@@ -4,12 +4,12 @@ import contextlib
 import time
 
 # Third party imports
+import websocket
 from azure.mgmt.containerinstance import ContainerInstanceManagementClient
 from azure.mgmt.containerinstance.models import (
     ContainerExecRequest,
     ContainerExecRequestTerminalSize,
 )
-import websocket
 
 # Local imports
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
@@ -18,8 +18,13 @@ from data_safe_haven.mixins import AzureMixin, LoggingMixin
 class ContainerProvisioner(AzureMixin, LoggingMixin):
     """Provisioner for Azure containers."""
 
-    def __init__(self, config, resource_group_name, container_group_name):
-        super().__init__(subscription_name=config.azure.subscription_name)
+    def __init__(
+        self,
+        container_group_name: str,
+        resource_group_name: str,
+        subscription_name: str,
+    ):
+        super().__init__(subscription_name=subscription_name)
         self.resource_group_name = resource_group_name
         self.container_group_name = container_group_name
 
@@ -28,15 +33,16 @@ class ContainerProvisioner(AzureMixin, LoggingMixin):
         while not poller.done():
             time.sleep(10)
 
-    def restart(self):
+    def restart(self, target_ip_address=None):
         """Restart the container group"""
         # Connect to Azure clients
         aci_client = ContainerInstanceManagementClient(
             self.credential, self.subscription_id
         )
-        initial_ip_address = aci_client.container_groups.get(
-            self.resource_group_name, self.container_group_name
-        ).ip_address.ip
+        if not target_ip_address:
+            target_ip_address = aci_client.container_groups.get(
+                self.resource_group_name, self.container_group_name
+            ).ip_address.ip
 
         # Restart container group
         self.info(
@@ -52,8 +58,9 @@ class ContainerProvisioner(AzureMixin, LoggingMixin):
             final_ip_address = aci_client.container_groups.get(
                 self.resource_group_name, self.container_group_name
             ).ip_address.ip
-            if final_ip_address == initial_ip_address:
+            if final_ip_address == target_ip_address:
                 break
+            print("... and again")
         self.info(
             f"Restarted container group <fg=green>{self.container_group_name}</>.",
             overwrite=True,

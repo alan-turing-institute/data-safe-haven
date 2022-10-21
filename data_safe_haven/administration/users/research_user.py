@@ -1,12 +1,9 @@
 # Standard library imports
-import contextlib
 import datetime
 from typing import Any
 
 # Local imports
-from data_safe_haven.helpers import (
-    hex_string,
-)
+from data_safe_haven.helpers import hex_string
 
 
 class ResearchUser:

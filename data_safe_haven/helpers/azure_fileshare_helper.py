@@ -1,7 +1,8 @@
+"""Helper class for Azure fileshares"""
 # Third party imports
 from azure.core.exceptions import ResourceNotFoundError
 from azure.mgmt.storage import StorageManagementClient
-from azure.storage.fileshare import ShareFileClient, ShareDirectoryClient
+from azure.storage.fileshare import ShareDirectoryClient, ShareFileClient
 
 # Local imports
 from data_safe_haven.config import Config

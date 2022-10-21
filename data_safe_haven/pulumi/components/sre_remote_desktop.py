@@ -1,3 +1,4 @@
+"""Pulumi component for SRE remote desktop"""
 # Standard library imports
 import pathlib
 from typing import Optional
@@ -13,9 +14,9 @@ from pulumi_azure_native import (
 )
 
 # Local imports
+from data_safe_haven.helpers import FileReader
 from ..dynamic.azuread_application import AzureADApplication, AzureADApplicationProps
 from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
-from data_safe_haven.helpers import FileReader
 
 
 class SRERemoteDesktopProps:
@@ -76,7 +77,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-guacamole",
+            resource_group_name=f"rg-{stack_name}-remote-desktop",
         )
 
         # Retrieve existing resources
@@ -363,3 +364,15 @@ class SRERemoteDesktopComponent(ComponentResource):
             ],
             opts=child_opts,
         )
+
+        # Register outputs
+        self.resource_group_name = resource_group.name
+
+        # Register exports
+        self.exports = {
+            "connection_db_name": connection_db.name,
+            "connection_db_server_name": connection_db_server_name,
+            "container_group_name": container_group.name,
+            "container_ip_address": Output.from_input(props.ip_address_container),
+            "resource_group_name": resource_group.name,
+        }

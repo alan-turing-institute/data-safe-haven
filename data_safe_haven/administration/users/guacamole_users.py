@@ -4,10 +4,10 @@ import tempfile
 from typing import Sequence
 
 # Local imports
+from data_safe_haven.configuration.components import PostgreSQLProvisioner
 from data_safe_haven.exceptions import DataSafeHavenInputException
 from data_safe_haven.helpers import FileReader
 from data_safe_haven.mixins import LoggingMixin
-from data_safe_haven.provisioning import PostgreSQLProvisioner
 from .research_user import ResearchUser
 
 
@@ -106,7 +106,9 @@ class GuacamoleUsers(LoggingMixin):
             self.postgres_provisioner.execute_scripts([sql_file_name])
             self.users_ = [user for user in self.users_ if user not in users]
         except Exception as exc:
-            raise DataSafeHavenInputException(exc)
+            raise DataSafeHavenInputException(
+                f"Could not update database users.\n{str(exc)}"
+            ) from exc
         finally:
             if sql_file_name:
                 pathlib.Path(sql_file_name).unlink()

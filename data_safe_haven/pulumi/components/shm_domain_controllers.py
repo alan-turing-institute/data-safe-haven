@@ -1,15 +1,16 @@
+"""Pulumi component for SHM domain controllers"""
 # Standard library import
 import pathlib
 from typing import Sequence
 
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions, Output
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import resources
 
 # Local
-from .virtual_machine import VMComponent, WindowsVMProps
-from .automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
 from data_safe_haven.helpers import AzureIPv4Range, FileReader
+from .automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
+from .virtual_machine import VMComponent, WindowsVMProps
 
 
 class SHMDomainControllersProps:

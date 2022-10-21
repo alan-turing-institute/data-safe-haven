@@ -1,7 +1,7 @@
 """Backend for a Data Safe Haven environment"""
 # Standard library imports
-from contextlib import suppress
 import time
+from contextlib import suppress
 from typing import Any, Dict, Sequence
 
 # Third party imports
@@ -16,7 +16,7 @@ from azure.keyvault.certificates import (
     KeyVaultCertificate,
 )
 from azure.keyvault.keys import KeyClient, KeyVaultKey
-from azure.keyvault.secrets import SecretClient, KeyVaultSecret
+from azure.keyvault.secrets import KeyVaultSecret, SecretClient
 from azure.mgmt.automation import AutomationClient
 from azure.mgmt.automation.models import (
     DscCompilationJobCreateParameters,
@@ -74,10 +74,8 @@ class AzureApi(AzureMixin, LoggingMixin):
                 if module.provisioning_state == "Succeeded"
             ]
             if all(
-                [
-                    (module_name in available_module_names)
-                    for module_name in required_modules
-                ]
+                module_name in available_module_names
+                for module_name in required_modules
             ):
                 break
             time.sleep(10)
@@ -460,7 +458,6 @@ class AzureApi(AzureMixin, LoggingMixin):
             DataSafeHavenAzureException if the existence of the certificate could not be verified
         """
         try:
-            self.storage_account_name = storage_account_name
             # Connect to Azure clients
             storage_client = StorageManagementClient(
                 self.credential, self.subscription_id

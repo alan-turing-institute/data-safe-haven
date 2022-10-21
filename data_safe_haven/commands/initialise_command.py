@@ -7,8 +7,8 @@ import sys
 from cleo import Command
 
 # Local imports
-from data_safe_haven.config import DotFileSettings
 from data_safe_haven.backend import Backend
+from data_safe_haven.config import DotFileSettings
 from data_safe_haven.exceptions import DataSafeHavenException
 from data_safe_haven.mixins import LoggingMixin
 

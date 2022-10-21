@@ -1,13 +1,11 @@
 """Command-line application for deploying a Secure Research Environment from project files"""
-# Standard library imports
-import pathlib
-
 # Third party imports
-from cleo import Command
 import yaml
+from cleo import Command
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
+from data_safe_haven.configuration import SREConfigurationManager
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
@@ -15,8 +13,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.external import GraphApi
 from data_safe_haven.helpers import alphanumeric, password
 from data_safe_haven.mixins import LoggingMixin
-from data_safe_haven.pulumi import PulumiInterface
-from data_safe_haven.provisioning import ContainerProvisioner, PostgreSQLProvisioner
+from data_safe_haven.pulumi import PulumiStack
 
 
 class DeploySRECommand(LoggingMixin, Command):
@@ -38,11 +35,14 @@ class DeploySRECommand(LoggingMixin, Command):
             # Use dotfile settings to load the job configuration
             try:
                 settings = DotFileSettings()
-            except DataSafeHavenInputException:
+            except DataSafeHavenException as exc:
                 raise DataSafeHavenInputException(
-                    "Unable to load project settings. Please run this command from inside the project directory."
-                )
+                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
+                ) from exc
             config = Config(settings.name, settings.subscription_name)
+
+            # Set a JSON-safe name for this SRE and add any missing values to the config
+            self.safe_name = alphanumeric(self.argument("name"))
             self.add_missing_values(config)
 
             # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
@@ -52,74 +52,45 @@ class DeploySRECommand(LoggingMixin, Command):
             )
 
             # Deploy infrastructure with Pulumi
-            infrastructure = PulumiInterface(
-                config, "SRE", sre_name=self.argument("name")
-            )
+            stack = PulumiStack(config, "SRE", sre_name=self.argument("name"))
             # Set Azure options
-            infrastructure.add_option("azure-native:location", config.azure.location)
-            infrastructure.add_option(
+            stack.add_option("azure-native:location", config.azure.location)
+            stack.add_option(
                 "azure-native:subscriptionId", config.azure.subscription_id
             )
-            infrastructure.add_option("azure-native:tenantId", config.azure.tenant_id)
+            stack.add_option("azure-native:tenantId", config.azure.tenant_id)
             # Add necessary secrets
-            infrastructure.add_secret("password-guacamole-database-admin", password(20))
-            infrastructure.add_secret(
-                "token-azuread-graphapi", graph_api.token, replace=True
-            )
-            infrastructure.deploy()
+            stack.add_secret("password-user-database-admin", password(20))
+            stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
+            stack.deploy()
 
             # Add Pulumi infrastructure information to the config file
-            with open(infrastructure.local_stack_path, "r") as f_stack:
+            with open(stack.local_stack_path, "r") as f_stack:
                 stack_yaml = yaml.safe_load(f_stack)
-            config.pulumi.stacks[infrastructure.stack_name] = stack_yaml
+            config.pulumi.stacks[stack.stack_name] = stack_yaml
 
             # Upload config to blob storage
             config.upload()
 
-            # # Provision Guacamole
-            # # -------------------
+            # Apply SRE configuration
+            remote_desktop_params = dict(**stack.output("remote_desktop"))
+            remote_desktop_params.update(
+                {
+                    "disable_copy": config.sre[self.safe_name].allow_copy,
+                    "disable_paste": config.sre[self.safe_name].allow_paste,
+                    "timezone": config.shm.timezone,
+                }
+            )
+            manager = SREConfigurationManager(
+                connection_db_server_password=stack.secret(
+                    "password-user-database-admin"
+                ),
+                remote_desktop_params=stack.output("remote_desktop"),
+                subscription_name=config.subscription_name,
+                vm_params=stack.output("vm_details"),
+            )
+            manager.apply_configuration()
 
-            # # Provision the Guacamole PostgreSQL server
-            # postgres_provisioner = PostgreSQLProvisioner(
-            #     config,
-            #     config.pulumi.outputs.guacamole.resource_group_name,
-            #     config.pulumi.outputs.guacamole.postgresql_server_name,
-            #     infrastructure.secret("guacamole-postgresql-password"),
-            # )
-            # connections = infrastructure.output("vm_details")
-            # connection_data = {
-            #     "connections": [
-            #         {
-            #             "connection_name": connection,
-            #             "disable_copy": (not config.settings.allow_copy),
-            #             "disable_paste": (not config.settings.allow_paste),
-            #             "ip_address": ip_address,
-            #             "timezone": config.settings.timezone,
-            #         }
-            #         for (connection, ip_address) in connections
-            #     ]
-            # }
-            # postgres_script_path = (
-            #     pathlib.Path(__file__).parent.parent
-            #     / "resources"
-            #     / "remote-desktop"
-            #     / "postgresql"
-            # )
-            # postgres_provisioner.execute_scripts(
-            #     [
-            #         postgres_script_path / "init_db.sql",
-            #         postgres_script_path / "update_connections.mustache.sql",
-            #     ],
-            #     mustache_values=connection_data,
-            # )
-
-            # # Restart the Guacamole container group
-            # guacamole_provisioner = ContainerProvisioner(
-            #     config,
-            #     config.pulumi.outputs.guacamole.resource_group_name,
-            #     config.pulumi.outputs.guacamole.container_group_name,
-            # )
-            # guacamole_provisioner.restart()
         except DataSafeHavenException as exc:
             for (
                 line
@@ -131,13 +102,12 @@ class DeploySRECommand(LoggingMixin, Command):
     def add_missing_values(self, config: Config) -> None:
         """Request any missing config values and add them to the config"""
         # Create a config entry for this SRE if it does not exist
-        sre_name = alphanumeric(self.argument("name"))
-        if sre_name not in config.sre.keys():
+        if self.safe_name not in config.sre.keys():
             highest_index = max([0] + [sre.index for sre in config.sre.values()])
-            config.sre[sre_name].index = highest_index + 1
+            config.sre[self.safe_name].index = highest_index + 1
 
         # Set whether copying is allowed
-        config.sre[sre_name].allow_copy = True if self.option("allow-copy") else False
+        config.sre[self.safe_name].allow_copy = bool(self.option("allow-copy"))
 
         # Set whether pasting is allowed
-        config.sre[sre_name].allow_paste = True if self.option("allow-paste") else False
+        config.sre[self.safe_name].allow_paste = bool(self.option("allow-paste"))

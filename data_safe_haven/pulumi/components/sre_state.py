@@ -1,10 +1,11 @@
+"""Pulumi component for SRE state"""
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions, Output
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, managedidentity, resources, storage
 
 # Local imports
-from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 from data_safe_haven.helpers import alphanumeric, hash
+from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 
 
 class SREStateProps:
@@ -162,7 +163,6 @@ class SREStateComponent(ComponentResource):
         )
 
         # Define SSL certificate for this FQDN
-
         certificate = SSLCertificate(
             f"{self._name}_ssl_certificate",
             SSLCertificateProps(

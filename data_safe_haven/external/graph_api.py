@@ -1,14 +1,14 @@
 """Interface to the Microsoft Graph API"""
 # Standard library imports
-from contextlib import suppress
 import datetime
-from io import UnsupportedOperation
 import pathlib
-import requests
 import time
+from contextlib import suppress
+from io import UnsupportedOperation
 from typing import Any, Sequence
 
 # Third party imports
+import requests
 from dns import resolver
 from msal import (
     ConfidentialClientApplication,
@@ -100,7 +100,7 @@ class GraphApi(LoggingMixin):
         try:
             # Create the AzureAD custom domain if it does not already exist
             domains = self.read_domains()
-            domain_exists = any([domain["id"] == domain_name for domain in domains])
+            domain_exists = any(domain["id"] == domain_name for domain in domains)
             if not domain_exists:
                 response = self.http_post(
                     f"{self.base_endpoint}/domains",
@@ -142,7 +142,7 @@ class GraphApi(LoggingMixin):
                 f"{self.base_endpoint}/groups/{group_id}/members",
             ).json()
             # If user already belongs to group then do nothing further
-            if any([user_id == member["id"] for member in json_response["value"]]):
+            if any(user_id == member["id"] for member in json_response["value"]):
                 self.info(
                     f"User <fg=green>'{username}'</> is already a member of group <fg=green>'{group_name}'</>."
                 )
@@ -275,10 +275,8 @@ class GraphApi(LoggingMixin):
             application_json = self.get_application_by_name(application_name)
             # If the secret already exists then raise an exception
             if "passwordCredentials" in application_json and any(
-                [
-                    cred["displayName"] == application_secret_name
-                    for cred in application_json["passwordCredentials"]
-                ]
+                cred["displayName"] == application_secret_name
+                for cred in application_json["passwordCredentials"]
             ):
                 raise DataSafeHavenInputException(
                     f"Secret '{application_secret_name}' already exists in application '{application_name}'."
@@ -393,7 +391,7 @@ class GraphApi(LoggingMixin):
                         f"Could not initiate device login for scopes {self.default_scopes}."
                     )
                 self.info(
-                    f"Administrator approval is needed in order to interact with Azure Active Directory."
+                    "Administrator approval is needed in order to interact with Azure Active Directory."
                 )
                 self.info(
                     f"Please sign-in with <fg=green>global administrator</> credentials for Azure Active Directory <fg=green>{self.tenant_id}</>."
@@ -406,7 +404,7 @@ class GraphApi(LoggingMixin):
                 result = app.acquire_token_by_device_flow(flow)
             return result["access_token"]
         except Exception as exc:
-            error_description = f"Could not create access token"
+            error_description = "Could not create access token"
             if result and "error_description" in result:
                 error_description += f": {result['error_description']}"
             raise DataSafeHavenMicrosoftGraphException(
@@ -435,7 +433,7 @@ class GraphApi(LoggingMixin):
             )
             return result["access_token"]
         except Exception as exc:
-            error_description = f"Could not create access token"
+            error_description = "Could not create access token"
             if result and "error_description" in result:
                 error_description += f": {result['error_description']}"
             raise DataSafeHavenMicrosoftGraphException(
@@ -600,7 +598,7 @@ class GraphApi(LoggingMixin):
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not execute DELETE request.\n{str(exc)}"
-            )
+            ) from exc
 
     def http_get(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP GET request
@@ -621,7 +619,7 @@ class GraphApi(LoggingMixin):
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not execute GET request.\n{str(exc)}"
-            )
+            ) from exc
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP PATCH request
@@ -642,7 +640,7 @@ class GraphApi(LoggingMixin):
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not execute PATCH request.\n{str(exc)}"
-            )
+            ) from exc
 
     def http_post(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP POST request
@@ -795,7 +793,7 @@ class GraphApi(LoggingMixin):
             ).json()["value"]
             for user in users:
                 user["isGlobalAdmin"] = any(
-                    [user["id"] == admin["id"] for admin in administrators]
+                    user["id"] == admin["id"] for admin in administrators
                 )
                 for key, value in user.get(self.linux_schema, {}).items():
                     user[key] = value
@@ -839,7 +837,7 @@ class GraphApi(LoggingMixin):
         try:
             # Create the AzureAD custom domain if it does not already exist
             domains = self.read_domains()
-            if not any([d["id"] == domain_name for d in domains]):
+            if not any(d["id"] == domain_name for d in domains):
                 raise DataSafeHavenMicrosoftGraphException(
                     f"Domain {domain_name} has not been added to AzureAD."
                 )
@@ -852,10 +850,8 @@ class GraphApi(LoggingMixin):
                     ]
                     self.info("Checking domain verification status.")
                     if all(
-                        [
-                            any([nameserver in n for n in active_nameservers])
-                            for nameserver in expected_nameservers
-                        ]
+                        any([nameserver in n for n in active_nameservers])
+                        for nameserver in expected_nameservers
                     ):
                         break
                 # Prompt user to set domain delegation manually
@@ -870,7 +866,7 @@ class GraphApi(LoggingMixin):
                     True,
                 )
             # Send verification request if needed
-            if not any([(d["id"] == domain_name and d["isVerified"]) for d in domains]):
+            if not any((d["id"] == domain_name and d["isVerified"]) for d in domains):
                 response = self.http_post(
                     f"{self.base_endpoint}/domains/{domain_name}/verify"
                 )

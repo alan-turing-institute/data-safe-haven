@@ -6,8 +6,8 @@ from typing import Sequence
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingException
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 from .azuread_users import AzureADUsers
-from .research_user import ResearchUser
 from .guacamole_users import GuacamoleUsers
+from .research_user import ResearchUser
 
 
 class UserHandler(LoggingMixin, AzureMixin):

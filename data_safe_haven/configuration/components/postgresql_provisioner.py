@@ -1,24 +1,24 @@
 """Backend for a Data Safe Haven environment"""
 # Standard library imports
 import pathlib
-import requests
 import time
 from typing import Dict, Sequence
 
 # Third party imports
+import psycopg2
+import requests
 from azure.core.polling import LROPoller
 from azure.mgmt.rdbms.postgresql import PostgreSQLManagementClient
+from azure.mgmt.rdbms.postgresql.models import FirewallRule, ServerUpdateParameters
 from azure.mgmt.rdbms.postgresql.operations import ServersOperations
-from azure.mgmt.rdbms.postgresql.models import ServerUpdateParameters, FirewallRule
-import psycopg2
 
 # Local imports
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureException,
+    DataSafeHavenInputException,
+)
 from data_safe_haven.helpers import FileReader
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
-from data_safe_haven.exceptions import (
-    DataSafeHavenInputException,
-    DataSafeHavenAzureException,
-)
 
 
 class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
@@ -26,21 +26,20 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
 
     def __init__(
         self,
-        config,
+        database_name,
+        database_server_admin_password,
+        database_server_name,
         resource_group_name,
-        server_name,
-        admin_password,
-        database_name="guacamole",
+        subscription_name,
     ):
-        super().__init__(subscription_name=config.azure.subscription_name)
-        self.cfg = config
-        self.admin_password = admin_password
+        super().__init__(subscription_name=subscription_name)
         self.current_ip = requests.get("https://api.ipify.org").content.decode("utf8")
-        self.database_name = database_name
         self.db_client_ = None
+        self.db_name = database_name
         self.db_server_ = None
+        self.db_server_admin_password = database_server_admin_password
         self.resource_group_name = resource_group_name
-        self.server_name = server_name
+        self.server_name = database_server_name
 
     @staticmethod
     def wait(poller: LROPoller) -> None:
@@ -72,10 +71,10 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
             try:
                 connection = psycopg2.connect(
                     user=f"{self.db_server.administrator_login}@{self.server_name}",
-                    password=self.admin_password,
+                    password=self.db_server_admin_password,
                     host=self.db_server.fully_qualified_domain_name,
                     port="5432",
-                    database=self.database_name,
+                    database=self.db_name,
                     sslmode="require",
                 )
                 break
@@ -125,13 +124,12 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
 
             # Commit changes
             connection.commit()
-            self.info("Finished running SQL scripts.", overwrite=True)
-
         except (Exception, psycopg2.Error) as exc:
             raise DataSafeHavenAzureException(
                 f"Error while connecting to PostgreSQL: {exc}"
             ) from exc
         finally:
+            self.info("Finished running SQL scripts.", overwrite=True)
             # Close the connection if it is open
             if connection:
                 cursor.close()

@@ -1,5 +1,5 @@
-from .config import Config as Config
-from .dotfilesettings import DotFileSettings as DotFileSettings
+from .config import Config
+from .dotfilesettings import DotFileSettings
 
 __all__ = [
     "Config",

@@ -1,15 +1,11 @@
+"""Pulumi dynamic component for AzureAD applications."""
 # Standard library imports
 from contextlib import suppress
 from typing import Dict, Optional
 
 # Third party imports
 from pulumi import Input, Output, ResourceOptions
-from pulumi.dynamic import (
-    CreateResult,
-    DiffResult,
-    Resource,
-    UpdateResult,
-)
+from pulumi.dynamic import CreateResult, DiffResult, Resource, UpdateResult
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphException

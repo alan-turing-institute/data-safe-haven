@@ -1,22 +1,15 @@
 """Command-line application for tearing down a Data Safe Haven"""
-# Standard library imports
-import pathlib
-import shutil
-import sys
-
 # Third party imports
 from cleo import Command
 
-
 # Local imports
 from data_safe_haven.backend import Backend
-from data_safe_haven.config import Config, DotFileSettings
+from data_safe_haven.config import DotFileSettings
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
 from data_safe_haven.mixins import LoggingMixin
-from data_safe_haven.pulumi import PulumiInterface
 
 
 class TeardownBackendCommand(LoggingMixin, Command):

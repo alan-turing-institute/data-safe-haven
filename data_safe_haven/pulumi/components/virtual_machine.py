@@ -1,8 +1,9 @@
+"""Pulumi component for virtual machines"""
 # Standard library imports
 from typing import Optional
 
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions, Output
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import compute, network
 
 

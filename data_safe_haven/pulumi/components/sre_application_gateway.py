@@ -1,6 +1,4 @@
-# Standard library imports
-from typing import Optional
-
+"""Pulumi component for SRE application gateway"""
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
@@ -14,16 +12,18 @@ class SREApplicationGatewayProps:
         ip_address_guacamole: Input[str],
         key_vault_certificate_id: Input[str],
         key_vault_identity: Input[str],
+        ip_address_public_id: Input[str],
         resource_group_name: Input[str],
+        sre_fqdn: Input[str],
         subnet_name: Input[str],
-        url_guacamole: Input[str],
         virtual_network_name: Input[str],
     ):
         self.key_vault_certificate_id = key_vault_certificate_id
         self.ip_address_guacamole = ip_address_guacamole
+        self.ip_address_public_id = ip_address_public_id
         self.resource_group_name = resource_group_name
+        self.sre_fqdn = sre_fqdn
         self.subnet_name = subnet_name
-        self.url_guacamole = url_guacamole
         self.virtual_network_name = virtual_network_name
         # Unwrap key vault identity so that it has type Output[dict(str, Any)] not dict(Output[str], Any)
         self.user_assigned_identities = Output.from_input(key_vault_identity).apply(
@@ -51,16 +51,6 @@ class SREApplicationGatewayComponent(ComponentResource):
             subnet_name="ApplicationGatewaySubnet",
             resource_group_name=props.resource_group_name,
             virtual_network_name=props.virtual_network_name,
-        )
-
-        # Define public IP address
-        public_ip = network.PublicIPAddress(
-            f"{self._name}_public_ip",
-            public_ip_address_name=f"ag-{stack_name}-public-ip",
-            public_ip_allocation_method="Static",
-            resource_group_name=props.resource_group_name,
-            sku=network.PublicIPAddressSkuArgs(name="Standard"),
-            opts=child_opts,
         )
 
         # Define application gateway
@@ -91,7 +81,9 @@ class SREApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayFrontendIPConfigurationArgs(
                     name="appGatewayFrontendIP",
                     private_ip_allocation_method="Dynamic",
-                    public_ip_address=network.SubResourceArgs(id=public_ip.id),
+                    public_ip_address=network.SubResourceArgs(
+                        id=props.ip_address_public_id
+                    ),
                 )
             ],
             frontend_ports=[
@@ -125,7 +117,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendPorts/appGatewayFrontendHttp",
                         )
                     ),
-                    host_name=props.url_guacamole,
+                    host_name=props.sre_fqdn,
                     name="GuacamoleHttpListener",
                     protocol="Http",
                 ),
@@ -142,7 +134,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendPorts/appGatewayFrontendHttps",
                         )
                     ),
-                    host_name=props.url_guacamole,
+                    host_name=props.sre_fqdn,
                     name="GuacamoleHttpsListener",
                     protocol="Https",
                     ssl_certificate=network.SubResourceArgs(

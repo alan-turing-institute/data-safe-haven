@@ -4,9 +4,9 @@ import ipaddress
 import re
 
 # Third party imports
-from cleo import Command
 import pytz
 import yaml
+from cleo import Command
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
@@ -15,9 +15,9 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external import GraphApi
-from data_safe_haven.mixins import LoggingMixin
-from data_safe_haven.pulumi import PulumiInterface
 from data_safe_haven.helpers import password
+from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.pulumi import PulumiStack
 
 
 class DeploySHMCommand(LoggingMixin, Command):
@@ -54,32 +54,30 @@ class DeploySHMCommand(LoggingMixin, Command):
             verification_record = graph_api.add_custom_domain(config.shm.fqdn)
 
             # Deploy Azure infrastructure
-            infrastructure = PulumiInterface(config, "SHM")
+            stack = PulumiStack(config, "SHM")
             # Set Azure options
-            infrastructure.add_option("azure-native:location", config.azure.location)
-            infrastructure.add_option(
+            stack.add_option("azure-native:location", config.azure.location)
+            stack.add_option(
                 "azure-native:subscriptionId", config.azure.subscription_id
             )
-            infrastructure.add_option("azure-native:tenantId", config.azure.tenant_id)
+            stack.add_option("azure-native:tenantId", config.azure.tenant_id)
             # Add necessary secrets
-            infrastructure.add_secret("password-domain-admin", password(20))
-            infrastructure.add_secret("password-domain-azure-ad-connect", password(20))
-            infrastructure.add_secret("password-domain-computer-manager", password(20))
-            infrastructure.add_secret(
-                "verification-azuread-custom-domain", verification_record
-            )
+            stack.add_secret("password-domain-admin", password(20))
+            stack.add_secret("password-domain-azure-ad-connect", password(20))
+            stack.add_secret("password-domain-computer-manager", password(20))
+            stack.add_secret("verification-azuread-custom-domain", verification_record)
             # Deploy with Pulumi
-            infrastructure.deploy()
+            stack.deploy()
 
             # Add the SHM domain as a custom domain in AzureAD
-            verification_record = graph_api.verify_custom_domain(
-                config.shm.fqdn, infrastructure.output("fqdn_nameservers")
+            graph_api.verify_custom_domain(
+                config.shm.fqdn, stack.output("fqdn_nameservers")
             )
 
             # Add Pulumi output information to the config file
-            with open(infrastructure.local_stack_path, "r") as f_stack:
+            with open(stack.local_stack_path, "r") as f_stack:
                 stack_yaml = yaml.safe_load(f_stack)
-            config.pulumi.stacks[infrastructure.stack_name] = stack_yaml
+            config.pulumi.stacks[stack.stack_name] = stack_yaml
 
             # Upload config to blob storage
             config.upload()

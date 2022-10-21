@@ -1,9 +1,12 @@
+"""Pulumi component for SHM networking"""
 # Standard library imports
 from typing import Optional, Sequence
 
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions, Output
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
+
+# Local imports
 from data_safe_haven.helpers import AzureIPv4Range
 
 

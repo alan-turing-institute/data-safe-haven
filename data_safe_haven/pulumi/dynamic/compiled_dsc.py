@@ -1,13 +1,10 @@
+"""Pulumi dynamic component for compiled desired state configuration."""
 # Standard library imports
 from typing import Dict, Optional, Sequence
 
 # Third party imports
 from pulumi import Input, ResourceOptions
-from pulumi.dynamic import (
-    CreateResult,
-    DiffResult,
-    Resource,
-)
+from pulumi.dynamic import CreateResult, DiffResult, Resource
 
 # Local imports
 from data_safe_haven.external import AzureApi
@@ -58,7 +55,7 @@ class CompiledDscProvider(DshResourceProvider):
 
     def delete(self, id: str, props: Dict[str, str]) -> None:
         """The Python SDK does not support configuration deletion"""
-        pass
+        return
 
     def diff(
         self,

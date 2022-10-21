@@ -1,7 +1,6 @@
 """Interact with users in an Azure Active Directory"""
 # Standard library imports
 from typing import Sequence
-import json
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphException

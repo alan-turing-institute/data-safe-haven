@@ -4,25 +4,19 @@ import pathlib
 
 # Third party imports
 import pulumi
-from pulumi_azure_native import resources
 
 # Local imports
-from .components.dns import DnsComponent, DnsProps
-from .components.sre_remote_desktop import (
-    SRERemoteDesktopComponent,
-    SRERemoteDesktopProps,
-)
-from .components.secure_research_desktop import (
-    SecureResearchDesktopComponent,
-    SecureResearchDesktopProps,
-)
+from data_safe_haven.config import Config
 from .components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
-from .components.sre_state import SREStateComponent, SREStateProps
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
-from data_safe_haven.config import Config
+from .components.sre_remote_desktop import (
+    SRERemoteDesktopComponent,
+    SRERemoteDesktopProps,
+)
+from .components.sre_state import SREStateComponent, SREStateProps
 
 
 class DeclarativeSRE:
@@ -78,11 +72,12 @@ class DeclarativeSRE:
             self.sre_name,
             SREApplicationGatewayProps(
                 ip_address_guacamole=networking.guacamole_containers["ip_address"],
+                ip_address_public_id=networking.public_ip_id,
                 key_vault_certificate_id=state.certificate_secret_id,
                 key_vault_identity=state.managed_identity.id,
                 resource_group_name=networking.resource_group_name,
                 subnet_name=networking.application_gateway["subnet_name"],
-                url_guacamole=state.sre_fqdn,
+                sre_fqdn=state.sre_fqdn,
                 virtual_network_name=networking.virtual_network.name,
             ),
         )
@@ -97,9 +92,7 @@ class DeclarativeSRE:
                 aad_application_fqdn=state.sre_fqdn,
                 aad_auth_token=self.secrets.require("token-azuread-graphapi"),
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
-                database_password=self.secrets.require(
-                    "password-guacamole-database-admin"
-                ),
+                database_password=self.secrets.require("password-user-database-admin"),
                 ip_address_container=networking.guacamole_containers["ip_address"],
                 ip_address_database=networking.guacamole_database["ip_address"],
                 location=self.cfg.azure.location,
@@ -136,25 +129,6 @@ class DeclarativeSRE:
         #     ),
         # )
 
-        # # Define DNS
-        # dns = DnsComponent(
-        #     "sre_dns",
-        #     self.stack_name,
-        #     self.sre_name,
-        #     DnsProps(
-        #         dns_name=self.cfg.environment.url,
-        #         public_ip=application_gateway.public_ip_address,
-        #         resource_group_name=rg_networking.name,
-        #         subdomains=[],
-        #     ),
-        # )
-
-        # # Export values for later use
-        # pulumi.export("guacamole_container_group_name", guacamole.container_group_name)
-        # pulumi.export(
-        #     "guacamole_postgresql_server_name", guacamole.postgresql_server_name
-        # )
-        # pulumi.export("guacamole_resource_group_name", guacamole.resource_group_name)
-        # pulumi.export("state_resource_group_name", state_storage.resource_group_name)
-        # pulumi.export("state_storage_account_name", state_storage.account_name)
-        # pulumi.export("vm_details", srd.vm_details)
+        # Export values for later use
+        pulumi.export("remote_desktop", remote_desktop.exports)
+        pulumi.export("vm_details", ())  # srd.vm_details)

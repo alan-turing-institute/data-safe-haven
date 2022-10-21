@@ -1,5 +1,6 @@
+"""Pulumi component for SRE networking"""
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions, Output
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 # Local imports
@@ -200,6 +201,16 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Define public IP address
+        public_ip = network.PublicIPAddress(
+            f"{self._name}_public_ip",
+            public_ip_address_name=f"{stack_name}-public-ip",
+            public_ip_allocation_method="Static",
+            resource_group_name=resource_group.name,
+            sku=network.PublicIPAddressSkuArgs(name="Standard"),
+            opts=child_opts,
+        )
+
         # Define SRE DNS zone
         shm_dns_zone = network.get_zone(
             resource_group_name=props.shm_zone_resource_group_name,
@@ -216,7 +227,7 @@ class SRENetworkingComponent(ComponentResource):
             zone_name=sre_fqdn,
             zone_type="Public",
         )
-        sre_ns_record = network.RecordSet(
+        shm_ns_record = network.RecordSet(
             f"{self._name}_ns_record",
             ns_records=sre_dns_zone.name_servers.apply(
                 lambda servers: [network.NsRecordArgs(nsdname=ns) for ns in servers]
@@ -244,6 +255,20 @@ class SRENetworkingComponent(ComponentResource):
             zone_name=sre_dns_zone.name,
             opts=child_opts,
         )
+        sre_a_record = network.RecordSet(
+            f"{self._name}_a_record",
+            a_records=[
+                network.ARecordArgs(
+                    ipv4_address=public_ip.ip_address,
+                )
+            ],
+            record_type="A",
+            relative_record_set_name="@",
+            resource_group_name=resource_group.name,
+            ttl=30,
+            zone_name=sre_dns_zone.name,
+            opts=child_opts,
+        )
 
         # Extract useful variables
         ip_address_guacamole_container = props.guacamole_containers_ip_range.apply(
@@ -265,6 +290,7 @@ class SRENetworkingComponent(ComponentResource):
             "ip_address": ip_address_guacamole_database,
             "subnet_name": props.guacamole_database_subnet_name,
         }
+        self.public_ip_id = public_ip.id
         self.resource_group_name = resource_group.name
         self.sre_fqdn = sre_dns_zone.name
         self.virtual_network = virtual_network

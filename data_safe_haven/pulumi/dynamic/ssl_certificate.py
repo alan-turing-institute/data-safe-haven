@@ -1,27 +1,22 @@
+"""Pulumi dynamic component for SSL certificates uploaded to an Azure KeyVault."""
 # Standard library imports
 from contextlib import suppress
 from typing import Dict, Optional
 
 # Third party imports
+import simple_acme_dns
 from acme.errors import ValidationError
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_private_key,
     NoEncryption,
+    load_pem_private_key,
     pkcs12,
 )
 from cryptography.x509 import load_pem_x509_certificate
-from pulumi import Input, Output, ResourceOptions, log
-from pulumi.dynamic import (
-    CreateResult,
-    DiffResult,
-    Resource,
-)
-import simple_acme_dns
+from pulumi import Input, Output, ResourceOptions
+from pulumi.dynamic import CreateResult, DiffResult, Resource
 
 # Local imports
-from data_safe_haven.exceptions import (
-    DataSafeHavenSSLException,
-)
+from data_safe_haven.exceptions import DataSafeHavenSSLException
 from data_safe_haven.external import AzureApi
 from .dsh_resource_provider import DshResourceProvider
 
@@ -93,9 +88,9 @@ class SSLCertificateProvider(DshResourceProvider):
                 certificate_bytes = client.request_certificate()
             except ValidationError as exc:
                 raise DataSafeHavenSSLException(
-                    f"ACME validation error:\n"
+                    "ACME validation error:\n"
                     + "\n".join([str(auth_error) for auth_error in exc.failed_authzrs])
-                )
+                ) from exc
             # Although KeyVault will accept a PEM certificate (where we simply
             # prepend the private key) we need a PFX certificate for
             # compatibility with ApplicationGateway

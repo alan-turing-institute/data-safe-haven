@@ -7,7 +7,7 @@ import re
 
 # Third party imports
 from cleo.io import ConsoleIO
-from clikit.api.io import flags, Output
+from clikit.api.io import Output, flags
 from clikit.formatter import AnsiFormatter, PlainFormatter
 from clikit.io.output_stream import StreamOutputStream
 from clikit.ui.components import Table

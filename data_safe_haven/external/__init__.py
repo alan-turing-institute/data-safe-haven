@@ -1,5 +1,5 @@
-from .azure_api import AzureApi as AzureApi
-from .graph_api import GraphApi as GraphApi
+from .azure_api import AzureApi
+from .graph_api import GraphApi
 
 __all__ = [
     "AzureApi",

@@ -1,10 +1,10 @@
 """Deploy with Pulumi"""
 # Standard library imports
-from contextlib import suppress
 import pathlib
 import shutil
 import subprocess
 import time
+from contextlib import suppress
 from typing import Any, Dict, Optional
 
 # Third party imports
@@ -12,22 +12,22 @@ import pulumi
 import yaml
 
 # Local imports
-from .declarative_shm import DeclarativeSHM
-from .declarative_sre import DeclarativeSRE
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
 from data_safe_haven.mixins import LoggingMixin
+from .declarative_shm import DeclarativeSHM
+from .declarative_sre import DeclarativeSRE
 
 
-class PulumiInterface(LoggingMixin):
+class PulumiStack(LoggingMixin):
     """Interact with infrastructure using Pulumi"""
 
     def __init__(
         self,
         config: Config,
         deployment_type: str,
-        sre_name: str = None,
         *args: Optional[Any],
+        sre_name: str = None,
         **kwargs: Optional[Any],
     ):
         super().__init__(*args, **kwargs)

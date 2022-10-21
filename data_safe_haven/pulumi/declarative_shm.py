@@ -4,17 +4,16 @@ import pathlib
 
 # Third party imports
 import pulumi
-from pulumi_azure_native import resources
 
 # Local imports
-from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
-from .components.shm_state import SHMStateComponent, SHMStateProps
+from data_safe_haven.config import Config
 from .components.shm_domain_controllers import (
     SHMDomainControllersComponent,
     SHMDomainControllersProps,
 )
 from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
-from data_safe_haven.config import Config
+from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
+from .components.shm_state import SHMStateComponent, SHMStateProps
 
 
 class DeclarativeSHM:

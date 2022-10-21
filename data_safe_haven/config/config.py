@@ -3,12 +3,13 @@
 import re
 from typing import Any, Optional
 
-# Third party imports
-from azure.storage.blob import BlobServiceClient
-from azure.mgmt.storage import StorageManagementClient
-from azure.core.exceptions import ResourceNotFoundError
 import dotmap
 import yaml
+from azure.core.exceptions import ResourceNotFoundError
+from azure.mgmt.storage import StorageManagementClient
+
+# Third party imports
+from azure.storage.blob import BlobServiceClient
 
 # Local imports
 from data_safe_haven import __version__
@@ -48,7 +49,7 @@ class Config(LoggingMixin, AzureMixin):
                 backend_storage_container_name,
             )
         # ... otherwise create a new DotMap
-        except (DataSafeHavenAzureException, ResourceNotFoundError) as exc:
+        except (DataSafeHavenAzureException, ResourceNotFoundError):
             self._map = dotmap.DotMap()
 
         # Update the map with local config variables
@@ -154,7 +155,7 @@ class Config(LoggingMixin, AzureMixin):
             blob_client = blob_service_client.get_blob_client(
                 container=self.backend.storage_container_name, blob=self.filename
             )
-            blob_client.upload_blob(self.__str__(), overwrite=True)
+            blob_client.upload_blob(str(self), overwrite=True)
             self.info(
                 f"Uploaded config <fg=green>{self.name}</> to blob storage.",
                 overwrite=True,

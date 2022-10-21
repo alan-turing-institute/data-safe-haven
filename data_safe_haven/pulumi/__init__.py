@@ -1,5 +1,5 @@
-from .pulumi_interface import PulumiInterface as PulumiInterface
+from .pulumi_stack import PulumiStack
 
 __all__ = [
-    "PulumiInterface",
+    "PulumiStack",
 ]

@@ -1,7 +1,6 @@
 """Load global and local settings from dotfiles"""
 # Standard library imports
 import pathlib
-import re
 
 # Third party imports
 import yaml

@@ -7,8 +7,8 @@ from data_safe_haven import __version__
 from data_safe_haven.commands import (
     DeployCommand,
     InitialiseCommand,
-    UsersCommand,
     TeardownCommand,
+    UsersCommand,
 )
 
 application = Application("dsh", __version__, complete=True)
