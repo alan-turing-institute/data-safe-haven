@@ -248,6 +248,10 @@ If you see an error like the following when attempting to log in, it is likely t
   - This should open a web browser inside the remote desktop
   - Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
 
+````{error}
+Should there be any issues using the web apps (e.g. unable to log in, or log in page not appearing) you can inspect the build log and access the console for the relevant VMs following the guide for {ref}`System Managers <administrator_manage_webapps>`
+````
+
 ### {{fire}} Run smoke tests on SRD
 
 ```{include} snippets/14_run_smoke_tests.partial.md
