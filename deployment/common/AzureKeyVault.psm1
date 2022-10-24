@@ -166,9 +166,13 @@ function Set-KeyVaultPermissions {
         [string]$GroupName
     )
     Add-LogMessage -Level Info "Giving group '$GroupName' access to key vault '$Name'..."
+    # We need to catch both an exception from `Get-AzADGroup` and a non-existent group which returns $null
     try {
         $securityGroupId = (Get-AzADGroup -DisplayName $GroupName).Id | Select-Object -First 1
     } catch [Microsoft.Azure.Commands.ActiveDirectory.GetAzureADGroupCommand] {
+        $securityGroupId = $null
+    }
+    if ($null -eq $securityGroupId) {
         Add-LogMessage -Level Fatal "Could not identify an Azure security group called $GroupName!"
     }
     Set-AzKeyVaultAccessPolicy -VaultName $Name `
