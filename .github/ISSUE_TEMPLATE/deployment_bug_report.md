@@ -23,7 +23,7 @@ Before reporting a problem please check the following. Replace the empty checkbo
 - **Operating System:** <!-- Which operating system are you using: Windows, Linux, macOS etc. -->
 - **Data Safe Haven version:** <!-- Which version of the Data Safe Haven are you using: 3.0.0, 3.1.1 etc. -->
 
-## :cactus: Required modules
+## :cactus: Powershell module versions
 
 <!-- Paste the output of deployment/CheckRequirements.ps1 here -->
 

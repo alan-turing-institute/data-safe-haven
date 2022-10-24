@@ -1,6 +1,6 @@
-name: cffconvert
+name: Validate citation
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     paths:
       - CITATION.cff

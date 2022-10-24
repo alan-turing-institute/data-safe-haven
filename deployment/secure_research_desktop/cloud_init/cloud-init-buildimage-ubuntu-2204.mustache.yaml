@@ -21,7 +21,7 @@ apt:
       keyid: 98F5A7CC1ABE72AC3852A007D33A1BD725ED047D  # DBeaver Co. (DBeaver Co. GPG key) <support@dbeaver.com>
 
     microsoft-general-2004.list:
-      source: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main" # needed for some packages eg. blobfuse
+      source: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main"  # needed for some packages eg. blobfuse
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
     microsoft-general.list:
@@ -37,7 +37,7 @@ apt:
       keyid: EB693B3035CD5710E231E123A4B469963BF863CC  # cudatools <cudatools@nvidia.com>
 
     nvidia-ml.list:
-      source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /" # there is no 22.04 repository at present
+      source: "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /"  # there is no 22.04 repository at present
       keyid: AE09FE4BBD223A84B2CCFCE3F60F4B3D7FA2AF80  # cudatools <cudatools@nvidia.com>
 
     postgresql.list:
@@ -267,7 +267,7 @@ runcmd:
   - echo "Downloading icons..."
   - mkdir -p /opt/icons
   - wget https://raw.githubusercontent.com/sagemathinc/cocalc/master/src/packages/assets/cocalc-icon.svg -O /tmp/cocalc-icon.svg || die "Could not find CoCalc icon!"
-  - convert -density 983 -transparent white /tmp/cocalc-icon.svg /opt/icons/cocalc.png || die "Could not convert CoCalc icon!" # this should give a 1024x1024 png
+  - convert -density 983 -transparent white /tmp/cocalc-icon.svg /opt/icons/cocalc.png || die "Could not convert CoCalc icon!"  # this should give a 1024x1024 png
   - wget https://raw.githubusercontent.com/hackmdio/codimd/develop/public/favicon.png -O /opt/icons/codimd.png || die "Could not find CodiMD icon!"
   - wget https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png -O /opt/icons/gitlab.png || die "Could not find GitLab icon!"
 

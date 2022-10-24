@@ -6,6 +6,7 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Dns -ErrorAction Stop
 Import-Module Microsoft.Graph.Authentication -ErrorAction Stop
+Import-Module $PSScriptRoot/../../common/AzureDns -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 
