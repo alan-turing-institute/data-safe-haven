@@ -363,7 +363,7 @@ Before you do this, you **must** configure and log into the **native** admin acc
 
 The other administrators you have just set up can activate their accounts by following the same steps.
 
-```{include} ../roles/researcher/snippets/15_MFA.partial.md
+```{include} ../roles/researcher/snippets/13_MFA.partial.md
 :relative-images:
 ```
 

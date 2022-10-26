@@ -12,7 +12,7 @@
 
 ### {{closed_lock_with_key}} Set a password
 
-```{include} snippets/15_MFA.partial.md
+```{include} snippets/13_MFA.partial.md
 :relative-images:
 ```
 
