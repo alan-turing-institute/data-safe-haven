@@ -87,9 +87,3 @@ In this document Ada Lovelace - our example user - will be participating in the 
 - Her **{ref}`username domain <user_guide_username_domain>`** is `projects.turingsafehaven.ac.uk` .
 - Her **{ref}`SRE URL <user_guide_sre_url>`** is `https://sandbox.projects.turingsafehaven.ac.uk`
 ```
-
-### {{closed_lock_with_key}} Set a password
-
-```{include} 15_MFA.partial.md
-:relative-images:
-```

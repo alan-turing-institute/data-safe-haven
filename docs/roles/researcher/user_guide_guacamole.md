@@ -12,6 +12,12 @@
 :relative-images:
 ```
 
+### {{closed_lock_with_key}} Set a password
+
+```{include} snippets/15_MFA.partial.md
+:relative-images:
+```
+
 ## {{unlock}} Access the Secure Research Environment
 
 ```{include} snippets/03_01_prerequisites.partial.md
