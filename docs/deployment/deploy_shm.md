@@ -367,19 +367,6 @@ The other administrators you have just set up can activate their accounts by fol
 :relative-images:
 ```
 
-<!-- - Go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) in an **incognito / private browsing** tab
-- Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)
-- Click the `Forgotten my password` link
-- Enter the CAPTCHA text and press next
-  - If you get a message about not being registered for self-service password reset, this indicates that you have not registered both a phone number and an email address in Azure Active Directory
-- Enter your mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
-- Enter the code that was texted to your phone
-- Enter a new password
-- Click the `Sign in with new password` link on the following page, or go to https://aka.ms/mfasetup again
-- Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)and the new password
-- Click `Next` at the `Help us to protect your account` prompt
-- Follow the instructions to configure `Microsoft Authenticator` -->
-
 ### Remove the default external user that was used to create the Azure AD
 
 ```{warning}
