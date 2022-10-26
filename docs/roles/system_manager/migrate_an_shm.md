@@ -30,10 +30,9 @@ The following variables will be used during deploying
 
 - Log into the **SHM primary domain controller** for the old SHM (`DC1-SHM-<old SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` from the portal
 - Open `Powershell` as an administrator
-
-  - Navigate to `C:\Installation`
-  - Run `.\Disconnect_AD.ps1`
-  - You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
+    - Navigate to `C:\Installation`
+    - Run `.\Disconnect_AD.ps1`
+    - You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
 
 ```{warning}
 Do not attempt to add users to the old SHM after this point as they will not be synchronised to the `Azure` Active Directory!
@@ -109,8 +108,8 @@ Do **not** run any of the domain controller configuration steps yet
 - Click `Security` in the left hand sidebar
 - Click `Conditional access` in the left hand sidebar
 - Click the `Require MFA` policy from the policy list
-  - Toggle `Enable policy` to `Off`
-  - Click the `Save` button
+    - Toggle `Enable policy` to `Off`
+    - Click the `Save` button
 
 ### {{busts_in_silhouette}} Copy SHM users from old domain controller
 

@@ -24,12 +24,12 @@ The following steps show how to generate a temporary write-only upload token tha
 - From the `Overview` tab, click the link to `Containers` (in the middle of the page)
 - Click `ingress`
 - Click `Shared access signature` under `Settings` and do the following:
-  - Under `Permissions`, check these boxes:
-    - `Write`
-    - `List`
-  - Set a 24 hour time window in the `Start and expiry date/time` (or an appropriate length of time)
-  - Leave everything else as default and click `Generate SAS token and URL`
-  - Copy the `Blob SAS URL`
+    - Under `Permissions`, check these boxes:
+        - `Write`
+        - `List`
+    - Set a 24 hour time window in the `Start and expiry date/time` (or an appropriate length of time)
+    - Leave everything else as default and click `Generate SAS token and URL`
+    - Copy the `Blob SAS URL`
 - Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
 - The data provider should now be able to upload data by following {ref}`these instructions <process_data_ingress>`
 - You can validate successful data ingress by logging into the SRD for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
@@ -58,37 +58,37 @@ Software ingress must go through the same approval process as is the case for da
 - Click `Containers` under `Data storage`
 - Click `egress`
 - Click `Shared access signature` under `Settings` and do the following:
-  - Under `Permissions`, check these boxes:
-    - `Read`
-    - `List`
-  - Set a time window in the `Start and expiry date/time` that gives you enough time to extract the data
-  - Leave everything else as default click `Generate SAS token and URL`
+    - Under `Permissions`, check these boxes:
+        - `Read`
+        - `List`
+    - Set a time window in the `Start and expiry date/time` that gives you enough time to extract the data
+    - Leave everything else as default click `Generate SAS token and URL`
 
-    ```{image} administrator_guide/read_only_sas_token.png
-    :alt: Read-only SAS token
-    :align: center
-    ```
+      ```{image} administrator_guide/read_only_sas_token.png
+      :alt: Read-only SAS token
+      :align: center
+      ```
 
-  - Leave this portal window open and move to the next step
+    - Leave this portal window open and move to the next step
 - Open `Azure Storage Explorer` ([download](https://azure.microsoft.com/en-us/products/storage/storage-explorer/) it if you don't have it)
 - Click the socket image on the left hand side
 
-  ```{image} ../data_provider_representative/azure_storage_explorer_connect.png
-  :alt: Azure Storage Explorer connection
-  :align: center
-  ```
+    ```{image} ../data_provider_representative/azure_storage_explorer_connect.png
+    :alt: Azure Storage Explorer connection
+    :align: center
+    ```
 
 - On `Select Resource`, choose `Blob container`
 - On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
 
-  ```{image} administrator_guide/connect_azure_storage.png
-  :alt: Connect with SAS token
-  :align: center
-  ```
+    ```{image} administrator_guide/connect_azure_storage.png
+    :alt: Connect with SAS token
+    :align: center
+    ```
 
 - On `Enter Connection Info`:
-  - Set the `Display name` to "egress" (or choose an informative name)
-  - Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
+    - Set the `Display name` to "egress" (or choose an informative name)
+    - Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
 - On the `Summary` page, hit `Connect`
 - On the left hand side, the connection should show up under `Local & Attached > Storage Accounts > (Attached Containers) > Blob Containers > ingress (SAS)`
 - You should now be able to securely download the data from the Safe Haven's output volume by highlighting the relevant file(s) and hitting the `Download` button
@@ -124,27 +124,27 @@ The current state will be overwritten by the point which you restore to.
 - Click `Backup instances` under `Manage` in the left-hand menu
 - Ensure that the `Datasource type` filter is set to `Azure Blobs (Azure Storage)`
 
-  ```{image} administrator_guide/backup_instances_blobs.png
-  :alt: Selecting blob backup instances
-  :align: center
-  ```
+    ```{image} administrator_guide/backup_instances_blobs.png
+    :alt: Selecting blob backup instances
+    :align: center
+    ```
 
 - Click on the storage-account backup instance
 - Select a point in the past to restore to and click `Restore`
 
-  ```{image} administrator_guide/backup_select_restore_time_blobs.png
-  :alt: Selecting blob backup restore point
-  :align: center
-  ```
+    ```{image} administrator_guide/backup_select_restore_time_blobs.png
+    :alt: Selecting blob backup restore point
+    :align: center
+    ```
 
 - Click on `Next: Restore Parameters`
 - You can now choose whether to restore all, or a subset of the containers. In the example below the 'egress' and 'backup' containers are selected
 - Click on `Validate`
 
-  ```{image} administrator_guide/backup_select_containers_validate_blobs.png
-  :alt: Selecting blob containers to restore and validating
-  :align: center
-  ```
+    ```{image} administrator_guide/backup_select_containers_validate_blobs.png
+    :alt: Selecting blob containers to restore and validating
+    :align: center
+    ```
 
 - Click on `Next: Review + restore`
 - Click on `Restore`
@@ -188,26 +188,26 @@ it and enroll the new disk into the backup system.
 - Enter the subscription and resource group in which to create the new disk; these should match the original disk
 - Enter a name for the new disk and click `Validate`
 
-  ```{image} administrator_guide/backup_select_snapshot_validate_disks.png
-  :alt: Configuring and validating disk backup
-  :align: center
-  ```
+    ```{image} administrator_guide/backup_select_snapshot_validate_disks.png
+    :alt: Configuring and validating disk backup
+    :align: center
+    ```
 
 - Click on `Next: Review + restore`
 - Click on `Restore`
 - Wait for the restoration to finish. You can monitor the progress on the backup instance page on the Azure portal
 
-  ```{image} administrator_guide/backup_progress_disk_1.png
-  :align: center
-  ```
+    ```{image} administrator_guide/backup_progress_disk_1.png
+    :align: center
+    ```
 
-  ```{image} administrator_guide/backup_progress_disk_2.png
-  :align: center
-  ```
+    ```{image} administrator_guide/backup_progress_disk_2.png
+    :align: center
+    ```
 
-  ```{image} administrator_guide/backup_progress_disk_3.png
-  :align: center
-  ```
+    ```{image} administrator_guide/backup_progress_disk_3.png
+    :align: center
+    ```
 
 - Navigate to the resource group where the new disk has been created
 - Select the virtual machine that the old disk is attached to and click `Disks` in the left-hand menu
@@ -218,15 +218,15 @@ it and enroll the new disk into the backup system.
 - Ensure the restored disk has the same 'LUN' as the old disk
 - Click `Save`
 
-  ```{image} administrator_guide/backup_swap_disk_before.png
-  :alt: The state before swapping in the restored disk
-  :align: center
-  ```
+    ```{image} administrator_guide/backup_swap_disk_before.png
+    :alt: The state before swapping in the restored disk
+    :align: center
+    ```
 
-  ```{image} administrator_guide/backup_swap_disk_after.png
-  :alt: The state after swapping in the restored disk
-  :align: center
-  ```
+    ```{image} administrator_guide/backup_swap_disk_after.png
+    :alt: The state after swapping in the restored disk
+    :align: center
+    ```
 
 - Restart the virtual machine
 
@@ -241,10 +241,10 @@ On your **deployment machine**.
 - Note the name of the restored disk and the name of the resource group it belongs to
 - Run the following script subsituting <resource group name> and <disk name> with the names of the resource group and disk respectively:
 
-  ```powershell
-  ./SRE_Enroll_Disk_Backup.ps1 -shmId <SHM ID> -sreId <SRE ID> -resourceGroup
-  <resource group name> -diskName <disk name>
-  ```
+    ```powershell
+    ./SRE_Enroll_Disk_Backup.ps1 -shmId <SHM ID> -sreId <SRE ID> -resourceGroup
+    <resource group name> -diskName <disk name>
+    ```
 
 ## {{package}} Updating allowed repository packages
 
