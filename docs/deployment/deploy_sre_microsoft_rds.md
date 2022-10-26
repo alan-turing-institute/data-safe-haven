@@ -205,16 +205,10 @@ These certificates will **not** be trusted by your browser, and so should not be
 :relative-images:
 ```
 
-<details>
-<summary><strong>Ensure that your user account has MFA enabled (2)</strong></summary>
-
-MFA must be enabled for the user via the following:
+### {{closed_lock_with_key}} Ensure that your non-privileged user account has MFA enabled
 
 ```{include} ../roles/researcher/snippets/13_MFA.partial.md
-:relative-images:
 ```
-
-</details>
 
 ### {{nut_and_bolt}} Test the Microsoft RDS remote desktop
 

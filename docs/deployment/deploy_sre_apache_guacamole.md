@@ -184,16 +184,10 @@ If you specify the same size more than once, you will create multiple SRDs of th
 :relative-images:
 ```
 
-<details>
-<summary><strong>Ensure that your user account has MFA enabled (2)</strong></summary>
-
-MFA must be enabled for the user via the following:
+### {{closed_lock_with_key}} Ensure that your non-privileged user account has MFA enabled
 
 ```{include} ../roles/researcher/snippets/13_MFA.partial.md
-:relative-images:
 ```
-
-</details>
 
 (deploy_sre_apache_guacamole_test_remote_desktop)=
 
