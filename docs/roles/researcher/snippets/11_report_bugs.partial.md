@@ -14,28 +14,21 @@ If you find problems with the IT infrastructure, please contact the designated c
 To help us fix your issues please do the following:
 
 - Make sure you have **read this document** and checked if it answers your query.
-
-  - Please do not log an issue before you have read all of the sections in this document.
-
+    - Please do not log an issue before you have read all of the sections in this document.
 - Log out of the SRE and log back in again at least once
-
-  - Re-attempt the process leading to the bug/error at least twice.
-  - We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well! (Particularly when there are lots of folks trying these steps at the same time.)
-  - The multi-factor authentication step in particular is known to have quite a few gremlins.
-  - If you are getting frustrated, log out of everything, turn off your computer, take a 15 minute coffee break, and then start the process from the beginning.
+    - Re-attempt the process leading to the bug/error at least twice.
+    - We know that "turn it off and turn it back on again" is a frustrating piece of advice to receive, but in our experience it works rather well! (Particularly when there are lots of folks trying these steps at the same time.)
+    - The multi-factor authentication step in particular is known to have quite a few gremlins.
+    - If you are getting frustrated, log out of everything, turn off your computer, take a 15 minute coffee break, and then start the process from the beginning.
 
 - Write down a comprehensive summary of the issue.
-
-  - A really good bug report makes it much easier to pin down what the problem is.
-
-  Please include:
-
-  - Your computer's operating system and operating system version.
-  - Precise condition under which the error occurs.
-    - What steps would someone need to take to get the exact same error?
-  - A precise description of the problem.
-    - What happens? What would you expect to happen if there were no error?
-  - Any workarounds/fixes you have found.
+- A really good bug report makes it much easier to pin down what the problem is. Please include:
+    - Your computer's operating system and operating system version.
+    - Precise condition under which the error occurs.
+        - What steps would someone need to take to get the exact same error?
+    - A precise description of the problem.
+        - What happens? What would you expect to happen if there were no error?
+    - Any workarounds/fixes you have found.
 
 - Send the bug report to the designated contact for your SRE.
 

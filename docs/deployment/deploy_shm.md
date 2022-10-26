@@ -23,7 +23,7 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
   ```
 
 - `PowerShell`
-  - Install [PowerShell v7.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
+    - Install [PowerShell v7.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
 - `Powershell` cross-platform modules
 
   ````{tip}
@@ -38,19 +38,19 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
   ````
 
 - `Microsoft Remote Desktop`
-  - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) this can be installed from the [Apple store](https://www.apple.com/app-store/)
-  - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://apps.microsoft.com/store/detail/microsoft-remote-desktop/9WZDNCRFJ3PS)
-  - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite remote desktop client
+    - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) this can be installed from the [Apple store](https://www.apple.com/app-store/)
+    - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) this can be [downloaded from Microsoft](https://apps.microsoft.com/store/detail/microsoft-remote-desktop/9WZDNCRFJ3PS)
+    - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite remote desktop client
 - `OpenSSL`
 
-  - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) a pre-compiled version can be installed using Homebrew: `brew install openssl`
-  - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) binaries are [available here](https://wiki.openssl.org/index.php/Binaries).
+    - ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) a pre-compiled version can be installed using Homebrew: `brew install openssl`
+    - ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) binaries are [available here](https://wiki.openssl.org/index.php/Binaries).
 
-    ```{error}
-    If `Powershell` cannot detect `OpenSSL` you may need to explicitly add your `OpenSSL` installation to your `Powershell` path by running `$env:path = $env:path + ";<path to OpenSSL bin directory>`
-    ```
+      ```{error}
+      If `Powershell` cannot detect `OpenSSL` you may need to explicitly add your `OpenSSL` installation to your `Powershell` path by running `$env:path = $env:path + ";<path to OpenSSL bin directory>`
+      ```
 
-  - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manager or install manually following the [instructions on GitHub](https://github.com/openssl/openssl)
+    - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manager or install manually following the [instructions on GitHub](https://github.com/openssl/openssl)
 
 ````{hint}
 If you run:
@@ -185,7 +185,7 @@ You can then continue to the next step: {ref}`getting the Azure AD tenant ID <ro
 
 - Click `Create`
 - Set the `Organisation Name` to the value of `<name>` in your core configuration file (e.g. `Turing Production Safe Haven`)
-  - Note: be careful not to confuse this with the `<name>` under `<organisation>` used in the config file
+    - Note: be careful not to confuse this with the `<name>` under `<organisation>` used in the config file
 - Set the `Initial Domain Name` to the `Organisation Name` all lower case with spaces removed (e.g. `turingproductionsafehaven`)
 - Set the `Country or Region` to whatever region is appropriate for your deployment (e.g. `United Kingdom`)
   <details><summary><b>Screenshots</b></summary>
@@ -208,8 +208,8 @@ You can then continue to the next step: {ref}`getting the Azure AD tenant ID <ro
 
 - From the Azure portal, navigate to the AAD you have created.
   You can do this by:
-  - Clicking the link displayed at the end of the initial AAD deployment.
-  - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of the `Directory + Subscription` panel that then displays.
+    - Clicking the link displayed at the end of the initial AAD deployment.
+    - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of the `Directory + Subscription` panel that then displays.
 - If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 - Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
   <details><summary><b>Screenshots</b></summary>
@@ -245,8 +245,8 @@ If you see a message `You need to add the following NS records to the parent DNS
 - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for `DNS Zone` and locate the DNS Zone with the SHM's domain.
 - The NS record will list four Azure name servers which must be duplicated to the parent DNS system.
 - If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
-  - The name should be set to the subdomain (e.g. `project`) or `@` if using a custom domain, and the values duplicated from above
-  - For example, for a new subdomain `project.turingsafehaven.ac.uk`, duplicate the NS records from the Azure DNS Zone `project.turingsafehaven.ac.uk` to the Azure DNS Zone for `turingsafehaven.ac.uk`, by creating a record set with name `project`
+    - The name should be set to the subdomain (e.g. `project`) or `@` if using a custom domain, and the values duplicated from above
+    - For example, for a new subdomain `project.turingsafehaven.ac.uk`, duplicate the NS records from the Azure DNS Zone `project.turingsafehaven.ac.uk` to the Azure DNS Zone for `turingsafehaven.ac.uk`, by creating a record set with name `project`
     ```{image} deploy_shm/shm_subdomain_ns.png
     :alt: Subdomain NS record
     :align: center
@@ -309,9 +309,9 @@ In particular, it should not be used as a shared admin account for routine admin
 - Name: `AAD Admin - Firstname Lastname`
 - Leave `Auto-generate password` set. Users will be able to reset their passwords on first login and it is good security practice for admins not to know user passwords.
 - Click the `User` link in the `Roles` field and make the user an administrator:
-  - Search for `Global Administrator`
-  - Check `Global Administrator`
-  - Click the `Select` button
+    - Search for `Global Administrator`
+    - Check `Global Administrator`
+    - Click the `Select` button
 - Set their usage location to the country you used when creating the Safe Haven Azure AD
 - Leave all other fields empty, including First name and Last name
 - Click `Create`
@@ -325,17 +325,17 @@ In particular, it should not be used as a shared admin account for routine admin
 
 - Navigate to `Users` and click on the account you have just created.
 - Click on `Properties` and then edit the `Contact info` section.
-  - Add the the user's mobile phone number to the `Mobile phone` field.
-    Make sure to prefix it with the country code and **do not include** the leading zero (e.g. `+44 7700900000`).
-  - They will need to enter their number in **exactly this format** when performing a self-service password reset.
-  - Do **not** add anything in the `Email` field here as this will prevent you from using the same email address for a user account.
-  - Click the `Save` icon in top panel.
+    - Add the the user's mobile phone number to the `Mobile phone` field.
+      Make sure to prefix it with the country code and **do not include** the leading zero (e.g. `+44 7700900000`).
+    - They will need to enter their number in **exactly this format** when performing a self-service password reset.
+    - Do **not** add anything in the `Email` field here as this will prevent you from using the same email address for a user account.
+    - Click the `Save` icon in top panel.
 - In the left-hand sidebar click `Authentication methods`.
-  - Enter the user's mobile phone number in the `Phone` field, using the same format as above.
-    - Note that you do **not** need to fill out the `Alternate Phone` field.
-  - Enter the user's institutional email address in the `Email` field.
-  - Ensure that you have registered **both** a phone number and an email address.
-  - Click the `Save` icon in top panel.
+    - Enter the user's mobile phone number in the `Phone` field, using the same format as above.
+        - Note that you do **not** need to fill out the `Alternate Phone` field.
+    - Enter the user's institutional email address in the `Email` field.
+    - Ensure that you have registered **both** a phone number and an email address.
+    - Click the `Save` icon in top panel.
 
 ### Register allowed authentication methods
 
@@ -364,7 +364,7 @@ The other administrators you have just set up can activate their accounts by fol
 - Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)
 - Click the `Forgotten my password` link
 - Enter the CAPTCHA text and press next
-  - If you get a message about not being registered for self-service password reset, this indicates that you have not registered both a phone number and an email address in Azure Active Directory
+    - If you get a message about not being registered for self-service password reset, this indicates that you have not registered both a phone number and an email address in Azure Active Directory
 - Enter your mobile phone number, making sure to prefix it with the country code and to **not include** the leading zero (`+<country-code> <phone-number-without-leading-zero>` e.g. `+44 7700900000`).
 - Enter the code that was texted to your phone
 - Enter a new password
@@ -382,12 +382,12 @@ Make sure you have activated your account and **successfully logged in** with th
 ![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
 
 - Ensure you are logged in with the new **native** administrator account you have just created.
-  - Click on your username at the top right corner of the screen, then `Sign in with a different user`.
-  - Log in with the password you set for yourself when activating your admin account in the previous step
+    - Click on your username at the top right corner of the screen, then `Sign in with a different user`.
+    - Log in with the password you set for yourself when activating your admin account in the previous step
 - From the Azure portal, navigate to the AAD you have created.
 - Click `Users` in the left hand sidebar
 - Select the default **external** user that was created when you created the Azure AD.
-  - The `User principal name` field for this user will contain the **external domain** and will have `#EXT#` before the `@` sign (for example `alovelace_turing.ac.uk#EXT#@turingsafehaven.onmicrosoft.com`)
+    - The `User principal name` field for this user will contain the **external domain** and will have `#EXT#` before the `@` sign (for example `alovelace_turing.ac.uk#EXT#@turingsafehaven.onmicrosoft.com`)
 - Click the `Delete user` icon in the menu bar at the top of the user list panel
 
 (roles_deployer_deploy_shm)=

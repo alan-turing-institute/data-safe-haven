@@ -15,17 +15,17 @@ Already know what you're looking for in this guide?
 Jump to the following sections:
 
 - [A DevOps development philosophy](#a-devops-development-philosophy)
-  - [Project workflow](#project-workflow)
-  - [Project meetings](#project-meetings)
-  - [Communications within the team and asking for help](#communications-within-the-team-and-asking-for-help)
+    - [Project workflow](#project-workflow)
+    - [Project meetings](#project-meetings)
+    - [Communications within the team and asking for help](#communications-within-the-team-and-asking-for-help)
 - [Contributing through GitHub](#contributing-through-github)
-  - [Discussions vs Issues](#discussions-vs-issues)
-  - [Writing in markdown](#writing-in-markdown)
-  - [Project management through issues](#project-management-through-issues)
-  - [Issues as conversations](#issues-as-conversations)
-  - [Working in a private repository](#working-in-a-private-repository)
-  - [Who's involved in the project](#whos-involved-in-the-project)
-  - [Make a change with a pull request](#making-a-change-with-a-pull-request)
+    - [Discussions vs Issues](#discussions-vs-issues)
+    - [Writing in markdown](#writing-in-markdown)
+    - [Project management through issues](#project-management-through-issues)
+    - [Issues as conversations](#issues-as-conversations)
+    - [Working in a private repository](#working-in-a-private-repository)
+    - [Who's involved in the project](#whos-involved-in-the-project)
+    - [Make a change with a pull request](#making-a-change-with-a-pull-request)
 
 ## A DevOps development philosophy
 
@@ -94,8 +94,8 @@ This means that:
 - checking out the `latest` branch, will give you the latest tagged release
 - the `develop` branch, which is the default branch of the repository, contains the latest cutting-edge code that has not yet made it into a release
 - releases are made by branching from `develop` into a branch called `release-<version name>`
-  - deployment is tested from this release and any necessary integration changes are made on this branch
-  - the branch is then merged into `latest` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
+    - deployment is tested from this release and any necessary integration changes are made on this branch
+    - the branch is then merged into `latest` (which is tagged) as the next release **and** into `develop` so that any fixes are included there
 - we prefer to use [merge commits](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github) in order to avoid rewriting the git history
 
 ### Discussions vs Issues

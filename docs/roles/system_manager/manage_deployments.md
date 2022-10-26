@@ -18,9 +18,9 @@ On your **deployment machine**.
 - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Run the following script:
 
-  ```powershell
-  ./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>
-  ```
+    ```powershell
+    ./SRE_Teardown.ps1 -shmId <SHM ID> -sreId <SRE ID>
+    ```
 
 - If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 
@@ -34,12 +34,12 @@ On your **deployment machine**.
 - Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
 - Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
 
-  ```{attention}
-  If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-  ```
+    ```{attention}
+    If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+    ```
 
 - For each SRE attached to the SHM, do the following:
-  - Tear down the SRE by running:
+    - Tear down the SRE by running:
 
     ```powershell
     ./SRE_Teardown.ps1 -sreId <SRE ID>
@@ -58,9 +58,9 @@ Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over th
 - Log in as a **domain** user (ie. `<admin username>@<SHM domain>`) using the username and password obtained from the Azure portal
 - If you see a warning dialog that the certificate cannot be verified as root, accept this and continue
 - Open Powershell as an administrator
-  - Navigate to `C:\Installation`
-  - Run `.\Disconnect_AD.ps1`
-  - You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
+    - Navigate to `C:\Installation`
+    - Run `.\Disconnect_AD.ps1`
+    - You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
 
 ```{attention}
 Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less.
@@ -75,17 +75,14 @@ On your **deployment machine**.
 - Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
 - Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
 
-  ```{attention}
-  If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
-  ```
+    ```{attention}
+    If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+    ```
 
 - Tear down the SHM by running:
 
-  ```powershell
-  ./SHM_Teardown.ps1 -shmId <SHM ID>
-  ```
+    ```powershell
+    ./SHM_Teardown.ps1 -shmId <SHM ID>
+    ```
 
   where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` specified in the configuration file.
-
-
-

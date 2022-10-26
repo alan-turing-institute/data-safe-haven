@@ -16,16 +16,16 @@ A helper script for doing this is already uploaded to the domain controller - yo
 ### {{car}} Using data classification app
 
 - Follow the [instructions in the classification app documentation](https://github.com/alan-turing-institute/data-classification-app) to create users
-  - Users can be created in bulk by selecting `Create User > Import user list` and uploading a spreadsheet of user details
-  - Users can also be created individually by selecting `Create User > Create Single User`
+    - Users can be created in bulk by selecting `Create User > Import user list` and uploading a spreadsheet of user details
+    - Users can also be created individually by selecting `Create User > Create Single User`
 - After creating users, export the `UserCreate.csv` file
-  - To export all users, select `Users > Export UserCreate.csv`
-  - To export only users for a particular project, select `Projects > (Project Name) > Export UserCreate.csv`
+    - To export all users, select `Users > Export UserCreate.csv`
+    - To export only users for a particular project, select `Projects > (Project Name) > Export UserCreate.csv`
 - Upload the user details CSV file to a sensible location on the SHM domain controller
 
-  ```{note}
-  We suggest using `C:\Installation\YYYYDDMM-HHMM_user_details.csv` but this is up to you
-  ```
+    ```{note}
+    We suggest using `C:\Installation\YYYYDDMM-HHMM_user_details.csv` but this is up to you
+    ```
 
 ### {{hand}} Manually edit CSV
 

@@ -34,8 +34,8 @@
 
 - You should arrive at a login page that needs you to enter:
 
-  - your `username@<username domain>`
-  - your password
+    - your `username@<username domain>`
+    - your password
 
   then click `Login`.
 

@@ -254,31 +254,31 @@ This is known as multi-factor authentication (MFA).
   ```
 
 - You can click on the link in the prompt or follow the appropriate link for your phone here:
-  - {{apple}} iOS: `https://bit.ly/iosauthenticator`
-  - {{robot}} Android: `https://bit.ly/androidauthenticator`
-  - {{bento_box}} Windows mobile: `https://bit.ly/windowsauthenticator`
+    - {{apple}} iOS: `https://bit.ly/iosauthenticator`
+    - {{robot}} Android: `https://bit.ly/androidauthenticator`
+    - {{bento_box}} Windows mobile: `https://bit.ly/windowsauthenticator`
 
 - You will now be prompted to open the app and:
-  - To allow notifications
-  - Select `Add an account`
-  - Select `Work or School account`
+    - To allow notifications
+    - Select `Add an account`
+    - Select `Work or School account`
 
-  ```{image} user_guide/account_setup_mfa_allow_notifications.png
-  :alt: Allow Authenticator notifications
-  :align: center
-  ```
+    ```{image} user_guide/account_setup_mfa_allow_notifications.png
+    :alt: Allow Authenticator notifications
+    :align: center
+    ```
 
-  ```{important}
-  You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
-  ```
+    ```{important}
+    You must give permission for the authenticator app to send you notifications for the app to work as an MFA method.
+    ```
 
 - The next prompt will give you a QR code to scan, like the one shown below
-  - Scan the QR code on the screen
+    - Scan the QR code on the screen
 
-  ```{image} user_guide/account_setup_mfa_app_qrcode.png
-  :alt: Setup Authenticator app
-  :align: center
-  ```
+    ```{image} user_guide/account_setup_mfa_app_qrcode.png
+    :alt: Setup Authenticator app
+    :align: center
+    ```
 
 - Once this is completed, Microsoft will send you a test notification to respond to
 
