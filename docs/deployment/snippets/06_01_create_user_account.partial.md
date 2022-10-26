@@ -54,7 +54,7 @@ Switch to your custom Azure Active Directory in the Azure portal and make the fo
 
 MFA must be enabled for the user via the following:
 
-```{include} 15_MFA.md
+```{include} 15_MFA.partial.md
 :relative-images:
 ```
 

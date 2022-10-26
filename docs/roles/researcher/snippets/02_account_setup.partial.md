@@ -90,6 +90,6 @@ In this document Ada Lovelace - our example user - will be participating in the 
 
 ### {{closed_lock_with_key}} Set a password
 
-```{include} 15_MFA.md
+```{include} 15_MFA.partial.md
 :relative-images:
 ```
