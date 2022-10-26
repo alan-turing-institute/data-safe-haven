@@ -184,8 +184,6 @@ If you specify the same size more than once, you will create multiple SRDs of th
 :relative-images:
 ```
 
-### {{closed_lock_with_key}} Ensure that your non-privileged user account has MFA enabled
-
 ```{include} ../roles/researcher/snippets/13_MFA.partial.md
 ```
 
