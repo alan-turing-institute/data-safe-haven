@@ -40,7 +40,7 @@ PS> C:\Installation\Run_ADSync.ps1
 </details>
 
 <details>
-<summary><strong>Ensure that your user account has MFA enabled</strong></summary>
+<summary><strong>Ensure that your user account has MFA enabled (1)</strong></summary>
 
 Switch to your custom Azure Active Directory in the Azure portal and make the following checks:
 
@@ -51,11 +51,5 @@ Switch to your custom Azure Active Directory in the Azure portal and make the fo
   - Navigate to `Azure Active Directory > Manage / Users > (user account)`, and ensure that `Settings > Usage Location` is set.
 - A licence must be assigned to the user.
   - Navigate to `Azure Active Directory > Manage / Users > (user account) > Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
-
-MFA must be enabled for the user via the following:
-
-```{include} 15_MFA.partial.md
-:relative-images:
-```
 
 </details>
