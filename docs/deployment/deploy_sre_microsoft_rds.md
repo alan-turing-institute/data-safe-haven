@@ -210,7 +210,7 @@ These certificates will **not** be trusted by your browser, and so should not be
 
 MFA must be enabled for the user via the following:
 
-```{include} snippets/15_MFA.partial.md
+```{include} ../roles/researcher/snippets/15_MFA.partial.md
 :relative-images:
 ```
 

@@ -189,7 +189,7 @@ If you specify the same size more than once, you will create multiple SRDs of th
 
 MFA must be enabled for the user via the following:
 
-```{include} snippets/15_MFA.partial.md
+```{include} ../roles/researcher/snippets/15_MFA.partial.md
 :relative-images:
 ```
 
