@@ -358,9 +358,16 @@ In the next step we will delete the external admin account created for the user 
 Before you do this, you **must** configure and log into the **native** admin account you have just created for yourself.
 ```
 
+- The `<username>` for this account is `aad.admin.firstname.lastname`
+- The `<username domain>` for this account is the same as the `<SHM domain>`
+
 The other administrators you have just set up can activate their accounts by following the same steps.
 
-- Go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) in an **incognito / private browsing** tab
+```{include} snippets/15_MFA.md
+:relative-images:
+```
+
+<!-- - Go to [https://aka.ms/mfasetup](https://aka.ms/mfasetup) in an **incognito / private browsing** tab
 - Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)
 - Click the `Forgotten my password` link
 - Enter the CAPTCHA text and press next
@@ -371,7 +378,7 @@ The other administrators you have just set up can activate their accounts by fol
 - Click the `Sign in with new password` link on the following page, or go to https://aka.ms/mfasetup again
 - Enter your username (`aad.admin.firstname.lastname@<SHM domain>`)and the new password
 - Click `Next` at the `Help us to protect your account` prompt
-- Follow the instructions to configure `Microsoft Authenticator`
+- Follow the instructions to configure `Microsoft Authenticator` -->
 
 ### Remove the default external user that was used to create the Azure AD
 
