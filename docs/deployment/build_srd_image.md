@@ -10,11 +10,11 @@ These instructions will walk you through creating a new VM image for use in the 
 
 - An `Azure` subscription with sufficient credits to build the environment in
 - `Powershell` for `Azure`
-  - Install [Powershell v6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
-  - Install the Azure [Powershell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
+    - Install [Powershell v6.0 or above](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0)
+    - Install the Azure [Powershell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-2.2.0&viewFallbackFrom=azps-1.3.0)
 - `SSH` or `OpenSSH` (not tested on Windows)
 - SHM configuration file
-  - The core properties for the environment must be present in the `environment_configs` folder as described in the {ref}`Safe Haven Management deployment instructions <deploy_shm>`.
+    - The core properties for the environment must be present in the `environment_configs` folder as described in the {ref}`Safe Haven Management deployment instructions <deploy_shm>`.
 
 ````{hint}
 If you run:
@@ -67,15 +67,15 @@ if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which a
 ### Adding a new Python package
 
 - Add the name of the package as it appears on `PyPI` to the package list:
-  - `deployment/secure_research_desktop/packages/packages-python.yaml`
-  - If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then make sure to specify this
+    - `deployment/secure_research_desktop/packages/packages-python.yaml`
+    - If there are any restrictions on acceptable versions for this package (e.g. a minimum or exact version) then make sure to specify this
 - You should also add this package to the **allow list** used by {ref}`policy_tier_3` package mirrors in `environment_configs/package_lists/allowlist-core-python-pypi-tier3.list`
 
 ### Adding a new R package
 
 - Add the name of the package as it appears on `CRAN` or `Bioconductor` to the appropriate package list:
-  - `deployment/secure_research_desktop/packages/packages-r-bioconductor.list`
-  - `deployment/secure_research_desktop/packages/packages-r-cran.list`
+    - `deployment/secure_research_desktop/packages/packages-r-bioconductor.list`
+    - `deployment/secure_research_desktop/packages/packages-r-cran.list`
 - If this `R` package is available as a pre-compiled apt binary (eg. `abind` is available as `r-cran-abind`) then also add it to `deployment/secure_research_desktop/packages/packages-apt.list`.
 - You should also add this package to the **allow list** used by {ref}`policy_tier_3` package mirrors in `environment_configs/package_lists/allowlist-core-r-cran-tier3.list`
 
@@ -83,8 +83,8 @@ if [ "$(which azuredatastudio)" ]; then echo "\n\n*azuredatastudio*\n\n$(which a
 
 - When you add a new package to either the `PyPI` or `CRAN` allowlist you should also determine all of its dependencies (and their dependencies, recursively)
 - Once you have the list of packages you should add them to:
-  - **PyPI:** `environment_configs/package_lists/allowlist-full-python-pypi-tier3.list`
-  - **CRAN:** `environment_configs/package_lists/allowlist-full-r-cran-tier3.list`
+    - **PyPI:** `environment_configs/package_lists/allowlist-full-python-pypi-tier3.list`
+    - **CRAN:** `environment_configs/package_lists/allowlist-full-r-cran-tier3.list`
 
 ### Changing the version of a package
 

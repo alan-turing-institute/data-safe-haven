@@ -40,10 +40,10 @@ Some parts of the checklist are only relevant when there are multiple SREs attac
 The following users will be needed for this checklist
 
 - **SRE standard user** who is a member of the **SRE A** research users group
-  - Create a new user **without** MFA
-    - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but **do not** add them to any `SG <SRE ID> Research Users` group.
-    - Visit [`https://aka.ms/sspr`](https://aka.ms/sspr) in an incognito browser
-    - Attempt to login and reset password, but **do not complete MFA** (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
+    - Create a new user **without** MFA
+        - Following the SRE deployment instructions for setting up a {ref}`non privileged user account <deploy_sre_apache_guacamole_create_user_account>`, create an account but **do not** add them to any `SG <SRE ID> Research Users` group.
+        - Visit [`https://aka.ms/sspr`](https://aka.ms/sspr) in an incognito browser
+        - Attempt to login and reset password, but **do not complete MFA** (see {ref}`these steps <roles_researcher_user_guide_setup_mfa>`)
 - {ref}`role_system_manager` who has `Contributor` permissions (or higher) on the underlying Azure subscription
 - **Data provider** who has no accounts on the Safe Haven system
 
@@ -288,9 +288,9 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 ````
 
 - Check that users cannot copy files from one SRE to another one in the same SHM
-  - Log in to an SRD in **SRE A** as the **SRE standard user** using the web client.
-  - In a separate browser window, do the same for **SRE B**.
-  - Attempt to copy and paste a file from one SRE desktop to another
+    - Log in to an SRD in **SRE A** as the **SRE standard user** using the web client.
+    - In a separate browser window, do the same for **SRE B**.
+    - Attempt to copy and paste a file from one SRE desktop to another
 
 ```{attention}
 {{white_check_mark}} **Verify that:** copy-and-paste is not possible
@@ -372,8 +372,8 @@ A device is able to connect to the environment if and only if it is managed (wit
 There are network rules permitting access to the remote desktop gateway from allow-listed IP addresses only
 
 - Navigate to the NSG for this SRE in the portal:
-  - {{bento_box}} **Microsoft Remote Desktop:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
-  - {{pear}} **Guacamole:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
+    - {{bento_box}} **Microsoft Remote Desktop:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
+    - {{pear}} **Guacamole:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -461,8 +461,8 @@ Connection from within the secure physical space is possible.
 ````
 
 - Find the public IP address for the remote desktop server VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
-  - {{pear}} **Guacamole:** VM name will be `GUACAMOLE-SRE-<SRE ID>`
-  - {{bento_box}} **Microsoft Remote Desktop:** VM name will be `RDG-SRE-<SRE ID>`
+    - {{pear}} **Guacamole:** VM name will be `GUACAMOLE-SRE-<SRE ID>`
+    - {{bento_box}} **Microsoft Remote Desktop:** VM name will be `RDG-SRE-<SRE ID>`
 - Attempt to login as the **SRE standard user** via `SSH` with `ssh <user.name>@<public IP>` (e.g. `ssh ada.lovelace@8.8.8.8`)
 
 ````{attention}
@@ -533,8 +533,8 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 - Access to the ingress volume is restricted to a limited range of IP addresses associated with the **Dataset Provider** and the **host organisation**.
 - The {ref}`role_data_provider_representative` receives a write-only upload token.
-  - This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data.
-  - This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.
+    - This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data.
+    - This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.
 - The upload token expires after a time-limited upload window.
 - The upload token is transferred to the Dataset Provider via a secure email system.
 
@@ -642,14 +642,14 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 - For {ref}`policy_tier_2` or higher environments we use the secure data transfer process.
 
 - Installation during deployment
-  - If known in advance, software can be installed during SRD deployment whilst there is still internet access, but before project data is added. Once the software is installed, the SRD undergoes ingress into the environment with a one way lock.
+    - If known in advance, software can be installed during SRD deployment whilst there is still internet access, but before project data is added. Once the software is installed, the SRD undergoes ingress into the environment with a one way lock.
 - Installation after deployment
-  - Once an SRD has been deployed into the analysis environment it cannot be moved out. There is no outbound internet access.
-  - Software is added via ingress in a similar manner to data:
-    - Researchers are provided temporary write-only access to the software ingress volume.
-    - The access is then revoked and the software is then reviewed.
-    - If it passes review, the software is moved into the environment.
-  - If the software requires administrator rights to install, a {ref}`role_system_manager` must do this. Otherwise, the researcher can do this themselves.
+    - Once an SRD has been deployed into the analysis environment it cannot be moved out. There is no outbound internet access.
+    - Software is added via ingress in a similar manner to data:
+        - Researchers are provided temporary write-only access to the software ingress volume.
+        - The access is then revoked and the software is then reviewed.
+        - If it passes review, the software is moved into the environment.
+    - If the software requires administrator rights to install, a {ref}`role_system_manager` must do this. Otherwise, the researcher can do this themselves.
 
 ### Implication:
 

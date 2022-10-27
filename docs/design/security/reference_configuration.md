@@ -88,8 +88,8 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 - Access to the ingress volume is restricted to a limited range of IP addresses associated with the **Dataset Provider** and the **host organisation**.
 - The {ref}`role_data_provider_representative` receives a write-only upload token.
-  - This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data.
-  - This provides protection against an unauthorised party accessing the data, even if they gain access to the upload token.
+    - This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data.
+    - This provides protection against an unauthorised party accessing the data, even if they gain access to the upload token.
 - The upload token expires after a time-limited upload window.
 - The upload token is transferred to the Dataset Provider via a secure email system.
 
@@ -117,14 +117,14 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 - For {ref}`policy_tier_2` or higher environments we use a secure data transfer process.
 
 - Installation during deployment
-  - If known in advance, software can be installed during SRD deployment whilst there is still internet access, but before project data is added. Once the software is installed, the SRD undergoes ingress into the environment with a one way lock.
+    - If known in advance, software can be installed during SRD deployment whilst there is still internet access, but before project data is added. Once the software is installed, the SRD undergoes ingress into the environment with a one way lock.
 - Installation after deployment
-  - Once an SRD has been deployed into the analysis environment it cannot be moved out. There is no outbound internet access.
-  - Software is added via ingress in a similar manner to data:
-    - Researchers are provided temporary write-only access to the software ingress volume.
-    - The access is then revoked and the software is then reviewed.
-    - If it passes review, the software is moved into the environment.
-  - If the software requires administrator rights to install, a {ref}`role_system_manager` must do this. Otherwise, the researcher can do this themselves.
+    - Once an SRD has been deployed into the analysis environment it cannot be moved out. There is no outbound internet access.
+    - Software is added via ingress in a similar manner to data:
+        - Researchers are provided temporary write-only access to the software ingress volume.
+        - The access is then revoked and the software is then reviewed.
+        - If it passes review, the software is moved into the environment.
+    - If the software requires administrator rights to install, a {ref}`role_system_manager` must do this. Otherwise, the researcher can do this themselves.
 
 ### Implication:
 

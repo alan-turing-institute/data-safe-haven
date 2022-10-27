@@ -56,6 +56,6 @@ On your **deployment machine**.
 - Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team.
 - Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository.
 - Ensure you are logged into `Azure` within `Powershell` using the command: `Connect-AzAccount`. This command will give you a URL and a short alphanumeric code. You will need to visit that URL in a web browser and enter the code
-  - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
+    - NB. If your account is a guest in additional Azure tenants, you may need to add the `-Tenant <Tenant ID>` flag, where `<Tenant ID>` is the ID of the Azure tenant you want to deploy into.
 - Tear down the package mirrors by running `./SHM_Package_Repository_Teardown.ps1 -shmId <SHM ID> -tier <desired tier>`, where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` specified in the configuration file.
 - This will take **a few minutes** to run.
