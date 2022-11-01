@@ -2,7 +2,7 @@
 FROM mcr.microsoft.com/powershell:7.2-ubuntu-bionic
 # [Optional] Uncomment this section to install additional OS packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends libssl-dev
+    && apt-get -y install --no-install-recommends libssl-dev git
 
 # Install azure-cli
 RUN apt-get update && apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg \
