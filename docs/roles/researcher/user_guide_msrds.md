@@ -10,7 +10,7 @@
 :relative-images:
 ```
 
-### {{closed_lock_with_key}} Set a password
+## {{closed_lock_with_key}} Set a password
 
 ```{include} snippets/13_MFA.partial.md
 :relative-images:
