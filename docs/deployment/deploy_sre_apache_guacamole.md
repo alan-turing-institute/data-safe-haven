@@ -185,6 +185,7 @@ If you specify the same size more than once, you will create multiple SRDs of th
 ```
 
 ```{include} ../roles/researcher/snippets/13_MFA.partial.md
+:relative-images:
 ```
 
 (deploy_sre_apache_guacamole_test_remote_desktop)=

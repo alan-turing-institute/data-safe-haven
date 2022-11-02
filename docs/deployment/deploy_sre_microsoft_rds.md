@@ -206,6 +206,7 @@ These certificates will **not** be trusted by your browser, and so should not be
 ```
 
 ```{include} ../roles/researcher/snippets/13_MFA.partial.md
+:relative-images:
 ```
 
 ### {{nut_and_bolt}} Test the Microsoft RDS remote desktop
