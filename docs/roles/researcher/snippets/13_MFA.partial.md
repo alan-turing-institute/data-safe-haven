@@ -187,15 +187,17 @@ This is known as multi-factor authentication (MFA).
   :align: center
   ```
 
-- You can click on the link in the prompt or follow the appropriate link for your phone here:
-  - {{apple}} iOS: `https://bit.ly/iosauthenticator`
-  - {{robot}} Android: `https://bit.ly/androidauthenticator`
-  - {{bento_box}} Windows mobile: `https://bit.ly/windowsauthenticator`
+You can click on the link in the prompt or follow the appropriate link for your phone here:
 
-- You will now be prompted to open the app and:
-  - To allow notifications
-  - Select `Add an account`
-  - Select `Work or School account`
+- {{apple}} iOS: `https://bit.ly/iosauthenticator`
+- {{robot}} Android: `https://bit.ly/androidauthenticator`
+- {{bento_box}} Windows mobile: `https://bit.ly/windowsauthenticator`
+
+You will now be prompted to open the app and:
+
+- To allow notifications
+- Select `Add an account`
+- Select `Work or School account`
 
 <!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
@@ -209,7 +211,7 @@ This is known as multi-factor authentication (MFA).
   ```
 
 - The next prompt will give you a QR code to scan, like the one shown below
-  - Scan the QR code on the screen
+- Scan the QR code on the screen
 
 <!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
