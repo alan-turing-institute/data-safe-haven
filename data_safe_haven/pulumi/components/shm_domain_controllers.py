@@ -139,3 +139,9 @@ class SHMDomainControllersComponent(ComponentResource):
 
         # Register outputs
         self.resource_group_name = Output.from_input(resource_group.name)
+
+        # Register exports
+        self.exports = {
+            "resource_group_name": Output.from_input(resource_group.name),
+            "vm_name": primary_domain_controller.vm_name,
+        }

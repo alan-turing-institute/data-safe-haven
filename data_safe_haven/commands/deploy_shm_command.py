@@ -74,10 +74,13 @@ class DeploySHMCommand(LoggingMixin, Command):
                 config.shm.fqdn, stack.output("fqdn_nameservers")
             )
 
-            # Add Pulumi output information to the config file
+            # Add Pulumi infrastructure information to the config file
             with open(stack.local_stack_path, "r") as f_stack:
                 stack_yaml = yaml.safe_load(f_stack)
             config.pulumi.stacks[stack.stack_name] = stack_yaml
+
+            # Add Pulumi output information to the config file
+            config.shm.domain_controllers = stack.output("domain_controllers")
 
             # Upload config to blob storage
             config.upload()

@@ -69,25 +69,21 @@ class DeploySRECommand(LoggingMixin, Command):
                 stack_yaml = yaml.safe_load(f_stack)
             config.pulumi.stacks[stack.stack_name] = stack_yaml
 
+            # Add Pulumi output information to the config file
+            for key, value in stack.output("remote_desktop").items():
+                config.sre[self.safe_name].remote_desktop[key] = value
+            config.sre[self.safe_name].vm_details = stack.output("vm_details")
+
             # Upload config to blob storage
             config.upload()
 
             # Apply SRE configuration
-            remote_desktop_params = dict(**stack.output("remote_desktop"))
-            remote_desktop_params.update(
-                {
-                    "disable_copy": config.sre[self.safe_name].allow_copy,
-                    "disable_paste": config.sre[self.safe_name].allow_paste,
-                    "timezone": config.shm.timezone,
-                }
-            )
             manager = SREConfigurationManager(
+                config,
                 connection_db_server_password=stack.secret(
                     "password-user-database-admin"
                 ),
-                remote_desktop_params=stack.output("remote_desktop"),
-                subscription_name=config.subscription_name,
-                vm_params=stack.output("vm_details"),
+                sre_safe_name=self.safe_name,
             )
             manager.apply_configuration()
 
@@ -107,7 +103,11 @@ class DeploySRECommand(LoggingMixin, Command):
             config.sre[self.safe_name].index = highest_index + 1
 
         # Set whether copying is allowed
-        config.sre[self.safe_name].allow_copy = bool(self.option("allow-copy"))
+        config.sre[self.safe_name].remote_desktop.allow_copy = bool(
+            self.option("allow-copy")
+        )
 
         # Set whether pasting is allowed
-        config.sre[self.safe_name].allow_paste = bool(self.option("allow-paste"))
+        config.sre[self.safe_name].remote_desktop.allow_paste = bool(
+            self.option("allow-paste")
+        )

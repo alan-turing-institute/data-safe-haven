@@ -131,4 +131,4 @@ class DeclarativeSRE:
 
         # Export values for later use
         pulumi.export("remote_desktop", remote_desktop.exports)
-        pulumi.export("vm_details", ())  # srd.vm_details)
+        pulumi.export("vm_details", ())

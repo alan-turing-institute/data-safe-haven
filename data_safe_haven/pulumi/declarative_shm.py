@@ -103,3 +103,4 @@ class DeclarativeSHM:
 
         # Export values for later use
         pulumi.export("fqdn_nameservers", networking.dns_zone_nameservers)
+        pulumi.export("domain_controllers", domain_controllers.exports)
