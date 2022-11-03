@@ -22,6 +22,8 @@ from azure.mgmt.automation.models import (
     DscCompilationJobCreateParameters,
     DscConfigurationAssociationProperty,
 )
+from azure.mgmt.compute import ComputeManagementClient
+from azure.mgmt.compute.models import RunCommandInput, RunCommandInputParameter
 from azure.mgmt.dns import DnsManagementClient
 from azure.mgmt.dns.models import RecordSet, TxtRecord
 from azure.mgmt.keyvault import KeyVaultManagementClient
@@ -776,6 +778,55 @@ class AzureApi(AzureMixin, LoggingMixin):
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to remove resource group {resource_group_name}.\n{str(exc)}"
+            ) from exc
+
+    def run_remote_script(
+        self,
+        resource_group_name: str,
+        script: str,
+        script_parameters: Dict[str, str],
+        vm_name: str,
+    ) -> str:
+        """Run a script on a remote virtual machine
+
+        Returns:
+            str: The script output
+
+        Raises:
+            DataSafeHavenAzureException if running the script failed
+        """
+        try:
+            # Connect to Azure clients
+            compute_client = ComputeManagementClient(
+                self.credential, self.subscription_id
+            )
+            vm = compute_client.virtual_machines.get(resource_group_name, vm_name)
+            command_id = (
+                "RunPowerShellScript"
+                if (
+                    vm.os_profile.windows_configuration
+                    and not vm.os_profile.linux_configuration
+                )
+                else "RunShellScript"
+            )
+            run_command_parameters = RunCommandInput(
+                command_id=command_id,
+                script=list(script.split("\n")),
+                parameters=[
+                    RunCommandInputParameter(name=name, value=value)
+                    for name, value in script_parameters.items()
+                ],
+            )
+            # Run the command and wait until finished
+            poller = compute_client.virtual_machines.begin_run_command(
+                resource_group_name, vm_name, run_command_parameters
+            )
+            result = poller.result()
+            # Return stdout/stderr from the command
+            return result.value[0].message
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to run command on '{vm_name}'.\n{str(exc)}"
             ) from exc
 
     def set_keyvault_secret(
