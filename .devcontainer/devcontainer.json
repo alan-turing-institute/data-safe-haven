@@ -1,7 +1,14 @@
-// Initial develeopment container for the Data Safe Haven project
+// Initial development container for the Data Safe Haven project
 {
 	"name": "ATI Data Safe Haven",
 	"build": {
 		"dockerfile": "Dockerfile"
-	}
+	},
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "bash"
+	},
+	"extensions": [
+		"github.vscode-pull-request-github"
+	],
+	"remoteUser": "deploydsh"
 }
