@@ -361,11 +361,7 @@ Before you do this, you **must** configure and log into the **native** admin acc
 - The `<username>` for this account is `aad.admin.firstname.lastname`
 - The `<username domain>` for this account is the same as the `<SHM domain>`
 
-The other administrators you have just set up can activate their accounts by following the same steps.
-
-```{include} ../roles/researcher/snippets/13_MFA.partial.md
-:relative-images:
-```
+The administrators you have just set up can activate their accounts by following the same steps as in the {ref}`user guide <user_setup>`.
 
 ### Remove the default external user that was used to create the Azure AD
 

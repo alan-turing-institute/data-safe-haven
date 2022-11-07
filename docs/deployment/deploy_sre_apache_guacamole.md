@@ -184,9 +184,7 @@ If you specify the same size more than once, you will create multiple SRDs of th
 :relative-images:
 ```
 
-```{include} ../roles/researcher/snippets/13_MFA.partial.md
-:relative-images:
-```
+To complete the account setup, follow the instructions present in the {ref}`user guide <user_setup>`.
 
 (deploy_sre_apache_guacamole_test_remote_desktop)=
 
