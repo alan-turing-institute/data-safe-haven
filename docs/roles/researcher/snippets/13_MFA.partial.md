@@ -26,7 +26,6 @@ Please follow these steps carefully.
 
   The first time you log in you need to click **"Forgotten my password"**.
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_forgotten_password.png
   :alt: Forgotten my password
@@ -39,7 +38,6 @@ Please follow these steps carefully.
 
 - Fill out the requested CAPTCHA (your username should be pre-filled).
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_captcha.png
   :alt: CAPTCHA
@@ -48,7 +46,6 @@ Please follow these steps carefully.
 
 - Confirm your phone number, which you provided to the {ref}`System Manager <role_system_manager>` when you registered for access to the environment.
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_verify_phone.png
   :alt: Verify phone number
@@ -85,7 +82,6 @@ Please follow these steps carefully.
 
 - Enter your password into the `Enter new password` and `Confirm new password` fields.
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_new_password.png
   :alt: New password
@@ -94,7 +90,6 @@ Please follow these steps carefully.
 
 - Then continue to the next step
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_new_password_sign_in.png
   :alt: Click to continue
@@ -103,7 +98,6 @@ Please follow these steps carefully.
 
 - Log into your account when prompted and at this point you will be asked for additional security verification.
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_more_information_required.png
   :alt: Click to continue
@@ -120,7 +114,6 @@ This is known as multi-factor authentication (MFA).
 
 - In order to set up MFA you will need to enter your phone number
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_additional_security_verification.png
   :alt: Additional security verification
@@ -129,7 +122,6 @@ This is known as multi-factor authentication (MFA).
 
 - Once you click next you will receive a phone call straight away.
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_verifying_phone.png
   :alt: Verifying phone number
@@ -142,7 +134,6 @@ This is known as multi-factor authentication (MFA).
 
 - After following the instructions you will see the following screen
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_verified_phone.png
   :alt: Verified phone number
@@ -151,7 +142,6 @@ This is known as multi-factor authentication (MFA).
 
 - Click `Next` to register this phone number for MFA
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_registered_phone.png
   :alt: Registered phone number
@@ -160,7 +150,6 @@ This is known as multi-factor authentication (MFA).
 
 - You should now see the Security Information dashboard that lists all your verified MFA methods
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_dashboard_phone_only.png
   :alt: Registered phone number
@@ -171,7 +160,6 @@ This is known as multi-factor authentication (MFA).
 
 - If you want to use the Microsoft Authenticator app for MFA (which will work if you have wifi but no phone signal) then click on `+ Add sign-in method` and select `Authenticator app`
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_add_authenticator_app.png
   :alt: Add Authenticator app
@@ -180,7 +168,6 @@ This is known as multi-factor authentication (MFA).
 
 - This will prompt you to download the `Microsoft Authenticator` phone app.
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_download_authenticator_app.png
   :alt: Add Authenticator app
@@ -199,7 +186,6 @@ You will now be prompted to open the app and:
 - Select `Add an account`
 - Select `Work or School account`
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_allow_notifications.png
   :alt: Allow Authenticator notifications
@@ -213,7 +199,6 @@ You will now be prompted to open the app and:
 - The next prompt will give you a QR code to scan, like the one shown below
 - Scan the QR code on the screen
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_app_qrcode.png
   :alt: Setup Authenticator app
@@ -222,7 +207,6 @@ You will now be prompted to open the app and:
 
 - Once this is completed, Microsoft will send you a test notification to respond to
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_authenticator_app_test.png
   :alt: Authenticator app test notification
@@ -231,7 +215,6 @@ You will now be prompted to open the app and:
 
 - When you click `Approve` on the phone notification, you will get the following message in your browser
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_authenticator_app_approved.png
   :alt: Authenticator app test approved
@@ -240,7 +223,6 @@ You will now be prompted to open the app and:
 
 - You should now be returned to the Security Information dashboard that lists two verified MFA methods
 
-<!-- WARNING: If replace this image, make sure you do so at docs/deployment/user_guide too -->
 
   ```{image} user_guide/account_setup_mfa_dashboard_two_methods.png
   :alt: Registered MFA methods
