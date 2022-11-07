@@ -41,20 +41,27 @@ class UserHandler(LoggingMixin, AzureMixin):
         try:
             # Construct user list
             with open(users_csv_path) as f_csv:
-                new_users = [
-                    ResearchUser.from_csv(
-                        account_enabled=True,
-                        domain_suffix=self.cfg.azure.domain_suffix,
-                        **user,
+                reader = csv.DictReader(f_csv)
+                for required_field in ["GivenName", "Surname", "Phone", "Email"]:
+                    if required_field not in reader.fieldnames:
+                        raise ValueError(
+                            f"Missing required CSV field '{required_field}'."
+                        )
+                users = [
+                    ResearchUser(
+                        country="GB",
+                        email_address=user["Email"],
+                        given_name=user["GivenName"],
+                        phone_number=user["Phone"],
+                        surname=user["Surname"],
                     )
-                    for user in csv.DictReader(f_csv, delimiter=";")
+                    for user in reader
                 ]
-            for new_user in new_users:
-                self.debug(f"Processing new user: {new_user}")
+            for user in users:
+                self.debug(f"Processing new user: {user}")
 
             # Commit changes
-            self.azuread.add(new_users)
-            self.guacamole.add(new_users)
+            self.active_directory_users.add(users)
         except Exception as exc:
             raise DataSafeHavenUserHandlingException(
                 f"Could not add users from '{users_csv_path}'.\n{str(exc)}"
@@ -72,7 +79,7 @@ class UserHandler(LoggingMixin, AzureMixin):
             usernames["Azure AD"] = [
                 user.username for user in self.azure_ad_users.list()
             ]
-            usernames["SHM account"] = [
+            usernames["Domain controller"] = [
                 user.username for user in self.active_directory_users.list()
             ]
             for sre_name, guacamole_users in self.sre_guacamole_users.items():

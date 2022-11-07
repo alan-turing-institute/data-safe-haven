@@ -6,6 +6,7 @@ class ResearchUser:
     def __init__(
         self,
         account_enabled: bool = None,
+        country: str = None,
         email_address: str = None,
         given_name: str = None,
         phone_number: str = None,
@@ -14,6 +15,7 @@ class ResearchUser:
         user_principal_name: str = None,
     ):
         self.account_enabled = account_enabled
+        self.country = country
         self.sam_account_name = sam_account_name
         self.given_name = given_name
         self.surname = surname

@@ -13,11 +13,12 @@ from data_safe_haven.external import GraphApi
 from data_safe_haven.mixins import LoggingMixin
 
 
-class UsersListCommand(LoggingMixin, Command):
+class UsersAddCommand(LoggingMixin, Command):
     """
-    List users for a Data Safe Haven deployment
+    Add users to a Data Safe Haven deployment
 
-    list
+    add
+        {csv : CSV file containing details of users to add.}
         {--o|output= : Path to an output log file}
     """
 
@@ -43,11 +44,11 @@ class UsersListCommand(LoggingMixin, Command):
 
             # List users
             users = UserHandler(config, graph_api)
-            users.list()
+            users.add(self.argument("csv"))
         except DataSafeHavenException as exc:
             for (
                 line
-            ) in f"Could not list users for Data Safe Haven '{config.name}'.\n{str(exc)}".split(
+            ) in f"Could not add users to Data Safe Haven '{config.name}'.\n{str(exc)}".split(
                 "\n"
             ):
                 self.error(line)

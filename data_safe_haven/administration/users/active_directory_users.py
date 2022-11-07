@@ -1,5 +1,6 @@
 """Interact with users in an Azure Active Directory"""
 # Standard library imports
+import base64
 import pathlib
 from typing import Sequence
 
@@ -28,6 +29,35 @@ class ActiveDirectoryUsers(LoggingMixin):
             pathlib.Path(__file__).parent.parent.parent / "resources"
         ).resolve()
         self.vm_name = vm_name
+
+    def add(self, new_users: Sequence[ResearchUser]) -> None:
+        """Add list of users to local Active Directory"""
+        add_users_script = FileReader(
+            self.resources_path / "active_directory" / "add_users.ps1"
+        )
+        csv_contents = ["SamAccountName;GivenName;Surname;Mobile;Email;Country"]
+        for user in new_users:
+            csv_contents += [
+                ";".join(
+                    [
+                        user.username,
+                        user.given_name,
+                        user.surname,
+                        user.phone_number,
+                        user.email_address,
+                        user.country,
+                    ]
+                )
+            ]
+        user_details_b64 = base64.b64encode("\n".join(csv_contents).encode("utf-8"))
+        output = self.azure_api.run_remote_script(
+            self.resource_group_name,
+            add_users_script.file_contents(),
+            {"UserDetailsB64": user_details_b64.decode()},
+            self.vm_name,
+        )
+        for line in output.split("\n"):
+            self.info(line)
 
     def list(self) -> Sequence[ResearchUser]:
         """List users in a local Active Directory"""

@@ -3,6 +3,7 @@
 from cleo import Command
 
 # Local imports
+from .users_add import UsersAddCommand
 from .users_list import UsersListCommand
 
 
@@ -13,4 +14,4 @@ class UsersCommand(Command):
     users
     """
 
-    commands = [UsersListCommand()]
+    commands = [UsersAddCommand(), UsersListCommand()]
