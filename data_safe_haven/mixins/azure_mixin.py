@@ -57,7 +57,7 @@ class AzureMixin:
                     break
         except ClientAuthenticationError as exc:
             raise DataSafeHavenAzureException(
-                "Failed to authenticate with Azure"
+                f"Failed to authenticate with Azure.\n{str(exc)}"
             ) from exc
         if not (self.subscription_id and self.tenant_id):
             raise DataSafeHavenInputException(

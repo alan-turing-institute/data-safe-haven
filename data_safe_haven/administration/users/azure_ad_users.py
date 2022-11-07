@@ -15,30 +15,12 @@ class AzureADUsers(LoggingMixin):
 
     def __init__(
         self,
-        tenant_id,
-        application_id,
-        application_secret,
-        research_users_group_name,
+        graph_api: GraphApi,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.graph_api = GraphApi(
-            tenant_id,
-            application_id=application_id,
-            application_secret=application_secret,
-        )
-        self.researchers_group_name = research_users_group_name
-
-    @property
-    def users(self) -> Sequence[ResearchUser]:
-        user_list = self.graph_api.read_users()
-        all_users = [ResearchUser.from_graph_api(**user) for user in user_list]
-        return [
-            user
-            for user in all_users
-            if user.account_enabled and not user.is_global_admin
-        ]
+        self.graph_api = graph_api
 
     def add(self, new_users: Sequence[ResearchUser]) -> None:
         """Add list of users to AzureAD"""
@@ -70,6 +52,24 @@ class AzureADUsers(LoggingMixin):
             self.graph_api.add_user_to_group(user.username, user.username)
             # Also add the user to the research users group
             self.graph_api.add_user_to_group(user.username, self.researchers_group_name)
+
+    def list(self) -> Sequence[ResearchUser]:
+        user_list = self.graph_api.read_users()
+        return [
+            ResearchUser(
+                account_enabled=user_details["accountEnabled"],
+                email_address=user_details["mail"],
+                given_name=user_details["givenName"],
+                phone_number=user_details["businessPhones"][0]
+                if len(user_details["businessPhones"])
+                else None,
+                sam_account_name=user_details["mailNickname"],
+                surname=user_details["surname"],
+                user_principal_name=user_details["userPrincipalName"],
+            )
+            for user_details in user_list
+            if (user_details["onPremisesSyncEnabled"] or user_details["isGlobalAdmin"])
+        ]
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
         """Disable a list of users in AzureAD"""

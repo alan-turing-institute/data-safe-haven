@@ -14,6 +14,7 @@ from azure.storage.blob import BlobServiceClient
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenAzureException
+from data_safe_haven.external import AzureApi
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
@@ -50,6 +51,9 @@ class Config(LoggingMixin, AzureMixin):
             )
         # ... otherwise create a new DotMap
         except (DataSafeHavenAzureException, ResourceNotFoundError):
+            self.warning(
+                f"Unable to load existing config file from '{backend_storage_account_name}'."
+            )
             self._map = dotmap.DotMap()
 
         # Update the map with local config variables
@@ -94,6 +98,11 @@ class Config(LoggingMixin, AzureMixin):
         """Filename where this configuration will be stored"""
         return f"config-{self.shm_name}.yaml"
 
+    def add_secret(self, name: str, value: str) -> None:
+        """Add a secret to the backend key vault"""
+        azure_api = AzureApi(self.subscription_name)
+        azure_api.set_keyvault_secret(self.backend.key_vault_name, name, value)
+
     def download(
         self,
         backend_resource_group_name: str,
@@ -118,6 +127,11 @@ class Config(LoggingMixin, AzureMixin):
             raise DataSafeHavenAzureException(
                 f"Configuration file could not be downloaded from '{backend_storage_account_name}'\n{str(exc)}."
             ) from exc
+
+    def get_secret(self, name: str) -> str:
+        """Get a secret from the backend key vault"""
+        azure_api = AzureApi(self.subscription_name)
+        return azure_api.get_keyvault_secret(self.backend.key_vault_name, name)
 
     def storage_account_key(
         self, backend_resource_group_name: str, backend_storage_account_name: str

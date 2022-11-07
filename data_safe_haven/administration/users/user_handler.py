@@ -3,9 +3,12 @@ import csv
 from typing import Sequence
 
 # Local imports
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingException
+from data_safe_haven.external import GraphApi
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
-from .azuread_users import AzureADUsers
+from .active_directory_users import ActiveDirectoryUsers
+from .azure_ad_users import AzureADUsers
 from .guacamole_users import GuacamoleUsers
 from .research_user import ResearchUser
 
@@ -13,24 +16,21 @@ from .research_user import ResearchUser
 class UserHandler(LoggingMixin, AzureMixin):
     def __init__(
         self,
-        config,
-        aad_application_id,
-        aad_application_secret,
-        postgresql_password,
+        config: Config,
+        graph_api: GraphApi,
         *args,
         **kwargs,
     ):
-        super().__init__(
-            subscription_name=config.azure.subscription_name, *args, **kwargs
+        super().__init__(subscription_name=config.subscription_name, *args, **kwargs)
+        self.active_directory_users = ActiveDirectoryUsers(
+            resource_group_name=config.shm.domain_controllers.resource_group_name,
+            subscription_name=config.subscription_name,
+            vm_name=config.shm.domain_controllers.vm_name,
         )
-        self.cfg = config
-        self.azuread = AzureADUsers(
-            config.azure.aad_tenant_id,
-            aad_application_id,
-            aad_application_secret,
-            config.azure.aad_group_research_users,
-        )
-        self.guacamole = GuacamoleUsers(config, postgresql_password)
+        self.azure_ad_users = AzureADUsers(graph_api)
+        self.sre_guacamole_users = {
+            sre_name: GuacamoleUsers(config, sre_name) for sre_name in config.sre.keys()
+        }
 
     def add(self, users_csv_path: str) -> None:
         """Add AzureAD and Guacamole users
@@ -61,26 +61,37 @@ class UserHandler(LoggingMixin, AzureMixin):
             )
 
     def list(self) -> None:
-        """List AzureAD and Guacamole users
+        """List Active Directory, AzureAD and Guacamole users
 
         Raises:
             DataSafeHavenUserHandlingException if the users could not be listed
         """
         try:
-            user_data = []
-            azuread_usernames = [user.preferred_username for user in self.azuread.users]
-            guacamole_usernames = [
-                user.preferred_username for user in self.guacamole.users
+            # Load usernames
+            usernames = {}
+            usernames["Azure AD"] = [
+                user.username for user in self.azure_ad_users.list()
             ]
-            for username in sorted(set(azuread_usernames + guacamole_usernames)):
-                user_data.append(
-                    [
-                        username,
-                        "x" if username in azuread_usernames else "",
-                        "x" if username in guacamole_usernames else "",
-                    ]
-                )
-            user_headers = ["username", "In AzureAD", "In Guacamole"]
+            usernames["SHM account"] = [
+                user.username for user in self.active_directory_users.list()
+            ]
+            for sre_name, guacamole_users in self.sre_guacamole_users.items():
+                usernames[f"SRE {sre_name}"] = [
+                    user.username for user in guacamole_users.list()
+                ]
+
+            # Fill user information as a table
+            user_headers = ["username"] + list(usernames.keys())
+            user_data = []
+            for username in sorted(set(sum(usernames.values(), []))):
+                user_memberships = [username]
+                for category in user_headers[1:]:
+                    user_memberships.append(
+                        "x" if username in usernames[category] else ""
+                    )
+                user_data.append(user_memberships)
+
+            # Write user information as a table
             for line in self.tabulate(user_headers, user_data):
                 self.info(line)
         except Exception as exc:

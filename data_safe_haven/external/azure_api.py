@@ -551,9 +551,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Failed to retrieve certificate {certificate_name}."
             ) from exc
 
-    def get_keyvault_secret(
-        self, key_vault_name: str, secret_name: str
-    ) -> KeyVaultSecret:
+    def get_keyvault_secret(self, key_vault_name: str, secret_name: str) -> str:
         """Read a secret from the KeyVault
 
         Returns:

@@ -5,7 +5,6 @@ from azure.mgmt.storage import StorageManagementClient
 from azure.storage.fileshare import ShareDirectoryClient, ShareFileClient
 
 # Local imports
-from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.mixins import AzureMixin
 
@@ -15,16 +14,14 @@ class AzureFileShareHelper(AzureMixin):
 
     def __init__(
         self,
-        config: Config,
         storage_account_name: str,
         storage_account_resource_group_name: str,
+        subscription_name: str,
         share_name: str,
         *args: list,
         **kwargs: dict,
     ):
-        super().__init__(
-            subscription_name=config.azure.subscription_name, *args, **kwargs
-        )
+        super().__init__(subscription_name=subscription_name, *args, **kwargs)
         self.storage_client_ = None
         self.storage_account_key_ = None
         self.storage_account_name = storage_account_name

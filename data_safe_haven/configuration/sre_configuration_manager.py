@@ -17,7 +17,6 @@ class SREConfigurationManager(LoggingMixin):
     def __init__(
         self,
         config: Config,
-        connection_db_server_password: str,
         sre_safe_name: str,
     ):
         super().__init__()
@@ -27,9 +26,11 @@ class SREConfigurationManager(LoggingMixin):
 
         # Construct remote desktop parameters
         self.remote_desktop_params = dict(config.sre[sre_safe_name].remote_desktop)
-        self.remote_desktop_params[
-            "connection_db_server_password"
-        ] = connection_db_server_password
+        self.remote_desktop_params["connection_db_server_password"] = config.get_secret(
+            config.sre[self.safe_name].remote_desktop[
+                "connection_db_server_admin_password_secret"
+            ]
+        )
         self.remote_desktop_params["timezone"] = config.shm.timezone
 
         # Construct security group parameters

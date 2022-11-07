@@ -72,19 +72,22 @@ class DeploySRECommand(LoggingMixin, Command):
             # Add Pulumi output information to the config file
             for key, value in stack.output("remote_desktop").items():
                 config.sre[self.safe_name].remote_desktop[key] = value
+            config.sre[self.safe_name].remote_desktop[
+                "connection_db_server_admin_password_secret"
+            ] = f"{self.safe_name}-password-user-database-admin"
             config.sre[self.safe_name].vm_details = stack.output("vm_details")
+            config.add_secret(
+                config.sre[self.safe_name].remote_desktop[
+                    "connection_db_server_admin_password_secret"
+                ],
+                stack.secret("password-user-database-admin"),
+            )
 
             # Upload config to blob storage
             config.upload()
 
             # Apply SRE configuration
-            manager = SREConfigurationManager(
-                config,
-                connection_db_server_password=stack.secret(
-                    "password-user-database-admin"
-                ),
-                sre_safe_name=self.safe_name,
-            )
+            manager = SREConfigurationManager(config, self.safe_name)
             manager.apply_configuration()
 
         except DataSafeHavenException as exc:

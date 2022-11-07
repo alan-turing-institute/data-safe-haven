@@ -1,7 +1,7 @@
 # Standard library imports
 import pathlib
 import tempfile
-from typing import Sequence
+from typing import Any, Sequence
 
 # Local imports
 from data_safe_haven.configuration.components import PostgreSQLProvisioner
@@ -9,41 +9,44 @@ from data_safe_haven.exceptions import DataSafeHavenInputException
 from data_safe_haven.helpers import FileReader
 from data_safe_haven.mixins import LoggingMixin
 from .research_user import ResearchUser
+from data_safe_haven.config import Config
 
 
 class GuacamoleUsers(LoggingMixin):
-    def __init__(self, config, postgresql_password, *args, **kwargs):
+    def __init__(self, config: Config, sre_name: str, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self.cfg = config
         self.postgres_provisioner = PostgreSQLProvisioner(
-            self.cfg,
-            self.cfg.pulumi.outputs.guacamole.resource_group_name,
-            self.cfg.pulumi.outputs.guacamole.postgresql_server_name,
-            postgresql_password,
+            config.sre[sre_name].remote_desktop.connection_db_name,
+            config.get_secret(
+                config.sre[sre_name].remote_desktop[
+                    "connection_db_server_admin_password_secret"
+                ]
+            ),
+            config.sre[sre_name].remote_desktop.connection_db_server_name,
+            config.sre[sre_name].remote_desktop.resource_group_name,
+            config.subscription_name,
         )
+
         self.users_ = None
         self.postgres_script_path = (
             pathlib.Path(__file__).parent.parent.parent
             / "resources"
-            / "guacamole"
+            / "remote_desktop"
             / "postgresql"
         )
 
-    @property
-    def users(self) -> Sequence[ResearchUser]:
+    def list(self) -> Sequence[ResearchUser]:
         if self.users_ is None:  # Allow for the possibility of an empty list of users
             postgres_output = self.postgres_provisioner.execute_scripts(
                 [self.postgres_script_path / "list_users.sql"]
             )
             self.users_ = [
                 ResearchUser(
-                    username=result[0].split("@")[0],
-                    user_principal_name=result[0],
-                    password_salt=result[1],
-                    password_hash=result[2],
-                    password_date=result[3],
+                    sam_account_name=tokens[0].split("@")[0],
+                    user_principal_name=tokens[0],
+                    email_address=tokens[2],
                 )
-                for result in postgres_output
+                for tokens in postgres_output
             ]
         return self.users_
 

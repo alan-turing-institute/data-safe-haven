@@ -770,12 +770,14 @@ class GraphApi(LoggingMixin):
             if attributes
             else [
                 "accountEnabled",
+                "businessPhones",
                 "displayName",
                 "givenName",
                 "id",
                 "mail",
                 "mailNickname",
                 "mobilePhone",
+                "onPremisesSyncEnabled",
                 "userPrincipalName",
                 "surname",
                 "telephoneNumber",
