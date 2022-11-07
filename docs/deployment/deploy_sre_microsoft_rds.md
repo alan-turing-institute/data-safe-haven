@@ -205,7 +205,7 @@ These certificates will **not** be trusted by your browser, and so should not be
 :relative-images:
 ```
 
-To complete the account setup, follow the instructions present in the {ref}`user guide <user_setup>`.
+To complete the account setup, follow the instructions for password and MFA setup present in the {ref}`user guide <user_setup_password_mfa>`.
 
 ### {{nut_and_bolt}} Test the Microsoft RDS remote desktop
 

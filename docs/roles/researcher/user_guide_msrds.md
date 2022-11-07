@@ -10,7 +10,7 @@
 :relative-images:
 ```
 
-(user_setup)=
+(user_setup_password_mfa)=
 
 ## {{closed_lock_with_key}} Password and MFA
 
