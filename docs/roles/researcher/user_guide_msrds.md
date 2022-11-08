@@ -10,6 +10,14 @@
 :relative-images:
 ```
 
+(user_setup_password_mfa)=
+
+## {{closed_lock_with_key}} Password and MFA
+
+```{include} snippets/13_MFA.partial.md
+:relative-images:
+```
+
 ## {{unlock}} Access the Secure Research Environment
 
 ```{include} snippets/03_01_prerequisites.partial.md

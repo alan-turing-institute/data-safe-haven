@@ -205,6 +205,8 @@ These certificates will **not** be trusted by your browser, and so should not be
 :relative-images:
 ```
 
+To complete the account setup, follow the instructions for password and MFA setup present in the {ref}`user guide <user_setup_password_mfa>`.
+
 ### {{nut_and_bolt}} Test the Microsoft RDS remote desktop
 
 - Launch a local web browser on your **deployment machine** and go to `https://<SRE ID>.<safe haven domain>` and log in with the user name and password you set up for the non-privileged user account.
