@@ -184,6 +184,8 @@ If you specify the same size more than once, you will create multiple SRDs of th
 :relative-images:
 ```
 
+To complete the account setup, follow the instructions for password and MFA setup present in the {ref}`user guide <user_setup_password_mfa>`.
+
 (deploy_sre_apache_guacamole_test_remote_desktop)=
 
 ### {{pear}} Test the Apache Guacamole remote desktop
