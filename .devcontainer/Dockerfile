@@ -5,29 +5,36 @@ ARG DOCKER_BUILDKIT=1
 
 ARG TARGETARCH
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends libssl-dev git
+    && apt-get -y install --no-install-recommends libssl-dev git python3-sphinx
 
 # Install Azure-CLI - DOES NOT SUPPORT ARM64 ON LINUX
 ARG AZURE_CLI_VERSION="2.42.0"
-RUN apt-get update \
-  && apt-get -y install ca-certificates curl \ 
-  apt-transport-https lsb-release gnupg \
-  && curl -sL https://packages.microsoft.com/keys/microsoft.asc \ 
-  | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null \
-  && AZ_REPO="$(lsb_release -cs)" \
-  && echo "deb [arch=$(dpkg --print-architecture)] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" \ 
-  | tee /etc/apt/sources.list.d/azure-cli.list \
-  && apt-get update \
-  && apt-get -y install azure-cli="${AZURE_CLI_VERSION}-1~buster"
+# RUN apt-get update \
+#   && apt-get -y install ca-certificates curl \ 
+#   apt-transport-https lsb-release gnupg \
+#   && curl -sL https://packages.microsoft.com/keys/microsoft.asc \ 
+#   | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null \
+#   && AZ_REPO="$(lsb_release -cs)" \
+#   && echo "deb [arch=$(dpkg --print-architecture)] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" \ 
+#   | tee /etc/apt/sources.list.d/azure-cli.list \
+#   && apt-get update \
+#   && apt-get -y install azure-cli="${AZURE_CLI_VERSION}-1~buster"
+# Use pip instead
+ADD requirements.txt requirements.txt
+RUN pip3 install azure-cli==${AZURE_CLI_VERSION} \
+  && pip3 install -r requirements.txt \ 
+  && rm -f requirements.txt
 
 # Install Powershell
+# Pull different binaries from Github depending on architecture
+ARG PWSH_VERSION="7.2.6"
 RUN if [ "${TARGETARCH}" = "arm64" ]; \
   then \
     DEBARCH="arm64"; \
   else \
     DEBARCH="x86"; \
   fi; \
-  curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v7.2.3/powershell-7.2.3-linux-$DEBARCH.tar.gz \
+  curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${PWSH_VERSION}/powershell-${PWSH_VERSION}-linux-$DEBARCH.tar.gz \
   && mkdir -p /opt/microsoft/powershell/7 \
   && tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7 \
   && chmod +x /opt/microsoft/powershell/7/pwsh \
