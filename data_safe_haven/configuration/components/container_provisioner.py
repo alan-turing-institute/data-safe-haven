@@ -60,7 +60,6 @@ class ContainerProvisioner(AzureMixin, LoggingMixin):
             ).ip_address.ip
             if final_ip_address == target_ip_address:
                 break
-            print("... and again")
         self.info(
             f"Restarted container group <fg=green>{self.container_group_name}</>.",
             overwrite=True,

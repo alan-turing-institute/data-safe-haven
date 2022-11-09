@@ -63,7 +63,7 @@ class SREConfigurationManager(LoggingMixin):
             script_parameters,
             self.security_group_params["vm_name"],
         )
-        print(output)
+        self.info(output)
 
     def update_remote_desktop_connections(self) -> None:
         """Update connection information on the Guacamole PostgreSQL server"""

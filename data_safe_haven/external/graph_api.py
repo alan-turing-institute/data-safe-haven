@@ -777,6 +777,7 @@ class GraphApi(LoggingMixin):
                 "mail",
                 "mailNickname",
                 "mobilePhone",
+                "onPremisesSamAccountName",
                 "onPremisesSyncEnabled",
                 "userPrincipalName",
                 "surname",

@@ -42,7 +42,7 @@ class UsersAddCommand(LoggingMixin, Command):
                 default_scopes=["Group.Read.All"],
             )
 
-            # List users
+            # Add users to SHM
             users = UserHandler(config, graph_api)
             users.add(self.argument("csv"))
         except DataSafeHavenException as exc:

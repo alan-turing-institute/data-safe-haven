@@ -63,12 +63,15 @@ class AzureADUsers(LoggingMixin):
                 phone_number=user_details["businessPhones"][0]
                 if len(user_details["businessPhones"])
                 else None,
-                sam_account_name=user_details["mailNickname"],
+                sam_account_name=user_details["onPremisesSamAccountName"],
                 surname=user_details["surname"],
                 user_principal_name=user_details["userPrincipalName"],
             )
             for user_details in user_list
-            if (user_details["onPremisesSyncEnabled"] or user_details["isGlobalAdmin"])
+            if (
+                user_details["onPremisesSamAccountName"]
+                or user_details["isGlobalAdmin"]
+            )
         ]
 
     def remove(self, users: Sequence[ResearchUser]) -> None:

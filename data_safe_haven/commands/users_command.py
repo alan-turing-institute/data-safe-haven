@@ -5,6 +5,7 @@ from cleo import Command
 # Local imports
 from .users_add import UsersAddCommand
 from .users_list import UsersListCommand
+from .users_register import UsersRegisterCommand
 
 
 class UsersCommand(Command):
@@ -14,4 +15,4 @@ class UsersCommand(Command):
     users
     """
 
-    commands = [UsersAddCommand(), UsersListCommand()]
+    commands = [UsersAddCommand(), UsersListCommand(), UsersRegisterCommand()]

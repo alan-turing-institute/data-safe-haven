@@ -7,12 +7,14 @@ VALUES
 ON CONFLICT DO NOTHING;
 {{/users}}
 
--- Create password entries in guacamole_user table
+-- Create entries in guacamole_user table
+-- Note that these passwords should not be used to log-in so we set them to random 64 character strings
 {{#users}}
 INSERT INTO
     guacamole_user (
         entity_id,
         full_name,
+        email_address,
         password_hash,
         password_salt,
         password_date
@@ -20,6 +22,7 @@ INSERT INTO
 SELECT
     entity_id,
     '{{full_name}}',
+    '{{email_address}}',
     decode(
         '{{password_hash}}',
         'hex'

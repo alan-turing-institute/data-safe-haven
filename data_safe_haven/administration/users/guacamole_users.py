@@ -1,4 +1,5 @@
 # Standard library imports
+from datetime import datetime, timezone
 import pathlib
 import tempfile
 from typing import Any, Sequence
@@ -6,7 +7,7 @@ from typing import Any, Sequence
 # Local imports
 from data_safe_haven.configuration.components import PostgreSQLProvisioner
 from data_safe_haven.exceptions import DataSafeHavenInputException
-from data_safe_haven.helpers import FileReader
+from data_safe_haven.helpers import FileReader, hex_string
 from data_safe_haven.mixins import LoggingMixin
 from .research_user import ResearchUser
 from data_safe_haven.config import Config
@@ -26,7 +27,6 @@ class GuacamoleUsers(LoggingMixin):
             config.sre[sre_name].remote_desktop.resource_group_name,
             config.subscription_name,
         )
-
         self.users_ = None
         self.postgres_script_path = (
             pathlib.Path(__file__).parent.parent.parent
@@ -34,44 +34,34 @@ class GuacamoleUsers(LoggingMixin):
             / "remote_desktop"
             / "postgresql"
         )
-
-    def list(self) -> Sequence[ResearchUser]:
-        if self.users_ is None:  # Allow for the possibility of an empty list of users
-            postgres_output = self.postgres_provisioner.execute_scripts(
-                [self.postgres_script_path / "list_users.sql"]
-            )
-            self.users_ = [
-                ResearchUser(
-                    sam_account_name=tokens[0].split("@")[0],
-                    user_principal_name=tokens[0],
-                    email_address=tokens[2],
-                )
-                for tokens in postgres_output
-            ]
-        return self.users_
+        self.sre_name = sre_name
 
     def add(self, users: Sequence[ResearchUser]) -> None:
-        """Add list of users to Guacamole"""
+        """Add sequence of users to Guacamole"""
         # Update Guacamole users
         users_to_add = []
         for new_user in users:
-            if new_user in self.users:
+            if new_user in self.list():
                 self.debug(
-                    f"User '{new_user.preferred_username}' already exists in Guacamole"
+                    f"User '{new_user.preferred_username}' already exists in SRE '{self.sre_name}' database"
                 )
             else:
-                self.info(f"Adding '{new_user.preferred_username}' to Guacamole")
+                self.info(
+                    f"Adding '{new_user.preferred_username}' to SRE '{self.sre_name}' database"
+                )
                 users_to_add.append(new_user)
 
         # Add user details to the mustache template
+        pwd_date = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
         user_data = {
             "users": [
                 {
                     "username": user.user_principal_name,
+                    "email_address": user.email_address,
                     "full_name": user.display_name,
-                    "password_hash": user.password_hash,
-                    "password_salt": user.password_salt,
-                    "password_date": user.password_date.isoformat(),
+                    "password_hash": hex_string(64),
+                    "password_salt": hex_string(64),
+                    "password_date": pwd_date,
                 }
                 for user in users_to_add
             ],
@@ -82,6 +72,22 @@ class GuacamoleUsers(LoggingMixin):
                 [self.postgres_script_path / "add_users.mustache.sql"],
                 mustache_values=user_data,
             )
+
+    def list(self) -> Sequence[ResearchUser]:
+        """List all Guacamole users"""
+        if self.users_ is None:  # Allow for the possibility of an empty list of users
+            postgres_output = self.postgres_provisioner.execute_scripts(
+                [self.postgres_script_path / "list_users.sql"]
+            )
+            self.users_ = [
+                ResearchUser(
+                    sam_account_name=tokens[0].split("@")[0],
+                    user_principal_name=tokens[0],
+                    email_address=tokens[1],
+                )
+                for tokens in postgres_output
+            ]
+        return self.users_
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
         """Remove list of users from Guacamole"""
@@ -98,7 +104,9 @@ class GuacamoleUsers(LoggingMixin):
             ]
         }
         for user in users:
-            self.info(f"Removing '{user.preferred_username}' from Guacamole")
+            self.info(
+                f"Removing '{user.preferred_username}' from SRE '{self.sre_name}' database"
+            )
 
         # Create a temporary file with user details and run it on the Guacamole database
         sql_file_name = None
@@ -110,7 +118,7 @@ class GuacamoleUsers(LoggingMixin):
             self.users_ = [user for user in self.users_ if user not in users]
         except Exception as exc:
             raise DataSafeHavenInputException(
-                f"Could not update database users.\n{str(exc)}"
+                f"Could not update SRE '{self.sre_name}' database users.\n{str(exc)}"
             ) from exc
         finally:
             if sql_file_name:
@@ -118,7 +126,7 @@ class GuacamoleUsers(LoggingMixin):
 
     def set(self, users: Sequence[ResearchUser]) -> None:
         """Set Guacamole users to specified list"""
-        users_to_remove = [user for user in self.users if user not in users]
+        users_to_remove = [user for user in self.list() if user not in users]
         self.remove(users_to_remove)
-        users_to_add = [user for user in users if user not in self.users]
+        users_to_add = [user for user in users if user not in self.list()]
         self.add(users_to_add)

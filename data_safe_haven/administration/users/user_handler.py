@@ -1,6 +1,6 @@
 # Standard library imports
 import csv
-from typing import Sequence
+from typing import Dict, List, Sequence
 
 # Local imports
 from data_safe_haven.config import Config
@@ -67,6 +67,27 @@ class UserHandler(LoggingMixin, AzureMixin):
                 f"Could not add users from '{users_csv_path}'.\n{str(exc)}"
             )
 
+    def get_usernames(self) -> Dict[str, List[str]]:
+        """Load usernames from all sources"""
+        usernames = {}
+        usernames["Azure AD"] = self.get_usernames_azure_ad()
+        usernames["Domain controller"] = self.get_usernames_domain_controller()
+        for sre_name in self.sre_guacamole_users.keys():
+            usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(sre_name)
+        return usernames
+
+    def get_usernames_azure_ad(self) -> List[str]:
+        """Load usernames from Azure AD"""
+        return [user.username for user in self.azure_ad_users.list()]
+
+    def get_usernames_domain_controller(self) -> List[str]:
+        """Load usernames from all domain controller"""
+        return [user.username for user in self.active_directory_users.list()]
+
+    def get_usernames_guacamole(self, sre_name: str) -> List[str]:
+        """Load usernames from Guacamole"""
+        return [user.username for user in self.sre_guacamole_users[sre_name].list()]
+
     def list(self) -> None:
         """List Active Directory, AzureAD and Guacamole users
 
@@ -75,18 +96,7 @@ class UserHandler(LoggingMixin, AzureMixin):
         """
         try:
             # Load usernames
-            usernames = {}
-            usernames["Azure AD"] = [
-                user.username for user in self.azure_ad_users.list()
-            ]
-            usernames["Domain controller"] = [
-                user.username for user in self.active_directory_users.list()
-            ]
-            for sre_name, guacamole_users in self.sre_guacamole_users.items():
-                usernames[f"SRE {sre_name}"] = [
-                    user.username for user in guacamole_users.list()
-                ]
-
+            usernames = self.get_usernames()
             # Fill user information as a table
             user_headers = ["username"] + list(usernames.keys())
             user_data = []
@@ -104,6 +114,25 @@ class UserHandler(LoggingMixin, AzureMixin):
         except Exception as exc:
             raise DataSafeHavenUserHandlingException(
                 f"Could not list users.\n{str(exc)}"
+            )
+
+    def register(self, sre_name: str, user_names: Sequence[str]) -> None:
+        """Register usernames with Guacamole database
+
+        Raises:
+            DataSafeHavenUserHandlingException if the users could not be registered in the Guacamole database
+        """
+        try:
+            # Construct sequence of users
+            users = filter(
+                lambda user: user.username in user_names,
+                self.active_directory_users.list(),
+            )
+            # Add specified users to Guacamole
+            self.sre_guacamole_users[sre_name].add(users)
+        except Exception as exc:
+            raise DataSafeHavenUserHandlingException(
+                f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{str(exc)}"
             )
 
     def remove(self, user_names: Sequence[str]) -> None:
