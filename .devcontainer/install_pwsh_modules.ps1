@@ -19,6 +19,7 @@ $ModuleVersionRequired = @{
     "Microsoft.Graph.Identity.DirectoryManagement" = @("ge", "1.10.0")
     "Poshstache"                     = @("ge", "0.1.10")
     "Powershell-Yaml"                = @("ge", "0.4.2")
+    "PSScriptAnalyzer"               = @("ge", "1.21.0")
 }
 
 # Powershell modules
