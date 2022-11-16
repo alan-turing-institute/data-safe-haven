@@ -8,7 +8,8 @@
 		"terminal.integrated.defaultProfile.linux": "bash"
 	},
 	"extensions": [
-		"github.vscode-pull-request-github"
+		"github.vscode-pull-request-github",
+		"ms-vscode.powershell"
 	],
 	"remoteUser": "deploydsh"
 }
