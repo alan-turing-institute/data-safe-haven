@@ -2,6 +2,7 @@
 # - ActiveDirectoryDsc
 # - PSModulesDsc
 # - xPendingReboot
+# - xPSDesiredStateConfiguration
 # Note that logs are in C:\Windows\System32\Configuration\ConfigurationStatus
 
 Configuration InstallPowershellModules {
@@ -298,7 +299,6 @@ Configuration ConfigureActiveDirectory {
             SetScript = {
                 try {
                     $success = $true
-                    # $ADRootDSE = Get-ADRootDSE
                     $AzureADSyncUsername = $using:DataSafeHavenServiceAccounts.AzureADSynchroniser.Username
                     $AzureADSyncSID = (Get-ADUser -Identity $AzureADSyncUsername).SID
                     $DefaultNamingContext = $(Get-ADRootDSE).DefaultNamingContext
@@ -377,6 +377,9 @@ Configuration DownloadInstallers {
         [ValidateNotNullOrEmpty()]
         [String]$DIInstallerBasePath
     )
+
+    Import-DscResource -ModuleName xPSDesiredStateConfiguration -ModuleVersion 9.1.0
+
     Node localhost {
         Script AzureADConnect {
             SetScript = {
@@ -389,6 +392,11 @@ Configuration DownloadInstallers {
             }
             GetScript = { @{} }
             TestScript = { (Test-Path -Path (Join-Path $using:DIInstallerBasePath "AzureADConnect.msi")) }
+        }
+
+        xRemoteFile DisconnectAD { # from xPSDesiredStateConfiguration
+            Uri = "https://raw.githubusercontent.com/alan-turing-institute/data-safe-haven/develop/deployment/safe_haven_management_environment/desired_state_configuration/dc1Artifacts/Disconnect_AD.mustache.ps1"
+            DestinationPath = Join-Path $DIInstallerBasePath "DisconnectAD.ps1"
         }
     }
 }

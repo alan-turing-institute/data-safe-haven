@@ -65,6 +65,10 @@ class SHMMonitoringComponent(ComponentResource):
                 "0.4.0.0",
                 "2fbada64b9b1424ee72badf3c332e9670c97e0cc4d20ce4aeb8a499bda2b4d4e",
             ),
+            "xPSDesiredStateConfiguration": (
+                "9.1.0",
+                "1541119e4d47e5f3854d55cff520443b7cefa74842b14932f10dfe0bd820e9c3",
+            ),
         }
         for module_name, (module_version, sha256_hash) in modules.items():
             module = automation.Module(
