@@ -144,6 +144,7 @@ class VMComponent(ComponentResource):
                 network.NetworkInterfaceIPConfigurationArgs(
                     name=f"ipconfig{props.vm_name_underscored}".replace("_", ""),
                     private_ip_address=props.ip_address_private,
+                    private_ip_allocation_method="Static",
                     subnet=network.SubnetArgs(id=subnet.id),
                     **network_interface_ip_params,
                 )
@@ -156,6 +157,9 @@ class VMComponent(ComponentResource):
         # Define virtual machine
         virtual_machine = compute.VirtualMachine(
             self._name,
+            diagnostics_profile=compute.DiagnosticsProfileArgs(
+                boot_diagnostics=compute.BootDiagnosticsArgs(enabled=True)
+            ),
             hardware_profile=compute.HardwareProfileArgs(
                 vm_size=props.vm_size,
             ),
@@ -188,6 +192,6 @@ class VMComponent(ComponentResource):
             ),
         )
         # Register outputs
+        self.ip_address_private = Output.from_input(props.ip_address_private)
         self.resource_group_name = Output.from_input(props.resource_group_name)
-        self.virtual_machine = virtual_machine
-        self.vm_name = Output.from_input(props.vm_name)
+        self.vm_name = virtual_machine.name
