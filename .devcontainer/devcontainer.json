@@ -9,7 +9,8 @@
 	},
 	"extensions": [
 		"github.vscode-pull-request-github",
-		"ms-vscode.powershell"
+		"ms-vscode.powershell",
+		"ms-vscode.azure-account"
 	],
 	"remoteUser": "deploydsh"
 }
