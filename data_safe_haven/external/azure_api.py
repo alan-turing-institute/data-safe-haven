@@ -844,7 +844,12 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"https://{key_vault_name}.vault.azure.net", self.credential
             )
             # Set the secret to the desired value
-            secret_client.set_secret(secret_name, secret_value)
+            try:
+                existing_value = secret_client.get_secret(secret_name)
+            except ResourceNotFoundError:
+                existing_value = None
+            if (not existing_value) or (existing_value != secret_value):
+                secret_client.set_secret(secret_name, secret_value)
             return secret_client.get_secret(secret_name)
         except Exception as exc:
             raise DataSafeHavenAzureException(
