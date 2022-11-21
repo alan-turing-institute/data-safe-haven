@@ -36,7 +36,7 @@ class SREConfigurationManager(LoggingMixin):
         self.security_group_params = {
             "dn_base": f"DC={config.shm.fqdn.replace('.',',DC=')}",
             "resource_group_name": config.shm.domain_controllers.resource_group_name,
-            "group_name": f"Data Safe Haven Users SRE {self.sre_name}",
+            "group_name": config.sre[self.sre_name].security_group_name,
             "vm_name": config.shm.domain_controllers.vm_name,
         }
 

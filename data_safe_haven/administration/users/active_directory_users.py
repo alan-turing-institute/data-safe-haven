@@ -6,7 +6,7 @@ from typing import Sequence
 
 # Local imports
 from data_safe_haven.external import AzureApi
-from data_safe_haven.helpers import FileReader
+from data_safe_haven.helpers import b64encode, FileReader
 from data_safe_haven.mixins import LoggingMixin
 from .research_user import ResearchUser
 
@@ -49,11 +49,11 @@ class ActiveDirectoryUsers(LoggingMixin):
                     ]
                 )
             ]
-        user_details_b64 = base64.b64encode("\n".join(csv_contents).encode("utf-8"))
+        user_details_b64 = b64encode("\n".join(csv_contents))
         output = self.azure_api.run_remote_script(
             self.resource_group_name,
             add_users_script.file_contents(),
-            {"UserDetailsB64": user_details_b64.decode()},
+            {"UserDetailsB64": user_details_b64},
             self.vm_name,
         )
         for line in output.split("\n"):
@@ -85,3 +85,16 @@ class ActiveDirectoryUsers(LoggingMixin):
                     )
                 )
         return users
+
+    def register(self, sre_name: str, users: Sequence[ResearchUser]) -> None:
+        """Register usernames with correct security group"""
+        register_users_script = FileReader(
+            self.resources_path / "active_directory" / "add_users_to_group.ps1"
+        )
+        usernames = "\n".join([user.username for user in users])
+        output = self.azure_api.run_remote_script(
+            self.resource_group_name,
+            register_users_script.file_contents(),
+            {"SREName": sre_name, "UsernamesB64": b64encode(usernames)},
+            self.vm_name,
+        )

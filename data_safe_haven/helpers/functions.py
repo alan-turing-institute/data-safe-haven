@@ -1,4 +1,5 @@
 # Standard library imports
+import base64
 import hashlib
 import secrets
 import string
@@ -7,6 +8,10 @@ import string
 def alphanumeric(input: str) -> str:
     """Strip any characters that are not letters or numbers from a string."""
     return "".join(filter(lambda x: x in (string.ascii_letters + string.digits), input))
+
+
+def b64encode(input: str) -> str:
+    return base64.b64encode(input.encode("utf-8")).decode()
 
 
 def hash(input: str) -> str:

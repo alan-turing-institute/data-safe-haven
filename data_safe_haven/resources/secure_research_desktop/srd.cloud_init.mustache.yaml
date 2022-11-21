@@ -21,10 +21,11 @@ write_files:
       base OU=Data Safe Haven Research Users,{{ldap_root_dn}}
       base OU=Data Safe Haven Security Groups,{{ldap_root_dn}}
 
-      # User filter is any user
-      filter passwd (objectclass=user)
-      # One group for each user and for each security group
-      filter group (|(objectclass=group)(objectclass=user))
+      # All users that are members of the correct security group
+      filter passwd (&(objectClass=user)(memberOf=CN={{ldap_sre_security_group}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}}))
+
+      # One group for each security group and for each user
+      filter group (|(objectclass=group)(&(objectClass=user)(memberOf=CN={{ldap_sre_security_group}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}})))
 
       # Attribute mappings
       map  passwd  uid                sAMAccountName

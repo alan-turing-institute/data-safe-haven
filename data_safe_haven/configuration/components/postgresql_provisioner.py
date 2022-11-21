@@ -118,7 +118,7 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
 
             # Apply the Guacamole initialisation script
             for filepath in filepaths:
-                self.info(f"Running SQL script: {filepath.name}")
+                self.info(f"Running SQL script: <fg=green>{filepath.name}</>.")
                 commands = self.load_sql(filepath, mustache_values)
                 cursor.execute(commands)
                 if "SELECT" in cursor.statusmessage:

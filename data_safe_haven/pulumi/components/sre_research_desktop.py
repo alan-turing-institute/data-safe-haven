@@ -23,6 +23,7 @@ class SREResearchDesktopProps:
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
         location: Input[str],
+        security_group_name: Input[str],
         subnet_name: Input[str],
         virtual_network_resource_group_name: Input[str],
         virtual_network: Input[network.VirtualNetwork],
@@ -30,11 +31,11 @@ class SREResearchDesktopProps:
     ):
         self.admin_password = admin_password
         self.domain_sid = domain_sid
-        self.ip_addresses = ip_addresses
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.location = location
+        self.security_group_name = security_group_name
         self.subnet_name = subnet_name
         self.virtual_network = virtual_network
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
@@ -74,6 +75,7 @@ class SREResearchDesktopComponent(ComponentResource):
             ldap_search_password=props.ldap_search_password,
             ldap_server_ip=props.ldap_server_ip,
             resource_group_name=resource_group.name,
+            security_group_name=props.security_group_name,
             vm_details=props.vm_details,
         ).apply(
             lambda args: self.deploy(
@@ -82,6 +84,7 @@ class SREResearchDesktopComponent(ComponentResource):
                 ldap_search_password=args["ldap_search_password"],
                 ldap_server_ip=args["ldap_server_ip"],
                 resource_group_name=args["resource_group_name"],
+                security_group_name=args["security_group_name"],
                 sre_name=sre_name,
                 vm_details=args["vm_details"],
                 props=props,
@@ -102,6 +105,7 @@ class SREResearchDesktopComponent(ComponentResource):
         ldap_search_password: str,
         ldap_server_ip: str,
         resource_group_name: str,
+        security_group_name: str,
         sre_name: str,
         vm_details: Sequence[Tuple[str, str]],
         props: SREResearchDesktopProps,
@@ -126,6 +130,7 @@ class SREResearchDesktopComponent(ComponentResource):
                 "ldap_root_dn": ldap_root_dn,
                 "ldap_search_password": ldap_search_password,
                 "ldap_server_ip": ldap_server_ip,
+                "ldap_sre_security_group": security_group_name,
             }
             cloudinit = chevron.render(f_cloudinit, mustache_values)
             b64cloudinit = base64.b64encode(cloudinit.encode("utf-8")).decode()

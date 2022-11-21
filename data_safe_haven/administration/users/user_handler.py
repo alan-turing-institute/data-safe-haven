@@ -124,10 +124,9 @@ class UserHandler(LoggingMixin, AzureMixin):
         """
         try:
             # Construct sequence of users
-            users = filter(
-                lambda user: user.username in user_names,
-                self.active_directory_users.list(),
-            )
+            users = [user.username in user_names for user in self.active_directory_users.list()]
+            # Register users in correct security group
+            self.active_directory_users.register(sre_name, users)
             # Add specified users to Guacamole
             self.sre_guacamole_users[sre_name].add(users)
         except Exception as exc:

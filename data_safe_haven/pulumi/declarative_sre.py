@@ -127,6 +127,7 @@ class DeclarativeSRE:
                 ),
                 ldap_server_ip=self.cfg.shm.domain_controllers.ldap_server_ip,
                 location=self.cfg.azure.location,
+                security_group_name=self.cfg.sre[self.sre_name].security_group_name,
                 subnet_name=networking.secure_research_desktop["subnet_name"],
                 virtual_network_resource_group_name=networking.resource_group_name,
                 virtual_network=networking.virtual_network,
