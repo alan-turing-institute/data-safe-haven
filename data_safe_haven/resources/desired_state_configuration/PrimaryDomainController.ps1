@@ -115,6 +115,14 @@ Configuration InstallActiveDirectory {
 
 Configuration ConfigureActiveDirectory {
     param (
+        [Parameter(HelpMessage = "AzureAD connect password")]
+        [ValidateNotNullOrEmpty()]
+        [String]$CADAzureADConnectPassword,
+
+        [Parameter(HelpMessage = "AzureAD connect user name")]
+        [ValidateNotNullOrEmpty()]
+        [String]$CADAzureADConnectUsername,
+
         [Parameter(Mandatory = $true, HelpMessage = "Domain administrator password")]
         [ValidateNotNullOrEmpty()]
         [String]$CADDomainAdministratorPassword,
@@ -131,13 +139,13 @@ Configuration ConfigureActiveDirectory {
         [ValidateNotNullOrEmpty()]
         [String]$CADDomainComputerManagerUsername,
 
-        [Parameter(HelpMessage = "AzureAD connect password")]
+        [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM domain")]
         [ValidateNotNullOrEmpty()]
-        [String]$CADAzureADConnectPassword,
+        [String]$CADDomainName,
 
-        [Parameter(HelpMessage = "AzureAD connect user name")]
+        [Parameter(Mandatory = $true, HelpMessage = "Root DN for the SHM domain")]
         [ValidateNotNullOrEmpty()]
-        [String]$CADAzureADConnectUsername,
+        [String]$CADDomainRootDn,
 
         [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM domain")]
         [ValidateNotNullOrEmpty()]
@@ -149,23 +157,23 @@ Configuration ConfigureActiveDirectory {
     # Construct variables for passing to DSC configurations
     $DomainAdministratorPasswordSecure = ConvertTo-SecureString -String $CADDomainAdministratorPassword -AsPlainText -Force
     $DomainAdministratorCredentials = New-Object System.Management.Automation.PSCredential ("${CADDomainName}\$($CADDomainAdministratorUsername)", $DomainAdministratorPasswordSecure)
-    $DomainBaseDn = "DC=$($CADDomainName.Replace('.',',DC='))"
+    $CADDomainRootDn = "DC=$($CADDomainName.Replace('.',',DC='))"
     $DataSafeHavenUnits = @{
         DomainComputers = @{
             Description = "Data Safe Haven Domain Computers"
-            Path        = "OU=Data Safe Haven Domain Computers,${DomainBaseDn}"
+            Path        = "OU=Data Safe Haven Domain Computers,${CADDomainRootDn}"
         }
         ResearchUsers   = @{
             Description = "Data Safe Haven Research Users"
-            Path        = "OU=Data Safe Haven Research Users,${DomainBaseDn}"
+            Path        = "OU=Data Safe Haven Research Users,${CADDomainRootDn}"
         }
         SecurityGroups  = @{
             Description = "Data Safe Haven Security Groups"
-            Path        = "OU=Data Safe Haven Security Groups,${DomainBaseDn}"
+            Path        = "OU=Data Safe Haven Security Groups,${CADDomainRootDn}"
         }
         ServiceAccounts = @{
             Description = "Data Safe Haven Service Accounts"
-            Path        = "OU=Data Safe Haven Service Accounts,${DomainBaseDn}"
+            Path        = "OU=Data Safe Haven Service Accounts,${CADDomainRootDn}"
         }
     }
     $DataSafeHavenServiceAccounts = @{
@@ -231,7 +239,7 @@ Configuration ConfigureActiveDirectory {
                 Description = "$($DataSafeHavenUnits[$Unit].Description)"
                 Ensure = "Present"
                 Name = "$($DataSafeHavenUnits[$Unit].Description)"
-                Path = $DomainBaseDn
+                Path = $CADDomainRootDn
                 ProtectedFromAccidentalDeletion = $true
             }
         }
@@ -274,7 +282,7 @@ Configuration ConfigureActiveDirectory {
                 IdentityReference = $DataSafeHavenServiceAccounts.AzureADSynchroniser.UserName
                 InheritedObjectType = $ADGuid["user"]
                 ObjectType = $ADGuid[$Property]
-                Path = $DomainBaseDn
+                Path = $CADDomainRootDn
                 DependsOn = "[ADUser]AzureADSynchroniser"
             }
         }
@@ -289,7 +297,7 @@ Configuration ConfigureActiveDirectory {
                 IdentityReference = $DataSafeHavenServiceAccounts.AzureADSynchroniser.UserName
                 InheritedObjectType = $ADGuid["user"]
                 ObjectType = $ADExtendedRights[$ExtendedRight]
-                Path = $DomainBaseDn
+                Path = $CADDomainRootDn
                 DependsOn = "[ADUser]AzureADSynchroniser"
             }
         }
@@ -431,6 +439,10 @@ Configuration PrimaryDomainController {
         [ValidateNotNullOrEmpty()]
         [String]$DomainName,
 
+        [Parameter(Mandatory = $true, HelpMessage = "Root DN for the SHM domain")]
+        [ValidateNotNullOrEmpty()]
+        [String]$DomainRootDn,
+
         [Parameter(Mandatory = $true, HelpMessage = "NetBIOS name for the domain")]
         [ValidateNotNullOrEmpty()]
         [String]$DomainNetBios
@@ -476,6 +488,7 @@ Configuration PrimaryDomainController {
             CADDomainComputerManagerPassword = $DomainComputerManagerPassword
             CADDomainComputerManagerUsername = $DomainComputerManagerUsername
             CADDomainName = $DomainName
+            CADDomainRootDn = $DomainRootDn
             DependsOn = "[InstallActiveDirectory]InstallActiveDirectory"
         }
 

@@ -11,6 +11,7 @@ from pulumi_azure_native import resources
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.helpers import FileReader
 from .automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
+from ..dynamic.remote_powershell import RemoteScript, RemoteScriptProps
 from .virtual_machine import VMComponent, WindowsVMProps
 
 
@@ -27,9 +28,9 @@ class SHMDomainControllersProps:
         domain_fqdn: Input[str],
         domain_netbios_name: Input[str],
         location: Input[str],
-        password_domain_computer_manager: Input[str],
         password_domain_admin: Input[str],
         password_domain_azuread_connect: Input[str],
+        password_domain_computer_manager: Input[str],
         subnet_ip_range: Input[AzureIPv4Range],
         subnet_name: Input[str],
         subscription_name: Input[str],
@@ -44,18 +45,21 @@ class SHMDomainControllersProps:
             automation_account_resource_group_name
         )
         self.domain_fqdn = domain_fqdn
+        self.domain_root_dn = Output.from_input(domain_fqdn).apply(
+            lambda dn: f"DC={dn.replace('.', ',DC=')}"
+        )
         self.domain_netbios_name = domain_netbios_name[:15]  # maximum of 15 characters
         self.location = location
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect
         self.password_domain_computer_manager = password_domain_computer_manager
         # Note that usernames have a maximum of 20 characters
-        self.username_domain_computer_manager = "dshcomputermanager"
-        self.username_domain_azuread_connect = "dshazureadsync"
-        self.username_domain_admin = "dshdomainadmin"
         self.subnet_ip_range = subnet_ip_range
         self.subnet_name = subnet_name
         self.subscription_name = subscription_name
+        self.username_domain_admin = "dshdomainadmin"
+        self.username_domain_azuread_connect = "dshazureadsync"
+        self.username_domain_computer_manager = "dshcomputermanager"
         self.virtual_network_name = virtual_network_name
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
@@ -116,6 +120,7 @@ class SHMDomainControllersComponent(ComponentResource):
                 automation_account_registration_url=props.automation_account_registration_url,
                 automation_account_resource_group_name=props.automation_account_resource_group_name,
                 configuration_name=dsc_configuration_name,
+                dsc_description="DSC for Data Safe Haven primary domain controller",
                 dsc_file=dsc_reader,
                 dsc_parameters={
                     "AzureADConnectPassword": props.password_domain_azuread_connect,
@@ -126,6 +131,7 @@ class SHMDomainControllersComponent(ComponentResource):
                     "DomainComputerManagerUsername": props.username_domain_computer_manager,
                     "DomainName": props.domain_fqdn,
                     "DomainNetBios": props.domain_netbios_name,
+                    "DomainRootDn": props.domain_root_dn,
                 },
                 dsc_required_modules=props.automation_account_modules,
                 location=props.location,
@@ -137,12 +143,40 @@ class SHMDomainControllersComponent(ComponentResource):
                 child_opts, ResourceOptions(depends_on=[primary_domain_controller])
             ),
         )
+        # Extract the domain SID
+        domain_sid_script = FileReader(
+            resources_path / "active_directory" / "get_ad_sid.ps1"
+        )
+        domain_sid = RemoteScript(
+            f"{self._name}_get_ad_sid",
+            RemoteScriptProps(
+                script_contents=domain_sid_script.file_contents(),
+                script_hash=domain_sid_script.sha256(),
+                script_parameters={},
+                subscription_name=props.subscription_name,
+                vm_name=primary_domain_controller.vm_name,
+                vm_resource_group_name=resource_group.name,
+            ),
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    depends_on=[
+                        primary_domain_controller,
+                        primary_domain_controller_dsc_node,
+                    ]
+                ),
+            ),
+        )
 
         # Register outputs
-        self.resource_group_name = Output.from_input(resource_group.name)
+        self.resource_group_name = resource_group.name
 
         # Register exports
         self.exports = {
-            "resource_group_name": Output.from_input(resource_group.name),
+            "azure_ad_connect_password_secret": "password-domain-azure-ad-connect",
+            "domain_sid": domain_sid.script_output,
+            "ldap_root_dn": props.domain_root_dn,
+            "ldap_server_ip": primary_domain_controller.ip_address_private,
+            "resource_group_name": resource_group.name,
             "vm_name": primary_domain_controller.vm_name,
         }
