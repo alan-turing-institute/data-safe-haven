@@ -10,7 +10,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.external import GraphApi
+from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.helpers import alphanumeric, password
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.pulumi import PulumiStack
@@ -25,12 +25,17 @@ class DeploySRECommand(LoggingMixin, Command):
         {--c|allow-copy= : Allow copying of text from the SRE (default: False)}
         {--p|allow-paste= : Allow pasting of text into the SRE (default: False)}
         {--o|output= : Path to an output log file}
+        {--r|research-desktop=* : Add a research desktop VM by SKU name}
     """
 
     def handle(self) -> None:
         try:
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
+
+            # Require at least one research desktop
+            if not self.option("research-desktop"):
+                raise ValueError("At least one research desktop must be specified.")
 
             # Use dotfile settings to load the job configuration
             try:
@@ -42,7 +47,7 @@ class DeploySRECommand(LoggingMixin, Command):
             config = Config(settings.name, settings.subscription_name)
 
             # Set a JSON-safe name for this SRE and add any missing values to the config
-            self.safe_name = alphanumeric(self.argument("name"))
+            self.sre_name = alphanumeric(self.argument("name"))
             self.add_missing_values(config)
 
             # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
@@ -52,7 +57,7 @@ class DeploySRECommand(LoggingMixin, Command):
             )
 
             # Deploy infrastructure with Pulumi
-            stack = PulumiStack(config, "SRE", sre_name=self.argument("name"))
+            stack = PulumiStack(config, "SRE", sre_name=self.sre_name)
             # Set Azure options
             stack.add_option("azure-native:location", config.azure.location)
             stack.add_option(
@@ -60,7 +65,15 @@ class DeploySRECommand(LoggingMixin, Command):
             )
             stack.add_option("azure-native:tenantId", config.azure.tenant_id)
             # Add necessary secrets
+            stack.add_secret(
+                "password-domain-ldap-searcher",
+                config.get_secret(
+                    config.shm.domain_controllers["ldap_searcher_password_secret"]
+                ),
+                replace=True,
+            )
             stack.add_secret("password-user-database-admin", password(20))
+            stack.add_secret("password-secure-research-desktop-admin", password(20))
             stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
             stack.deploy()
 
@@ -71,13 +84,16 @@ class DeploySRECommand(LoggingMixin, Command):
 
             # Add Pulumi output information to the config file
             for key, value in stack.output("remote_desktop").items():
-                config.sre[self.safe_name].remote_desktop[key] = value
-            config.sre[self.safe_name].remote_desktop[
+                config.sre[self.sre_name].remote_desktop[key] = value
+            config.sre[self.sre_name].remote_desktop[
                 "connection_db_server_admin_password_secret"
-            ] = f"{self.safe_name}-password-user-database-admin"
-            config.sre[self.safe_name].vm_details = stack.output("vm_details")
+            ] = f"password-user-database-admin-sre-{self.sre_name}"
+            for (vm_name, _, vm_ipaddress) in stack.output("srd"):
+                config.sre[self.sre_name].research_desktops[
+                    vm_name
+                ].ip_address = vm_ipaddress
             config.add_secret(
-                config.sre[self.safe_name].remote_desktop[
+                config.sre[self.sre_name].remote_desktop[
                     "connection_db_server_admin_password_secret"
                 ],
                 stack.secret("password-user-database-admin"),
@@ -87,7 +103,7 @@ class DeploySRECommand(LoggingMixin, Command):
             config.upload()
 
             # Apply SRE configuration
-            manager = SREConfigurationManager(config, self.safe_name)
+            manager = SREConfigurationManager(config, self.sre_name)
             manager.apply_configuration()
 
         except DataSafeHavenException as exc:
@@ -101,16 +117,51 @@ class DeploySRECommand(LoggingMixin, Command):
     def add_missing_values(self, config: Config) -> None:
         """Request any missing config values and add them to the config"""
         # Create a config entry for this SRE if it does not exist
-        if self.safe_name not in config.sre.keys():
+        if self.sre_name not in config.sre.keys():
             highest_index = max([0] + [sre.index for sre in config.sre.values()])
-            config.sre[self.safe_name].index = highest_index + 1
+            config.sre[self.sre_name].index = highest_index + 1
 
         # Set whether copying is allowed
-        config.sre[self.safe_name].remote_desktop.allow_copy = bool(
+        config.sre[self.sre_name].remote_desktop.allow_copy = bool(
             self.option("allow-copy")
         )
 
         # Set whether pasting is allowed
-        config.sre[self.safe_name].remote_desktop.allow_paste = bool(
+        config.sre[self.sre_name].remote_desktop.allow_paste = bool(
             self.option("allow-paste")
         )
+
+        # Add list of research desktop VMs
+        azure_api = AzureApi(config.subscription_name)
+        available_vm_skus = azure_api.list_available_vm_skus(config.azure.location)
+        vm_skus = [
+            sku
+            for sku in self.option("research-desktop")
+            if sku in available_vm_skus.keys()
+        ]
+        while not vm_skus:
+            self.warning("An SRE deployment needs at least one research desktop.")
+            self.info(
+                "Please enter the VM SKU for each desktop you want to create, separated by spaces, for example 'Standard_D2s_v3 Standard_D2s_v3'."
+            )
+            self.info("Available SKUs can be seen here: https://azureprice.net/")
+            answer = self.log_ask("Space-separated VM sizes:", None)
+            vm_skus = [sku for sku in answer if sku in available_vm_skus.keys()]
+        if hasattr(config.sre[self.sre_name], "research_desktops"):
+            del config.sre[self.sre_name].research_desktops
+        for vm_sku in vm_skus:
+            idx_cpu, idx_gpu = 0, 0
+            if int(available_vm_skus[vm_sku]["GPUs"]) > 0:
+                vm_cfg = config.sre[self.sre_name].research_desktops[
+                    f"srd-gpu-{idx_gpu:02d}"
+                ]
+                idx_gpu += 1
+            else:
+                vm_cfg = config.sre[self.sre_name].research_desktops[
+                    f"srd-cpu-{idx_cpu:02d}"
+                ]
+                idx_cpu += 1
+            vm_cfg.sku = vm_sku
+            vm_cfg.cpus = int(available_vm_skus[vm_sku]["vCPUs"])
+            vm_cfg.gpus = int(available_vm_skus[vm_sku]["GPUs"])
+            vm_cfg.ram = int(available_vm_skus[vm_sku]["MemoryGB"])

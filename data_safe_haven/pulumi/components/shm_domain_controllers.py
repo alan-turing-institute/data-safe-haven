@@ -86,7 +86,7 @@ class SHMDomainControllersComponent(ComponentResource):
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-users",
+            resource_group_name=f"rg-{stack_name}-identity",
         )
 
         # Create the DC

@@ -15,11 +15,11 @@ class SRENetworkingProps:
         self,
         location: Input[str],
         shm_fqdn: Input[str],
-        shm_zone_resource_group_name: Input[str],
+        shm_networking_resource_group_name: Input[str],
+        shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
         sre_index: Input[str],
     ):
-        self.location = location
         # VNet
         self.vnet_ip_range = Output.from_input(sre_index).apply(
             lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
@@ -55,8 +55,11 @@ class SRENetworkingProps:
         )
         self.srds_cidr = self.srds_ip_range.apply(lambda ip_range: str(ip_range))
         self.srds_subnet_name = "SecureResearchDesktopSubnet"
+        # Other variables
+        self.location = location
         self.shm_fqdn = shm_fqdn
-        self.shm_zone_resource_group_name = shm_zone_resource_group_name
+        self.shm_networking_resource_group_name = shm_networking_resource_group_name
+        self.shm_virtual_network_name = shm_virtual_network_name
         self.shm_zone_name = shm_zone_name
 
 
@@ -139,13 +142,37 @@ class SRENetworkingComponent(ComponentResource):
             security_rules=[
                 network.SecurityRuleArgs(
                     access="Allow",
-                    description="Allow inbound SSH from Guacamole.",
+                    description="Allow connections to SRDs from remote desktop gateway.",
                     destination_address_prefix="*",
                     destination_port_range="22",
                     direction="Inbound",
-                    name="AllowGuacamoleSSHInbound",
-                    priority=1000,
+                    name="AllowRemoteDesktopGatewayInbound",
+                    priority=800,
                     protocol="*",
+                    source_address_prefix=props.guacamole_containers_cidr,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access="Allow",
+                    description="Allow LDAP client requests over UDP.",
+                    destination_address_prefix="*",
+                    destination_port_ranges=["389", "636"],
+                    direction="Outbound",
+                    name="AllowLDAPClientUDPOutbound",
+                    priority=1000,
+                    protocol="UDP",
+                    source_address_prefix=props.guacamole_containers_cidr,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access="Allow",
+                    description="Allow LDAP client requests over TCP (see https://devopstales.github.io/linux/pfsense-ad-join/ for details).",
+                    destination_address_prefix="*",
+                    destination_port_ranges=["389", "636"],
+                    direction="Outbound",
+                    name="AllowLDAPClientTCPOutbound",
+                    priority=1100,
+                    protocol="TCP",
                     source_address_prefix=props.guacamole_containers_cidr,
                     source_port_range="*",
                 ),
@@ -154,7 +181,7 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Define the virtual network with inline subnets
-        virtual_network = network.VirtualNetwork(
+        sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
                 address_prefixes=[props.vnet_cidr],
@@ -202,6 +229,27 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Peer to the SHM virtual network
+        shm_virtual_network = network.get_virtual_network(
+            resource_group_name=props.shm_networking_resource_group_name,
+            virtual_network_name=props.shm_virtual_network_name,
+        )
+        # shm_virtual_network_name = Output.from_input(props.shm_virtual_network_name).apply(lambda name: str(name))
+        peering_sre_to_shm = network.VirtualNetworkPeering(
+            f"{self._name}_sre_to_shm_peering",
+            remote_virtual_network=network.SubResourceArgs(id=shm_virtual_network.id),
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+            virtual_network_peering_name=f"peer_sre_{sre_name}_to_shm",
+        )
+        peering_shm_to_sre = network.VirtualNetworkPeering(
+            f"{self._name}_shm_to_sre_peering",
+            remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
+            resource_group_name=props.shm_networking_resource_group_name,
+            virtual_network_name=shm_virtual_network.name,
+            virtual_network_peering_name=f"peer_shm_to_sre_{sre_name}",
+        )
+
         # Define public IP address
         public_ip = network.PublicIPAddress(
             f"{self._name}_public_ip",
@@ -214,7 +262,7 @@ class SRENetworkingComponent(ComponentResource):
 
         # Define SRE DNS zone
         shm_dns_zone = network.get_zone(
-            resource_group_name=props.shm_zone_resource_group_name,
+            resource_group_name=props.shm_networking_resource_group_name,
             zone_name=props.shm_zone_name,
         )
         sre_subdomain = alphanumeric(sre_name)
@@ -235,7 +283,7 @@ class SRENetworkingComponent(ComponentResource):
             ),
             record_type="NS",
             relative_record_set_name=sre_subdomain,
-            resource_group_name=props.shm_zone_resource_group_name,
+            resource_group_name=props.shm_networking_resource_group_name,
             ttl=3600,
             zone_name=shm_dns_zone.name,
             opts=child_opts,
@@ -272,11 +320,14 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Extract useful variables
-        ip_address_guacamole_container = props.guacamole_containers_ip_range.apply(
-            lambda ip_range: str(ip_range.available()[0])
-        )
         ip_address_guacamole_database = props.guacamole_database_ip_range.apply(
             lambda ip_range: str(ip_range.available()[0])
+        )
+        ip_addresses_guacamole_container = props.guacamole_containers_ip_range.apply(
+            lambda ip_range: [str(ip) for ip in ip_range.available()]
+        )
+        ip_addresses_srds = props.srds_ip_range.apply(
+            lambda ip_range: [str(ip) for ip in ip_range.available()]
         )
 
         # Register outputs
@@ -284,14 +335,19 @@ class SRENetworkingComponent(ComponentResource):
             "subnet_name": props.application_gateway_subnet_name,
         }
         self.guacamole_containers = {
-            "ip_address": ip_address_guacamole_container,
+            "ip_addresses": ip_addresses_guacamole_container,
             "subnet_name": props.guacamole_containers_subnet_name,
         }
         self.guacamole_database = {
             "ip_address": ip_address_guacamole_database,
             "subnet_name": props.guacamole_database_subnet_name,
         }
+        self.secure_research_desktop = {
+            "ip_addresses": ip_addresses_srds,
+            "subnet_name": props.srds_subnet_name,
+        }
+
         self.public_ip_id = public_ip.id
         self.resource_group_name = resource_group.name
         self.sre_fqdn = sre_dns_zone.name
-        self.virtual_network = virtual_network
+        self.virtual_network = sre_virtual_network

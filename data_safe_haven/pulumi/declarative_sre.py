@@ -11,6 +11,10 @@ from .components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
+from .components.sre_research_desktop import (
+    SREResearchDesktopComponent,
+    SREResearchDesktopProps,
+)
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
 from .components.sre_remote_desktop import (
     SRERemoteDesktopComponent,
@@ -43,9 +47,10 @@ class DeclarativeSRE:
             SRENetworkingProps(
                 location=self.cfg.azure.location,
                 shm_fqdn=self.cfg.shm.fqdn,
-                shm_zone_resource_group_name=f"rg-shm-{self.shm_name}-networking",
+                shm_networking_resource_group_name=f"rg-shm-{self.shm_name}-networking",
                 shm_zone_name=self.cfg.shm.fqdn,
                 sre_index=self.cfg.sre[self.sre_name].index,
+                shm_virtual_network_name=self.cfg.shm.networking.virtual_network_name,
             ),
         )
 
@@ -71,8 +76,8 @@ class DeclarativeSRE:
             self.stack_name,
             self.sre_name,
             SREApplicationGatewayProps(
-                ip_address_guacamole=networking.guacamole_containers["ip_address"],
                 ip_address_public_id=networking.public_ip_id,
+                ip_addresses_guacamole=networking.guacamole_containers["ip_addresses"],
                 key_vault_certificate_id=state.certificate_secret_id,
                 key_vault_identity=state.managed_identity.id,
                 resource_group_name=networking.resource_group_name,
@@ -93,7 +98,7 @@ class DeclarativeSRE:
                 aad_auth_token=self.secrets.require("token-azuread-graphapi"),
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
                 database_password=self.secrets.require("password-user-database-admin"),
-                ip_address_container=networking.guacamole_containers["ip_address"],
+                ip_address_container=networking.guacamole_containers["ip_addresses"][0],
                 ip_address_database=networking.guacamole_database["ip_address"],
                 location=self.cfg.azure.location,
                 subnet_container_name=networking.guacamole_containers["subnet_name"],
@@ -105,30 +110,34 @@ class DeclarativeSRE:
             ),
         )
 
-        # # Define containerised secure desktops
-        # srd = SecureResearchDesktopComponent(
-        #     "sre_secure_research_desktop",
-        #     self.stack_name,
-        #     self.sre_name,
-        #     SecureResearchDesktopProps(
-        #         aad_auth_app_id=self.cfg.deployment.aad_app_id_authentication,
-        #         aad_auth_app_secret=self.secrets.get(
-        #             "azuread-authentication-application-secret"
-        #         ),
-        #         aad_domain_name=self.cfg.azure.domain_suffix,
-        #         aad_group_research_users=self.cfg.azure.aad_group_research_users,
-        #         aad_tenant_id=self.cfg.azure.aad_tenant_id,
-        #         admin_password=self.secrets.get(
-        #             "secure-research-desktop-admin-password"
-        #         ),
-        #         ip_addresses=networking.ip_addresses_srd,
-        #         resource_group_name=rg_secure_research_desktop.name,
-        #         virtual_network_resource_group_name=networking.resource_group_name,
-        #         virtual_network=networking.virtual_network,
-        #         vm_sizes=self.cfg.environment.vm_sizes,
-        #     ),
-        # )
+        # Define containerised secure desktops
+        srd = SREResearchDesktopComponent(
+            "sre_secure_research_desktop",
+            self.stack_name,
+            self.sre_name,
+            SREResearchDesktopProps(
+                admin_password=self.secrets.require(
+                    "password-secure-research-desktop-admin"
+                ),
+                ip_addresses=networking.secure_research_desktop["ip_addresses"],
+                ldap_root_dn=self.cfg.shm.domain_controllers.ldap_root_dn,
+                ldap_search_password=self.secrets.require(
+                    "password-domain-ldap-searcher"
+                ),
+                ldap_server_ip=self.cfg.shm.domain_controllers.ldap_server_ip,
+                location=self.cfg.azure.location,
+                subnet_name=networking.secure_research_desktop["subnet_name"],
+                virtual_network_resource_group_name=networking.resource_group_name,
+                virtual_network=networking.virtual_network,
+                vm_skus=[
+                    (name, details["sku"])
+                    for name, details in self.cfg.sre[
+                        self.sre_name
+                    ].research_desktops.items()
+                ],
+            ),
+        )
 
         # Export values for later use
         pulumi.export("remote_desktop", remote_desktop.exports)
-        pulumi.export("vm_details", ())
+        pulumi.export("srd", srd.exports)

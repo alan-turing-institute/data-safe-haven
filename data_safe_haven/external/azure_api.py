@@ -2,7 +2,7 @@
 # Standard library imports
 import time
 from contextlib import suppress
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, List, Sequence
 
 # Third party imports
 from azure.core.exceptions import (
@@ -41,6 +41,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalException,
 )
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
+from data_safe_haven.helpers import JSONType
 
 
 class AzureApi(AzureMixin, LoggingMixin):
@@ -573,6 +574,23 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Failed to retrieve secret {secret_name}."
             ) from exc
 
+    def get_vm_sku_details(self, sku: str):
+        # Connect to Azure client
+        compute_client = ComputeManagementClient(self.credential, self.subscription_id)
+        for resource_sku in compute_client.resource_skus.list():
+            if resource_sku.name == sku:
+                for capability in resource_sku.capabilities:
+                    if capability.name == "vCPUs":
+                        cpus = capability.value
+                    if capability.name == "GPUs":
+                        gpus = capability.value
+                    if capability.name == "MemoryGB":
+                        ram = capability.value
+                return (cpus, gpus, ram)
+        raise DataSafeHavenAzureException(
+            f"Could not find information for VM SKU {sku}."
+        )
+
     def import_keyvault_certificate(
         self,
         certificate_name: str,
@@ -618,6 +636,29 @@ class AzureApi(AzureMixin, LoggingMixin):
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to import certificate '{certificate_name}'."
+            ) from exc
+
+    def list_available_vm_skus(self, location: str) -> JSONType:
+        try:
+            # Connect to Azure client
+            compute_client = ComputeManagementClient(
+                self.credential, self.subscription_id
+            )
+            # Construct SKU information
+            skus = {}
+            for resource_sku in compute_client.resource_skus.list():
+                if (location in resource_sku.locations) and (
+                    resource_sku.resource_type == "virtualMachines"
+                ):
+                    skus[resource_sku.name] = {
+                        "GPUs": 0
+                    }  # default to 0 GPUs, overriding if appropriate
+                    for capability in resource_sku.capabilities:
+                        skus[resource_sku.name][capability.name] = capability.value
+            return skus
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to load available VM sizes for Azure location {location}.\n{str(exc)}",
             ) from exc
 
     def purge_keyvault_certificate(
