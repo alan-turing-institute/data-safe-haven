@@ -1,65 +1,63 @@
 #cloud-config
 
 write_files:
-  # Note that all users need to be able to read this so the application must have *very* limited permissions
-  - path: "/etc/azuread/parameters.json"
-    permissions: "0444"
-    content: |
-      {
-        "authority": "https://login.microsoftonline.com/{{aad_tenant_id}}",
-        "client_id": "{{aad_auth_app_id}}",
-        "scope": [ "https://graph.microsoft.com/.default" ],
-        "secret": "{{aad_auth_app_secret}}",
-        "endpoint": "https://graph.microsoft.com/v1.0/users"
-      }
-  - path: "/etc/azuread/parameters.toml"
+  - path: "/etc/nslcd.conf"
     permissions: "0400"
     content: |
-      # Tenant ID for this AzureAD
-      tenant-id="{{aad_tenant_id}}"
+      # nslcd configuration file.
+      # http://manpages.ubuntu.com/manpages/bionic/man5/nslcd.conf.5.html
 
-      # The Application (client) ID for your registered app
-      client-id="{{aad_auth_app_id}}"
+      # Runtime options
+      uid nslcd
+      gid nslcd
+      log syslog debug
 
-      # The (time-limited) client secret generated for this application above
-      client-secret="{{aad_auth_app_secret}}"
+      # General connection options
+      uri ldap://{{ldap_server_ip}}:389
+      binddn CN=dshldapsearcher,OU=Data Safe Haven Service Accounts,{{ldap_root_dn}}
+      bindpw {{ldap_search_password}}
 
-      # Name of AAD group that authenticated users must belong to
-      group-name="{{aad_group_research_users}}"
+      # Search/mapping options
+      base OU=Data Safe Haven Research Users,{{ldap_root_dn}}
+      base OU=Data Safe Haven Security Groups,{{ldap_root_dn}}
 
-      # Default domain for AAD users. This will be appended to any users not in `username@domain` format.
-      domain="{{aad_domain_name}}"
+      # User filter is any user
+      filter passwd (objectclass=user)
+      # One group for each user and for each security group
+      filter group (|(objectclass=group)(objectclass=user))
 
-  - path: "/usr/share/pam-configs/aad_oidc"
-    permissions: "0644"
-    content: |
-      Name: Allow AzureAD login
-      Default: no
-      Priority: 129
-      Auth-Type: Primary
-      Auth:
-        [success=end default=ignore]	pam_aad_oidc.so config=/etc/azuread/parameters.toml
-      Auth-Initial:
-        [success=end default=ignore]	pam_aad_oidc.so config=/etc/azuread/parameters.toml
+      # Attribute mappings
+      map  passwd  uid                sAMAccountName
+      map  passwd  gidNumber          objectSid:{{domain_sid}}
+      map  passwd  uidNumber          objectSid:{{domain_sid}}
+      map  passwd  homeDirectory      "${unixHomeDirectory:-/home/$sAMAccountName}"
+      map  group   cn                 sAMAccountName
+      map  group   gidNumber          objectSid:{{domain_sid}}
 
 package_update: true
 package_upgrade: true
 
 # List of packages to install with apt-get
 packages:
-  - libjansson4 # Needed by libnss_aad
+  - libnss-ldapd # LDAP login
+  - libpam-ldapd # LDAP login
+  - ldap-utils   # LDAP login
 
 runcmd:
-  # Allow AzureAD users to login
-  # ----------------------------
-  # Install PAM and NSS modules
-  - wget https://github.com/alan-turing-institute/pam-aad-oidc/releases/download/v0.2.0/pam_aad_oidc.so -O /lib/x86_64-linux-gnu/security/pam_aad_oidc.so
-  - wget https://github.com/alan-turing-institute/pam-aad-oidc/releases/download/v0.2.0/libnss_aad.so -O /usr/lib/x86_64-linux-gnu/libnss_aad.so
-  - ln -s /usr/lib/x86_64-linux-gnu/libnss_aad.so /lib/x86_64-linux-gnu/libnss_aad.so.2
-  # Add libnss_aad to /etc/nsswitch.conf
-  - sed -i -r "s|^(passwd\|group\|shadow)(:.*)$|\1\2 aad|g" /etc/nsswitch.conf
-  # Add pam_aad_oidc to /etc/pam.d/common-auth
-  - pam-auth-update --enable mkhomedir aad_oidc
+  # Allow LDAP users to login
+  # -------------------------
+  # Configure nsswitch
+  - echo "Adding ldap to /etc/nsswitch.conf"
+  - sed -i -r "s|^(passwd\|group\|shadow)(:.*)$|\1\2 ldap|g" /etc/nsswitch.conf
+  # Configure PAM for LDAP
+  - echo "Configuring PAM for LDAP login"
+  - sed -i "s|pam_mkhomedir.so|pam_mkhomedir.so skel=/etc/skel umask=0022|g" /usr/share/pam-configs/mkhomedir
+  - sed -i "s| use_authtok||g" /usr/share/pam-configs/ldap
+  - pam-auth-update --enable mkhomedir ldap
   # Allow SSH password authentication
   - sed -i "s|^PasswordAuthentication.*|PasswordAuthentication yes|g" /etc/ssh/sshd_config
+  - sed -i "s|^UsePAM.*|UsePAM yes|g" /etc/ssh/sshd_config
+  # Restart services
+  - systemctl restart nscd
+  - systemctl restart nslcd
   - systemctl restart sshd

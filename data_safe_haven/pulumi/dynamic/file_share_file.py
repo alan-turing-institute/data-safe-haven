@@ -20,14 +20,14 @@ class FileShareFileProps:
     def __init__(
         self,
         destination_path: Input[str],
-        share_name: Input[str],
         file_contents: Input[str],
+        share_name: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
     ):
         self.destination_path = destination_path
-        self.share_name = share_name
         self.file_contents = file_contents
+        self.share_name = share_name
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
 

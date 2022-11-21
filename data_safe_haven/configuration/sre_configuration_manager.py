@@ -1,7 +1,6 @@
 """Backend for a Data Safe Haven environment"""
 # Standard library imports
 import pathlib
-from typing import Dict, Sequence, Tuple
 
 # Local imports
 from data_safe_haven.config import Config
@@ -17,17 +16,17 @@ class SREConfigurationManager(LoggingMixin):
     def __init__(
         self,
         config: Config,
-        sre_safe_name: str,
+        sre_name: str,
     ):
         super().__init__()
         self.resources_path = pathlib.Path(__file__).parent.parent / "resources"
-        self.sre_name = sre_safe_name
+        self.sre_name = sre_name
         self.subscription_name = config.subscription_name
 
         # Construct remote desktop parameters
-        self.remote_desktop_params = dict(config.sre[sre_safe_name].remote_desktop)
+        self.remote_desktop_params = dict(config.sre[sre_name].remote_desktop)
         self.remote_desktop_params["connection_db_server_password"] = config.get_secret(
-            config.sre[self.safe_name].remote_desktop[
+            config.sre[self.sre_name].remote_desktop[
                 "connection_db_server_admin_password_secret"
             ]
         )
@@ -42,7 +41,7 @@ class SREConfigurationManager(LoggingMixin):
         }
 
         # Construct VM parameters
-        self.vm_params = dict(config.sre[sre_safe_name].vm_details)
+        self.research_desktops = dict(config.sre[sre_name].research_desktops)
 
     def apply_configuration(self) -> None:
         """Apply SRE configuration"""
@@ -77,13 +76,13 @@ class SREConfigurationManager(LoggingMixin):
         connection_data = {
             "connections": [
                 {
-                    "connection_name": connection,
+                    "connection_name": f"{vm_details['sku']} [{vm_details['cpus']} CPU(s), {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM] ({vm_name})",
                     "disable_copy": (not self.remote_desktop_params["allow_copy"]),
                     "disable_paste": (not self.remote_desktop_params["allow_paste"]),
-                    "ip_address": ip_address,
+                    "ip_address": vm_details["ip_address"],
                     "timezone": self.remote_desktop_params["timezone"],
                 }
-                for (connection, ip_address) in self.vm_params
+                for vm_name, vm_details in self.research_desktops.items()
             ]
         }
         postgres_script_path = (
@@ -100,7 +99,7 @@ class SREConfigurationManager(LoggingMixin):
             mustache_values=connection_data,
         )
 
-    def restart_remote_desktop_containers(self):
+    def restart_remote_desktop_containers(self) -> None:
         # Restart the Guacamole container group
         guacamole_provisioner = ContainerProvisioner(
             self.remote_desktop_params["container_group_name"],

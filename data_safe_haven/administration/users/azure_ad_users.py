@@ -60,10 +60,16 @@ class AzureADUsers(LoggingMixin):
                 account_enabled=user_details["accountEnabled"],
                 email_address=user_details["mail"],
                 given_name=user_details["givenName"],
-                phone_number=user_details["businessPhones"][0]
-                if len(user_details["businessPhones"])
-                else None,
-                sam_account_name=user_details["onPremisesSamAccountName"],
+                phone_number=(
+                    user_details["businessPhones"][0]
+                    if len(user_details["businessPhones"])
+                    else None
+                ),
+                sam_account_name=(
+                    user_details["onPremisesSamAccountName"]
+                    if user_details["onPremisesSamAccountName"]
+                    else user_details["mailNickname"]
+                ),
                 surname=user_details["surname"],
                 user_principal_name=user_details["userPrincipalName"],
             )

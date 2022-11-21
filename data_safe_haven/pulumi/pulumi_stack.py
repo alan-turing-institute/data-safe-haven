@@ -279,4 +279,6 @@ class PulumiStack(LoggingMixin):
             result = self.stack.up(color="always", on_output=self.info)
             self.evaluate(result.summary.result)
         except pulumi.automation.errors.CommandError as exc:
-            raise DataSafeHavenPulumiException("Pulumi update failed.") from exc
+            raise DataSafeHavenPulumiException(
+                f"Pulumi update failed.\n{str(exc)}"
+            ) from exc

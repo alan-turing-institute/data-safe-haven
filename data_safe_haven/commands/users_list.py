@@ -38,7 +38,7 @@ class UsersListCommand(LoggingMixin, Command):
             # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
             graph_api = GraphApi(
                 tenant_id=config.shm.aad_tenant_id,
-                default_scopes=["Group.Read.All"],
+                default_scopes=["Directory.Read.All", "Group.Read.All"],
             )
 
             # List users from all sources

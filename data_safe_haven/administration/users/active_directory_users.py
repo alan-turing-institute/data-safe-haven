@@ -70,18 +70,18 @@ class ActiveDirectoryUsers(LoggingMixin):
             {},
             self.vm_name,
         )
-
         users = []
         for line in output.split("\n"):
             tokens = line.split(";")
-            users.append(
-                ResearchUser(
-                    email_address=tokens[4],
-                    given_name=tokens[1],
-                    phone_number=tokens[3],
-                    sam_account_name=tokens[0],
-                    surname=tokens[2],
-                    user_principal_name=tokens[5],
+            if len(tokens) >= 6:
+                users.append(
+                    ResearchUser(
+                        email_address=tokens[4],
+                        given_name=tokens[1],
+                        phone_number=tokens[3],
+                        sam_account_name=tokens[0],
+                        surname=tokens[2],
+                        user_principal_name=tokens[5],
+                    )
                 )
-            )
         return users

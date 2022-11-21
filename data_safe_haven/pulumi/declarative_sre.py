@@ -119,6 +119,7 @@ class DeclarativeSRE:
                 admin_password=self.secrets.require(
                     "password-secure-research-desktop-admin"
                 ),
+                domain_sid=self.cfg.shm.domain_controllers.domain_sid,
                 ip_addresses=networking.secure_research_desktop["ip_addresses"],
                 ldap_root_dn=self.cfg.shm.domain_controllers.ldap_root_dn,
                 ldap_search_password=self.secrets.require(

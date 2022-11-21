@@ -23,6 +23,7 @@ class AutomationDscNodeProps:
         automation_account_registration_url: Input[str],
         automation_account_resource_group_name: Input[str],
         configuration_name: Input[str],
+        dsc_description: Input[str],
         dsc_file: Input[FileReader],
         dsc_parameters: Input[Dict[str, str]],
         dsc_required_modules: Input[Sequence[str]],
@@ -38,10 +39,11 @@ class AutomationDscNodeProps:
             automation_account_resource_group_name
         )
         self.configuration_name = configuration_name
+        self.dsc_description = dsc_description
         self.dsc_file = dsc_file
-        self.location = location
         self.dsc_parameters = dsc_parameters
         self.dsc_required_modules = dsc_required_modules
+        self.location = location
         self.subscription_name = subscription_name
         self.vm_name = vm_name
         self.vm_resource_group_name = vm_resource_group_name
@@ -62,7 +64,7 @@ class AutomationDscNode(ComponentResource):
             f"{self._name}_dsc",
             automation_account_name=props.automation_account_name,
             configuration_name=props.configuration_name,
-            description="DSC for Data Safe Haven primary domain controller",
+            description=props.dsc_description,
             location=props.location,
             name=props.configuration_name,
             resource_group_name=props.automation_account_resource_group_name,

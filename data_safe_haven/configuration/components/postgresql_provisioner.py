@@ -2,6 +2,7 @@
 # Standard library imports
 import pathlib
 import time
+from datetime import datetime
 from typing import Dict, Sequence
 
 # Third party imports
@@ -40,6 +41,7 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
         self.db_server_admin_password = database_server_admin_password
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
+        self.rule_suffix = datetime.now().strftime(r"%Y%m%d-%H%M%S")
 
     @staticmethod
     def wait(poller: LROPoller) -> None:
@@ -84,7 +86,7 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
                     time.sleep(10)
                 else:
                     raise DataSafeHavenAzureException(
-                        "Could not connect to database."
+                        f"Could not connect to database.\n{str(exc)}"
                     ) from exc
         return connection
 
@@ -115,8 +117,8 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
             cursor = connection.cursor()
 
             # Apply the Guacamole initialisation script
-            self.info("Running SQL scripts...", no_newline=True)
             for filepath in filepaths:
+                self.info(f"Running SQL script: {filepath.name}")
                 commands = self.load_sql(filepath, mustache_values)
                 cursor.execute(commands)
                 if "SELECT" in cursor.statusmessage:
@@ -124,12 +126,12 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
 
             # Commit changes
             connection.commit()
+            self.info(f"Finished running {len(filepaths)} SQL scripts.")
         except (Exception, psycopg2.Error) as exc:
             raise DataSafeHavenAzureException(
-                f"Error while connecting to PostgreSQL: {exc}"
+                f"Error while connecting to PostgreSQL.\n{str(exc)}"
             ) from exc
         finally:
-            self.info("Finished running SQL scripts.", overwrite=True)
             # Close the connection if it is open
             if connection:
                 cursor.close()
@@ -140,7 +142,8 @@ class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
 
     def set_database_access(self, action: str) -> None:
         """Enable/disable database access to the PostgreSQL server."""
-        rule_name = "AllowConfigurationUpdate"
+        rule_name = f"AllowConfigurationUpdate-{self.rule_suffix}"
+
         if action == "enabled":
             self.info(
                 f"Adding temporary firewall rule for <fg=green>{self.current_ip}</>...",

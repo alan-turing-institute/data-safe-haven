@@ -17,6 +17,7 @@ class SREResearchDesktopProps:
     def __init__(
         self,
         admin_password: Input[str],
+        domain_sid: Input[str],
         ip_addresses: Input[Sequence[str]],
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
@@ -28,6 +29,7 @@ class SREResearchDesktopProps:
         vm_skus: Input[Sequence[Tuple[str, str]]],
     ):
         self.admin_password = admin_password
+        self.domain_sid = domain_sid
         self.ip_addresses = ip_addresses
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
@@ -67,7 +69,7 @@ class SREResearchDesktopComponent(ComponentResource):
 
         # Deploy a variable number of VMs depending on the input parameters
         Output.all(
-            admin_password=props.admin_password,
+            domain_sid=props.domain_sid,
             ldap_root_dn=props.ldap_root_dn,
             ldap_search_password=props.ldap_search_password,
             ldap_server_ip=props.ldap_server_ip,
@@ -75,7 +77,7 @@ class SREResearchDesktopComponent(ComponentResource):
             vm_details=props.vm_details,
         ).apply(
             lambda args: self.deploy(
-                admin_password=args["admin_password"],
+                domain_sid=args["domain_sid"],
                 ldap_root_dn=args["ldap_root_dn"],
                 ldap_search_password=args["ldap_search_password"],
                 ldap_server_ip=args["ldap_server_ip"],
@@ -95,7 +97,7 @@ class SREResearchDesktopComponent(ComponentResource):
 
     def deploy(
         self,
-        admin_password: str,
+        domain_sid: str,
         ldap_root_dn: str,
         ldap_search_password: str,
         ldap_server_ip: str,
@@ -120,6 +122,7 @@ class SREResearchDesktopComponent(ComponentResource):
         )
         with open(resources_path / "srd.cloud_init.mustache.yaml", "r") as f_cloudinit:
             mustache_values = {
+                "domain_sid": domain_sid,
                 "ldap_root_dn": ldap_root_dn,
                 "ldap_search_password": ldap_search_password,
                 "ldap_server_ip": ldap_server_ip,
@@ -170,7 +173,7 @@ class SREResearchDesktopComponent(ComponentResource):
                     ],
                 ),
                 os_profile=compute.OSProfileArgs(
-                    admin_password=admin_password,
+                    admin_password=props.admin_password,
                     admin_username="dshadmin",
                     computer_name=vm_name,
                     custom_data=Output.secret(b64cloudinit),
