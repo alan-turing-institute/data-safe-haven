@@ -12,7 +12,7 @@ ARG PWSH_VERSION="7.2.6"
 ARG TARGETARCH
 
 # Install Azure-CLI 
-# Standard install method currently does not support ARM64.
+# Standard install method currently does not support ARM64. 
 # Use pip instead - https://github.com/Azure/azure-cli/issues/22875 
 
 # RUN apt-get update \
@@ -57,7 +57,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
 # Set the default user
 USER $USERNAME
 
-# Install Sphinx dependencies.
+# Install Sphinx dependencies
 ADD requirements.txt /build/requirements.txt
 RUN pip3 install -r /build/requirements.txt
 

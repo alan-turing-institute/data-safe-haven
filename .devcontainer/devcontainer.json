@@ -1,6 +1,6 @@
 // Initial development container for the Data Safe Haven project
 {
-	"name": "ATI Data Safe Haven",
+	"name": "Turing Data Safe Haven",
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
