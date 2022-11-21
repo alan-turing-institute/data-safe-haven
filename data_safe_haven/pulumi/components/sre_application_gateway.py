@@ -1,4 +1,7 @@
 """Pulumi component for SRE application gateway"""
+# Standard library imports
+from typing import Sequence
+
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
@@ -9,18 +12,18 @@ class SREApplicationGatewayProps:
 
     def __init__(
         self,
-        ip_address_guacamole: Input[str],
+        ip_address_public_id: Input[str],
+        ip_addresses_guacamole: Input[Sequence[str]],
         key_vault_certificate_id: Input[str],
         key_vault_identity: Input[str],
-        ip_address_public_id: Input[str],
         resource_group_name: Input[str],
         sre_fqdn: Input[str],
         subnet_name: Input[str],
         virtual_network_name: Input[str],
     ):
         self.key_vault_certificate_id = key_vault_certificate_id
-        self.ip_address_guacamole = ip_address_guacamole
         self.ip_address_public_id = ip_address_public_id
+        self.ip_addresses_guacamole = ip_addresses_guacamole
         self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.subnet_name = subnet_name
@@ -61,11 +64,14 @@ class SREApplicationGatewayComponent(ComponentResource):
             backend_address_pools=[
                 # Guacamole private IP address
                 network.ApplicationGatewayBackendAddressPoolArgs(
-                    backend_addresses=[
-                        network.ApplicationGatewayBackendAddressArgs(
-                            ip_address=props.ip_address_guacamole
-                        )
-                    ],
+                    backend_addresses=props.ip_addresses_guacamole.apply(
+                        lambda ip_addresses: [
+                            network.ApplicationGatewayBackendAddressArgs(
+                                ip_address=ip_address
+                            )
+                            for ip_address in ip_addresses
+                        ]
+                    ),
                     name="appGatewayBackendGuacamole",
                 ),
             ],
