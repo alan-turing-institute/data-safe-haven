@@ -147,9 +147,13 @@ Configuration ConfigureActiveDirectory {
         [ValidateNotNullOrEmpty()]
         [String]$CADDomainRootDn,
 
-        [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM domain")]
+        [Parameter(Mandatory = $true, HelpMessage = "LDAP searcher password")]
         [ValidateNotNullOrEmpty()]
-        [String]$CADDomainName
+        [String]$CADLDAPSearcherPassword,
+
+        [Parameter(Mandatory = $true, HelpMessage = "LDAP searcher username")]
+        [ValidateNotNullOrEmpty()]
+        [String]$CADLDAPSearcherUsername
     )
 
     Import-DscResource -ModuleName ActiveDirectoryDsc -ModuleVersion 6.2.0
@@ -186,6 +190,11 @@ Configuration ConfigureActiveDirectory {
             Description = "DSH domain computers manager"
             Password    = $CADDomainComputerManagerPassword
             Username    = $CADDomainComputerManagerUsername
+        }
+        LDAPSearcher        = @{
+            Description = "DSH LDAP searcher"
+            Password    = $CADLDAPSearcherPassword
+            Username    = $CADLDAPSearcherUsername
         }
     }
     $DataSafeHavenGroups = @{
@@ -445,7 +454,15 @@ Configuration PrimaryDomainController {
 
         [Parameter(Mandatory = $true, HelpMessage = "NetBIOS name for the domain")]
         [ValidateNotNullOrEmpty()]
-        [String]$DomainNetBios
+        [String]$DomainNetBios,
+
+        [Parameter(Mandatory = $true, HelpMessage = "LDAP searcher password")]
+        [ValidateNotNullOrEmpty()]
+        [String]$LDAPSearcherPassword,
+
+        [Parameter(Mandatory = $true, HelpMessage = "LDAP searcher username")]
+        [ValidateNotNullOrEmpty()]
+        [String]$LDAPSearcherUsername
     )
 
     # Common parameters
@@ -489,6 +506,8 @@ Configuration PrimaryDomainController {
             CADDomainComputerManagerUsername = $DomainComputerManagerUsername
             CADDomainName = $DomainName
             CADDomainRootDn = $DomainRootDn
+            CADLDAPSearcherPassword = $LDAPSearcherPassword
+            CADLDAPSearcherUsername = $LDAPSearcherUsername
             DependsOn = "[InstallActiveDirectory]InstallActiveDirectory"
         }
 

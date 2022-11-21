@@ -26,7 +26,9 @@ class DeploySHMCommand(LoggingMixin, Command):
 
     shm
         {--a|aad-tenant-id= : Tenant ID for the AzureAD where users will be created}
+        {--e|email= : A single email address that your system deployers and administrators can be contacted on}
         {--f|fqdn= : Domain that SHM users will belong to}
+        {--i|ip-address=* : IP addresses or ranges that system deployers and administrators will be connecting from}
         {--o|output= : Path to an output log file}
         {--t|timezone= : Timezone to use}
     """
@@ -49,7 +51,11 @@ class DeploySHMCommand(LoggingMixin, Command):
             # Add the SHM domain to AzureAD as a custom domain
             graph_api = GraphApi(
                 tenant_id=config.shm.aad_tenant_id,
-                default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
+                default_scopes=[
+                    "Application.ReadWrite.All",
+                    "Domain.ReadWrite.All",
+                    "Group.ReadWrite.All",
+                ],
             )
             verification_record = graph_api.add_custom_domain(config.shm.fqdn)
 
@@ -65,6 +71,7 @@ class DeploySHMCommand(LoggingMixin, Command):
             stack.add_secret("password-domain-admin", password(20))
             stack.add_secret("password-domain-azure-ad-connect", password(20))
             stack.add_secret("password-domain-computer-manager", password(20))
+            stack.add_secret("password-domain-ldap-searcher", password(20))
             stack.add_secret("verification-azuread-custom-domain", verification_record)
             # Deploy with Pulumi
             stack.deploy()
@@ -81,6 +88,15 @@ class DeploySHMCommand(LoggingMixin, Command):
 
             # Add Pulumi output information to the config file
             config.shm.domain_controllers = stack.output("domain_controllers")
+            config.shm.networking = stack.output("networking")
+            config.add_secret(
+                config.shm.domain_controllers["azure_ad_connect_password_secret"],
+                stack.secret("password-domain-azure-ad-connect"),
+            )
+            config.add_secret(
+                config.shm.domain_controllers["ldap_searcher_password_secret"],
+                stack.secret("password-domain-ldap-searcher"),
+            )
 
             # Upload config to blob storage
             config.upload()
@@ -119,33 +135,39 @@ class DeploySHMCommand(LoggingMixin, Command):
                 aad_tenant_id = self.log_ask("AzureAD tenant ID:", None)
 
         # Request admin email address if not provided
+        admin_email_address = self.option("email")
         while not config.shm.admin_email_address:
-            self.info(
-                "We need to know an email address that your system deployers and administrators can be contacted on."
-            )
-            self.info(
-                "Please enter a single email address, for example 'sherlock@holmes.com'."
-            )
-            admin_email_address = self.log_ask("Administrator email address:", None)
+            if not admin_email_address:
+                self.info(
+                    "We need to know an email address that your system deployers and administrators can be contacted on."
+                )
+                self.info(
+                    "Please enter a single email address, for example 'sherlock@holmes.com'."
+                )
+                admin_email_address = self.log_ask("Administrator email address:", None)
             if admin_email_address:
                 config.shm.admin_email_address = str(admin_email_address).strip()
+            admin_email_address = None
 
         # Request admin IP addresses if not provided
+        admin_ip_addresses = " ".join(self.option("ip-address"))
         while not config.shm.admin_ip_addresses:
-            self.info(
-                "We need to know any IP addresses or ranges that your system deployers and administrators will be connecting from."
-            )
-            self.info(
-                "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
-            )
-            admin_ip_addresses = self.log_ask(
-                "Space-separated administrator IP addresses and ranges:", None
-            )
+            if not admin_ip_addresses:
+                self.info(
+                    "We need to know any IP addresses or ranges that your system deployers and administrators will be connecting from."
+                )
+                self.info(
+                    "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
+                )
+                admin_ip_addresses = self.log_ask(
+                    "Space-separated administrator IP addresses and ranges:", None
+                )
             config.shm.admin_ip_addresses = [
                 str(ipaddress.ip_network(ipv4))
                 for ipv4 in admin_ip_addresses.split()
                 if ipv4
             ]
+            admin_ip_addresses = None
 
         # Request timezone if not provided
         timezone = self.option("timezone")

@@ -1,6 +1,5 @@
 """Configuration file backed by blob storage"""
 # Standard library imports
-import re
 from typing import Any, Optional
 
 import dotmap
@@ -15,6 +14,7 @@ from azure.storage.blob import BlobServiceClient
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.external import AzureApi
+from data_safe_haven.helpers import alphanumeric
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
@@ -33,7 +33,7 @@ class Config(LoggingMixin, AzureMixin):
 
         # Set names
         self.name = name
-        self.shm_name = re.sub(r"[^0-9a-zA-Z]+", "", self.name).lower()
+        self.shm_name = alphanumeric(self.name).lower()
 
         # Construct backend storage variables
         backend_resource_group_name = f"rg-shm-{self.shm_name}-backend"

@@ -31,6 +31,7 @@ class SHMDomainControllersProps:
         password_domain_admin: Input[str],
         password_domain_azuread_connect: Input[str],
         password_domain_computer_manager: Input[str],
+        password_domain_searcher: Input[str],
         subnet_ip_range: Input[AzureIPv4Range],
         subnet_name: Input[str],
         subscription_name: Input[str],
@@ -53,6 +54,7 @@ class SHMDomainControllersProps:
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect
         self.password_domain_computer_manager = password_domain_computer_manager
+        self.password_domain_searcher = password_domain_searcher
         # Note that usernames have a maximum of 20 characters
         self.subnet_ip_range = subnet_ip_range
         self.subnet_name = subnet_name
@@ -60,6 +62,7 @@ class SHMDomainControllersProps:
         self.username_domain_admin = "dshdomainadmin"
         self.username_domain_azuread_connect = "dshazureadsync"
         self.username_domain_computer_manager = "dshcomputermanager"
+        self.username_domain_searcher = "dshldapsearcher"
         self.virtual_network_name = virtual_network_name
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
@@ -132,6 +135,8 @@ class SHMDomainControllersComponent(ComponentResource):
                     "DomainName": props.domain_fqdn,
                     "DomainNetBios": props.domain_netbios_name,
                     "DomainRootDn": props.domain_root_dn,
+                    "LDAPSearcherPassword": props.password_domain_searcher,
+                    "LDAPSearcherUsername": props.username_domain_searcher,
                 },
                 dsc_required_modules=props.automation_account_modules,
                 location=props.location,
@@ -176,6 +181,8 @@ class SHMDomainControllersComponent(ComponentResource):
             "azure_ad_connect_password_secret": "password-domain-azure-ad-connect",
             "domain_sid": domain_sid.script_output,
             "ldap_root_dn": props.domain_root_dn,
+            "ldap_search_username": props.username_domain_searcher,
+            "ldap_searcher_password_secret": "password-domain-ldap-searcher",
             "ldap_server_ip": primary_domain_controller.ip_address_private,
             "resource_group_name": resource_group.name,
             "vm_name": primary_domain_controller.vm_name,

@@ -93,8 +93,11 @@ class DeclarativeSHM:
                 password_domain_computer_manager=self.secrets.require(
                     "password-domain-computer-manager"
                 ),
-                subnet_ip_range=networking.subnet_users_iprange,
-                subnet_name="UsersSubnet",
+                password_domain_searcher=self.secrets.require(
+                    "password-domain-ldap-searcher"
+                ),
+                subnet_ip_range=networking.subnet_identity_iprange,
+                subnet_name=networking.subnet_identity_name,
                 subscription_name=self.cfg.subscription_name,
                 virtual_network_name=networking.virtual_network.name,
                 virtual_network_resource_group_name=networking.resource_group_name,
@@ -104,3 +107,4 @@ class DeclarativeSHM:
         # Export values for later use
         pulumi.export("fqdn_nameservers", networking.dns_zone_nameservers)
         pulumi.export("domain_controllers", domain_controllers.exports)
+        pulumi.export("networking", networking.exports)
