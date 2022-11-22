@@ -78,7 +78,7 @@ class DeploySRECommand(LoggingMixin, Command):
             stack.deploy()
 
             # Add Pulumi infrastructure information to the config file
-            with open(stack.local_stack_path, "r") as f_stack:
+            with open(stack.local_stack_path, "r", encoding="utf-8") as f_stack:
                 stack_yaml = yaml.safe_load(f_stack)
             config.pulumi.stacks[stack.stack_name] = stack_yaml
 
@@ -142,7 +142,7 @@ class DeploySRECommand(LoggingMixin, Command):
         vm_skus = [
             sku
             for sku in self.option("research-desktop")
-            if sku in available_vm_skus.keys()
+            if sku in available_vm_skus
         ]
         while not vm_skus:
             self.warning("An SRE deployment needs at least one research desktop.")
@@ -151,7 +151,7 @@ class DeploySRECommand(LoggingMixin, Command):
             )
             self.info("Available SKUs can be seen here: https://azureprice.net/")
             answer = self.log_ask("Space-separated VM sizes:", None)
-            vm_skus = [sku for sku in answer if sku in available_vm_skus.keys()]
+            vm_skus = [sku for sku in answer if sku in available_vm_skus]
         if hasattr(config.sre[self.sre_name], "research_desktops"):
             del config.sre[self.sre_name].research_desktops
         for vm_sku in vm_skus:

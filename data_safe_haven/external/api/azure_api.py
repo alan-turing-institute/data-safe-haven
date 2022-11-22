@@ -2,7 +2,7 @@
 # Standard library imports
 import time
 from contextlib import suppress
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, Sequence
 
 # Third party imports
 from azure.core.exceptions import (

@@ -32,13 +32,13 @@ class LocalTokenCache(SerializableTokenCache):
         self.token_cache_filename = token_cache_filename
         try:
             if self.token_cache_filename.exists():
-                with open(self.token_cache_filename, "r") as f_token:
+                with open(self.token_cache_filename, "r", encoding="utf-8") as f_token:
                     self.deserialize(f_token.read())
         except (FileNotFoundError, UnsupportedOperation):
             self.deserialize({})
 
     def __del__(self):
-        with open(self.token_cache_filename, "w") as f_token:
+        with open(self.token_cache_filename, "w", encoding="utf-8") as f_token:
             f_token.write(self.serialize())
 
 
@@ -63,13 +63,13 @@ class GraphApi(LoggingMixin):
 
     def __init__(
         self,
+        *args: Any,
         tenant_id: str = None,
         auth_token: str = None,
         application_id: str = None,
         application_secret: str = None,
         base_endpoint: str = "",
         default_scopes: Sequence[str] = [],
-        *args: Any,
         **kwargs: Any,
     ):
         super().__init__(*args, **kwargs)
@@ -405,7 +405,7 @@ class GraphApi(LoggingMixin):
             return result["access_token"]
         except Exception as exc:
             error_description = "Could not create access token"
-            if result and "error_description" in result:
+            if isinstance(result, dict) and "error_description" in result:
                 error_description += f": {result['error_description']}"
             raise DataSafeHavenMicrosoftGraphException(
                 f"{error_description}.\n{str(exc)}"
@@ -590,7 +590,7 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.delete(
-                url, headers={"Authorization": f"Bearer {self.token}"}, **kwargs
+                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -611,7 +611,7 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.get(
-                url, headers={"Authorization": f"Bearer {self.token}"}, **kwargs
+                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -632,7 +632,7 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.patch(
-                url, headers={"Authorization": f"Bearer {self.token}"}, **kwargs
+                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -653,7 +653,7 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.post(
-                url, headers={"Authorization": f"Bearer {self.token}"}, **kwargs
+                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -853,7 +853,7 @@ class GraphApi(LoggingMixin):
                     ]
                     self.info("Checking domain verification status.")
                     if all(
-                        any([nameserver in n for n in active_nameservers])
+                        any(nameserver in n for n in active_nameservers)
                         for nameserver in expected_nameservers
                     ):
                         break

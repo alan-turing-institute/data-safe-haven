@@ -40,7 +40,7 @@ class UserHandler(LoggingMixin, AzureMixin):
         """
         try:
             # Construct user list
-            with open(users_csv_path) as f_csv:
+            with open(users_csv_path, encoding="utf-8") as f_csv:
                 reader = csv.DictReader(f_csv)
                 for required_field in ["GivenName", "Surname", "Phone", "Email"]:
                     if required_field not in reader.fieldnames:
@@ -65,7 +65,7 @@ class UserHandler(LoggingMixin, AzureMixin):
         except Exception as exc:
             raise DataSafeHavenUserHandlingException(
                 f"Could not add users from '{users_csv_path}'.\n{str(exc)}"
-            )
+            ) from exc
 
     def get_usernames(self) -> Dict[str, List[str]]:
         """Load usernames from all sources"""
@@ -114,7 +114,7 @@ class UserHandler(LoggingMixin, AzureMixin):
         except Exception as exc:
             raise DataSafeHavenUserHandlingException(
                 f"Could not list users.\n{str(exc)}"
-            )
+            ) from exc
 
     def register(self, sre_name: str, user_names: Sequence[str]) -> None:
         """Register usernames with Guacamole database
@@ -132,7 +132,7 @@ class UserHandler(LoggingMixin, AzureMixin):
         except Exception as exc:
             raise DataSafeHavenUserHandlingException(
                 f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{str(exc)}"
-            )
+            ) from exc
 
     def remove(self, user_names: Sequence[str]) -> None:
         """Remove AzureAD and Guacamole users
@@ -141,21 +141,22 @@ class UserHandler(LoggingMixin, AzureMixin):
             DataSafeHavenUserHandlingException if the users could not be removed
         """
         try:
-            # Construct user lists
-            azuread_users_to_remove = [
-                user for user in self.azuread.users if user.username in user_names
-            ]
-            guacamole_users_to_remove = [
-                user for user in self.guacamole.users if user.username in user_names
-            ]
+            # # Construct user lists
+            # azuread_users_to_remove = [
+            #     user for user in self.active_directory_users.list() if user.username in user_names
+            # ]
+            # guacamole_users_to_remove = [
+            #     user for user in self.guacamole.users if user.username in user_names
+            # ]
 
-            # Commit changes
-            self.azuread.remove(azuread_users_to_remove)
-            self.guacamole.remove(guacamole_users_to_remove)
+            # # Commit changes
+            # self.azuread.remove(azuread_users_to_remove)
+            # self.guacamole.remove(guacamole_users_to_remove)
+            pass
         except Exception as exc:
             raise DataSafeHavenUserHandlingException(
                 f"Could not remove users: {user_names}.\n{str(exc)}"
-            )
+            ) from exc
 
     def set(self, users_csv_path: str) -> None:
         """Set AzureAD and Guacamole users
@@ -164,35 +165,36 @@ class UserHandler(LoggingMixin, AzureMixin):
             DataSafeHavenUserHandlingException if the users could not be set to the desired list
         """
         try:
-            # Construct user lists
-            with open(users_csv_path) as f_csv:
-                new_users = [
-                    ResearchUser.from_csv(
-                        account_enabled=True,
-                        domain_suffix=self.cfg.azure.domain_suffix,
-                        **user,
-                    )
-                    for user in csv.DictReader(f_csv, delimiter=";")
-                ]
-            for new_user in new_users:
-                self.debug(f"Processing user: {new_user}")
+            # # Construct user lists
+            # with open(users_csv_path, "r", encoding="utf-8") as f_csv:
+            #     new_users = [
+            #         ResearchUser.from_csv(
+            #             account_enabled=True,
+            #             domain_suffix=self.cfg.azure.domain_suffix,
+            #             **user,
+            #         )
+            #         for user in csv.DictReader(f_csv, delimiter=";")
+            #     ]
+            # for new_user in new_users:
+            #     self.debug(f"Processing user: {new_user}")
 
-            # Keep existing users with the same username
-            azuread_users = [user for user in self.azuread.users if user in new_users]
-            guacamole_users = [
-                user for user in self.guacamole.users if user in new_users
-            ]
+            # # Keep existing users with the same username
+            # azuread_users = [user for user in self.azuread.users if user in new_users]
+            # guacamole_users = [
+            #     user for user in self.guacamole.users if user in new_users
+            # ]
 
-            # Add any new users
-            azuread_users += [user for user in new_users if user not in azuread_users]
-            guacamole_users += [
-                user for user in new_users if user not in guacamole_users
-            ]
+            # # Add any new users
+            # azuread_users += [user for user in new_users if user not in azuread_users]
+            # guacamole_users += [
+            #     user for user in new_users if user not in guacamole_users
+            # ]
 
-            # Commit changes
-            self.azuread.set(azuread_users)
-            self.guacamole.set(guacamole_users)
+            # # Commit changes
+            # self.azuread.set(azuread_users)
+            # self.guacamole.set(guacamole_users)
+            pass
         except Exception as exc:
             raise DataSafeHavenUserHandlingException(
                 f"Could not set users from '{users_csv_path}'.\n{str(exc)}"
-            )
+            ) from exc

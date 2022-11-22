@@ -126,13 +126,11 @@ class PulumiStack(LoggingMixin):
                     break
                 except pulumi.automation.errors.CommandError as exc:
                     if any(
-                        [
-                            error in str(exc)
-                            for error in (
-                                "NetworkProfileAlreadyInUseWithContainerNics",
-                                "InUseSubnetCannotBeDeleted",
-                            )
-                        ]
+                        error in str(exc)
+                        for error in (
+                            "NetworkProfileAlreadyInUseWithContainerNics",
+                            "InUseSubnetCannotBeDeleted",
+                        )
                     ):
                         time.sleep(10)
                     else:
@@ -175,7 +173,7 @@ class PulumiStack(LoggingMixin):
                 stack_yaml = yaml.dump(
                     self.cfg.pulumi.stacks[self.stack_name].toDict(), indent=2
                 )
-                with open(self.local_stack_path, "w") as f_stack:
+                with open(self.local_stack_path, "w", encoding="utf-8") as f_stack:
                     f_stack.writelines(stack_yaml)
         except Exception as exc:
             raise DataSafeHavenPulumiException(

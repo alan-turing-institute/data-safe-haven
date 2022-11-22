@@ -39,7 +39,7 @@ class DotFileSettings(LoggingMixin):
             # Load local dotfile settings (if any)
             local_dotfile = pathlib.Path.cwd() / self.config_file_name
             if local_dotfile.exists():
-                with open(pathlib.Path(local_dotfile), "r") as f_yaml:
+                with open(pathlib.Path(local_dotfile), "r", encoding="utf-8") as f_yaml:
                     settings = yaml.safe_load(f_yaml)
                     self.admin_group_id = settings.get("azure", {}).get(
                         "admin_group_id", self.admin_group_id
@@ -98,6 +98,6 @@ class DotFileSettings(LoggingMixin):
             },
         }
         filepath = (directory / self.config_file_name).resolve()
-        with open(filepath, "w") as f_settings:
+        with open(filepath, "w", encoding="utf-8") as f_settings:
             yaml.dump(settings, f_settings, indent=2)
         return filepath

@@ -41,10 +41,10 @@ class DeploySHMCommand(LoggingMixin, Command):
             # Use dotfile settings to load the job configuration
             try:
                 settings = DotFileSettings()
-            except DataSafeHavenInputException:
+            except DataSafeHavenInputException as exc:
                 raise DataSafeHavenInputException(
-                    "Unable to load project settings. Please run this command from inside the project directory."
-                )
+                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
+                ) from exc
             config = Config(settings.name, settings.subscription_name)
             self.add_missing_values(config)
 
@@ -82,7 +82,7 @@ class DeploySHMCommand(LoggingMixin, Command):
             )
 
             # Add Pulumi infrastructure information to the config file
-            with open(stack.local_stack_path, "r") as f_stack:
+            with open(stack.local_stack_path, "r", encoding="utf-8") as f_stack:
                 stack_yaml = yaml.safe_load(f_stack)
             config.pulumi.stacks[stack.stack_name] = stack_yaml
 

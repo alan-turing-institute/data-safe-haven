@@ -4,7 +4,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, managedidentity, resources, storage
 
 # Local imports
-from data_safe_haven.helpers import alphanumeric, hash
+from data_safe_haven.helpers import alphanumeric, sha256hash
 from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 
 
@@ -54,7 +54,7 @@ class SREStateComponent(ComponentResource):
         # Deploy storage account
         storage_account = storage.StorageAccount(
             f"{self._name}_storage_account_state",
-            account_name=alphanumeric(f"sre{sre_name}{hash(stack_name)}")[
+            account_name=alphanumeric(f"sre{sre_name}{sha256hash(stack_name)}")[
                 :24
             ],  # maximum of 24 characters
             kind="StorageV2",

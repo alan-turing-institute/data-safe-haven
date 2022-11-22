@@ -48,7 +48,7 @@ class RemoteScriptProvider(DshResourceProvider):
             outs=outs,
         )
 
-    def delete(self, id: str, props: Dict[str, str]) -> None:
+    def delete(self, id_: str, props: Dict[str, str]) -> None:
         """The Python SDK does not support configuration deletion"""
         return
 

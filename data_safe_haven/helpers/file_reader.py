@@ -1,34 +1,36 @@
 """Read local files, handling template expansion if needed"""
 # Standard library imports
-import hashlib
 import pathlib
+from typing import Any
 
 # Third party imports
 import chevron
 
 # Local imports
 from data_safe_haven.mixins import LoggingMixin
+from .functions import sha256hash
+from .types import JSONType, PathType
 
 
 class FileReader(LoggingMixin):
     """Read local files, handling template expansion if needed"""
 
-    def __init__(self, file_path, *args, **kwargs):
+    def __init__(self, file_path: PathType, *args: Any, **kwargs: Any):
         self.file_path = pathlib.Path(file_path).resolve()
         super().__init__(*args, **kwargs)
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.file_path.name.replace(".mustache", "")
 
-    def file_contents(self, mustache_values=None):
+    def file_contents(self, mustache_values: JSONType=None) -> str:
         """Read a local file into a string, expanding template values"""
-        with open(self.file_path, "r") as source_file:
+        with open(self.file_path, "r", encoding="utf-8") as source_file:
             if mustache_values:
                 contents = chevron.render(source_file, mustache_values)
             else:
                 contents = source_file.read()
         return contents
 
-    def sha256(self):
-        return hashlib.sha256(self.file_contents().encode("utf-8")).hexdigest()
+    def sha256(self) -> str:
+        return sha256hash(self.file_contents())

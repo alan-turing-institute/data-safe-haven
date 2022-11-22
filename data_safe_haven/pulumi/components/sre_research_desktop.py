@@ -124,7 +124,7 @@ class SREResearchDesktopComponent(ComponentResource):
             / "resources"
             / "secure_research_desktop"
         )
-        with open(resources_path / "srd.cloud_init.mustache.yaml", "r") as f_cloudinit:
+        with open(resources_path / "srd.cloud_init.mustache.yaml", "r", encoding="utf-8") as f_cloudinit:
             mustache_values = {
                 "domain_sid": domain_sid,
                 "ldap_root_dn": ldap_root_dn,

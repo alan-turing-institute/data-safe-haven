@@ -27,10 +27,10 @@ class TeardownBackendCommand(LoggingMixin, Command):
             # Use dotfile settings to load the job configuration
             try:
                 settings = DotFileSettings()
-            except DataSafeHavenInputException:
+            except DataSafeHavenInputException as exc:
                 raise DataSafeHavenInputException(
-                    "Unable to load project settings. Please run this command from inside the project directory."
-                )
+                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
+                ) from exc
 
             # Remove the Pulumi backend
             try:
