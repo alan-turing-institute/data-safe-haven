@@ -123,10 +123,10 @@ class UserHandler(LoggingMixin, AzureMixin):
             DataSafeHavenUserHandlingException if the users could not be registered in the Guacamole database
         """
         try:
-            # Construct sequence of users
-            users = [user.username in user_names for user in self.active_directory_users.list()]
             # Register users in correct security group
-            self.active_directory_users.register(sre_name, users)
+            self.active_directory_users.register(sre_name, user_names)
+            # Retrieve list of users
+            users = self.active_directory_users.list(sre_name)
             # Add specified users to Guacamole
             self.sre_guacamole_users[sre_name].add(users)
         except Exception as exc:

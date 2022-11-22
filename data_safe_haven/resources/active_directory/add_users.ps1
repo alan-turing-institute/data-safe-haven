@@ -50,27 +50,25 @@ Import-Csv -Path $UserFilePath -Delimiter ";" | ForEach-Object {
                    -UserPrincipalName $UserPrincipalName `
                    -SamAccountName $_.SamAccountName `
                    -ErrorAction Stop
-        Write-Output "Created a user with name '$UserPrincipalName'"
+        Write-Output "INFO: Created a user with name '<fg=green>$UserPrincipalName</>'"
     } catch [Microsoft.ActiveDirectory.Management.ADIdentityAlreadyExistsException] {
-        Write-Output "User with name '$UserPrincipalName' already exists"
+        Write-Output "WARNING: User with name '<fg=green>$UserPrincipalName</>' already exists"
     } catch {
-        Write-Output "Failed to create user with name '$UserPrincipalName'!"
-        Write-Output "Cause of error: $($_.Exception)"
+        Write-Output "ERROR: Failed to create user with name '<fg=green>$UserPrincipalName</>'!"
+        Write-Output "ERROR: Cause of error: $($_.Exception)"
     }
 }
 Remove-Item $UserFilePath
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
-Write-Output "Synchronising local Active Directory with Azure"
+Write-Output "INFO: Synchronising local Active Directory with Azure"
 try {
     Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -ErrorAction Stop
     Start-ADSyncSyncCycle -PolicyType Delta | Out-Null
-    Write-Output "Finished synchronising local Active Directory with Azure"
+    Write-Output "INFO: Finished synchronising local Active Directory with Azure"
 } catch [System.IO.FileNotFoundException] {
-    Write-Output "Skipping as Azure AD Sync is not installed"
+    Write-Output "WARNING: Skipping as Azure AD Sync is not installed"
 } catch {
-    Write-Output "Unable to run Azure Active Directory synchronisation!"
-    Write-Output "Cause of error: $($_.Exception)"
+    Write-Output "ERROR: Unable to run Azure Active Directory synchronisation!"
+    Write-Output "ERROR: Cause of error: $($_.Exception)"
 }
-
-

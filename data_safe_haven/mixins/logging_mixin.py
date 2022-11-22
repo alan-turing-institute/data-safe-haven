@@ -183,11 +183,29 @@ class LoggingMixin:
         self.logger.info(message, extra={"tag": "no_console"})
         return self.console.io.ask(formatted, *args, **kwargs)
 
-    def log_choose(self, message, *args, **kwargs):
+    def log_choose(self, message: str, *args, **kwargs):
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
         return self.console.io.choice(formatted, *args, **kwargs)
 
+
+    def parse_as_log(self, message: str, no_newline=False, overwrite=False):
+        tokens = message.split(":")
+        level, remainder = tokens[0], ":".join(tokens[1:]).strip()
+        if level == "CRITICAL":
+            self.critical(remainder, no_newline, overwrite)
+        elif level == "ERROR":
+            self.error(remainder, no_newline, overwrite)
+        elif level == "WARNING":
+            self.warning(remainder, no_newline, overwrite)
+        elif level == "INFO":
+            self.info(remainder, no_newline, overwrite)
+        elif level == "DEBUG":
+            self.debug(remainder, no_newline, overwrite)
+        else:
+            self.info(message.strip(), no_newline, overwrite)
+
+    # Create a table
     def tabulate(self, header=None, rows=None):
         table = Table()
         if header:

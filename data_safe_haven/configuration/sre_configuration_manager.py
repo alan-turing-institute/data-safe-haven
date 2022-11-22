@@ -62,7 +62,8 @@ class SREConfigurationManager(LoggingMixin):
             script_parameters,
             self.security_group_params["vm_name"],
         )
-        self.info(output)
+        for line in output.split("\n"):
+            self.parse_as_log(line)
 
     def update_remote_desktop_connections(self) -> None:
         """Update connection information on the Guacamole PostgreSQL server"""
@@ -85,6 +86,8 @@ class SREConfigurationManager(LoggingMixin):
                 for vm_name, vm_details in self.research_desktops.items()
             ]
         }
+        for details in connection_data["connections"]:
+            self.info(f"Adding connection {details['connection_name']} at {details['ip_address']}")
         postgres_script_path = (
             pathlib.Path(__file__).parent.parent
             / "resources"

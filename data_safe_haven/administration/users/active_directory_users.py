@@ -57,17 +57,18 @@ class ActiveDirectoryUsers(LoggingMixin):
             self.vm_name,
         )
         for line in output.split("\n"):
-            self.info(line)
+            self.parse_as_log(line)
 
-    def list(self) -> Sequence[ResearchUser]:
+    def list(self, sre_name=None) -> Sequence[ResearchUser]:
         """List users in a local Active Directory"""
         list_users_script = FileReader(
             self.resources_path / "active_directory" / "list_users.ps1"
         )
+        script_params = {"SREName": sre_name} if sre_name else {}
         output = self.azure_api.run_remote_script(
             self.resource_group_name,
             list_users_script.file_contents(),
-            {},
+            script_params,
             self.vm_name,
         )
         users = []
@@ -86,15 +87,14 @@ class ActiveDirectoryUsers(LoggingMixin):
                 )
         return users
 
-    def register(self, sre_name: str, users: Sequence[ResearchUser]) -> None:
+    def register(self, sre_name: str, usernames: Sequence[str]) -> None:
         """Register usernames with correct security group"""
         register_users_script = FileReader(
             self.resources_path / "active_directory" / "add_users_to_group.ps1"
         )
-        usernames = "\n".join([user.username for user in users])
         output = self.azure_api.run_remote_script(
             self.resource_group_name,
             register_users_script.file_contents(),
-            {"SREName": sre_name, "UsernamesB64": b64encode(usernames)},
+            {"SREName": sre_name, "UsernamesB64": b64encode("\n".join(usernames))},
             self.vm_name,
         )
