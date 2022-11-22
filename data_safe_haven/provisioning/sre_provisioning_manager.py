@@ -1,4 +1,4 @@
-"""Backend for a Data Safe Haven environment"""
+"""Provisioning manager for a deployed SRE."""
 # Standard library imports
 import pathlib
 
@@ -10,8 +10,8 @@ from data_safe_haven.helpers import FileReader
 from data_safe_haven.mixins import LoggingMixin
 
 
-class SREConfigurationManager(LoggingMixin):
-    """Configuration manager for a deployed SRE."""
+class SREProvisioningManager(LoggingMixin):
+    """Provisioning manager for a deployed SRE."""
 
     def __init__(
         self,
@@ -42,12 +42,6 @@ class SREConfigurationManager(LoggingMixin):
 
         # Construct VM parameters
         self.research_desktops = dict(config.sre[sre_name].research_desktops)
-
-    def apply_configuration(self) -> None:
-        """Apply SRE configuration"""
-        self.create_security_group()
-        self.update_remote_desktop_connections()
-        self.restart_remote_desktop_containers()
 
     def create_security_group(self) -> None:
         azure_api = AzureApi(self.subscription_name)
@@ -114,3 +108,9 @@ class SREConfigurationManager(LoggingMixin):
         guacamole_provisioner.restart(
             self.remote_desktop_params["container_ip_address"]
         )
+
+    def run(self) -> None:
+        """Apply SRE configuration"""
+        self.create_security_group()
+        self.update_remote_desktop_connections()
+        self.restart_remote_desktop_containers()

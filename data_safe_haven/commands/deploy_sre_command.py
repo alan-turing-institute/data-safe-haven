@@ -5,7 +5,7 @@ from cleo import Command
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
-from data_safe_haven.configuration import SREConfigurationManager
+from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
@@ -102,9 +102,9 @@ class DeploySRECommand(LoggingMixin, Command):
             # Upload config to blob storage
             config.upload()
 
-            # Apply SRE configuration
-            manager = SREConfigurationManager(config, self.sre_name)
-            manager.apply_configuration()
+            # Provision SRE with anything that could not be done in Pulumi
+            manager = SREProvisioningManager(config, self.sre_name)
+            manager.run()
 
         except DataSafeHavenException as exc:
             for (
