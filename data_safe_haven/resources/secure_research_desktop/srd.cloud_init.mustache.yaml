@@ -1,0 +1,83 @@
+#cloud-config
+
+write_files:
+  - path: "/etc/nslcd.conf"
+    permissions: "0400"
+    content: |
+      # nslcd configuration file.
+      # http://manpages.ubuntu.com/manpages/bionic/man5/nslcd.conf.5.html
+
+      # Runtime options
+      uid nslcd
+      gid nslcd
+      log syslog debug
+
+      # General connection options
+      uri ldap://{{ldap_server_ip}}:389
+      binddn CN=dshldapsearcher,OU=Data Safe Haven Service Accounts,{{ldap_root_dn}}
+      bindpw {{ldap_search_password}}
+
+      # Search/mapping options
+      base OU=Data Safe Haven Research Users,{{ldap_root_dn}}
+      base OU=Data Safe Haven Security Groups,{{ldap_root_dn}}
+
+      # All users that are members of the correct security group
+      filter passwd (&(objectClass=user)(memberOf=CN={{ldap_sre_security_group}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}}))
+
+      # One group for each security group and for each user
+      filter group (|(objectclass=group)(&(objectClass=user)(memberOf=CN={{ldap_sre_security_group}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}})))
+
+      # Attribute mappings
+      map  passwd  uid                sAMAccountName
+      map  passwd  gidNumber          objectSid:{{domain_sid}}
+      map  passwd  uidNumber          objectSid:{{domain_sid}}
+      map  passwd  homeDirectory      "${unixHomeDirectory:-/home/$sAMAccountName}"
+      map  group   cn                 sAMAccountName
+      map  group   gidNumber          objectSid:{{domain_sid}}
+
+  - path: "/etc/skel/.xsession"
+    permissions: "0444"
+    content: |
+      xfce4-session
+
+package_update: true
+package_upgrade: true
+
+# List of packages to install with apt-get
+packages:
+  # System requirements
+  - libnss-ldapd # LDAP login
+  - libpam-ldapd # LDAP login
+  - ldap-utils   # LDAP login
+  - xfce4        # XFCE desktop
+  - xrdp         # remote desktop client
+  # Programming
+  - python-is-python3 # Python language
+  - python3           # Python language
+  - r-base            # R language
+
+runcmd:
+  # Allow LDAP users to login
+  # -------------------------
+  # Configure nsswitch
+  - echo "Adding ldap to /etc/nsswitch.conf"
+  - sed -i -r "s|^(passwd\|group\|shadow)(:.*)$|\1\2 ldap|g" /etc/nsswitch.conf
+  # Configure PAM for LDAP
+  - echo "Configuring PAM for LDAP login"
+  - sed -i "s|pam_mkhomedir.so|pam_mkhomedir.so skel=/etc/skel umask=0022|g" /usr/share/pam-configs/mkhomedir
+  - sed -i "s| use_authtok||g" /usr/share/pam-configs/ldap
+  - pam-auth-update --enable mkhomedir ldap
+  # Allow SSH password authentication
+  - sed -i "s|^PasswordAuthentication.*|PasswordAuthentication yes|g" /etc/ssh/sshd_config
+  - sed -i "s|^UsePAM.*|UsePAM yes|g" /etc/ssh/sshd_config
+  # Restart services
+  - systemctl restart nscd
+  - systemctl restart nslcd
+  - systemctl restart sshd
+
+  # Ensure that xrdp is running and enabled at startup
+  # --------------------------------------------------
+  - systemctl enable xrdp
+  - systemctl enable xrdp-sesman
+  - systemctl start xrdp
+  - systemctl start xrdp-sesman

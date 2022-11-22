@@ -1,5 +1,6 @@
 # System files
 *.DS_Store
+__pycache__
 
 # All secrets folders, no matter how nested
 secrets/
@@ -34,3 +35,6 @@ docs/_output
 # Files produced during testing
 .mustache_config.json
 expanded.yaml
+
+# Pulumi secrets files
+pulumi/Pulumi.*.yaml

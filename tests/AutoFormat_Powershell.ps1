@@ -11,7 +11,8 @@ Import-Module $PSScriptRoot/../deployment/common/Logging -ErrorAction Stop
 
 # Set the root path which we will format
 # --------------------------------------
-$CodeRootPath = $TargetPath ? $TargetPath : (Join-Path -Path (Get-Item $PSScriptRoot).Parent -ChildPath "deployment")
+#$CodeRootPath = $TargetPath ? $TargetPath : (Join-Path -Path (Get-Item $PSScriptRoot).Parent -ChildPath "deployment")
+$CodeRootPath = $TargetPath ? $TargetPath : (Join-Path -Path (Get-Item $PSScriptRoot).Parent -ChildPath "data_safe_haven")
 
 
 # Formatter settings
