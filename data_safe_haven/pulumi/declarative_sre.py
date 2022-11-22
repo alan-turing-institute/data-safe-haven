@@ -7,18 +7,19 @@ import pulumi
 
 # Local imports
 from data_safe_haven.config import Config
+
 from .components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
-)
-from .components.sre_research_desktop import (
-    SREResearchDesktopComponent,
-    SREResearchDesktopProps,
 )
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
 from .components.sre_remote_desktop import (
     SRERemoteDesktopComponent,
     SRERemoteDesktopProps,
+)
+from .components.sre_research_desktop import (
+    SREResearchDesktopComponent,
+    SREResearchDesktopProps,
 )
 from .components.sre_state import SREStateComponent, SREStateProps
 

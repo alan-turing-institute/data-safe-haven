@@ -1,7 +1,7 @@
 # Standard library imports
-from datetime import datetime, timezone
 import pathlib
 import tempfile
+from datetime import datetime, timezone
 from typing import Any, Sequence
 
 # Local imports

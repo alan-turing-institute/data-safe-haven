@@ -5,7 +5,6 @@ from cleo import Command
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
-from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
@@ -13,6 +12,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.external.api import AzureApi, GraphApi
 from data_safe_haven.helpers import alphanumeric, password
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.pulumi import PulumiStack
 
 

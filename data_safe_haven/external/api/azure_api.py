@@ -40,8 +40,8 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInternalException,
 )
-from data_safe_haven.mixins import AzureMixin, LoggingMixin
 from data_safe_haven.helpers import JSONType
+from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
 class AzureApi(AzureMixin, LoggingMixin):

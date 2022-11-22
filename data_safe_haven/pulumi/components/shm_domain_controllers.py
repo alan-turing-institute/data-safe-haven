@@ -10,8 +10,9 @@ from pulumi_azure_native import resources
 # Local
 from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers import FileReader
-from .automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
+
 from ..dynamic.remote_powershell import RemoteScript, RemoteScriptProps
+from .automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
 from .virtual_machine import VMComponent, WindowsVMProps
 
 

@@ -4,8 +4,11 @@ import pathlib
 
 # Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.external.interface import AzureContainerInstance, AzurePostgreSQLDatabase
 from data_safe_haven.external.api import AzureApi
+from data_safe_haven.external.interface import (
+    AzureContainerInstance,
+    AzurePostgreSQLDatabase,
+)
 from data_safe_haven.helpers import FileReader
 from data_safe_haven.mixins import LoggingMixin
 

@@ -5,7 +5,7 @@ from typing import Sequence
 
 # Local imports
 from data_safe_haven.external.api import AzureApi
-from data_safe_haven.helpers import b64encode, FileReader
+from data_safe_haven.helpers import FileReader, b64encode
 from data_safe_haven.mixins import LoggingMixin
 from .research_user import ResearchUser
 
