@@ -22,7 +22,6 @@ class InitialiseCommand(LoggingMixin, Command):
         {--d|deployment-name= : Name for this Data Safe Haven deployment}
         {--l|location= : Name of the Azure location to deploy into}
         {--o|output= : Path to an output log file}
-        {--p|project= : Path to the base directory which will hold the project files for this deployment}
         {--s|subscription= : Name of the Azure subscription to deploy into}
     """
 
@@ -32,16 +31,12 @@ class InitialiseCommand(LoggingMixin, Command):
             self.initialise_logging(self.io.verbosity, self.option("output"))
 
             # Confirm project path
-            if self.option("project"):
-                project_base_path = pathlib.Path(self.option("project")).resolve()
-            else:
-                project_base_path = pathlib.Path.cwd().resolve()
-                self.info("No --project option was provided")
-                if not self.log_confirm(
-                    f"Do you want to use the default project location (<fg=green>{project_base_path}</>)?",
-                    True,
-                ):
-                    sys.exit(0)
+            project_base_path = pathlib.Path.cwd().resolve()
+            if not self.log_confirm(
+                f"Do you want to initialise a Data Safe Haven project at <fg=green>{project_base_path}</>?",
+                True,
+            ):
+                sys.exit(0)
 
             # Load settings from dotfiles
             settings = DotFileSettings(
