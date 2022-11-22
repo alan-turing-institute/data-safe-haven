@@ -1,11 +1,10 @@
 """Interact with users in an Azure Active Directory"""
 # Standard library imports
-import base64
 import pathlib
 from typing import Sequence
 
 # Local imports
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external.api import AzureApi
 from data_safe_haven.helpers import b64encode, FileReader
 from data_safe_haven.mixins import LoggingMixin
 from .research_user import ResearchUser
@@ -98,3 +97,5 @@ class ActiveDirectoryUsers(LoggingMixin):
             {"SREName": sre_name, "UsernamesB64": b64encode("\n".join(usernames))},
             self.vm_name,
         )
+        for line in output.split("\n"):
+            self.parse_as_log(line)

@@ -9,7 +9,7 @@ from pulumi.dynamic import CreateResult, DiffResult, Resource, UpdateResult
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphException
-from data_safe_haven.external import GraphApi
+from data_safe_haven.external.api import GraphApi
 from .dsh_resource_provider import DshResourceProvider
 
 

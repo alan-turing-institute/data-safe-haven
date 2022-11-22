@@ -5,7 +5,7 @@ from typing import Dict, List, Sequence
 # Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingException
-from data_safe_haven.external import GraphApi
+from data_safe_haven.external.api import GraphApi
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 from .active_directory_users import ActiveDirectoryUsers
 from .azure_ad_users import AzureADUsers

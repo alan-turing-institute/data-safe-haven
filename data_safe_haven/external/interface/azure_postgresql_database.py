@@ -22,8 +22,8 @@ from data_safe_haven.helpers import FileReader
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
-class PostgreSQLProvisioner(AzureMixin, LoggingMixin):
-    """Provisioner for Azure PostgreSQL databases."""
+class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
+    """Interface for Azure PostgreSQL databases."""
 
     def __init__(
         self,

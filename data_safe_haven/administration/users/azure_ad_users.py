@@ -4,7 +4,7 @@ from typing import Sequence
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphException
-from data_safe_haven.external import GraphApi
+from data_safe_haven.external.api import GraphApi
 from data_safe_haven.helpers import password
 from data_safe_haven.mixins import LoggingMixin
 from .research_user import ResearchUser

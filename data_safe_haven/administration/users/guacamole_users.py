@@ -5,18 +5,18 @@ import tempfile
 from typing import Any, Sequence
 
 # Local imports
-from data_safe_haven.configuration.components import PostgreSQLProvisioner
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenInputException
+from data_safe_haven.external.interface import AzurePostgreSQLDatabase
 from data_safe_haven.helpers import FileReader, hex_string
 from data_safe_haven.mixins import LoggingMixin
 from .research_user import ResearchUser
-from data_safe_haven.config import Config
 
 
 class GuacamoleUsers(LoggingMixin):
     def __init__(self, config: Config, sre_name: str, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self.postgres_provisioner = PostgreSQLProvisioner(
+        self.postgres_provisioner = AzurePostgreSQLDatabase(
             config.sre[sre_name].remote_desktop.connection_db_name,
             config.get_secret(
                 config.sre[sre_name].remote_desktop[

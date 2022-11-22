@@ -13,7 +13,7 @@ from azure.storage.blob import BlobServiceClient
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external.api import AzureApi
 from data_safe_haven.helpers import alphanumeric
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 

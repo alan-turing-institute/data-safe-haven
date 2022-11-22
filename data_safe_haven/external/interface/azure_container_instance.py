@@ -15,8 +15,8 @@ from azure.mgmt.containerinstance.models import (
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
-class ContainerProvisioner(AzureMixin, LoggingMixin):
-    """Provisioner for Azure containers."""
+class AzureContainerInstance(AzureMixin, LoggingMixin):
+    """Interface for Azure container instances."""
 
     def __init__(
         self,

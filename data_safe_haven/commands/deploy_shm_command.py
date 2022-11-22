@@ -14,7 +14,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.external import GraphApi
+from data_safe_haven.external.api import GraphApi
 from data_safe_haven.helpers import password
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.pulumi import PulumiStack

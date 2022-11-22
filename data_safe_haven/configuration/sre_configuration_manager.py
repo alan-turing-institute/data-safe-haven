@@ -4,10 +4,10 @@ import pathlib
 
 # Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external.interface import AzureContainerInstance, AzurePostgreSQLDatabase
+from data_safe_haven.external.api import AzureApi
 from data_safe_haven.helpers import FileReader
 from data_safe_haven.mixins import LoggingMixin
-from .components import ContainerProvisioner, PostgreSQLProvisioner
 
 
 class SREConfigurationManager(LoggingMixin):
@@ -67,7 +67,7 @@ class SREConfigurationManager(LoggingMixin):
 
     def update_remote_desktop_connections(self) -> None:
         """Update connection information on the Guacamole PostgreSQL server"""
-        postgres_provisioner = PostgreSQLProvisioner(
+        postgres_provisioner = AzurePostgreSQLDatabase(
             self.remote_desktop_params["connection_db_name"],
             self.remote_desktop_params["connection_db_server_password"],
             self.remote_desktop_params["connection_db_server_name"],
@@ -106,7 +106,7 @@ class SREConfigurationManager(LoggingMixin):
 
     def restart_remote_desktop_containers(self) -> None:
         # Restart the Guacamole container group
-        guacamole_provisioner = ContainerProvisioner(
+        guacamole_provisioner = AzureContainerInstance(
             self.remote_desktop_params["container_group_name"],
             self.remote_desktop_params["resource_group_name"],
             self.subscription_name,

@@ -9,8 +9,8 @@ from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.mixins import AzureMixin
 
 
-class AzureFileShareHelper(AzureMixin):
-    """Helper class for Azure fileshares"""
+class AzureFileShare(AzureMixin):
+    """Interface for Azure fileshares"""
 
     def __init__(
         self,

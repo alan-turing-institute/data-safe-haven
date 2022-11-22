@@ -6,7 +6,6 @@ import pathlib
 import yaml
 
 # Local imports
-from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenInputException
 from data_safe_haven.mixins import LoggingMixin
 

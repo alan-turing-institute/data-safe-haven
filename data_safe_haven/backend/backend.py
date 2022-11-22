@@ -5,7 +5,7 @@ from typing import Any, Optional
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external.api import AzureApi
 from data_safe_haven.mixins import LoggingMixin
 
 
@@ -64,12 +64,12 @@ class Backend(LoggingMixin):
                 storage_account_name=self.config.backend.storage_account_name,
                 tags=self.tags,
             )
-            config_container = self.azure_api.ensure_storage_blob_container(
+            _ = self.azure_api.ensure_storage_blob_container(
                 container_name=self.config.backend.storage_container_name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account.name,
             )
-            pulumi_container = self.azure_api.ensure_storage_blob_container(
+            _ = self.azure_api.ensure_storage_blob_container(
                 container_name=self.config.pulumi.storage_container_name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account.name,

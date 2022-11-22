@@ -1,6 +1,6 @@
 """Pulumi base dynamic component."""
 # Standard library imports
-from typing import Any, Dict, Sequence
+from typing import Dict, Sequence
 
 # Third party imports
 from pulumi.dynamic import (

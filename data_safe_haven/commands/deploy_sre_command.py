@@ -10,7 +10,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.external import AzureApi, GraphApi
+from data_safe_haven.external.api import AzureApi, GraphApi
 from data_safe_haven.helpers import alphanumeric, password
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.pulumi import PulumiStack
