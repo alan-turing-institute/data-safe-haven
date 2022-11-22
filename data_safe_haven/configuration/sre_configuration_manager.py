@@ -87,7 +87,9 @@ class SREConfigurationManager(LoggingMixin):
             ]
         }
         for details in connection_data["connections"]:
-            self.info(f"Adding connection {details['connection_name']} at {details['ip_address']}")
+            self.info(
+                f"Adding connection {details['connection_name']} at {details['ip_address']}"
+            )
         postgres_script_path = (
             pathlib.Path(__file__).parent.parent
             / "resources"

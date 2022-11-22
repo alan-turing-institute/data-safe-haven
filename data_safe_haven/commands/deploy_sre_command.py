@@ -122,7 +122,9 @@ class DeploySRECommand(LoggingMixin, Command):
             config.sre[self.sre_name].index = highest_index + 1
 
         # Set the security group name
-        config.sre[self.sre_name].security_group_name = f"Data Safe Haven Users SRE {self.sre_name}"
+        config.sre[
+            self.sre_name
+        ].security_group_name = f"Data Safe Haven Users SRE {self.sre_name}"
 
         # Set whether copying is allowed
         config.sre[self.sre_name].remote_desktop.allow_copy = bool(

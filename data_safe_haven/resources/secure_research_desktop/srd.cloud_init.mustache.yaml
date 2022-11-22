@@ -35,14 +35,26 @@ write_files:
       map  group   cn                 sAMAccountName
       map  group   gidNumber          objectSid:{{domain_sid}}
 
+  - path: "/etc/skel/.xsession"
+    permissions: "0444"
+    content: |
+      xfce4-session
+
 package_update: true
 package_upgrade: true
 
 # List of packages to install with apt-get
 packages:
+  # System requirements
   - libnss-ldapd # LDAP login
   - libpam-ldapd # LDAP login
   - ldap-utils   # LDAP login
+  - xfce4        # XFCE desktop
+  - xrdp         # remote desktop client
+  # Programming
+  - python-is-python3 # Python language
+  - python3           # Python language
+  - r-base            # R language
 
 runcmd:
   # Allow LDAP users to login
@@ -62,3 +74,10 @@ runcmd:
   - systemctl restart nscd
   - systemctl restart nslcd
   - systemctl restart sshd
+
+  # Ensure that xrdp is running and enabled at startup
+  # --------------------------------------------------
+  - systemctl enable xrdp
+  - systemctl enable xrdp-sesman
+  - systemctl start xrdp
+  - systemctl start xrdp-sesman

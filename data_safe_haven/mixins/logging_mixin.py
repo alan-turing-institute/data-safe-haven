@@ -188,7 +188,6 @@ class LoggingMixin:
         self.logger.info(message, extra={"tag": "no_console"})
         return self.console.io.choice(formatted, *args, **kwargs)
 
-
     def parse_as_log(self, message: str, no_newline=False, overwrite=False):
         tokens = message.split(":")
         level, remainder = tokens[0], ":".join(tokens[1:]).strip()
