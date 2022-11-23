@@ -12,25 +12,13 @@ ARG PWSH_VERSION="7.2.6"
 ARG TARGETARCH
 
 # Install Azure-CLI 
-# Standard install method currently does not support ARM64. 
+# Standard install method currently does not support ARM64 
 # Use pip instead - https://github.com/Azure/azure-cli/issues/22875 
-
-# RUN apt-get update \
-#   && apt-get -y install ca-certificates curl \ 
-#   apt-transport-https lsb-release gnupg \
-#   && curl -sL https://packages.microsoft.com/keys/microsoft.asc \ 
-#   | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null \
-#   && AZ_REPO="$(lsb_release -cs)" \
-#   && echo "deb [arch=$(dpkg --print-architecture)] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" \ 
-#   | tee /etc/apt/sources.list.d/azure-cli.list \
-#   && apt-get update \
-#   && apt-get -y install azure-cli="${AZURE_CLI_VERSION}-1~buster"
-
 RUN pip3 install azure-cli==${AZURE_CLI_VERSION} 
 
 # Install Powershell
-# Pull different binaries from Github depending on architecture.
-# The standard APT method only works for `amd64`
+# Pull different binaries from Github depending on system architecture
+# The standard APT method currently only works for `amd64`
  RUN if [ "${TARGETARCH}" = "arm64" ]; \
    then \
      DEBARCH="arm64"; \
@@ -58,10 +46,12 @@ RUN groupadd --gid $USER_GID $USERNAME \
 USER $USERNAME
 
 # Install Sphinx dependencies
-ADD requirements.txt /build/requirements.txt
+COPY ./docs/build/requirements.txt /build/requirements.txt
 RUN pip3 install -r /build/requirements.txt
 
 # Install/check needed powershell modules
-ADD install_pwsh_modules.ps1 /build/install_pwsh_modules.ps1
-RUN pwsh -File '/build/install_pwsh_modules.ps1' && sudo rm -rf /build/
-
+COPY ./deployment/CheckRequirements.ps1 /build/CheckRequirements.ps1
+COPY ./deployment/common/Logging.psm1 /build/common/Logging.psm1
+RUN pwsh -Command "& {Set-PSRepository -Name PSGallery -InstallationPolicy Trusted}" \
+  && pwsh -File /build/CheckRequirements.ps1 -InstallMissing \
+  && sudo rm -rf /build/
