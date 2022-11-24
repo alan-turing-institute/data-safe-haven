@@ -8,7 +8,8 @@ param (
 Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
 
 # Requirements
-$PowershellVersionRequired = "7.0.0"
+$PowershellMinVersion = "7.0.0"
+$PowershellMaxVersion = "7.2.7"
 $ModuleVersionRequired = @{
     "Az.Accounts"                                  = @("ge", "2.9.0")
     "Az.Automation"                                = @("ge", "1.7.3")
@@ -37,10 +38,12 @@ if ($IncludeDev.IsPresent) {
 
 # Powershell version
 $PowershellVersion = (Get-Host | Select-Object Version).Version
-if ($PowershellVersion -ge $PowershellVersionRequired) {
+if ($PowershellVersion -gt $PowershellMaxVersion) {
+    Add-LogMessage -Level Fatal "Please downgrade Powershell to a minimum version of $PowershellMinVersion and a maximum of $PowershellMaxVersion (currently using $PowershellVersion)!"
+} elseif ($PowershellVersion -lt $PowershellMinVersion) {
+    Add-LogMessage -Level Fatal "Please upgrade Powershell to a minimum version of $PowershellMinVersion and a maximum of $PowershellMaxVersion (currently using $PowershellVersion)!"
+} else{
     Add-LogMessage -Level Success "Powershell version: $PowershellVersion"
-} else {
-    Add-LogMessage -Level Fatal "Please update your Powershell version to $PowershellVersionRequired or greater (currently using $PowershellVersion)!"
 }
 
 # Powershell modules
