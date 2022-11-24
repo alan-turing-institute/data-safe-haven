@@ -19,6 +19,8 @@ Deployment might be carried out by members of an institutional IT team or extern
 In either case, the deploying team should ensure that the system is working as expected before handing it over to the {ref}`System Managers <role_system_manager>`.
 We suggest developing a security checklist for deployers to work through - an example of one used at the Alan Turing Institute is shown below.
 
+For instructions on removing deployed resources, refer to the guide for {ref}`System Managers <administrator_manage_deployments>`.
+
 [Safe Haven Management (SHM) deployment guide](deploy_shm.md)
 : deploy a single Safe Haven Management (SHM) segment. This will deploy infrastructure shared between projects such as user management and package mirrors/proxies.
 
