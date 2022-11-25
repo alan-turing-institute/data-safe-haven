@@ -24,14 +24,21 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
-# Connect the private DNS zones to all virtual networks in the SRE
+# Load SRE virtual networks
+# -------------------------
+$sreVirtualNetworks = Get-VirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg
+
+
+# Switch to SHM subscription and connect the private DNS zones to all virtual networks in the SRE
 # Note that this must be done before connecting the VMs to log analytics to ensure that they use the private link
 # ---------------------------------------------------------------------------------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 foreach ($PrivateZone in (Get-AzPrivateDnsZone -ResourceGroupName $config.shm.network.vnet.rg)) {
-    foreach ($virtualNetwork in Get-VirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg) {
+    foreach ($virtualNetwork in $sreVirtualNetworks) {
         $null = Connect-PrivateDnsToVirtualNetwork -DnsZone $privateZone -VirtualNetwork $virtualNetwork
     }
 }
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Get log analytics workspace details
