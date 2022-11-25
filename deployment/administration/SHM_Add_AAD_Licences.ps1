@@ -18,7 +18,7 @@ $config = Get-ShmConfig -shmId $shmId
 # --------------------------
 if (-not (Get-MgContext)) {
   Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph. Please sign in with an account with admin rights over the Azure Active Directory you plan to use."
-  Connect-MgGraph -TenantId $config.azureAdTenantId -Scopes "Directory.ReadWrite.All" -ErrorAction Stop
+  Connect-MgGraph -TenantId $config.azureAdTenantId -Scopes "Directory.ReadWrite.All" -ErrorAction Stop -ContextScope Process
 }
 if (Get-MgContext) {
     Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
