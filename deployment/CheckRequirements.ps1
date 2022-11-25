@@ -42,7 +42,7 @@ if ($PowershellVersion -gt $PowershellMaxVersion) {
     Add-LogMessage -Level Fatal "Please downgrade Powershell to a minimum version of $PowershellMinVersion and a maximum of $PowershellMaxVersion (currently using $PowershellVersion)!"
 } elseif ($PowershellVersion -lt $PowershellMinVersion) {
     Add-LogMessage -Level Fatal "Please upgrade Powershell to a minimum version of $PowershellMinVersion and a maximum of $PowershellMaxVersion (currently using $PowershellVersion)!"
-} else{
+} else {
     Add-LogMessage -Level Success "Powershell version: $PowershellVersion"
 }
 
