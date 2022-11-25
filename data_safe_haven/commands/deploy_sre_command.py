@@ -140,9 +140,7 @@ class DeploySRECommand(LoggingMixin, Command):
         azure_api = AzureApi(config.subscription_name)
         available_vm_skus = azure_api.list_available_vm_skus(config.azure.location)
         vm_skus = [
-            sku
-            for sku in self.option("research-desktop")
-            if sku in available_vm_skus
+            sku for sku in self.option("research-desktop") if sku in available_vm_skus
         ]
         while not vm_skus:
             self.warning("An SRE deployment needs at least one research desktop.")

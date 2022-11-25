@@ -34,7 +34,9 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         subscription_name,
     ):
         super().__init__(subscription_name=subscription_name)
-        self.current_ip = requests.get("https://api.ipify.org", timeout=300).content.decode("utf8")
+        self.current_ip = requests.get(
+            "https://api.ipify.org", timeout=300
+        ).content.decode("utf8")
         self.db_client_ = None
         self.db_name = database_name
         self.db_server_ = None

@@ -13,6 +13,7 @@ from .components.shm_domain_controllers import (
 )
 from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
+from .components.shm_routing import SHMRoutingComponent, SHMRoutingProps
 from .components.shm_state import SHMStateComponent, SHMStateProps
 
 
@@ -46,6 +47,21 @@ class DeclarativeSHM:
             ),
         )
 
+        # Deploy SHM firewall and routing
+        routing = SHMRoutingComponent(
+            "shm_routing",
+            self.stack_name,
+            self.shm_name,
+            SHMRoutingProps(
+                location=self.cfg.azure.location,
+                resource_group_name=networking.resource_group_name,
+                subnet_firewall_name=networking.subnet_firewall_name,
+                subnet_firewall_virtual_network_name=networking.virtual_network.name,
+                subnet_identity_iprange=networking.subnet_identity_iprange,
+                subnet_update_servers_iprange=networking.subnet_update_servers_iprange,
+            ),
+        )
+
         # Deploy SHM state
         state = SHMStateComponent(
             "shm_state",
@@ -67,8 +83,6 @@ class DeclarativeSHM:
                 location=self.cfg.azure.location,
             ),
         )
-
-        # Deploy firewall
 
         # Deploy update servers
 

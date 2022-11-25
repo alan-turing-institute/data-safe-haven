@@ -237,14 +237,13 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Register outputs
         self.dns_zone_nameservers = dns_zone.name_servers
-        self.subnet_identity_iprange = subnet_identity_iprange
         self.resource_group_name = Output.from_input(resource_group.name)
         self.subnet_firewall_name = Output.from_input(props.subnet_firewall_name)
+        self.subnet_identity_iprange = subnet_identity_iprange
         self.subnet_identity_name = Output.from_input(props.subnet_identity_name)
         self.subnet_monitoring_name = Output.from_input(props.subnet_monitoring_name)
-        self.subnet_update_servers_name = Output.from_input(
-            props.subnet_update_servers_name
-        )
+        self.subnet_update_servers_iprange = subnet_update_servers_iprange
+        self.subnet_update_servers_name = Output.from_input(props.subnet_update_servers_name)
         self.subnet_vpn_gateway_name = Output.from_input(props.subnet_vpn_gateway_name)
         self.virtual_network = virtual_network
 

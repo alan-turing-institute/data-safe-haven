@@ -7,7 +7,9 @@ import string
 
 def alphanumeric(input_string: str) -> str:
     """Strip any characters that are not letters or numbers from a string."""
-    return "".join(filter(lambda x: x in (string.ascii_letters + string.digits), input_string))
+    return "".join(
+        filter(lambda x: x in (string.ascii_letters + string.digits), input_string)
+    )
 
 
 def b64encode(input_string: str) -> str:

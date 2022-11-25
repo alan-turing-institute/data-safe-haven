@@ -590,7 +590,10 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.delete(
-                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
+                url,
+                headers={"Authorization": f"Bearer {self.token}"},
+                timeout=300,
+                **kwargs,
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -611,7 +614,10 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.get(
-                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
+                url,
+                headers={"Authorization": f"Bearer {self.token}"},
+                timeout=300,
+                **kwargs,
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -632,7 +638,10 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.patch(
-                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
+                url,
+                headers={"Authorization": f"Bearer {self.token}"},
+                timeout=300,
+                **kwargs,
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -653,7 +662,10 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.post(
-                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
+                url,
+                headers={"Authorization": f"Bearer {self.token}"},
+                timeout=300,
+                **kwargs,
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)

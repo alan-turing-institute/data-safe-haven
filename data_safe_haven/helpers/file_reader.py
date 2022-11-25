@@ -23,7 +23,7 @@ class FileReader(LoggingMixin):
     def name(self) -> str:
         return self.file_path.name.replace(".mustache", "")
 
-    def file_contents(self, mustache_values: JSONType=None) -> str:
+    def file_contents(self, mustache_values: JSONType = None) -> str:
         """Read a local file into a string, expanding template values"""
         with open(self.file_path, "r", encoding="utf-8") as source_file:
             if mustache_values:
