@@ -112,10 +112,11 @@ jobs:
         run: |
           echo '{"array": ["dummy"], "variable": "dummy"}' > .mustache_config.json
           for yamlfile in $(find . -name "*.yml" -o -name "*.yaml"); do
-            sed "s|{{\([/#]\)[^}]*}}|{{\1array}}|g" $yamlfile > expanded.yaml  # replace mustache arrays
-            sed -i "s|{{[^#/].\{1,\}}}|{{variable}}|g" expanded.yaml           # replace mustache variables
-            mustache .mustache_config.json expanded.yaml > $yamlfile           # perform mustache expansion overwriting file
+            sed "s|{{\([/#]\)[^}]*}}|{{\1array}}|g" $yamlfile > expanded.tmp  # replace mustache arrays
+            sed -i "s|{{[^#/].\{1,\}}}|{{variable}}|g" expanded.tmp           # replace mustache variables
+            mustache .mustache_config.json expanded.tmp > $yamlfile           # perform mustache expansion overwriting original file
           done
+          rm expanded.tmp
       - name: Lint YAML
         uses: karancode/yamllint-github-action@dd59165b84d90d37fc919c3c7dd84c7e37cd6bfb  # this is 2.0.0
         with:
