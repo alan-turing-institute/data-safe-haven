@@ -74,6 +74,7 @@ packages:
     torch:
     torchvision:
     tsfresh:
+        "3.10": ["uninstallable"]
     wordcloud:
     xgboost:
     xlrd:
