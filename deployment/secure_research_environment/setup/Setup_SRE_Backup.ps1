@@ -22,6 +22,18 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 $null = Deploy-ResourceGroup -Name $config.sre.backup.rg -Location $config.shm.location
 
 
+# Register DataProtection provider
+# --------------------------------
+$RegistrationState = (Get-AzResourceProvider | Where-Object { $_.ProviderNamespace -eq “Microsoft.DataProtection” }).RegistrationState
+while ($RegistrationState -ne "Registered") {
+    if ($RegistrationState -ne "Registering") {
+        $null = Register-AzResourceProvider -ProviderNamespace Microsoft.DataProtection
+    } else {
+        Start-Sleep 30
+    }
+}
+
+
 # Deploy data protection backup vault
 # -----------------------------------
 $Vault = Deploy-DataProtectionBackupVault -ResourceGroupName $config.sre.backup.rg `
