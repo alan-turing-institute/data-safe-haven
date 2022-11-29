@@ -13,7 +13,6 @@ packages:
     arviz:
     beautifulsoup4:
     black:
-        "all": [">18.3a0"]  # no full releases are available
     Cython:
     dash:
     dask:
@@ -70,9 +69,7 @@ packages:
     sympy:
     tables:
     tensorboard:
-        "all": ["<2.10.0"]  # 2.10.0 is not compatible with tensorflow
     tensorflow:
-        "all": [">=2.0"]  # allow flexibility in tensorflow2 version
     thinc:
     torch:
     torchvision:
