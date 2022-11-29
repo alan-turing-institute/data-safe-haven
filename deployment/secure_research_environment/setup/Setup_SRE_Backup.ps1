@@ -48,9 +48,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # Assign permissions required for blob backup to the Vault's managed identity
 # ---------------------------------------------------------------------------
 $null = Deploy-RoleAssignment -ObjectId $Vault.IdentityPrincipalId `
-                              -ResourceGroupName $PersistentStorageAccount.ResourceGroupName `
-                              -ResourceType "Microsoft.Storage/storageAccounts" `
-                              -ResourceName $PersistentStorageAccount.StorageAccountName `
+                              -Scope $PersistentStorageAccount.id
                               -RoleDefinitionName "Storage Account Backup Contributor"
 
 
