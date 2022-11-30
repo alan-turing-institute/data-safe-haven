@@ -80,7 +80,7 @@ if (($existingNic.VirtualMachine.Id) -and -not $Upgrade) {
 # -----------------------------------------------
 if ($Upgrade) {
     # Attempt to find exactly one existing virtual machine
-    $existingVm = Get-AzVM | Where-Object { $_.Name -match "$vmNamePrefix-\d-\d-\d{10}" }
+    $existingVm = Get-AzVM | Where-Object { $_.Name -match "$vmNamePrefix-\d{2}-\d{2}-\d{10}" }
     if (-not $existingVm) {
         Add-LogMessage -Level Fatal "No existing VM found to upgrade"
     } elseif ($existingVm.Length -ne 1) {
