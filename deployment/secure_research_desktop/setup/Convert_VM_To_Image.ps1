@@ -61,7 +61,7 @@ Add-LogMessage -Level Warning "Please check the output of the build analysis scr
 $confirmation = $null
 while ($confirmation -ne "y") {
     if ($confirmation -eq "n") { exit 0 }
-    $confirmation = Read-Host "Are you sure you want to deprovision '$($vm.Name)' and turn it into a VM image? [y/n]"
+    $confirmation = Read-Host "Can you confirm that all steps of the '$($vm.Name)' build completed successfully? [y/n]"
 }
 
 
@@ -103,6 +103,7 @@ Add-LogMessage -Level Info "VM has been generalized"
 # Create an image from the deallocated VM
 # ---------------------------------------
 $imageName = "Image$($vm.Name -replace 'Candidate', '')"
+Add-LogMessage -Level Info "Preparing to create image $imageName..."
 $vm = Get-AzVM -Name $vm.Name -ResourceGroupName $config.srdImage.build.rg
 $imageConfig = New-AzImageConfig -Location $config.srdImage.location -SourceVirtualMachineId $vm.ID
 $image = New-AzImage -Image $imageConfig -ImageName $imageName -ResourceGroupName $config.srdImage.images.rg
