@@ -87,7 +87,7 @@ function Deploy-RoleAssignment {
     if ($Scope) {
         $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
                                            -RoleDefinitionName $RoleDefinitionName `
-                                           -Scope $Scope
+                                           -Scope $Scope `
                                            -ErrorAction SilentlyContinue
     } else {
         $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
@@ -104,7 +104,7 @@ function Deploy-RoleAssignment {
             if ($Scope) {
                 $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
                                                    -RoleDefinitionName $RoleDefinitionName `
-                                                   -Scope $Scope
+                                                   -Scope $Scope `
                                                    -ErrorAction Stop
             } else {
                 $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
