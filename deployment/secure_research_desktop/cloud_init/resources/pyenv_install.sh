@@ -94,8 +94,7 @@ fi
 # Run safety check and log any problems
 # -------------------------------------
 echo "Running safety check on Python ${PYTHON_VERSION} installation..."
-${EXE_PATH}/safety check --json --output $SAFETY_CHECK_JSON
-${EXE_PATH}/safety review --full-report -f $SAFETY_CHECK_JSON
+${EXE_PATH}/safety check --save-json $SAFETY_CHECK_JSON
 
 
 # Clean up
