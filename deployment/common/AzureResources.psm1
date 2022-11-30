@@ -78,7 +78,7 @@ function Deploy-RoleAssignment {
         [string]$Scope
     )
     # Validate arguments
-    if ([boolean]$ResourceGroupName -eq [boolean]$Scope){
+    if ([boolean]$ResourceGroupName -eq [boolean]$Scope) {
         Add-LogMessage -Level Fatal "Failed to create role assignment, cannot declare both ResourceGroupName and Scope."
     }
 
