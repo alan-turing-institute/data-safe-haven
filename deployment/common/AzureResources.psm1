@@ -72,7 +72,7 @@ function Deploy-RoleAssignment {
         [string]$ObjectId,
         [Parameter(Mandatory = $true, HelpMessage = "Name of role to be assigned")]
         [string]$RoleDefinitionName,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group to apply the role over")]
+        [Parameter(Mandatory = $false, HelpMessage = "Name of resource group to apply the role over")]
         [string]$ResourceGroupName,
         [Parameter(Mandatory = $false, HelpMessage = "URI of the object to apply the role over")]
         [string]$Scope
