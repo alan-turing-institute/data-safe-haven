@@ -68,7 +68,7 @@ Add-LogMessage -Level Info "Ensuring that '$azureAdApplicationName' is registere
 if (Get-MgContext) {
     Add-LogMessage -Level Info "Already authenticated against Microsoft Graph"
 } else {
-    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop -ContextScope Process
 }
 try {
     $application = Get-MgApplication -Filter "DisplayName eq '$azureAdApplicationName'" -ErrorAction Stop
