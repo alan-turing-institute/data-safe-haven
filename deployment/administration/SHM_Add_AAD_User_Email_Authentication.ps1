@@ -27,7 +27,7 @@ if (Get-MgContext) {
 # Find all users without with OnPremisesSyncEnabled=True, with Mail entries, who have not already got an authenticationemailmethod.
 # This indicates that they originated from a local AD.
 # ----------------------------------------------------------------------------------
-$users = Get-MgUser -Property Mail,DisplayName,OnPremisesSyncEnabled,UserPrincipalName | where { $_.OnPremisesSyncEnabled } | where { $_.Mail }
+$users = Get-MgUser -Property Mail, OnPremisesSyncEnabled, UserPrincipalName | where { $_.OnPremisesSyncEnabled } | where { $_.Mail }
 $users | ForEach-Object { 
     if (Get-MgUserAuthenticationEmailMethod -UserId $_.UserPrincipalName ) {
         Add-LogMessage -Level Info "User '$($_.UserPrincipalName)' already has an authentication email"
