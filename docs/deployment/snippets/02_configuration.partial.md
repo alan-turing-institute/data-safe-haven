@@ -41,8 +41,8 @@ The following core SRE properties are required - look in the `environment_config
 ```{tip}
 We recommend the following for the `inboundAccessFrom` setting
 - Tier 0/1 SREs: this can be set to `Internet`, allowing access from anywhere.
-- Tier 2 SREs: this should correspond to the **organisational networks** (including guest networks) for all approved partner organisations (i.e. any network managed by the organisation, such as `EduRoam`, `Turing Guest`, `Turing Secure`)
-- Tier 3 SREs: this should correspond to the **restricted networks** for all approved partner organisations. These should only permit connections from within medium security access controlled physical spaces and from managed devices (e.g. `Turing Secure`).
+- Tier 2 SREs: this should correspond to the IP addresses of **organisational networks** (including guest networks) for all approved partner organisations (i.e. any network managed by the organisation, such as `EduRoam`, `Turing Guest`, `Turing Secure`)
+- Tier 3 SREs: this should correspond to the IP addresses of **restricted networks** for all approved partner organisations. These should only permit connections from within medium security access controlled physical spaces and from managed devices (e.g. `Turing Secure`).
 ```
 
 ```{important}
