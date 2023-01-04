@@ -16,13 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.10'
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.0.3
+          ruby-version: 3.1.3
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -65,7 +65,7 @@ jobs:
             --url-ignore "/github.com\/alan-turing-institute\/data-safe-haven/,/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//"
       - name: Deploy documentation to GitHub Pages
         if: ${{ !env.ACT }}
-        uses: JamesIves/github-pages-deploy-action@60b5e92fe9331f02fa1cdad4d19ddf875be0361c  # This commit corresponds to tag 4.1.6
+        uses: JamesIves/github-pages-deploy-action@ba1486788b0490a235422264426c45848eac35c6  # This commit corresponds to tag 4.4.1
         with:
           branch: autodocs                     # The branch the action should deploy to.
           folder: ${{env.OUTPUTDIR}}           # The folder the action should deploy.
