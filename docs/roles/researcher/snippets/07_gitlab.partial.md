@@ -13,7 +13,7 @@ The `GitLab` instance within the SRE can contain code, documentation and results
 You do not need to worry about the security of the information you upload there as it is fully contained within the SRE and there is no access to the internet and/or external servers.
 
 ```{important}
-The `GitLab` instance within the SRE is entirely separate from the https://gitlab.com service.
+The `GitLab` instance within the SRE is entirely separate from the `https://gitlab.com` service.
 ```
 
 ### {{books}} Maintaining an archive of the project
@@ -48,7 +48,7 @@ Accessing `GitLab` from the browser on the SRD is an easy way to switch between 
 
 ```{warning}
 Do not use your username and password from a pre-existing `GitLab` account!
-The `GitLab` instance within the SRE is entirely separate from the https://gitlab.com service and is expecting the same username and password that you used to log into the SRE.
+The `GitLab` instance within the SRE is entirely separate from the `https://gitlab.com` service and is expecting the same username and password that you used to log into the SRE.
 ```
 
 ### {{open_hands}} Public repositories within the SRE
@@ -67,7 +67,7 @@ We recommend that you make your repositories public to facilitate collaboration 
 If you have not used GitLab before:
 
 - There is a small tutorial available as an [Appendix](#appendix-b-gitlab-tutorial-notes) to this user guide.
-- You can find the official documentation on the [GitLab website](https://docs.gitlab.com/ee/gitlab-basics/).
+- You can find the official documentation on the [GitLab website](https://docs.gitlab.com/ee/user/index.html).
 - Ask your team mates for help.
 - Ask the designated contact for your SRE.
 - There may be a dedicated discussion channel, for example during Turing Data Study Groups you can ask in the Slack channel.
