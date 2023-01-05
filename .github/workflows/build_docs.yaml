@@ -42,7 +42,7 @@ jobs:
           python3 ./docs/build/build_all_supported_versions.py -o ${{env.OUTPUTDIR}}
       - name: Install html-proofer
         shell: bash
-        run: gem install html-proofer -v 3.19.0
+        run: gem install html-proofer
       - name: Run HTML proofer
         shell: bash
         run: |
@@ -52,17 +52,14 @@ jobs:
           #   - the data-safe-haven repo (as it is private)
           #   - the data-classification-app repo (as it is private)
           #   - turing.ac.uk (as it requires a CAPTCHA)
-          export LC_CTYPE="C.UTF-8"
           htmlproofer ${{env.OUTPUTDIR}}/develop \
             --allow-hash-href \
-            --check-favicon \
-            --check-html \
-            --check-img-http \
             --enforce-https \
-            --file-ignore "/_static/" \
-            --http-status-ignore "403,429,503" \
-            --url-swap "^\/data-safe-haven:/.." \
-            --url-ignore "/github.com\/alan-turing-institute\/data-safe-haven/,/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//"
+            --ignore-files "/_static/" \
+            --ignore-status-codes "403,429,503" \
+            --ignore-urls "/github.com\/alan-turing-institute\/data-classification-app/,/turing.ac.uk\//" \
+            --swap-urls "^\/data-safe-haven:/.."
+
       - name: Deploy documentation to GitHub Pages
         if: ${{ !env.ACT }}
         uses: JamesIves/github-pages-deploy-action@ba1486788b0490a235422264426c45848eac35c6  # This commit corresponds to tag 4.4.1
