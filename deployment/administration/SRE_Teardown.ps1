@@ -103,7 +103,7 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     } else {
         Add-LogMessage -Level Info "Ensuring that '$AzureAdApplicationName' is removed from Azure Active Directory..."
         if (-not (Get-MgContext)) {
-            Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+            Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop -ContextScope Process
         }
         try {
             Get-MgApplication -Filter "DisplayName eq '$AzureAdApplicationName'" | ForEach-Object { Remove-MgApplication -ApplicationId $_.Id }

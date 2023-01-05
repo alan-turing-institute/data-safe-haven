@@ -17,9 +17,9 @@ Most of these controls can be relaxed or tightened by the {ref}`role_system_mana
 
 - {ref}`Researchers <role_researcher>` access the SRE by connecting via SSL/TLS to the Remote Desktop Gateway.
 - Authentication to the Remote Desktop Gateway requires all of:
-  - username
-  - password
-  - multi-factor authentication (phonecall or phone app notification)
+    - username
+    - password
+    - multi-factor authentication (phonecall or phone app notification)
 
 ### Remote connections:
 

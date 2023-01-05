@@ -37,13 +37,9 @@ You should have already set up a non-privileged user account upon setting up the
 PS> C:\Installation\Run_ADSync.ps1
 ```
 
-</details>
+### {{closed_lock_with_key}} Ensure that your non-privileged user account has MFA enabled
 
-<details>
-<summary><strong>Ensure that your user account has MFA enabled</strong></summary>
-
-Please ensure that your account is fully set-up (including MFA as {ref}`detailed in the user guide <roles_researcher_user_guide_setup_mfa>`).
-In order to verify this switch to your custom Azure Active Directory in the Azure portal and make the following checks:
+Switch to your custom Azure Active Directory in the Azure portal and make the following checks:
 
 ![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
 
@@ -52,7 +48,3 @@ In order to verify this switch to your custom Azure Active Directory in the Azur
   - Navigate to `Azure Active Directory > Manage / Users > (user account)`, and ensure that `Settings > Usage Location` is set.
 - A licence must be assigned to the user.
   - Navigate to `Azure Active Directory > Manage / Users > (user account) > Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
-- MFA must be enabled for the user.
-  - The user must log into [https://aka.ms/mfasetup](https://aka.ms/mfasetup) and set up MFA as `detailed in the user guide <roles_researcher_user_guide_setup_mfa>`.
-
-</details>

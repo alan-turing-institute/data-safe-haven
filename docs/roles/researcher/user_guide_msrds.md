@@ -10,6 +10,14 @@
 :relative-images:
 ```
 
+(user_setup_password_mfa)=
+
+## {{closed_lock_with_key}} Password and MFA
+
+```{include} snippets/13_MFA.partial.md
+:relative-images:
+```
+
 ## {{unlock}} Access the Secure Research Environment
 
 ```{include} snippets/03_01_prerequisites.partial.md
@@ -32,13 +40,13 @@
 
 - You should arrive at a login page that needs you to enter:
 
-  - your `username`
-  - your password
+    - your `username`
+    - your password
 
   then click `Sign in`.
 
   ````{note}
-  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace` in the `User name` box, enter her password and then click `Sign in`.
+  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace` in the `User name` box, enter her   password and then click `Sign in`.
   ```{image} user_guide/logon_environment_msrds.png
   :alt: Research environment log in
   :align: center

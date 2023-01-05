@@ -13,6 +13,7 @@ param(
 
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/AzureCompute -Force -ErrorAction Stop
+Import-Module $PSScriptRoot/../common/AzureNetwork -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 

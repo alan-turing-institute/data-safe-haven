@@ -32,7 +32,7 @@ PS> ./Deploy_SRE.ps1 -shmId <SHM ID> -sreId <SRE ID> -VMs <VM sizes>
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
-- where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create (for example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`)
+- where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create. For example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`. If you are unsure of the appropriate VM sizes, run the script with a single `'default'` (resizing can be done after deployment via the Azure portal).
 
 You will be prompted for credentials for:
 
@@ -183,6 +183,8 @@ If you specify the same size more than once, you will create multiple SRDs of th
 ```{include} snippets/06_01_create_user_account.partial.md
 :relative-images:
 ```
+
+To complete the account setup, follow the instructions for password and MFA setup present in the {ref}`user guide <user_setup_password_mfa>`.
 
 (deploy_sre_apache_guacamole_test_remote_desktop)=
 
