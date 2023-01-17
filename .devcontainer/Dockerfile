@@ -4,8 +4,8 @@ FROM python:${VARIANT}-buster
 # Set package versions
 ARG AZURE_CLI_VERSION="2.42.0"
 ARG PWSH_VERSION="7.2.6"
-ARG PULUMI_VERSION="3.48.0"
-ARG POETRY_VERSION="1.2.0"
+ARG PULUMI_VERSION="3.45.0"
+ARG POETRY_VERSION="1.2.2"
 
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
@@ -64,7 +64,9 @@ RUN pwsh -Command "& {Set-PSRepository -Name PSGallery -InstallationPolicy Trust
   && sudo rm -rf /build/
 
 # Set PATH for pulumi - pulumi installed as feature to work round installing as root
-ENV PATH=$PATH:/home/deploydsh/.pulumi/bin
+ENV PATH=$PATH:/home/${USERNAME}/.pulumi/bin
 
 # Install poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
+# Respects environment variables $POETRY_HOME and $POETRY_VERSION
+RUN curl -sSL https://install.python-poetry.org | python3 - \
+  && /home/${USERNAME}/.local/bin/poetry config virtualenvs.in-project true

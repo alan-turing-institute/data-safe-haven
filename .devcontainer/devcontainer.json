@@ -1,11 +1,15 @@
-// Development container for the Data Safe Haven project
+// Development container for the Data Safe Haven project pulumi
 {
-    "name": "Turing Data Safe Haven",
+    "name": "Turing Data Safe Haven - Pulumi",
     "build": {
         "context": "..",
         "dockerfile": "Dockerfile",
-        "POETRY_VERSION": "1.2.0",
-        "VARIANT": "3.10"
+        "args": {
+            "POETRY_VERSION": "1.2.2",
+            "VARIANT": "3.10",
+            "PWSH_VERSION": "7.2.6",
+            "AZURE_CLI_VERSION": "2.42.0"
+        }
     },
     "settings": {
         "terminal.integrated.defaultProfile.linux": "bash"
@@ -14,12 +18,14 @@
 		"github.vscode-pull-request-github",
 		"ms-vscode.powershell",
 		"ms-vscode.azure-account",
-		"ms-python.python"
+		"ms-python.python",
+		"christian-kohler.path-intellisense"
 	],
     "remoteUser": "deploydsh",
     "features": {
         "ghcr.io/devcontainers-contrib/features/pulumi:1": {
-            "BASHCOMPLETION": false
+            "version": "3.45.0",
+            "bashCompletion": false
         }
     }
 }
