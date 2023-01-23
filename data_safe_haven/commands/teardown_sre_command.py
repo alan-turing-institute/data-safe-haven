@@ -41,7 +41,7 @@ class TeardownSRECommand(LoggingMixin, Command):
                     stack.teardown()
                 else:
                     raise DataSafeHavenInputException(
-                        f"SRE %s not found - check the name is spelt correctly." % (self.argument("name"))
+                        f"SRE {self.argument('name')} not found - check the name is spelt correctly." 
                     )
             except Exception as exc:
                 raise DataSafeHavenInputException(
