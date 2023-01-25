@@ -44,6 +44,20 @@ Read our [versioning scheme](VERSIONING.md) for how we number and label releases
 We value those who take the time and effort to report security vulnerabilities.
 If you believe you have found a security vulnerability, please report it as outlined in our [Security and vulnerability disclosure policy](SECURITY.md).
 
+## :book: Docs
+
+The docs, including for older releases, are available [here](https://alan-turing-institute.github.io/data-safe-haven).
+
+To build the docs locally, check out the repo, navigate to the `docs` folder and `make` them:
+
+```{bash}
+git clone https://github.com/alan-turing-institute/data-safe-haven.git
+cd data-safe-haven/docs
+make html
+```
+
+This will add the contents to a folder called `_output` inside `docs`.
+
 ## :bow: Acknowledgements
 
 We are grateful for the following support for this project:
