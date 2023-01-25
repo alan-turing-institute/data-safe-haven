@@ -48,15 +48,7 @@ If you believe you have found a security vulnerability, please report it as outl
 
 The docs, including for older releases, are available [here](https://alan-turing-institute.github.io/data-safe-haven).
 
-To build the docs locally, check out the repo, navigate to the `docs` folder and `make` them:
-
-```{bash}
-git clone https://github.com/alan-turing-institute/data-safe-haven.git
-cd data-safe-haven/docs
-make html
-```
-
-This will add the contents to a folder called `_output` inside `docs`.
+See the [Contributor Guide](CONTRIBUTING.md#making-a-change-to-documentation) for how to make changes to the docs.
 
 ## :bow: Acknowledgements
 
