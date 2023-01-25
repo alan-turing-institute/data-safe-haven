@@ -1,6 +1,6 @@
 To build the docs locally, simply type:
 
-```
+```{bash}
 make html
 ```
 
