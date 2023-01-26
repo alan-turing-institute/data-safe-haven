@@ -11,7 +11,7 @@ MOUNT_POINTS=("/data" "/home" "/scratch" "/shared" "/output")
 echo -e "${BLUE}Checking drives are mounted...${END}"
 for MOUNT_POINT in "${MOUNT_POINTS[@]}"; do
     ls "${MOUNT_POINT}"/* > /dev/null 2>&1
-    if (mount | grep -q "$MOUNT_POINT"); then
+    if (findmnt "$MOUNT_POINT" > /dev/null 2>&1); then
         echo -e "${BLUE} [o] ${MOUNT_POINT} is mounted...${END}"
     else
         echo -e "${RED} [ ] ${MOUNT_POINT} not mounted. Attempting to mount...${END}"
@@ -28,7 +28,7 @@ sleep 30
 echo -e "${BLUE}Rechecking drives are mounted...${END}"
 for MOUNT_POINT in "${MOUNT_POINTS[@]}"; do
     ls "${MOUNT_POINT}"/* > /dev/null 2>&1
-    if (mount | grep -q "$MOUNT_POINT"); then
+    if (findmnt "$MOUNT_POINT" > /dev/null 2>&1); then
         echo -e "${BLUE} [o] ${MOUNT_POINT} is mounted...${END}"
         df -h  | grep "$MOUNT_POINT"
     else
