@@ -30,11 +30,6 @@ There are lots of ways to contribute, not just writing code!
 
 See our [Code of Conduct](CODE_OF_CONDUCT.md) and our [Contributor Guide](CONTRIBUTING.md) to learn more about how we work together as a community and how you can contribute.
 
-## :book: Documentation
-
-Full documentation is available at the [Data Safe Haven website](https://alan-turing-institute.github.io/data-safe-haven).
-If you think anything there is unclear, please consider reading how to contribute a documentation change in our [Contributor Guide](CONTRIBUTING.md#making-a-change-to-documentation).
-
 ## :cake: Releases
 
 If you're new to the project, why not check out our [latest release](https://github.com/alan-turing-institute/data-safe-haven/releases/latest)?
