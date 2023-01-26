@@ -415,7 +415,7 @@ write_files:
         BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-backup"
         rm -rf $BLOBFUSE_CACHE_DIR
         mkdir -p $BLOBFUSE_CACHE_DIR
-        CACHE_SPACE_MB=$(echo "$(df -BM | grep /dev/root | awk '{print $2}' | sed 's/M//') / 50" | bc) # set the cache size to 2% of the OS disk size
+        CACHE_SPACE_MB=$(echo "$(findmnt -nb -o size /) / 1024^2 / 50" | bc) # set the cache size to 2% of the OS disk size
         /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-backup.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
 
@@ -426,7 +426,7 @@ write_files:
         BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-egress"
         rm -rf $BLOBFUSE_CACHE_DIR
         mkdir -p $BLOBFUSE_CACHE_DIR
-        CACHE_SPACE_MB=$(echo "$(df -BM | grep /dev/root | awk '{print $2}' | sed 's/M//') / 50" | bc) # set the cache size to 2% of the OS disk size
+        CACHE_SPACE_MB=$(echo "$(findmnt -nb -o size /) / 1024^2 / 50" | bc) # set the cache size to 2% of the OS disk size
         /usr/bin/blobfuse $1 -o rw --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-egress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
 
@@ -437,7 +437,7 @@ write_files:
         BLOBFUSE_CACHE_DIR="/tmp/blobfuse-cache-ingress"
         rm -rf $BLOBFUSE_CACHE_DIR
         mkdir -p $BLOBFUSE_CACHE_DIR
-        CACHE_SPACE_MB=$(echo "$(df -BM | grep /dev/root | awk '{print $2}' | sed 's/M//') / 50" | bc) # set the cache size to 2% of the OS disk size
+        CACHE_SPACE_MB=$(echo "$(findmnt -nb -o size /) / 1024^2 / 50" | bc) # set the cache size to 2% of the OS disk size
         /usr/bin/blobfuse $1 -o ro --tmp-path=$BLOBFUSE_CACHE_DIR --cache-size-mb=$CACHE_SPACE_MB --no-symlinks=true --config-file=/opt/configuration/credentials-ingress.secret --log-level=LOG_DEBUG -o attr_timeout=240 -o entry_timeout=240 -o negative_timeout=120 -o allow_other
       fi
 
