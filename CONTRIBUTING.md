@@ -26,7 +26,7 @@ Jump to the following sections:
     - [Working in a private repository](#working-in-a-private-repository)
     - [Who's involved in the project](#whos-involved-in-the-project)
     - [Make a change with a pull request](#making-a-change-with-a-pull-request)
-    - [Make a change to documentation](#making-a-change-to-documentation)
+    - [Make a change to the documentation](#making-a-change-to-the-documentation)
 
 ## A DevOps development philosophy
 
