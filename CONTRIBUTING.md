@@ -220,7 +220,7 @@ You can update your [fork](https://docs.github.com/en/get-started/quickstart/for
 
 GitHub has a [nice introduction](https://docs.github.com/en/get-started/quickstart/github-flow) to the pull request workflow, but please [get in touch](#get-in-touch) if you have any questions :balloon:.
 
-### Making a change to documentation
+### Making a change to the documentation
 
 The docs, including for older releases, are available [here](https://alan-turing-institute.github.io/data-safe-haven).
 
