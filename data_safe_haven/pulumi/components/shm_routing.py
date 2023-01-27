@@ -1104,12 +1104,23 @@ class SHMRoutingComponent(ComponentResource):
             opts=child_opts,
         )
 
+        route_table = network.RouteTable(
+            f"{self._name}_route_table",
+            location=props.location,
+            resource_group_name=props.resource_group_name,
+            route_table_name=f"route-{stack_name}",
+            routes=[
+                network.RouteArgs(
+                    next_hop_type=network.RouteNextHopType.VIRTUAL_APPLIANCE,
+                    address_prefix="0.0.0.0/0",
+                    name="ViaFirewall",
+                    next_hop_ip_address=(firewall.ip_configurations)[0].private_ip_address,
+                    # next_hop_ip_address=firewall.ip_configurations.apply(lambda cfg: cfg[0].private_ip_address),
+                )
+            ],
+        )
+
         # Register outputs
         self.external_dns_resolver = external_dns_resolver
         self.ntp_fqdns = ntp_fqdns
         self.ntp_ip_addresses = ntp_ip_addresses
-
-        # # Register exports
-        # self.exports = {
-        #     "virtual_network_name": virtual_network.name,
-        # }
