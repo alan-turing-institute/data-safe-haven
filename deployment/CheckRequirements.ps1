@@ -9,7 +9,7 @@ Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
 
 # Requirements
 $PowershellMinVersion = "7.0.0"
-$PowershellMaxVersion = "7.2.7"
+$PowershellMaxVersion = "7.2.8"
 $ModuleVersionRequired = @{
     "Az.Accounts"                                  = @("ge", "2.9.0")
     "Az.Automation"                                = @("ge", "1.7.3")
