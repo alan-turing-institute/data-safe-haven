@@ -32,7 +32,8 @@ PS> ./Deploy_SRE.ps1 -shmId <SHM ID> -sreId <SRE ID> -VMs <VM sizes>
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
-- where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create. For example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`. If you are unsure of the appropriate VM sizes, run the script with a single `'default'` (resizing can be done after deployment via the Azure portal).
+- where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create. For example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`. If you are unsure of the appropriate VM sizes, run the script with a single `'default'`.
+- Additional VMs can be added and existing ones can be resized after deployment. See {ref}`Adding and resizing VMs <add_resize_vm>`.
 
 You will be prompted for credentials for:
 
@@ -169,6 +170,26 @@ If you specify the same size more than once, you will create multiple SRDs of th
 <summary><strong>Enable backup</strong></summary>
 
 ```{include} snippets/13_enable_backup.partial.md
+:relative-images:
+```
+
+</details>
+
+(add_resize_vm)=
+
+### (Optional) {{heavy_plus_sign}} Add a new SRD or resize an existing SRD's VM
+
+The `-VmSizes` parameter that you provided to the `Deploy_SRE.ps1` script determines how many SRDs are created and how large each one will be.
+
+- To add another SRD, follow the below instructions for Deploying SRDs
+- The simplest way to resize a VM for an existing SRD is to log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`, then resize it by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal)
+- You can also use the below instructions for Deploying SRDs to resize the VM for an existing SRD, by taking care to set the `<IP last octet>` to that of the existing VM (viewable in Azure), and by setting the `-Upgrade` and `-Force` flags
+
+<details>
+<summary><strong>Deploying SRDs</strong></summary>
+
+
+```{include} snippets/09_single_srd.partial.md
 :relative-images:
 ```
 
