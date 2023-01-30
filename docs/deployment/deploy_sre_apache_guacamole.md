@@ -175,25 +175,6 @@ If you specify the same size more than once, you will create multiple SRDs of th
 
 </details>
 
-(add_resize_vm)=
-
-### (Optional) {{heavy_plus_sign}} Add a new Secure Research Desktop (SRD) or resize an existing SRD’s VM
-
-The `-VmSizes` parameter that you provided to the `Deploy_SRE.ps1` script determines how many SRDs are created and how large each one will be.
-
-- To add another SRD, follow the below instructions for Deploying SRDs
-- The simplest way to resize a VM for an existing SRD is to log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`, then resize it by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal)
-- You can also use the below instructions for Deploying SRDs to resize the VM for an existing SRD, by taking care to set the `<IP last octet>` to that of the existing VM (viewable in Azure), and by setting the `-Upgrade` and `-Force` flags
-
-<details>
-<summary><strong>Deploying SRDs</strong></summary>
-
-```{include} snippets/09_single_srd.partial.md
-:relative-images:
-```
-
-</details>
-
 ## 4. {{microscope}} Test deployed SRE
 
 (deploy_sre_apache_guacamole_create_user_account)=

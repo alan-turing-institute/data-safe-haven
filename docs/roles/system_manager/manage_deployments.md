@@ -6,6 +6,25 @@
 This document assumes that you already have access to a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
+(add_resize_vm)=
+
+## {{heavy_plus_sign}} Add a new Secure Research Desktop (SRD) or resize an existing SRD’s VM
+
+The `-VmSizes` parameter provided when deploying the SRE (with the `Deploy_SRE.ps1` script) determines how many SRDs are created and how large each one will be.
+
+- To add another SRD after deployment, follow the below instructions for Deploying SRDs
+- The simplest way to resize a VM for an existing SRD is to log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`, then resize it by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal)
+- You can also use the below instructions for Deploying SRDs to resize the VM for an existing SRD, by taking care to set the `<IP last octet>` to that of the existing VM (viewable in Azure), and by setting the `-Upgrade` and `-Force` flags
+
+<details>
+<summary><strong>Deploying SRDs</strong></summary>
+
+```{include} snippets/09_single_srd.partial.md
+:relative-images:
+```
+
+</details>
+
 ## {{fire}} Remove a single SRE
 
 In order to tear down an SRE, use the following procedure:
