@@ -188,7 +188,6 @@ The `-VmSizes` parameter that you provided to the `Deploy_SRE.ps1` script determ
 <details>
 <summary><strong>Deploying SRDs</strong></summary>
 
-
 ```{include} snippets/09_single_srd.partial.md
 :relative-images:
 ```
