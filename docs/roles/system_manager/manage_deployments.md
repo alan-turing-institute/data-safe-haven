@@ -28,7 +28,7 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 - where `<IP last octet>` is last octet of the IP address (if resizing an existing VM, check what this is in Azure)
 - [optional] where `<VM size>` is the [Azure VM size](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) for this SRD
-- [optional] where resizing a VM for an existing SRD, also add `-Upgrade` and `-Force` 
+- [optional] where resizing a VM for an existing SRD, also add `-Upgrade` and `-Force`
 
 This will deploy a new SRD into the SRE environment.
 
