@@ -12,18 +12,24 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 
 The `-VmSizes` parameter provided when deploying the SRE (with the `Deploy_SRE.ps1` script) determines how many SRDs are created and how large each one will be.
 
-- To add another SRD after deployment, follow the below instructions for Deploying SRDs
-- The simplest way to resize a VM for an existing SRD is to log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`, then resize it by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal)
-- You can also use the below instructions for Deploying SRDs to resize the VM for an existing SRD, by taking care to set the `<IP last octet>` to that of the existing VM (viewable in Azure), and by setting the `-Upgrade` and `-Force` flags
+- To **add** another SRD after deployment, follow the below instructions for deploying an SRD with `Add_Single_SRD.ps1`
+- The simplest way to **resize** a VM for an existing SRD is to log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`, then resize it by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal)
+- Alternatively, you can **resize** a VM by using the below instructions for deploying an SRD, taking care to set the `<IP last octet>` to that of the existing VM (viewable in Azure), and by setting the `-Upgrade` and `-Force` flags
 
-<details>
-<summary><strong>Deploying SRDs</strong></summary>
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
-```{include} snippets/09_single_srd.partial.md
-:relative-images:
+**Deploy an SRD:**
+
+```powershell
+PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet> [-vmSize <VM size>]
 ```
 
-</details>
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
+- where `<IP last octet>` is last octet of the IP address
+- [optional] where `<VM size>` is the [Azure VM size](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) for this SRD
+
+This will deploy a new SRD into the SRE environment.
 
 ## {{fire}} Remove a single SRE
 
