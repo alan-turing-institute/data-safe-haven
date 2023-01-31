@@ -9,25 +9,24 @@ Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
 
 # Requirements
 $PowershellMinVersion = "7.0.0"
-$PowershellMaxVersion = "7.2.8"
 $ModuleVersionRequired = @{
-    "Az.Accounts"                                  = @("ge", "2.9.0")
-    "Az.Automation"                                = @("ge", "1.7.3")
-    "Az.Compute"                                   = @("ge", "4.29.0")
+    "Az.Accounts"                                  = @("ge", "2.11.1")
+    "Az.Automation"                                = @("ge", "1.9.0")
+    "Az.Compute"                                   = @("ge", "5.3.0")
     "Az.DataProtection"                            = @("ge", "0.4.0")
     "Az.Dns"                                       = @("ge", "1.1.2")
-    "Az.KeyVault"                                  = @("ge", "4.6.0")
+    "Az.KeyVault"                                  = @("ge", "4.9.1")
     "Az.Monitor"                                   = @("ge", "3.0.1")
     "Az.MonitoringSolutions"                       = @("ge", "0.1.0")
-    "Az.Network"                                   = @("ge", "4.18.0")
+    "Az.Network"                                   = @("ge", "5.3.0")
     "Az.OperationalInsights"                       = @("ge", "3.1.0")
     "Az.PrivateDns"                                = @("ge", "1.0.3")
     "Az.RecoveryServices"                          = @("ge", "5.4.1")
-    "Az.Resources"                                 = @("ge", "6.0.1")
+    "Az.Resources"                                 = @("ge", "6.5.1")
     "Az.Storage"                                   = @("ge", "4.7.0")
-    "Microsoft.Graph.Authentication"               = @("ge", "1.10.0")
-    "Microsoft.Graph.Applications"                 = @("ge", "1.10.0")
-    "Microsoft.Graph.Identity.DirectoryManagement" = @("ge", "1.10.0")
+    "Microsoft.Graph.Authentication"               = @("ge", "1.20.0")
+    "Microsoft.Graph.Applications"                 = @("ge", "1.20.0")
+    "Microsoft.Graph.Identity.DirectoryManagement" = @("ge", "1.20.0")
     "Poshstache"                                   = @("ge", "0.1.10")
     "Powershell-Yaml"                              = @("ge", "0.4.2")
 }
@@ -38,10 +37,8 @@ if ($IncludeDev.IsPresent) {
 
 # Powershell version
 $PowershellVersion = (Get-Host | Select-Object Version).Version
-if ($PowershellVersion -gt $PowershellMaxVersion) {
-    Add-LogMessage -Level Fatal "Please downgrade Powershell to a minimum version of $PowershellMinVersion and a maximum of $PowershellMaxVersion (currently using $PowershellVersion)!"
-} elseif ($PowershellVersion -lt $PowershellMinVersion) {
-    Add-LogMessage -Level Fatal "Please upgrade Powershell to a minimum version of $PowershellMinVersion and a maximum of $PowershellMaxVersion (currently using $PowershellVersion)!"
+if ($PowershellVersion -lt $PowershellMinVersion) {
+    Add-LogMessage -Level Fatal "Please upgrade Powershell to a minimum version of $PowershellMinVersion (currently using $PowershellVersion)!"
 } else {
     Add-LogMessage -Level Success "Powershell version: $PowershellVersion"
 }
