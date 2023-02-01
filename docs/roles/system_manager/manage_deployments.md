@@ -20,7 +20,7 @@ Sometimes during a project that uses a deployed SRE, researchers may find the av
 
 The `-VmSizes` parameter provided when deploying the SRE (with the `Deploy_SRE.ps1` script) determines how many SRDs are created and how large each one will be.
 
-To deploy a new SRD into the SRE environment (after SRE deployment), follow the below instructions for deploying an SRD with `Add_Single_SRD.ps1`.
+To deploy a new SRD into the SRE environment, follow the below instructions:
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
