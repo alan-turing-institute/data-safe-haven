@@ -208,7 +208,7 @@ Make sure to [keep your fork up to date](https://docs.github.com/en/pull-request
 #### 3. Make the changes you've discussed
 
 Try to keep the changes focused. If you submit a large amount of work in all in one go it will be much more work for whomever is reviewing your pull request. [Help them help you](https://media.giphy.com/media/uRb2p09vY8lEs/giphy.gif) :wink:
-If you feel tempted to "branch out" then please make a [new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) and a [new issue][https://github.com/alan-turing-institute/data-safe-haven/issues] to go with it.
+If you feel tempted to "branch out" then please make a [new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) and a [new issue](https://github.com/alan-turing-institute/data-safe-haven/issues) to go with it.
 
 #### 4. Submit a pull request
 
