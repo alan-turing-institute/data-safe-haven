@@ -34,8 +34,6 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 - [optional] where `<VM size>` is the [Azure VM size](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) for this SRD
 - [optional] where resizing a VM for an existing SRD, also add `-Upgrade` and `-Force`
 
-This will deploy .
-
 ## {{fire}} Remove a single SRE
 
 In order to tear down an SRE, use the following procedure:
