@@ -14,7 +14,7 @@ The `-VmSizes` parameter provided when deploying the SRE (with the `Deploy_SRE.p
 
 - To **add** another SRD after deployment, follow the below instructions for deploying an SRD with `Add_Single_SRD.ps1`
 - The simplest way to **resize** a VM for an existing SRD is to log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`, then resize it by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal)
-- Alternatively, you can **resize** a VM by using the below instructions for deploying an SRD, taking care to set the `<IP last octet>` to that of the existing VM (viewable in Azure), and by setting the `-Upgrade` and `-Force` flags
+- Alternatively, you can **resize** a VM by using the below instructions for deploying an SRD, taking care to set the `<IP last octet>` to that of the existing VM (viewable in the Azure portal), and by setting the `-Upgrade` and `-Force` flags
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
