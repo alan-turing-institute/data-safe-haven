@@ -18,7 +18,7 @@ The `-VmSizes` parameter provided when deploying the SRE (with the `Deploy_SRE.p
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
-**Deploy an SRD:**
+### Deploy an SRD:
 
 ```powershell
 PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet> [-vmSize <VM size>]
