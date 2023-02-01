@@ -32,7 +32,8 @@ PS> ./Deploy_SRE.ps1 -shmId <SHM ID> -sreId <SRE ID> -VMs <VM sizes>
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
-- where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create. For example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`. If you are unsure of the appropriate VM sizes, run the script with a single `'default'` (resizing can be done after deployment via the Azure portal).
+- where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create. For example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`. If you are unsure of the appropriate VM sizes, run the script with a single `'default'`.
+- VMs can be resized after deployment. See how to do so in the {ref}`System Manager instructions <resize_vm>`.
 
 You will be prompted for credentials for:
 
