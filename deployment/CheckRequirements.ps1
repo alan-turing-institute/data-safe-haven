@@ -9,6 +9,7 @@ Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
 
 # Requirements
 $PowershellMinVersion = "7.0.0"
+$PowershellSupportedVersion = "7.3.2"
 $ModuleVersionRequired = @{
     "Az.Accounts"                                  = @("ge", "2.11.1")
     "Az.Automation"                                = @("ge", "1.9.0")
@@ -24,9 +25,9 @@ $ModuleVersionRequired = @{
     "Az.RecoveryServices"                          = @("ge", "5.4.1")
     "Az.Resources"                                 = @("ge", "6.5.1")
     "Az.Storage"                                   = @("ge", "4.7.0")
-    "Microsoft.Graph.Authentication"               = @("ge", "1.20.0")
-    "Microsoft.Graph.Applications"                 = @("ge", "1.20.0")
-    "Microsoft.Graph.Identity.DirectoryManagement" = @("ge", "1.20.0")
+    "Microsoft.Graph.Authentication"               = @("ge", "1.21.0")
+    "Microsoft.Graph.Applications"                 = @("ge", "1.21.0")
+    "Microsoft.Graph.Identity.DirectoryManagement" = @("ge", "1.21.0")
     "Poshstache"                                   = @("ge", "0.1.10")
     "Powershell-Yaml"                              = @("ge", "0.4.2")
 }
@@ -38,10 +39,17 @@ if ($IncludeDev.IsPresent) {
 # Powershell version
 $PowershellVersion = (Get-Host | Select-Object Version).Version
 if ($PowershellVersion -lt $PowershellMinVersion) {
-    Add-LogMessage -Level Fatal "Please upgrade Powershell to a minimum version of $PowershellMinVersion (currently using $PowershellVersion)!"
+    Add-LogMessage -Level Fatal "Please upgrade Powershell to a minimum version of $PowershellMinVersion (currently using $PowershellVersion; currently supported version is $PowershellSupportedVersion)!"
 } else {
-    Add-LogMessage -Level Success "Powershell version: $PowershellVersion"
+    if ($PowershellVersion -ne $PowershellSupportedVersion) {
+        Add-LogMessage -Level Warning "Powershell version: $PowershellVersion"
+        Add-LogMessage -Level Warning "The currently supported version of Powershell is $PowershellSupportedVersion."
+        Add-LogMessage -Level Warning "In case of errors originating from Powershell code, ensure that you are running the currently supported version."
+    } else {
+        Add-LogMessage -Level Success "Powershell version: $PowershellVersion"
+    }
 }
+
 
 # Powershell modules
 $RepositoryName = "PSGallery"
