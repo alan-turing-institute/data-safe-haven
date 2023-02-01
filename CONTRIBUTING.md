@@ -208,7 +208,7 @@ Make sure to [keep your fork up to date](https://docs.github.com/en/pull-request
 #### 3. Make the changes you've discussed
 
 Try to keep the changes focused. If you submit a large amount of work in all in one go it will be much more work for whomever is reviewing your pull request. [Help them help you](https://media.giphy.com/media/uRb2p09vY8lEs/giphy.gif) :wink:
-If you feel tempted to "branch out" then please make a [new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) and a [new issue][https://github.com/alan-turing-institute/data-safe-haven/issues] to go with it.
+If you feel tempted to "branch out" then please make a [new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) and a [new issue](https://github.com/alan-turing-institute/data-safe-haven/issues) to go with it.
 
 #### 4. Submit a pull request
 
@@ -226,9 +226,16 @@ The docs, including for older releases, are available [here](https://alan-turing
 
 You should follow the same instructions as above to [make a change with a pull request](#making-a-change-with-a-pull-request) when editing the documentation.
 
-To test your changes, build the docs locally by checking out your fork of the repo, navigating to the `docs` folder and `make`ing them:
+To preview your changes, you can build the docs locally.
+The documentation build dependencies are listed in [a requirements file](docs/build/requirements.txt) that can be installed using `pip`:
 
-```{bash}
+```{shell}
+pip install -r docs/build/requirements.txt
+```
+
+Check out your branch, navigate to the `docs` folder and `make` them:
+
+```{shell}
 cd data-safe-haven/docs
 make html
 ```
