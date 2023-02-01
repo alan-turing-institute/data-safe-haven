@@ -38,7 +38,7 @@ if ($IncludeDev.IsPresent) {
 }
 
 # Powershell version
-$PowershellVersion = (Get-Host | Select-Object Version).Version
+$PowershellVersion = $PSVersionTable.PSVersion
 if ($PowershellVersion -lt $PowershellMinVersion) {
     Add-LogMessage -Level Fatal "Please upgrade Powershell to a minimum version of $PowershellMinVersion (currently using $PowershellVersion; currently supported version is $PowershellSupportedVersion)!"
 } else {
