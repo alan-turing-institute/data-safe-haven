@@ -98,7 +98,7 @@ class DeploySHMCommand(LoggingMixin, Command):
                 stack.secret("password-domain-ldap-searcher"),
             )
             config.add_secret(
-                config.shm.domain_controllers["password_domain_admin"],
+                config.shm.domain_controllers["domain_admin_password_secret"],
                 stack.secret("password-domain-admin"),
             )
 
