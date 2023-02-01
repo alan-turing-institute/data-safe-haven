@@ -28,6 +28,7 @@ $ModuleVersionRequired = @{
     "Microsoft.Graph.Authentication"               = @("ge", "1.21.0")
     "Microsoft.Graph.Applications"                 = @("ge", "1.21.0")
     "Microsoft.Graph.Identity.DirectoryManagement" = @("ge", "1.21.0")
+    "Microsoft.Graph.Users"                        = @("ge", "1.21.0")
     "Poshstache"                                   = @("ge", "0.1.10")
     "Powershell-Yaml"                              = @("ge", "0.4.2")
 }
