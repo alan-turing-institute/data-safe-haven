@@ -226,9 +226,16 @@ The docs, including for older releases, are available [here](https://alan-turing
 
 You should follow the same instructions as above to [make a change with a pull request](#making-a-change-with-a-pull-request) when editing the documentation.
 
-To test your changes, build the docs locally by checking out your fork of the repo, navigating to the `docs` folder and `make`ing them:
+To preview your changes, you can build the docs locally.
+The documentation build dependencies are listed in [a requirements file](docs/build/requirements.txt) that can be installed using `pip`:
 
-```{bash}
+```{shell}
+pip install -r docs/build/requirements.txt
+```
+
+Check out your branch, navigate to the `docs` folder and `make` them:
+
+```{shell}
 cd data-safe-haven/docs
 make html
 ```
