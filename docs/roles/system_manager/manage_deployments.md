@@ -6,19 +6,22 @@
 This document assumes that you already have access to a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
-(add_resize_vm)=
+(resize_vm)=
 
-## {{heavy_plus_sign}} Add a new Secure Research Desktop (SRD) or resize an existing SRD’s VM
+## {{arrow_upper_right}} Resize the Virtual Machine (VM) of a Secure Research Desktop (SRD)
+
+Sometimes during a project that uses a a deployed SRE, researchers may find the available compute inadequate for their purposes and wish to increase the size of the SRD's VM.
+
+- The simplest way to resize a VM for an existing SRD is to log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`, then resize it by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal)
+- Alternatively, you can resize a VM by using the below instructions for deploying an SRD, taking care to set the `<IP last octet>` to that of the existing VM (viewable in the Azure portal), and by setting the `-Upgrade` and `-Force` flags
+
+## {{heavy_plus_sign}} Add a new SRD
 
 The `-VmSizes` parameter provided when deploying the SRE (with the `Deploy_SRE.ps1` script) determines how many SRDs are created and how large each one will be.
 
-- To **add** another SRD after deployment, follow the below instructions for deploying an SRD with `Add_Single_SRD.ps1`
-- The simplest way to **resize** a VM for an existing SRD is to log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`, then resize it by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal)
-- Alternatively, you can **resize** a VM by using the below instructions for deploying an SRD, taking care to set the `<IP last octet>` to that of the existing VM (viewable in the Azure portal), and by setting the `-Upgrade` and `-Force` flags
+To deploy a new SRD into the SRE environment (after SRE deployment), follow the below instructions for deploying an SRD with `Add_Single_SRD.ps1`.
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
-
-### Deploy an SRD:
 
 ```powershell
 PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet> [-vmSize <VM size>]
@@ -30,7 +33,7 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 - [optional] where `<VM size>` is the [Azure VM size](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) for this SRD
 - [optional] where resizing a VM for an existing SRD, also add `-Upgrade` and `-Force`
 
-This will deploy a new SRD into the SRE environment.
+This will deploy .
 
 ## {{fire}} Remove a single SRE
 
