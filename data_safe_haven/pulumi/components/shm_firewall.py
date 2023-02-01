@@ -1,22 +1,20 @@
 """Pulumi component for SHM traffic routing"""
-# Standard library imports
-from typing import Optional, Sequence
-
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network, resources
+from pulumi_azure_native import network
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
 
 
-class SHMRoutingProps:
-    """Properties for SHMRoutingComponent"""
+class SHMFirewallProps:
+    """Properties for SHMFirewallComponent"""
 
     def __init__(
         self,
         location: Input[str],
         resource_group_name: Input[str],
+        route_table_name: Input[str],
         subnet_firewall_name: Input[str],
         subnet_firewall_virtual_network_name: Input[str],
         subnet_identity_iprange: Input[AzureIPv4Range],
@@ -24,6 +22,7 @@ class SHMRoutingProps:
     ):
         self.location = location
         self.resource_group_name = resource_group_name
+        self.route_table_name = route_table_name
         self.subnet_firewall_name = subnet_firewall_name
         self.subnet_firewall_virtual_network_name = subnet_firewall_virtual_network_name
         self.subnet_identity_iprange = Output.from_input(subnet_identity_iprange).apply(
@@ -34,7 +33,7 @@ class SHMRoutingProps:
         ).apply(lambda ip_range: str(ip_range))
 
 
-class SHMRoutingComponent(ComponentResource):
+class SHMFirewallComponent(ComponentResource):
     """Deploy SHM routing with Pulumi"""
 
     def __init__(
@@ -42,10 +41,10 @@ class SHMRoutingComponent(ComponentResource):
         name: str,
         stack_name: str,
         shm_name: str,
-        props: SHMRoutingProps,
+        props: SHMFirewallProps,
         opts: ResourceOptions = None,
     ):
-        super().__init__("dsh:shm:SHMRoutingComponent", name, {}, opts)
+        super().__init__("dsh:shm:SHMFirewallComponent", name, {}, opts)
         child_opts = ResourceOptions(parent=self)
 
         # Important IP addresses
@@ -66,8 +65,8 @@ class SHMRoutingComponent(ComponentResource):
 
         # Deploy IP address
         public_ip = network.PublicIPAddress(
-            f"{self._name}_public_ip",
-            public_ip_address_name=f"firewall-{stack_name}-public-ip",
+            f"{self._name}_firewall_public_ip",
+            public_ip_address_name=f"{stack_name}-firewall-public-ip",
             public_ip_allocation_method="Static",
             resource_group_name=props.resource_group_name,
             sku=network.PublicIPAddressSkuArgs(name="Standard"),
@@ -77,6 +76,11 @@ class SHMRoutingComponent(ComponentResource):
         # Get firewall subnet
         snet_firewall = network.get_subnet_output(
             subnet_name=props.subnet_firewall_name,
+            resource_group_name=props.resource_group_name,
+            virtual_network_name=props.subnet_firewall_virtual_network_name,
+        )
+        snet_identity = network.get_subnet_output(
+            subnet_name="IdentitySubnet",  # props.subnet_firewall_name,
             resource_group_name=props.resource_group_name,
             virtual_network_name=props.subnet_firewall_virtual_network_name,
         )
@@ -1047,7 +1051,7 @@ class SHMRoutingComponent(ComponentResource):
                     ],
                 )
             ],
-            azure_firewall_name=f"firewall-{stack_name}",
+            azure_firewall_name=f"{stack_name}-firewall",
             ip_configurations=[
                 network.AzureFirewallIPConfigurationArgs(
                     name="FirewallIpConfiguration",
@@ -1104,20 +1108,18 @@ class SHMRoutingComponent(ComponentResource):
             opts=child_opts,
         )
 
-        route_table = network.RouteTable(
-            f"{self._name}_route_table",
-            location=props.location,
+        # Route all connected traffic through the firewall
+        route = network.Route(
+            f"{self._name}_via_firewall",
+            address_prefix="0.0.0.0/0",
+            # next_hop_ip_address=(firewall.ip_configurations)[0].private_ip_address,
+            next_hop_ip_address=firewall.ip_configurations.apply(
+                lambda cfgs: cfgs[0].private_ip_address
+            ),
+            next_hop_type=network.RouteNextHopType.VIRTUAL_APPLIANCE,
             resource_group_name=props.resource_group_name,
-            route_table_name=f"route-{stack_name}",
-            routes=[
-                network.RouteArgs(
-                    next_hop_type=network.RouteNextHopType.VIRTUAL_APPLIANCE,
-                    address_prefix="0.0.0.0/0",
-                    name="ViaFirewall",
-                    next_hop_ip_address=(firewall.ip_configurations)[0].private_ip_address,
-                    # next_hop_ip_address=firewall.ip_configurations.apply(lambda cfg: cfg[0].private_ip_address),
-                )
-            ],
+            route_name="ViaFirewall",
+            route_table_name=props.route_table_name,
         )
 
         # Register outputs

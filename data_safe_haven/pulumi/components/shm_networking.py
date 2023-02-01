@@ -152,6 +152,15 @@ class SHMNetworkingComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Define route table
+        route_table = network.RouteTable(
+            f"{self._name}_route_table",
+            location=props.location,
+            resource_group_name=resource_group.name,
+            route_table_name=f"{stack_name}-route",
+            routes=[],
+        )
+
         # Define the virtual network with inline subnets
         virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
@@ -176,6 +185,7 @@ class SHMNetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_monitoring.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 network.SubnetArgs(
                     address_prefix=str(subnet_update_servers_iprange),
@@ -183,6 +193,7 @@ class SHMNetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_update_servers.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 network.SubnetArgs(
                     address_prefix=str(subnet_identity_iprange),
@@ -190,6 +201,7 @@ class SHMNetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_identity.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
             ],
             virtual_network_name=f"vnet-{stack_name}",
@@ -235,15 +247,48 @@ class SHMNetworkingComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Set up private link domains
+        for private_link_domain in [
+            "agentsvc.azure-automation.net",
+            "azure-automation.net",  # note this must come after 'agentsvc.azure-automation.net'
+            "blob.core.windows.net",
+            "monitor.azure.com",
+            "ods.opinsights.azure.com",
+            "oms.opinsights.azure.com",
+        ]:
+            private_zone = network.PrivateZone(
+                f"{self._name}_{private_link_domain}",
+                location="Global",
+                private_zone_name=f"privatelink.{private_link_domain}",
+                resource_group_name=resource_group.name,
+            )
+            virtual_network_link = network.VirtualNetworkLink(
+                f"{self._name}_{private_link_domain}_vnet_link",
+                location="Global",
+                private_zone_name=private_zone.name,
+                registration_enabled=False,
+                resource_group_name=resource_group.name,
+                virtual_network=network.SubResourceArgs(id=virtual_network.id),
+                virtual_network_link_name=f"link-to-vnet-{stack_name}",
+            )
+
         # Register outputs
         self.dns_zone_nameservers = dns_zone.name_servers
         self.resource_group_name = Output.from_input(resource_group.name)
+        self.route_table_name = route_table.name
         self.subnet_firewall_name = Output.from_input(props.subnet_firewall_name)
         self.subnet_identity_iprange = subnet_identity_iprange
         self.subnet_identity_name = Output.from_input(props.subnet_identity_name)
         self.subnet_monitoring_name = Output.from_input(props.subnet_monitoring_name)
+        self.subnet_monitoring = network.get_subnet(
+            resource_group_name=resource_group.name,
+            subnet_name=props.subnet_monitoring_name,
+            virtual_network_name=virtual_network.name,
+        )
         self.subnet_update_servers_iprange = subnet_update_servers_iprange
-        self.subnet_update_servers_name = Output.from_input(props.subnet_update_servers_name)
+        self.subnet_update_servers_name = Output.from_input(
+            props.subnet_update_servers_name
+        )
         self.subnet_vpn_gateway_name = Output.from_input(props.subnet_vpn_gateway_name)
         self.virtual_network = virtual_network
 

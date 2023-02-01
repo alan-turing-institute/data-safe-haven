@@ -1,7 +1,7 @@
 """Pulumi component for SHM monitoring"""
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import automation, resources
+from pulumi_azure_native import automation, network, resources
 
 
 class SHMMonitoringProps:
@@ -9,13 +9,19 @@ class SHMMonitoringProps:
 
     def __init__(
         self,
+        dns_resource_group_name: Input[str],
         location: Input[str],
+        subnet_monitoring_id: Input[str],
     ):
+        self.dns_resource_group_name = dns_resource_group_name
         self.location = location
+        self.subnet_monitoring_id = subnet_monitoring_id
 
 
 class SHMMonitoringComponent(ComponentResource):
     """Deploy SHM secrets with Pulumi"""
+
+    private_zone_names = ["agentsvc.azure-automation.net", "azure-automation.net"]
 
     def __init__(
         self,
@@ -86,6 +92,31 @@ class SHMMonitoringComponent(ComponentResource):
                 resource_group_name=resource_group.name,
             )
 
+        # Set up a private endpoint
+        private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_automation_private_endpoint",
+            location=props.location,
+            private_endpoint_name=f"{stack_name}-automation-pep",
+            private_link_service_connections=[
+                network.PrivateLinkServiceConnectionArgs(
+                    group_ids=["DSCAndHybridWorker"],
+                    name="DSCAndHybridWorker",
+                    private_link_service_id=automation_account.id,  # "/subscriptions/subId/resourceGroups/rg1/providers/Microsoft.Network/privateLinkServices/testPls",
+                    request_message="Connection auto-approved.",
+                )
+            ],
+            resource_group_name=resource_group.name,
+            subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
+        )
+
+        # Add a private DNS record for each custom DNS config
+        private_records = private_endpoint.custom_dns_configs.apply(
+            lambda cfgs: [
+                self.private_record_set(cfg, props.dns_resource_group_name)
+                for cfg in cfgs
+            ]
+        )
+
         # Register outputs
         self.automation_account = automation_account
         self.automation_account_jrds_url = (
@@ -103,3 +134,22 @@ class SHMMonitoringComponent(ComponentResource):
             automation_keys.keys[0].value
         )
         self.resource_group_name = Output.secret(resource_group.name)
+
+    def private_record_set(
+        self,
+        config: network.outputs.CustomDnsConfigPropertiesFormatResponse,
+        resource_group_name: str,
+    ) -> network.PrivateRecordSet:
+        private_zone_name = [
+            name for name in self.private_zone_names if name in config.fqdn
+        ][0]
+        record_name = config.fqdn.replace(f".{private_zone_name}", "")
+        return network.PrivateRecordSet(
+            f"{record_name}.{private_zone_name}_a_record",
+            a_records=[network.ARecordArgs(ipv4_address=config.ip_addresses[0])],
+            private_zone_name=f"privatelink.{private_zone_name}",
+            record_type="A",
+            relative_record_set_name=record_name,
+            resource_group_name=resource_group_name,
+            ttl=10,
+        )
