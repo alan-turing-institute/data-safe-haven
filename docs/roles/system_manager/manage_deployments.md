@@ -10,10 +10,11 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 
 ## {{arrow_upper_right}} Resize the Virtual Machine (VM) of a Secure Research Desktop (SRD)
 
-Sometimes during a project that uses a a deployed SRE, researchers may find the available compute inadequate for their purposes and wish to increase the size of the SRD's VM.
+Sometimes during a project that uses a deployed SRE, researchers may find the available compute inadequate for their purposes and wish to increase the size of the SRD's VM.
 
-- The simplest way to resize a VM for an existing SRD is to log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`, then resize it by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal)
-- Alternatively, you can resize a VM by using the below instructions for deploying an SRD, taking care to set the `<IP last octet>` to that of the existing VM (viewable in the Azure portal), and by setting the `-Upgrade` and `-Force` flags
+- Log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`
+- The simplest way to resize this VM is by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal) in the Azure portal
+- Alternatively, you can resize this VM by using the below instructions to "Add a new SRD", taking care to set the `<IP last octet>` to that of the VM (viewable in the Azure portal), and by setting the `-Upgrade` and `-Force` flags
 
 ## {{heavy_plus_sign}} Add a new SRD
 
