@@ -43,7 +43,7 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
-- where `<IP last octet>` is last octet of the IP address
+- where `<IP last octet>` is last octet of the IP address (this must be different to any other SRD VMs)
 
 ## {{fire}} Remove a single SRE
 
