@@ -23,7 +23,7 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
   ```
 
 - `PowerShell`
-    - Install [PowerShell v7.0 or above](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell)
+    - We recommend [installing](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell) the [latest stable release](https://learn.microsoft.com/en-us/powershell/scripting/install/powershell-support-lifecycle?view=powershell-7.3) of Powershell. We have most recently tested deployment using version `7.3.2`.
 - `Powershell` cross-platform modules
 
   ````{tip}
