@@ -19,6 +19,6 @@ class AzureIPv4Range(ipaddress.IPv4Network):
             )
         super().__init__(networks[0])
 
-    def available(self) -> List[ipaddress.IPv4Network]:
+    def available(self) -> List[ipaddress.IPv4Address]:
         """Azure reserves x.x.x.1 for the default gateway and (x.x.x.2, x.x.x.3) to map Azure DNS IPs."""
         return list(self.hosts())[3:]

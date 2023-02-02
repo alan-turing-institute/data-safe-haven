@@ -15,16 +15,14 @@ class SHMFirewallProps:
         location: Input[str],
         resource_group_name: Input[str],
         route_table_name: Input[str],
-        subnet_firewall_name: Input[str],
-        subnet_firewall_virtual_network_name: Input[str],
+        subnet_firewall: Input[network.GetSubnetResult],
         subnet_identity_iprange: Input[AzureIPv4Range],
         subnet_update_servers_iprange: Input[AzureIPv4Range],
     ):
         self.location = location
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name
-        self.subnet_firewall_name = subnet_firewall_name
-        self.subnet_firewall_virtual_network_name = subnet_firewall_virtual_network_name
+        self.subnet_firewall = Output.from_input(subnet_firewall)
         self.subnet_identity_iprange = Output.from_input(subnet_identity_iprange).apply(
             lambda ip_range: str(ip_range)
         )
@@ -71,18 +69,6 @@ class SHMFirewallComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             sku=network.PublicIPAddressSkuArgs(name="Standard"),
             opts=opts,
-        )
-
-        # Get firewall subnet
-        snet_firewall = network.get_subnet_output(
-            subnet_name=props.subnet_firewall_name,
-            resource_group_name=props.resource_group_name,
-            virtual_network_name=props.subnet_firewall_virtual_network_name,
-        )
-        snet_identity = network.get_subnet_output(
-            subnet_name="IdentitySubnet",  # props.subnet_firewall_name,
-            resource_group_name=props.resource_group_name,
-            virtual_network_name=props.subnet_firewall_virtual_network_name,
         )
 
         # Deploy firewall
@@ -1056,7 +1042,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallIPConfigurationArgs(
                     name="FirewallIpConfiguration",
                     public_ip_address=network.SubResourceArgs(id=public_ip.id),
-                    subnet=network.SubResourceArgs(id=snet_firewall.id),
+                    subnet=network.SubResourceArgs(id=props.subnet_firewall.id),
                 )
             ],
             location=props.location,
@@ -1100,8 +1086,8 @@ class SHMFirewallComponent(ComponentResource):
             ],
             resource_group_name=props.resource_group_name,
             sku=network.AzureFirewallSkuArgs(
-                name="AZFW_VNet",
-                tier="Standard",
+                name=network.AzureFirewallSkuName.AZF_W_V_NET,
+                tier=network.AzureFirewallSkuTier.STANDARD,
             ),
             threat_intel_mode="Alert",
             zones=[],
@@ -1109,13 +1095,15 @@ class SHMFirewallComponent(ComponentResource):
         )
 
         # Route all connected traffic through the firewall
+        private_ip_address = firewall.ip_configurations.apply(
+            lambda cfgs: ""
+            if not cfgs
+            else next(filter(lambda _: _, [cfg.private_ip_address for cfg in cfgs]))
+        )
         route = network.Route(
             f"{self._name}_via_firewall",
             address_prefix="0.0.0.0/0",
-            # next_hop_ip_address=(firewall.ip_configurations)[0].private_ip_address,
-            next_hop_ip_address=firewall.ip_configurations.apply(
-                lambda cfgs: cfgs[0].private_ip_address
-            ),
+            next_hop_ip_address=private_ip_address,
             next_hop_type=network.RouteNextHopType.VIRTUAL_APPLIANCE,
             resource_group_name=props.resource_group_name,
             route_name="ViaFirewall",

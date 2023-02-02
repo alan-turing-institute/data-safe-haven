@@ -101,7 +101,7 @@ class SHMMonitoringComponent(ComponentResource):
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["DSCAndHybridWorker"],
                     name="DSCAndHybridWorker",
-                    private_link_service_id=automation_account.id,  # "/subscriptions/subId/resourceGroups/rg1/providers/Microsoft.Network/privateLinkServices/testPls",
+                    private_link_service_id=automation_account.id,
                     request_message="Connection auto-approved.",
                 )
             ],
@@ -115,6 +115,8 @@ class SHMMonitoringComponent(ComponentResource):
                 self.private_record_set(cfg, props.dns_resource_group_name)
                 for cfg in cfgs
             ]
+            if cfgs
+            else []
         )
 
         # Register outputs
@@ -138,15 +140,23 @@ class SHMMonitoringComponent(ComponentResource):
     def private_record_set(
         self,
         config: network.outputs.CustomDnsConfigPropertiesFormatResponse,
-        resource_group_name: str,
+        resource_group_name: Input[str],
     ) -> network.PrivateRecordSet:
+        """
+        Create a PrivateRecordSet for a given CustomDnsConfigPropertiesFormatResponse
+
+        Note that creating resources inside an .apply() is discouraged but not
+        forbidden. This is the one way to create one resource for each entry in
+        an Output[Sequence]. See https://github.com/pulumi/pulumi/issues/3849.
+        """
         private_zone_name = [
             name for name in self.private_zone_names if name in config.fqdn
         ][0]
         record_name = config.fqdn.replace(f".{private_zone_name}", "")
+        ip_address = config.ip_addresses[0] if config.ip_addresses else ""
         return network.PrivateRecordSet(
             f"{record_name}.{private_zone_name}_a_record",
-            a_records=[network.ARecordArgs(ipv4_address=config.ip_addresses[0])],
+            a_records=[network.ARecordArgs(ipv4_address=ip_address)],
             private_zone_name=f"privatelink.{private_zone_name}",
             record_type="A",
             relative_record_set_name=record_name,

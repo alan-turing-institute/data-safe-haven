@@ -50,7 +50,9 @@ class SHMDomainControllersProps:
         self.domain_root_dn = Output.from_input(domain_fqdn).apply(
             lambda dn: f"DC={dn.replace('.', ',DC=')}"
         )
-        self.domain_netbios_name = domain_netbios_name[:15]  # maximum of 15 characters
+        self.domain_netbios_name = Output.from_input(domain_netbios_name).apply(
+            lambda n: n[:15]
+        )  # maximum of 15 characters
         self.location = location
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect

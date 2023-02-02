@@ -32,13 +32,13 @@ class AzureMixin:
         return self.credential_
 
     @property
-    def subscription_id(self):
+    def subscription_id(self) -> str:
         if not self.subscription_id_:
             self.login()
         return self.subscription_id_
 
     @property
-    def tenant_id(self):
+    def tenant_id(self) -> str:
         if not self.tenant_id_:
             self.login()
         return self.tenant_id_

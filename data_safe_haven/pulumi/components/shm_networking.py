@@ -159,6 +159,9 @@ class SHMNetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             route_table_name=f"{stack_name}-route",
             routes=[],
+            opts=ResourceOptions(
+                ignore_changes=["routes"]
+            ),  # allow routes to be added in other modules
         )
 
         # Define the virtual network with inline subnets
@@ -214,7 +217,7 @@ class SHMNetworkingComponent(ComponentResource):
             location="Global",
             resource_group_name=resource_group.name,
             zone_name=props.fqdn,
-            zone_type="Public",
+            zone_type=network.ZoneType.PUBLIC,
         )
         caa_record = network.RecordSet(
             f"{self._name}_caa_record",
@@ -272,10 +275,18 @@ class SHMNetworkingComponent(ComponentResource):
                 virtual_network_link_name=f"link-to-vnet-{stack_name}",
             )
 
+        # Extract subnets
+        subnet_firewall = network.get_subnet_output(
+            subnet_name=props.subnet_firewall_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=virtual_network.name,
+        )
+
         # Register outputs
         self.dns_zone_nameservers = dns_zone.name_servers
         self.resource_group_name = Output.from_input(resource_group.name)
-        self.route_table_name = route_table.name
+        self.route_table = route_table
+        self.subnet_firewall = subnet_firewall
         self.subnet_firewall_name = Output.from_input(props.subnet_firewall_name)
         self.subnet_identity_iprange = subnet_identity_iprange
         self.subnet_identity_name = Output.from_input(props.subnet_identity_name)

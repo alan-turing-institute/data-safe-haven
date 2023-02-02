@@ -55,9 +55,8 @@ class DeclarativeSHM:
             SHMFirewallProps(
                 location=self.cfg.azure.location,
                 resource_group_name=networking.resource_group_name,
-                route_table_name=networking.route_table_name,
-                subnet_firewall_name=networking.subnet_firewall_name,
-                subnet_firewall_virtual_network_name=networking.virtual_network.name,
+                route_table_name=networking.route_table.name,
+                subnet_firewall=networking.subnet_firewall,
                 subnet_identity_iprange=networking.subnet_identity_iprange,
                 subnet_update_servers_iprange=networking.subnet_update_servers_iprange,
             ),
