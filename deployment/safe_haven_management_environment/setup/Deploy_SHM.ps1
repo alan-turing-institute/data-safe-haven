@@ -35,7 +35,7 @@ if ($UseDeviceAuthentication) {
     Connect-MgGraph -TenantId $config.azureAdTenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop -ContextScope Process -UseDeviceAuthentication
 } else {
     Connect-MgGraph -TenantId $config.azureAdTenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop -ContextScope Process | Out-Null
-}   
+}
 if (Get-MgContext) {
     Add-LogMessage -Level Success "Authenticated with Microsoft Graph as $((Get-MgContext).Account)"
 } else {
