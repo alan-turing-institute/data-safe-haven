@@ -6,6 +6,45 @@
 This document assumes that you already have access to a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
+(resize_vm)=
+
+## {{arrow_upper_right}} Resize the Virtual Machine (VM) of a Secure Research Desktop (SRD)
+
+Sometimes during a project that uses a deployed SRE, researchers may find the available compute inadequate for their purposes and wish to increase the size of the SRD's VM.
+
+- Log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`
+- The **simplest way to resize this VM** is by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal) in the Azure portal
+- Alternatively, you can resize this VM by using the instructions below to run the `./Add_Single_SRD.ps1` script. Make a note of the last octet of the IP address, which can be seen in the Azure Portal.
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
+
+```powershell
+PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet> [-vmSize <VM size>] -Upgrade -Force
+```
+
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
+- where `<IP last octet>` is last octet of the IP address (check what this is in the Azure Portal)
+- where `<VM size>` is the new [Azure VM size](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes)
+- where `<Upgrade>` is required to ensure the old VM is replaced
+- where `<Force>` ensures that `<Upgrade>` works even when the VM is built with the same image
+
+## {{heavy_plus_sign}} Add a new SRD
+
+The `-VmSizes` parameter provided when deploying the SRE (with the `Deploy_SRE.ps1` script) determines how many SRDs are created and how large each one will be.
+
+To deploy a new SRD into the SRE environment, follow the below instructions:
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
+
+```powershell
+PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last octet> [-vmSize <VM size>]
+```
+
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
+- where `<IP last octet>` is last octet of the IP address (this must be different to any other SRD VMs)
+
 ## {{fire}} Remove a single SRE
 
 In order to tear down an SRE, use the following procedure:

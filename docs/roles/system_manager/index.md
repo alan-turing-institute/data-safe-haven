@@ -31,5 +31,5 @@ Typically these might be members of an institutional IT team.
 [Managing web applications](manage_webapps.md)
 : How to access virtual machines hosting web applications
 
-[Removing deployed components](manage_deployments.md)
-: Removing an SRE or a complete, deployment Data Safe Haven as an administrator.
+[Managing Data Safe Haven deployments](manage_deployments.md)
+: Managing, altering and removing an SRE or a complete deployment as a Data Safe Haven administrator.

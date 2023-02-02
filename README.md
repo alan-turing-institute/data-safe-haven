@@ -7,10 +7,12 @@ It provides a set of scripts and templates that will allow you to deploy, admini
 It was developed as part of the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project.
 
 [![Docs](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/build_docs.yaml/badge.svg)](https://alan-turing-institute.github.io/data-safe-haven)
-[![Build status](https://app.travis-ci.com/alan-turing-institute/data-safe-haven.svg?token=fmccRP1RHVJaEoiWy6QF&branch=develop)](https://app.travis-ci.com/alan-turing-institute/data-safe-haven)
+[![Lint code](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/lint_code.yaml/badge.svg)](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/lint_code.yaml)
+[![Test code](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/test_code.yaml/badge.svg)](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/test_code.yaml)
 [![Latest version](https://img.shields.io/github/v/release/alan-turing-institute/data-safe-haven?style=flat&label=Latest&color=%234B78E6)](https://github.com/alan-turing-institute/data-safe-haven/releases)
 [![Slack](https://img.shields.io/badge/Join%20us!-yellow?style=flat&logo=slack&logoColor=white&labelColor=4A154B&label=Slack)](https://join.slack.com/t/turingdatasafehaven/signup)
 ![Licence](https://img.shields.io/github/license/alan-turing-institute/data-safe-haven)
+[![Citation](https://img.shields.io/badge/citation-cite%20this%20project-informational)](https://github.com/alan-turing-institute/data-safe-haven/blob/badges/CITATION.cff)
 
 ## :family: Community & support
 
