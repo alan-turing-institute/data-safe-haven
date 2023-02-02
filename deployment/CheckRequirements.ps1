@@ -8,7 +8,6 @@ param (
 Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
 
 # Requirements
-$PowershellMinVersion = "7.0.0"
 $PowershellSupportedVersion = "7.3.2"
 $ModuleVersionRequired = @{
     "Az.Accounts"                                  = @("ge", "2.11.1")
@@ -39,16 +38,12 @@ if ($IncludeDev.IsPresent) {
 
 # Powershell version
 $PowershellVersion = $PSVersionTable.PSVersion
-if ($PowershellVersion -lt $PowershellMinVersion) {
-    Add-LogMessage -Level Fatal "Please upgrade Powershell to a minimum version of $PowershellMinVersion (currently using $PowershellVersion; currently supported version is $PowershellSupportedVersion)!"
+if ($PowershellVersion -ne $PowershellSupportedVersion) {
+    Add-LogMessage -Level Warning "Powershell version: $PowershellVersion"
+    Add-LogMessage -Level Warning "The currently supported version of Powershell is $PowershellSupportedVersion."
+    Add-LogMessage -Level Warning "In case of errors originating from Powershell code, ensure that you are running the currently supported version."
 } else {
-    if ($PowershellVersion -ne $PowershellSupportedVersion) {
-        Add-LogMessage -Level Warning "Powershell version: $PowershellVersion"
-        Add-LogMessage -Level Warning "The currently supported version of Powershell is $PowershellSupportedVersion."
-        Add-LogMessage -Level Warning "In case of errors originating from Powershell code, ensure that you are running the currently supported version."
-    } else {
-        Add-LogMessage -Level Success "Powershell version: $PowershellVersion"
-    }
+    Add-LogMessage -Level Success "Powershell version: $PowershellVersion"
 }
 
 
