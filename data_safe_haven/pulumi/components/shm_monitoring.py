@@ -1,4 +1,7 @@
 """Pulumi component for SHM monitoring"""
+# Standard library import
+from typing import Optional
+
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, network, resources
@@ -29,10 +32,10 @@ class SHMMonitoringComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMMonitoringProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:shm:SHMMonitoringComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(

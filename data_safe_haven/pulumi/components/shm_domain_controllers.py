@@ -1,7 +1,7 @@
 """Pulumi component for SHM domain controllers"""
 # Standard library import
 import pathlib
-from typing import Sequence
+from typing import Optional, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -79,10 +79,10 @@ class SHMDomainControllersComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMDomainControllersProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:shm:SHMDomainControllersComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 
         # Deploy resource group

@@ -1,4 +1,7 @@
 """Pulumi component for SHM state"""
+# Standard library import
+from typing import Optional
+
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, resources
@@ -27,10 +30,10 @@ class SHMStateComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMStateProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:shm:SHMStateComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -105,6 +108,7 @@ class SHMStateComponent(ComponentResource):
             ),
             resource_group_name=resource_group.name,
             vault_name=f"kv-{stack_name[:15]}-state",  # maximum of 24 characters
+            opts=child_opts,
         )
         # Register outputs
         self.resource_group_name = Output.from_input(resource_group.name)

@@ -36,15 +36,17 @@ class VMProps:
         self.virtual_network_name = virtual_network_name
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
         self.vm_name = vm_name
-        self.vm_name_underscored = vm_name.replace("-", "_")
+        self.vm_name_underscored = Output.from_input(vm_name).apply(
+            lambda n: n.replace("-", "_")
+        )
         self.vm_size = vm_size
 
     @property
-    def os_profile(self) -> compute.OSProfileArgs:
+    def os_profile(self) -> compute.OSProfileArgs | None:
         return self.os_profile_args
 
     @property
-    def image_reference(self) -> compute.ImageReferenceArgs:
+    def image_reference(self) -> compute.ImageReferenceArgs | None:
         return self.image_reference_args
 
 
@@ -110,9 +112,11 @@ class LinuxVMProps(VMProps):
 class VMComponent(ComponentResource):
     """Deploy SHM secrets with Pulumi"""
 
-    def __init__(self, name: str, props: VMProps, opts: ResourceOptions = None):
+    def __init__(
+        self, name: str, props: VMProps, opts: Optional[ResourceOptions] = None
+    ):
         super().__init__("dsh:common:VMComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Retrieve existing resources
         subnet = network.get_subnet_output(
@@ -130,7 +134,7 @@ class VMComponent(ComponentResource):
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,
                 sku=network.PublicIPAddressSkuArgs(name="Standard"),
-                opts=opts,
+                opts=child_opts,
             )
             network_interface_ip_params[
                 "public_ip_address"
@@ -151,7 +155,7 @@ class VMComponent(ComponentResource):
             ],
             network_interface_name=f"{props.vm_name}-nic",
             resource_group_name=props.resource_group_name,
-            opts=opts,
+            opts=child_opts,
         )
 
         # Define virtual machine
@@ -187,8 +191,11 @@ class VMComponent(ComponentResource):
                 ),
             ),
             vm_name=props.vm_name,
-            opts=ResourceOptions(
-                delete_before_replace=True, replace_on_changes=["os_profile"]
+            opts=ResourceOptions.merge(
+                ResourceOptions(
+                    delete_before_replace=True, replace_on_changes=["os_profile"]
+                ),
+                child_opts,
             ),
         )
         # Register outputs

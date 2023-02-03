@@ -68,10 +68,10 @@ class SRERemoteDesktopComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SRERemoteDesktopProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:sre:SRERemoteDesktopComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -215,7 +215,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             network_profile_name=f"np-{stack_name}-guacamole",
             resource_group_name=props.virtual_network_resource_group_name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(depends_on=[props.virtual_network])
+                ResourceOptions(depends_on=[props.virtual_network]), child_opts
             ),
         )
 

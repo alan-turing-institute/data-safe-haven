@@ -1,6 +1,6 @@
 """Pulumi component for SRE application gateway"""
 # Standard library imports
-from typing import Sequence
+from typing import Optional, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -43,13 +43,15 @@ class SREApplicationGatewayComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SREApplicationGatewayProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Retrieve existing resource group and subnet
-        resource_group = resources.get_resource_group(props.resource_group_name)
+        resource_group = Output.from_input(props.resource_group_name).apply(
+            lambda n: resources.get_resource_group(n)
+        )
         snet_application_gateway = network.get_subnet_output(
             subnet_name="ApplicationGatewaySubnet",
             resource_group_name=props.resource_group_name,

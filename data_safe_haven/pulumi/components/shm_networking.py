@@ -19,40 +19,36 @@ class SHMNetworkingProps:
         location: Input[str],
         public_ip_range_admins: Input[Sequence[str]],
         record_domain_verification: Input[str],
-        ip_range_vnet: Optional[Input[Sequence[str]]] = [
-            "10.0.0.0",
-            "10.0.255.255",
-        ],
-        ip_range_firewall: Optional[
-            Input[Sequence[str]]
-        ] = [  # must be at least /26 in size
-            "10.0.0.0",
-            "10.0.0.63",
-        ],
-        ip_range_vpn_gateway: Optional[Input[Sequence[str]]] = [
-            "10.0.0.64",
-            "10.0.0.127",
-        ],
-        ip_range_monitoring: Optional[Input[Sequence[str]]] = [
-            "10.0.0.128",
-            "10.0.0.159",
-        ],
-        ip_range_update_servers: Optional[Input[Sequence[str]]] = [
-            "10.0.0.160",
-            "10.0.0.191",
-        ],
-        ip_range_identity: Optional[Input[Sequence[str]]] = [
-            "10.0.0.192",
-            "10.0.0.223",
-        ],
+        ip_range_vnet: Optional[Input[Sequence[str]]],
+        ip_range_firewall: Optional[Input[Sequence[str]]],
+        ip_range_vpn_gateway: Optional[Input[Sequence[str]]],
+        ip_range_monitoring: Optional[Input[Sequence[str]]],
+        ip_range_update_servers: Optional[Input[Sequence[str]]],
+        ip_range_identity: Optional[Input[Sequence[str]]],
     ):
         self.fqdn = fqdn
-        self.ip_range_firewall = ip_range_firewall
-        self.ip_range_identity = ip_range_identity
-        self.ip_range_monitoring = ip_range_monitoring
-        self.ip_range_update_servers = ip_range_update_servers
-        self.ip_range_vnet = ip_range_vnet
-        self.ip_range_vpn_gateway = ip_range_vpn_gateway
+        self.ip_range_firewall = (
+            ip_range_firewall if ip_range_firewall else ["10.0.0.0", "10.0.0.63"]
+        )  # must be at least /26 in size
+        self.ip_range_identity = (
+            ip_range_identity if ip_range_identity else ["10.0.0.192", "10.0.0.223"]
+        )
+        self.ip_range_monitoring = (
+            ip_range_monitoring if ip_range_monitoring else ["10.0.0.128", "10.0.0.159"]
+        )
+        self.ip_range_update_servers = (
+            ip_range_update_servers
+            if ip_range_update_servers
+            else ["10.0.0.160", "10.0.0.191"]
+        )
+        self.ip_range_vnet = (
+            ip_range_vnet if ip_range_vnet else ["10.0.0.0", "10.0.255.255"]
+        )
+        self.ip_range_vpn_gateway = (
+            ip_range_vpn_gateway
+            if ip_range_vpn_gateway
+            else ["10.0.0.64", "10.0.0.127"]
+        )
         self.location = location
         self.public_ip_range_admins = public_ip_range_admins
         self.record_domain_verification = record_domain_verification
@@ -72,10 +68,10 @@ class SHMNetworkingComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMNetworkingProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:shm:SHMNetworkingComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -85,12 +81,24 @@ class SHMNetworkingComponent(ComponentResource):
         )
 
         # Set address prefixes from ranges
-        virtual_network_iprange = AzureIPv4Range(*props.ip_range_vnet)
-        subnet_firewall_iprange = AzureIPv4Range(*props.ip_range_firewall)
-        subnet_vpn_gateway_iprange = AzureIPv4Range(*props.ip_range_vpn_gateway)
-        subnet_monitoring_iprange = AzureIPv4Range(*props.ip_range_monitoring)
-        subnet_update_servers_iprange = AzureIPv4Range(*props.ip_range_update_servers)
-        subnet_identity_iprange = AzureIPv4Range(*props.ip_range_identity)
+        virtual_network_iprange = Output.from_input(props.ip_range_vnet).apply(
+            lambda iprange: AzureIPv4Range(*iprange)
+        )
+        subnet_firewall_iprange = Output.from_input(props.ip_range_firewall).apply(
+            lambda iprange: AzureIPv4Range(*iprange)
+        )
+        subnet_vpn_gateway_iprange = Output.from_input(
+            props.ip_range_vpn_gateway
+        ).apply(lambda iprange: AzureIPv4Range(*iprange))
+        subnet_monitoring_iprange = Output.from_input(props.ip_range_monitoring).apply(
+            lambda iprange: AzureIPv4Range(*iprange)
+        )
+        subnet_update_servers_iprange = Output.from_input(
+            props.ip_range_update_servers
+        ).apply(lambda iprange: AzureIPv4Range(*iprange))
+        subnet_identity_iprange = Output.from_input(props.ip_range_identity).apply(
+            lambda iprange: AzureIPv4Range(*iprange)
+        )
 
         # Define NSGs
         nsg_monitoring = network.NetworkSecurityGroup(
@@ -159,9 +167,12 @@ class SHMNetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             route_table_name=f"{stack_name}-route",
             routes=[],
-            opts=ResourceOptions(
-                ignore_changes=["routes"]
-            ),  # allow routes to be added in other modules
+            opts=ResourceOptions.merge(
+                ResourceOptions(
+                    ignore_changes=["routes"]
+                ),  # allow routes to be added in other modules
+                child_opts,
+            ),
         )
 
         # Define the virtual network with inline subnets

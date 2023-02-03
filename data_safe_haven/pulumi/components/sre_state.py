@@ -1,4 +1,7 @@
 """Pulumi component for SRE state"""
+# Standard library imports
+from typing import Optional
+
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, managedidentity, resources, storage
@@ -39,10 +42,10 @@ class SREStateComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SREStateProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:sre:SREStateComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(

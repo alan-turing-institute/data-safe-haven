@@ -1,7 +1,7 @@
 # Standard library imports
 import base64
 import pathlib
-from typing import Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 # Third party imports
 import chevron
@@ -37,7 +37,9 @@ class SREResearchDesktopProps:
         self.location = location
         self.security_group_name = security_group_name
         self.subnet_name = subnet_name
-        self.virtual_network = virtual_network
+        self.virtual_network_name = Output.from_input(virtual_network).apply(
+            lambda v: v.name
+        )
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
         self.vm_details = Output.all(vm_skus=vm_skus, ip_addresses=ip_addresses).apply(
             lambda args: [
@@ -56,10 +58,10 @@ class SREResearchDesktopComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SREResearchDesktopProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:sre:SREResearchDesktopComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -88,7 +90,7 @@ class SREResearchDesktopComponent(ComponentResource):
                 sre_name=sre_name,
                 vm_details=args["vm_details"],
                 props=props,
-                opts=child_opts,
+                child_opts=child_opts,
             )
         )
 
@@ -107,15 +109,15 @@ class SREResearchDesktopComponent(ComponentResource):
         resource_group_name: str,
         security_group_name: str,
         sre_name: str,
-        vm_details: Sequence[Tuple[str, str]],
+        vm_details: Sequence[Tuple[str, str, str]],
         props: SREResearchDesktopProps,
-        opts: ResourceOptions = None,
+        child_opts: Optional[ResourceOptions] = None,
     ):
         # Retrieve existing resources
         snet_secure_research_desktop = network.get_subnet_output(
             subnet_name=props.subnet_name,
             resource_group_name=props.virtual_network_resource_group_name,
-            virtual_network_name=props.virtual_network.name,
+            virtual_network_name=props.virtual_network_name,
         )
 
         # Load cloud-init file
@@ -149,7 +151,7 @@ class SREResearchDesktopComponent(ComponentResource):
                 public_ip_allocation_method="Static",
                 resource_group_name=resource_group_name,
                 sku=network.PublicIPAddressSkuArgs(name="Standard"),
-                opts=opts,
+                opts=child_opts,
             )
             network_interface = network.NetworkInterface(
                 f"network_interface_{vm_name_underscored}",
@@ -164,7 +166,7 @@ class SREResearchDesktopComponent(ComponentResource):
                 ],
                 network_interface_name=f"{vm_name_underscored}-nic",
                 resource_group_name=resource_group_name,
-                opts=opts,
+                opts=child_opts,
             )
             virtual_machine = compute.VirtualMachine(
                 f"virtual_machine_{vm_name_underscored}",
@@ -200,17 +202,20 @@ class SREResearchDesktopComponent(ComponentResource):
                         version="latest",
                     ),
                     os_disk=compute.OSDiskArgs(
-                        caching="ReadWrite",
-                        create_option="FromImage",
-                        delete_option="Delete",
+                        caching=compute.CachingTypes.READ_WRITE,
+                        create_option=compute.DiskCreateOptionTypes.FROM_IMAGE,
+                        delete_option=compute.DiskDeleteOptionTypes.DELETE,
                         managed_disk=compute.ManagedDiskParametersArgs(
-                            storage_account_type="Premium_LRS",
+                            storage_account_type=compute.StorageAccountTypes.PREMIUM_LRS,
                         ),
                         name=f"{vm_name}-osdisk",
                     ),
                 ),
                 vm_name=vm_name,
-                opts=ResourceOptions(
-                    delete_before_replace=True, replace_on_changes=["os_profile"]
+                opts=ResourceOptions.merge(
+                    ResourceOptions(
+                        delete_before_replace=True, replace_on_changes=["os_profile"]
+                    ),
+                    child_opts,
                 ),
             )

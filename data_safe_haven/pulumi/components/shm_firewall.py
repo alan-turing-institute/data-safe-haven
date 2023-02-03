@@ -1,4 +1,7 @@
 """Pulumi component for SHM traffic routing"""
+# Standard library import
+from typing import Optional
+
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
@@ -40,10 +43,10 @@ class SHMFirewallComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMFirewallProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:shm:SHMFirewallComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Important IP addresses
         external_dns_resolver = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
@@ -68,7 +71,7 @@ class SHMFirewallComponent(ComponentResource):
             public_ip_allocation_method="Static",
             resource_group_name=props.resource_group_name,
             sku=network.PublicIPAddressSkuArgs(name="Standard"),
-            opts=opts,
+            opts=child_opts,
         )
 
         # Deploy firewall

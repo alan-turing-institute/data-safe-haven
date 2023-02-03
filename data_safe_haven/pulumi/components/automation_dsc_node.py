@@ -2,7 +2,7 @@
 # Standard library imports
 import pathlib
 import time
-from typing import Dict, Sequence
+from typing import Dict, Optional, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, ResourceOptions
@@ -53,10 +53,13 @@ class AutomationDscNode(ComponentResource):
     """Deploy an AutomationDscNode with Pulumi"""
 
     def __init__(
-        self, name: str, props: AutomationDscNodeProps, opts: ResourceOptions = None
+        self,
+        name: str,
+        props: AutomationDscNodeProps,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:common:AutomationDscNode", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 
         # Upload the primary domain controller DSC
@@ -77,10 +80,10 @@ class AutomationDscNode(ComponentResource):
                 value=props.dsc_file.file_contents(),
             ),
             opts=ResourceOptions.merge(
-                child_opts,
                 ResourceOptions(
                     delete_before_replace=True, replace_on_changes=["source.hash"]
                 ),
+                child_opts,
             ),
         )
         dsc_compiled = CompiledDsc(
@@ -95,7 +98,7 @@ class AutomationDscNode(ComponentResource):
                 required_modules=props.dsc_required_modules,
                 subscription_name=props.subscription_name,
             ),
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(depends_on=[dsc])),
+            opts=ResourceOptions.merge(ResourceOptions(depends_on=[dsc]), child_opts),
         )
         dsc_extension = compute.VirtualMachineExtension(
             f"{self._name}_dsc_extension",
@@ -128,6 +131,7 @@ class AutomationDscNode(ComponentResource):
             vm_name=props.vm_name,
             vm_extension_name="Microsoft.Powershell.DSC",
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(depends_on=[dsc_compiled])
+                ResourceOptions(depends_on=[dsc_compiled]),
+                child_opts,
             ),
         )
