@@ -8,6 +8,7 @@ from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.helpers import alphanumeric
 
 
 class SHMNetworkingProps:
@@ -271,13 +272,13 @@ class SHMNetworkingComponent(ComponentResource):
             "oms.opinsights.azure.com",
         ]:
             private_zone = network.PrivateZone(
-                f"{self._name}_{private_link_domain}",
+                f"{self._name}_private_zone_{private_link_domain}",
                 location="Global",
                 private_zone_name=f"privatelink.{private_link_domain}",
                 resource_group_name=resource_group.name,
             )
             virtual_network_link = network.VirtualNetworkLink(
-                f"{self._name}_{private_link_domain}_vnet_link",
+                f"{self._name}_private_zone_{private_link_domain}_vnet_link",
                 location="Global",
                 private_zone_name=private_zone.name,
                 registration_enabled=False,
@@ -295,6 +296,7 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Register outputs
         self.dns_zone_nameservers = dns_zone.name_servers
+        self.domain_controller_private_ip = str(subnet_identity_iprange.available()[0])
         self.resource_group_name = Output.from_input(resource_group.name)
         self.route_table = route_table
         self.subnet_firewall = subnet_firewall

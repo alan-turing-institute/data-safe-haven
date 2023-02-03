@@ -5,7 +5,7 @@ from typing import Optional, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import resources
+from pulumi_azure_native import network, resources
 
 # Local
 from data_safe_haven.external.interface import AzureIPv4Range
@@ -33,7 +33,8 @@ class SHMDomainControllersProps:
         password_domain_azuread_connect: Input[str],
         password_domain_computer_manager: Input[str],
         password_domain_searcher: Input[str],
-        subnet_ip_range: Input[AzureIPv4Range],
+        public_ip_range_admins: Input[Sequence[str]],
+        private_ip_address: Input[str],
         subnet_name: Input[str],
         subscription_name: Input[str],
         virtual_network_name: Input[str],
@@ -58,10 +59,11 @@ class SHMDomainControllersProps:
         self.password_domain_azuread_connect = password_domain_azuread_connect
         self.password_domain_computer_manager = password_domain_computer_manager
         self.password_domain_searcher = password_domain_searcher
-        # Note that usernames have a maximum of 20 characters
-        self.subnet_ip_range = subnet_ip_range
+        self.public_ip_range_admins = public_ip_range_admins
+        self.private_ip_address = private_ip_address
         self.subnet_name = subnet_name
         self.subscription_name = subscription_name
+        # Note that usernames have a maximum of 20 characters
         self.username_domain_admin = "dshdomainadmin"
         self.username_domain_azuread_connect = "dshazureadsync"
         self.username_domain_computer_manager = "dshcomputermanager"
@@ -99,8 +101,8 @@ class SHMDomainControllersComponent(ComponentResource):
             WindowsVMProps(
                 admin_password=props.password_domain_admin,
                 admin_username=props.username_domain_admin,
-                ip_address_public=True,
-                ip_address_private=str(props.subnet_ip_range.available()[0]),
+                ip_address_public=False,
+                ip_address_private=props.private_ip_address,
                 location=props.location,
                 resource_group_name=resource_group.name,
                 subnet_name=props.subnet_name,

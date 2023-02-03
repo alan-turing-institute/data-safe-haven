@@ -53,6 +53,7 @@ class DeclarativeSHM:
             self.stack_name,
             self.shm_name,
             SHMFirewallProps(
+                domain_controller_private_ip=networking.domain_controller_private_ip,
                 location=self.cfg.azure.location,
                 resource_group_name=networking.resource_group_name,
                 route_table_name=networking.route_table.name,
@@ -112,7 +113,8 @@ class DeclarativeSHM:
                 password_domain_searcher=self.secrets.require(
                     "password-domain-ldap-searcher"
                 ),
-                subnet_ip_range=networking.subnet_identity_iprange,
+                public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
+                private_ip_address=networking.domain_controller_private_ip,
                 subnet_name=networking.subnet_identity_name,
                 subscription_name=self.cfg.subscription_name,
                 virtual_network_name=networking.virtual_network.name,

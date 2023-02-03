@@ -15,6 +15,7 @@ class SHMFirewallProps:
 
     def __init__(
         self,
+        domain_controller_private_ip: Input[str],
         location: Input[str],
         resource_group_name: Input[str],
         route_table_name: Input[str],
@@ -22,6 +23,7 @@ class SHMFirewallProps:
         subnet_identity_iprange: Input[AzureIPv4Range],
         subnet_update_servers_iprange: Input[AzureIPv4Range],
     ):
+        self.domain_controller_private_ip = domain_controller_private_ip
         self.location = location
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name
@@ -66,7 +68,7 @@ class SHMFirewallComponent(ComponentResource):
 
         # Deploy IP address
         public_ip = network.PublicIPAddress(
-            f"{self._name}_firewall_public_ip",
+            f"{self._name}_public_ip",
             public_ip_address_name=f"{stack_name}-firewall-public-ip",
             public_ip_allocation_method="Static",
             resource_group_name=props.resource_group_name,
@@ -777,6 +779,7 @@ class SHMFirewallComponent(ComponentResource):
                                 "s1.adhybridhealth.azure.com",
                                 "management.azure.com",
                                 "policykeyservice.dc.ad.msft.net",
+                                "provisioningapi.microsoftonline.com",
                                 "www.office.com",
                             ],
                         ),
@@ -1049,6 +1052,27 @@ class SHMFirewallComponent(ComponentResource):
                 )
             ],
             location=props.location,
+            nat_rule_collections=[
+                network.AzureFirewallNatRuleCollectionArgs(
+                    action=network.AzureFirewallNatRCActionArgs(type="Dnat"),
+                    name="RDPTrafficToDomainController",
+                    priority=100,
+                    rules=[
+                        network.AzureFirewallNatRuleArgs(
+                            description="Redirect RDP traffic to domain controller",
+                            destination_addresses=public_ip.ip_address.apply(
+                                lambda ip: [ip] if ip else []
+                            ),
+                            destination_ports=["3389"],
+                            name="dc-rdp-traffic",
+                            protocols=["TCP"],
+                            source_addresses=["*"],
+                            translated_address=props.domain_controller_private_ip,
+                            translated_port="3389",
+                        ),
+                    ],
+                )
+            ],
             network_rule_collections=[
                 network.AzureFirewallNetworkRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),

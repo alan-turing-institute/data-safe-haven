@@ -113,7 +113,7 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Add a private DNS record for each custom DNS config
-        private_records = private_endpoint.custom_dns_configs.apply(
+        private_endpoint.custom_dns_configs.apply(
             lambda cfgs: [
                 self.private_record_set(cfg, props.dns_resource_group_name)
                 for cfg in cfgs
@@ -158,7 +158,7 @@ class SHMMonitoringComponent(ComponentResource):
         record_name = config.fqdn.replace(f".{private_zone_name}", "")
         ip_address = config.ip_addresses[0] if config.ip_addresses else ""
         return network.PrivateRecordSet(
-            f"{record_name}.{private_zone_name}_a_record",
+            f"{self._name}_private_a_record_{record_name}.{private_zone_name}",
             a_records=[network.ARecordArgs(ipv4_address=ip_address)],
             private_zone_name=f"privatelink.{private_zone_name}",
             record_type="A",

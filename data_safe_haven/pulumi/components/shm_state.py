@@ -1,5 +1,5 @@
 """Pulumi component for SHM state"""
-# Standard library import
+# Standard library imports
 from typing import Optional
 
 # Third party imports

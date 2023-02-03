@@ -133,7 +133,9 @@ class VMComponent(ComponentResource):
                 public_ip_address_name=f"{props.vm_name}-public-ip",
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,
-                sku=network.PublicIPAddressSkuArgs(name="Standard"),
+                sku=network.PublicIPAddressSkuArgs(
+                    name=network.PublicIPAddressSkuName.STANDARD
+                ),
                 opts=child_opts,
             )
             network_interface_ip_params[
@@ -146,9 +148,9 @@ class VMComponent(ComponentResource):
             enable_accelerated_networking=True,
             ip_configurations=[
                 network.NetworkInterfaceIPConfigurationArgs(
-                    name=f"ipconfig{props.vm_name_underscored}".replace("_", ""),
+                    name=props.vm_name_underscored.apply(lambda n: f"ipconfig{n}".replace("_", "")),
                     private_ip_address=props.ip_address_private,
-                    private_ip_allocation_method="Static",
+                    private_ip_allocation_method=network.IPAllocationMethod.STATIC,
                     subnet=network.SubnetArgs(id=subnet.id),
                     **network_interface_ip_params,
                 )
@@ -181,11 +183,11 @@ class VMComponent(ComponentResource):
             storage_profile=compute.StorageProfileArgs(
                 image_reference=props.image_reference,
                 os_disk=compute.OSDiskArgs(
-                    caching="ReadWrite",
-                    create_option="FromImage",
-                    delete_option="Delete",
+                    caching=compute.CachingTypes.READ_WRITE,
+                    create_option=compute.DiskCreateOptionTypes.FROM_IMAGE,
+                    delete_option=compute.DiskDeleteOptionTypes.DELETE,
                     managed_disk=compute.ManagedDiskParametersArgs(
-                        storage_account_type="Premium_LRS",
+                        storage_account_type=compute.StorageAccountTypes.PREMIUM_LRS,
                     ),
                     name=f"{props.vm_name}-osdisk",
                 ),
