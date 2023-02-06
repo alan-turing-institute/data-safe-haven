@@ -138,7 +138,7 @@ class SHMMonitoringComponent(ComponentResource):
         self.automation_account_primary_key = Output.secret(
             automation_keys.keys[0].value
         )
-        self.resource_group_name = Output.secret(resource_group.name)
+        self.resource_group_name = resource_group.name
 
     def private_record_set(
         self,

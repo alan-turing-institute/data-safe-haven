@@ -16,8 +16,8 @@ class Backend(LoggingMixin):
         self, settings: DotFileSettings, *args: Optional[Any], **kwargs: Optional[Any]
     ):
         super().__init__(*args, **kwargs)
-        self.azure_api_ = None
-        self.config = Config(
+        self.azure_api_: Optional[AzureApi] = None
+        self.config: Config = Config(
             name=settings.name,
             subscription_name=settings.subscription_name,
         )

@@ -1,6 +1,6 @@
 """Pulumi dynamic component for compiled desired state configuration."""
 # Standard library imports
-from typing import Dict, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 # Third party imports
 from pulumi import Input, ResourceOptions
@@ -36,7 +36,7 @@ class CompiledDscProps:
 
 
 class CompiledDscProvider(DshResourceProvider):
-    def create(self, props: Dict[str, str]) -> CreateResult:
+    def create(self, props: Dict[str, Any]) -> CreateResult:
         """Create compiled desired state file."""
         azure_api = AzureApi(props["subscription_name"])
         # Compile desired state
@@ -60,8 +60,8 @@ class CompiledDscProvider(DshResourceProvider):
     def diff(
         self,
         id_: str,
-        old_props: Dict[str, str],
-        new_props: Dict[str, str],
+        old_props: Dict[str, Any],
+        new_props: Dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
         return self.partial_diff(old_props, new_props, [])

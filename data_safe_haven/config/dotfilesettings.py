@@ -1,6 +1,7 @@
 """Load global and local settings from dotfiles"""
 # Standard library imports
 import pathlib
+from typing import Optional
 
 # Third party imports
 import yaml
@@ -21,23 +22,23 @@ class DotFileSettings(LoggingMixin):
       name: Turing Development
     """
 
-    admin_group_id: str = None
-    location: str = None
-    name: str = None
-    subscription_name: str = None
-    config_file_name = ".dshconfig"
+    admin_group_id: str = ""
+    location: str = ""
+    name: str = ""
+    subscription_name: str = ""
+    config_file_name: str = ".dshconfig"
 
     def __init__(
         self,
-        admin_group_id: str = None,
-        location: str = None,
-        name: str = None,
-        subscription_name: str = None,
+        admin_group_id: Optional[str] = None,
+        location: Optional[str] = None,
+        name: Optional[str] = None,
+        subscription_name: Optional[str] = None,
     ):
         super().__init__()
+        # Load local dotfile settings (if any)
+        local_dotfile = pathlib.Path.cwd() / self.config_file_name
         try:
-            # Load local dotfile settings (if any)
-            local_dotfile = pathlib.Path.cwd() / self.config_file_name
             if local_dotfile.exists():
                 with open(pathlib.Path(local_dotfile), "r", encoding="utf-8") as f_yaml:
                     settings = yaml.safe_load(f_yaml)
@@ -86,7 +87,7 @@ class DotFileSettings(LoggingMixin):
                 None,
             )
 
-    def write(self, directory: pathlib.Path) -> None:
+    def write(self, directory: pathlib.Path) -> pathlib.Path:
         settings = {
             "shm": {
                 "name": self.name,

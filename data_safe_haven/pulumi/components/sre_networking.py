@@ -183,7 +183,7 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
         )
 
-        # Define the virtual network with inline subnets
+        # Define the virtual network and its subnets
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
@@ -237,7 +237,6 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=props.shm_virtual_network_name,
         )
-        # shm_virtual_network_name = Output.from_input(props.shm_virtual_network_name).apply(lambda name: str(name))
         peering_sre_to_shm = network.VirtualNetworkPeering(
             f"{self._name}_sre_to_shm_peering",
             remote_virtual_network=network.SubResourceArgs(id=shm_virtual_network.id),

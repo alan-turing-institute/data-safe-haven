@@ -67,7 +67,7 @@ class Config(LoggingMixin, AzureMixin):
         if isinstance(self.tags.version, dotmap.DotMap):
             self.tags.version = __version__
         if isinstance(self.backend.key_vault_name, dotmap.DotMap):
-            self.backend.key_vault_name = f"kv-{self.shm_name[:13]}-backend"
+            self.backend.key_vault_name = f"shm-{self.shm_name[:9]}-backend-kv"
         if isinstance(self.backend.resource_group_name, dotmap.DotMap):
             self.backend.resource_group_name = backend_resource_group_name
         if isinstance(self.backend.storage_account_name, dotmap.DotMap):
@@ -75,7 +75,9 @@ class Config(LoggingMixin, AzureMixin):
         if isinstance(self.backend.storage_container_name, dotmap.DotMap):
             self.backend.storage_container_name = backend_storage_container_name
         if isinstance(self.backend.managed_identity_name, dotmap.DotMap):
-            self.backend.managed_identity_name = "KeyVaultReaderIdentity"
+            self.backend.managed_identity_name = (
+                f"shm-{self.shm_name}-backend-reader-identity"
+            )
         if isinstance(self.backend.pulumi_encryption_key_name, dotmap.DotMap):
             self.backend.pulumi_encryption_key_name = "pulumi-encryption-key"
         if isinstance(self.pulumi.storage_container_name, dotmap.DotMap):

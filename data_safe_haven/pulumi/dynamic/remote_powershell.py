@@ -18,7 +18,7 @@ class RemoteScriptProps:
         self,
         script_contents: Input[str],
         script_hash: Input[str],
-        script_parameters: Input[str],
+        script_parameters: Input[Dict[str, str]],
         subscription_name: Input[str],
         vm_name: Input[str],
         vm_resource_group_name: Input[str],

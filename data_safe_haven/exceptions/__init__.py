@@ -14,6 +14,10 @@ class DataSafeHavenInternalException(DataSafeHavenException):
     pass
 
 
+class DataSafeHavenIPRangeException(DataSafeHavenException):
+    pass
+
+
 class DataSafeHavenNotImplementedException(DataSafeHavenInternalException):
     pass
 

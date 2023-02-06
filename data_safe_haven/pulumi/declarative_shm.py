@@ -101,7 +101,7 @@ class DeclarativeSHM:
                 automation_account_registration_url=monitoring.automation_account_agentsvc_url,
                 automation_account_resource_group_name=monitoring.resource_group_name,
                 domain_fqdn=self.cfg.shm.fqdn,
-                domain_netbios_name=self.stack_name[4:].upper(),  # drop initial 'shm-'
+                domain_netbios_name=self.shm_name.upper(),
                 location=self.cfg.azure.location,
                 password_domain_admin=self.secrets.require("password-domain-admin"),
                 password_domain_azuread_connect=self.secrets.require(

@@ -62,7 +62,7 @@ class WindowsVMProps(VMProps):
         self.os_profile_args = compute.OSProfileArgs(
             admin_password=self.admin_password,
             admin_username=self.admin_username,
-            computer_name=self.vm_name,
+            computer_name=Output.from_input(self.vm_name).apply(lambda n: n[:15]),
             windows_configuration=compute.WindowsConfigurationArgs(
                 enable_automatic_updates=True,
                 patch_settings=compute.PatchSettingsArgs(
@@ -92,7 +92,7 @@ class LinuxVMProps(VMProps):
         self.os_profile_args = compute.OSProfileArgs(
             admin_password=self.admin_password,
             admin_username=self.admin_username,
-            computer_name=self.vm_name,
+            computer_name=Output.from_input(self.vm_name).apply(lambda n: n[:64]),
             custom_data=Output.secret(b64cloudinit),
             linux_configuration=compute.LinuxConfigurationArgs(
                 patch_settings=compute.LinuxPatchSettingsArgs(
@@ -148,7 +148,9 @@ class VMComponent(ComponentResource):
             enable_accelerated_networking=True,
             ip_configurations=[
                 network.NetworkInterfaceIPConfigurationArgs(
-                    name=props.vm_name_underscored.apply(lambda n: f"ipconfig{n}".replace("_", "")),
+                    name=props.vm_name_underscored.apply(
+                        lambda n: f"ipconfig{n}".replace("_", "")
+                    ),
                     private_ip_address=props.ip_address_private,
                     private_ip_allocation_method=network.IPAllocationMethod.STATIC,
                     subnet=network.SubnetArgs(id=subnet.id),
