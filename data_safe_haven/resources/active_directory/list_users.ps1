@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory = $false, HelpMessage = "SRE name")]
-    [string]$SREName = $null #this sets $SREName to an empty string, not to NULL
+    [string]$SREName = $null 
 )
 
 # Find SRE security group if an SRE name is specified
