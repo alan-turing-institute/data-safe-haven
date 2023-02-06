@@ -14,11 +14,13 @@ class SHMMonitoringProps:
         self,
         dns_resource_group_name: Input[str],
         location: Input[str],
-        subnet_monitoring_id: Input[str],
+        subnet_monitoring: Input[network.Subnet],
     ):
         self.dns_resource_group_name = dns_resource_group_name
         self.location = location
-        self.subnet_monitoring_id = subnet_monitoring_id
+        self.subnet_monitoring_id = Output.from_input(subnet_monitoring).apply(
+            lambda s: s.id
+        )
 
 
 class SHMMonitoringComponent(ComponentResource):

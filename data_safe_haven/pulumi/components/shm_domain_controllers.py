@@ -35,7 +35,7 @@ class SHMDomainControllersProps:
         password_domain_searcher: Input[str],
         public_ip_range_admins: Input[Sequence[str]],
         private_ip_address: Input[str],
-        subnet_name: Input[str],
+        subnet_identity: Input[network.Subnet],
         subscription_name: Input[str],
         virtual_network_name: Input[str],
         virtual_network_resource_group_name: Input[str],
@@ -61,7 +61,7 @@ class SHMDomainControllersProps:
         self.password_domain_searcher = password_domain_searcher
         self.public_ip_range_admins = public_ip_range_admins
         self.private_ip_address = private_ip_address
-        self.subnet_name = subnet_name
+        self.subnet_name = Output.from_input(subnet_identity).apply(lambda s: s.name)
         self.subscription_name = subscription_name
         # Note that usernames have a maximum of 20 characters
         self.username_domain_admin = "dshdomainadmin"
@@ -130,19 +130,19 @@ class SHMDomainControllersComponent(ComponentResource):
                 configuration_name=dsc_configuration_name,
                 dsc_description="DSC for Data Safe Haven primary domain controller",
                 dsc_file=dsc_reader,
-                dsc_parameters={
-                    "AzureADConnectPassword": props.password_domain_azuread_connect,
-                    "AzureADConnectUsername": props.username_domain_azuread_connect,
-                    "DomainAdministratorPassword": props.password_domain_admin,
-                    "DomainAdministratorUsername": props.username_domain_admin,
-                    "DomainComputerManagerPassword": props.password_domain_computer_manager,
-                    "DomainComputerManagerUsername": props.username_domain_computer_manager,
-                    "DomainName": props.domain_fqdn,
-                    "DomainNetBios": props.domain_netbios_name,
-                    "DomainRootDn": props.domain_root_dn,
-                    "LDAPSearcherPassword": props.password_domain_searcher,
-                    "LDAPSearcherUsername": props.username_domain_searcher,
-                },
+                dsc_parameters=Output.all(
+                    AzureADConnectPassword=props.password_domain_azuread_connect,
+                    AzureADConnectUsername=props.username_domain_azuread_connect,
+                    DomainAdministratorPassword=props.password_domain_admin,
+                    DomainAdministratorUsername=props.username_domain_admin,
+                    DomainComputerManagerPassword=props.password_domain_computer_manager,
+                    DomainComputerManagerUsername=props.username_domain_computer_manager,
+                    DomainName=props.domain_fqdn,
+                    DomainNetBios=props.domain_netbios_name,
+                    DomainRootDn=props.domain_root_dn,
+                    LDAPSearcherPassword=props.password_domain_searcher,
+                    LDAPSearcherUsername=props.username_domain_searcher,
+                ),
                 dsc_required_modules=props.automation_account_modules,
                 location=props.location,
                 subscription_name=props.subscription_name,

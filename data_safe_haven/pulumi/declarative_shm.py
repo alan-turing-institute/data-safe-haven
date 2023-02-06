@@ -58,8 +58,8 @@ class DeclarativeSHM:
                 resource_group_name=networking.resource_group_name,
                 route_table_name=networking.route_table.name,
                 subnet_firewall=networking.subnet_firewall,
-                subnet_identity_iprange=networking.subnet_identity_iprange,
-                subnet_update_servers_iprange=networking.subnet_update_servers_iprange,
+                subnet_identity=networking.subnet_identity,
+                subnet_update_servers=networking.subnet_update_servers,
             ),
         )
 
@@ -83,7 +83,7 @@ class DeclarativeSHM:
             SHMMonitoringProps(
                 dns_resource_group_name=networking.resource_group_name,
                 location=self.cfg.azure.location,
-                subnet_monitoring_id=networking.subnet_monitoring.id,
+                subnet_monitoring=networking.subnet_monitoring,
             ),
         )
 
@@ -115,7 +115,7 @@ class DeclarativeSHM:
                 ),
                 public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
                 private_ip_address=networking.domain_controller_private_ip,
-                subnet_name=networking.subnet_identity_name,
+                subnet_identity=networking.subnet_identity,
                 subscription_name=self.cfg.subscription_name,
                 virtual_network_name=networking.virtual_network.name,
                 virtual_network_resource_group_name=networking.resource_group_name,

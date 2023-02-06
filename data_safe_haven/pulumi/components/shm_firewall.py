@@ -19,21 +19,23 @@ class SHMFirewallProps:
         location: Input[str],
         resource_group_name: Input[str],
         route_table_name: Input[str],
-        subnet_firewall: Input[network.GetSubnetResult],
-        subnet_identity_iprange: Input[AzureIPv4Range],
-        subnet_update_servers_iprange: Input[AzureIPv4Range],
+        subnet_firewall: Input[network.Subnet],
+        subnet_identity: Input[network.Subnet],
+        subnet_update_servers: Input[network.Subnet],
     ):
         self.domain_controller_private_ip = domain_controller_private_ip
         self.location = location
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name
-        self.subnet_firewall = Output.from_input(subnet_firewall)
-        self.subnet_identity_iprange = Output.from_input(subnet_identity_iprange).apply(
-            lambda ip_range: str(ip_range)
+        self.subnet_firewall_id = Output.from_input(subnet_firewall).apply(
+            lambda s: s.id
         )
+        self.subnet_identity_iprange = Output.from_input(
+            subnet_identity
+        ).address_prefix.apply(lambda prefix: str(prefix) if prefix else "")
         self.subnet_update_servers_iprange = Output.from_input(
-            subnet_update_servers_iprange
-        ).apply(lambda ip_range: str(ip_range))
+            subnet_update_servers
+        ).address_prefix.apply(lambda prefix: str(prefix) if prefix else "")
 
 
 class SHMFirewallComponent(ComponentResource):
@@ -1048,7 +1050,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallIPConfigurationArgs(
                     name="FirewallIpConfiguration",
                     public_ip_address=network.SubResourceArgs(id=public_ip.id),
-                    subnet=network.SubResourceArgs(id=props.subnet_firewall.id),
+                    subnet=network.SubResourceArgs(id=props.subnet_firewall_id),
                 )
             ],
             location=props.location,
