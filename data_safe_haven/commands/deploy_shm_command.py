@@ -97,6 +97,10 @@ class DeploySHMCommand(LoggingMixin, Command):
                 config.shm.domain_controllers["ldap_searcher_password_secret"],
                 stack.secret("password-domain-ldap-searcher"),
             )
+            config.add_secret(
+                config.shm.domain_controllers["password_domain_admin"],
+                stack.secret("password-domain-admin"),
+            )
 
             # Upload config to blob storage
             config.upload()

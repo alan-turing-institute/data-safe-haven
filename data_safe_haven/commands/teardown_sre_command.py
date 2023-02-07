@@ -34,11 +34,15 @@ class TeardownSRECommand(LoggingMixin, Command):
                     f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
                 ) from exc
             config = Config(settings.name, settings.subscription_name)
-
             # Remove infrastructure deployed with Pulumi
             try:
                 stack = PulumiStack(config, "SRE", sre_name=self.argument("name"))
-                stack.teardown()
+                if stack.work_dir.exists():
+                    stack.teardown()
+                else:
+                    raise DataSafeHavenInputException(
+                        f"SRE {self.argument('name')} not found - check the name is spelt correctly." 
+                    )
             except Exception as exc:
                 raise DataSafeHavenInputException(
                     f"Unable to teardown Pulumi infrastructure.\n{str(exc)}"
