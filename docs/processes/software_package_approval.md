@@ -5,8 +5,15 @@ To maximise the usability of the secure research environments, we pre-install ce
 Other software packages which are only of interest to a subset of users can be made available for download from remote package repositories.
 Currently, we support PyPI (Python) and CRAN (R) as remote repositories.
 
-Only a subset of packages that have been vetted to mitigate the risk of introducing malicious or unsound software into the secure environment are made available in this way.
-This page sets out the policy for adding software packages to the approved download list and/or software to the pre-installed software list.
+For higher {ref}`sensitivity tiers <policy_classification_sensitivity_tiers>` ({ref}`policy_tier_3` and above), only a subset of packages are made available in this way.
+This subset of packages constitutes an "allowlist" of packages that have been vetted to mitigate the risk of introducing malicious or unsound software into the secure environment.
+
+```{warning}
+The Data Safe Haven team manages a default allowlist, but individual deployments may be using their own versions.
+Check with your {ref}`role_system_manager` what is being used in your case
+```
+
+This page sets out the policy for adding software packages to the default allowlist and/or software to the pre-installed software list.
 It also describes the procedure that users of the secure environment should follow to request new additions to the allowlist.
 
 ## Background
