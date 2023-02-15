@@ -34,6 +34,7 @@ Specific risks which this policy aims to mitigate include:
 
 - package name squatting (allowlisting a similarly-named package instead of the intended one)
 - privilege escalation attacks (enabling a user to gain elevated access permissions)
+- unauthorised data ingress (in particular, it is possible to upload arbitrary data to PyPI without review)
 
 (package_inclusion_policy)=
 
