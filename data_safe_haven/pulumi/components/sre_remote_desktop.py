@@ -29,35 +29,53 @@ class SRERemoteDesktopProps:
         aad_application_fqdn: Input[str],
         aad_auth_token: Input[str],
         aad_tenant_id: Input[str],
-        ip_address_container: Input[str],
-        ip_address_database: Input[str],
         database_password: Input[str],
         location: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group: Input[str],
-        subnet_container_name: Input[str],
-        subnet_database_name: Input[str],
+        subnet_guacamole_containers: Input[network.GetSubnetResult],
+        subnet_guacamole_database: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
-        virtual_network_resource_group_name: Input[str],
+        virtual_network_resource_group: Input[resources.ResourceGroup],
         database_username: Optional[Input[str]] = "postgresadmin",
     ):
         self.aad_application_name = aad_application_name
-        self.aad_application_url = Output.from_input(aad_application_fqdn).apply(
-            lambda fqdn: f"https://{fqdn}"
-        )
+        self.aad_application_url = Output.concat("https://", aad_application_fqdn)
         self.aad_auth_token = aad_auth_token
         self.aad_tenant_id = aad_tenant_id
-        self.ip_address_container = ip_address_container
-        self.ip_address_database = ip_address_database
         self.database_password = database_password
         self.database_username = database_username
         self.location = location
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group = storage_account_resource_group
-        self.subnet_container_name = subnet_container_name
-        self.subnet_database_name = subnet_database_name
+        self.subnet_guacamole_containers_id = Output.from_input(
+            subnet_guacamole_containers
+        ).apply(lambda s: s.id)
+        self.subnet_guacamole_containers_ip_addresses = Output.from_input(
+            subnet_guacamole_containers
+        ).apply(
+            lambda s: [
+                str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
+            ]
+            if s.address_prefix
+            else []
+        )
+        self.subnet_guacamole_database_id = Output.from_input(
+            subnet_guacamole_database
+        ).apply(lambda s: s.id)
+        self.subnet_guacamole_database_ip_addresses = Output.from_input(
+            subnet_guacamole_database
+        ).apply(
+            lambda s: [
+                str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
+            ]
+            if s.address_prefix
+            else []
+        )
         self.virtual_network = virtual_network
-        self.virtual_network_resource_group_name = virtual_network_resource_group_name
+        self.virtual_network_resource_group_name = Output.from_input(
+            virtual_network_resource_group
+        ).apply(lambda rg: rg.name)
 
 
 class SRERemoteDesktopComponent(ComponentResource):
@@ -78,24 +96,15 @@ class SRERemoteDesktopComponent(ComponentResource):
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-remote-desktop",
+            resource_group_name=f"{stack_name}-rg-remote-desktop",
+            opts=child_opts,
         )
 
-        # Retrieve existing resources
-        snet_guacamole_containers = network.get_subnet_output(
-            subnet_name=props.subnet_container_name,
-            resource_group_name=props.virtual_network_resource_group_name,
-            virtual_network_name=props.virtual_network.name,
-        )
-        snet_guacamole_db = network.get_subnet_output(
-            subnet_name=props.subnet_database_name,
-            resource_group_name=props.virtual_network_resource_group_name,
-            virtual_network_name=props.virtual_network.name,
-        )
-        storage_account_keys = storage.list_storage_account_keys(
+        # Retrieve existing storage account details
+        storage_account_keys = Output.all(
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group,
-        )
+        ).apply(lambda kwargs: storage.list_storage_account_keys(**kwargs))
         storage_account_key_secret = Output.secret(storage_account_keys.keys[0].value)
 
         # Define AzureAD application
@@ -136,7 +145,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         )
 
         # Define a PostgreSQL server
-        connection_db_server_name = f"postgresql-{stack_name}-guacamole"
+        connection_db_server_name = f"{stack_name}-db-postgresql-guacamole"
         connection_db_server = dbforpostgresql.Server(
             f"{self._name}_connection_db_server",
             properties={
@@ -168,14 +177,14 @@ class SRERemoteDesktopComponent(ComponentResource):
             f"{self._name}_connection_db_private_endpoint",
             custom_dns_configs=[
                 network.CustomDnsConfigPropertiesFormatArgs(
-                    ip_addresses=[props.ip_address_database],
+                    ip_addresses=[props.subnet_guacamole_database_ip_addresses[0]],
                 )
             ],
-            private_endpoint_name=f"endpoint-{stack_name}-guacamole-db",
+            private_endpoint_name=f"{stack_name}-endpoint-guacamole-db",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["postgresqlServer"],
-                    name=f"privatelink-{stack_name}-guacamole-db",
+                    name=f"{stack_name}-privatelink-guacamole-db",
                     private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
                         actions_required="None",
                         description="Auto-approved",
@@ -185,7 +194,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 )
             ],
             resource_group_name=resource_group.name,
-            subnet=network.SubnetArgs(id=snet_guacamole_db.id),
+            subnet=network.SubnetArgs(id=props.subnet_guacamole_database_id),
             opts=child_opts,
         )
         connection_db = dbforpostgresql.Database(
@@ -206,14 +215,14 @@ class SRERemoteDesktopComponent(ComponentResource):
                         network.IPConfigurationProfileArgs(
                             name="ipconfigguacamole",
                             subnet=network.SubnetArgs(
-                                id=snet_guacamole_containers.id,
+                                id=props.subnet_guacamole_containers_id,
                             ),
                         )
                     ],
                     name="networkinterfaceconfigguacamole",
                 )
             ],
-            network_profile_name=f"np-{stack_name}-guacamole",
+            network_profile_name=f"{stack_name}-np-guacamole",
             resource_group_name=props.virtual_network_resource_group_name,
             opts=ResourceOptions.merge(
                 ResourceOptions(depends_on=[props.virtual_network]), child_opts
@@ -223,11 +232,11 @@ class SRERemoteDesktopComponent(ComponentResource):
         # Define the container group with guacd, guacamole and caddy
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
-            container_group_name=f"container-{stack_name}-remote-desktop",
+            container_group_name=f"{stack_name}-container-remote-desktop",
             containers=[
                 containerinstance.ContainerArgs(
                     image="caddy:latest",
-                    name=f"container-{stack_name[:32]}-remote-desktop-caddy",  # maximum of 63 characters
+                    name=f"{stack_name[:32]}-container-remote-desktop-caddy",  # maximum of 63 characters
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=80,
@@ -252,7 +261,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 # More information at https://github.com/apache/guacamole-client/blob/master/guacamole-docker/bin/start.sh
                 containerinstance.ContainerArgs(
                     image="guacamole/guacamole:1.4.0",
-                    name=f"container-{stack_name[:28]}-remote-desktop-guacamole",  # maximum of 63 characters
+                    name=f"{stack_name[:28]}-container-remote-desktop-guacamole",  # maximum of 63 characters
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="GUACD_HOSTNAME", value="localhost"
@@ -287,7 +296,8 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="POSTGRES_DATABASE", value="guacamole"
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_HOSTNAME", value=props.ip_address_database
+                            name="POSTGRES_HOSTNAME",
+                            value=props.subnet_guacamole_database_ip_addresses[0],
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_PASSWORD",
@@ -316,7 +326,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ),
                 containerinstance.ContainerArgs(
                     image="guacamole/guacd:1.4.0",
-                    name=f"container-{stack_name[:32]}-remote-desktop-guacd",  # maximum of 63 characters
+                    name=f"{stack_name[:32]}-container-remote-desktop-guacd",  # maximum of 63 characters
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="GUACD_LOG_LEVEL", value="debug"
@@ -337,7 +347,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ),
             ],
             ip_address=containerinstance.IpAddressArgs(
-                ip=props.ip_address_container,
+                ip=props.subnet_guacamole_containers_ip_addresses[0],
                 ports=[
                     containerinstance.PortArgs(
                         port=80,
@@ -357,7 +367,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
                         share_name=file_share.name,
-                        storage_account_key=storage_account_keys.keys[0].value,
+                        storage_account_key=storage_account_key_secret,
                         storage_account_name=props.storage_account_name,
                     ),
                     name="guacamole-caddy-config",
@@ -374,6 +384,6 @@ class SRERemoteDesktopComponent(ComponentResource):
             "connection_db_name": connection_db.name,
             "connection_db_server_name": connection_db_server_name,
             "container_group_name": container_group.name,
-            "container_ip_address": Output.from_input(props.ip_address_container),
+            "container_ip_address": props.subnet_guacamole_containers_ip_addresses[0],
             "resource_group_name": resource_group.name,
         }

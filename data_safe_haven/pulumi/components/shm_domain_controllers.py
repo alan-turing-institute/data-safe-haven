@@ -33,7 +33,7 @@ class SHMDomainControllersProps:
         password_domain_searcher: Input[str],
         public_ip_range_admins: Input[Sequence[str]],
         private_ip_address: Input[str],
-        subnet_identity: Input[network.Subnet],
+        subnet_identity_servers: Input[network.GetSubnetResult],
         subscription_name: Input[str],
         virtual_network_name: Input[str],
         virtual_network_resource_group_name: Input[str],
@@ -59,7 +59,9 @@ class SHMDomainControllersProps:
         self.password_domain_searcher = password_domain_searcher
         self.public_ip_range_admins = public_ip_range_admins
         self.private_ip_address = private_ip_address
-        self.subnet_name = Output.from_input(subnet_identity).apply(lambda s: s.name)
+        self.subnet_name = Output.from_input(subnet_identity_servers).apply(
+            lambda s: s.name
+        )
         self.subscription_name = subscription_name
         # Note that usernames have a maximum of 20 characters
         self.username_domain_admin = "dshdomainadmin"
@@ -89,7 +91,8 @@ class SHMDomainControllersComponent(ComponentResource):
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-identity",
+            resource_group_name=f"{stack_name}-rg-identity",
+            opts=child_opts,
         )
 
         # Create the DC

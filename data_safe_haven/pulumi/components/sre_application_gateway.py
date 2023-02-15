@@ -15,25 +15,36 @@ class SREApplicationGatewayProps:
 
     def __init__(
         self,
-        ip_address_public_id: Input[str],
-        ip_addresses_guacamole: Input[Sequence[str]],
         key_vault_certificate_id: Input[str],
-        key_vault_identity: Input[str],
-        resource_group_name: Input[str],
+        key_vault_identity: Input[managedidentity.UserAssignedIdentity],
+        resource_group: Input[resources.ResourceGroup],
         sre_fqdn: Input[str],
-        subnet_name: Input[str],
-        virtual_network_name: Input[str],
+        subnet_application_gateway: Input[network.GetSubnetResult],
+        subnet_guacamole_containers: Input[network.GetSubnetResult],
     ):
         self.key_vault_certificate_id = key_vault_certificate_id
-        self.ip_address_public_id = ip_address_public_id
-        self.ip_addresses_guacamole = ip_addresses_guacamole
-        self.resource_group_name = resource_group_name
+        self.resource_group_id = Output.from_input(resource_group).apply(
+            lambda rg: rg.id
+        )
+        self.resource_group_name = Output.from_input(resource_group).apply(
+            lambda rg: rg.name
+        )
         self.sre_fqdn = sre_fqdn
-        self.subnet_name = subnet_name
-        self.virtual_network_name = virtual_network_name
-        # Unwrap key vault identity so that it has type Output[dict(str, Any)] not dict(Output[str], Any)
+        self.subnet_application_gateway_id = Output.from_input(
+            subnet_application_gateway
+        ).apply(lambda ag: ag.id)
+        self.subnet_guacamole_containers_ip_addresses = Output.from_input(
+            subnet_guacamole_containers
+        ).apply(
+            lambda s: [
+                str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
+            ]
+            if s.address_prefix
+            else []
+        )
+        # Unwrap key vault identity so that it has type Output[dict(str, dict(Any, Any))]
         self.user_assigned_identities = Output.from_input(key_vault_identity).apply(
-            lambda identity: {identity: {}}
+            lambda identity: identity.id.apply(lambda id: {id: {}})
         )
 
 
@@ -51,25 +62,41 @@ class SREApplicationGatewayComponent(ComponentResource):
         super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
-        # Retrieve existing resource group and subnet
-        resource_group = Output.from_input(props.resource_group_name).apply(
-            lambda n: resources.get_resource_group(n)
-        )
-        snet_application_gateway = network.get_subnet_output(
-            subnet_name="ApplicationGatewaySubnet",
+        # Define public IP address
+        public_ip = network.PublicIPAddress(
+            f"{self._name}_public_ip",
+            public_ip_address_name=f"{stack_name}-public-ip",
+            public_ip_allocation_method=network.IpAllocationMethod.STATIC,
             resource_group_name=props.resource_group_name,
-            virtual_network_name=props.virtual_network_name,
+            sku=network.PublicIPAddressSkuArgs(
+                name=network.PublicIPAddressSkuName.STANDARD
+            ),
+            opts=child_opts,
+        )
+
+        # Link the public IP address to the SRE domain
+        network.RecordSet(
+            f"{self._name}_a_record",
+            a_records=public_ip.ip_address.apply(
+                lambda ip: [network.ARecordArgs(ipv4_address=ip)] if ip else []
+            ),
+            record_type="A",
+            relative_record_set_name="@",
+            resource_group_name=props.resource_group_name,
+            ttl=30,
+            zone_name=props.sre_fqdn,
+            opts=child_opts,
         )
 
         # Define application gateway
-        application_gateway_name = f"ag-{stack_name}-entrypoint"
+        application_gateway_name = f"{stack_name}-ag-entrypoint"
         application_gateway = network.ApplicationGateway(
             f"{self._name}_application_gateway",
             application_gateway_name=application_gateway_name,
             backend_address_pools=[
-                # Guacamole private IP address
+                # Guacamole private IP addresses
                 network.ApplicationGatewayBackendAddressPoolArgs(
-                    backend_addresses=props.ip_addresses_guacamole.apply(
+                    backend_addresses=props.subnet_guacamole_containers_ip_addresses.apply(
                         lambda ip_addresses: [
                             network.ApplicationGatewayBackendAddressArgs(
                                 ip_address=ip_address
@@ -92,9 +119,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayFrontendIPConfigurationArgs(
                     name="appGatewayFrontendIP",
                     private_ip_allocation_method="Dynamic",
-                    public_ip_address=network.SubResourceArgs(
-                        id=props.ip_address_public_id
-                    ),
+                    public_ip_address=network.SubResourceArgs(id=public_ip.id),
                 )
             ],
             frontend_ports=[
@@ -110,7 +135,9 @@ class SREApplicationGatewayComponent(ComponentResource):
             gateway_ip_configurations=[
                 network.ApplicationGatewayIPConfigurationArgs(
                     name="appGatewayIP",
-                    subnet=network.SubResourceArgs(id=snet_application_gateway.id),
+                    subnet=network.SubResourceArgs(
+                        id=props.subnet_application_gateway_id
+                    ),
                 )
             ],
             http_listeners=[
@@ -118,13 +145,13 @@ class SREApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayHttpListenerArgs(
                     frontend_ip_configuration=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendIPConfigurations/appGatewayFrontendIP",
                         )
                     ),
                     frontend_port=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendPorts/appGatewayFrontendHttp",
                         )
                     ),
@@ -135,13 +162,13 @@ class SREApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayHttpListenerArgs(
                     frontend_ip_configuration=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendIPConfigurations/appGatewayFrontendIP",
                         )
                     ),
                     frontend_port=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/frontendPorts/appGatewayFrontendHttps",
                         )
                     ),
@@ -150,13 +177,13 @@ class SREApplicationGatewayComponent(ComponentResource):
                     protocol="Https",
                     ssl_certificate=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/sslCertificates/letsencryptcertificate",
                         ),
                     ),
                     ssl_profile=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/sslProfiles/sslProfile",
                         ),
                     ),
@@ -176,14 +203,14 @@ class SREApplicationGatewayComponent(ComponentResource):
                     request_routing_rules=[
                         network.SubResourceArgs(
                             id=Output.concat(
-                                resource_group.id,
+                                props.resource_group_id,
                                 f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/requestRoutingRules/HttpToHttpsRedirection",
                             ),
                         )
                     ],
                     target_listener=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/GuacamoleHttpsListener",
                         )
                     ),
@@ -194,13 +221,13 @@ class SREApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayRequestRoutingRuleArgs(
                     http_listener=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/GuacamoleHttpListener",
                         )
                     ),
                     redirect_configuration=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/redirectConfigurations/GuacamoleHttpToHttpsRedirection",
                         )
                     ),
@@ -210,19 +237,19 @@ class SREApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayRequestRoutingRuleArgs(
                     backend_address_pool=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/backendAddressPools/appGatewayBackendGuacamole",
                         )
                     ),
                     backend_http_settings=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/backendHttpSettingsCollection/appGatewayBackendHttpSettings",
                         )
                     ),
                     http_listener=network.SubResourceArgs(
                         id=Output.concat(
-                            resource_group.id,
+                            props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/httpListeners/GuacamoleHttpsListener",
                         )
                     ),
@@ -275,6 +302,3 @@ class SREApplicationGatewayComponent(ComponentResource):
             ],
             opts=child_opts,
         )
-
-        # Register outputs
-        self.resource_group_name = Output.from_input(props.resource_group_name)

@@ -63,7 +63,7 @@ class DeclarativeSRE:
                 admin_email_address=self.cfg.shm.admin_email_address,
                 admin_group_id=self.cfg.azure.admin_group_id,
                 location=self.cfg.azure.location,
-                networking_resource_group_name=networking.resource_group_name,
+                networking_resource_group=networking.resource_group,
                 sre_fqdn=networking.sre_fqdn,
                 subscription_name=self.cfg.subscription_name,
                 tenant_id=self.cfg.azure.tenant_id,
@@ -76,14 +76,12 @@ class DeclarativeSRE:
             self.stack_name,
             self.sre_name,
             SREApplicationGatewayProps(
-                ip_address_public_id=networking.public_ip_id,
-                ip_addresses_guacamole=networking.guacamole_containers["ip_addresses"],
                 key_vault_certificate_id=state.certificate_secret_id,
-                key_vault_identity=state.managed_identity.id,
-                resource_group_name=networking.resource_group_name,
-                subnet_name=networking.application_gateway["subnet_name"],
-                sre_fqdn=state.sre_fqdn,
-                virtual_network_name=networking.virtual_network.name,
+                key_vault_identity=state.managed_identity,
+                resource_group=networking.resource_group,
+                subnet_application_gateway=networking.subnet_application_gateway,
+                subnet_guacamole_containers=networking.subnet_guacamole_containers,
+                sre_fqdn=networking.sre_fqdn,
             ),
         )
 
@@ -94,23 +92,20 @@ class DeclarativeSRE:
             self.sre_name,
             SRERemoteDesktopProps(
                 aad_application_name=f"sre-{self.sre_name}-azuread-guacamole",
-                aad_application_fqdn=state.sre_fqdn,
+                aad_application_fqdn=networking.sre_fqdn,
                 aad_auth_token=self.secrets.require("token-azuread-graphapi"),
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
                 database_password=self.secrets.require("password-user-database-admin"),
-                ip_address_container=networking.guacamole_containers["ip_addresses"][0],
-                ip_address_database=networking.guacamole_database["ip_address"],
                 location=self.cfg.azure.location,
-                subnet_container_name=networking.guacamole_containers["subnet_name"],
-                subnet_database_name=networking.guacamole_database["subnet_name"],
+                subnet_guacamole_containers=networking.subnet_guacamole_containers,
+                subnet_guacamole_database=networking.subnet_guacamole_database,
                 storage_account_name=state.account_name,
                 storage_account_resource_group=state.resource_group_name,
-                virtual_network_resource_group_name=networking.resource_group_name,
+                virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
             ),
         )
 
-        # Define containerised secure desktops
         srd = SREResearchDesktopComponent(
             "sre_secure_research_desktop",
             self.stack_name,
@@ -120,7 +115,6 @@ class DeclarativeSRE:
                     "password-secure-research-desktop-admin"
                 ),
                 domain_sid=self.cfg.shm.domain_controllers.domain_sid,
-                ip_addresses=networking.secure_research_desktop["ip_addresses"],
                 ldap_root_dn=self.cfg.shm.domain_controllers.ldap_root_dn,
                 ldap_search_password=self.secrets.require(
                     "password-domain-ldap-searcher"
@@ -128,15 +122,10 @@ class DeclarativeSRE:
                 ldap_server_ip=self.cfg.shm.domain_controllers.ldap_server_ip,
                 location=self.cfg.azure.location,
                 security_group_name=self.cfg.sre[self.sre_name].security_group_name,
-                subnet_name=networking.secure_research_desktop["subnet_name"],
-                virtual_network_resource_group_name=networking.resource_group_name,
+                subnet_research_desktops=networking.subnet_research_desktops,
+                virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
-                vm_skus=[
-                    (name, details["sku"])
-                    for name, details in self.cfg.sre[
-                        self.sre_name
-                    ].research_desktops.items()
-                ],
+                vm_details=self.cfg.sre[self.sre_name].research_desktops,
             ),
         )
 

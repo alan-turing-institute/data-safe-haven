@@ -16,9 +16,9 @@ class SHMFirewallProps:
         location: Input[str],
         resource_group_name: Input[str],
         route_table_name: Input[str],
-        subnet_firewall: Input[network.Subnet],
-        subnet_identity: Input[network.Subnet],
-        subnet_update_servers: Input[network.Subnet],
+        subnet_firewall: Input[network.GetSubnetResult],
+        subnet_identity_servers: Input[network.GetSubnetResult],
+        subnet_update_servers: Input[network.GetSubnetResult],
     ):
         self.domain_controller_private_ip = domain_controller_private_ip
         self.location = location
@@ -27,12 +27,12 @@ class SHMFirewallProps:
         self.subnet_firewall_id = Output.from_input(subnet_firewall).apply(
             lambda s: s.id
         )
-        self.subnet_identity_iprange = Output.from_input(
-            subnet_identity
-        ).address_prefix.apply(lambda prefix: str(prefix) if prefix else "")
+        self.subnet_identity_servers_iprange = Output.from_input(
+            subnet_identity_servers
+        ).apply(lambda s: str(s.address_prefix) if s.address_prefix else "")
         self.subnet_update_servers_iprange = Output.from_input(
             subnet_update_servers
-        ).address_prefix.apply(lambda prefix: str(prefix) if prefix else "")
+        ).apply(lambda s: str(s.address_prefix) if s.address_prefix else "")
 
 
 class SHMFirewallComponent(ComponentResource):
@@ -94,7 +94,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=[props.subnet_identity_iprange],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
                                 "aadconnecthealth.azure.com",
                                 "adhsprodncuaadsynciadata.blob.core.windows.net",
@@ -201,7 +201,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=[props.subnet_identity_iprange],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
                                 "g10-prod-ch3-003-sb.servicebus.windows.net",
                                 "g10-prod-ch3-004-sb.servicebus.windows.net",
@@ -773,7 +773,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=[props.subnet_identity_iprange],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
                                 "s1.adhybridhealth.azure.com",
                                 "management.azure.com",
@@ -791,7 +791,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=[props.subnet_identity_iprange],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
                                 "aadcdn.msftauth.net",
                                 "login.live.com",
@@ -838,7 +838,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=[props.subnet_identity_iprange],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
                                 "css.phonefactor.net",
                                 "pfd.phonefactor.net",
@@ -854,7 +854,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=[props.subnet_identity_iprange],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
                                 "adnotifications.windowsazure.com",
                                 "credentials.azure.com",
@@ -1095,7 +1095,7 @@ class SHMFirewallComponent(ComponentResource):
                                 network.AzureFirewallNetworkRuleProtocol.UDP,
                                 network.AzureFirewallNetworkRuleProtocol.TCP,
                             ],
-                            source_addresses=[props.subnet_identity_iprange],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                         ),
                         network.AzureFirewallNetworkRuleArgs(
                             description="Allow external rsync requests to CRAN",
@@ -1103,7 +1103,7 @@ class SHMFirewallComponent(ComponentResource):
                             destination_ports=["873"],
                             name="AllowExternalPackageRSyncCRAN",
                             protocols=[network.AzureFirewallNetworkRuleProtocol.TCP],
-                            source_addresses=[props.subnet_identity_iprange],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             #         "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
                             #         "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
                         ),
@@ -1134,6 +1134,7 @@ class SHMFirewallComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             route_name="ViaFirewall",
             route_table_name=props.route_table_name,
+            opts=child_opts,
         )
 
         # Register outputs

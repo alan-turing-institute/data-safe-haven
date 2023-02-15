@@ -58,7 +58,7 @@ class DeclarativeSHM:
                 resource_group_name=networking.resource_group_name,
                 route_table_name=networking.route_table.name,
                 subnet_firewall=networking.subnet_firewall,
-                subnet_identity=networking.subnet_identity,
+                subnet_identity_servers=networking.subnet_identity_servers,
                 subnet_update_servers=networking.subnet_update_servers,
             ),
         )
@@ -115,7 +115,7 @@ class DeclarativeSHM:
                 ),
                 public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
                 private_ip_address=networking.domain_controller_private_ip,
-                subnet_identity=networking.subnet_identity,
+                subnet_identity_servers=networking.subnet_identity_servers,
                 subscription_name=self.cfg.subscription_name,
                 virtual_network_name=networking.virtual_network.name,
                 virtual_network_resource_group_name=networking.resource_group_name,

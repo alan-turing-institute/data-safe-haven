@@ -39,7 +39,8 @@ class SHMStateComponent(ComponentResource):
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-state",
+            resource_group_name=f"{stack_name}-rg-state",
+            opts=child_opts,
         )
 
         # Deploy key vault
@@ -107,7 +108,7 @@ class SHMStateComponent(ComponentResource):
                 tenant_id=props.tenant_id,
             ),
             resource_group_name=resource_group.name,
-            vault_name=f"kv-{stack_name[:15]}-state",  # maximum of 24 characters
+            vault_name=f"{stack_name[:15]}-kv-state",  # maximum of 24 characters
             opts=child_opts,
         )
         # Register outputs

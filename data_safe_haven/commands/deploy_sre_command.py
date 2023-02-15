@@ -89,7 +89,9 @@ class DeploySRECommand(LoggingMixin, Command):
             config.sre[self.sre_name].remote_desktop[
                 "connection_db_server_admin_password_secret"
             ] = f"password-user-database-admin-sre-{self.sre_name}"
-            for (vm_name, _, vm_ipaddress) in stack.output("srd"):
+            for (vm_name, vm_ipaddress) in zip(
+                stack.output("srd")["vm_names"], stack.output("srd")["vm_ip_addresses"]
+            ):
                 config.sre[self.sre_name].research_desktops[
                     vm_name
                 ].ip_address = vm_ipaddress

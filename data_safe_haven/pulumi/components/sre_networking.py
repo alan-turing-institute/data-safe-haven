@@ -23,41 +23,22 @@ class SRENetworkingProps:
         shm_zone_name: Input[str],
         sre_index: Input[str],
     ):
-        # VNet
-        self.vnet_ip_range = Output.from_input(sre_index).apply(
+        # Virtual network and subnet IP ranges
+        self.virtual_network_iprange = Output.from_input(sre_index).apply(
             lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
         )
-        self.vnet_cidr = self.vnet_ip_range.apply(lambda ip_range: str(ip_range))
-        # Application gateway subnet
-        self.application_gateway_ip_range = Output.from_input(sre_index).apply(
-            lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.0.255")
+        self.subnet_application_gateway_iprange = self.virtual_network_iprange.apply(
+            lambda r: r.next_subnet(256)
         )
-        self.application_gateway_cidr = self.application_gateway_ip_range.apply(
-            lambda ip_range: str(ip_range)
+        self.subnet_guacamole_containers_iprange = self.virtual_network_iprange.apply(
+            lambda r: r.next_subnet(128)
         )
-        self.application_gateway_subnet_name = "ApplicationGatewaySubnet"
-        # Guacamole containers subnet
-        self.guacamole_containers_ip_range = Output.from_input(sre_index).apply(
-            lambda index: AzureIPv4Range(f"10.{index}.1.0", f"10.{index}.1.127")
+        self.subnet_guacamole_database_iprange = self.virtual_network_iprange.apply(
+            lambda r: r.next_subnet(128)
         )
-        self.guacamole_containers_cidr = self.guacamole_containers_ip_range.apply(
-            lambda ip_range: str(ip_range)
+        self.subnet_research_desktops_iprange = self.virtual_network_iprange.apply(
+            lambda r: r.next_subnet(256)
         )
-        self.guacamole_containers_subnet_name = "GuacamoleContainersSubnet"
-        # Guacamole database server subnet
-        self.guacamole_database_ip_range = Output.from_input(sre_index).apply(
-            lambda index: AzureIPv4Range(f"10.{index}.1.128", f"10.{index}.1.255")
-        )
-        self.guacamole_database_cidr = self.guacamole_database_ip_range.apply(
-            lambda ip_range: str(ip_range)
-        )
-        self.guacamole_database_subnet_name = "GuacamoleDatabaseSubnet"
-        # Secure research desktop subnet
-        self.srds_ip_range = Output.from_input(sre_index).apply(
-            lambda index: AzureIPv4Range(f"10.{index}.2.0", f"10.{index}.2.255")
-        )
-        self.srds_cidr = self.srds_ip_range.apply(lambda ip_range: str(ip_range))
-        self.srds_subnet_name = "SecureResearchDesktopSubnet"
         # Other variables
         self.location = location
         self.shm_fqdn = shm_fqdn
@@ -84,13 +65,28 @@ class SRENetworkingComponent(ComponentResource):
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-networking",
+            resource_group_name=f"{stack_name}-rg-networking",
+            opts=child_opts,
+        )
+
+        # Set address prefixes from ranges
+        subnet_application_gateway_prefix = (
+            props.subnet_application_gateway_iprange.apply(lambda r: str(r))
+        )
+        subnet_guacamole_containers_prefix = (
+            props.subnet_guacamole_containers_iprange.apply(lambda r: str(r))
+        )
+        subnet_guacamole_database_prefix = (
+            props.subnet_guacamole_database_iprange.apply(lambda r: str(r))
+        )
+        subnet_research_desktops_prefix = props.subnet_research_desktops_iprange.apply(
+            lambda r: str(r)
         )
 
         # Define NSGs
         nsg_application_gateway = network.NetworkSecurityGroup(
             f"{self._name}_nsg_application_gateway",
-            network_security_group_name=f"nsg-{stack_name}-application-gateway",
+            network_security_group_name=f"{stack_name}-nsg-application-gateway",
             resource_group_name=resource_group.name,
             security_rules=[
                 network.SecurityRuleArgs(
@@ -108,7 +104,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access="Allow",
                     description="Allow gateway management traffic over the internet.",
-                    destination_address_prefix=props.application_gateway_cidr,
+                    destination_address_prefix=subnet_application_gateway_prefix,
                     destination_port_range="65200-65535",
                     direction="Inbound",
                     name="AllowGatewayManagerInternetInbound",
@@ -120,7 +116,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access="Allow",
                     description="Allow inbound internet to Application Gateway.",
-                    destination_address_prefix=props.application_gateway_cidr,
+                    destination_address_prefix=subnet_application_gateway_prefix,
                     destination_port_ranges=["80", "443"],
                     direction="Inbound",
                     name="AllowInternetInbound",
@@ -132,51 +128,57 @@ class SRENetworkingComponent(ComponentResource):
             ],
             opts=child_opts,
         )
-        nsg_guacamole = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_guacamole",
-            network_security_group_name=f"nsg-{stack_name}-guacamole",
+        nsg_guacamole_containers = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_guacamole_containers",
+            network_security_group_name=f"{stack_name}-nsg-guacamole-containers",
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        nsg_secure_research_desktop = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_secure_research_desktop",
-            network_security_group_name=f"nsg-{stack_name}-secure-research-desktop",
+        nsg_guacamole_database = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_guacamole_database",
+            network_security_group_name=f"{stack_name}-nsg-guacamole-database",
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
+        nsg_research_desktops = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_research_desktops",
+            network_security_group_name=f"{stack_name}-nsg-research-desktops",
             resource_group_name=resource_group.name,
             security_rules=[
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow connections to SRDs from remote desktop gateway.",
                     destination_address_prefix="*",
                     destination_port_range="22",
-                    direction="Inbound",
+                    direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowRemoteDesktopGatewayInbound",
                     priority=800,
-                    protocol="*",
-                    source_address_prefix=props.guacamole_containers_cidr,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over UDP.",
                     destination_address_prefix="*",
                     destination_port_ranges=["389", "636"],
-                    direction="Outbound",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLDAPClientUDPOutbound",
                     priority=1000,
-                    protocol="UDP",
-                    source_address_prefix=props.guacamole_containers_cidr,
+                    protocol=network.SecurityRuleProtocol.UDP,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over TCP (see https://devopstales.github.io/linux/pfsense-ad-join/ for details).",
                     destination_address_prefix="*",
                     destination_port_ranges=["389", "636"],
-                    direction="Outbound",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLDAPClientTCPOutbound",
                     priority=1100,
-                    protocol="TCP",
-                    source_address_prefix=props.guacamole_containers_cidr,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
                 ),
             ],
@@ -184,22 +186,30 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Define the virtual network and its subnets
+        subnet_application_gateway_name = "ApplicationGatewaySubnet"
+        subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
+        subnet_guacamole_database_name = "GuacamoleDatabaseSubnet"
+        subnet_research_desktops_name = "ResearchDesktopsSubnet"
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
-                address_prefixes=[props.vnet_cidr],
+                address_prefixes=[
+                    props.virtual_network_iprange.apply(lambda r: str(r))
+                ],
             ),
             resource_group_name=resource_group.name,
-            subnets=[  # Note that we need to define subnets inline or they will be destroyed/recreated on a new run
+            subnets=[  # Note that we define subnets inline to avoid creation order issues
+                # Application gateway subnet
                 network.SubnetArgs(
-                    address_prefix=props.application_gateway_cidr,
-                    name=props.application_gateway_subnet_name,
+                    address_prefix=subnet_application_gateway_prefix,
+                    name=subnet_application_gateway_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_application_gateway.id
                     ),
                 ),
+                # Guacamole containers
                 network.SubnetArgs(
-                    address_prefix=props.guacamole_containers_cidr,
+                    address_prefix=subnet_guacamole_containers_prefix,
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -207,42 +217,45 @@ class SRENetworkingComponent(ComponentResource):
                             type="Microsoft.Network/virtualNetworks/subnets/delegations",
                         ),
                     ],
-                    name=props.guacamole_containers_subnet_name,
+                    name=subnet_guacamole_containers_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_guacamole.id
+                        id=nsg_guacamole_containers.id
                     ),
                 ),
+                # Guacamole database
                 network.SubnetArgs(
-                    address_prefix=props.guacamole_database_cidr,
-                    name=props.guacamole_database_subnet_name,
+                    address_prefix=subnet_guacamole_database_prefix,
+                    name=subnet_guacamole_database_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_guacamole.id
+                        id=nsg_guacamole_database.id
                     ),
                     private_endpoint_network_policies="Disabled",
                 ),
+                # Research desktops
                 network.SubnetArgs(
-                    address_prefix=props.srds_cidr,
-                    name=props.srds_subnet_name,
+                    address_prefix=subnet_research_desktops_prefix,
+                    name=subnet_research_desktops_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_secure_research_desktop.id
+                        id=nsg_research_desktops.id
                     ),
                 ),
             ],
-            virtual_network_name=f"vnet-{stack_name}",
+            virtual_network_name=f"{stack_name}-vnet",
             opts=child_opts,
         )
 
         # Peer to the SHM virtual network
-        shm_virtual_network = network.get_virtual_network(
+        shm_virtual_network = Output.all(
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=props.shm_virtual_network_name,
-        )
+        ).apply(lambda kwargs: network.get_virtual_network(**kwargs))
         peering_sre_to_shm = network.VirtualNetworkPeering(
             f"{self._name}_sre_to_shm_peering",
             remote_virtual_network=network.SubResourceArgs(id=shm_virtual_network.id),
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
             virtual_network_peering_name=f"peer_sre_{sre_name}_to_shm",
+            opts=child_opts,
         )
         peering_shm_to_sre = network.VirtualNetworkPeering(
             f"{self._name}_shm_to_sre_peering",
@@ -250,23 +263,14 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=shm_virtual_network.name,
             virtual_network_peering_name=f"peer_shm_to_sre_{sre_name}",
-        )
-
-        # Define public IP address
-        public_ip = network.PublicIPAddress(
-            f"{self._name}_public_ip",
-            public_ip_address_name=f"{stack_name}-public-ip",
-            public_ip_allocation_method="Static",
-            resource_group_name=resource_group.name,
-            sku=network.PublicIPAddressSkuArgs(name="Standard"),
             opts=child_opts,
         )
 
         # Define SRE DNS zone
-        shm_dns_zone = network.get_zone(
+        shm_dns_zone = Output.all(
             resource_group_name=props.shm_networking_resource_group_name,
             zone_name=props.shm_zone_name,
-        )
+        ).apply(lambda kwargs: network.get_zone(**kwargs))
         sre_subdomain = alphanumeric(sre_name)
         sre_fqdn = Output.from_input(props.shm_fqdn).apply(
             lambda parent: f"{sre_subdomain}.{parent}"
@@ -307,50 +311,28 @@ class SRENetworkingComponent(ComponentResource):
             zone_name=sre_dns_zone.name,
             opts=child_opts,
         )
-        sre_a_record = network.RecordSet(
-            f"{self._name}_a_record",
-            a_records=[
-                network.ARecordArgs(
-                    ipv4_address=public_ip.ip_address,
-                )
-            ],
-            record_type="A",
-            relative_record_set_name="@",
-            resource_group_name=resource_group.name,
-            ttl=30,
-            zone_name=sre_dns_zone.name,
-            opts=child_opts,
-        )
-
-        # Extract useful variables
-        ip_address_guacamole_database = props.guacamole_database_ip_range.apply(
-            lambda ip_range: str(ip_range.available()[0])
-        )
-        ip_addresses_guacamole_container = props.guacamole_containers_ip_range.apply(
-            lambda ip_range: [str(ip) for ip in ip_range.available()]
-        )
-        ip_addresses_srds = props.srds_ip_range.apply(
-            lambda ip_range: [str(ip) for ip in ip_range.available()]
-        )
 
         # Register outputs
-        self.application_gateway = {
-            "subnet_name": props.application_gateway_subnet_name,
-        }
-        self.guacamole_containers = {
-            "ip_addresses": ip_addresses_guacamole_container,
-            "subnet_name": props.guacamole_containers_subnet_name,
-        }
-        self.guacamole_database = {
-            "ip_address": ip_address_guacamole_database,
-            "subnet_name": props.guacamole_database_subnet_name,
-        }
-        self.secure_research_desktop = {
-            "ip_addresses": ip_addresses_srds,
-            "subnet_name": props.srds_subnet_name,
-        }
-
-        self.public_ip_id = public_ip.id
-        self.resource_group_name = resource_group.name
+        self.resource_group = resource_group
         self.sre_fqdn = sre_dns_zone.name
+        self.subnet_application_gateway = network.get_subnet_output(
+            subnet_name=subnet_application_gateway_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_guacamole_containers = network.get_subnet_output(
+            subnet_name=subnet_guacamole_containers_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_guacamole_database = network.get_subnet_output(
+            subnet_name=subnet_guacamole_database_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_research_desktops = network.get_subnet_output(
+            subnet_name=subnet_research_desktops_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
         self.virtual_network = sre_virtual_network

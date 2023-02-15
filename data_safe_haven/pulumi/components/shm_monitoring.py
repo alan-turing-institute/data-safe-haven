@@ -14,7 +14,7 @@ class SHMMonitoringProps:
         self,
         dns_resource_group_name: Input[str],
         location: Input[str],
-        subnet_monitoring: Input[network.Subnet],
+        subnet_monitoring: Input[network.GetSubnetResult],
     ):
         self.dns_resource_group_name = dns_resource_group_name
         self.location = location
@@ -43,7 +43,8 @@ class SHMMonitoringComponent(ComponentResource):
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-monitoring",
+            resource_group_name=f"{stack_name}-rg-monitoring",
+            opts=child_opts,
         )
 
         # Deploy automation account
@@ -95,6 +96,7 @@ class SHMMonitoringComponent(ComponentResource):
                 ),
                 module_name=module_name,
                 resource_group_name=resource_group.name,
+                opts=child_opts,
             )
 
         # Set up a private endpoint
@@ -112,12 +114,13 @@ class SHMMonitoringComponent(ComponentResource):
             ],
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
+            opts=child_opts,
         )
 
         # Add a private DNS record for each custom DNS config
         private_endpoint.custom_dns_configs.apply(
             lambda cfgs: [
-                self.private_record_set(cfg, props.dns_resource_group_name)
+                self.private_record_set(cfg, props.dns_resource_group_name, child_opts)
                 for cfg in cfgs
             ]
             if cfgs
@@ -146,6 +149,7 @@ class SHMMonitoringComponent(ComponentResource):
         self,
         config: network.outputs.CustomDnsConfigPropertiesFormatResponse,
         resource_group_name: Input[str],
+        child_opts: Optional[ResourceOptions] = None,
     ) -> network.PrivateRecordSet:
         """
         Create a PrivateRecordSet for a given CustomDnsConfigPropertiesFormatResponse
@@ -167,4 +171,5 @@ class SHMMonitoringComponent(ComponentResource):
             relative_record_set_name=record_name,
             resource_group_name=resource_group_name,
             ttl=10,
+            opts=child_opts,
         )
