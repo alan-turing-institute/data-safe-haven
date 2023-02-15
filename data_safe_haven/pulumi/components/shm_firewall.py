@@ -13,6 +13,7 @@ class SHMFirewallProps:
     def __init__(
         self,
         domain_controller_private_ip: Input[str],
+        domain_fqdn: Input[str],
         location: Input[str],
         resource_group_name: Input[str],
         route_table_name: Input[str],
@@ -21,6 +22,7 @@ class SHMFirewallProps:
         subnet_update_servers: Input[network.GetSubnetResult],
     ):
         self.domain_controller_private_ip = domain_controller_private_ip
+        self.domain_fqdn = domain_fqdn
         self.location = location
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name
@@ -1134,6 +1136,20 @@ class SHMFirewallComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             route_name="ViaFirewall",
             route_table_name=props.route_table_name,
+            opts=child_opts,
+        )
+
+        # Add an A record for the domain controller
+        a_record = network.RecordSet(
+            f"{self._name}_a_record",
+            a_records=public_ip.ip_address.apply(
+                lambda ip: [network.ARecordArgs(ipv4_address=ip)] if ip else []
+            ),
+            record_type="A",
+            relative_record_set_name="ad",
+            resource_group_name=props.resource_group_name,
+            ttl=30,
+            zone_name=props.domain_fqdn,
             opts=child_opts,
         )
 

@@ -19,6 +19,7 @@ from data_safe_haven.external.api import GraphApi
 from data_safe_haven.helpers import password
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.provisioning import SHMProvisioningManager
 
 
 class DeploySHMCommand(LoggingMixin, Command):
@@ -105,6 +106,10 @@ class DeploySHMCommand(LoggingMixin, Command):
 
             # Upload config to blob storage
             config.upload()
+
+            # Provision SHM with anything that could not be done in Pulumi
+            manager = SHMProvisioningManager(config)
+            manager.run()
 
         except DataSafeHavenException as exc:
             error_msg = (

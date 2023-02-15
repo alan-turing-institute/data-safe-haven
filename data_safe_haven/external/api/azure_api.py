@@ -818,6 +818,31 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Failed to remove resource group {resource_group_name}.\n{str(exc)}"
             ) from exc
 
+    def restart_virtual_machine(self, resource_group_name: str, vm_name: str) -> None:
+        try:
+            self.info(
+                f"Attempting to restart virtual machine '<fg=green>{vm_name}</>' in resource group '<fg=green>{resource_group_name}</>'...",
+                no_newline=True,
+            )
+            # Connect to Azure clients
+            compute_client = ComputeManagementClient(
+                self.credential, self.subscription_id
+            )
+            poller = compute_client.virtual_machines.begin_restart(
+                resource_group_name, vm_name
+            )
+            _ = (
+                poller.result()
+            )  # returns 'None' on success or raises an exception on failure
+            self.info(
+                f"Restarted virtual machine '<fg=green>{vm_name}</>' in resource group '<fg=green>{resource_group_name}</>'.",
+                overwrite=True,
+            )
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to restart virtual machine '{vm_name}' in resource group '{resource_group_name}'.\n{str(exc)}"
+            ) from exc
+
     def run_remote_script(
         self,
         resource_group_name: str,

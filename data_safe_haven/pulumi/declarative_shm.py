@@ -54,6 +54,7 @@ class DeclarativeSHM:
             self.shm_name,
             SHMFirewallProps(
                 domain_controller_private_ip=networking.domain_controller_private_ip,
+                domain_fqdn=self.cfg.shm.fqdn,
                 location=self.cfg.azure.location,
                 resource_group_name=networking.resource_group_name,
                 route_table_name=networking.route_table.name,
