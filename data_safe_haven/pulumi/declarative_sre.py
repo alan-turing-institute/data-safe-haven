@@ -47,12 +47,13 @@ class DeclarativeSRE:
             SRENetworkingProps(
                 location=self.cfg.azure.location,
                 shm_fqdn=self.cfg.shm.fqdn,
-                shm_networking_resource_group_name=f"rg-shm-{self.shm_name}-networking",
+                shm_networking_resource_group_name=self.cfg.shm.networking.resource_group_name,
                 shm_zone_name=self.cfg.shm.fqdn,
                 sre_index=self.cfg.sre[self.sre_name].index,
                 shm_virtual_network_name=self.cfg.shm.networking.virtual_network_name,
             ),
         )
+        networking.sre_fqdn.apply(lambda s: print(f"sre_fqdn {s}"))
 
         # Define state storage
         state = SREStateComponent(
@@ -62,6 +63,7 @@ class DeclarativeSRE:
             SREStateProps(
                 admin_email_address=self.cfg.shm.admin_email_address,
                 admin_group_id=self.cfg.azure.admin_group_id,
+                dns_record=networking.shm_ns_record,
                 location=self.cfg.azure.location,
                 networking_resource_group=networking.resource_group,
                 sre_fqdn=networking.sre_fqdn,

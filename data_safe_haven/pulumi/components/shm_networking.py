@@ -301,5 +301,6 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Register exports
         self.exports = {
+            "resource_group_name": resource_group.name,
             "virtual_network_name": virtual_network.name,
         }

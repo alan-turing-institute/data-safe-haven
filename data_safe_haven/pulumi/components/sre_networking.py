@@ -312,6 +312,7 @@ class SRENetworkingComponent(ComponentResource):
 
         # Register outputs
         self.resource_group = resource_group
+        self.shm_ns_record = shm_ns_record
         self.sre_fqdn = sre_dns_zone.name
         self.subnet_application_gateway = network.get_subnet_output(
             subnet_name=subnet_application_gateway_name,

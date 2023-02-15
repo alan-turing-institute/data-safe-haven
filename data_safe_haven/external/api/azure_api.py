@@ -2,7 +2,7 @@
 # Standard library imports
 import time
 from contextlib import suppress
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 # Third party imports
 from azure.core.exceptions import (
@@ -168,7 +168,7 @@ class AzureApi(AzureMixin, LoggingMixin):
         managed_identity: Identity,
         resource_group_name: str,
         tags: Any = None,
-        tenant_id: str = None,
+        tenant_id: Optional[str] = None,
     ) -> Vault:
         """Ensure that a KeyVault exists
 
@@ -299,13 +299,17 @@ class AzureApi(AzureMixin, LoggingMixin):
             no_newline=True,
         )
         try:
+            # Connect to Azure clients
+            secret_client = SecretClient(
+                f"https://{key_vault_name}.vault.azure.net", self.credential
+            )
             try:
-                secret = self.get_keyvault_secret(key_vault_name, secret_name)
+                secret = secret_client.get_secret(secret_name)
             except DataSafeHavenAzureException:
                 secret = None
             if not secret:
                 self.set_keyvault_secret(key_vault_name, secret_name, secret_value)
-                secret = self.get_keyvault_secret(key_vault_name, secret_name)
+                secret = secret_client.get_secret(secret_name)
             self.info(
                 f"Ensured that secret <fg=green>{secret_name}</> exists.",
                 overwrite=True,
