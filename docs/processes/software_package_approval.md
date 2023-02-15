@@ -33,13 +33,13 @@ Such risks may originate unwittingly, from a user who wants to "just get the job
 Specific risks which this policy aims to mitigate include:
 
 - package name squatting (allowlisting a similarly-named package instead of the intended one)
-- privilege escalation attacks (enabling a user to gain elevated access permissions).
+- privilege escalation attacks (enabling a user to gain elevated access permissions)
 
 (package_inclusion_policy)=
 
 ## Policy
 
-- For each supported programming language, three package lists will be maintained:
+- For each supported repository, three package lists will be maintained:
     - a core allowlist of broadly useful packages that should be pre-installed in each environment
     - an extra allowlist of packages that may be useful for specific projects
     - an expanded list to be made available from the package repositories consisting of the core and extra packages plus their dependencies
@@ -60,7 +60,7 @@ To meet this condition, a package should:
 - provide support for a cross-cutting analysis technique (e.g. geospatial data analysis, NLP), or
 - facilitate data science or software development best practices (e.g. for robustness, correctness, reproducibility), or
 - enhance the presentational features of the programming language (e.g. for producing plots, notebooks, articles, websites), or
-- enhance the usability of the programming language or development environment (e.g. RStudio, PyCharm).
+- enhance the usability of the programming language or development environment (e.g. RStudio, PyCharm)
 
 (package_request_procedure)=
 
