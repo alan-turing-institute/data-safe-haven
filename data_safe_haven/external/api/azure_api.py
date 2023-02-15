@@ -567,7 +567,9 @@ class AzureApi(AzureMixin, LoggingMixin):
         # Ensure that secret exists
         try:
             secret = secret_client.get_secret(secret_name)
-            return secret.value
+            if secret.value:
+                return secret.value
+            raise DataSafeHavenAzureException(f"Secret {secret_name} has no value.")
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to retrieve secret {secret_name}."
@@ -864,6 +866,8 @@ class AzureApi(AzureMixin, LoggingMixin):
                 self.credential, self.subscription_id
             )
             vm = compute_client.virtual_machines.get(resource_group_name, vm_name)
+            if not vm.os_profile:
+                raise ValueError(f"No OSProfile available for VM {vm_name}")
             command_id = (
                 "RunPowerShellScript"
                 if (
@@ -910,7 +914,7 @@ class AzureApi(AzureMixin, LoggingMixin):
             )
             # Set the secret to the desired value
             try:
-                existing_value = secret_client.get_secret(secret_name)
+                existing_value = secret_client.get_secret(secret_name).value
             except ResourceNotFoundError:
                 existing_value = None
             if (not existing_value) or (existing_value != secret_value):
