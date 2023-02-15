@@ -1,8 +1,12 @@
 """Mixin class for anything Azure-aware"""
+# Standard library imports
+from typing import cast, Optional
+
 # Third party imports
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.resource import SubscriptionClient
+from azure.mgmt.resource.subscriptions.models import Subscription
 
 # Local imports
 from data_safe_haven.exceptions import (
@@ -15,10 +19,10 @@ class AzureMixin:
     """Mixin class for anything Azure-aware"""
 
     def __init__(self, subscription_name, *args, **kwargs):
-        self.subscription_name = subscription_name
-        self.credential_ = None
-        self.subscription_id_ = None
-        self.tenant_id_ = None
+        self.subscription_name: str = subscription_name
+        self.credential_: Optional[DefaultAzureCredential] = None
+        self.subscription_id_: Optional[str] = None
+        self.tenant_id_: Optional[str] = None
         super().__init__(*args, **kwargs)
 
     @property
@@ -35,12 +39,16 @@ class AzureMixin:
     def subscription_id(self) -> str:
         if not self.subscription_id_:
             self.login()
+        if not self.subscription_id_:
+            raise DataSafeHavenAzureException("Failed to load subscription ID.")
         return self.subscription_id_
 
     @property
     def tenant_id(self) -> str:
         if not self.tenant_id_:
             self.login()
+        if not self.tenant_id_:
+            raise DataSafeHavenAzureException("Failed to load tenant ID.")
         return self.tenant_id_
 
     def login(self):
@@ -50,7 +58,9 @@ class AzureMixin:
 
         # Check that the Azure credentials are valid
         try:
-            for subscription in subscription_client.subscriptions.list():
+            for subscription in [
+                cast(Subscription, s) for s in subscription_client.subscriptions.list()
+            ]:
                 if subscription.display_name == self.subscription_name:
                     self.subscription_id_ = subscription.subscription_id
                     self.tenant_id_ = subscription.tenant_id

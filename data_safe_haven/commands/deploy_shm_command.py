@@ -2,6 +2,7 @@
 # Standard library imports
 import ipaddress
 import re
+from typing import cast, List
 
 # Third party imports
 import pytz
@@ -115,7 +116,7 @@ class DeploySHMCommand(LoggingMixin, Command):
     def add_missing_values(self, config: Config) -> None:
         """Request any missing config values and add them to the config"""
         # Request FQDN if not provided
-        fqdn = self.option("fqdn")
+        fqdn = cast(str, self.option("fqdn"))
         while not config.shm.fqdn:
             if fqdn:
                 config.shm.fqdn = fqdn
@@ -125,7 +126,7 @@ class DeploySHMCommand(LoggingMixin, Command):
                 )
 
         # Request admin IP addresses if not provided
-        aad_tenant_id = self.option("aad-tenant-id")
+        aad_tenant_id = cast(str, self.option("aad-tenant-id"))
         while not config.shm.aad_tenant_id:
             if aad_tenant_id and re.match(
                 r"^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$",
@@ -139,7 +140,7 @@ class DeploySHMCommand(LoggingMixin, Command):
                 aad_tenant_id = self.log_ask("AzureAD tenant ID:", None)
 
         # Request admin email address if not provided
-        admin_email_address = self.option("email")
+        admin_email_address = cast(str, self.option("email"))
         while not config.shm.admin_email_address:
             if not admin_email_address:
                 self.info(
@@ -154,7 +155,7 @@ class DeploySHMCommand(LoggingMixin, Command):
             admin_email_address = None
 
         # Request admin IP addresses if not provided
-        admin_ip_addresses = " ".join(self.option("ip-address"))
+        admin_ip_addresses = " ".join(cast(List[str], self.option("ip-address")))
         while not config.shm.admin_ip_addresses:
             if not admin_ip_addresses:
                 self.info(
@@ -174,7 +175,7 @@ class DeploySHMCommand(LoggingMixin, Command):
             admin_ip_addresses = None
 
         # Request timezone if not provided
-        timezone = self.option("timezone")
+        timezone = cast(str, self.option("timezone"))
         while not config.shm.timezone:
             if timezone in pytz.all_timezones:
                 config.shm.timezone = timezone

@@ -237,9 +237,7 @@ class SHMNetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             ttl=3600,
             txt_records=[
-                network.TxtRecordArgs(
-                    value=[props.record_domain_verification],
-                )
+                network.TxtRecordArgs(value=[props.record_domain_verification])
             ],
             zone_name=dns_zone.name,
             opts=child_opts,

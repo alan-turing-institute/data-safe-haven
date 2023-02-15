@@ -2,6 +2,7 @@
 # Third party imports
 import yaml
 from cleo import Command
+from typing import cast, List
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
@@ -47,7 +48,7 @@ class DeploySRECommand(LoggingMixin, Command):
             config = Config(settings.name, settings.subscription_name)
 
             # Set a JSON-safe name for this SRE and add any missing values to the config
-            self.sre_name = alphanumeric(self.argument("name"))
+            self.sre_name = alphanumeric(cast(str, self.argument("name")))
             self.add_missing_values(config)
 
             # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
@@ -140,7 +141,9 @@ class DeploySRECommand(LoggingMixin, Command):
         azure_api = AzureApi(config.subscription_name)
         available_vm_skus = azure_api.list_available_vm_skus(config.azure.location)
         vm_skus = [
-            sku for sku in self.option("research-desktop") if sku in available_vm_skus
+            sku
+            for sku in cast(List[str], self.option("research-desktop"))
+            if sku in available_vm_skus
         ]
         while not vm_skus:
             self.warning("An SRE deployment needs at least one research desktop.")
@@ -152,8 +155,8 @@ class DeploySRECommand(LoggingMixin, Command):
             vm_skus = [sku for sku in answer if sku in available_vm_skus]
         if hasattr(config.sre[self.sre_name], "research_desktops"):
             del config.sre[self.sre_name].research_desktops
+        idx_cpu, idx_gpu = 0, 0
         for vm_sku in vm_skus:
-            idx_cpu, idx_gpu = 0, 0
             if int(available_vm_skus[vm_sku]["GPUs"]) > 0:
                 vm_cfg = config.sre[self.sre_name].research_desktops[
                     f"srd-gpu-{idx_gpu:02d}"

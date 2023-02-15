@@ -66,7 +66,7 @@ class WindowsVMProps(VMProps):
             windows_configuration=compute.WindowsConfigurationArgs(
                 enable_automatic_updates=True,
                 patch_settings=compute.PatchSettingsArgs(
-                    patch_mode="AutomaticByPlatform",
+                    patch_mode=compute.LinuxVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
                 ),
                 provision_vm_agent=True,
             ),
@@ -96,7 +96,7 @@ class LinuxVMProps(VMProps):
             custom_data=Output.secret(b64cloudinit),
             linux_configuration=compute.LinuxConfigurationArgs(
                 patch_settings=compute.LinuxPatchSettingsArgs(
-                    assessment_mode="AutomaticByPlatform",
+                    assessment_mode=compute.LinuxPatchAssessmentMode.AUTOMATIC_BY_PLATFORM,
                 ),
                 provision_vm_agent=True,
             ),

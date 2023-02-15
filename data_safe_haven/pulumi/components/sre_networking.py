@@ -276,7 +276,8 @@ class SRENetworkingComponent(ComponentResource):
             location="Global",
             resource_group_name=resource_group.name,
             zone_name=sre_fqdn,
-            zone_type="Public",
+            zone_type=network.ZoneType.PUBLIC,
+            opts=child_opts,
         )
         shm_ns_record = network.RecordSet(
             f"{self._name}_ns_record",

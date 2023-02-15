@@ -14,6 +14,7 @@ from pulumi_azure_native import (
 )
 
 # Local imports
+from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers import FileReader
 from ..dynamic.azuread_application import AzureADApplication, AzureADApplicationProps
 from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
@@ -159,7 +160,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 capacity=2,
                 family="Gen5",
                 name="GP_Gen5_2",
-                tier="GeneralPurpose",  # required to use private link
+                tier=dbforpostgresql.SkuTier.GENERAL_PURPOSE,  # required to use private link
             ),
             opts=child_opts,
         )

@@ -7,7 +7,6 @@ import pulumi
 
 # Local imports
 from data_safe_haven.config import Config
-
 from .components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,

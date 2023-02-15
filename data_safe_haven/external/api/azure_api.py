@@ -40,7 +40,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInternalException,
 )
-from data_safe_haven.helpers import JSONType
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
@@ -638,7 +637,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Failed to import certificate '{certificate_name}'."
             ) from exc
 
-    def list_available_vm_skus(self, location: str) -> JSONType:
+    def list_available_vm_skus(self, location: str) -> Dict[str, Dict[str, Any]]:
         try:
             # Connect to Azure client
             compute_client = ComputeManagementClient(

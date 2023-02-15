@@ -1,14 +1,17 @@
 # Standard library imports
 import base64
 import pathlib
-from typing import Optional, Sequence, Tuple
+from typing import cast, Dict, List, Optional, Sequence
 
 # Third party imports
 import chevron
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import compute, network, resources
+from pulumi_azure_native import network, resources
 
 # Local imports
+from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.helpers import replace_separators
+from .virtual_machine import LinuxVMProps, VMComponent
 
 
 class SREResearchDesktopProps:

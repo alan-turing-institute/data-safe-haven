@@ -40,6 +40,15 @@ def random_letters(length: int) -> str:
     return "".join(secrets.choice(string.ascii_letters) for _ in range(length))
 
 
+def replace_separators(input_string: str, separator: str) -> str:
+    """Return a string using underscores as a separator"""
+    return (
+        input_string.replace("-", separator)
+        .replace("_", separator)
+        .replace(" ", separator)
+    )
+
+
 def sha256hash(input_string: str) -> str:
     """Return the SHA256 hash of a string as a string."""
     return hashlib.sha256(str.encode(input_string, encoding="utf-8")).hexdigest()

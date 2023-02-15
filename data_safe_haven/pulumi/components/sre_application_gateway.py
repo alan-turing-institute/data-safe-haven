@@ -1,10 +1,13 @@
 """Pulumi component for SRE application gateway"""
 # Standard library imports
-from typing import Optional, Sequence
+from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network, resources
+from pulumi_azure_native import managedidentity, network, resources
+
+# Local imports
+from data_safe_haven.external.interface import AzureIPv4Range
 
 
 class SREApplicationGatewayProps:
