@@ -10,6 +10,7 @@ data_ingress.md
 data_egress.md
 data_access_controls.md
 data_transfer_protocol.md
+software_package_approval.md
 ```
 
 [Data handling](data_handling.md)
@@ -29,3 +30,6 @@ data_transfer_protocol.md
 
 [Data transfer protocol](data_transfer_protocol.md)
 : A description of the protocol used for data transfer at the Turing
+
+[Software approval policy](software_package_approval.md)
+: The checks needed before a software package can be approved for use in Tier 3 environments
