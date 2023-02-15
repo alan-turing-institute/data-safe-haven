@@ -57,6 +57,13 @@ Configuration InstallActiveDirectory {
     $SafeModeAdministratorCredentials = New-Object System.Management.Automation.PSCredential ("safemode${IADDomainAdministratorUsername}".ToLower(), $DomainAdministratorPasswordSecure)
 
     Node localhost {
+        # Allow forced reboots
+        LocalConfigurationManager {
+            ActionAfterReboot = "ContinueConfiguration"
+            ConfigurationMode = "ApplyOnly"
+            RebootNodeIfNeeded = $true
+        }
+
         # Install Active Directory domain services
         WindowsFeature ADDomainServices { # built-in
             Ensure = "Present"
