@@ -419,7 +419,7 @@ Configuration DownloadInstallers {
         }
 
         xRemoteFile DisconnectAD { # from xPSDesiredStateConfiguration
-            Uri = "https://raw.githubusercontent.com/alan-turing-institute/data-safe-haven/develop/deployment/safe_haven_management_environment/desired_state_configuration/dc1Artifacts/Disconnect_AD.mustache.ps1"
+            Uri = "https://raw.githubusercontent.com/alan-turing-institute/data-safe-haven/python-migration/data_safe_haven/resources/active_directory/disconnect_ad.ps1"
             DestinationPath = Join-Path $DIInstallerBasePath "DisconnectAD.ps1"
         }
     }

@@ -26,18 +26,14 @@ class SHMNetworkingProps:
         self.record_domain_verification = record_domain_verification
 
         # Virtual network and subnet IP ranges
-        self.virtual_network_iprange = AzureIPv4Range("10.0.0.0", "10.0.255.255")
-        # Firewall subnet must be at least /26 in size
-        self.subnet_firewall_iprange = self.virtual_network_iprange.next_subnet(64)
-        # VPN gateway subnet must be at least /29 in size
-        self.subnet_vpn_gateway_iprange = self.virtual_network_iprange.next_subnet(64)
-        self.subnet_monitoring_iprange = self.virtual_network_iprange.next_subnet(32)
-        self.subnet_update_servers_iprange = self.virtual_network_iprange.next_subnet(
-            32
-        )
-        self.subnet_identity_servers_iprange = self.virtual_network_iprange.next_subnet(
-            32
-        )
+        self.vnet_iprange = AzureIPv4Range("10.0.0.0", "10.0.255.255")
+        # Firewall subnet must be at least /26 in size (64 addresses)
+        self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
+        # VPN gateway subnet must be at least /29 in size (8 addresses)
+        self.subnet_vpn_gateway_iprange = self.vnet_iprange.next_subnet(8)
+        self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(8)
+        self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
+        self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
 
 
 class SHMNetworkingComponent(ComponentResource):
@@ -152,7 +148,7 @@ class SHMNetworkingComponent(ComponentResource):
         virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
-                address_prefixes=[str(props.virtual_network_iprange)],
+                address_prefixes=[str(props.vnet_iprange)],
             ),
             resource_group_name=resource_group.name,
             subnets=[  # Note that we define subnets inline to avoid creation order issues
@@ -270,7 +266,7 @@ class SHMNetworkingComponent(ComponentResource):
             )
 
         # Register outputs
-        self.dns_zone_nameservers = dns_zone.name_servers
+        self.dns_zone = dns_zone
         self.domain_controller_private_ip = str(
             props.subnet_identity_servers_iprange.available()[0]
         )

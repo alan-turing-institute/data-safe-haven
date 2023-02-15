@@ -13,7 +13,7 @@ class SHMFirewallProps:
     def __init__(
         self,
         domain_controller_private_ip: Input[str],
-        domain_fqdn: Input[str],
+        dns_zone: Input[network.Zone],
         location: Input[str],
         resource_group_name: Input[str],
         route_table_name: Input[str],
@@ -22,7 +22,7 @@ class SHMFirewallProps:
         subnet_update_servers: Input[network.GetSubnetResult],
     ):
         self.domain_controller_private_ip = domain_controller_private_ip
-        self.domain_fqdn = domain_fqdn
+        self.dns_zone = dns_zone
         self.location = location
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name
@@ -785,6 +785,20 @@ class SHMFirewallComponent(ComponentResource):
                             ],
                         ),
                         network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external script downloads from GitHub",
+                            name="AllowExternalGitHubScriptDownload",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type="Https",
+                                )
+                            ],
+                            source_addresses=[props.subnet_identity_servers_iprange],
+                            target_fqdns=[
+                                "raw.githubusercontent.com",
+                            ],
+                        ),
+                        network.AzureFirewallApplicationRuleArgs(
                             description="Allow external AzureAD login requests",
                             name="AllowExternalAzureADLogin",
                             protocols=[
@@ -1149,7 +1163,7 @@ class SHMFirewallComponent(ComponentResource):
             relative_record_set_name="ad",
             resource_group_name=props.resource_group_name,
             ttl=30,
-            zone_name=props.domain_fqdn,
+            zone_name=props.dns_zone.name,
             opts=child_opts,
         )
 

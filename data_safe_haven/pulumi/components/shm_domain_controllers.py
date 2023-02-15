@@ -151,7 +151,8 @@ class SHMDomainControllersComponent(ComponentResource):
                 vm_resource_group_name=resource_group.name,
             ),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(depends_on=[primary_domain_controller])
+                ResourceOptions(depends_on=[primary_domain_controller]),
+                child_opts,
             ),
         )
         # Extract the domain SID

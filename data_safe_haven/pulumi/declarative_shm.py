@@ -54,7 +54,7 @@ class DeclarativeSHM:
             self.shm_name,
             SHMFirewallProps(
                 domain_controller_private_ip=networking.domain_controller_private_ip,
-                domain_fqdn=self.cfg.shm.fqdn,
+                dns_zone=networking.dns_zone,
                 location=self.cfg.azure.location,
                 resource_group_name=networking.resource_group_name,
                 route_table_name=networking.route_table.name,
@@ -101,7 +101,7 @@ class DeclarativeSHM:
                 automation_account_registration_key=monitoring.automation_account_primary_key,
                 automation_account_registration_url=monitoring.automation_account_agentsvc_url,
                 automation_account_resource_group_name=monitoring.resource_group_name,
-                domain_fqdn=self.cfg.shm.fqdn,
+                domain_fqdn=networking.dns_zone.name,
                 domain_netbios_name=self.shm_name.upper(),
                 location=self.cfg.azure.location,
                 password_domain_admin=self.secrets.require("password-domain-admin"),
@@ -124,6 +124,6 @@ class DeclarativeSHM:
         )
 
         # Export values for later use
-        pulumi.export("fqdn_nameservers", networking.dns_zone_nameservers)
         pulumi.export("domain_controllers", domain_controllers.exports)
+        pulumi.export("fqdn_nameservers", networking.dns_zone.name_servers)
         pulumi.export("networking", networking.exports)

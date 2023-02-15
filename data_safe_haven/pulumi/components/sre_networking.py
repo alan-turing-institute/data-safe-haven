@@ -24,19 +24,19 @@ class SRENetworkingProps:
         sre_index: Input[str],
     ):
         # Virtual network and subnet IP ranges
-        self.virtual_network_iprange = Output.from_input(sre_index).apply(
+        self.vnet_iprange = Output.from_input(sre_index).apply(
             lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
         )
-        self.subnet_application_gateway_iprange = self.virtual_network_iprange.apply(
+        self.subnet_application_gateway_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(256)
         )
-        self.subnet_guacamole_containers_iprange = self.virtual_network_iprange.apply(
+        self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(128)
         )
-        self.subnet_guacamole_database_iprange = self.virtual_network_iprange.apply(
+        self.subnet_guacamole_database_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(128)
         )
-        self.subnet_research_desktops_iprange = self.virtual_network_iprange.apply(
+        self.subnet_research_desktops_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(256)
         )
         # Other variables
@@ -193,9 +193,7 @@ class SRENetworkingComponent(ComponentResource):
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
-                address_prefixes=[
-                    props.virtual_network_iprange.apply(lambda r: str(r))
-                ],
+                address_prefixes=[props.vnet_iprange.apply(lambda r: str(r))],
             ),
             resource_group_name=resource_group.name,
             subnets=[  # Note that we define subnets inline to avoid creation order issues
