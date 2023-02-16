@@ -13,8 +13,8 @@ class Backend(LoggingMixin):
     """Azure backend for a Data Safe Haven deployment"""
 
     def __init__(
-        self, settings: DotFileSettings, *args: Optional[Any], **kwargs: Optional[Any]
-    ):
+        self, settings: DotFileSettings, *args: Any, **kwargs: Any
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.azure_api_: Optional[AzureApi] = None
         self.config: Config = Config(
@@ -53,6 +53,8 @@ class Backend(LoggingMixin):
                 resource_group_name=self.config.backend.resource_group_name,
                 tags=self.tags,
             )
+            if not resource_group.name:
+                raise DataSafeHavenAzureException(f"Resource group '{self.config.backend.resource_group_name}' was not created.")
             identity = self.azure_api.ensure_managed_identity(
                 identity_name=self.config.backend.managed_identity_name,
                 location=resource_group.location,
@@ -64,6 +66,8 @@ class Backend(LoggingMixin):
                 storage_account_name=self.config.backend.storage_account_name,
                 tags=self.tags,
             )
+            if not storage_account.name:
+                raise DataSafeHavenAzureException(f"Storage account '{self.config.backend.storage_account_name}' was not created.")
             _ = self.azure_api.ensure_storage_blob_container(
                 container_name=self.config.backend.storage_container_name,
                 resource_group_name=resource_group.name,
@@ -82,6 +86,8 @@ class Backend(LoggingMixin):
                 resource_group_name=resource_group.name,
                 tags=self.tags,
             )
+            if not keyvault.name:
+                raise DataSafeHavenAzureException(f"Keyvault '{self.config.backend.key_vault_name}' was not created.")
             pulumi_encryption_key = self.azure_api.ensure_keyvault_key(
                 key_name=self.config.backend.pulumi_encryption_key_name,
                 key_vault_name=keyvault.name,

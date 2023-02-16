@@ -56,8 +56,6 @@ dsh = "data_safe_haven.cli:main"
 strict = true
 files = "data_safe_haven"
 exclude = [
-    "^data_safe_haven/administration",
-    "^data_safe_haven/backend",
     "^data_safe_haven/commands",
     "^data_safe_haven/config",
     "^data_safe_haven/exceptions",
