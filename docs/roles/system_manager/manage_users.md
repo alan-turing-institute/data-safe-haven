@@ -69,7 +69,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 Users that didn't have a `GroupName` specified in the `user_details_template.csv`, will need to be added manually, before they can access an SRE.
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
-- Open `Active Directory Users and Computers`
+- In Server Manager click `Tools > Active Directory Users and Computers`
 - Click on `Safe Haven Security Groups`
 - Find the group that the user needs to be added to. For each SRE there are the following groups:
     - `SG <SRE ID> Data Administrators` (enables database privileges, not write access to `/data`)
@@ -91,7 +91,7 @@ Sometimes if a user has provided an incorrect phone number, or has a new phone n
 - Click `Users` under `Manage`
 - Search for the user and check the box next to their name, then click `Delete` (this could take a few minutes)
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
-- Open `Active Directory Users and Computers`
+- In Server Manager click `Tools > Active Directory Users and Computers`
 - Click on `Safe Haven Research Users`
 - Find the person, right click on them and select `Properties`
 - Select the `Telephones` tab and edit the `Mobile` number, then click `OK`
