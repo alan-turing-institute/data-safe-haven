@@ -2,6 +2,7 @@
 # Standard library imports
 import contextlib
 import time
+from typing import Optional
 
 # Third party imports
 import websocket
@@ -33,7 +34,7 @@ class AzureContainerInstance(AzureMixin, LoggingMixin):
         while not poller.done():
             time.sleep(10)
 
-    def restart(self, target_ip_address=None):
+    def restart(self, target_ip_address: Optional[str] = None):
         """Restart the container group"""
         # Connect to Azure clients
         aci_client = ContainerInstanceManagementClient(
