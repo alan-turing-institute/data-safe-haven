@@ -38,3 +38,6 @@ expanded.yaml
 
 # Pulumi secrets files
 pulumi/Pulumi.*.yaml
+
+# mypy cache
+.mypy_cache

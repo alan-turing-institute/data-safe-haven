@@ -4,6 +4,7 @@ import datetime
 import io
 import logging
 import re
+from typing import Any, List
 
 # Third party imports
 from cleo.io import ConsoleIO
@@ -23,7 +24,7 @@ class CleoStringIO(ConsoleIO):
     A wrapper to coerce Cleo IO into a StringIO stream.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         self.stdout = io.StringIO()
         kwargs["output"] = Output(StreamOutputStream(self.stdout), AnsiFormatter())
         super().__init__(*args, **kwargs)
@@ -102,7 +103,7 @@ class LoggingMixin:
     coloured_fmt = "<fg=blue>%(asctime)s</> <%(style)s>[%(levelname)8s]</> %(message)s"
     is_setup = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger("data_safe_haven")
         self.console = LoggingHandlerClikit(
@@ -157,33 +158,33 @@ class LoggingMixin:
             logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
 
     # Pass log levels through to the logger
-    def critical(self, message, no_newline=False, overwrite=False):
+    def critical(self, message: str, no_newline=False, overwrite=False) -> None:
         self.logger.critical(message, extra=self.extra_args(no_newline, overwrite))
 
-    def error(self, message, no_newline=False, overwrite=False):
+    def error(self, message: str, no_newline=False, overwrite=False) -> None:
         self.logger.error(message, extra=self.extra_args(no_newline, overwrite))
 
-    def warning(self, message, no_newline=False, overwrite=False):
+    def warning(self, message: str, no_newline=False, overwrite=False) -> None:
         self.logger.warning(message, extra=self.extra_args(no_newline, overwrite))
 
-    def info(self, message, no_newline=False, overwrite=False):
+    def info(self, message: str, no_newline=False, overwrite=False) -> None:
         self.logger.info(message, extra=self.extra_args(no_newline, overwrite))
 
-    def debug(self, message, no_newline=False, overwrite=False):
+    def debug(self, message: str, no_newline=False, overwrite=False) -> None:
         self.logger.debug(message, extra=self.extra_args(no_newline, overwrite))
 
     # Loggable wrappers for confirm/ask/choice
-    def log_confirm(self, message, *args, **kwargs):
+    def log_confirm(self, message: str, *args, **kwargs) -> str:
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
         return self.console.io.confirm(formatted, *args, **kwargs)
 
-    def log_ask(self, message, *args, **kwargs):
+    def log_ask(self, message: str, *args, **kwargs) -> str:
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
         return self.console.io.ask(formatted, *args, **kwargs)
 
-    def log_choose(self, message: str, *args, **kwargs):
+    def log_choose(self, message: str, *args, **kwargs) -> str:
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
         return self.console.io.choice(formatted, *args, **kwargs)
@@ -205,7 +206,7 @@ class LoggingMixin:
             self.info(message.strip(), no_newline, overwrite)
 
     # Create a table
-    def tabulate(self, header=None, rows=None):
+    def tabulate(self, header=None, rows=None) -> List[str]:
         table = Table()
         if header:
             table.set_header_row(header)

@@ -27,12 +27,12 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
 
     def __init__(
         self,
-        database_name,
-        database_server_admin_password,
-        database_server_name,
-        resource_group_name,
-        subscription_name,
-    ):
+        database_name: str,
+        database_server_admin_password: str,
+        database_server_name: str,
+        resource_group_name: str,
+        subscription_name: str,
+    ) -> None:
         super().__init__(subscription_name=subscription_name)
         self.current_ip = requests.get(
             "https://api.ipify.org", timeout=300

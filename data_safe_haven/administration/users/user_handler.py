@@ -1,6 +1,6 @@
 # Standard library imports
 import csv
-from typing import Dict, List, Sequence
+from typing import Any, Dict, List, Sequence
 
 # Local imports
 from data_safe_haven.config import Config
@@ -18,8 +18,8 @@ class UserHandler(LoggingMixin, AzureMixin):
         self,
         config: Config,
         graph_api: GraphApi,
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ):
         super().__init__(subscription_name=config.subscription_name, *args, **kwargs)
         self.active_directory_users = ActiveDirectoryUsers(
@@ -43,7 +43,7 @@ class UserHandler(LoggingMixin, AzureMixin):
             with open(users_csv_path, encoding="utf-8") as f_csv:
                 reader = csv.DictReader(f_csv)
                 for required_field in ["GivenName", "Surname", "Phone", "Email"]:
-                    if required_field not in reader.fieldnames:
+                    if (not reader.fieldnames) or (required_field not in reader.fieldnames):
                         raise ValueError(
                             f"Missing required CSV field '{required_field}'."
                         )

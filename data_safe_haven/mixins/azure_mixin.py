@@ -59,7 +59,7 @@ class AzureMixin:
         # Check that the Azure credentials are valid
         try:
             for subscription in [
-                cast(Subscription, s) for s in subscription_client.subscriptions.list()
+                s for s in subscription_client.subscriptions.list()
             ]:
                 if subscription.display_name == self.subscription_name:
                     self.subscription_id_ = subscription.subscription_id

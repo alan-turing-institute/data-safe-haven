@@ -41,9 +41,16 @@ websocket-client = "^1.5.0"
 [tool.poetry.dev-dependencies]
 black = "^22.12.0"
 pytest = "^7.2"
+mypy = "^1.0.0"
 
 [tool.poetry.scripts]
 dsh = "data_safe_haven.cli:main"
+
+[tool.mypy]
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+files = "data_safe_haven/administration/users"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
