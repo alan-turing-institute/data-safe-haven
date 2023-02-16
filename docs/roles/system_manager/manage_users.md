@@ -64,6 +64,22 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Be particularly careful never to use them to log in to any user-accessible VMs (such as the SRDs)
 ```
 
+### {{iphone}} Changing a users phone number
+
+Sometimes if a user has provided an incorrect phone number, or has a new phone number that needs to be added, the phone number associated with their account will need to be updated.
+
+- Login into the Azure Portal and connect to the correct AAD
+- Open `Azure Active Directory`
+- Click `Users` under `Manage`
+- Search for the user and check the box next to their name, then click `Delete`
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
+- Open `Active Directory Users and Computers`
+- Click on `Safe Haven Research Users`
+- Find the person, right click on them and select `Properties`
+- Select the `Telephones` tab and edit the `Mobile` number, then click `OK`
+- Open a `Powershell` command window with elevated privileges
+- Run `C:\Installation\Run_ADSync.ps1`
+
 ## {{calling}} Assign MFA licences
 
 ### {{hand}} Manually add licence to each user
