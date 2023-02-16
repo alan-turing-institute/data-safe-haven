@@ -64,6 +64,24 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Be particularly careful never to use them to log in to any user-accessible VMs (such as the SRDs)
 ```
 
+### {{woman}} {{man}} Adding users to security group(s)
+
+Users that didn't have a `GroupName` specified in the `user_details_template.csv`, will need to be added manually, before they can access an SRE.
+
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
+- Open `Active Directory Users and Computers`
+- Click on `Safe Haven Security Groups`
+- Find the group that the user needs to be added to. For each SRE there are the following groups:
+    - `SG <SRE ID> Data Administrators` (enables database privileges, not write access to `/data`)
+    - `SG <SRE ID> Research Users`
+    - `SG <SRE ID> System Administrators`
+- Right click on the group and click `Properties`
+- Click the `Members` tab and click `Add...`
+- Enter a part of the user's name and click `Check Names`
+- Select the correct user and click `OK`, then click `OK` again until the window closes
+- Open a `Powershell` command window with elevated privileges
+- Run `C:\Installation\Run_ADSync.ps1`
+
 ### {{iphone}} Changing a users phone number
 
 Sometimes if a user has provided an incorrect phone number, or has a new phone number that needs to be added, the phone number associated with their account will need to be updated.
