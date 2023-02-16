@@ -5,7 +5,7 @@ import pathlib
 import time
 from contextlib import suppress
 from io import UnsupportedOperation
-from typing import Any, Sequence
+from typing import cast, Any, Dict, Optional, Sequence
 
 # Third party imports
 import requests
@@ -22,7 +22,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalException,
     DataSafeHavenMicrosoftGraphException,
 )
-from data_safe_haven.helpers import JSONType
 from data_safe_haven.mixins import LoggingMixin
 
 
@@ -64,10 +63,10 @@ class GraphApi(LoggingMixin):
     def __init__(
         self,
         *args: Any,
-        tenant_id: str = None,
-        auth_token: str = None,
-        application_id: str = None,
-        application_secret: str = None,
+        tenant_id: Optional[str] = None,
+        auth_token: Optional[str] = None,
+        application_id: Optional[str] = None,
+        application_secret: Optional[str] = None,
         base_endpoint: str = "",
         default_scopes: Sequence[str] = [],
         **kwargs: Any,
@@ -168,8 +167,8 @@ class GraphApi(LoggingMixin):
         application_name: str,
         application_scopes: Sequence[str] = [],
         delegated_scopes: Sequence[str] = [],
-        request_json: JSONType = None,
-    ) -> JSONType:
+        request_json: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """Create an AzureAD application if it does not already exist
 
         Raises:
@@ -273,6 +272,10 @@ class GraphApi(LoggingMixin):
         """
         try:
             application_json = self.get_application_by_name(application_name)
+            if not application_json:
+                raise DataSafeHavenMicrosoftGraphException(
+                    f"Could not retrieve application '{application_name}'"
+                )
             # If the secret already exists then raise an exception
             if "passwordCredentials" in application_json and any(
                 cred["displayName"] == application_secret_name
@@ -419,6 +422,7 @@ class GraphApi(LoggingMixin):
         Raises:
             DataSafeHavenMicrosoftGraphException if the token could not be created
         """
+        result = None
         try:
             # Use a created application
             app = ConfidentialClientApplication(
@@ -431,6 +435,7 @@ class GraphApi(LoggingMixin):
             result = app.acquire_token_for_client(
                 scopes="https://graph.microsoft.com/.default"
             )
+            result = cast(Dict[str, Any], result)
             return result["access_token"]
         except Exception as exc:
             error_description = "Could not create access token"
@@ -442,7 +447,7 @@ class GraphApi(LoggingMixin):
 
     def create_user(
         self,
-        request_json: JSONType,
+        request_json: Dict[str, Any],
         email_address: str,
         phone_number: str,
     ) -> None:
@@ -535,7 +540,7 @@ class GraphApi(LoggingMixin):
                 f"Could not delete application '{application_name}'.\n{str(exc)}"
             ) from exc
 
-    def get_application_by_name(self, application_name: str) -> JSONType:
+    def get_application_by_name(self, application_name: str) -> Dict[str, Any] | None:
         try:
             return [
                 application
@@ -545,7 +550,9 @@ class GraphApi(LoggingMixin):
         except (DataSafeHavenMicrosoftGraphException, IndexError):
             return None
 
-    def get_service_principal_by_name(self, service_principal_name: str) -> JSONType:
+    def get_service_principal_by_name(
+        self, service_principal_name: str
+    ) -> Dict[str, Any] | None:
         try:
             return [
                 service_principal
@@ -555,13 +562,16 @@ class GraphApi(LoggingMixin):
         except (DataSafeHavenMicrosoftGraphException, IndexError):
             return None
 
-    def get_id_from_application_name(self, application_name: str) -> str:
+    def get_id_from_application_name(self, application_name: str) -> str | None:
         try:
-            return self.get_application_by_name(application_name)["appId"]
+            application = self.get_application_by_name(application_name)
+            if not application:
+                return None
+            return application["appId"]
         except DataSafeHavenMicrosoftGraphException:
             return None
 
-    def get_id_from_groupname(self, group_name: str) -> str:
+    def get_id_from_groupname(self, group_name: str) -> str | None:
         try:
             return [
                 group
@@ -571,7 +581,7 @@ class GraphApi(LoggingMixin):
         except (DataSafeHavenMicrosoftGraphException, IndexError):
             return None
 
-    def get_id_from_username(self, username: str) -> str:
+    def get_id_from_username(self, username: str) -> str | None:
         try:
             return [
                 user for user in self.read_users() if user["mailNickname"] == username
@@ -590,7 +600,10 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.delete(
-                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
+                url,
+                headers={"Authorization": f"Bearer {self.token}"},
+                timeout=300,
+                **kwargs,
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -611,7 +624,10 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.get(
-                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
+                url,
+                headers={"Authorization": f"Bearer {self.token}"},
+                timeout=300,
+                **kwargs,
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -632,7 +648,10 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.patch(
-                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
+                url,
+                headers={"Authorization": f"Bearer {self.token}"},
+                timeout=300,
+                **kwargs,
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -653,7 +672,10 @@ class GraphApi(LoggingMixin):
         """
         try:
             response = requests.post(
-                url, headers={"Authorization": f"Bearer {self.token}"}, timeout=300, **kwargs
+                url,
+                headers={"Authorization": f"Bearer {self.token}"},
+                timeout=300,
+                **kwargs,
             )
             if not response.ok:
                 raise DataSafeHavenInternalException(response.content)
@@ -664,7 +686,7 @@ class GraphApi(LoggingMixin):
                 f"Could not execute POST request.\n{str(exc)}"
             ) from exc
 
-    def read_applications(self) -> JSONType:
+    def read_applications(self) -> Sequence[Dict[str, Any]]:
         """Get list of applications
 
         Returns:
@@ -684,7 +706,7 @@ class GraphApi(LoggingMixin):
 
     def read_application_permissions(
         self, application_service_principal_id: str
-    ) -> JSONType:
+    ) -> Sequence[Dict[str, Any]]:
         """Get list of application permissions
 
         Returns:
@@ -706,7 +728,7 @@ class GraphApi(LoggingMixin):
                 f"Could not load list of application permissions.\n{str(exc)}"
             ) from exc
 
-    def read_domains(self) -> JSONType:
+    def read_domains(self) -> Sequence[Dict[str, Any]]:
         """Get details of AzureAD domains
 
         Returns:
@@ -725,8 +747,8 @@ class GraphApi(LoggingMixin):
 
     def read_groups(
         self,
-        attributes: Sequence[str] = None,
-    ) -> JSONType:
+        attributes: Sequence[str] | None = None,
+    ) -> Sequence[Dict[str, Any]]:
         """Get details of AzureAD groups
 
         Returns:
@@ -745,7 +767,7 @@ class GraphApi(LoggingMixin):
                 f"Could not load list of groups.\n{str(exc)}"
             ) from exc
 
-    def read_service_principals(self) -> JSONType:
+    def read_service_principals(self) -> Sequence[Dict[str, Any]]:
         """Get list of service principals"""
         try:
             return self.http_get(
@@ -756,7 +778,9 @@ class GraphApi(LoggingMixin):
                 f"Could not load list of service principals.\n{str(exc)}"
             ) from exc
 
-    def read_users(self, attributes: Sequence[str] = None) -> JSONType:
+    def read_users(
+        self, attributes: Sequence[str] | None = None
+    ) -> Sequence[Dict[str, Any]]:
         """Get details of AzureAD users
 
         Returns:

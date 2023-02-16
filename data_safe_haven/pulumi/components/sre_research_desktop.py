@@ -1,14 +1,17 @@
 # Standard library imports
 import base64
 import pathlib
-from typing import Sequence, Tuple
+from typing import cast, Dict, List, Optional, Sequence
 
 # Third party imports
 import chevron
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import compute, network, resources
+from pulumi_azure_native import network, resources
 
 # Local imports
+from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.helpers import replace_separators
+from .virtual_machine import LinuxVMProps, VMComponent
 
 
 class SREResearchDesktopProps:
@@ -18,33 +21,53 @@ class SREResearchDesktopProps:
         self,
         admin_password: Input[str],
         domain_sid: Input[str],
-        ip_addresses: Input[Sequence[str]],
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
         location: Input[str],
         security_group_name: Input[str],
-        subnet_name: Input[str],
-        virtual_network_resource_group_name: Input[str],
+        subnet_research_desktops: Input[network.GetSubnetResult],
+        virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
-        vm_skus: Input[Sequence[Tuple[str, str]]],
+        vm_details: Input[Dict[str, Dict[str, str]]],
     ):
-        self.admin_password = admin_password
+        self.admin_password = Output.secret(admin_password)
+        self.admin_username = "dshadmin"
         self.domain_sid = domain_sid
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.location = location
         self.security_group_name = security_group_name
-        self.subnet_name = subnet_name
-        self.virtual_network = virtual_network
-        self.virtual_network_resource_group_name = virtual_network_resource_group_name
-        self.vm_details = Output.all(vm_skus=vm_skus, ip_addresses=ip_addresses).apply(
-            lambda args: [
-                (*vm_sku, ip_address)
-                for vm_sku, ip_address in zip(args["vm_skus"], args["ip_addresses"])
-            ]
+        self.virtual_network_name = Output.from_input(virtual_network).apply(
+            lambda v: v.name
         )
+        self.subnet_research_desktops_name = Output.from_input(
+            subnet_research_desktops
+        ).apply(lambda s: s.name)
+        self.virtual_network_resource_group_name = Output.from_input(
+            virtual_network_resource_group
+        ).apply(lambda rg: rg.name)
+        self.vm_ip_addresses = Output.all(subnet_research_desktops, vm_details).apply(
+            lambda args: self.get_ip_addresses(
+                cast(network.GetSubnetResult, args[0]), len(cast(list, args[1]))
+            )
+        )
+        vm_lists = Output.from_input(vm_details).apply(
+            lambda d: [(k, v["sku"]) for k, v in d.items()]
+        )
+        self.vm_names = vm_lists.apply(lambda l: [t[0] for t in l])
+        self.vm_sizes = vm_lists.apply(lambda l: [t[1] for t in l])
+
+    def get_ip_addresses(
+        self, subnet: network.GetSubnetResult, number: int
+    ) -> List[str]:
+        if not subnet.address_prefix:
+            return []
+        return [
+            str(ip)
+            for ip in AzureIPv4Range.from_cidr(subnet.address_prefix).available()
+        ][:number]
 
 
 class SREResearchDesktopComponent(ComponentResource):
@@ -56,75 +79,120 @@ class SREResearchDesktopComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SREResearchDesktopProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:sre:SREResearchDesktopComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-research-desktops",
+            resource_group_name=f"{stack_name}-rg-research-desktops",
+            opts=child_opts,
         )
 
-        # Deploy a variable number of VMs depending on the input parameters
-        Output.all(
+        # Load cloud-init file
+        b64cloudinit = Output.all(
             domain_sid=props.domain_sid,
             ldap_root_dn=props.ldap_root_dn,
             ldap_search_password=props.ldap_search_password,
             ldap_server_ip=props.ldap_server_ip,
-            resource_group_name=resource_group.name,
             security_group_name=props.security_group_name,
-            vm_details=props.vm_details,
+        ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
+
+        # Deploy a variable number of VMs depending on the input parameters
+        # Note that deploying inside an apply is advised against but not forbidden
+        Output.all(
+            vm_ip_addresses=props.vm_ip_addresses,
+            vm_names=props.vm_names,
+            vm_sizes=props.vm_sizes,
         ).apply(
-            lambda args: self.deploy(
-                domain_sid=args["domain_sid"],
-                ldap_root_dn=args["ldap_root_dn"],
-                ldap_search_password=args["ldap_search_password"],
-                ldap_server_ip=args["ldap_server_ip"],
-                resource_group_name=args["resource_group_name"],
-                security_group_name=args["security_group_name"],
-                sre_name=sre_name,
-                vm_details=args["vm_details"],
-                props=props,
-                opts=child_opts,
+            lambda kwargs: (
+                VMComponent(
+                    replace_separators(f"sre-{sre_name}-vm-{vm_name}", "-"),
+                    LinuxVMProps(
+                        admin_password=props.admin_password,
+                        admin_username=props.admin_username,
+                        b64cloudinit=b64cloudinit,
+                        ip_address_private=vm_ip_address,
+                        location=props.location,
+                        resource_group_name=resource_group.name,
+                        subnet_name=props.subnet_research_desktops_name,
+                        virtual_network_name=props.virtual_network_name,
+                        virtual_network_resource_group_name=props.virtual_network_resource_group_name,
+                        vm_name=vm_name,
+                        vm_size=vm_size,
+                    ),
+                    opts=child_opts,
+                )
+                for vm_ip_address, vm_name, vm_size in zip(
+                    kwargs["vm_ip_addresses"], kwargs["vm_names"], kwargs["vm_sizes"]
+                )
             )
         )
 
         # Register outputs
-        self.resource_group_name = resource_group.name
+        self.resource_group = resource_group
 
         # Register exports
-        self.exports = props.vm_details
+        self.exports = {
+            "vm_ip_addresses": props.vm_ip_addresses,
+            "vm_names": props.vm_names,
+        }
 
-    def deploy(
+    def deploy_vms(
+        self,
+        admin_password: str,
+        admin_username: str,
+        b64cloudinit: str,
+        location: str,
+        resource_group_name: str,
+        sre_name: str,
+        subnet_research_desktops_name: str,
+        virtual_network_name: str,
+        virtual_network_resource_group_name: str,
+        vm_ip_addresses: Sequence[str],
+        vm_names: Sequence[str],
+        vm_sizes: Sequence[str],
+        child_opts: ResourceOptions,
+    ):
+        # Deploy as many VMs as requested
+        for vm_ip_address, vm_name, vm_size in zip(vm_ip_addresses, vm_names, vm_sizes):
+            VMComponent(
+                replace_separators(f"sre-{sre_name}-{vm_name}", "-"),
+                LinuxVMProps(
+                    admin_password=admin_password,
+                    admin_username=admin_username,
+                    b64cloudinit=b64cloudinit,
+                    ip_address_private=vm_ip_address,
+                    location=location,
+                    resource_group_name=resource_group_name,
+                    subnet_name=subnet_research_desktops_name,
+                    virtual_network_name=virtual_network_name,
+                    virtual_network_resource_group_name=virtual_network_resource_group_name,
+                    vm_name=vm_name,
+                    vm_size=vm_size,
+                ),
+                opts=child_opts,
+            )
+
+    def read_cloudinit(
         self,
         domain_sid: str,
         ldap_root_dn: str,
         ldap_search_password: str,
         ldap_server_ip: str,
-        resource_group_name: str,
         security_group_name: str,
-        sre_name: str,
-        vm_details: Sequence[Tuple[str, str]],
-        props: SREResearchDesktopProps,
-        opts: ResourceOptions = None,
     ):
-        # Retrieve existing resources
-        snet_secure_research_desktop = network.get_subnet_output(
-            subnet_name=props.subnet_name,
-            resource_group_name=props.virtual_network_resource_group_name,
-            virtual_network_name=props.virtual_network.name,
-        )
-
-        # Load cloud-init file
         resources_path = (
             pathlib.Path(__file__).parent.parent.parent
             / "resources"
             / "secure_research_desktop"
         )
-        with open(resources_path / "srd.cloud_init.mustache.yaml", "r", encoding="utf-8") as f_cloudinit:
+        with open(
+            resources_path / "srd.cloud_init.mustache.yaml", "r", encoding="utf-8"
+        ) as f_cloudinit:
             mustache_values = {
                 "domain_sid": domain_sid,
                 "ldap_root_dn": ldap_root_dn,
@@ -133,82 +201,4 @@ class SREResearchDesktopComponent(ComponentResource):
                 "ldap_sre_security_group": security_group_name,
             }
             cloudinit = chevron.render(f_cloudinit, mustache_values)
-            b64cloudinit = base64.b64encode(cloudinit.encode("utf-8")).decode()
-
-        # Deploy secure research desktops
-        for vm_short_name, vm_size, ip_address in vm_details:
-            vm_name = f"sre-{sre_name}-{vm_short_name}".replace("_", "-")
-            vm_name_underscored = vm_name.replace("-", "_")
-
-            # Define public IP address
-            public_ip = network.PublicIPAddress(
-                f"public_ip_{vm_name_underscored}",
-                public_ip_address_name=f"{vm_name}-public-ip",
-                public_ip_allocation_method="Static",
-                resource_group_name=resource_group_name,
-                sku=network.PublicIPAddressSkuArgs(name="Standard"),
-                opts=opts,
-            )
-            network_interface = network.NetworkInterface(
-                f"network_interface_{vm_name_underscored}",
-                enable_accelerated_networking=True,
-                ip_configurations=[
-                    network.NetworkInterfaceIPConfigurationArgs(
-                        name="ipconfigsreresearchdesktop",
-                        public_ip_address=network.PublicIPAddressArgs(id=public_ip.id),
-                        private_ip_address=ip_address,
-                        subnet=network.SubnetArgs(id=snet_secure_research_desktop.id),
-                    )
-                ],
-                network_interface_name=f"{vm_name_underscored}-nic",
-                resource_group_name=resource_group_name,
-                opts=opts,
-            )
-            virtual_machine = compute.VirtualMachine(
-                f"virtual_machine_{vm_name_underscored}",
-                hardware_profile=compute.HardwareProfileArgs(
-                    vm_size=vm_size,
-                ),
-                network_profile=compute.NetworkProfileArgs(
-                    network_interfaces=[
-                        compute.NetworkInterfaceReferenceArgs(
-                            id=network_interface.id,
-                            primary=True,
-                        )
-                    ],
-                ),
-                os_profile=compute.OSProfileArgs(
-                    admin_password=props.admin_password,
-                    admin_username="dshadmin",
-                    computer_name=vm_name,
-                    custom_data=Output.secret(b64cloudinit),
-                    linux_configuration=compute.LinuxConfigurationArgs(
-                        patch_settings=compute.LinuxPatchSettingsArgs(
-                            assessment_mode="ImageDefault",
-                        ),
-                        provision_vm_agent=True,
-                    ),
-                ),
-                resource_group_name=resource_group_name,
-                storage_profile=compute.StorageProfileArgs(
-                    image_reference=compute.ImageReferenceArgs(
-                        offer="0001-com-ubuntu-server-focal",
-                        publisher="Canonical",
-                        sku="20_04-LTS",
-                        version="latest",
-                    ),
-                    os_disk=compute.OSDiskArgs(
-                        caching="ReadWrite",
-                        create_option="FromImage",
-                        delete_option="Delete",
-                        managed_disk=compute.ManagedDiskParametersArgs(
-                            storage_account_type="Premium_LRS",
-                        ),
-                        name=f"{vm_name}-osdisk",
-                    ),
-                ),
-                vm_name=vm_name,
-                opts=ResourceOptions(
-                    delete_before_replace=True, replace_on_changes=["os_profile"]
-                ),
-            )
+            return base64.b64encode(cloudinit.encode("utf-8")).decode()

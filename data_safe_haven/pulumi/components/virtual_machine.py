@@ -36,15 +36,17 @@ class VMProps:
         self.virtual_network_name = virtual_network_name
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
         self.vm_name = vm_name
-        self.vm_name_underscored = vm_name.replace("-", "_")
+        self.vm_name_underscored = Output.from_input(vm_name).apply(
+            lambda n: n.replace("-", "_")
+        )
         self.vm_size = vm_size
 
     @property
-    def os_profile(self) -> compute.OSProfileArgs:
+    def os_profile(self) -> compute.OSProfileArgs | None:
         return self.os_profile_args
 
     @property
-    def image_reference(self) -> compute.ImageReferenceArgs:
+    def image_reference(self) -> compute.ImageReferenceArgs | None:
         return self.image_reference_args
 
 
@@ -60,11 +62,11 @@ class WindowsVMProps(VMProps):
         self.os_profile_args = compute.OSProfileArgs(
             admin_password=self.admin_password,
             admin_username=self.admin_username,
-            computer_name=self.vm_name,
+            computer_name=Output.from_input(self.vm_name).apply(lambda n: n[:15]),
             windows_configuration=compute.WindowsConfigurationArgs(
                 enable_automatic_updates=True,
                 patch_settings=compute.PatchSettingsArgs(
-                    patch_mode="AutomaticByPlatform",
+                    patch_mode=compute.LinuxVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
                 ),
                 provision_vm_agent=True,
             ),
@@ -90,11 +92,11 @@ class LinuxVMProps(VMProps):
         self.os_profile_args = compute.OSProfileArgs(
             admin_password=self.admin_password,
             admin_username=self.admin_username,
-            computer_name=self.vm_name,
+            computer_name=Output.from_input(self.vm_name).apply(lambda n: n[:64]),
             custom_data=Output.secret(b64cloudinit),
             linux_configuration=compute.LinuxConfigurationArgs(
                 patch_settings=compute.LinuxPatchSettingsArgs(
-                    assessment_mode="AutomaticByPlatform",
+                    assessment_mode=compute.LinuxPatchAssessmentMode.AUTOMATIC_BY_PLATFORM,
                 ),
                 provision_vm_agent=True,
             ),
@@ -110,9 +112,11 @@ class LinuxVMProps(VMProps):
 class VMComponent(ComponentResource):
     """Deploy SHM secrets with Pulumi"""
 
-    def __init__(self, name: str, props: VMProps, opts: ResourceOptions = None):
+    def __init__(
+        self, name: str, props: VMProps, opts: Optional[ResourceOptions] = None
+    ):
         super().__init__("dsh:common:VMComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Retrieve existing resources
         subnet = network.get_subnet_output(
@@ -129,8 +133,10 @@ class VMComponent(ComponentResource):
                 public_ip_address_name=f"{props.vm_name}-public-ip",
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,
-                sku=network.PublicIPAddressSkuArgs(name="Standard"),
-                opts=opts,
+                sku=network.PublicIPAddressSkuArgs(
+                    name=network.PublicIPAddressSkuName.STANDARD
+                ),
+                opts=child_opts,
             )
             network_interface_ip_params[
                 "public_ip_address"
@@ -142,16 +148,18 @@ class VMComponent(ComponentResource):
             enable_accelerated_networking=True,
             ip_configurations=[
                 network.NetworkInterfaceIPConfigurationArgs(
-                    name=f"ipconfig{props.vm_name_underscored}".replace("_", ""),
+                    name=props.vm_name_underscored.apply(
+                        lambda n: f"ipconfig{n}".replace("_", "")
+                    ),
                     private_ip_address=props.ip_address_private,
-                    private_ip_allocation_method="Static",
+                    private_ip_allocation_method=network.IPAllocationMethod.STATIC,
                     subnet=network.SubnetArgs(id=subnet.id),
                     **network_interface_ip_params,
                 )
             ],
             network_interface_name=f"{props.vm_name}-nic",
             resource_group_name=props.resource_group_name,
-            opts=opts,
+            opts=child_opts,
         )
 
         # Define virtual machine
@@ -177,18 +185,21 @@ class VMComponent(ComponentResource):
             storage_profile=compute.StorageProfileArgs(
                 image_reference=props.image_reference,
                 os_disk=compute.OSDiskArgs(
-                    caching="ReadWrite",
-                    create_option="FromImage",
-                    delete_option="Delete",
+                    caching=compute.CachingTypes.READ_WRITE,
+                    create_option=compute.DiskCreateOptionTypes.FROM_IMAGE,
+                    delete_option=compute.DiskDeleteOptionTypes.DELETE,
                     managed_disk=compute.ManagedDiskParametersArgs(
-                        storage_account_type="Premium_LRS",
+                        storage_account_type=compute.StorageAccountTypes.PREMIUM_LRS,
                     ),
                     name=f"{props.vm_name}-osdisk",
                 ),
             ),
             vm_name=props.vm_name,
-            opts=ResourceOptions(
-                delete_before_replace=True, replace_on_changes=["os_profile"]
+            opts=ResourceOptions.merge(
+                ResourceOptions(
+                    delete_before_replace=True, replace_on_changes=["os_profile"]
+                ),
+                child_opts,
             ),
         )
         # Register outputs

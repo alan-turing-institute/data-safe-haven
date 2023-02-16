@@ -2,10 +2,10 @@
 # Standard library imports
 import pathlib
 import time
-from typing import Dict, Sequence
+from typing import Dict, Optional, Sequence
 
 # Third party imports
-from pulumi import ComponentResource, Input, ResourceOptions
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, compute
 
 # Local imports
@@ -53,10 +53,13 @@ class AutomationDscNode(ComponentResource):
     """Deploy an AutomationDscNode with Pulumi"""
 
     def __init__(
-        self, name: str, props: AutomationDscNodeProps, opts: ResourceOptions = None
+        self,
+        name: str,
+        props: AutomationDscNodeProps,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:common:AutomationDscNode", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 
         # Upload the primary domain controller DSC
@@ -71,16 +74,18 @@ class AutomationDscNode(ComponentResource):
             source=automation.ContentSourceArgs(
                 hash=automation.ContentHashArgs(
                     algorithm="sha256",
-                    value=props.dsc_file.sha256(),
+                    value=Output.from_input(props.dsc_file).apply(lambda f: f.sha256()),
                 ),
                 type="embeddedContent",
-                value=props.dsc_file.file_contents(),
+                value=Output.from_input(props.dsc_file).apply(
+                    lambda f: f.file_contents()
+                ),
             ),
             opts=ResourceOptions.merge(
-                child_opts,
                 ResourceOptions(
                     delete_before_replace=True, replace_on_changes=["source.hash"]
                 ),
+                child_opts,
             ),
         )
         dsc_compiled = CompiledDsc(
@@ -88,14 +93,16 @@ class AutomationDscNode(ComponentResource):
             CompiledDscProps(
                 automation_account_name=props.automation_account_name,
                 configuration_name=dsc.name,
-                content_hash=props.dsc_file.sha256(),
+                content_hash=Output.from_input(props.dsc_file).apply(
+                    lambda f: f.sha256()
+                ),
                 location=props.location,
                 parameters=props.dsc_parameters,
                 resource_group_name=props.automation_account_resource_group_name,
                 required_modules=props.dsc_required_modules,
                 subscription_name=props.subscription_name,
             ),
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(depends_on=[dsc])),
+            opts=ResourceOptions.merge(ResourceOptions(depends_on=[dsc]), child_opts),
         )
         dsc_extension = compute.VirtualMachineExtension(
             f"{self._name}_dsc_extension",
@@ -128,6 +135,7 @@ class AutomationDscNode(ComponentResource):
             vm_name=props.vm_name,
             vm_extension_name="Microsoft.Powershell.DSC",
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(depends_on=[dsc_compiled])
+                ResourceOptions(depends_on=[dsc_compiled]),
+                child_opts,
             ),
         )

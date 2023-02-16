@@ -1,7 +1,10 @@
 """Pulumi component for SRE state"""
+# Standard library imports
+from typing import Optional
+
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import keyvault, managedidentity, resources, storage
+from pulumi_azure_native import keyvault, network, managedidentity, resources, storage
 
 # Local imports
 from data_safe_haven.helpers import alphanumeric, sha256hash
@@ -13,18 +16,20 @@ class SREStateProps:
 
     def __init__(
         self,
-        admin_group_id: Input[str],
         admin_email_address: Input[str],
+        admin_group_id: Input[str],
+        dns_record: Input[network.RecordSet],
         location: Input[str],
-        networking_resource_group_name: Input[str],
-        subscription_name: Input[str],
+        networking_resource_group: Input[resources.ResourceGroup],
         sre_fqdn: Input[str],
+        subscription_name: Input[str],
         tenant_id: Input[str],
     ):
         self.admin_email_address = admin_email_address
         self.admin_group_id = admin_group_id
+        self.dns_record = dns_record
         self.location = location
-        self.networking_resource_group_name = networking_resource_group_name
+        self.networking_resource_group_name = Output.from_input(networking_resource_group).apply(lambda rg: rg.name)
         self.sre_fqdn = sre_fqdn
         self.subscription_name = subscription_name
         self.tenant_id = tenant_id
@@ -39,16 +44,17 @@ class SREStateComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SREStateProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:sre:SREStateComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-state",
+            resource_group_name=f"{stack_name}-rg-state",
+            opts=child_opts,
         )
 
         # Deploy storage account
@@ -60,6 +66,7 @@ class SREStateComponent(ComponentResource):
             kind="StorageV2",
             resource_group_name=resource_group.name,
             sku=storage.SkuArgs(name="Standard_LRS"),
+            opts=child_opts,
         )
 
         # Retrieve storage account keys
@@ -73,7 +80,8 @@ class SREStateComponent(ComponentResource):
             f"{self._name}_key_vault_reader",
             location=props.location,
             resource_group_name=resource_group.name,
-            resource_name_=f"id-{stack_name}-key-vault-reader",
+            resource_name_=f"{stack_name}-id-key-vault-reader",
+            opts=child_opts,
         )
 
         # Define SRE KeyVault
@@ -159,7 +167,8 @@ class SREStateComponent(ComponentResource):
                 tenant_id=props.tenant_id,
             ),
             resource_group_name=resource_group.name,
-            vault_name=f"kv-sre-{sre_name[:11]}-state",  # maximum of 24 characters
+            vault_name=f"sre-{sre_name[:11]}-kv-state",  # maximum of 24 characters
+            opts=child_opts,
         )
 
         # Define SSL certificate for this FQDN
@@ -173,7 +182,10 @@ class SREStateComponent(ComponentResource):
                 networking_resource_group_name=props.networking_resource_group_name,
                 subscription_name=props.subscription_name,
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                ResourceOptions(depends_on=[props.dns_record]), # we need the delegation NS record to exist before generating the certificate
+                child_opts,
+            )
         )
 
         # Register outputs
@@ -182,4 +194,3 @@ class SREStateComponent(ComponentResource):
         self.certificate_secret_id = certificate.secret_id
         self.managed_identity = key_vault_reader
         self.resource_group_name = resource_group.name
-        self.sre_fqdn = Output.from_input(props.sre_fqdn)

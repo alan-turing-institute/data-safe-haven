@@ -5,6 +5,7 @@ from .functions import (
     hex_string,
     password,
     random_letters,
+    replace_separators,
     sha256hash,
 )
 from .types import ConfigType, JSONType
@@ -18,5 +19,6 @@ __all__ = [
     "JSONType",
     "password",
     "random_letters",
+    "replace_separators",
     "sha256hash",
 ]

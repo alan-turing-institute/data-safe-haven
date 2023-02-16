@@ -1,16 +1,14 @@
 """Pulumi component for SHM domain controllers"""
 # Standard library import
 import pathlib
-from typing import Sequence
+from typing import Optional, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import resources
+from pulumi_azure_native import network, resources
 
 # Local
-from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers import FileReader
-
 from ..dynamic.remote_powershell import RemoteScript, RemoteScriptProps
 from .automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
 from .virtual_machine import VMComponent, WindowsVMProps
@@ -33,8 +31,9 @@ class SHMDomainControllersProps:
         password_domain_azuread_connect: Input[str],
         password_domain_computer_manager: Input[str],
         password_domain_searcher: Input[str],
-        subnet_ip_range: Input[AzureIPv4Range],
-        subnet_name: Input[str],
+        public_ip_range_admins: Input[Sequence[str]],
+        private_ip_address: Input[str],
+        subnet_identity_servers: Input[network.GetSubnetResult],
         subscription_name: Input[str],
         virtual_network_name: Input[str],
         virtual_network_resource_group_name: Input[str],
@@ -50,16 +49,21 @@ class SHMDomainControllersProps:
         self.domain_root_dn = Output.from_input(domain_fqdn).apply(
             lambda dn: f"DC={dn.replace('.', ',DC=')}"
         )
-        self.domain_netbios_name = domain_netbios_name[:15]  # maximum of 15 characters
+        self.domain_netbios_name = Output.from_input(domain_netbios_name).apply(
+            lambda n: n[:15]
+        )  # maximum of 15 characters
         self.location = location
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect
         self.password_domain_computer_manager = password_domain_computer_manager
         self.password_domain_searcher = password_domain_searcher
-        # Note that usernames have a maximum of 20 characters
-        self.subnet_ip_range = subnet_ip_range
-        self.subnet_name = subnet_name
+        self.public_ip_range_admins = public_ip_range_admins
+        self.private_ip_address = private_ip_address
+        self.subnet_name = Output.from_input(subnet_identity_servers).apply(
+            lambda s: s.name
+        )
         self.subscription_name = subscription_name
+        # Note that usernames have a maximum of 20 characters
         self.username_domain_admin = "dshdomainadmin"
         self.username_domain_azuread_connect = "dshazureadsync"
         self.username_domain_computer_manager = "dshcomputermanager"
@@ -77,17 +81,18 @@ class SHMDomainControllersComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMDomainControllersProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:shm:SHMDomainControllersComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-identity",
+            resource_group_name=f"{stack_name}-rg-identity",
+            opts=child_opts,
         )
 
         # Create the DC
@@ -97,8 +102,8 @@ class SHMDomainControllersComponent(ComponentResource):
             WindowsVMProps(
                 admin_password=props.password_domain_admin,
                 admin_username=props.username_domain_admin,
-                ip_address_public=True,
-                ip_address_private=str(props.subnet_ip_range.available()[0]),
+                ip_address_public=False,
+                ip_address_private=props.private_ip_address,
                 location=props.location,
                 resource_group_name=resource_group.name,
                 subnet_name=props.subnet_name,
@@ -126,19 +131,19 @@ class SHMDomainControllersComponent(ComponentResource):
                 configuration_name=dsc_configuration_name,
                 dsc_description="DSC for Data Safe Haven primary domain controller",
                 dsc_file=dsc_reader,
-                dsc_parameters={
-                    "AzureADConnectPassword": props.password_domain_azuread_connect,
-                    "AzureADConnectUsername": props.username_domain_azuread_connect,
-                    "DomainAdministratorPassword": props.password_domain_admin,
-                    "DomainAdministratorUsername": props.username_domain_admin,
-                    "DomainComputerManagerPassword": props.password_domain_computer_manager,
-                    "DomainComputerManagerUsername": props.username_domain_computer_manager,
-                    "DomainName": props.domain_fqdn,
-                    "DomainNetBios": props.domain_netbios_name,
-                    "DomainRootDn": props.domain_root_dn,
-                    "LDAPSearcherPassword": props.password_domain_searcher,
-                    "LDAPSearcherUsername": props.username_domain_searcher,
-                },
+                dsc_parameters=Output.all(
+                    AzureADConnectPassword=props.password_domain_azuread_connect,
+                    AzureADConnectUsername=props.username_domain_azuread_connect,
+                    DomainAdministratorPassword=props.password_domain_admin,
+                    DomainAdministratorUsername=props.username_domain_admin,
+                    DomainComputerManagerPassword=props.password_domain_computer_manager,
+                    DomainComputerManagerUsername=props.username_domain_computer_manager,
+                    DomainName=props.domain_fqdn,
+                    DomainNetBios=props.domain_netbios_name,
+                    DomainRootDn=props.domain_root_dn,
+                    LDAPSearcherPassword=props.password_domain_searcher,
+                    LDAPSearcherUsername=props.username_domain_searcher,
+                ),
                 dsc_required_modules=props.automation_account_modules,
                 location=props.location,
                 subscription_name=props.subscription_name,
@@ -146,7 +151,8 @@ class SHMDomainControllersComponent(ComponentResource):
                 vm_resource_group_name=resource_group.name,
             ),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(depends_on=[primary_domain_controller])
+                ResourceOptions(depends_on=[primary_domain_controller]),
+                child_opts,
             ),
         )
         # Extract the domain SID
@@ -181,6 +187,7 @@ class SHMDomainControllersComponent(ComponentResource):
         self.exports = {
             "azure_ad_connect_password_secret": "password-domain-azure-ad-connect",
             "domain_sid": domain_sid.script_output,
+            "domain_admin_password_secret": "password-domain-vm-admin",
             "ldap_root_dn": props.domain_root_dn,
             "ldap_search_username": props.username_domain_searcher,
             "ldap_searcher_password_secret": "password-domain-ldap-searcher",

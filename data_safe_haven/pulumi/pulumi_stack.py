@@ -27,17 +27,19 @@ class PulumiStack(LoggingMixin):
         config: Config,
         deployment_type: str,
         *args: Optional[Any],
-        sre_name: str = None,
+        sre_name: Optional[str] = None,
         **kwargs: Optional[Any],
     ):
         super().__init__(*args, **kwargs)
-        self.cfg = config
-        self.env_ = None
-        self.stack_ = None
+        self.cfg: Config = config
+        self.env_: Optional[Dict[str, Any]] = None
+        self.stack_: Optional[pulumi.automation.Stack] = None
         self.options = {}
         if deployment_type == "SHM":
             self.program = DeclarativeSHM(config, config.shm.name)
         elif deployment_type == "SRE":
+            if not sre_name:
+                raise DataSafeHavenPulumiException("No sre_name was provided.")
             self.program = DeclarativeSRE(config, config.shm.name, sre_name)
         else:
             raise DataSafeHavenPulumiException(
@@ -76,7 +78,7 @@ class PulumiStack(LoggingMixin):
                 program=self.program.run,
                 opts=pulumi.automation.LocalWorkspaceOptions(
                     secrets_provider=self.cfg.backend.pulumi_secrets_provider,
-                    work_dir=self.work_dir,
+                    work_dir=str(self.work_dir),
                     env_vars=self.env,
                 ),
             )
@@ -121,7 +123,9 @@ class PulumiStack(LoggingMixin):
             # See https://github.com/MicrosoftDocs/azure-docs/issues/20737 for details
             while True:
                 try:
-                    result = self.stack.destroy(color="always", on_output=self.info)
+                    result = self.stack.destroy(
+                        color="always", on_output=self.info, parallel=1
+                    )
                     self.evaluate(result.summary.result)
                     break
                 except pulumi.automation.errors.CommandError as exc:
@@ -135,7 +139,8 @@ class PulumiStack(LoggingMixin):
                         time.sleep(10)
                     else:
                         raise
-            self.stack_.workspace.remove_stack(self.stack_name)
+            if self.stack_:
+                self.stack_.workspace.remove_stack(self.stack_name)
         except pulumi.automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException("Pulumi destroy failed.") from exc
 
@@ -197,7 +202,8 @@ class PulumiStack(LoggingMixin):
                 stderr=subprocess.STDOUT,
                 encoding="UTF-8",
             ) as process:
-                self.info(process.stdout.readline().strip())
+                if process.stdout:
+                    self.info(process.stdout.readline().strip())
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Logging into Pulumi failed.\n{str(exc)}."

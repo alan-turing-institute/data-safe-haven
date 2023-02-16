@@ -17,6 +17,7 @@ class TeardownBackendCommand(LoggingMixin, Command):
     Teardown a deployed Data Safe Haven backend using local configuration files
 
     backend
+        {--o|output= : Path to an output log file}
     """
 
     def handle(self):

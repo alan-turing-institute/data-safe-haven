@@ -19,48 +19,21 @@ class SHMNetworkingProps:
         location: Input[str],
         public_ip_range_admins: Input[Sequence[str]],
         record_domain_verification: Input[str],
-        ip_range_vnet: Optional[Input[Sequence[str]]] = [
-            "10.0.0.0",
-            "10.0.255.255",
-        ],
-        ip_range_firewall: Optional[
-            Input[Sequence[str]]
-        ] = [  # must be at least /26 in size
-            "10.0.0.0",
-            "10.0.0.63",
-        ],
-        ip_range_vpn_gateway: Optional[Input[Sequence[str]]] = [
-            "10.0.0.64",
-            "10.0.0.127",
-        ],
-        ip_range_monitoring: Optional[Input[Sequence[str]]] = [
-            "10.0.0.128",
-            "10.0.0.159",
-        ],
-        ip_range_update_servers: Optional[Input[Sequence[str]]] = [
-            "10.0.0.160",
-            "10.0.0.191",
-        ],
-        ip_range_identity: Optional[Input[Sequence[str]]] = [
-            "10.0.0.192",
-            "10.0.0.223",
-        ],
     ):
         self.fqdn = fqdn
-        self.ip_range_firewall = ip_range_firewall
-        self.ip_range_identity = ip_range_identity
-        self.ip_range_monitoring = ip_range_monitoring
-        self.ip_range_update_servers = ip_range_update_servers
-        self.ip_range_vnet = ip_range_vnet
-        self.ip_range_vpn_gateway = ip_range_vpn_gateway
         self.location = location
         self.public_ip_range_admins = public_ip_range_admins
         self.record_domain_verification = record_domain_verification
-        self.subnet_firewall_name = "AzureFirewallSubnet"  # This name is forced by https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
-        self.subnet_identity_name = "IdentitySubnet"
-        self.subnet_monitoring_name = "MonitoringSubnet"
-        self.subnet_update_servers_name = "UpdateServersSubnet"
-        self.subnet_vpn_gateway_name = "GatewaySubnet"  # This name is forced by https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+
+        # Virtual network and subnet IP ranges
+        self.vnet_iprange = AzureIPv4Range("10.0.0.0", "10.0.255.255")
+        # Firewall subnet must be at least /26 in size (64 addresses)
+        self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
+        # VPN gateway subnet must be at least /29 in size (8 addresses)
+        self.subnet_vpn_gateway_iprange = self.vnet_iprange.next_subnet(8)
+        self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(8)
+        self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
+        self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
 
 
 class SHMNetworkingComponent(ComponentResource):
@@ -72,79 +45,78 @@ class SHMNetworkingComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMNetworkingProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:shm:SHMNetworkingComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-networking",
+            resource_group_name=f"{stack_name}-rg-networking",
+            opts=child_opts,
         )
-
-        # Set address prefixes from ranges
-        virtual_network_iprange = AzureIPv4Range(*props.ip_range_vnet)
-        subnet_firewall_iprange = AzureIPv4Range(*props.ip_range_firewall)
-        subnet_vpn_gateway_iprange = AzureIPv4Range(*props.ip_range_vpn_gateway)
-        subnet_monitoring_iprange = AzureIPv4Range(*props.ip_range_monitoring)
-        subnet_update_servers_iprange = AzureIPv4Range(*props.ip_range_update_servers)
-        subnet_identity_iprange = AzureIPv4Range(*props.ip_range_identity)
 
         # Define NSGs
         nsg_monitoring = network.NetworkSecurityGroup(
             f"{self._name}_nsg_monitoring",
-            network_security_group_name=f"nsg-{stack_name}-monitoring",
+            network_security_group_name=f"{stack_name}-nsg-monitoring",
             resource_group_name=resource_group.name,
             security_rules=[],
             opts=child_opts,
         )
         nsg_update_servers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_update_servers",
-            network_security_group_name=f"nsg-{stack_name}-update-servers",
+            network_security_group_name=f"{stack_name}-nsg-update-servers",
             resource_group_name=resource_group.name,
             security_rules=[],
             opts=child_opts,
         )
-        nsg_identity = network.NetworkSecurityGroup(
+        nsg_identity_servers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_identity",
-            network_security_group_name=f"nsg-{stack_name}-identity",
+            network_security_group_name=f"{stack_name}-nsg-identity",
             resource_group_name=resource_group.name,
             security_rules=[
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound LDAP to domain controllers.",
-                    destination_address_prefix=str(subnet_identity_iprange),
+                    destination_address_prefix=str(
+                        props.subnet_identity_servers_iprange
+                    ),
                     destination_port_ranges=["389", "636"],
-                    direction="Inbound",
+                    direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowLDAPClientUDPInbound",
                     priority=1000,
-                    protocol="UDP",
+                    protocol=network.SecurityRuleProtocol.UDP,
                     source_address_prefix="*",
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound LDAP to domain controllers.",
-                    destination_address_prefix=str(subnet_identity_iprange),
+                    destination_address_prefix=str(
+                        props.subnet_identity_servers_iprange
+                    ),
                     destination_port_ranges=["389", "636"],
-                    direction="Inbound",
+                    direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowLDAPClientTCPInbound",
                     priority=1100,
-                    protocol="TCP",
+                    protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix="*",
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound RDP connections from admins.",
-                    destination_address_prefix=str(subnet_identity_iprange),
+                    destination_address_prefix=str(
+                        props.subnet_identity_servers_iprange
+                    ),
                     destination_port_ranges=["3389"],
-                    direction="Inbound",
+                    direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowAdminRDPInbound",
                     priority=2000,
-                    protocol="TCP",
+                    protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefixes=props.public_ip_range_admins,
                     source_port_range="*",
                 ),
@@ -152,47 +124,77 @@ class SHMNetworkingComponent(ComponentResource):
             opts=child_opts,
         )
 
-        # Define the virtual network with inline subnets
+        # Define route table
+        route_table = network.RouteTable(
+            f"{self._name}_route_table",
+            location=props.location,
+            resource_group_name=resource_group.name,
+            route_table_name=f"{stack_name}-route",
+            routes=[],
+            opts=ResourceOptions.merge(
+                ResourceOptions(
+                    ignore_changes=["routes"]
+                ),  # allow routes to be created outside this definition
+                child_opts,
+            ),
+        )
+
+        # Define the virtual network and its subnets
+        subnet_firewall_name = "AzureFirewallSubnet"  # this name is forced by https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
+        subnet_vpn_gateway_name = "GatewaySubnet"  # this name is forced by https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+        subnet_monitoring_name = "MonitoringSubnet"
+        subnet_update_servers_name = "UpdateServersSubnet"
+        subnet_identity_servers_name = "IdentityServersSubnet"
         virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
-                address_prefixes=[str(virtual_network_iprange)],
+                address_prefixes=[str(props.vnet_iprange)],
             ),
             resource_group_name=resource_group.name,
-            subnets=[  # Note that we need to define subnets inline or they will be destroyed/recreated on a new run
+            subnets=[  # Note that we define subnets inline to avoid creation order issues
+                # AzureFirewall subnet
                 network.SubnetArgs(
-                    address_prefix=str(subnet_firewall_iprange),
-                    name=props.subnet_firewall_name,
+                    address_prefix=str(props.subnet_firewall_iprange),
+                    name=subnet_firewall_name,
                     network_security_group=None,  # the firewall subnet must NOT have an NSG
+                    route_table=None,  # the firewall subnet must NOT be attached to the route table
                 ),
+                # VPN gateway subnet
                 network.SubnetArgs(
-                    address_prefix=str(subnet_vpn_gateway_iprange),
-                    name=props.subnet_vpn_gateway_name,
+                    address_prefix=str(props.subnet_vpn_gateway_iprange),
+                    name=subnet_vpn_gateway_name,
                     network_security_group=None,  # the VPN gateway subnet must NOT have an NSG
+                    route_table=None,  # the VPN gateway subnet must NOT be attached to the route table
                 ),
+                # Monitoring subnet
                 network.SubnetArgs(
-                    address_prefix=str(subnet_monitoring_iprange),
-                    name=props.subnet_monitoring_name,
+                    address_prefix=str(props.subnet_monitoring_iprange),
+                    name=subnet_monitoring_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_monitoring.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
+                # Update servers subnet
                 network.SubnetArgs(
-                    address_prefix=str(subnet_update_servers_iprange),
-                    name=props.subnet_update_servers_name,
+                    address_prefix=str(props.subnet_update_servers_iprange),
+                    name=subnet_update_servers_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_update_servers.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
+                # Identity servers subnet
                 network.SubnetArgs(
-                    address_prefix=str(subnet_identity_iprange),
-                    name=props.subnet_identity_name,
+                    address_prefix=str(props.subnet_identity_servers_iprange),
+                    name=subnet_identity_servers_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_identity.id
+                        id=nsg_identity_servers.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
             ],
-            virtual_network_name=f"vnet-{stack_name}",
+            virtual_network_name=f"{stack_name}-vnet",
             opts=child_opts,
         )
 
@@ -202,7 +204,8 @@ class SHMNetworkingComponent(ComponentResource):
             location="Global",
             resource_group_name=resource_group.name,
             zone_name=props.fqdn,
-            zone_type="Public",
+            zone_type=network.ZoneType.PUBLIC,
+            opts=child_opts,
         )
         caa_record = network.RecordSet(
             f"{self._name}_caa_record",
@@ -227,28 +230,77 @@ class SHMNetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             ttl=3600,
             txt_records=[
-                network.TxtRecordArgs(
-                    value=[props.record_domain_verification],
-                )
+                network.TxtRecordArgs(value=[props.record_domain_verification])
             ],
             zone_name=dns_zone.name,
             opts=child_opts,
         )
 
+        # Set up private link domains
+        for private_link_domain in [
+            "agentsvc.azure-automation.net",
+            "azure-automation.net",  # note this must come after 'agentsvc.azure-automation.net'
+            "blob.core.windows.net",
+            "monitor.azure.com",
+            "ods.opinsights.azure.com",
+            "oms.opinsights.azure.com",
+        ]:
+            private_zone = network.PrivateZone(
+                f"{self._name}_private_zone_{private_link_domain}",
+                location="Global",
+                private_zone_name=f"privatelink.{private_link_domain}",
+                resource_group_name=resource_group.name,
+                opts=child_opts,
+            )
+            virtual_network_link = network.VirtualNetworkLink(
+                f"{self._name}_private_zone_{private_link_domain}_vnet_link",
+                location="Global",
+                private_zone_name=private_zone.name,
+                registration_enabled=False,
+                resource_group_name=resource_group.name,
+                virtual_network=network.SubResourceArgs(id=virtual_network.id),
+                virtual_network_link_name=Output.concat(
+                    "link-to-", virtual_network.name
+                ),
+                opts=child_opts,
+            )
+
         # Register outputs
-        self.dns_zone_nameservers = dns_zone.name_servers
-        self.subnet_identity_iprange = subnet_identity_iprange
-        self.resource_group_name = Output.from_input(resource_group.name)
-        self.subnet_firewall_name = Output.from_input(props.subnet_firewall_name)
-        self.subnet_identity_name = Output.from_input(props.subnet_identity_name)
-        self.subnet_monitoring_name = Output.from_input(props.subnet_monitoring_name)
-        self.subnet_update_servers_name = Output.from_input(
-            props.subnet_update_servers_name
+        self.dns_zone = dns_zone
+        self.domain_controller_private_ip = str(
+            props.subnet_identity_servers_iprange.available()[0]
         )
-        self.subnet_vpn_gateway_name = Output.from_input(props.subnet_vpn_gateway_name)
+        self.resource_group_name = Output.from_input(resource_group.name)
+        self.route_table = route_table
+        self.subnet_firewall = network.get_subnet_output(
+            subnet_name=subnet_firewall_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=virtual_network.name,
+        )
+        self.subnet_identity_servers = network.get_subnet_output(
+            subnet_name=subnet_identity_servers_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=virtual_network.name,
+        )
+        self.subnet_monitoring = network.get_subnet_output(
+            subnet_name=subnet_monitoring_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=virtual_network.name,
+        )
+        self.subnet_update_servers = network.get_subnet_output(
+            subnet_name=subnet_update_servers_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=virtual_network.name,
+        )
+        self.subnet_vpn_gateway = network.get_subnet_output(
+            subnet_name=subnet_vpn_gateway_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=virtual_network.name,
+        )
         self.virtual_network = virtual_network
 
         # Register exports
         self.exports = {
+            "resource_group_name": resource_group.name,
             "virtual_network_name": virtual_network.name,
         }

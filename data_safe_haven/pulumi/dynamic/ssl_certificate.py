@@ -157,6 +157,7 @@ class SSLCertificateProvider(DshResourceProvider):
 
 
 class SSLCertificate(Resource):
+    _resource_type_name = "dsh:SSLCertificate"  # set resource type
     secret_id: Output[str]
 
     def __init__(
@@ -165,7 +166,6 @@ class SSLCertificate(Resource):
         props: SSLCertificateProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        self._resource_type_name = "dsh:SSLCertificate"  # set resource type
         super().__init__(
             SSLCertificateProvider(),
             name,

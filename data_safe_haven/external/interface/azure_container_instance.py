@@ -94,7 +94,7 @@ class AzureContainerInstance(AzureMixin, LoggingMixin):
         output = []
         with contextlib.suppress(websocket.WebSocketConnectionClosedException):
             while result := socket.recv():
-                for line in [l.strip() for l in result.splitlines()]:
+                for line in [line.strip() for line in result.splitlines()]:
                     output.append(line)
             socket.close()
         return output

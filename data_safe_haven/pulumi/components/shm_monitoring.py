@@ -1,7 +1,10 @@
 """Pulumi component for SHM monitoring"""
+# Standard library import
+from typing import Optional
+
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import automation, resources
+from pulumi_azure_native import automation, network, resources
 
 
 class SHMMonitoringProps:
@@ -9,13 +12,21 @@ class SHMMonitoringProps:
 
     def __init__(
         self,
+        dns_resource_group_name: Input[str],
         location: Input[str],
+        subnet_monitoring: Input[network.GetSubnetResult],
     ):
+        self.dns_resource_group_name = dns_resource_group_name
         self.location = location
+        self.subnet_monitoring_id = Output.from_input(subnet_monitoring).apply(
+            lambda s: s.id
+        )
 
 
 class SHMMonitoringComponent(ComponentResource):
     """Deploy SHM secrets with Pulumi"""
+
+    private_zone_names = ["agentsvc.azure-automation.net", "azure-automation.net"]
 
     def __init__(
         self,
@@ -23,16 +34,17 @@ class SHMMonitoringComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMMonitoringProps,
-        opts: ResourceOptions = None,
+        opts: Optional[ResourceOptions] = None,
     ):
         super().__init__("dsh:shm:SHMMonitoringComponent", name, {}, opts)
-        child_opts = ResourceOptions(parent=self)
+        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"rg-{stack_name}-monitoring",
+            resource_group_name=f"{stack_name}-rg-monitoring",
+            opts=child_opts,
         )
 
         # Deploy automation account
@@ -84,7 +96,36 @@ class SHMMonitoringComponent(ComponentResource):
                 ),
                 module_name=module_name,
                 resource_group_name=resource_group.name,
+                opts=child_opts,
             )
+
+        # Set up a private endpoint
+        private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_automation_private_endpoint",
+            location=props.location,
+            private_endpoint_name=f"{stack_name}-automation-pep",
+            private_link_service_connections=[
+                network.PrivateLinkServiceConnectionArgs(
+                    group_ids=["DSCAndHybridWorker"],
+                    name="DSCAndHybridWorker",
+                    private_link_service_id=automation_account.id,
+                    request_message="Connection auto-approved.",
+                )
+            ],
+            resource_group_name=resource_group.name,
+            subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
+            opts=child_opts,
+        )
+
+        # Add a private DNS record for each custom DNS config
+        private_endpoint.custom_dns_configs.apply(
+            lambda cfgs: [
+                self.private_record_set(cfg, props.dns_resource_group_name, child_opts)
+                for cfg in cfgs
+            ]
+            if cfgs
+            else []
+        )
 
         # Register outputs
         self.automation_account = automation_account
@@ -102,4 +143,33 @@ class SHMMonitoringComponent(ComponentResource):
         self.automation_account_primary_key = Output.secret(
             automation_keys.keys[0].value
         )
-        self.resource_group_name = Output.secret(resource_group.name)
+        self.resource_group_name = resource_group.name
+
+    def private_record_set(
+        self,
+        config: network.outputs.CustomDnsConfigPropertiesFormatResponse,
+        resource_group_name: Input[str],
+        child_opts: Optional[ResourceOptions] = None,
+    ) -> network.PrivateRecordSet:
+        """
+        Create a PrivateRecordSet for a given CustomDnsConfigPropertiesFormatResponse
+
+        Note that creating resources inside an .apply() is discouraged but not
+        forbidden. This is the one way to create one resource for each entry in
+        an Output[Sequence]. See https://github.com/pulumi/pulumi/issues/3849.
+        """
+        private_zone_name = [
+            name for name in self.private_zone_names if name in config.fqdn
+        ][0]
+        record_name = config.fqdn.replace(f".{private_zone_name}", "")
+        ip_address = config.ip_addresses[0] if config.ip_addresses else ""
+        return network.PrivateRecordSet(
+            f"{self._name}_private_a_record_{record_name}.{private_zone_name}",
+            a_records=[network.ARecordArgs(ipv4_address=ip_address)],
+            private_zone_name=f"privatelink.{private_zone_name}",
+            record_type="A",
+            relative_record_set_name=record_name,
+            resource_group_name=resource_group_name,
+            ttl=10,
+            opts=child_opts,
+        )

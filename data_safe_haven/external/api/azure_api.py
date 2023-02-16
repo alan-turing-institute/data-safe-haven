@@ -2,7 +2,7 @@
 # Standard library imports
 import time
 from contextlib import suppress
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 # Third party imports
 from azure.core.exceptions import (
@@ -40,7 +40,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInternalException,
 )
-from data_safe_haven.helpers import JSONType
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
@@ -169,7 +168,7 @@ class AzureApi(AzureMixin, LoggingMixin):
         managed_identity: Identity,
         resource_group_name: str,
         tags: Any = None,
-        tenant_id: str = None,
+        tenant_id: Optional[str] = None,
     ) -> Vault:
         """Ensure that a KeyVault exists
 
@@ -300,13 +299,17 @@ class AzureApi(AzureMixin, LoggingMixin):
             no_newline=True,
         )
         try:
+            # Connect to Azure clients
+            secret_client = SecretClient(
+                f"https://{key_vault_name}.vault.azure.net", self.credential
+            )
             try:
-                secret = self.get_keyvault_secret(key_vault_name, secret_name)
+                secret = secret_client.get_secret(secret_name)
             except DataSafeHavenAzureException:
                 secret = None
             if not secret:
                 self.set_keyvault_secret(key_vault_name, secret_name, secret_value)
-                secret = self.get_keyvault_secret(key_vault_name, secret_name)
+                secret = secret_client.get_secret(secret_name)
             self.info(
                 f"Ensured that secret <fg=green>{secret_name}</> exists.",
                 overwrite=True,
@@ -568,7 +571,9 @@ class AzureApi(AzureMixin, LoggingMixin):
         # Ensure that secret exists
         try:
             secret = secret_client.get_secret(secret_name)
-            return secret.value
+            if secret.value:
+                return secret.value
+            raise DataSafeHavenAzureException(f"Secret {secret_name} has no value.")
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to retrieve secret {secret_name}."
@@ -638,7 +643,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Failed to import certificate '{certificate_name}'."
             ) from exc
 
-    def list_available_vm_skus(self, location: str) -> JSONType:
+    def list_available_vm_skus(self, location: str) -> Dict[str, Dict[str, Any]]:
         try:
             # Connect to Azure client
             compute_client = ComputeManagementClient(
@@ -819,6 +824,31 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Failed to remove resource group {resource_group_name}.\n{str(exc)}"
             ) from exc
 
+    def restart_virtual_machine(self, resource_group_name: str, vm_name: str) -> None:
+        try:
+            self.info(
+                f"Attempting to restart virtual machine '<fg=green>{vm_name}</>' in resource group '<fg=green>{resource_group_name}</>'...",
+                no_newline=True,
+            )
+            # Connect to Azure clients
+            compute_client = ComputeManagementClient(
+                self.credential, self.subscription_id
+            )
+            poller = compute_client.virtual_machines.begin_restart(
+                resource_group_name, vm_name
+            )
+            _ = (
+                poller.result()
+            )  # returns 'None' on success or raises an exception on failure
+            self.info(
+                f"Restarted virtual machine '<fg=green>{vm_name}</>' in resource group '<fg=green>{resource_group_name}</>'.",
+                overwrite=True,
+            )
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to restart virtual machine '{vm_name}' in resource group '{resource_group_name}'.\n{str(exc)}"
+            ) from exc
+
     def run_remote_script(
         self,
         resource_group_name: str,
@@ -840,6 +870,8 @@ class AzureApi(AzureMixin, LoggingMixin):
                 self.credential, self.subscription_id
             )
             vm = compute_client.virtual_machines.get(resource_group_name, vm_name)
+            if not vm.os_profile:
+                raise ValueError(f"No OSProfile available for VM {vm_name}")
             command_id = (
                 "RunPowerShellScript"
                 if (
@@ -886,7 +918,7 @@ class AzureApi(AzureMixin, LoggingMixin):
             )
             # Set the secret to the desired value
             try:
-                existing_value = secret_client.get_secret(secret_name)
+                existing_value = secret_client.get_secret(secret_name).value
             except ResourceNotFoundError:
                 existing_value = None
             if (not existing_value) or (existing_value != secret_value):

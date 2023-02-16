@@ -1,6 +1,7 @@
 """Load global and local settings from dotfiles"""
 # Standard library imports
 import pathlib
+from typing import cast, Dict, Optional
 
 # Third party imports
 import yaml
@@ -21,39 +22,28 @@ class DotFileSettings(LoggingMixin):
       name: Turing Development
     """
 
-    admin_group_id: str = None
-    location: str = None
-    name: str = None
-    subscription_name: str = None
-    config_file_name = ".dshconfig"
+    admin_group_id: str
+    location: str
+    name: str
+    subscription_name: str
+    config_file_name: str = ".dshconfig"
 
     def __init__(
         self,
-        admin_group_id: str = None,
-        location: str = None,
-        name: str = None,
-        subscription_name: str = None,
+        admin_group_id: Optional[str] = None,
+        location: Optional[str] = None,
+        name: Optional[str] = None,
+        subscription_name: Optional[str] = None,
     ):
         super().__init__()
+        # Load local dotfile settings (if any)
+        local_dotfile = pathlib.Path.cwd() / self.config_file_name
         try:
-            # Load local dotfile settings (if any)
-            local_dotfile = pathlib.Path.cwd() / self.config_file_name
             if local_dotfile.exists():
-                with open(pathlib.Path(local_dotfile), "r", encoding="utf-8") as f_yaml:
-                    settings = yaml.safe_load(f_yaml)
-                    self.admin_group_id = settings.get("azure", {}).get(
-                        "admin_group_id", self.admin_group_id
-                    )
-                    self.location = settings.get("azure", {}).get(
-                        "location", self.location
-                    )
-                    self.name = settings.get("shm", {}).get("name", self.name)
-                    self.subscription_name = settings.get("azure", {}).get(
-                        "subscription_name", self.subscription_name
-                    )
+                self.read(local_dotfile)
         except Exception as exc:
             raise DataSafeHavenInputException(
-                f"Could not load settings from YAML file '{local_dotfile}'"
+                f"Could not load settings from YAML file '{local_dotfile}'.\n{str(exc)}"
             ) from exc
 
         # Override with command-line settings (if any)
@@ -86,7 +76,23 @@ class DotFileSettings(LoggingMixin):
                 None,
             )
 
-    def write(self, directory: pathlib.Path) -> None:
+    def read(self, yaml_file: pathlib.Path) -> None:
+        """Read settings from YAML file"""
+        with open(pathlib.Path(yaml_file), "r", encoding="utf-8") as f_yaml:
+            settings = cast(Dict[str, Dict[str, str]], yaml.safe_load(f_yaml))
+        if admin_group_id := settings.get("azure", {}).get("admin_group_id", None):
+            self.admin_group_id = admin_group_id
+        if location := settings.get("azure", {}).get("location", None):
+            self.location = location
+        if name := settings.get("shm", {}).get("name", None):
+            self.name = name
+        if subscription_name := settings.get("azure", {}).get(
+            "subscription_name", None
+        ):
+            self.subscription_name = subscription_name
+
+    def write(self, directory: pathlib.Path) -> pathlib.Path:
+        """Write settings to YAML file"""
         settings = {
             "shm": {
                 "name": self.name,
@@ -98,6 +104,6 @@ class DotFileSettings(LoggingMixin):
             },
         }
         filepath = (directory / self.config_file_name).resolve()
-        with open(filepath, "w", encoding="utf-8") as f_settings:
-            yaml.dump(settings, f_settings, indent=2)
+        with open(filepath, "w", encoding="utf-8") as f_yaml:
+            yaml.dump(settings, f_yaml, indent=2)
         return filepath

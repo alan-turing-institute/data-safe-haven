@@ -13,6 +13,7 @@ from .components.shm_domain_controllers import (
 )
 from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
+from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
 from .components.shm_state import SHMStateComponent, SHMStateProps
 
 
@@ -46,6 +47,23 @@ class DeclarativeSHM:
             ),
         )
 
+        # Deploy SHM firewall and routing
+        firewall = SHMFirewallComponent(
+            "shm_firewall",
+            self.stack_name,
+            self.shm_name,
+            SHMFirewallProps(
+                domain_controller_private_ip=networking.domain_controller_private_ip,
+                dns_zone=networking.dns_zone,
+                location=self.cfg.azure.location,
+                resource_group_name=networking.resource_group_name,
+                route_table_name=networking.route_table.name,
+                subnet_firewall=networking.subnet_firewall,
+                subnet_identity_servers=networking.subnet_identity_servers,
+                subnet_update_servers=networking.subnet_update_servers,
+            ),
+        )
+
         # Deploy SHM state
         state = SHMStateComponent(
             "shm_state",
@@ -64,11 +82,11 @@ class DeclarativeSHM:
             self.stack_name,
             self.shm_name,
             SHMMonitoringProps(
+                dns_resource_group_name=networking.resource_group_name,
                 location=self.cfg.azure.location,
+                subnet_monitoring=networking.subnet_monitoring,
             ),
         )
-
-        # Deploy firewall
 
         # Deploy update servers
 
@@ -83,8 +101,8 @@ class DeclarativeSHM:
                 automation_account_registration_key=monitoring.automation_account_primary_key,
                 automation_account_registration_url=monitoring.automation_account_agentsvc_url,
                 automation_account_resource_group_name=monitoring.resource_group_name,
-                domain_fqdn=self.cfg.shm.fqdn,
-                domain_netbios_name=self.stack_name[4:].upper(),  # drop initial 'shm-'
+                domain_fqdn=networking.dns_zone.name,
+                domain_netbios_name=self.shm_name.upper(),
                 location=self.cfg.azure.location,
                 password_domain_admin=self.secrets.require("password-domain-admin"),
                 password_domain_azuread_connect=self.secrets.require(
@@ -96,8 +114,9 @@ class DeclarativeSHM:
                 password_domain_searcher=self.secrets.require(
                     "password-domain-ldap-searcher"
                 ),
-                subnet_ip_range=networking.subnet_identity_iprange,
-                subnet_name=networking.subnet_identity_name,
+                public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
+                private_ip_address=networking.domain_controller_private_ip,
+                subnet_identity_servers=networking.subnet_identity_servers,
                 subscription_name=self.cfg.subscription_name,
                 virtual_network_name=networking.virtual_network.name,
                 virtual_network_resource_group_name=networking.resource_group_name,
@@ -105,6 +124,6 @@ class DeclarativeSHM:
         )
 
         # Export values for later use
-        pulumi.export("fqdn_nameservers", networking.dns_zone_nameservers)
         pulumi.export("domain_controllers", domain_controllers.exports)
+        pulumi.export("fqdn_nameservers", networking.dns_zone.name_servers)
         pulumi.export("networking", networking.exports)
