@@ -71,7 +71,7 @@ Sometimes if a user has provided an incorrect phone number, or has a new phone n
 - Login into the Azure Portal and connect to the correct AAD
 - Open `Azure Active Directory`
 - Click `Users` under `Manage`
-- Search for the user and check the box next to their name, then click `Delete`
+- Search for the user and check the box next to their name, then click `Delete` (this could take a few minutes)
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - Open `Active Directory Users and Computers`
 - Click on `Safe Haven Research Users`
