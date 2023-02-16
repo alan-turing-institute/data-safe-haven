@@ -36,7 +36,14 @@ class ActiveDirectoryUsers(LoggingMixin):
         )
         csv_contents = ["SamAccountName;GivenName;Surname;Mobile;Email;Country"]
         for user in new_users:
-            if user.username and user.given_name and user.surname and user.phone_number and user.email_address and user.country:
+            if (
+                user.username
+                and user.given_name
+                and user.surname
+                and user.phone_number
+                and user.email_address
+                and user.country
+            ):
                 csv_contents += [
                     ";".join(
                         [

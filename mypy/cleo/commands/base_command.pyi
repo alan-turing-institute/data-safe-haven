@@ -1,9 +1,10 @@
+from typing import Optional
+
 from _typeshed import Incomplete
 from cleo.io import ConsoleIO as ConsoleIO
 from clikit.api.args import Args as Args
 from clikit.api.command import Command as CliKitCommand
 from clikit.api.config.command_config import CommandConfig
-from typing import Optional
 
 class CommandError(Exception): ...
 

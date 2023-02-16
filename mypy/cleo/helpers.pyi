@@ -1,5 +1,6 @@
-from clikit.api.args.format import Argument, Option
 from typing import Any, Optional
+
+from clikit.api.args.format import Argument, Option
 
 def argument(
     name: str,

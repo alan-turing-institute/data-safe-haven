@@ -1,7 +1,9 @@
-from .._compat import encode as encode
-from ..helpers import argument as argument, option as option
-from .command import Command as Command
 from _typeshed import Incomplete
+
+from .._compat import encode as encode
+from ..helpers import argument as argument
+from ..helpers import option as option
+from .command import Command as Command
 
 class CompletionsCommand(Command):
     name: str

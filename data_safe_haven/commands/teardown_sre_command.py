@@ -41,10 +41,10 @@ class TeardownSRECommand(LoggingMixin, Command):
             try:
                 name = self.argument("name")
                 if not isinstance(name, str):
-                    raise DataSafeHavenInputException(f"Invalid value '{name}' provided for option 'name'.")
-                stack = PulumiStack(
-                    config, "SRE", sre_name=name
-                )
+                    raise DataSafeHavenInputException(
+                        f"Invalid value '{name}' provided for option 'name'."
+                    )
+                stack = PulumiStack(config, "SRE", sre_name=name)
                 if stack.work_dir.exists():
                     stack.teardown()
                 else:

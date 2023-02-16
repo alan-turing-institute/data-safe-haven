@@ -29,7 +29,9 @@ class SREStateProps:
         self.admin_group_id = admin_group_id
         self.dns_record = dns_record
         self.location = location
-        self.networking_resource_group_name = Output.from_input(networking_resource_group).apply(lambda rg: rg.name)
+        self.networking_resource_group_name = Output.from_input(
+            networking_resource_group
+        ).apply(lambda rg: rg.name)
         self.sre_fqdn = sre_fqdn
         self.subscription_name = subscription_name
         self.tenant_id = tenant_id
@@ -183,9 +185,11 @@ class SREStateComponent(ComponentResource):
                 subscription_name=props.subscription_name,
             ),
             opts=ResourceOptions.merge(
-                ResourceOptions(depends_on=[props.dns_record]), # we need the delegation NS record to exist before generating the certificate
+                ResourceOptions(
+                    depends_on=[props.dns_record]
+                ),  # we need the delegation NS record to exist before generating the certificate
                 child_opts,
-            )
+            ),
         )
 
         # Register outputs

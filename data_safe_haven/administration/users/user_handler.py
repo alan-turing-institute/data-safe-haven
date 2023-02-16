@@ -43,7 +43,9 @@ class UserHandler(LoggingMixin, AzureMixin):
             with open(users_csv_path, encoding="utf-8") as f_csv:
                 reader = csv.DictReader(f_csv)
                 for required_field in ["GivenName", "Surname", "Phone", "Email"]:
-                    if (not reader.fieldnames) or (required_field not in reader.fieldnames):
+                    if (not reader.fieldnames) or (
+                        required_field not in reader.fieldnames
+                    ):
                         raise ValueError(
                             f"Missing required CSV field '{required_field}'."
                         )

@@ -1,7 +1,9 @@
 from typing import Optional, Tuple
+
 from clikit.api.args.raw_args import RawArgs
 from clikit.api.io import InputStream, OutputStream
 from clikit.console_application import ConsoleApplication
+
 from .commands import BaseCommand as BaseCommand
 from .commands.completions_command import CompletionsCommand as CompletionsCommand
 from .config import ApplicationConfig as ApplicationConfig

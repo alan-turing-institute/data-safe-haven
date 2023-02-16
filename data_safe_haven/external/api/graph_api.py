@@ -436,7 +436,9 @@ class GraphApi(LoggingMixin):
                 scopes="https://graph.microsoft.com/.default"
             )
             if not isinstance(result, Dict):
-                raise DataSafeHavenMicrosoftGraphException(f"Invalid application token returned from Microsoft Graph.")
+                raise DataSafeHavenMicrosoftGraphException(
+                    f"Invalid application token returned from Microsoft Graph."
+                )
             return result["access_token"]
         except Exception as exc:
             error_description = "Could not create access token"

@@ -48,7 +48,9 @@ class UsersAddCommand(LoggingMixin, Command):
             users = UserHandler(config, graph_api)
             csv_path = self.argument("csv")
             if not isinstance(csv_path, str):
-                raise DataSafeHavenInputException(f"Invalid value '{csv_path}' provided for argument 'csv'.")
+                raise DataSafeHavenInputException(
+                    f"Invalid value '{csv_path}' provided for argument 'csv'."
+                )
             users.add(csv_path)
         except DataSafeHavenException as exc:
             for (

@@ -36,7 +36,9 @@ class DeploySRECommand(LoggingMixin, Command):
 
             # Require at least one research desktop
             if not self.option("research-desktop"):
-                raise DataSafeHavenInputException("At least one research desktop must be specified.")
+                raise DataSafeHavenInputException(
+                    "At least one research desktop must be specified."
+                )
 
             # Use dotfile settings to load the job configuration
             try:
@@ -50,7 +52,9 @@ class DeploySRECommand(LoggingMixin, Command):
             # Set a JSON-safe name for this SRE and add any missing values to the config
             self.sre_name = self.argument("name")
             if not isinstance(self.sre_name, str):
-                raise DataSafeHavenInputException((f"Invalid value '{self.sre_name}' provided for option 'name'."))
+                raise DataSafeHavenInputException(
+                    (f"Invalid value '{self.sre_name}' provided for option 'name'.")
+                )
             self.sre_name = alphanumeric(self.sre_name)
             self.add_missing_values(config)
 
@@ -145,14 +149,14 @@ class DeploySRECommand(LoggingMixin, Command):
         # Add list of research desktop VMs
         research_desktops = self.option("research-desktop")
         if not isinstance(research_desktops, List):
-            raise DataSafeHavenInputException((f"Invalid value '{research_desktops}' provided for option 'research-desktop'."))
+            raise DataSafeHavenInputException(
+                (
+                    f"Invalid value '{research_desktops}' provided for option 'research-desktop'."
+                )
+            )
         azure_api = AzureApi(config.subscription_name)
         available_vm_skus = azure_api.list_available_vm_skus(config.azure.location)
-        vm_skus = [
-            sku
-            for sku in research_desktops
-            if sku in available_vm_skus
-        ]
+        vm_skus = [sku for sku in research_desktops if sku in available_vm_skus]
         while not vm_skus:
             self.warning("An SRE deployment needs at least one research desktop.")
             self.info(
