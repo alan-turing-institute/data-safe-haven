@@ -5,7 +5,7 @@ import pathlib
 import time
 from contextlib import suppress
 from io import UnsupportedOperation
-from typing import cast, Any, Dict, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 # Third party imports
 import requests
@@ -435,7 +435,8 @@ class GraphApi(LoggingMixin):
             result = app.acquire_token_for_client(
                 scopes="https://graph.microsoft.com/.default"
             )
-            result = cast(Dict[str, Any], result)
+            if not isinstance(result, Dict):
+                raise DataSafeHavenMicrosoftGraphException(f"Invalid application token returned from Microsoft Graph.")
             return result["access_token"]
         except Exception as exc:
             error_description = "Could not create access token"

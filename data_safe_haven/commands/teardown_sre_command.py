@@ -1,7 +1,6 @@
 """Command-line application for tearing down a Secure Research Environment"""
 # Third party imports
 from cleo import Command
-from typing import cast
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
@@ -23,8 +22,8 @@ class TeardownSRECommand(LoggingMixin, Command):
     """
 
     def handle(self):
+        environment_name = "UNKNOWN"
         try:
-            environment_name = "UNKNOWN"
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
 
@@ -40,8 +39,11 @@ class TeardownSRECommand(LoggingMixin, Command):
 
             # Remove infrastructure deployed with Pulumi
             try:
+                name = self.argument("name")
+                if not isinstance(name, str):
+                    raise DataSafeHavenInputException(f"Invalid value '{name}' provided for option 'name'.")
                 stack = PulumiStack(
-                    config, "SRE", sre_name=cast(str, self.argument("name"))
+                    config, "SRE", sre_name=name
                 )
                 if stack.work_dir.exists():
                     stack.teardown()

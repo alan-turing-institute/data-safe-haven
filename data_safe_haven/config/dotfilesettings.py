@@ -1,7 +1,7 @@
 """Load global and local settings from dotfiles"""
 # Standard library imports
 import pathlib
-from typing import cast, Dict, Optional
+from typing import Dict, Optional
 
 # Third party imports
 import yaml
@@ -79,7 +79,9 @@ class DotFileSettings(LoggingMixin):
     def read(self, yaml_file: pathlib.Path) -> None:
         """Read settings from YAML file"""
         with open(pathlib.Path(yaml_file), "r", encoding="utf-8") as f_yaml:
-            settings = cast(Dict[str, Dict[str, str]], yaml.safe_load(f_yaml))
+            settings = yaml.safe_load(f_yaml)
+        if not isinstance(settings, Dict):
+            return
         if admin_group_id := settings.get("azure", {}).get("admin_group_id", None):
             self.admin_group_id = admin_group_id
         if location := settings.get("azure", {}).get("location", None):

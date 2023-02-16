@@ -1,6 +1,6 @@
 """Mixin class for anything Azure-aware"""
 # Standard library imports
-from typing import cast, Optional
+from typing import Optional
 
 # Third party imports
 from azure.core.exceptions import ClientAuthenticationError

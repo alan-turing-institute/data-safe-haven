@@ -1,7 +1,6 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Third party imports
 from cleo import Command
-from typing import cast
 
 # Local imports
 from data_safe_haven.administration.users import UserHandler
@@ -24,8 +23,8 @@ class UsersAddCommand(LoggingMixin, Command):
     """
 
     def handle(self):
+        environment_name = "UNKNOWN"
         try:
-            environment_name = "UNKNOWN"
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
 
@@ -47,7 +46,10 @@ class UsersAddCommand(LoggingMixin, Command):
 
             # Add users to SHM
             users = UserHandler(config, graph_api)
-            users.add(cast(str, self.argument("csv")))
+            csv_path = self.argument("csv")
+            if not isinstance(csv_path, str):
+                raise DataSafeHavenInputException(f"Invalid value '{csv_path}' provided for argument 'csv'.")
+            users.add(csv_path)
         except DataSafeHavenException as exc:
             for (
                 line
