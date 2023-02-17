@@ -1200,7 +1200,7 @@ python-versions = ">=3.6"
 name = "types-chevron"
 version = "0.14.2.2"
 description = "Typing stubs for chevron"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1208,7 +1208,7 @@ python-versions = "*"
 name = "types-docutils"
 version = "0.19.1.4"
 description = "Typing stubs for docutils"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1216,6 +1216,14 @@ python-versions = "*"
 name = "types-protobuf"
 version = "4.21.0.6"
 description = "Typing stubs for protobuf"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "types-psycopg2"
+version = "2.9.21.5"
+description = "Typing stubs for psycopg2"
 category = "main"
 optional = false
 python-versions = "*"
@@ -1224,7 +1232,7 @@ python-versions = "*"
 name = "types-pytz"
 version = "2022.7.1.0"
 description = "Typing stubs for pytz"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1232,15 +1240,26 @@ python-versions = "*"
 name = "types-pyyaml"
 version = "6.0.12.6"
 description = "Typing stubs for PyYAML"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "types-requests"
+version = "2.28.11.13"
+description = "Typing stubs for requests"
 category = "main"
 optional = false
 python-versions = "*"
+
+[package.dependencies]
+types-urllib3 = "<1.27"
 
 [[package]]
 name = "types-setuptools"
 version = "67.3.0.1"
 description = "Typing stubs for setuptools"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1251,6 +1270,14 @@ types-docutils = "*"
 name = "types-six"
 version = "1.16.21.4"
 description = "Typing stubs for six"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "types-urllib3"
+version = "1.26.25.6"
+description = "Typing stubs for urllib3"
 category = "main"
 optional = false
 python-versions = "*"
@@ -1343,7 +1370,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "682502bd3abea1efd53700f9a7f2b86cebeec4fa8f122cd1b8ad967ea4febcda"
+content-hash = "384e67ca18a39e3547bdb61d8c4f1a58752127d6dce943f353005c47ab94cbdc"
 
 [metadata.files]
 acme = [
@@ -2109,6 +2136,10 @@ types-protobuf = [
     {file = "types-protobuf-4.21.0.6.tar.gz", hash = "sha256:8c105b906569e9d53ba033465880d9ef17a59bf3ba8ab656d24c9eadb9d8a056"},
     {file = "types_protobuf-4.21.0.6-py3-none-any.whl", hash = "sha256:39167012ead0bc5920b6322a1e4dc2d088f66a34b84cce39bb88500e49ac955a"},
 ]
+types-psycopg2 = [
+    {file = "types-psycopg2-2.9.21.5.tar.gz", hash = "sha256:93e436f5cc5e691f9f3004cef81675b8b5fab97689fc74d9d20f95bba80b3432"},
+    {file = "types_psycopg2-2.9.21.5-py3-none-any.whl", hash = "sha256:1757e5e9760aadc2d648d7b2a89d9733a1c5ee4ea6ef0d3fc90a7c4306556383"},
+]
 types-pytz = [
     {file = "types-pytz-2022.7.1.0.tar.gz", hash = "sha256:918f9c3e7a950ba7e7d6f84b18a7cacabc8886cb7125fb1927ff1c752b4b59de"},
     {file = "types_pytz-2022.7.1.0-py3-none-any.whl", hash = "sha256:10ec7d009a02340f1cecd654ac03f0c29b6088a03b63d164401fc52df45936b2"},
@@ -2117,6 +2148,10 @@ types-pyyaml = [
     {file = "types-PyYAML-6.0.12.6.tar.gz", hash = "sha256:24e76b938d58e68645271eeb149af6022d1da99788e481f959bd284b164f39a1"},
     {file = "types_PyYAML-6.0.12.6-py3-none-any.whl", hash = "sha256:77b74d0874482f2b42dd566b7277b0a220068595e0fb42689d0c0560f3d1ae9e"},
 ]
+types-requests = [
+    {file = "types-requests-2.28.11.13.tar.gz", hash = "sha256:3fd332842e8759ea5f7eb7789df8aa772ba155216ccf10ef4aa3b0e5b42e1b46"},
+    {file = "types_requests-2.28.11.13-py3-none-any.whl", hash = "sha256:94896f6f8e9f3db11e422c6e3e4abbc5d7ccace853eac74b23bdd65eeee3cdee"},
+]
 types-setuptools = [
     {file = "types-setuptools-67.3.0.1.tar.gz", hash = "sha256:1a26d373036c720e566823b6edd664a2db4d138b6eeba856721ec1254203474f"},
     {file = "types_setuptools-67.3.0.1-py3-none-any.whl", hash = "sha256:a7e0f0816b5b449f5bcdc0efa43da91ff81dbe6941f293a6490d68a450e130a1"},
@@ -2124,6 +2159,10 @@ types-setuptools = [
 types-six = [
     {file = "types-six-1.16.21.4.tar.gz", hash = "sha256:daaf1b506137d37257fad7a747857c57d5331611919d0d94b8195a06bdbc02af"},
     {file = "types_six-1.16.21.4-py3-none-any.whl", hash = "sha256:3849354bd07b9274436aaa7d5d834594d8f0aa74581f88c632188c58f2abed23"},
+]
+types-urllib3 = [
+    {file = "types-urllib3-1.26.25.6.tar.gz", hash = "sha256:35586727cbd7751acccf2c0f34a88baffc092f435ab62458f10776466590f2d5"},
+    {file = "types_urllib3-1.26.25.6-py3-none-any.whl", hash = "sha256:a6c23c41bd03e542eaee5423a018f833077b51c4bf9ceb5aa544e12b812d5604"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.5.0-py3-none-any.whl", hash = "sha256:fb33085c39dd998ac16d1431ebc293a8b3eedd00fd4a32de0ff79002c19511b4"},

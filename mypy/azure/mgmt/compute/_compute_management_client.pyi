@@ -4,13 +4,13 @@ from azure.core.credentials import TokenCredential
 from azure.identity import DefaultAzureCredential
 from azure.profiles import KnownProfiles
 from azure.profiles.multiapiclient import MultiApiClientMixin
+from .v2021_07_01.operations import ResourceSkusOperations
+from .v2022_11_01.operations import VirtualMachinesOperations
 
-from .v2021_08_01.operations import StorageAccountsOperations
-
-class _SDKClient:
+class _SDKClient(object):
     def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
-class StorageManagementClient(MultiApiClientMixin, _SDKClient):
+class ComputeManagementClient(MultiApiClientMixin, _SDKClient):
     def __init__(
         self,
         credential: TokenCredential | DefaultAzureCredential,
@@ -21,4 +21,6 @@ class StorageManagementClient(MultiApiClientMixin, _SDKClient):
         **kwargs: Any
     ) -> None: ...
     @property
-    def storage_accounts(self) -> StorageAccountsOperations: ...
+    def resource_skus(self) -> ResourceSkusOperations: ...
+    @property
+    def virtual_machines(self) -> VirtualMachinesOperations: ...

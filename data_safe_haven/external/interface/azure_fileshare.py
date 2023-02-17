@@ -1,4 +1,8 @@
 """Helper class for Azure fileshares"""
+# Standard library imports
+from contextlib import suppress
+from typing import Any, Optional
+
 # Third party imports
 from azure.core.exceptions import ResourceNotFoundError
 from azure.mgmt.storage import StorageManagementClient
@@ -18,18 +22,18 @@ class AzureFileShare(AzureMixin):
         storage_account_resource_group_name: str,
         subscription_name: str,
         share_name: str,
-        *args: list,
-        **kwargs: dict,
+        *args: Any,
+        **kwargs: Any,
     ):
         super().__init__(subscription_name=subscription_name, *args, **kwargs)
-        self.storage_client_ = None
+        self.storage_client_: Optional[StorageManagementClient] = None
         self.storage_account_key_ = None
         self.storage_account_name = storage_account_name
         self.resource_group_name = storage_account_resource_group_name
         self.share_name = share_name
 
     @property
-    def storage_client(self):
+    def storage_client(self) -> StorageManagementClient:
         if not self.storage_client_:
             self.storage_client_ = StorageManagementClient(
                 self.credential, self.subscription_id
@@ -37,16 +41,21 @@ class AzureFileShare(AzureMixin):
         return self.storage_client_
 
     @property
-    def storage_account_key(self):
+    def storage_account_key(self) -> str:
         if not self.storage_account_key_:
             storage_keys = self.storage_client.storage_accounts.list_keys(
                 self.resource_group_name, self.storage_account_name
             )
+            if not storage_keys.keys:
+                raise DataSafeHavenAzureException(
+                    f"Could not load keys for storage account {self.storage_account_name}."
+                )
             self.storage_account_key_ = [key.value for key in storage_keys.keys][0]
         return self.storage_account_key_
 
-    def upload(self, destination_path: str, file_contents: str):
+    def upload(self, destination_path: str, file_contents: str) -> None:
         """Upload file contents to the target storage account location."""
+        target = "UNKNOWN"
         try:
             tokens = destination_path.split("/")
             directory = "/".join(tokens[:-1])
@@ -61,8 +70,9 @@ class AzureFileShare(AzureMixin):
                 f"Failed to upload data to <fg=green>{target}</> in <fg=green>{self.share_name}</>."
             ) from exc
 
-    def delete(self, destination_path: str):
+    def delete(self, destination_path: str) -> None:
         """Delete a file from the target storage account"""
+        target = "UNKNOWN"
         try:
             tokens = destination_path.split("/")
             directory = "/".join(tokens[:-1])
@@ -79,18 +89,17 @@ class AzureFileShare(AzureMixin):
             ) from exc
 
     @staticmethod
-    def file_exists(file_client):
-        try:
+    def file_exists(file_client) -> bool:
+        with suppress(ResourceNotFoundError):
             file_client.get_file_properties()
             return True
-        except ResourceNotFoundError:
-            return False
+        return False
 
     def file_client(
         self,
-        file_name,
-        directory=None,
-    ):
+        file_name: str,
+        directory: Optional[str] = None,
+    ) -> ShareFileClient:
         if directory:
             directory_client = ShareDirectoryClient(
                 account_url=f"https://{self.storage_account_name}.file.core.windows.net",

@@ -1,6 +1,6 @@
 """Pulumi component for virtual machines"""
 # Standard library imports
-from typing import Optional
+from typing import Any, Dict, Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -9,6 +9,9 @@ from pulumi_azure_native import compute, network
 
 class VMProps:
     """Properties for WindowsVMComponent"""
+
+    image_reference_args: Optional[compute.ImageReferenceArgs]
+    os_profile_args: Optional[compute.OSProfileArgs]
 
     def __init__(
         self,
@@ -42,12 +45,12 @@ class VMProps:
         self.vm_size = vm_size
 
     @property
-    def os_profile(self) -> compute.OSProfileArgs | None:
-        return self.os_profile_args
-
-    @property
     def image_reference(self) -> compute.ImageReferenceArgs | None:
         return self.image_reference_args
+
+    @property
+    def os_profile(self) -> compute.OSProfileArgs | None:
+        return self.os_profile_args
 
 
 class WindowsVMProps(VMProps):
@@ -55,10 +58,16 @@ class WindowsVMProps(VMProps):
 
     def __init__(
         self,
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ):
         super().__init__(*args, **kwargs)
+        self.image_reference_args = compute.ImageReferenceArgs(
+            offer="WindowsServer",
+            publisher="MicrosoftWindowsServer",
+            sku="2022-Datacenter",
+            version="latest",
+        )
         self.os_profile_args = compute.OSProfileArgs(
             admin_password=self.admin_password,
             admin_username=self.admin_username,
@@ -71,12 +80,6 @@ class WindowsVMProps(VMProps):
                 provision_vm_agent=True,
             ),
         )
-        self.image_reference_args = compute.ImageReferenceArgs(
-            offer="WindowsServer",
-            publisher="MicrosoftWindowsServer",
-            sku="2022-Datacenter",
-            version="latest",
-        )
 
 
 class LinuxVMProps(VMProps):
@@ -85,10 +88,16 @@ class LinuxVMProps(VMProps):
     def __init__(
         self,
         b64cloudinit: Input[str],
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ):
         super().__init__(*args, **kwargs)
+        self.image_reference_args = compute.ImageReferenceArgs(
+            offer="0001-com-ubuntu-server-focal",
+            publisher="Canonical",
+            sku="20_04-LTS",
+            version="latest",
+        )
         self.os_profile_args = compute.OSProfileArgs(
             admin_password=self.admin_password,
             admin_username=self.admin_username,
@@ -100,12 +109,6 @@ class LinuxVMProps(VMProps):
                 ),
                 provision_vm_agent=True,
             ),
-        )
-        self.image_reference_args = compute.ImageReferenceArgs(
-            offer="0001-com-ubuntu-server-focal",
-            publisher="Canonical",
-            sku="20_04-LTS",
-            version="latest",
         )
 
 
@@ -126,7 +129,7 @@ class VMComponent(ComponentResource):
         )
 
         # Define public IP address if relevant
-        network_interface_ip_params = {}
+        network_interface_ip_params: Dict[str, Any] = {}
         if props.ip_address_public:
             public_ip = network.PublicIPAddress(
                 f"{self._name}_public_ip",

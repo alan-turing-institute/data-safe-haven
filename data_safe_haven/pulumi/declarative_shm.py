@@ -11,9 +11,9 @@ from .components.shm_domain_controllers import (
     SHMDomainControllersComponent,
     SHMDomainControllersProps,
 )
+from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
 from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
-from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
 from .components.shm_state import SHMStateComponent, SHMStateProps
 
 

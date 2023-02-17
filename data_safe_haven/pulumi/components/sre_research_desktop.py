@@ -1,7 +1,7 @@
 # Standard library imports
 import base64
 import pathlib
-from typing import cast, Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, cast
 
 # Third party imports
 import chevron

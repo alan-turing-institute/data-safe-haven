@@ -3,7 +3,7 @@
 import pathlib
 import time
 from datetime import datetime
-from typing import Dict, Sequence
+from typing import Dict, Optional, Sequence
 
 # Third party imports
 import psycopg2
@@ -47,7 +47,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         self.rule_suffix = datetime.now().strftime(r"%Y%m%d-%H%M%S")
 
     @staticmethod
-    def wait(poller: LROPoller) -> None:
+    def wait(poller: LROPoller[None]) -> None:
         """Wait for a polling operation to finish."""
         while not poller.done():
             time.sleep(10)
@@ -93,7 +93,9 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
                     ) from exc
         return connection
 
-    def load_sql(self, filepath: PathType, mustache_values: Dict = None) -> str:
+    def load_sql(
+        self, filepath: PathType, mustache_values: Optional[Dict[str, str]] = None
+    ) -> str:
         """Load filepath into a single SQL string."""
         reader = FileReader(filepath)
         # Strip any comment lines
@@ -105,7 +107,9 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         return " ".join([line for line in sql_lines if line])
 
     def execute_scripts(
-        self, filepaths: Sequence[PathType], mustache_values: Dict = None
+        self,
+        filepaths: Sequence[PathType],
+        mustache_values: Optional[Dict[str, str]] = None,
     ) -> Sequence[str]:
         """Execute scripts on the PostgreSQL server."""
         outputs = []

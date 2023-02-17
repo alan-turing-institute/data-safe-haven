@@ -5,7 +5,7 @@ import pathlib
 import time
 from contextlib import suppress
 from io import UnsupportedOperation
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 # Third party imports
 import requests
@@ -26,7 +26,7 @@ from data_safe_haven.mixins import LoggingMixin
 
 
 class LocalTokenCache(SerializableTokenCache):
-    def __init__(self, token_cache_filename):
+    def __init__(self, token_cache_filename: pathlib.Path) -> None:
         super().__init__()
         self.token_cache_filename = token_cache_filename
         try:
@@ -36,7 +36,7 @@ class LocalTokenCache(SerializableTokenCache):
         except (FileNotFoundError, UnsupportedOperation):
             self.deserialize({})
 
-    def __del__(self):
+    def __del__(self) -> None:
         with open(self.token_cache_filename, "w", encoding="utf-8") as f_token:
             f_token.write(self.serialize())
 
@@ -109,7 +109,7 @@ class GraphApi(LoggingMixin):
             response = self.http_get(
                 f"{self.base_endpoint}/domains/{domain_name}/verificationDnsRecords"
             )
-            txt_records = [
+            txt_records: List[str] = [
                 record["text"]
                 for record in response.json()["value"]
                 if record["recordType"] == "Txt"
@@ -306,7 +306,7 @@ class GraphApi(LoggingMixin):
                 f"Created application secret '<fg=green>{application_secret_name}</>'.",
                 overwrite=True,
             )
-            return json_response["secretText"]
+            return str(json_response["secretText"])
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not create application secret '{application_secret_name}'.\n{str(exc)}"
@@ -405,7 +405,7 @@ class GraphApi(LoggingMixin):
                 self.info(flow["message"])
                 # Block until a response is received
                 result = app.acquire_token_by_device_flow(flow)
-            return result["access_token"]
+            return str(result["access_token"])
         except Exception as exc:
             error_description = "Could not create access token"
             if isinstance(result, dict) and "error_description" in result:
@@ -439,7 +439,7 @@ class GraphApi(LoggingMixin):
                 raise DataSafeHavenMicrosoftGraphException(
                     f"Invalid application token returned from Microsoft Graph."
                 )
-            return result["access_token"]
+            return str(result["access_token"])
         except Exception as exc:
             error_description = "Could not create access token"
             if result and "error_description" in result:
@@ -570,25 +570,31 @@ class GraphApi(LoggingMixin):
             application = self.get_application_by_name(application_name)
             if not application:
                 return None
-            return application["appId"]
+            return str(application["appId"])
         except DataSafeHavenMicrosoftGraphException:
             return None
 
     def get_id_from_groupname(self, group_name: str) -> str | None:
         try:
-            return [
-                group
-                for group in self.read_groups()
-                if group["displayName"] == group_name
-            ][0]["id"]
+            return str(
+                [
+                    group
+                    for group in self.read_groups()
+                    if group["displayName"] == group_name
+                ][0]["id"]
+            )
         except (DataSafeHavenMicrosoftGraphException, IndexError):
             return None
 
     def get_id_from_username(self, username: str) -> str | None:
         try:
-            return [
-                user for user in self.read_users() if user["mailNickname"] == username
-            ][0]["id"]
+            return str(
+                [
+                    user
+                    for user in self.read_users()
+                    if user["mailNickname"] == username
+                ][0]["id"]
+            )
         except (DataSafeHavenMicrosoftGraphException, IndexError):
             return None
 
@@ -699,9 +705,12 @@ class GraphApi(LoggingMixin):
             DataSafeHavenMicrosoftGraphException if applications could not be loaded
         """
         try:
-            return self.http_get(
-                f"{self.base_endpoint}/applications",
-            ).json()["value"]
+            return [
+                dict(obj)
+                for obj in self.http_get(f"{self.base_endpoint}/applications").json()[
+                    "value"
+                ]
+            ]
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not load list of applications.\n{str(exc)}"
@@ -725,7 +734,7 @@ class GraphApi(LoggingMixin):
             application = self.http_get(
                 f"{self.base_endpoint}/servicePrincipals/{application_service_principal_id}/appRoleAssignments",
             ).json()["value"]
-            return delegated + application
+            return [dict(obj) for obj in (delegated + application)]
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not load list of application permissions.\n{str(exc)}"
@@ -742,7 +751,7 @@ class GraphApi(LoggingMixin):
         """
         try:
             json_response = self.http_get(f"{self.base_endpoint}/domains").json()
-            return json_response["value"]
+            return [dict(obj) for obj in json_response["value"]]
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not load list of domains.\n{str(exc)}"
@@ -764,7 +773,7 @@ class GraphApi(LoggingMixin):
             endpoint = f"{self.base_endpoint}/groups"
             if attributes:
                 endpoint += f"?$select={','.join(attributes)}"
-            return self.http_get(endpoint).json()["value"]
+            return [dict(obj) for obj in self.http_get(endpoint).json()["value"]]
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not load list of groups.\n{str(exc)}"
@@ -773,9 +782,12 @@ class GraphApi(LoggingMixin):
     def read_service_principals(self) -> Sequence[Dict[str, Any]]:
         """Get list of service principals"""
         try:
-            return self.http_get(
-                f"{self.base_endpoint}/servicePrincipals",
-            ).json()["value"]
+            return [
+                dict(obj)
+                for obj in self.http_get(
+                    f"{self.base_endpoint}/servicePrincipals"
+                ).json()["value"]
+            ]
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
                 f"Could not load list of service principals.\n{str(exc)}"

@@ -1,0 +1,1 @@
+from ._credentials import DefaultAzureCredential as DefaultAzureCredential

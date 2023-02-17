@@ -44,8 +44,10 @@ mypy = "^1.0.0"
 pytest = "^7.2"
 types-chevron = "^0.14.2"
 types-protobuf = "^4.21.0"
+types-psycopg2 = "^2.9.21"
 types-pytz = "^2022.7.1"
 types-PyYAML = "^6.0.12"
+types-requests = "^2.28.11"
 types-setuptools = "^67.3.0"
 types-six = "^1.16.21"
 
@@ -56,9 +58,39 @@ dsh = "data_safe_haven.cli:main"
 strict = true
 files = "data_safe_haven"
 exclude = [
-    "^data_safe_haven/mixins",
-    "^data_safe_haven/pulumi",
-    "^data_safe_haven/resources",
+    "data_safe_haven/administration/users/guacamole_users.py",
+    "data_safe_haven/commands/deploy_shm_command.py",
+    "data_safe_haven/commands/deploy_sre_command.py",
+    "data_safe_haven/commands/initialise_command.py",
+    "data_safe_haven/commands/teardown_backend_command.py",
+    "data_safe_haven/commands/teardown_shm_command.py",
+    "data_safe_haven/commands/teardown_sre_command.py",
+    "data_safe_haven/commands/users_add.py",
+    "data_safe_haven/commands/users_list.py",
+    "data_safe_haven/commands/users_register.py",
+    "data_safe_haven/external/api/azure_api.py",
+    "data_safe_haven/external/api/graph_api.py",
+    "data_safe_haven/external/interface/azure_fileshare.py",
+    "data_safe_haven/external/interface/azure_postgresql_database.py",
+    "data_safe_haven/helpers/__init__.py",
+    "data_safe_haven/mixins/logging_mixin.py",
+    "data_safe_haven/provisioning/sre_provisioning_manager.py",
+    "data_safe_haven/pulumi/components/shm_domain_controllers.py",
+    "data_safe_haven/pulumi/components/shm_firewall.py",
+    "data_safe_haven/pulumi/components/shm_monitoring.py",
+    "data_safe_haven/pulumi/components/sre_application_gateway.py",
+    "data_safe_haven/pulumi/components/sre_networking.py",
+    "data_safe_haven/pulumi/components/sre_remote_desktop.py",
+    "data_safe_haven/pulumi/components/sre_research_desktop.py",
+    "data_safe_haven/pulumi/components/sre_state.py",
+    "data_safe_haven/pulumi/components/virtual_machine.py",
+    "data_safe_haven/pulumi/declarative_shm.py",
+    "data_safe_haven/pulumi/declarative_sre.py",
+    "data_safe_haven/pulumi/dynamic/azuread_application.py",
+    "data_safe_haven/pulumi/dynamic/file_share_file.py",
+    "data_safe_haven/pulumi/dynamic/remote_powershell.py",
+    "data_safe_haven/pulumi/dynamic/ssl_certificate.py",
+    "data_safe_haven/pulumi/pulumi_stack.py",
 ]
 mypy_path = "mypy"
 

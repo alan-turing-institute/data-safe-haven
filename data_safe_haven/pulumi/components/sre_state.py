@@ -4,7 +4,7 @@ from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import keyvault, network, managedidentity, resources, storage
+from pulumi_azure_native import keyvault, managedidentity, network, resources, storage
 
 # Local imports
 from data_safe_haven.helpers import alphanumeric, sha256hash

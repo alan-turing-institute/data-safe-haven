@@ -2,7 +2,7 @@
 # Standard library imports
 import time
 from contextlib import suppress
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 # Third party imports
 from azure.core.exceptions import (
@@ -10,6 +10,7 @@ from azure.core.exceptions import (
     ResourceExistsError,
     ResourceNotFoundError,
 )
+from azure.core.polling import LROPoller
 from azure.keyvault.certificates import (
     CertificateClient,
     CertificatePolicy,
@@ -23,7 +24,11 @@ from azure.mgmt.automation.models import (
     DscConfigurationAssociationProperty,
 )
 from azure.mgmt.compute import ComputeManagementClient
-from azure.mgmt.compute.models import RunCommandInput, RunCommandInputParameter
+from azure.mgmt.compute.models import (
+    ResourceSku,
+    RunCommandInput,
+    RunCommandInputParameter,
+)
 from azure.mgmt.dns import DnsManagementClient
 from azure.mgmt.dns.models import RecordSet, TxtRecord
 from azure.mgmt.keyvault import KeyVaultManagementClient
@@ -33,7 +38,12 @@ from azure.mgmt.msi.models import Identity
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import ResourceGroup
 from azure.mgmt.storage import StorageManagementClient
-from azure.mgmt.storage.models import BlobContainer, StorageAccount
+from azure.mgmt.storage.models import (
+    BlobContainer,
+    Sku as StorageAccountSku,
+    StorageAccount,
+    StorageAccountCreateParameters,
+)
 
 # Local imports
 from data_safe_haven.exceptions import (
@@ -356,7 +366,9 @@ class AzureApi(AzureMixin, LoggingMixin):
                 enhanced_key_usage=["1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2"],
                 validity_in_months=12,
             )
-            poller = certificate_client.begin_create_certificate(
+            poller: LROPoller[
+                KeyVaultCertificate
+            ] = certificate_client.begin_create_certificate(
                 certificate_name=certificate_name, policy=policy
             )
             certificate = poller.result()
@@ -579,19 +591,22 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Failed to retrieve secret {secret_name}."
             ) from exc
 
-    def get_vm_sku_details(self, sku: str):
+    def get_vm_sku_details(self, sku: str) -> Tuple[str, str, str]:
         # Connect to Azure client
+        cpus, gpus, ram = None, None, None
         compute_client = ComputeManagementClient(self.credential, self.subscription_id)
         for resource_sku in compute_client.resource_skus.list():
             if resource_sku.name == sku:
-                for capability in resource_sku.capabilities:
-                    if capability.name == "vCPUs":
-                        cpus = capability.value
-                    if capability.name == "GPUs":
-                        gpus = capability.value
-                    if capability.name == "MemoryGB":
-                        ram = capability.value
-                return (cpus, gpus, ram)
+                if resource_sku.capabilities:
+                    for capability in resource_sku.capabilities:
+                        if capability.name == "vCPUs":
+                            cpus = capability.value
+                        if capability.name == "GPUs":
+                            gpus = capability.value
+                        if capability.name == "MemoryGB":
+                            ram = capability.value
+        if cpus and gpus and ram:
+            return (cpus, gpus, ram)
         raise DataSafeHavenAzureException(
             f"Could not find information for VM SKU {sku}."
         )
@@ -652,14 +667,17 @@ class AzureApi(AzureMixin, LoggingMixin):
             # Construct SKU information
             skus = {}
             for resource_sku in compute_client.resource_skus.list():
-                if (location in resource_sku.locations) and (
-                    resource_sku.resource_type == "virtualMachines"
+                if (
+                    resource_sku.locations
+                    and (location in resource_sku.locations)
+                    and (resource_sku.resource_type == "virtualMachines")
                 ):
                     skus[resource_sku.name] = {
                         "GPUs": 0
                     }  # default to 0 GPUs, overriding if appropriate
-                    for capability in resource_sku.capabilities:
-                        skus[resource_sku.name][capability.name] = capability.value
+                    if resource_sku.capabilities:
+                        for capability in resource_sku.capabilities:
+                            skus[resource_sku.name][capability.name] = capability.value
             return skus
         except Exception as exc:
             raise DataSafeHavenAzureException(
@@ -894,7 +912,7 @@ class AzureApi(AzureMixin, LoggingMixin):
             )
             result = poller.result()
             # Return stdout/stderr from the command
-            return result.value[0].message
+            return str(result.value[0].message)
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to run command on '{vm_name}'.\n{str(exc)}"

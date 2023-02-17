@@ -27,7 +27,7 @@ class AzureIPv4Range(ipaddress.IPv4Network):
                 f"{ip_address_first}-{ip_address_last} cannot be expressed as a single network range."
             )
         super().__init__(networks[0])
-        self.subnets: List["AzureIPv4Range"] = []
+        self._subnets: List["AzureIPv4Range"] = []
 
     @classmethod
     def from_cidr(cls, ip_cidr: str) -> "AzureIPv4Range":
@@ -49,8 +49,8 @@ class AzureIPv4Range(ipaddress.IPv4Network):
             ip_address_last = ip_address_first + int(number_of_addresses - 1)
             with suppress(DataSafeHavenIPRangeException):
                 candidate = AzureIPv4Range(ip_address_first, ip_address_last)
-                if not any(subnet.overlaps(candidate) for subnet in self.subnets):
-                    self.subnets.append(candidate)
+                if not any(subnet.overlaps(candidate) for subnet in self._subnets):
+                    self._subnets.append(candidate)
                     break
             ip_address_first = ip_address_first + number_of_addresses
         return candidate

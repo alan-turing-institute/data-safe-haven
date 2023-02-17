@@ -145,7 +145,7 @@ class LoggingMixin:
         record.style = LoggingFilterColouredLevel.STYLES[record.levelname]
         return self.console.format(record)
 
-    def initialise_logging(self, verbosity: int, log_file: PathType) -> None:
+    def initialise_logging(self, verbosity: int, log_file: Optional[PathType]) -> None:
         """Initialise logging handlers and formatters."""
         if not self.is_setup:
             # Setup handlers
