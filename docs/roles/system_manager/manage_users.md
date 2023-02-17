@@ -64,6 +64,8 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Be particularly careful never to use them to log in to any user-accessible VMs (such as the SRDs)
 ```
 
+(adding_users_manually)=
+
 ### {{woman}} {{man}} Adding users to security group(s)
 
 Users that didn't have a `GroupName` specified in the `user_details_template.csv`, will need to be added manually, before they can access an SRE.
