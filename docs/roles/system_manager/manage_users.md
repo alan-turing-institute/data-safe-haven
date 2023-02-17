@@ -6,6 +6,8 @@
 This document assumes that you already have access to a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
+(create_new_users)=
+
 ## {{beginner}} Create new users
 
 Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
@@ -94,11 +96,14 @@ The `DC1` is the source of truth for user details. If these details need to be c
 - In Server Manager click `Tools > Active Directory Users and Computers`
 - Click on `Safe Haven Research Users`
 - Find the person, right click on them and select `Properties`
-- From here, you can edit the person's name, email etc
+- From here, you can edit the person's name, phone etc
     - To edit a phone number, select the `Telephones` tab and edit the `Mobile` number
+    - Note: To change a user's email, you'll need to delete the user entirely and recreate them, meaning they'll have to set up their accounts (including MFA) again. See {ref}`deleting_users` and then {ref}`create_new_users`.
 - Click `OK` after any changes are made
 - Open a `Powershell` command window with elevated privileges
 - Run `C:\Installation\Run_ADSync.ps1`
+
+(deleting_users)=
 
 ### {{x}} Deleting users
 
