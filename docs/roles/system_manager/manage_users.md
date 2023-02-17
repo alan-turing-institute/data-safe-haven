@@ -86,6 +86,24 @@ Users will need to be added to the relevant security group before they can acces
 - Open a `Powershell` command window with elevated privileges
 - Run `C:\Installation\Run_ADSync.ps1`
 
+### {{iphone}} Edit user details
+
+The `DC1` is the source of truth for user details. If these details need to be changed, the user should be deleted in the Azure Portal and re-created from the `DC1`.
+
+- Login into the Azure Portal and navigate to the correct AAD
+- Open `Azure Active Directory`
+- Click `Users` under `Manage`
+- Search for the user and check the box next to their name, then click `Delete` (this could take a few minutes)
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
+- In Server Manager click `Tools > Active Directory Users and Computers`
+- Click on `Safe Haven Research Users`
+- Find the person, right click on them and select `Properties`
+- From here, you can edit the person's name, email etc
+    - To edit a phone number, select the `Telephones` tab and edit the `Mobile` number
+- Click `OK` after any changes are made
+- Open a `Powershell` command window with elevated privileges
+- Run `C:\Installation\Run_ADSync.ps1`
+
 ### {{x}} Deleting users
 
 - Login into the Azure Portal and navigate to the correct AAD
@@ -96,20 +114,6 @@ Users will need to be added to the relevant security group before they can acces
 - In Server Manager click `Tools > Active Directory Users and Computers`
 - Click on `Safe Haven Research Users`
 - Find the person, right click on them and click `Delete`
-
-### {{iphone}} Changing a users phone number
-
-If a user has provided an incorrect phone number, or has a new phone number, the phone number associated with their account will need to be updated.
-
-- Login into the Azure Portal and navigate to the correct AAD
-- Open `Azure Active Directory`
-- Click `Users` under `Manage`
-- Search for the user and check the box next to their name, then click `Delete` (this could take a few minutes)
-- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
-- In Server Manager click `Tools > Active Directory Users and Computers`
-- Click on `Safe Haven Research Users`
-- Find the person, right click on them and select `Properties`
-- Select the `Telephones` tab and edit the `Mobile` number, then click `OK`
 - Open a `Powershell` command window with elevated privileges
 - Run `C:\Installation\Run_ADSync.ps1`
 
