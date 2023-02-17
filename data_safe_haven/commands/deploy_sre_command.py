@@ -29,7 +29,7 @@ class DeploySRECommand(LoggingMixin, Command):
         {--r|research-desktop=* : Add a research desktop VM by SKU name}
     """
 
-    def handle(self) -> None:
+    def handle(self) -> int:
         try:
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
@@ -115,6 +115,7 @@ class DeploySRECommand(LoggingMixin, Command):
             # Provision SRE with anything that could not be done in Pulumi
             manager = SREProvisioningManager(config, self.sre_name)
             manager.run()
+            return 0
 
         except DataSafeHavenException as exc:
             for (
@@ -123,6 +124,7 @@ class DeploySRECommand(LoggingMixin, Command):
                 "\n"
             ):
                 self.error(line)
+        return 1
 
     def add_missing_values(self, config: Config) -> None:
         """Request any missing config values and add them to the config"""

@@ -20,7 +20,7 @@ class TeardownSHMCommand(LoggingMixin, Command):
         {--o|output= : Path to an output log file}
     """
 
-    def handle(self):
+    def handle(self) -> int:
         try:
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
@@ -51,6 +51,7 @@ class TeardownSHMCommand(LoggingMixin, Command):
 
             # Upload config to blob storage
             config.upload()
+            return 0
         except DataSafeHavenException as exc:
             for (
                 line
@@ -58,3 +59,4 @@ class TeardownSHMCommand(LoggingMixin, Command):
                 "\n"
             ):
                 self.error(line)
+        return 1

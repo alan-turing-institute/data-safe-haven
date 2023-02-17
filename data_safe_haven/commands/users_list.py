@@ -21,7 +21,7 @@ class UsersListCommand(LoggingMixin, Command):
         {--o|output= : Path to an output log file}
     """
 
-    def handle(self):
+    def handle(self) -> int:
         try:
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
@@ -44,6 +44,7 @@ class UsersListCommand(LoggingMixin, Command):
             # List users from all sources
             users = UserHandler(config, graph_api)
             users.list()
+            return 0
         except DataSafeHavenException as exc:
             for (
                 line
@@ -51,3 +52,4 @@ class UsersListCommand(LoggingMixin, Command):
                 "\n"
             ):
                 self.error(line)
+        return 1

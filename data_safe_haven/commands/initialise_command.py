@@ -25,7 +25,7 @@ class InitialiseCommand(LoggingMixin, Command):
         {--s|subscription= : Name of the Azure subscription to deploy into}
     """
 
-    def handle(self):
+    def handle(self) -> int:
         try:
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
@@ -62,8 +62,10 @@ class InitialiseCommand(LoggingMixin, Command):
                 project_base_path.mkdir(parents=True)
             settings_path = settings.write(project_base_path)
             self.info(f"Saved project settings to '<fg=green>{settings_path}</>'.")
+            return 0
         except DataSafeHavenException as exc:
             for line in f"Could not initialise Data Safe Haven.\n{str(exc)}".split(
                 "\n"
             ):
                 self.error(line)
+        return 1

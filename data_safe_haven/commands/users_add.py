@@ -22,7 +22,7 @@ class UsersAddCommand(LoggingMixin, Command):
         {--o|output= : Path to an output log file}
     """
 
-    def handle(self):
+    def handle(self) -> int:
         environment_name = "UNKNOWN"
         try:
             # Set up logging for anything called by this command
@@ -52,6 +52,7 @@ class UsersAddCommand(LoggingMixin, Command):
                     f"Invalid value '{csv_path}' provided for argument 'csv'."
                 )
             users.add(csv_path)
+            return 0
         except DataSafeHavenException as exc:
             for (
                 line
@@ -59,3 +60,4 @@ class UsersAddCommand(LoggingMixin, Command):
                 "\n"
             ):
                 self.error(line)
+        return 1

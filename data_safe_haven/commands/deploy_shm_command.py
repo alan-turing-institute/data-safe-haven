@@ -35,7 +35,7 @@ class DeploySHMCommand(LoggingMixin, Command):
         {--t|timezone= : Timezone to use}
     """
 
-    def handle(self) -> None:
+    def handle(self) -> int:
         try:
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
@@ -110,6 +110,7 @@ class DeploySHMCommand(LoggingMixin, Command):
             # Provision SHM with anything that could not be done in Pulumi
             manager = SHMProvisioningManager(config)
             manager.run()
+            return 0
 
         except DataSafeHavenException as exc:
             error_msg = (
@@ -117,6 +118,7 @@ class DeploySHMCommand(LoggingMixin, Command):
             )
             for line in error_msg.split("\n"):
                 self.error(line)
+        return 1
 
     def add_missing_values(self, config: Config) -> None:
         """Request any missing config values and add them to the config"""

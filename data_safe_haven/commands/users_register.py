@@ -23,7 +23,7 @@ class UsersRegisterCommand(LoggingMixin, Command):
         {--s|sre= : Name of SRE to add users to}
     """
 
-    def handle(self):
+    def handle(self) -> int:
         try:
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
@@ -62,6 +62,7 @@ class UsersRegisterCommand(LoggingMixin, Command):
                         f"Username '{username}' does not belong to this Data Safe Haven deployment. Please use 'dsh users add' to create it."
                     )
             users.register(self.option("sre"), usernames_to_register)
+            return 0
         except DataSafeHavenException as exc:
             for (
                 line
@@ -69,3 +70,4 @@ class UsersRegisterCommand(LoggingMixin, Command):
                 "\n"
             ):
                 self.error(line)
+        return 1

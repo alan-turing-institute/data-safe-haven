@@ -20,7 +20,7 @@ class TeardownBackendCommand(LoggingMixin, Command):
         {--o|output= : Path to an output log file}
     """
 
-    def handle(self):
+    def handle(self) -> int:
         try:
             # Set up logging for anything called by this command
             self.initialise_logging(self.io.verbosity, self.option("output"))
@@ -41,9 +41,10 @@ class TeardownBackendCommand(LoggingMixin, Command):
                 raise DataSafeHavenInputException(
                     f"Unable to teardown Pulumi backend.\n{str(exc)}"
                 ) from exc
-
+            return 0
         except DataSafeHavenException as exc:
             for (
                 line
             ) in f"Could not teardown Data Safe Haven backend.\n{str(exc)}".split("\n"):
                 self.error(line)
+        return 1
