@@ -11,6 +11,8 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
 A helper script for doing this is already uploaded to the domain controller - you will need to prepare a `CSV` file in the appropriate format for it.
 
+(generate_user_csv)=
+
 ## {{scroll}} Generate user details CSV file
 
 ### {{car}} Using data classification app
@@ -66,9 +68,9 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 (adding_users_manually)=
 
-### {{woman}} {{man}} Adding users to security group(s)
+### {{woman}} {{man}} Managing user access to SREs with security groups
 
-Users will need to be added to the relevant security group before they can access an SRE.
+Users will need to be added to the relevant security group before they can access an SRE. This may have already been done if the `GroupName` was specified in the `user_details_template.csv` (see {ref}`generate_user_csv`), but otherwise can be achieved by the following:
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - In Server Manager click `Tools > Active Directory Users and Computers`
