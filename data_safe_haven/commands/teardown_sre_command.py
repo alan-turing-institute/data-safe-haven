@@ -1,4 +1,7 @@
 """Command-line application for tearing down a Secure Research Environment"""
+# Standard library imports
+from typing import Optional
+
 # Third party imports
 from cleo import Command
 
@@ -8,6 +11,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
+from data_safe_haven.helpers import alphanumeric
 from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.pulumi import PulumiStack
 
@@ -21,11 +25,17 @@ class TeardownSRECommand(LoggingMixin, Command):
         {--o|output= : Path to an output log file}
     """
 
+    sre_name: Optional[str]
+    output: Optional[str]
+
     def handle(self) -> int:
         environment_name = "UNKNOWN"
         try:
+            # Process command line arguments
+            self.process_arguments()
+
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.option("output"))
+            self.initialise_logging(self.io.verbosity, self.output)
 
             # Use dotfile settings to load the job configuration
             try:
@@ -39,17 +49,12 @@ class TeardownSRECommand(LoggingMixin, Command):
 
             # Remove infrastructure deployed with Pulumi
             try:
-                name = self.argument("name")
-                if not isinstance(name, str):
-                    raise DataSafeHavenInputException(
-                        f"Invalid value '{name}' provided for option 'name'."
-                    )
-                stack = PulumiStack(config, "SRE", sre_name=name)
+                stack = PulumiStack(config, "SRE", sre_name=self.sre_name)
                 if stack.work_dir.exists():
                     stack.teardown()
                 else:
                     raise DataSafeHavenInputException(
-                        f"SRE {self.argument('name')} not found - check the name is spelt correctly."
+                        f"SRE {self.sre_name} not found - check the name is spelt correctly."
                     )
             except Exception as exc:
                 raise DataSafeHavenInputException(
@@ -59,8 +64,8 @@ class TeardownSRECommand(LoggingMixin, Command):
             # Remove information from config file
             if stack.stack_name in config.pulumi.stacks.keys():
                 del config.pulumi.stacks[stack.stack_name]
-            if self.argument("name") in config.sre.keys():
-                del config.sre[self.argument("name")]
+            if self.sre_name in config.sre.keys():
+                del config.sre[self.sre_name]
 
             # Upload config to blob storage
             config.upload()
@@ -73,3 +78,20 @@ class TeardownSRECommand(LoggingMixin, Command):
             ):
                 self.error(line)
         return 1
+
+    def process_arguments(self) -> None:
+        """Load command line arguments into attributes"""
+        # Output
+        output = self.option("output")
+        if not isinstance(output, str) and (output is not None):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{output}' provided for 'output'."
+            )
+        self.output = output
+        # Set a JSON-safe name for this SRE
+        sre_name = self.argument("name")
+        if not isinstance(sre_name, str):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{sre_name}' provided for 'name'."
+            )
+        self.sre_name = alphanumeric(sre_name)
