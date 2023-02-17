@@ -90,10 +90,6 @@ Users will need to be added to the relevant security group before they can acces
 
 The `DC1` is the source of truth for user details. If these details need to be changed, the user should be deleted in the Azure Portal and re-created from the `DC1`.
 
-- Login into the Azure Portal and navigate to the correct AAD
-- Open `Azure Active Directory`
-- Click `Users` under `Manage`
-- Search for the user and check the box next to their name, then click `Delete` (this could take a few minutes)
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - In Server Manager click `Tools > Active Directory Users and Computers`
 - Click on `Safe Haven Research Users`
