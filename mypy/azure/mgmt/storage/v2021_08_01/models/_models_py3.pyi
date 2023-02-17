@@ -1,4 +1,5 @@
 from typing import List, Optional
+
 import msrest.serialization
 from _typeshed import Incomplete
 

@@ -1,12 +1,11 @@
 """Mixin class for anything Azure-aware"""
 # Standard library imports
-from typing import Optional
+from typing import Any, Optional
 
 # Third party imports
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.resource import SubscriptionClient
-from azure.mgmt.resource.subscriptions.models import Subscription
 
 # Local imports
 from data_safe_haven.exceptions import (
@@ -18,7 +17,7 @@ from data_safe_haven.exceptions import (
 class AzureMixin:
     """Mixin class for anything Azure-aware"""
 
-    def __init__(self, subscription_name, *args, **kwargs):
+    def __init__(self, subscription_name: str, *args: Any, **kwargs: Any) -> None:
         self.subscription_name: str = subscription_name
         self.credential_: Optional[DefaultAzureCredential] = None
         self.subscription_id_: Optional[str] = None
@@ -26,7 +25,7 @@ class AzureMixin:
         super().__init__(*args, **kwargs)
 
     @property
-    def credential(self):
+    def credential(self) -> DefaultAzureCredential:
         if not self.credential_:
             self.credential_ = DefaultAzureCredential(
                 exclude_interactive_browser_credential=False,
@@ -51,7 +50,7 @@ class AzureMixin:
             raise DataSafeHavenAzureException("Failed to load tenant ID.")
         return self.tenant_id_
 
-    def login(self):
+    def login(self) -> None:
         """Get subscription and tenant IDs"""
         # Connect to Azure clients
         subscription_client = SubscriptionClient(self.credential)

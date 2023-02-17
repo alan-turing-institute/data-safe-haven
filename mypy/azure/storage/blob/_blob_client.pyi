@@ -1,5 +1,5 @@
 from typing import IO, Any, AnyStr, Dict, Iterable, Optional, Union, overload
-from _typeshed import Incomplete
+
 from ...core.credentials import (
     AzureNamedKeyCredential,
     AzureSasCredential,
@@ -11,24 +11,21 @@ from ._models import BlobType
 from ._shared.base_client import StorageAccountHostsMixin
 
 class BlobClient(StorageAccountHostsMixin, StorageEncryptionMixin):
-    container_name: Incomplete
-    blob_name: Incomplete
-    snapshot: Incomplete
     def __init__(
         self,
         account_url: str,
         container_name: str,
         blob_name: str,
-        snapshot: Optional[Union[str, Dict[str, Any]]] = ...,
+        snapshot: Optional[Union[str, Dict[str, Any]]],
         credential: Optional[
             Union[
                 str,
                 Dict[str, str],
                 AzureNamedKeyCredential,
                 AzureSasCredential,
-                "TokenCredential",
+                TokenCredential,
             ]
-        ] = ...,
+        ],
         **kwargs: Any
     ) -> None: ...
     def upload_blob(

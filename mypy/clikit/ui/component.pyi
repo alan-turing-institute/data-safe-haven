@@ -1,0 +1,2 @@
+class Component(object):
+    pass

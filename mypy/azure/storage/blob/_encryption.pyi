@@ -1,1 +1,2 @@
-class StorageEncryptionMixin: ...
+class StorageEncryptionMixin:
+    pass

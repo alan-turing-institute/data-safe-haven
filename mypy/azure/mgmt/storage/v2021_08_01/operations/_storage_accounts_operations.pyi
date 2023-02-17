@@ -1,6 +1,8 @@
-from ..models import StorageAccountListKeysResult
-from _typeshed import Incomplete
 from typing import Any, Optional
+
+from _typeshed import Incomplete
+
+from ..models import StorageAccountListKeysResult
 
 class StorageAccountsOperations:
     models: Incomplete
