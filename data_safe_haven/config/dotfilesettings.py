@@ -8,6 +8,7 @@ import yaml
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenInputException
+from data_safe_haven.helpers.types import PathType
 from data_safe_haven.mixins import LoggingMixin
 
 
@@ -76,7 +77,7 @@ class DotFileSettings(LoggingMixin):
                 None,
             )
 
-    def read(self, yaml_file: pathlib.Path) -> None:
+    def read(self, yaml_file: PathType) -> None:
         """Read settings from YAML file"""
         with open(pathlib.Path(yaml_file), "r", encoding="utf-8") as f_yaml:
             settings = yaml.safe_load(f_yaml)
@@ -93,7 +94,7 @@ class DotFileSettings(LoggingMixin):
         ):
             self.subscription_name = subscription_name
 
-    def write(self, directory: pathlib.Path) -> pathlib.Path:
+    def write(self, directory: PathType) -> pathlib.Path:
         """Write settings to YAML file"""
         settings = {
             "shm": {
@@ -105,7 +106,7 @@ class DotFileSettings(LoggingMixin):
                 "subscription_name": self.subscription_name,
             },
         }
-        filepath = (directory / self.config_file_name).resolve()
+        filepath = (pathlib.Path(directory) / self.config_file_name).resolve()
         with open(filepath, "w", encoding="utf-8") as f_yaml:
             yaml.dump(settings, f_yaml, indent=2)
         return filepath

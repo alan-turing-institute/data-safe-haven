@@ -19,6 +19,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.helpers import FileReader
+from data_safe_haven.helpers.types import PathType
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
@@ -92,7 +93,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
                     ) from exc
         return connection
 
-    def load_sql(self, filepath: pathlib.Path, mustache_values: Dict = None) -> str:
+    def load_sql(self, filepath: PathType, mustache_values: Dict = None) -> str:
         """Load filepath into a single SQL string."""
         reader = FileReader(filepath)
         # Strip any comment lines
@@ -104,7 +105,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         return " ".join([line for line in sql_lines if line])
 
     def execute_scripts(
-        self, filepaths: Sequence[pathlib.Path], mustache_values: Dict = None
+        self, filepaths: Sequence[PathType], mustache_values: Dict = None
     ) -> Sequence[str]:
         """Execute scripts on the PostgreSQL server."""
         outputs = []
@@ -120,6 +121,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
 
             # Apply the Guacamole initialisation script
             for filepath in filepaths:
+                filepath = pathlib.Path(filepath)
                 self.info(f"Running SQL script: <fg=green>{filepath.name}</>.")
                 commands = self.load_sql(filepath, mustache_values)
                 cursor.execute(commands)
