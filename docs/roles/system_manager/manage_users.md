@@ -68,7 +68,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ### {{woman}} {{man}} Adding users to security group(s)
 
-Users that didn't have a `GroupName` specified in the `user_details_template.csv`, will need to be added manually, before they can access an SRE.
+Users will need to be added to the relevant security group before they can access an SRE.
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - In Server Manager click `Tools > Active Directory Users and Computers`
