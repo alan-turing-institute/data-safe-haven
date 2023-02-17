@@ -68,7 +68,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 (adding_users_manually)=
 
-### {{woman}} {{man}} Managing user access to SREs with security groups
+### {{woman}} {{man}} Adding users to security group(s)
 
 Users will need to be added to the relevant security group before they can access an SRE. This may have already been done if the `GroupName` was specified in the `user_details_template.csv` (see {ref}`generate_user_csv`), but otherwise can be achieved by the following:
 
@@ -85,6 +85,17 @@ Users will need to be added to the relevant security group before they can acces
 - Select the correct user and click `OK`, then click `OK` again until the window closes
 - Open a `Powershell` command window with elevated privileges
 - Run `C:\Installation\Run_ADSync.ps1`
+
+### {{x}} Deleting users
+
+- Login into the Azure Portal and navigate to the correct AAD
+- Open `Azure Active Directory`
+- Click `Users` under `Manage`
+- Search for the user and check the box next to their name, then click `Delete` (this could take a few minutes)
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
+- In Server Manager click `Tools > Active Directory Users and Computers`
+- Click on `Safe Haven Research Users`
+- Find the person, right click on them and click `Delete`
 
 ### {{iphone}} Changing a users phone number
 
