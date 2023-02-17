@@ -84,7 +84,7 @@ Users that didn't have a `GroupName` specified in the `user_details_template.csv
 
 ### {{iphone}} Changing a users phone number
 
-Sometimes if a user has provided an incorrect phone number, or has a new phone number that needs to be added, the phone number associated with their account will need to be updated.
+If a user has provided an incorrect phone number, or has a new phone number, the phone number associated with their account will need to be updated.
 
 - Login into the Azure Portal and connect to the correct AAD
 - Open `Azure Active Directory`
