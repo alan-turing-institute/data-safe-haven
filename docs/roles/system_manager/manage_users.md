@@ -86,7 +86,7 @@ Users that didn't have a `GroupName` specified in the `user_details_template.csv
 
 If a user has provided an incorrect phone number, or has a new phone number, the phone number associated with their account will need to be updated.
 
-- Login into the Azure Portal and connect to the correct AAD
+- Login into the Azure Portal and navigate to the correct AAD
 - Open `Azure Active Directory`
 - Click `Users` under `Manage`
 - Search for the user and check the box next to their name, then click `Delete` (this could take a few minutes)
