@@ -13,9 +13,6 @@ from clikit.formatter import AnsiFormatter, PlainFormatter
 from clikit.io.output_stream import StreamOutputStream
 from clikit.ui.components import Table
 
-# Local imports
-from data_safe_haven.helpers.types import PathType
-
 
 def strip_formatting(input_string: str) -> str:
     first_pass = PlainFormatter().remove_format(input_string)
@@ -145,7 +142,7 @@ class LoggingMixin:
         record.style = LoggingFilterColouredLevel.STYLES[record.levelname]
         return self.console.format(record)
 
-    def initialise_logging(self, verbosity: int, log_file: Optional[PathType]) -> None:
+    def initialise_logging(self, verbosity: int, log_file: Optional[str]) -> None:
         """Initialise logging handlers and formatters."""
         if not self.is_setup:
             # Setup handlers

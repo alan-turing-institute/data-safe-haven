@@ -84,13 +84,10 @@ exclude = [
     "data_safe_haven/pulumi/components/sre_research_desktop.py",
     "data_safe_haven/pulumi/components/sre_state.py",
     "data_safe_haven/pulumi/components/virtual_machine.py",
-    "data_safe_haven/pulumi/declarative_shm.py",
-    "data_safe_haven/pulumi/declarative_sre.py",
     "data_safe_haven/pulumi/dynamic/azuread_application.py",
     "data_safe_haven/pulumi/dynamic/file_share_file.py",
     "data_safe_haven/pulumi/dynamic/remote_powershell.py",
     "data_safe_haven/pulumi/dynamic/ssl_certificate.py",
-    "data_safe_haven/pulumi/pulumi_stack.py",
 ]
 mypy_path = "mypy"
 
