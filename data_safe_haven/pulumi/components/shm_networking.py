@@ -195,7 +195,13 @@ class SHMNetworkingComponent(ComponentResource):
                 ),
             ],
             virtual_network_name=f"{stack_name}-vnet",
-            opts=child_opts,
+            virtual_network_peerings=[],
+            opts=ResourceOptions.merge(
+                ResourceOptions(
+                    ignore_changes=["virtual_network_peerings"]
+                ),  # allow SRE virtual networks to peer to this
+                child_opts,
+            ),
         )
 
         # Define SHM DNS zone
