@@ -58,21 +58,10 @@ dsh = "data_safe_haven.cli:main"
 strict = true
 files = "data_safe_haven"
 exclude = [
-    "data_safe_haven/commands/deploy_shm_command.py",
-    "data_safe_haven/commands/deploy_sre_command.py",
-    "data_safe_haven/commands/initialise_command.py",
-    "data_safe_haven/commands/teardown_backend_command.py",
-    "data_safe_haven/commands/teardown_shm_command.py",
-    "data_safe_haven/commands/teardown_sre_command.py",
-    "data_safe_haven/commands/users_add.py",
-    "data_safe_haven/commands/users_list.py",
-    "data_safe_haven/commands/users_register.py",
     "data_safe_haven/external/api/azure_api.py",
     "data_safe_haven/external/api/graph_api.py",
     "data_safe_haven/external/interface/azure_fileshare.py",
     "data_safe_haven/external/interface/azure_postgresql_database.py",
-    "data_safe_haven/helpers/__init__.py",
-    "data_safe_haven/mixins/logging_mixin.py",
     "data_safe_haven/provisioning/sre_provisioning_manager.py",
     "data_safe_haven/pulumi/components/shm_domain_controllers.py",
     "data_safe_haven/pulumi/components/shm_firewall.py",
@@ -88,7 +77,7 @@ exclude = [
     "data_safe_haven/pulumi/dynamic/remote_powershell.py",
     "data_safe_haven/pulumi/dynamic/ssl_certificate.py",
 ]
-mypy_path = "mypy"
+mypy_path = "typings"
 
 [[tool.mypy.overrides]]
 module = "azure.*"
