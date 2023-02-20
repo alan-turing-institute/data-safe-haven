@@ -58,7 +58,6 @@ dsh = "data_safe_haven.cli:main"
 strict = true
 files = "data_safe_haven"
 exclude = [
-    "data_safe_haven/administration/users/guacamole_users.py",
     "data_safe_haven/commands/deploy_shm_command.py",
     "data_safe_haven/commands/deploy_sre_command.py",
     "data_safe_haven/commands/initialise_command.py",

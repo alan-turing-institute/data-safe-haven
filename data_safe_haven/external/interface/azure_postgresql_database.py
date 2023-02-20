@@ -3,7 +3,7 @@
 import pathlib
 import time
 from datetime import datetime
-from typing import Dict, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 # Third party imports
 import psycopg2
@@ -109,7 +109,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
     def execute_scripts(
         self,
         filepaths: Sequence[PathType],
-        mustache_values: Optional[Dict[str, str]] = None,
+        mustache_values: Optional[Dict[str, Any]] = None,
     ) -> Sequence[str]:
         """Execute scripts on the PostgreSQL server."""
         outputs = []
