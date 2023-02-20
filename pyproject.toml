@@ -59,22 +59,10 @@ strict = true
 files = "data_safe_haven"
 exclude = [
     "data_safe_haven/external/api/azure_api.py",
-    "data_safe_haven/external/api/graph_api.py",
     "data_safe_haven/external/interface/azure_fileshare.py",
-    "data_safe_haven/external/interface/azure_postgresql_database.py",
-    "data_safe_haven/provisioning/sre_provisioning_manager.py",
-    "data_safe_haven/pulumi/components/shm_domain_controllers.py",
     "data_safe_haven/pulumi/components/shm_firewall.py",
-    "data_safe_haven/pulumi/components/shm_monitoring.py",
     "data_safe_haven/pulumi/components/sre_application_gateway.py",
-    "data_safe_haven/pulumi/components/sre_networking.py",
-    "data_safe_haven/pulumi/components/sre_remote_desktop.py",
     "data_safe_haven/pulumi/components/sre_research_desktop.py",
-    "data_safe_haven/pulumi/components/sre_state.py",
-    "data_safe_haven/pulumi/components/virtual_machine.py",
-    "data_safe_haven/pulumi/dynamic/azuread_application.py",
-    "data_safe_haven/pulumi/dynamic/file_share_file.py",
-    "data_safe_haven/pulumi/dynamic/remote_powershell.py",
     "data_safe_haven/pulumi/dynamic/ssl_certificate.py",
 ]
 mypy_path = "typings"

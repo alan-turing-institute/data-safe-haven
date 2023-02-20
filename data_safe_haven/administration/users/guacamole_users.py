@@ -2,7 +2,7 @@
 import pathlib
 import tempfile
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Optional, Sequence
 
 # Local imports
 from data_safe_haven.config import Config

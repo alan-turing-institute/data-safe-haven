@@ -1,7 +1,7 @@
 """Interact with users in an Azure Active Directory"""
 # Standard library imports
 import pathlib
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Optional, Sequence
 
 # Local imports
 from data_safe_haven.external.api import AzureApi

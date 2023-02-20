@@ -3,7 +3,7 @@
 import pathlib
 import time
 from datetime import datetime
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 # Third party imports
 import psycopg2
@@ -70,7 +70,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
             )
         return self.db_server_
 
-    def db_connection(self, n_retries: int = 0) -> psycopg2._psycopg.connection:
+    def db_connection(self, n_retries: int = 0) -> psycopg2.connection:
         """Get the database connection as a ServersOperations object."""
         while True:
             try:
@@ -110,10 +110,11 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         self,
         filepaths: Sequence[PathType],
         mustache_values: Optional[Dict[str, Any]] = None,
-    ) -> Sequence[str]:
+    ) -> List[str]:
         """Execute scripts on the PostgreSQL server."""
-        outputs = []
-        connection = None
+        outputs: List[str] = []
+        connection: Optional[psycopg2.connection] = None
+        cursor = None
 
         try:
             # Add temporary firewall rule
@@ -130,7 +131,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
                 commands = self.load_sql(filepath, mustache_values)
                 cursor.execute(commands)
                 if "SELECT" in cursor.statusmessage:
-                    outputs += list(cursor)
+                    outputs += [str(msg) for msg in cursor]
 
             # Commit changes
             connection.commit()
@@ -142,7 +143,8 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         finally:
             # Close the connection if it is open
             if connection:
-                cursor.close()
+                if cursor:
+                    cursor.close()  # type: ignore
                 connection.close()
             # Remove temporary firewall rules
             self.set_database_access("disabled")

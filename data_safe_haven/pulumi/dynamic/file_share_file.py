@@ -1,7 +1,7 @@
 """Pulumi dynamic component for files uploaded to an Azure FileShare."""
 # Standard library imports
 from contextlib import suppress
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 # Third party imports
 from azure.core.exceptions import ResourceNotFoundError
@@ -25,7 +25,7 @@ class FileShareFileProps:
         share_name: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-    ):
+    ) -> None:
         self.destination_path = destination_path
         self.file_contents = file_contents
         self.share_name = share_name
@@ -35,12 +35,11 @@ class FileShareFileProps:
 
 class FileShareFileProvider(DshResourceProvider):
     @staticmethod
-    def file_exists(file_client: ShareFileClient):
-        try:
+    def file_exists(file_client: ShareFileClient) -> bool:
+        with suppress(ResourceNotFoundError):
             file_client.get_file_properties()
             return True
-        except ResourceNotFoundError:
-            return False
+        return False
 
     @staticmethod
     def get_file_client(
@@ -48,7 +47,7 @@ class FileShareFileProvider(DshResourceProvider):
         storage_account_key: str,
         share_name: str,
         destination_path: str,
-    ):
+    ) -> ShareFileClient:
         tokens = destination_path.split("/")
         directory = "/".join(tokens[:-1])
         file_name = tokens[-1]
@@ -70,7 +69,7 @@ class FileShareFileProvider(DshResourceProvider):
         )
 
     @staticmethod
-    def refresh(props: Dict[str, str]) -> Dict[str, str]:
+    def refresh(props: Dict[str, Any]) -> Dict[str, Any]:
         with suppress(Exception):
             file_client = FileShareFileProvider.get_file_client(
                 props["storage_account_name"],
@@ -79,12 +78,13 @@ class FileShareFileProvider(DshResourceProvider):
                 props["destination_path"],
             )
             if not FileShareFileProvider.file_exists(file_client):
-                props["file_name"] = None
+                props["file_name"] = ""
         return dict(**props)
 
-    def create(self, props: Dict[str, str]) -> CreateResult:
+    def create(self, props: Dict[str, Any]) -> CreateResult:
         """Create file in target storage account with specified contents."""
         outs = dict(**props)
+        file_client: Optional[ShareFileClient] = None
         try:
             file_client = self.get_file_client(
                 props["storage_account_name"],
@@ -95,16 +95,18 @@ class FileShareFileProvider(DshResourceProvider):
             file_client.upload_file(props["file_contents"].encode("utf-8"))
             outs["file_name"] = file_client.file_name
         except Exception as exc:
+            file_name = file_client.file_name if file_client else ""
             raise DataSafeHavenAzureException(
-                f"Failed to upload data to <fg=green>{file_client.file_name}</> in <fg=green>{props['share_name']}</>.\n{str(exc)}"
+                f"Failed to upload data to <fg=green>{file_name}</> in <fg=green>{props['share_name']}</>.\n{str(exc)}"
             ) from exc
         return CreateResult(
             f"filesharefile-{props['destination_path'].replace('/', '-')}",
             outs=outs,
         )
 
-    def delete(self, id_: str, props: Dict[str, str]):
+    def delete(self, id_: str, props: Dict[str, Any]) -> None:
         """Delete a file from the target storage account"""
+        file_client: Optional[ShareFileClient] = None
         try:
             file_client = self.get_file_client(
                 props["storage_account_name"],
@@ -115,15 +117,16 @@ class FileShareFileProvider(DshResourceProvider):
             if self.file_exists(file_client):
                 file_client.delete_file()
         except Exception as exc:
+            file_name = file_client.file_name if file_client else ""
             raise DataSafeHavenAzureException(
-                f"Failed to delete file <fg=green>{file_client.file_name}</> in <fg=green>{props['share_name']}</>.\n{str(exc)}"
+                f"Failed to delete file <fg=green>{file_name}</> in <fg=green>{props['share_name']}</>.\n{str(exc)}"
             ) from exc
 
     def diff(
         self,
         id_: str,
-        old_props: Dict[str, str],
-        new_props: Dict[str, str],
+        old_props: Dict[str, Any],
+        new_props: Dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
         # Exclude "storage_account_key" which should not trigger a diff
@@ -132,6 +135,7 @@ class FileShareFileProvider(DshResourceProvider):
 
 class FileShareFile(Resource):
     file_name: Output[str]
+    _resource_type_name = "dsh:FileShareFile"  # set resource type
 
     def __init__(
         self,
@@ -139,7 +143,6 @@ class FileShareFile(Resource):
         props: FileShareFileProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        self._resource_type_name = "dsh:FileShareFile"  # set resource type
         super().__init__(
             FileShareFileProvider(), name, {"file_name": None, **vars(props)}, opts
         )

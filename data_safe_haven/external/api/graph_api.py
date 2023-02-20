@@ -34,7 +34,7 @@ class LocalTokenCache(SerializableTokenCache):
                 with open(self.token_cache_filename, "r", encoding="utf-8") as f_token:
                     self.deserialize(f_token.read())
         except (FileNotFoundError, UnsupportedOperation):
-            self.deserialize({})
+            self.deserialize()
 
     def __del__(self) -> None:
         with open(self.token_cache_filename, "w", encoding="utf-8") as f_token:
@@ -77,7 +77,7 @@ class GraphApi(LoggingMixin):
         self.base_endpoint = (
             base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
         )
-        self.default_scopes = default_scopes
+        self.default_scopes = list(default_scopes)
         if auth_token:
             self.token = auth_token
         elif application_id and application_secret:
@@ -176,11 +176,12 @@ class GraphApi(LoggingMixin):
         """
         try:
             # Check for an existing application
-            json_response = self.get_application_by_name(application_name)
-            if json_response:
+            json_response: Dict[str, Any]
+            if existing_application := self.get_application_by_name(application_name):
                 self.info(
                     f"Application '<fg=green>{application_name}</>' already exists."
                 )
+                json_response = existing_application
             else:
                 # Create a new application
                 self.info(
@@ -433,11 +434,11 @@ class GraphApi(LoggingMixin):
             # Block until a response is received
             # For this call the scopes are pre-defined by the application privileges
             result = app.acquire_token_for_client(
-                scopes="https://graph.microsoft.com/.default"
+                scopes=["https://graph.microsoft.com/.default"]
             )
             if not isinstance(result, Dict):
                 raise DataSafeHavenMicrosoftGraphException(
-                    f"Invalid application token returned from Microsoft Graph."
+                    "Invalid application token returned from Microsoft Graph."
                 )
             return str(result["access_token"])
         except Exception as exc:
@@ -825,6 +826,7 @@ class GraphApi(LoggingMixin):
                 self.linux_schema,
             ]
         )
+        users: Sequence[Dict[str, Any]]
         try:
             endpoint = f"{self.base_endpoint}/users"
             if attributes:

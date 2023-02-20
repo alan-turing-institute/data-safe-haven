@@ -6,6 +6,9 @@ from typing import Optional
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
+# Local imports
+from data_safe_haven.pulumi.transformations import get_id_from_subnet
+
 
 class SHMFirewallProps:
     """Properties for SHMFirewallComponent"""
@@ -22,12 +25,12 @@ class SHMFirewallProps:
         subnet_update_servers: Input[network.GetSubnetResult],
     ):
         self.domain_controller_private_ip = domain_controller_private_ip
-        self.dns_zone = dns_zone
+        self.dns_zone_name = Output.from_input(dns_zone).apply(lambda zone: zone.name)
         self.location = location
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name
         self.subnet_firewall_id = Output.from_input(subnet_firewall).apply(
-            lambda s: s.id
+            get_id_from_subnet
         )
         self.subnet_identity_servers_iprange = Output.from_input(
             subnet_identity_servers
@@ -1163,7 +1166,7 @@ class SHMFirewallComponent(ComponentResource):
             relative_record_set_name="ad",
             resource_group_name=props.resource_group_name,
             ttl=30,
-            zone_name=props.dns_zone.name,
+            zone_name=props.dns_zone_name,
             opts=child_opts,
         )
 

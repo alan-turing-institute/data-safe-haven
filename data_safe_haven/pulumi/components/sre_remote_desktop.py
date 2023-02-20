@@ -16,6 +16,7 @@ from pulumi_azure_native import (
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers import FileReader
+from data_safe_haven.pulumi.transformations import get_id_from_subnet, get_name_from_rg
 from ..dynamic.azuread_application import AzureADApplication, AzureADApplicationProps
 from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 
@@ -50,7 +51,7 @@ class SRERemoteDesktopProps:
         self.storage_account_resource_group = storage_account_resource_group
         self.subnet_guacamole_containers_id = Output.from_input(
             subnet_guacamole_containers
-        ).apply(lambda s: s.id)
+        ).apply(get_id_from_subnet)
         self.subnet_guacamole_containers_ip_addresses = Output.from_input(
             subnet_guacamole_containers
         ).apply(
@@ -62,7 +63,7 @@ class SRERemoteDesktopProps:
         )
         self.subnet_guacamole_database_id = Output.from_input(
             subnet_guacamole_database
-        ).apply(lambda s: s.id)
+        ).apply(get_id_from_subnet)
         self.subnet_guacamole_database_ip_addresses = Output.from_input(
             subnet_guacamole_database
         ).apply(
@@ -75,7 +76,7 @@ class SRERemoteDesktopProps:
         self.virtual_network = virtual_network
         self.virtual_network_resource_group_name = Output.from_input(
             virtual_network_resource_group
-        ).apply(lambda rg: rg.name)
+        ).apply(get_name_from_rg)
 
 
 class SRERemoteDesktopComponent(ComponentResource):
@@ -104,8 +105,15 @@ class SRERemoteDesktopComponent(ComponentResource):
         storage_account_keys = Output.all(
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group,
-        ).apply(lambda kwargs: storage.list_storage_account_keys(**kwargs))
-        storage_account_key_secret = Output.secret(storage_account_keys.keys[0].value)
+        ).apply(
+            lambda kwargs: storage.list_storage_account_keys(
+                account_name=kwargs["account_name"],
+                resource_group_name=kwargs["resource_group_name"],
+            )
+        )
+        storage_account_key_secret = storage_account_keys.apply(
+            lambda keylist: str(keylist.keys[0].value)
+        )
 
         # Define AzureAD application
         aad_application = AzureADApplication(

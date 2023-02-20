@@ -25,25 +25,27 @@ from azure.mgmt.automation.models import (
 )
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.compute.models import (
-    ResourceSku,
     RunCommandInput,
     RunCommandInputParameter,
 )
 from azure.mgmt.dns import DnsManagementClient
 from azure.mgmt.dns.models import RecordSet, TxtRecord
 from azure.mgmt.keyvault import KeyVaultManagementClient
-from azure.mgmt.keyvault.models import Vault
+from azure.mgmt.keyvault.models import AccessPolicyEntry, Permissions
+from azure.mgmt.keyvault.models import Sku as KeyVaultSku
+from azure.mgmt.keyvault.models import (
+    Vault,
+    VaultCreateOrUpdateParameters,
+    VaultProperties,
+)
 from azure.mgmt.msi import ManagedServiceIdentityClient
 from azure.mgmt.msi.models import Identity
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import ResourceGroup
 from azure.mgmt.storage import StorageManagementClient
-from azure.mgmt.storage.models import (
-    BlobContainer,
-    Sku as StorageAccountSku,
-    StorageAccount,
-    StorageAccountCreateParameters,
-)
+from azure.mgmt.storage.models import BlobContainer
+from azure.mgmt.storage.models import Sku as StorageAccountSku
+from azure.mgmt.storage.models import StorageAccount, StorageAccountCreateParameters
 
 # Local imports
 from data_safe_haven.exceptions import (
@@ -202,42 +204,39 @@ class AzureApi(AzureMixin, LoggingMixin):
             key_vault_client.vaults.begin_create_or_update(
                 resource_group_name,
                 key_vault_name,
-                {
-                    "location": location,
-                    "tags": tags,
-                    "properties": {
-                        "sku": {
-                            "name": "standard",
-                            "family": "A",
-                        },
-                        "tenant_id": tenant_id,
-                        "access_policies": [
-                            {
-                                "tenant_id": tenant_id,
-                                "object_id": admin_group_id,
-                                "permissions": {
-                                    "keys": [
+                VaultCreateOrUpdateParameters(
+                    location=location,
+                    tags=tags,
+                    properties=VaultProperties(
+                        tenant_id=tenant_id,
+                        sku=KeyVaultSku(name="standard", family="A"),
+                        access_policies=[
+                            AccessPolicyEntry(
+                                tenant_id=tenant_id,
+                                object_id=admin_group_id,
+                                permissions=Permissions(
+                                    keys=[
                                         "GET",
                                         "LIST",
                                         "CREATE",
                                         "DECRYPT",
                                         "ENCRYPT",
                                     ],
-                                    "secrets": ["GET", "LIST", "SET"],
-                                    "certificates": ["GET", "LIST", "CREATE"],
-                                },
-                            },
-                            {
-                                "tenant_id": self.tenant_id,
-                                "object_id": managed_identity.principal_id,
-                                "permissions": {
-                                    "secrets": ["GET", "LIST"],
-                                    "certificates": ["GET", "LIST"],
-                                },
-                            },
+                                    secrets=["GET", "LIST", "SET"],
+                                    certificates=["GET", "LIST", "CREATE"],
+                                ),
+                            ),
+                            AccessPolicyEntry(
+                                tenant_id=tenant_id,
+                                object_id=managed_identity.principal_id,
+                                permissions=Permissions(
+                                    secrets=["GET", "LIST"],
+                                    certificates=["GET", "LIST"],
+                                ),
+                            ),
                         ],
-                    },
-                },
+                    ),
+                ),
             )
             key_vaults = [
                 kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name
@@ -407,7 +406,7 @@ class AzureApi(AzureMixin, LoggingMixin):
             managed_identity = msi_client.user_assigned_identities.create_or_update(
                 resource_group_name,
                 identity_name,
-                {"location": location},
+                Identity(location=location),
             )
             self.info(
                 f"Ensured that managed identity <fg=green>{identity_name}</> exists.",
@@ -443,7 +442,7 @@ class AzureApi(AzureMixin, LoggingMixin):
             )
             resource_client.resource_groups.create_or_update(
                 resource_group_name,
-                {"location": location, "tags": tags},
+                ResourceGroup(location=location, tags=tags),
             )
             resource_groups = [
                 rg
@@ -487,12 +486,12 @@ class AzureApi(AzureMixin, LoggingMixin):
             poller = storage_client.storage_accounts.begin_create(
                 resource_group_name,
                 storage_account_name,
-                {
-                    "location": location,
-                    "kind": "StorageV2",
-                    "sku": {"name": "Standard_LRS"},
-                    "tags": tags,
-                },
+                StorageAccountCreateParameters(
+                    sku=StorageAccountSku(name="Standard_LRS"),
+                    kind="StorageV2",
+                    location=location,
+                    tags=tags,
+                ),
             )
             storage_account = poller.result()
             self.info(

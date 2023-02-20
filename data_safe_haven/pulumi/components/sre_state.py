@@ -8,6 +8,7 @@ from pulumi_azure_native import keyvault, managedidentity, network, resources, s
 
 # Local imports
 from data_safe_haven.helpers import alphanumeric, sha256hash
+from data_safe_haven.pulumi.transformations import get_name_from_rg
 from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 
 
@@ -31,7 +32,7 @@ class SREStateProps:
         self.location = location
         self.networking_resource_group_name = Output.from_input(
             networking_resource_group
-        ).apply(lambda rg: rg.name)
+        ).apply(get_name_from_rg)
         self.sre_fqdn = sre_fqdn
         self.subscription_name = subscription_name
         self.tenant_id = tenant_id

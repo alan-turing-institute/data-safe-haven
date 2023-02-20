@@ -1,0 +1,2 @@
+class ModuleProvisioningState:
+    pass

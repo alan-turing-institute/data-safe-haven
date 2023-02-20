@@ -27,10 +27,10 @@ class AzureFileShare(AzureMixin):
     ):
         super().__init__(subscription_name=subscription_name, *args, **kwargs)
         self.storage_client_: Optional[StorageManagementClient] = None
-        self.storage_account_key_ = None
-        self.storage_account_name = storage_account_name
-        self.resource_group_name = storage_account_resource_group_name
-        self.share_name = share_name
+        self.storage_account_key_: Optional[str] = None
+        self.storage_account_name: str = storage_account_name
+        self.resource_group_name: str = storage_account_resource_group_name
+        self.share_name: str = share_name
 
     @property
     def storage_client(self) -> StorageManagementClient:
@@ -89,7 +89,7 @@ class AzureFileShare(AzureMixin):
             ) from exc
 
     @staticmethod
-    def file_exists(file_client) -> bool:
+    def file_exists(file_client: ShareFileClient) -> bool:
         with suppress(ResourceNotFoundError):
             file_client.get_file_properties()
             return True

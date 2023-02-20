@@ -42,6 +42,20 @@ class PublicClientApplication(ClientApplication):
         client_credential: Optional[str | Dict[Any, Any]] = None,
         **kwargs: Any
     ): ...
+    def acquire_token_by_device_flow(
+        self,
+        flow: Dict[str, Any],
+        claims_challenge: Optional[str] = None,
+        **kwargs: Any
+    ) -> Dict[str, Any]: ...
+    def initiate_device_flow(
+        self, scopes: Optional[List[str]] = None, **kwargs: Any
+    ) -> Dict[str, Any]: ...
 
 class ConfidentialClientApplication(ClientApplication):
-    pass
+    def acquire_token_for_client(
+        self,
+        scopes: Optional[List[str]] = None,
+        claims_challenge: Optional[str] = None,
+        **kwargs: Any
+    ) -> Dict[str, Any]: ...

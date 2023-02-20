@@ -8,13 +8,8 @@ from contextlib import suppress
 from typing import Any, Dict, Optional, Tuple
 
 # Third party imports
-# import pulumi
 import yaml
 from pulumi import automation
-
-# as auto
-# from automation import ConfigValue, Stack, create_or_select_stack, LocalWorkspaceOptions
-# from automation.errors import CommandError
 
 # Local imports
 from data_safe_haven.config import Config

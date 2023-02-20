@@ -8,6 +8,11 @@ from pulumi_azure_native import managedidentity, network, resources
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.pulumi.transformations import (
+    get_id_from_rg,
+    get_id_from_subnet,
+    get_name_from_rg,
+)
 
 
 class SREApplicationGatewayProps:
@@ -23,16 +28,14 @@ class SREApplicationGatewayProps:
         subnet_guacamole_containers: Input[network.GetSubnetResult],
     ):
         self.key_vault_certificate_id = key_vault_certificate_id
-        self.resource_group_id = Output.from_input(resource_group).apply(
-            lambda rg: rg.id
-        )
+        self.resource_group_id = Output.from_input(resource_group).apply(get_id_from_rg)
         self.resource_group_name = Output.from_input(resource_group).apply(
-            lambda rg: rg.name
+            get_name_from_rg
         )
         self.sre_fqdn = sre_fqdn
         self.subnet_application_gateway_id = Output.from_input(
             subnet_application_gateway
-        ).apply(lambda ag: ag.id)
+        ).apply(get_id_from_subnet)
         self.subnet_guacamole_containers_ip_addresses = Output.from_input(
             subnet_guacamole_containers
         ).apply(

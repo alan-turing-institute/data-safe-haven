@@ -1,5 +1,4 @@
 # Standard library imports
-import base64
 import pathlib
 from typing import Dict, List, Optional, Sequence, cast
 
@@ -10,7 +9,12 @@ from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
-from data_safe_haven.helpers import replace_separators
+from data_safe_haven.helpers import b64encode, replace_separators
+from data_safe_haven.pulumi.transformations import (
+    get_name_from_rg,
+    get_name_from_subnet,
+    get_name_from_vnet,
+)
 from .virtual_machine import LinuxVMProps, VMComponent
 
 
@@ -40,17 +44,17 @@ class SREResearchDesktopProps:
         self.location = location
         self.security_group_name = security_group_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
-            lambda v: v.name
+            get_name_from_vnet
         )
         self.subnet_research_desktops_name = Output.from_input(
             subnet_research_desktops
-        ).apply(lambda s: s.name)
+        ).apply(get_name_from_subnet)
         self.virtual_network_resource_group_name = Output.from_input(
             virtual_network_resource_group
-        ).apply(lambda rg: rg.name)
+        ).apply(get_name_from_rg)
         self.vm_ip_addresses = Output.all(subnet_research_desktops, vm_details).apply(
             lambda args: self.get_ip_addresses(
-                cast(network.GetSubnetResult, args[0]), len(cast(list, args[1]))
+                cast(network.GetSubnetResult, args[0]), len(cast(List[str], args[1]))
             )
         )
         vm_lists = Output.from_input(vm_details).apply(
@@ -156,7 +160,7 @@ class SREResearchDesktopComponent(ComponentResource):
         vm_names: Sequence[str],
         vm_sizes: Sequence[str],
         child_opts: ResourceOptions,
-    ):
+    ) -> None:
         # Deploy as many VMs as requested
         for vm_ip_address, vm_name, vm_size in zip(vm_ip_addresses, vm_names, vm_sizes):
             VMComponent(
@@ -184,7 +188,7 @@ class SREResearchDesktopComponent(ComponentResource):
         ldap_search_password: str,
         ldap_server_ip: str,
         security_group_name: str,
-    ):
+    ) -> str:
         resources_path = (
             pathlib.Path(__file__).parent.parent.parent
             / "resources"
@@ -201,4 +205,4 @@ class SREResearchDesktopComponent(ComponentResource):
                 "ldap_sre_security_group": security_group_name,
             }
             cloudinit = chevron.render(f_cloudinit, mustache_values)
-            return base64.b64encode(cloudinit.encode("utf-8")).decode()
+            return b64encode(cloudinit)

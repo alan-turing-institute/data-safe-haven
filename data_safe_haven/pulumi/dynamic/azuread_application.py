@@ -1,7 +1,7 @@
 """Pulumi dynamic component for AzureAD applications."""
 # Standard library imports
 from contextlib import suppress
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 # Third party imports
 from pulumi import Input, Output, ResourceOptions
@@ -29,7 +29,7 @@ class AzureADApplicationProps:
 
 class AzureADApplicationProvider(DshResourceProvider):
     @staticmethod
-    def refresh(props: Dict[str, str]) -> Dict[str, str]:
+    def refresh(props: Dict[str, Any]) -> Dict[str, Any]:
         outs = dict(**props)
         with suppress(Exception):
             graph_api = GraphApi(auth_token=outs["auth_token"])
@@ -40,7 +40,7 @@ class AzureADApplicationProvider(DshResourceProvider):
                 outs["application_id"] = json_response["appId"]
         return outs
 
-    def create(self, props: Dict[str, str]) -> CreateResult:
+    def create(self, props: Dict[str, Any]) -> CreateResult:
         """Create new AzureAD application."""
         outs = dict(**props)
         try:
@@ -69,7 +69,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             outs=outs,
         )
 
-    def delete(self, id_: str, props: Dict[str, str]) -> None:
+    def delete(self, id_: str, props: Dict[str, Any]) -> None:
         """Delete an AzureAD application."""
         try:
             graph_api = GraphApi(
@@ -84,8 +84,8 @@ class AzureADApplicationProvider(DshResourceProvider):
     def diff(
         self,
         id_: str,
-        old_props: Dict[str, str],
-        new_props: Dict[str, str],
+        old_props: Dict[str, Any],
+        new_props: Dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
         # Exclude "auth_token" which should not trigger a diff
@@ -94,21 +94,22 @@ class AzureADApplicationProvider(DshResourceProvider):
     def update(
         self,
         id_: str,
-        old_props: Dict[str, str],
-        new_props: Dict[str, str],
-    ) -> DiffResult:
+        old_props: Dict[str, Any],
+        new_props: Dict[str, Any],
+    ) -> UpdateResult:
         """Updating is deleting followed by creating."""
         # Note that we need to use the auth token from new_props
         props = {**old_props}
         props["auth_token"] = new_props["auth_token"]
         self.delete(id_, props)
         updated = self.create(new_props)
-        return UpdateResult(outs={**updated.outs})
+        return UpdateResult(outs=updated.outs)
 
 
 class AzureADApplication(Resource):
     application_id: Output[str]
     object_id: Output[str]
+    _resource_type_name = "dsh:AzureADApplication"  # set resource type
 
     def __init__(
         self,
@@ -116,7 +117,6 @@ class AzureADApplication(Resource):
         props: AzureADApplicationProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        self._resource_type_name = "dsh:AzureADApplication"  # set resource type
         super().__init__(
             AzureADApplicationProvider(),
             name,
