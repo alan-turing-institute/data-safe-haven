@@ -93,7 +93,7 @@ Users may have been added to one or more security groups through setting the `Gr
 
 ### {{iphone}} Edit user details
 
-The `DC1` is the source of truth for user details. If these details need to be changed, they should be changed in the `DC1` and then synchronised to Azure.
+The `DC1` is the source of truth for user details. If these details need to be changed, they should be changed in the `DC1` and then synchronised to Azure AD.
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - In Server Manager click `Tools > Active Directory Users and Computers`
