@@ -72,7 +72,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ### {{woman}} {{man}} Modifying user SRE access
 
-Users may have been added to one or more security groups through setting the `GroupName` field in the `user_details_template.csv` (see {ref}`generate_user_csv`). Security Group assignments can also be manually modified```
+Users may have been added to one or more security groups through setting the `GroupName` field in the `user_details_template.csv` (see {ref}`generate_user_csv`). Security Group assignments can also be manually modified
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - In Server Manager click `Tools > Active Directory Users and Computers`
