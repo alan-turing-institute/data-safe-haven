@@ -44,7 +44,7 @@
       This is **not** uploaded to their Data Safe Haven user account but is needed when sending account activation messages.
       ```
 
-    - `GroupName`: [Optional] The name of the Active Directory security group(s) that the users should be added to (eg. `SG SANDBOX Research Users` ). You can also set this manually later on (see {ref}`adding_users_manually`).
+    - `GroupName`: The name of the Active Directory security group(s) that the users should be added to (eg. `SG SANDBOX Research Users` ). You can also change this manually later on (see {ref}`adding_users_manually`).
 
       ```{tip}
       If the user needs to be added to multiple groups, separate them with a pipe-character ( `|` ).
