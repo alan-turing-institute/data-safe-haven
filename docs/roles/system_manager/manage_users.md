@@ -114,7 +114,7 @@ The `DC1` is the source of truth for user details. If these details need to be c
 - You can check the changes you made were successful by logging into the Azure Portal as the AAD admin
     - Open `Azure Active Directory`
     - Click on `Users` under `Manage` and search for the user
-    - Click on the user and then `Edit properties` and confirm your changes propagated to Azure
+    - Click on the user and then `Edit properties` and confirm your changes propagated to Azure AD
 
 (deleting_users)=
 
