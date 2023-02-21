@@ -13,6 +13,14 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
 A helper script for doing this is already uploaded to the domain controller - you will need to prepare a `CSV` file in the appropriate format for it.
 
+### {{lock}} SRE Security Groups
+
+Each user should be assigned to one or more "security groups", which give them access to a given SRE with appropriate privileges. The security groups are named like so:
+
+- `SG <SRE ID> Research Users`: Default for most researchers. No special permissions.
+- `SG <SRE ID> Data Administrators`: Researchers who can create/modify/delete database tables schemas. Given to a smaller number of researchers. Restricting this access to most users prevents them creating/deleting arbitrary schemas, which is important because some SREs have their input data in database form.
+- `SG <SRE ID> System Administrators` - Researchers with elevated privileges through sudo. Rarely used but could be useful in `Tier 0/1` SREs to let groups manage their own packages.
+
 (generate_user_csv)=
 
 ## {{scroll}} Generate user details CSV file
