@@ -93,7 +93,7 @@ Users will need to be added to the relevant security group before they can acces
 
 ### {{iphone}} Edit user details
 
-The `DC1` is the source of truth for user details. If these details need to be changed, the user should be deleted in the Azure Portal and re-created from the `DC1`.
+The `DC1` is the source of truth for user details. If these details need to be changed, they should be changed in the `DC1` and then synchronised to Azure.
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - In Server Manager click `Tools > Active Directory Users and Computers`
@@ -105,6 +105,10 @@ The `DC1` is the source of truth for user details. If these details need to be c
 - Click `OK` after any changes are made
 - Open a `Powershell` command window with elevated privileges
 - Run `C:\Installation\Run_ADSync.ps1`
+- You can check the changes you made were successful by logging into the Azure Portal as the AAD admin
+    - Open `Azure Active Directory`
+    - Click on `Users` under `Manage` and search for the user
+    - Click on the user and then `Edit properties` and confirm your changes propagated to Azure
 
 (deleting_users)=
 
