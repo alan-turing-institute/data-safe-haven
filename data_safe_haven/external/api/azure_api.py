@@ -2,7 +2,7 @@
 # Standard library imports
 import time
 from contextlib import suppress
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, cast, Dict, Optional, Sequence, Tuple
 
 # Third party imports
 from azure.core.exceptions import (
@@ -230,7 +230,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                             ),
                             AccessPolicyEntry(
                                 tenant_id=tenant_id,
-                                object_id=managed_identity.principal_id,
+                                object_id=str(managed_identity.principal_id),
                                 permissions=Permissions(
                                     secrets=["GET", "LIST"],
                                     certificates=["GET", "LIST"],
@@ -389,7 +389,7 @@ class AzureApi(AzureMixin, LoggingMixin):
         location: str,
         resource_group_name: str,
     ) -> Identity:
-        """Ensure that a ManagedIdentity exists
+        """Ensure that a managed identity exists
 
         Returns:
             Identity: The managed identity
@@ -414,7 +414,8 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Ensured that managed identity <fg=green>{identity_name}</> exists.",
                 overwrite=True,
             )
-            return managed_identity
+            # mypy thinks that create_or_update returns Any
+            return cast(Identity, managed_identity)
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create managed identity {identity_name}.\n{str(exc)}"
