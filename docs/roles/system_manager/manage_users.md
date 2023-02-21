@@ -70,9 +70,9 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 (adding_users_manually)=
 
-### {{woman}} {{man}} Adding users to security group(s)
+### {{woman}} {{man}} Modifying user SRE access
 
-Users will need to be added to the relevant security group before they can access an SRE. This may have already been done if the `GroupName` was specified in the `user_details_template.csv` (see {ref}`generate_user_csv`), but otherwise can be achieved by the following:
+Users will need to be added to the relevant security group before they can access an SRE. This will have been done by setting the `GroupName` in the `user_details_template.csv` (see {ref}`generate_user_csv`), but can me modified later by the following:
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - In Server Manager click `Tools > Active Directory Users and Computers`
@@ -82,9 +82,12 @@ Users will need to be added to the relevant security group before they can acces
     - `SG <SRE ID> Research Users`
     - `SG <SRE ID> System Administrators`
 - Right click on the group and click `Properties`
-- Click the `Members` tab and click `Add...`
-- Enter a part of the user's name and click `Check Names`
-- Select the correct user and click `OK`, then click `OK` again until the window closes
+- Click the `Members` tab
+- To add a user click `Add...`
+    - Enter a part of the user's name and click `Check Names`
+    - Select the correct user and click `OK`, then click `OK` again until the window closes
+- To remove a user click on the username of the person and then `Remove`
+    - Click `Yes` if you're sure this user should no longer have access to this SRE, then click `OK` again until the window closes
 - Open a `Powershell` command window with elevated privileges
 - Run `C:\Installation\Run_ADSync.ps1`
 
