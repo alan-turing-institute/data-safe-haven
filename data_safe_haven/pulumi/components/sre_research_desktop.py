@@ -1,6 +1,6 @@
 # Standard library imports
 import pathlib
-from typing import Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, Sequence
 
 # Third party imports
 import chevron
@@ -53,9 +53,7 @@ class SREResearchDesktopProps:
             virtual_network_resource_group
         ).apply(get_name_from_rg)
         self.vm_ip_addresses = Output.all(subnet_research_desktops, vm_details).apply(
-            lambda args: self.get_ip_addresses(
-                cast(network.GetSubnetResult, args[0]), len(cast(List[str], args[1]))
-            )
+            lambda args: self.get_ip_addresses(subnet=args[0], vm_details=args[1])
         )
         vm_lists = Output.from_input(vm_details).apply(
             lambda d: [(name, details["sku"]) for name, details in d.items()]
@@ -63,9 +61,12 @@ class SREResearchDesktopProps:
         self.vm_names = vm_lists.apply(lambda l: [t[0] for t in l])
         self.vm_sizes = vm_lists.apply(lambda l: [t[1] for t in l])
 
-    def get_ip_addresses(
-        self, subnet: network.GetSubnetResult, number: int
-    ) -> List[str]:
+    def get_ip_addresses(self, subnet: Any, vm_details: Any) -> List[str]:
+        assert isinstance(subnet, network.GetSubnetResult)
+        assert isinstance(List[str], vm_details)
+
+        number = len(vm_details)
+
         if not subnet.address_prefix:
             return []
         return [
