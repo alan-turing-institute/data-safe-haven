@@ -13,9 +13,11 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
 A helper script for doing this is already uploaded to the domain controller - you will need to prepare a `CSV` file in the appropriate format for it.
 
+(security_groups)=
+
 ### {{lock}} SRE Security Groups
 
-Each user should be assigned to one or more "security groups", which give them access to a given SRE with appropriate privileges. The security groups are named like so:
+Each user should be assigned to one or more Active Directory "security groups", which give them access to a given SRE with appropriate privileges. The security groups are named like so:
 
 - `SG <SRE ID> Research Users`: Default for most researchers. No special permissions.
 - `SG <SRE ID> Data Administrators`: Researchers who can create/modify/delete database tables schemas. Given to a smaller number of researchers. Restricting this access to most users prevents them creating/deleting arbitrary schemas, which is important because some SREs have their input data in database form.
@@ -80,15 +82,12 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ### {{woman}} {{man}} Modifying user SRE access
 
-Users may have been added to one or more security groups through setting the `GroupName` field in the `user_details_template.csv` (see {ref}`generate_user_csv`). Security Group assignments can also be manually modified
+Users may have been added to one or more {ref}`security_groups` through setting the `GroupName` field in the `user_details_template.csv` (see {ref}`generate_user_csv`). Security Group assignments can also be manually modified via the following:
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - In Server Manager click `Tools > Active Directory Users and Computers`
 - Click on `Safe Haven Security Groups`
-- Find the group that the user needs to be added to. For each SRE there are the following groups:
-    - `SG <SRE ID> Data Administrators` (enables database privileges, not write access to `/data`)
-    - `SG <SRE ID> Research Users`
-    - `SG <SRE ID> System Administrators`
+- Find the group that the user needs to be added to (see {ref}`security_groups`)
 - Right click on the group and click `Properties`
 - Click the `Members` tab
 - To add a user click `Add...`
