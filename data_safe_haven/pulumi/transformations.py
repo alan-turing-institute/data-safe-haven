@@ -1,9 +1,19 @@
 """Common transformations needed when manipulating Pulumi resources"""
+# Standard library imports
+from typing import List
+
 # Third party imports
 from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
+from data_safe_haven.external.interface import AzureIPv4Range
+
+
+def get_available_ips_from_subnet(subnet: network.GetSubnetResult) -> List[str]:
+    if address_prefix := subnet.address_prefix:
+        return [str(ip) for ip in AzureIPv4Range.from_cidr(address_prefix).available()]
+    return []
 
 
 def get_id_from_rg(rg: resources.ResourceGroup) -> str:

@@ -1,44 +1,33 @@
+from typing import List, Optional, Tuple
 from _typeshed import Incomplete
 
-DNS_LABEL: str
-__pdoc__: Incomplete
-__doc__: str
-
 class ACMEClient:
-    domains: Incomplete
-    email: Incomplete
-    directory: Incomplete
-    certificate: Incomplete
-    private_key: Incomplete
-    csr: Incomplete
-    verification_tokens: Incomplete
+    domains: List[str]
+    email: str
+    directory: str
+    certificate: str
+    private_key: bytes
+    csr: bytes
+    verification_tokens: List[Incomplete]
     account_key: Incomplete
     account: Incomplete
     account_path: Incomplete
     nameservers: Incomplete
-    __private_key__: Incomplete
-    __client__: Incomplete
-    __net__: Incomplete
-    __directory__: Incomplete
-    __order__: Incomplete
-    __final_order__: Incomplete
-    __verification_tokens__: Incomplete
-    __responses__: Incomplete
-    __challenges__: Incomplete
-    __answers__: Incomplete
     def __init__(
         self,
-        domains: list = ...,
-        email: str = ...,
-        directory: str = ...,
-        nameservers: list = ...,
-        new_account: bool = ...,
-        generate_csr: bool = ...,
+        domains: Optional[List[str]] = ...,
+        email: Optional[str] = ...,
+        directory: Optional[str] = ...,
+        nameservers: Optional[List[str]] = ...,
+        new_account: Optional[bool] = ...,
+        generate_csr: Optional[bool] = ...,
     ) -> None: ...
     def generate_csr(self) -> bytes: ...
     def generate_private_key(self, key_type: str = ...) -> bytes: ...
-    def generate_private_key_and_csr(self, key_type: str = ...) -> tuple: ...
-    def request_verification_tokens(self) -> list: ...
+    def generate_private_key_and_csr(
+        self, key_type: str = ...
+    ) -> Tuple[bytes, bytes]: ...
+    def request_verification_tokens(self) -> List[Tuple[str, str]]: ...
     def request_certificate(self, wait: int = ..., timeout: int = ...) -> bytes: ...
     def revoke_certificate(self, reason: int = ...) -> None: ...
     def new_account(self) -> None: ...
@@ -65,12 +54,3 @@ class ACMEClient:
         round_robin: bool = ...,
         verbose: bool = ...,
     ) -> bool: ...
-    def __verify_challenge__(self) -> list: ...
-    def __validate_registration__(self) -> None: ...
-    def __validate_email__(self) -> None: ...
-    def __validate_verification_tokens__(self) -> None: ...
-    def __validate_domains__(self) -> None: ...
-    def __validate_directory__(self) -> None: ...
-    def __validate_certificate__(self) -> None: ...
-    def __validate_private_key__(self) -> None: ...
-    def __format_verification_tokens__(self) -> list: ...

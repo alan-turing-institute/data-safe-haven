@@ -1,6 +1,6 @@
 """Pulumi component for SRE application gateway"""
 # Standard library imports
-from typing import Optional
+from typing import Any, Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -9,6 +9,7 @@ from pulumi_azure_native import managedidentity, network, resources
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.pulumi.transformations import (
+    get_available_ips_from_subnet,
     get_id_from_rg,
     get_id_from_subnet,
     get_name_from_rg,
@@ -17,6 +18,7 @@ from data_safe_haven.pulumi.transformations import (
 
 class SREApplicationGatewayProps:
     """Properties for SREApplicationGatewayComponent"""
+    user_assigned_identities: Output[dict[str, dict[Any, Any]]]
 
     def __init__(
         self,
@@ -38,16 +40,10 @@ class SREApplicationGatewayProps:
         ).apply(get_id_from_subnet)
         self.subnet_guacamole_containers_ip_addresses = Output.from_input(
             subnet_guacamole_containers
-        ).apply(
-            lambda s: [
-                str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
-            ]
-            if s.address_prefix
-            else []
-        )
-        # Unwrap key vault identity so that it has type Output[dict(str, dict(Any, Any))]
+        ).apply(get_available_ips_from_subnet)
+        # Unwrap key vault identity so that it has the required type
         self.user_assigned_identities = Output.from_input(key_vault_identity).apply(
-            lambda identity: identity.id.apply(lambda id: {id: {}})
+            lambda identity: identity.id.apply(lambda id: {str(id): {}})
         )
 
 

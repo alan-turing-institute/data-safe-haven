@@ -4,7 +4,6 @@ from contextlib import suppress
 from typing import Any, Dict, Optional
 
 # Third party imports
-import simple_acme_dns
 from acme.errors import ValidationError
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from cryptography.hazmat.primitives.serialization import (
@@ -15,6 +14,7 @@ from cryptography.hazmat.primitives.serialization import (
 from cryptography.x509 import load_pem_x509_certificate
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
+from simple_acme_dns import ACMEClient
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenSSLException
@@ -61,7 +61,7 @@ class SSLCertificateProvider(DshResourceProvider):
         try:
             # Note that we must set the key to RSA-2048 before generating the CSR
             # The default is ecdsa-with-SHA25, which Azure Key Vault cannot read
-            client = simple_acme_dns.ACMEClient(
+            client = ACMEClient(
                 domains=[props["domain_name"]],
                 email=props["admin_email_address"],
                 directory="https://acme-staging-v02.api.letsencrypt.org/directory",

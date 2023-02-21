@@ -42,14 +42,12 @@ websocket-client = "^1.5.0"
 black = "^22.12.0"
 mypy = "^1.0.0"
 pytest = "^7.2"
-types-chevron = "^0.14.2"
-types-protobuf = "^4.21.0"
-types-psycopg2 = "^2.9.21"
-types-pytz = "^2022.7.1"
-types-PyYAML = "^6.0.12"
-types-requests = "^2.28.11"
+types-chevron = "^0.14.0"
+types-psycopg2 = "^2.9.0"
+types-pytz = "^2022.7.0"
+types-PyYAML = "^6.0"
+types-requests = "^2.28.0"
 types-setuptools = "^67.3.0"
-types-six = "^1.16.21"
 
 [tool.poetry.scripts]
 dsh = "data_safe_haven.cli:main"
@@ -59,23 +57,9 @@ strict = true
 files = "data_safe_haven"
 exclude = [
     "data_safe_haven/external/api/azure_api.py",
-    "data_safe_haven/external/interface/azure_fileshare.py",
-    "data_safe_haven/pulumi/components/shm_firewall.py",
-    "data_safe_haven/pulumi/components/sre_application_gateway.py",
     "data_safe_haven/pulumi/components/sre_research_desktop.py",
-    "data_safe_haven/pulumi/dynamic/ssl_certificate.py",
 ]
 mypy_path = "typings"
-
-[[tool.mypy.overrides]]
-module = "azure.*"
-ignore_errors = true
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "pulumi_azure_native.*"
-ignore_errors = true
-ignore_missing_imports = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

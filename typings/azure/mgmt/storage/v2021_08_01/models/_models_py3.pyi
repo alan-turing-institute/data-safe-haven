@@ -7,11 +7,11 @@ class StorageAccountKey(msrest.serialization.Model):
     value: str
     permissions: Incomplete
     creation_time: Incomplete
-    def __init__(self, **kwargs) -> None: ...
+    def __init__(self, **kwargs: Any) -> None: ...
 
 class StorageAccountListKeysResult(msrest.serialization.Model):
     keys: Optional[List[StorageAccountKey]]
-    def __init__(self, **kwargs) -> None: ...
+    def __init__(self, **kwargs: Any) -> None: ...
 
 class Resource(msrest.serialization.Model):
     def __init__(self, **kwargs: Any) -> None: ...
@@ -25,5 +25,5 @@ class StorageAccountCreateParameters(msrest.serialization.Model):
 
 class TrackedResource(Resource):
     def __init__(
-        self, *, location: str, tags: Optional[Dict[str, str]] = None, **kwargs
+        self, *, location: str, tags: Optional[Dict[str, str]] = None, **kwargs: Any
     ) -> None: ...

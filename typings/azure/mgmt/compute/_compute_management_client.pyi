@@ -1,7 +1,6 @@
 from typing import Any, Optional
 
 from azure.core.credentials import TokenCredential
-from azure.identity import DefaultAzureCredential
 from azure.profiles import KnownProfiles
 from azure.profiles.multiapiclient import MultiApiClientMixin
 from .v2021_07_01.operations import ResourceSkusOperations
@@ -13,7 +12,7 @@ class _SDKClient(object):
 class ComputeManagementClient(MultiApiClientMixin, _SDKClient):
     def __init__(
         self,
-        credential: TokenCredential | DefaultAzureCredential,
+        credential: TokenCredential,
         subscription_id: str,
         api_version: Optional[str] = None,
         base_url: Optional[str] = ...,

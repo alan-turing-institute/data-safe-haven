@@ -10,8 +10,11 @@ import psycopg2
 import requests
 from azure.core.polling import LROPoller
 from azure.mgmt.rdbms.postgresql import PostgreSQLManagementClient
-from azure.mgmt.rdbms.postgresql.models import FirewallRule, ServerUpdateParameters
-from azure.mgmt.rdbms.postgresql.operations import ServersOperations
+from azure.mgmt.rdbms.postgresql.models import (
+    FirewallRule,
+    Server,
+    ServerUpdateParameters,
+)
 
 # Local imports
 from data_safe_haven.exceptions import (
@@ -25,6 +28,15 @@ from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
     """Interface for Azure PostgreSQL databases."""
+
+    current_ip: str
+    db_client_: Optional[PostgreSQLManagementClient]
+    db_name: str
+    db_server_: Optional[Server]
+    db_server_admin_password: str
+    resource_group_name: str
+    server_name: str
+    rule_suffix: str
 
     def __init__(
         self,
@@ -47,14 +59,14 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         self.rule_suffix = datetime.now().strftime(r"%Y%m%d-%H%M%S")
 
     @staticmethod
-    def wait(poller: LROPoller[None]) -> None:
+    def wait(poller: LROPoller[Any]) -> None:
         """Wait for a polling operation to finish."""
         while not poller.done():
             time.sleep(10)
 
     @property
     def db_client(self) -> PostgreSQLManagementClient:
-        """Get the database client as a PostgreSQLManagementClient object."""
+        """Get the database client."""
         if not self.db_client_:
             self.db_client_ = PostgreSQLManagementClient(
                 self.credential, self.subscription_id
@@ -62,16 +74,16 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         return self.db_client_
 
     @property
-    def db_server(self) -> ServersOperations:
-        """Get the database server as a ServersOperations object."""
+    def db_server(self) -> Server:
+        """Get the database server."""
         if not self.db_server_:
             self.db_server_ = self.db_client.servers.get(
                 self.resource_group_name, self.server_name
             )
         return self.db_server_
 
-    def db_connection(self, n_retries: int = 0) -> psycopg2.connection:
-        """Get the database connection as a ServersOperations object."""
+    def db_connection(self, n_retries: int = 0) -> psycopg2.extensions.connection:
+        """Get the database connection."""
         while True:
             try:
                 connection = psycopg2.connect(

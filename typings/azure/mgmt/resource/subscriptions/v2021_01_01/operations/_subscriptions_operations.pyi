@@ -1,0 +1,6 @@
+from typing import Any, Iterable
+from .. import models as _models
+
+class SubscriptionsOperations:
+    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
+    def list(self, **kwargs: Any) -> Iterable[_models.Subscription]: ...

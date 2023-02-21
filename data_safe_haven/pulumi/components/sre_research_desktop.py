@@ -58,7 +58,7 @@ class SREResearchDesktopProps:
             )
         )
         vm_lists = Output.from_input(vm_details).apply(
-            lambda d: [(k, v["sku"]) for k, v in d.items()]
+            lambda d: [(name, details["sku"]) for name, details in d.items()]
         )
         self.vm_names = vm_lists.apply(lambda l: [t[0] for t in l])
         self.vm_sizes = vm_lists.apply(lambda l: [t[1] for t in l])
@@ -107,6 +107,7 @@ class SREResearchDesktopComponent(ComponentResource):
 
         # Deploy a variable number of VMs depending on the input parameters
         # Note that deploying inside an apply is advised against but not forbidden
+        # NB. Output.all(**kwargs: Output[T]) -> Output[Dict[str, T]] is valid but not specified in the Output class
         Output.all(
             vm_ip_addresses=props.vm_ip_addresses,
             vm_names=props.vm_names,
@@ -119,14 +120,14 @@ class SREResearchDesktopComponent(ComponentResource):
                         admin_password=props.admin_password,
                         admin_username=props.admin_username,
                         b64cloudinit=b64cloudinit,
-                        ip_address_private=vm_ip_address,
+                        ip_address_private=str(vm_ip_address),
                         location=props.location,
                         resource_group_name=resource_group.name,
                         subnet_name=props.subnet_research_desktops_name,
                         virtual_network_name=props.virtual_network_name,
                         virtual_network_resource_group_name=props.virtual_network_resource_group_name,
-                        vm_name=vm_name,
-                        vm_size=vm_size,
+                        vm_name=str(vm_name),
+                        vm_size=str(vm_size),
                     ),
                     opts=child_opts,
                 )

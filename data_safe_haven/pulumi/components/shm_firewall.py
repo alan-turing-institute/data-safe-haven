@@ -25,7 +25,9 @@ class SHMFirewallProps:
         subnet_update_servers: Input[network.GetSubnetResult],
     ):
         self.domain_controller_private_ip = domain_controller_private_ip
-        self.dns_zone_name = Output.from_input(dns_zone).apply(lambda zone: zone.name)
+        self.dns_zone_name = Output.from_input(dns_zone).apply(
+            lambda zone: str(zone.name)
+        )
         self.location = location
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name

@@ -1,7 +1,6 @@
 from typing import Any, Optional
 
 from azure.core.credentials import TokenCredential
-from azure.identity import DefaultAzureCredential
 from azure.profiles import KnownProfiles
 from azure.profiles.multiapiclient import MultiApiClientMixin
 from .v2018_11_30.operations import UserAssignedIdentitiesOperations
@@ -12,7 +11,7 @@ class _SDKClient:
 class ManagedServiceIdentityClient(MultiApiClientMixin, _SDKClient):
     def __init__(
         self,
-        credential: TokenCredential | DefaultAzureCredential,
+        credential: TokenCredential,
         subscription_id: str,
         api_version: Optional[str] = None,
         base_url: Optional[str] = ...,

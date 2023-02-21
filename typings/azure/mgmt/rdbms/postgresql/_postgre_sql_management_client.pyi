@@ -1,8 +1,8 @@
 from typing import Any, Optional
+from .operations import FirewallRulesOperations, ServersOperations
 from azure.core.credentials import TokenCredential
-from .operations import DscCompilationJobOperations, ModuleOperations
 
-class AutomationClient(object):
+class PostgreSQLManagementClient:
     def __init__(
         self,
         credential: TokenCredential,
@@ -11,6 +11,6 @@ class AutomationClient(object):
         **kwargs: Any
     ) -> None: ...
     @property
-    def module(self) -> ModuleOperations: ...
+    def firewall_rules(self) -> FirewallRulesOperations: ...
     @property
-    def dsc_compilation_job(self) -> DscCompilationJobOperations: ...
+    def servers(self) -> ServersOperations: ...

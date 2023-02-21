@@ -25,7 +25,8 @@ class AzureFileShare(AzureMixin):
         *args: Any,
         **kwargs: Any,
     ):
-        super().__init__(subscription_name=subscription_name, *args, **kwargs)
+        kwargs[subscription_name] = subscription_name
+        super().__init__(*args, **kwargs)
         self.storage_client_: Optional[StorageManagementClient] = None
         self.storage_account_key_: Optional[str] = None
         self.storage_account_name: str = storage_account_name

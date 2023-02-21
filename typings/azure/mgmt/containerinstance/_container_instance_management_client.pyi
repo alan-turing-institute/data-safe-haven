@@ -1,16 +1,17 @@
 from typing import Any, Optional
 from azure.core.credentials import TokenCredential
-from .operations import DscCompilationJobOperations, ModuleOperations
+from .operations import ContainersOperations, ContainerGroupsOperations
 
-class AutomationClient(object):
+class ContainerInstanceManagementClient:
     def __init__(
         self,
         credential: TokenCredential,
         subscription_id: str,
+        api_version: Optional[str] = None,
         base_url: Optional[str] = ...,
         **kwargs: Any
     ) -> None: ...
     @property
-    def module(self) -> ModuleOperations: ...
+    def containers(self) -> ContainersOperations: ...
     @property
-    def dsc_compilation_job(self) -> DscCompilationJobOperations: ...
+    def container_groups(self) -> ContainerGroupsOperations: ...
