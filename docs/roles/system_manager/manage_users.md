@@ -114,16 +114,16 @@ The `DC1` is the source of truth for user details. If these details need to be c
 
 ### {{x}} Deleting users
 
-- Login into the Azure Portal and navigate to the correct AAD
-- Open `Azure Active Directory`
-- Click `Users` under `Manage`
-- Search for the user and check the box next to their name, then click `Delete` (this could take a few minutes)
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - In Server Manager click `Tools > Active Directory Users and Computers`
 - Click on `Safe Haven Research Users`
 - Find the person, right click on them and click `Delete`
 - Open a `Powershell` command window with elevated privileges
 - Run `C:\Installation\Run_ADSync.ps1`
+- You can check the user is deleted by logging into the Azure Portal as the AAD admin
+    - Open `Azure Active Directory`
+    - Click on `Users` under `Manage` and search for the user
+    - Confirm the user is no longer present
 
 ## {{calling}} Assign MFA licences
 
