@@ -1,6 +1,6 @@
 # Standard library imports
 import pathlib
-from typing import Dict, List, Optional, Sequence, cast
+from typing import Dict, List, Optional, cast
 
 # Third party imports
 import chevron
@@ -107,8 +107,7 @@ class SREResearchDesktopComponent(ComponentResource):
 
         # Deploy a variable number of VMs depending on the input parameters
         # Note that deploying inside an apply is advised against but not forbidden
-        # NB. Output.all(**kwargs: Output[T]) -> Output[Dict[str, T]] is valid but not specified in the Output class
-        Output.all(
+        vms = Output.all(
             vm_ip_addresses=props.vm_ip_addresses,
             vm_names=props.vm_names,
             vm_sizes=props.vm_sizes,
@@ -146,41 +145,65 @@ class SREResearchDesktopComponent(ComponentResource):
             "vm_names": props.vm_names,
         }
 
-    def deploy_vms(
-        self,
-        admin_password: str,
-        admin_username: str,
-        b64cloudinit: str,
-        location: str,
-        resource_group_name: str,
-        sre_name: str,
-        subnet_research_desktops_name: str,
-        virtual_network_name: str,
-        virtual_network_resource_group_name: str,
-        vm_ip_addresses: Sequence[str],
-        vm_names: Sequence[str],
-        vm_sizes: Sequence[str],
-        child_opts: ResourceOptions,
-    ) -> None:
-        # Deploy as many VMs as requested
-        for vm_ip_address, vm_name, vm_size in zip(vm_ip_addresses, vm_names, vm_sizes):
-            VMComponent(
-                replace_separators(f"sre-{sre_name}-{vm_name}", "-"),
-                LinuxVMProps(
-                    admin_password=admin_password,
-                    admin_username=admin_username,
-                    b64cloudinit=b64cloudinit,
-                    ip_address_private=vm_ip_address,
-                    location=location,
-                    resource_group_name=resource_group_name,
-                    subnet_name=subnet_research_desktops_name,
-                    virtual_network_name=virtual_network_name,
-                    virtual_network_resource_group_name=virtual_network_resource_group_name,
-                    vm_name=vm_name,
-                    vm_size=vm_size,
-                ),
-                opts=child_opts,
-            )
+    # def deploy_vms(self, sre_name: str, props: SREResearchDesktopProps, vm_args: Dict[str, List[str]]) -> List[VMComponent]:
+    #     components: List[VMComponent] = []
+    #     for vm_ip_address, vm_name, vm_size in zip(
+    #         vm_args["vm_ip_addresses"], vm_args["vm_names"], vm_args["vm_sizes"]
+    #     ):
+    #         components.append(VMComponent(
+    #             replace_separators(f"sre-{sre_name}-vm-{vm_name}", "-"),
+    #             LinuxVMProps(
+    #                 admin_password=props.admin_password,
+    #                 admin_username=props.admin_username,
+    #                 b64cloudinit=b64cloudinit,
+    #                 ip_address_private=str(vm_ip_address),
+    #                 location=props.location,
+    #                 resource_group_name=resource_group.name,
+    #                 subnet_name=props.subnet_research_desktops_name,
+    #                 virtual_network_name=props.virtual_network_name,
+    #                 virtual_network_resource_group_name=props.virtual_network_resource_group_name,
+    #                 vm_name=str(vm_name),
+    #                 vm_size=str(vm_size),
+    #             ),
+    #             opts=child_opts,
+    #         ))
+    #     return components
+
+    # def deploy_vms(
+    #     self,
+    #     admin_password: str,
+    #     admin_username: str,
+    #     b64cloudinit: str,
+    #     location: str,
+    #     resource_group_name: str,
+    #     sre_name: str,
+    #     subnet_research_desktops_name: str,
+    #     virtual_network_name: str,
+    #     virtual_network_resource_group_name: str,
+    #     vm_ip_addresses: Sequence[str],
+    #     vm_names: Sequence[str],
+    #     vm_sizes: Sequence[str],
+    #     child_opts: ResourceOptions,
+    # ) -> None:
+    #     # Deploy as many VMs as requested
+    #     for vm_ip_address, vm_name, vm_size in zip(vm_ip_addresses, vm_names, vm_sizes):
+    #         VMComponent(
+    #             replace_separators(f"sre-{sre_name}-{vm_name}", "-"),
+    #             LinuxVMProps(
+    #                 admin_password=admin_password,
+    #                 admin_username=admin_username,
+    #                 b64cloudinit=b64cloudinit,
+    #                 ip_address_private=vm_ip_address,
+    #                 location=location,
+    #                 resource_group_name=resource_group_name,
+    #                 subnet_name=subnet_research_desktops_name,
+    #                 virtual_network_name=virtual_network_name,
+    #                 virtual_network_resource_group_name=virtual_network_resource_group_name,
+    #                 vm_name=vm_name,
+    #                 vm_size=vm_size,
+    #             ),
+    #             opts=child_opts,
+    #         )
 
     def read_cloudinit(
         self,

@@ -25,7 +25,9 @@ class AzureFileShare(AzureMixin):
         *args: Any,
         **kwargs: Any,
     ):
-        kwargs[subscription_name] = subscription_name
+        kwargs[
+            "subscription_name"
+        ] = subscription_name  # workaround for erroneous 'multiple values for keyword' mypy warning
         super().__init__(*args, **kwargs)
         self.storage_client_: Optional[StorageManagementClient] = None
         self.storage_account_key_: Optional[str] = None

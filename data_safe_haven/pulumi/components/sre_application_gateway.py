@@ -7,7 +7,6 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import managedidentity, network, resources
 
 # Local imports
-from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.pulumi.transformations import (
     get_available_ips_from_subnet,
     get_id_from_rg,
@@ -18,6 +17,7 @@ from data_safe_haven.pulumi.transformations import (
 
 class SREApplicationGatewayProps:
     """Properties for SREApplicationGatewayComponent"""
+
     user_assigned_identities: Output[dict[str, dict[Any, Any]]]
 
     def __init__(

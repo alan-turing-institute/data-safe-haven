@@ -10,6 +10,14 @@ class TrackedResource(Resource):
     ) -> None: ...
 
 class Identity(TrackedResource):
+    client_id: str
+    id: str
+    location: str
+    name: str
+    principal_id: str
+    tags: Dict[str, str]
+    tenant_id: str
+    type: str
     def __init__(
         self, *, location: str, tags: Optional[Dict[str, str]] = None, **kwargs: Any
     ) -> None: ...

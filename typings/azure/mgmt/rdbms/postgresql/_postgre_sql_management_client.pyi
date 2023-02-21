@@ -1,6 +1,6 @@
 from typing import Any, Optional
-from .operations import FirewallRulesOperations, ServersOperations
 from azure.core.credentials import TokenCredential
+from .operations import FirewallRulesOperations, ServersOperations
 
 class PostgreSQLManagementClient:
     def __init__(

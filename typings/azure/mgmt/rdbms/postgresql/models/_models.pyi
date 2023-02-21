@@ -1,6 +1,6 @@
 from typing import Any
-from _typeshed import Incomplete
 import msrest.serialization
+from _typeshed import Incomplete
 
 class Resource(msrest.serialization.Model):
     def __init__(self, **kwargs: Any) -> None: ...

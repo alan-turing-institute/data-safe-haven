@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
-from ._automation_client_enums import ModuleProvisioningState
 import msrest.serialization
+from ._automation_client_enums import ModuleProvisioningState
 
 class DscCompilationJob(Resource):
     id: str

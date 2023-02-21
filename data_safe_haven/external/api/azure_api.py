@@ -43,7 +43,7 @@ from azure.mgmt.msi.models import Identity
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import ResourceGroup
 from azure.mgmt.storage import StorageManagementClient
-from azure.mgmt.storage.models import BlobContainer
+from azure.mgmt.storage.models import BlobContainer, PublicAccess
 from azure.mgmt.storage.models import Sku as StorageAccountSku
 from azure.mgmt.storage.models import StorageAccount, StorageAccountCreateParameters
 
@@ -59,7 +59,10 @@ class AzureApi(AzureMixin, LoggingMixin):
     """Interface to the Azure REST API"""
 
     def __init__(self, subscription_name: str, *args: Any, **kwargs: Any):
-        super().__init__(subscription_name=subscription_name, *args, **kwargs)
+        kwargs[
+            "subscription_name"
+        ] = subscription_name  # workaround for erroneous 'multiple values for keyword' mypy warning
+        super().__init__(*args, **kwargs)
 
     def compile_desired_state(
         self,
@@ -199,7 +202,6 @@ class AzureApi(AzureMixin, LoggingMixin):
             key_vault_client = KeyVaultManagementClient(
                 self.credential, self.subscription_id
             )
-
             # Ensure that key vault exists
             key_vault_client.vaults.begin_create_or_update(
                 resource_group_name,
@@ -530,7 +532,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                 resource_group_name,
                 storage_account_name,
                 container_name,
-                {"public_access": "none"},
+                BlobContainer(public_access=PublicAccess.NONE),
             )
             self.info(
                 f"Ensured that storage container <fg=green>{container.name}</> exists.",

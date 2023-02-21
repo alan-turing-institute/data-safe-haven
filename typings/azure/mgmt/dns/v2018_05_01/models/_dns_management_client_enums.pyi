@@ -1,0 +1,11 @@
+class RecordType:
+    A: str
+    AAAA: str
+    CAA: str
+    CNAME: str
+    MX: str
+    NS: str
+    PTR: str
+    SOA: str
+    SRV: str
+    TXT: str

@@ -2,23 +2,20 @@ from typing import Any, Optional
 from azure.core.credentials import TokenCredential
 from azure.profiles import KnownProfiles
 from azure.profiles.multiapiclient import MultiApiClientMixin
-from .v2021_07_01.operations import ResourceSkusOperations
-from .v2022_11_01.operations import VirtualMachinesOperations
+from .v2019_09_01.operations import VaultsOperations
 
-class _SDKClient(object):
+class _SDKClient:
     def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
-class ComputeManagementClient(MultiApiClientMixin, _SDKClient):
+class KeyVaultManagementClient(MultiApiClientMixin, _SDKClient):
     def __init__(
         self,
         credential: TokenCredential,
         subscription_id: str,
-        api_version: Optional[str] = None,
+        api_version: Optional[str] = ...,
         base_url: Optional[str] = ...,
-        profile: Optional[KnownProfiles] = ...,
+        profile: KnownProfiles = ...,
         **kwargs: Any
     ) -> None: ...
     @property
-    def resource_skus(self) -> ResourceSkusOperations: ...
-    @property
-    def virtual_machines(self) -> VirtualMachinesOperations: ...
+    def vaults(self) -> VaultsOperations: ...

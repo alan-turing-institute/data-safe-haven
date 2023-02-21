@@ -1,7 +1,7 @@
-from ._subscription_client_enums import ResourceNameStatus
+from typing import Any, Optional, Union
 import msrest.serialization
 from azure.core.exceptions import HttpResponseError as HttpResponseError
-from typing import Any, Optional, Union
+from ._subscription_client_enums import ResourceNameStatus
 
 class CheckResourceNameResult(msrest.serialization.Model):
     def __init__(

@@ -1,5 +1,4 @@
 from typing import Any, Optional
-
 from azure.core.credentials import TokenCredential
 from azure.profiles import KnownProfiles
 from azure.profiles.multiapiclient import MultiApiClientMixin
