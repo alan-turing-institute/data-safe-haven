@@ -8,9 +8,11 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 # Local imports
+from data_safe_haven.exceptions import DataSafeHavenPulumiException
 from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers import b64encode, replace_separators
 from data_safe_haven.pulumi.transformations import (
+    get_available_ips_from_subnet,
     get_name_from_rg,
     get_name_from_subnet,
     get_name_from_vnet,
@@ -62,17 +64,13 @@ class SREResearchDesktopProps:
         self.vm_sizes = vm_lists.apply(lambda l: [t[1] for t in l])
 
     def get_ip_addresses(self, subnet: Any, vm_details: Any) -> List[str]:
-        assert isinstance(subnet, network.GetSubnetResult)
-        assert isinstance(List[str], vm_details)
-
-        number = len(vm_details)
-
-        if not subnet.address_prefix:
-            return []
-        return [
-            str(ip)
-            for ip in AzureIPv4Range.from_cidr(subnet.address_prefix).available()
-        ][:number]
+        if not isinstance(subnet, network.GetSubnetResult):
+            DataSafeHavenPulumiException(f"'subnet' has invalid type {type(subnet)}")
+        if not isinstance(vm_details, list):
+            DataSafeHavenPulumiException(
+                f"'vm_details' has invalid type {type(vm_details)}"
+            )
+        return get_available_ips_from_subnet(subnet)[: len(vm_details)]
 
 
 class SREResearchDesktopComponent(ComponentResource):
