@@ -1,6 +1,6 @@
+from typing import Any, Optional
 import msrest.serialization
 from _typeshed import Incomplete
-from typing import Any, Optional
 
 class ContainerExecRequest(msrest.serialization.Model):
     def __init__(

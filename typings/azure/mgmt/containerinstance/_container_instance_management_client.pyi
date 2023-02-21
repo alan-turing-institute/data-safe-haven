@@ -1,6 +1,6 @@
 from typing import Any, Optional
 from azure.core.credentials import TokenCredential
-from .operations import ContainersOperations, ContainerGroupsOperations
+from .operations import ContainerGroupsOperations, ContainersOperations
 
 class ContainerInstanceManagementClient:
     def __init__(

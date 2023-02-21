@@ -1,5 +1,5 @@
 from typing import Any, Optional
-from .v2021_01_01.models import ResourceName, CheckResourceNameResult
+from .v2021_01_01.models import CheckResourceNameResult, ResourceName
 
 class SubscriptionClientOperationsMixin:
     def check_resource_name(

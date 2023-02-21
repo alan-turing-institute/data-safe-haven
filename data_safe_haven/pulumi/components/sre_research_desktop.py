@@ -107,13 +107,14 @@ class SREResearchDesktopComponent(ComponentResource):
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
 
         # Deploy a variable number of VMs depending on the input parameters
-        # Note that deploying inside an apply is advised against but not forbidden
-        # NB. Output.all(**kwargs: Output[T]) -> Output[Dict[str, T]] is valid but not specified in the Output class
-        Output.all(
+        # We separate the all() and apply() in order to provide a type-hint
+        vm_details: Output[Dict[str, List[str]]] = Output.all(
             vm_ip_addresses=props.vm_ip_addresses,
             vm_names=props.vm_names,
             vm_sizes=props.vm_sizes,
-        ).apply(
+        )
+        # Note that deploying inside an apply is advised against but not forbidden
+        vm_details.apply(
             lambda kwargs: (
                 VMComponent(
                     replace_separators(f"sre-{sre_name}-vm-{vm_name}", "-"),
@@ -146,42 +147,6 @@ class SREResearchDesktopComponent(ComponentResource):
             "vm_ip_addresses": props.vm_ip_addresses,
             "vm_names": props.vm_names,
         }
-
-    def deploy_vms(
-        self,
-        admin_password: str,
-        admin_username: str,
-        b64cloudinit: str,
-        location: str,
-        resource_group_name: str,
-        sre_name: str,
-        subnet_research_desktops_name: str,
-        virtual_network_name: str,
-        virtual_network_resource_group_name: str,
-        vm_ip_addresses: Sequence[str],
-        vm_names: Sequence[str],
-        vm_sizes: Sequence[str],
-        child_opts: ResourceOptions,
-    ) -> None:
-        # Deploy as many VMs as requested
-        for vm_ip_address, vm_name, vm_size in zip(vm_ip_addresses, vm_names, vm_sizes):
-            VMComponent(
-                replace_separators(f"sre-{sre_name}-{vm_name}", "-"),
-                LinuxVMProps(
-                    admin_password=admin_password,
-                    admin_username=admin_username,
-                    b64cloudinit=b64cloudinit,
-                    ip_address_private=vm_ip_address,
-                    location=location,
-                    resource_group_name=resource_group_name,
-                    subnet_name=subnet_research_desktops_name,
-                    virtual_network_name=virtual_network_name,
-                    virtual_network_resource_group_name=virtual_network_resource_group_name,
-                    vm_name=vm_name,
-                    vm_size=vm_size,
-                ),
-                opts=child_opts,
-            )
 
     def read_cloudinit(
         self,

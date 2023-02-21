@@ -55,10 +55,6 @@ dsh = "data_safe_haven.cli:main"
 [tool.mypy]
 strict = true
 files = "data_safe_haven"
-exclude = [
-    "data_safe_haven/external/api/azure_api.py",
-    "data_safe_haven/pulumi/components/sre_research_desktop.py",
-]
 mypy_path = "typings"
 
 [build-system]

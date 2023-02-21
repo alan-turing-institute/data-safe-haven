@@ -1,1 +1,2 @@
+from .resources import ResourceManagementClient as ResourceManagementClient
 from .subscriptions import SubscriptionClient as SubscriptionClient

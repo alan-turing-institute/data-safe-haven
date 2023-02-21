@@ -2,7 +2,7 @@
 # Standard library imports
 import time
 from contextlib import suppress
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, cast, Dict, Optional, Sequence, Tuple
 
 # Third party imports
 from azure.core.exceptions import (
@@ -43,7 +43,7 @@ from azure.mgmt.msi.models import Identity
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import ResourceGroup
 from azure.mgmt.storage import StorageManagementClient
-from azure.mgmt.storage.models import BlobContainer
+from azure.mgmt.storage.models import BlobContainer, PublicAccess
 from azure.mgmt.storage.models import Sku as StorageAccountSku
 from azure.mgmt.storage.models import StorageAccount, StorageAccountCreateParameters
 
@@ -59,7 +59,10 @@ class AzureApi(AzureMixin, LoggingMixin):
     """Interface to the Azure REST API"""
 
     def __init__(self, subscription_name: str, *args: Any, **kwargs: Any):
-        super().__init__(subscription_name=subscription_name, *args, **kwargs)
+        kwargs[
+            "subscription_name"
+        ] = subscription_name  # workaround for erroneous 'multiple values for keyword' mypy warning
+        super().__init__(*args, **kwargs)
 
     def compile_desired_state(
         self,
@@ -199,7 +202,6 @@ class AzureApi(AzureMixin, LoggingMixin):
             key_vault_client = KeyVaultManagementClient(
                 self.credential, self.subscription_id
             )
-
             # Ensure that key vault exists
             key_vault_client.vaults.begin_create_or_update(
                 resource_group_name,
@@ -228,7 +230,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                             ),
                             AccessPolicyEntry(
                                 tenant_id=tenant_id,
-                                object_id=managed_identity.principal_id,
+                                object_id=str(managed_identity.principal_id),
                                 permissions=Permissions(
                                     secrets=["GET", "LIST"],
                                     certificates=["GET", "LIST"],
@@ -387,7 +389,7 @@ class AzureApi(AzureMixin, LoggingMixin):
         location: str,
         resource_group_name: str,
     ) -> Identity:
-        """Ensure that a ManagedIdentity exists
+        """Ensure that a managed identity exists
 
         Returns:
             Identity: The managed identity
@@ -412,7 +414,8 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Ensured that managed identity <fg=green>{identity_name}</> exists.",
                 overwrite=True,
             )
-            return managed_identity
+            # mypy thinks that create_or_update returns Any
+            return cast(Identity, managed_identity)
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create managed identity {identity_name}.\n{str(exc)}"
@@ -530,7 +533,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                 resource_group_name,
                 storage_account_name,
                 container_name,
-                {"public_access": "none"},
+                BlobContainer(public_access=PublicAccess.NONE),
             )
             self.info(
                 f"Ensured that storage container <fg=green>{container.name}</> exists.",
