@@ -99,12 +99,18 @@ The `DC1` is the source of truth for user details. If these details need to be c
 - In Server Manager click `Tools > Active Directory Users and Computers`
 - Click on `Safe Haven Research Users`
 - Find the person, right click on them and select `Properties`
-- From here, you can edit the person's name, phone etc
-    - To edit a phone number, select the `Telephones` tab and edit the `Mobile` number
-    - Note: To change a user's email, you'll need to delete the user entirely and recreate them, meaning they'll have to set up their accounts (including MFA) again. See {ref}`deleting_users` and then {ref}`create_new_users`.
-- Click `OK` after any changes are made
-- Open a `Powershell` command window with elevated privileges
-- Run `C:\Installation\Run_ADSync.ps1`
+- To edit a **phone number**, select the `Telephones` tab and edit the `Mobile` number
+    - Click `OK` to save the new number
+    - Open a `Powershell` command window with elevated privileges
+    - Run `C:\Installation\Run_ADSync.ps1`
+- To edit a user's **email** or their **username** (or first name or last name) you'll need to delete the user entirely and recreate them, meaning they'll have to set up their accounts (including MFA) again
+    - Find the person, right click on them and click `Delete`
+    - Click `OK`
+    - Open a `Powershell` command window with elevated privileges
+    - Run `C:\Installation\Run_ADSync.ps1`
+    - Create a new csv (or edit an existing) one with the correct user details (see {ref}`create_new_users`)
+    - Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
+    - Run `C:\Installation\Run_ADSync.ps1`
 - You can check the changes you made were successful by logging into the Azure Portal as the AAD admin
     - Open `Azure Active Directory`
     - Click on `Users` under `Manage` and search for the user
