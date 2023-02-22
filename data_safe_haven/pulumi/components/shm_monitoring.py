@@ -27,7 +27,7 @@ class SHMMonitoringProps:
 
 
 class SHMMonitoringComponent(ComponentResource):
-    """Deploy SHM secrets with Pulumi"""
+    """Deploy SHM monitoring with Pulumi"""
 
     private_zone_names = ["agentsvc.azure-automation.net", "azure-automation.net"]
 
@@ -60,7 +60,6 @@ class SHMMonitoringComponent(ComponentResource):
             sku=automation.SkuArgs(name="Free"),
             opts=child_opts,
         )
-
         automation_keys = automation.list_key_by_automation_account(
             automation_account.name, resource_group_name=resource_group.name
         )
