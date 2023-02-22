@@ -12,6 +12,14 @@ from data_safe_haven.pulumi.transformations import get_id_from_subnet
 
 class SHMFirewallProps:
     """Properties for SHMFirewallComponent"""
+    domain_controller_private_ip: Input[str]
+    dns_zone_name: Output[str]
+    location: Input[str]
+    resource_group_name: Input[str]
+    route_table_name: Input[str]
+    subnet_firewall_id: Output[str]
+    subnet_identity_servers_iprange: Output[str]
+    subnet_update_servers_iprange: Output[str]
 
     def __init__(
         self,
@@ -26,7 +34,7 @@ class SHMFirewallProps:
     ):
         self.domain_controller_private_ip = domain_controller_private_ip
         self.dns_zone_name = Output.from_input(dns_zone).apply(
-            lambda zone: str(zone.name)
+            lambda zone: zone.name
         )
         self.location = location
         self.resource_group_name = resource_group_name
