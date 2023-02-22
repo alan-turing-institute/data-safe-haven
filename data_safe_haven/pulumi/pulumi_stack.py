@@ -104,6 +104,10 @@ class PulumiStack(LoggingMixin):
                 self.ensure_config(name, value, is_secret)
         self.options = {}
 
+    def copy_secret(self, name: str, other_stack: "PulumiStack") -> None:
+        """Copy a secret from another Pulumi stack"""
+        self.add_secret(name, other_stack.secret(name), replace=True)
+
     def deploy(self) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
