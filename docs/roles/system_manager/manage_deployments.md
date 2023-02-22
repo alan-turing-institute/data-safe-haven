@@ -37,7 +37,7 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 </details>
 
 ```{note}
-If you provide the <VM size> is for a GPU enabled VM, it's possible that you'll need to request an increase in the vCPU quota for the VM family before resizing is allowed:
+If the new VM size is a GPU enabled VM, it's possible that you'll need to request an increase in the vCPU quota for the VM family before resizing is allowed:
 - Navigate to the Azure Portal and on the subscription page, click "Usage + quotas" under "Settings"
 - Choose the family appropriate to the VM that you want to resize to, and select a region appropriate for the SRE
 - Click the pen icon and set the "New Limit" to at least the number of vCPUs required by the VM that you want, the click submit
