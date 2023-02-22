@@ -186,13 +186,9 @@ class SHMDomainControllersComponent(ComponentResource):
 
         # Register exports
         self.exports = {
-            "azure_ad_connect_password_secret": "password-domain-azure-ad-connect",
             "domain_sid": domain_sid.script_output,
-            "domain_admin_password_secret": "password-domain-vm-admin",
             "ldap_root_dn": props.domain_root_dn,
             "ldap_search_username": props.username_domain_searcher,
-            "ldap_searcher_password_secret": "password-domain-ldap-searcher",
-            "password_domain_admin": "password-domain-vm-admin",
             "ldap_server_ip": primary_domain_controller.ip_address_private,
             "resource_group_name": resource_group.name,
             "vm_name": primary_domain_controller.vm_name,
