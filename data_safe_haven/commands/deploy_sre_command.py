@@ -67,7 +67,8 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
             )
 
-            # Deploy infrastructure with Pulumi
+            # Initialise Pulumi stack
+            shm_stack = PulumiStack(config, "SHM")
             stack = PulumiStack(config, "SRE", sre_name=self.sre_name)
             # Set Azure options
             stack.add_option("azure-native:location", config.azure.location)
@@ -76,16 +77,12 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
             )
             stack.add_option("azure-native:tenantId", config.azure.tenant_id)
             # Add necessary secrets
-            stack.add_secret(
-                "password-domain-ldap-searcher",
-                config.get_secret(
-                    config.shm.domain_controllers["ldap_searcher_password_secret"]
-                ),
-                replace=True,
-            )
+            stack.copy_secret("password-domain-ldap-searcher", shm_stack)
             stack.add_secret("password-user-database-admin", password(20))
             stack.add_secret("password-secure-research-desktop-admin", password(20))
             stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
+
+            # Deploy Azure infrastructure with Pulumi
             stack.deploy()
 
             # Add Pulumi infrastructure information to the config file
@@ -96,21 +93,16 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
             # Add Pulumi output information to the config file
             for key, value in stack.output("remote_desktop").items():
                 config.sre[self.sre_name].remote_desktop[key] = value
-            config.sre[self.sre_name].remote_desktop[
-                "connection_db_server_admin_password_secret"
-            ] = f"password-user-database-admin-sre-{self.sre_name}"
             for (vm_name, vm_ipaddress) in zip(
                 stack.output("srd")["vm_names"], stack.output("srd")["vm_ip_addresses"]
             ):
                 config.sre[self.sre_name].research_desktops[
                     vm_name
                 ].ip_address = vm_ipaddress
-            config.add_secret(
-                config.sre[self.sre_name].remote_desktop[
-                    "connection_db_server_admin_password_secret"
-                ],
-                stack.secret("password-user-database-admin"),
-            )
+            for secret_name in ["password-user-database-admin"]:
+                config.add_secret(
+                    f"sre-{self.sre_name}-{secret_name}", stack.secret(secret_name)
+                )
 
             # Upload config to blob storage
             config.upload()
