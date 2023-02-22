@@ -18,6 +18,6 @@ application.add(TeardownCommand())
 application.add(UsersCommand())
 
 
-def main():
+def main() -> int:
     """Command line entrypoint for Data Safe Haven application"""
-    application.run()
+    return application.run()  # type: ignore

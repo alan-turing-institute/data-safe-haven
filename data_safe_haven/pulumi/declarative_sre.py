@@ -26,16 +26,16 @@ from .components.sre_state import SREStateComponent, SREStateProps
 class DeclarativeSRE:
     """Deploy with Pulumi"""
 
-    def __init__(self, config: Config, shm_name: str, sre_name: str):
+    def __init__(self, config: Config, shm_name: str, sre_name: str) -> None:
         self.cfg = config
         self.shm_name = shm_name
         self.sre_name = sre_name
         self.stack_name = f"shm-{shm_name}-sre-{sre_name}"
 
-    def work_dir(self, base_path: pathlib.Path):
+    def work_dir(self, base_path: pathlib.Path) -> pathlib.Path:
         return base_path / f"shm-{self.shm_name}" / f"sre-{self.sre_name}"
 
-    def run(self):
+    def run(self) -> None:
         # Load pulumi configuration secrets
         self.secrets = pulumi.Config()
 

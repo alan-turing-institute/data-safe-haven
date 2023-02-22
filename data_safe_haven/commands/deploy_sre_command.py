@@ -1,8 +1,9 @@
 """Command-line application for deploying a Secure Research Environment from project files"""
 # Third party imports
+from typing import List, Optional
+
 import yaml
 from cleo import Command
-from typing import cast, List
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
@@ -17,7 +18,7 @@ from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.pulumi import PulumiStack
 
 
-class DeploySRECommand(LoggingMixin, Command):
+class DeploySRECommand(LoggingMixin, Command):  # type: ignore
     """
     Deploy a Secure Research Environment using local configuration files
 
@@ -29,14 +30,24 @@ class DeploySRECommand(LoggingMixin, Command):
         {--r|research-desktop=* : Add a research desktop VM by SKU name}
     """
 
-    def handle(self) -> None:
+    allow_copy: Optional[bool]
+    allow_paste: Optional[bool]
+    output: Optional[str]
+    research_desktops: Optional[List[str]]
+
+    def handle(self) -> int:
         try:
+            # Process command line arguments
+            self.process_arguments()
+
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.option("output"))
+            self.initialise_logging(self.io.verbosity, self.output)
 
             # Require at least one research desktop
-            if not self.option("research-desktop"):
-                raise ValueError("At least one research desktop must be specified.")
+            if not self.research_desktops:
+                raise DataSafeHavenInputException(
+                    "At least one research desktop must be specified."
+                )
 
             # Use dotfile settings to load the job configuration
             try:
@@ -47,8 +58,7 @@ class DeploySRECommand(LoggingMixin, Command):
                 ) from exc
             config = Config(settings.name, settings.subscription_name)
 
-            # Set a JSON-safe name for this SRE and add any missing values to the config
-            self.sre_name = alphanumeric(cast(str, self.argument("name")))
+            # Add any missing values to the config
             self.add_missing_values(config)
 
             # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
@@ -108,14 +118,16 @@ class DeploySRECommand(LoggingMixin, Command):
             # Provision SRE with anything that could not be done in Pulumi
             manager = SREProvisioningManager(config, self.sre_name)
             manager.run()
+            return 0
 
         except DataSafeHavenException as exc:
             for (
                 line
-            ) in f"Could not deploy Secure Research Environment {self.argument('name')}.\n{str(exc)}".split(
+            ) in f"Could not deploy Secure Research Environment {self.sre_name}.\n{str(exc)}".split(
                 "\n"
             ):
                 self.error(line)
+        return 1
 
     def add_missing_values(self, config: Config) -> None:
         """Request any missing config values and add them to the config"""
@@ -130,23 +142,19 @@ class DeploySRECommand(LoggingMixin, Command):
         ].security_group_name = f"Data Safe Haven Users SRE {self.sre_name}"
 
         # Set whether copying is allowed
-        config.sre[self.sre_name].remote_desktop.allow_copy = bool(
-            self.option("allow-copy")
-        )
+        config.sre[self.sre_name].remote_desktop.allow_copy = self.allow_copy
 
         # Set whether pasting is allowed
-        config.sre[self.sre_name].remote_desktop.allow_paste = bool(
-            self.option("allow-paste")
-        )
+        config.sre[self.sre_name].remote_desktop.allow_paste = self.allow_paste
 
         # Add list of research desktop VMs
         azure_api = AzureApi(config.subscription_name)
         available_vm_skus = azure_api.list_available_vm_skus(config.azure.location)
-        vm_skus = [
-            sku
-            for sku in cast(List[str], self.option("research-desktop"))
-            if sku in available_vm_skus
-        ]
+        vm_skus = (
+            [sku for sku in self.research_desktops if sku in available_vm_skus]
+            if self.research_desktops
+            else []
+        )
         while not vm_skus:
             self.warning("An SRE deployment needs at least one research desktop.")
             self.info(
@@ -173,3 +181,41 @@ class DeploySRECommand(LoggingMixin, Command):
             vm_cfg.cpus = int(available_vm_skus[vm_sku]["vCPUs"])
             vm_cfg.gpus = int(available_vm_skus[vm_sku]["GPUs"])
             vm_cfg.ram = int(available_vm_skus[vm_sku]["MemoryGB"])
+
+    def process_arguments(self) -> None:
+        """Load command line arguments into attributes"""
+        # Allow copy
+        allow_copy = self.option("allow-copy")
+        if not isinstance(allow_copy, bool) and (allow_copy is not None):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{allow_copy}' provided for 'allow-copy'."
+            )
+        self.allow_copy = allow_copy
+        # Allow paste
+        allow_paste = self.option("allow-paste")
+        if not isinstance(allow_paste, bool) and (allow_paste is not None):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{allow_paste}' provided for 'allow-paste'."
+            )
+        self.allow_paste = allow_paste
+        # Output
+        output = self.option("output")
+        if not isinstance(output, str) and (output is not None):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{output}' provided for 'output'."
+            )
+        self.output = output
+        # Research desktops
+        research_desktops = self.option("research-desktop")
+        if not isinstance(research_desktops, list) and (research_desktops is not None):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{research_desktops}' provided for 'research-desktop'."
+            )
+        self.research_desktops = research_desktops
+        # Set a JSON-safe name for this SRE
+        sre_name = self.argument("name")
+        if not isinstance(sre_name, str):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{sre_name}' provided for 'name'."
+            )
+        self.sre_name = alphanumeric(sre_name)

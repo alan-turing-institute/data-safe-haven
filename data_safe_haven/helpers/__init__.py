@@ -8,16 +8,15 @@ from .functions import (
     replace_separators,
     sha256hash,
 )
-from .types import ConfigType, JSONType
+from .types import PathType
 
 __all__ = [
     "alphanumeric",
     "b64encode",
-    "ConfigType",
     "FileReader",
     "hex_string",
-    "JSONType",
     "password",
+    "PathType",
     "random_letters",
     "replace_separators",
     "sha256hash",

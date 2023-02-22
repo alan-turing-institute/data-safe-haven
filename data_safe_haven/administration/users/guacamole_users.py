@@ -2,7 +2,7 @@
 import pathlib
 import tempfile
 from datetime import datetime, timezone
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 
 # Local imports
 from data_safe_haven.config import Config
@@ -27,8 +27,8 @@ class GuacamoleUsers(LoggingMixin):
             config.sre[sre_name].remote_desktop.resource_group_name,
             config.subscription_name,
         )
-        self.users_ = None
-        self.postgres_script_path = (
+        self.users_: Optional[Sequence[ResearchUser]] = None
+        self.postgres_script_path: pathlib.Path = (
             pathlib.Path(__file__).parent.parent.parent
             / "resources"
             / "remote_desktop"
@@ -109,13 +109,14 @@ class GuacamoleUsers(LoggingMixin):
             )
 
         # Create a temporary file with user details and run it on the Guacamole database
-        sql_file_name = None
+        sql_file_name: Optional[pathlib.Path] = None
         try:
             with tempfile.NamedTemporaryFile("w", delete=False) as f_tmp:
                 f_tmp.writelines(reader.file_contents(user_data))
-                sql_file_name = f_tmp.name
+                sql_file_name = pathlib.Path(f_tmp.name)
             self.postgres_provisioner.execute_scripts([sql_file_name])
-            self.users_ = [user for user in self.users_ if user not in users]
+            if self.users_:
+                self.users_ = [user for user in self.users_ if user not in users]
         except Exception as exc:
             raise DataSafeHavenInputException(
                 f"Could not update SRE '{self.sre_name}' database users.\n{str(exc)}"

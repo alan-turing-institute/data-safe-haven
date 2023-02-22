@@ -9,6 +9,7 @@ from pulumi_azure_native import network, resources
 
 # Local
 from data_safe_haven.helpers import FileReader
+from data_safe_haven.pulumi.transformations import get_name_from_subnet
 from ..dynamic.remote_powershell import RemoteScript, RemoteScriptProps
 from .automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
 from .virtual_machine import VMComponent, WindowsVMProps
@@ -60,7 +61,7 @@ class SHMDomainControllersProps:
         self.public_ip_range_admins = public_ip_range_admins
         self.private_ip_address = private_ip_address
         self.subnet_name = Output.from_input(subnet_identity_servers).apply(
-            lambda s: s.name
+            get_name_from_subnet
         )
         self.subscription_name = subscription_name
         # Note that usernames have a maximum of 20 characters

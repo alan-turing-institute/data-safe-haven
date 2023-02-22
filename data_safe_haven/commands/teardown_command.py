@@ -8,7 +8,7 @@ from .teardown_shm_command import TeardownSHMCommand
 from .teardown_sre_command import TeardownSRECommand
 
 
-class TeardownCommand(Command):
+class TeardownCommand(Command):  # type: ignore
     """
     Tear down a Data Safe Haven component, delegating the details to a subcommand
 

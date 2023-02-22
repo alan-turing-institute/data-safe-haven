@@ -20,7 +20,7 @@ class CompiledDscProps:
         configuration_name: Input[str],
         content_hash: Input[str],
         location: Input[str],
-        parameters: Input[Dict[str, str]],
+        parameters: Input[Dict[str, Any]],
         resource_group_name: Input[str],
         required_modules: Input[Sequence[str]],
         subscription_name: Input[str],
@@ -53,7 +53,7 @@ class CompiledDscProvider(DshResourceProvider):
             outs=dict(**props),
         )
 
-    def delete(self, id_: str, props: Dict[str, str]) -> None:
+    def delete(self, id_: str, props: Dict[str, Any]) -> None:
         """The Python SDK does not support configuration deletion"""
         return
 

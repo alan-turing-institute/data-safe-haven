@@ -1,6 +1,6 @@
 """Interact with users in an Azure Active Directory"""
 # Standard library imports
-from typing import Sequence
+from typing import Any, Sequence
 
 # Local imports
 from data_safe_haven.external.api import GraphApi
@@ -15,9 +15,9 @@ class AzureADUsers(LoggingMixin):
     def __init__(
         self,
         graph_api: GraphApi,
-        *args,
-        **kwargs,
-    ):
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.graph_api = graph_api
 
@@ -33,15 +33,16 @@ class AzureADUsers(LoggingMixin):
             request_json = {
                 "accountEnabled": user.account_enabled,
                 "displayName": user.display_name,
-                "givenName": user.first_name,
-                "surname": user.last_name,
+                "givenName": user.given_name,
+                "surname": user.surname,
                 "mailNickname": user.username,
                 "passwordProfile": {"password": password(20)},
                 "userPrincipalName": f"{user.username}@{default_domain}",
             }
-            self.graph_api.create_user(
-                request_json, user.email_address, user.phone_number
-            )
+            if user.email_address and user.phone_number:
+                self.graph_api.create_user(
+                    request_json, user.email_address, user.phone_number
+                )
             self.info(f"Ensured user '{user.preferred_username}' exists in AzureAD")
         # Decorate all users with the Linux schema
         self.set_user_attributes()
@@ -103,12 +104,12 @@ class AzureADUsers(LoggingMixin):
 
     def set(self, users: Sequence[ResearchUser]) -> None:
         """Set Guacamole users to specified list"""
-        users_to_remove = [user for user in self.users if user not in users]
+        users_to_remove = [user for user in self.list() if user not in users]
         self.remove(users_to_remove)
-        users_to_add = [user for user in users if user not in self.users]
+        users_to_add = [user for user in users if user not in self.list()]
         self.add(users_to_add)
 
-    def set_user_attributes(self):
+    def set_user_attributes(self) -> None:
         """Ensure that all users have Linux attributes"""
         # next_uid = max(
         #     [int(user.uid_number) + 1 if user.uid_number else 0 for user in self.users]

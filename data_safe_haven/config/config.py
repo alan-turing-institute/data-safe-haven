@@ -1,13 +1,13 @@
 """Configuration file backed by blob storage"""
 # Standard library imports
-from typing import Any, Optional
+from typing import Any, List, Optional
 
+# Third party imports
 import dotmap
 import yaml
 from azure.core.exceptions import ResourceNotFoundError
 from azure.mgmt.storage import StorageManagementClient
-
-# Third party imports
+from azure.mgmt.storage.models import StorageAccountKey, StorageAccountListKeysResult
 from azure.storage.blob import BlobServiceClient
 
 # Local imports
@@ -89,9 +89,9 @@ class Config(LoggingMixin, AzureMixin):
         return f"{self.__class__} containing: {self._map}"
 
     def __str__(self) -> str:
-        return yaml.dump(self._map.toDict(), indent=2)
+        return str(yaml.dump(self._map.toDict(), indent=2))
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         """Access unknown attributes from the internal map"""
         return self._map[name]
 
@@ -117,9 +117,13 @@ class Config(LoggingMixin, AzureMixin):
             storage_account_key = self.storage_account_key(
                 backend_resource_group_name, backend_storage_account_name
             )
-            blob_service_client = BlobServiceClient.from_connection_string(
+            blob_service_client: BlobServiceClient = BlobServiceClient.from_connection_string(
                 f"DefaultEndpointsProtocol=https;AccountName={backend_storage_account_name};AccountKey={storage_account_key};EndpointSuffix=core.windows.net"
             )
+            if not isinstance(blob_service_client, BlobServiceClient):
+                raise DataSafeHavenAzureException(
+                    "Blob storage client could not be created."
+                )
             # Download the created file
             blob_client = blob_service_client.get_blob_client(
                 container=backend_storage_container_name, blob=self.filename
@@ -147,7 +151,16 @@ class Config(LoggingMixin, AzureMixin):
                 backend_resource_group_name,
                 backend_storage_account_name,
             )
-            return storage_keys.keys[0].value
+            if not isinstance(storage_keys, StorageAccountListKeysResult):
+                raise DataSafeHavenAzureException(
+                    "Storage client could not be created."
+                )
+            keys: Optional[List[StorageAccountKey]] = storage_keys.keys
+            if not keys:
+                raise DataSafeHavenAzureException(
+                    "Storage keys could not be retrieved."
+                )
+            return str(keys[0].value)
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 "Storage key could not be loaded."
@@ -164,9 +177,13 @@ class Config(LoggingMixin, AzureMixin):
             storage_account_key = self.storage_account_key(
                 self.backend.resource_group_name, self.backend.storage_account_name
             )
-            blob_service_client = BlobServiceClient.from_connection_string(
+            blob_service_client: BlobServiceClient = BlobServiceClient.from_connection_string(
                 f"DefaultEndpointsProtocol=https;AccountName={self.backend.storage_account_name};AccountKey={storage_account_key};EndpointSuffix=core.windows.net"
             )
+            if not isinstance(blob_service_client, BlobServiceClient):
+                raise DataSafeHavenAzureException(
+                    "Blob storage client could not be created."
+                )
             # Upload the created file
             blob_client = blob_service_client.get_blob_client(
                 container=self.backend.storage_container_name, blob=self.filename

@@ -1,19 +1,19 @@
 # Standard library imports
-from typing import Any
+from typing import Any, Optional
 
 
 class ResearchUser:
     def __init__(
         self,
-        account_enabled: bool = None,
-        country: str = None,
-        email_address: str = None,
-        given_name: str = None,
-        phone_number: str = None,
-        sam_account_name: str = None,
-        surname: str = None,
-        user_principal_name: str = None,
-    ):
+        account_enabled: Optional[bool] = None,
+        country: Optional[str] = None,
+        email_address: Optional[str] = None,
+        given_name: Optional[str] = None,
+        phone_number: Optional[str] = None,
+        sam_account_name: Optional[str] = None,
+        surname: Optional[str] = None,
+        user_principal_name: Optional[str] = None,
+    ) -> None:
         self.account_enabled = account_enabled
         self.country = country
         self.email_address = email_address

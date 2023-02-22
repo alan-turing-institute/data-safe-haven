@@ -2,7 +2,7 @@
 # Standard library imports
 import time
 from contextlib import suppress
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 # Third party imports
 from azure.core.exceptions import (
@@ -10,6 +10,7 @@ from azure.core.exceptions import (
     ResourceExistsError,
     ResourceNotFoundError,
 )
+from azure.core.polling import LROPoller
 from azure.keyvault.certificates import (
     CertificateClient,
     CertificatePolicy,
@@ -23,17 +24,28 @@ from azure.mgmt.automation.models import (
     DscConfigurationAssociationProperty,
 )
 from azure.mgmt.compute import ComputeManagementClient
-from azure.mgmt.compute.models import RunCommandInput, RunCommandInputParameter
+from azure.mgmt.compute.models import (
+    RunCommandInput,
+    RunCommandInputParameter,
+)
 from azure.mgmt.dns import DnsManagementClient
 from azure.mgmt.dns.models import RecordSet, TxtRecord
 from azure.mgmt.keyvault import KeyVaultManagementClient
-from azure.mgmt.keyvault.models import Vault
+from azure.mgmt.keyvault.models import AccessPolicyEntry, Permissions
+from azure.mgmt.keyvault.models import Sku as KeyVaultSku
+from azure.mgmt.keyvault.models import (
+    Vault,
+    VaultCreateOrUpdateParameters,
+    VaultProperties,
+)
 from azure.mgmt.msi import ManagedServiceIdentityClient
 from azure.mgmt.msi.models import Identity
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import ResourceGroup
 from azure.mgmt.storage import StorageManagementClient
-from azure.mgmt.storage.models import BlobContainer, StorageAccount
+from azure.mgmt.storage.models import BlobContainer, PublicAccess
+from azure.mgmt.storage.models import Sku as StorageAccountSku
+from azure.mgmt.storage.models import StorageAccount, StorageAccountCreateParameters
 
 # Local imports
 from data_safe_haven.exceptions import (
@@ -47,7 +59,10 @@ class AzureApi(AzureMixin, LoggingMixin):
     """Interface to the Azure REST API"""
 
     def __init__(self, subscription_name: str, *args: Any, **kwargs: Any):
-        super().__init__(subscription_name=subscription_name, *args, **kwargs)
+        kwargs[
+            "subscription_name"
+        ] = subscription_name  # workaround for erroneous 'multiple values for keyword' mypy warning
+        super().__init__(*args, **kwargs)
 
     def compile_desired_state(
         self,
@@ -187,47 +202,43 @@ class AzureApi(AzureMixin, LoggingMixin):
             key_vault_client = KeyVaultManagementClient(
                 self.credential, self.subscription_id
             )
-
             # Ensure that key vault exists
             key_vault_client.vaults.begin_create_or_update(
                 resource_group_name,
                 key_vault_name,
-                {
-                    "location": location,
-                    "tags": tags,
-                    "properties": {
-                        "sku": {
-                            "name": "standard",
-                            "family": "A",
-                        },
-                        "tenant_id": tenant_id,
-                        "access_policies": [
-                            {
-                                "tenant_id": tenant_id,
-                                "object_id": admin_group_id,
-                                "permissions": {
-                                    "keys": [
+                VaultCreateOrUpdateParameters(
+                    location=location,
+                    tags=tags,
+                    properties=VaultProperties(
+                        tenant_id=tenant_id,
+                        sku=KeyVaultSku(name="standard", family="A"),
+                        access_policies=[
+                            AccessPolicyEntry(
+                                tenant_id=tenant_id,
+                                object_id=admin_group_id,
+                                permissions=Permissions(
+                                    keys=[
                                         "GET",
                                         "LIST",
                                         "CREATE",
                                         "DECRYPT",
                                         "ENCRYPT",
                                     ],
-                                    "secrets": ["GET", "LIST", "SET"],
-                                    "certificates": ["GET", "LIST", "CREATE"],
-                                },
-                            },
-                            {
-                                "tenant_id": self.tenant_id,
-                                "object_id": managed_identity.principal_id,
-                                "permissions": {
-                                    "secrets": ["GET", "LIST"],
-                                    "certificates": ["GET", "LIST"],
-                                },
-                            },
+                                    secrets=["GET", "LIST", "SET"],
+                                    certificates=["GET", "LIST", "CREATE"],
+                                ),
+                            ),
+                            AccessPolicyEntry(
+                                tenant_id=tenant_id,
+                                object_id=str(managed_identity.principal_id),
+                                permissions=Permissions(
+                                    secrets=["GET", "LIST"],
+                                    certificates=["GET", "LIST"],
+                                ),
+                            ),
                         ],
-                    },
-                },
+                    ),
+                ),
             )
             key_vaults = [
                 kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name
@@ -356,7 +367,9 @@ class AzureApi(AzureMixin, LoggingMixin):
                 enhanced_key_usage=["1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2"],
                 validity_in_months=12,
             )
-            poller = certificate_client.begin_create_certificate(
+            poller: LROPoller[
+                KeyVaultCertificate
+            ] = certificate_client.begin_create_certificate(
                 certificate_name=certificate_name, policy=policy
             )
             certificate = poller.result()
@@ -376,7 +389,7 @@ class AzureApi(AzureMixin, LoggingMixin):
         location: str,
         resource_group_name: str,
     ) -> Identity:
-        """Ensure that a ManagedIdentity exists
+        """Ensure that a managed identity exists
 
         Returns:
             Identity: The managed identity
@@ -392,16 +405,17 @@ class AzureApi(AzureMixin, LoggingMixin):
             msi_client = ManagedServiceIdentityClient(
                 self.credential, self.subscription_id
             )
+            # mypy erroneously thinks that create_or_update returns Any rather than Identity
             managed_identity = msi_client.user_assigned_identities.create_or_update(
                 resource_group_name,
                 identity_name,
-                {"location": location},
+                Identity(location=location),
             )
             self.info(
                 f"Ensured that managed identity <fg=green>{identity_name}</> exists.",
                 overwrite=True,
             )
-            return managed_identity
+            return managed_identity  # type: ignore
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create managed identity {identity_name}.\n{str(exc)}"
@@ -431,7 +445,7 @@ class AzureApi(AzureMixin, LoggingMixin):
             )
             resource_client.resource_groups.create_or_update(
                 resource_group_name,
-                {"location": location, "tags": tags},
+                ResourceGroup(location=location, tags=tags),
             )
             resource_groups = [
                 rg
@@ -475,12 +489,12 @@ class AzureApi(AzureMixin, LoggingMixin):
             poller = storage_client.storage_accounts.begin_create(
                 resource_group_name,
                 storage_account_name,
-                {
-                    "location": location,
-                    "kind": "StorageV2",
-                    "sku": {"name": "Standard_LRS"},
-                    "tags": tags,
-                },
+                StorageAccountCreateParameters(
+                    sku=StorageAccountSku(name="Standard_LRS"),
+                    kind="StorageV2",
+                    location=location,
+                    tags=tags,
+                ),
             )
             storage_account = poller.result()
             self.info(
@@ -519,7 +533,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                 resource_group_name,
                 storage_account_name,
                 container_name,
-                {"public_access": "none"},
+                BlobContainer(public_access=PublicAccess.NONE),
             )
             self.info(
                 f"Ensured that storage container <fg=green>{container.name}</> exists.",
@@ -579,19 +593,22 @@ class AzureApi(AzureMixin, LoggingMixin):
                 f"Failed to retrieve secret {secret_name}."
             ) from exc
 
-    def get_vm_sku_details(self, sku: str):
+    def get_vm_sku_details(self, sku: str) -> Tuple[str, str, str]:
         # Connect to Azure client
+        cpus, gpus, ram = None, None, None
         compute_client = ComputeManagementClient(self.credential, self.subscription_id)
         for resource_sku in compute_client.resource_skus.list():
             if resource_sku.name == sku:
-                for capability in resource_sku.capabilities:
-                    if capability.name == "vCPUs":
-                        cpus = capability.value
-                    if capability.name == "GPUs":
-                        gpus = capability.value
-                    if capability.name == "MemoryGB":
-                        ram = capability.value
-                return (cpus, gpus, ram)
+                if resource_sku.capabilities:
+                    for capability in resource_sku.capabilities:
+                        if capability.name == "vCPUs":
+                            cpus = capability.value
+                        if capability.name == "GPUs":
+                            gpus = capability.value
+                        if capability.name == "MemoryGB":
+                            ram = capability.value
+        if cpus and gpus and ram:
+            return (cpus, gpus, ram)
         raise DataSafeHavenAzureException(
             f"Could not find information for VM SKU {sku}."
         )
@@ -652,14 +669,17 @@ class AzureApi(AzureMixin, LoggingMixin):
             # Construct SKU information
             skus = {}
             for resource_sku in compute_client.resource_skus.list():
-                if (location in resource_sku.locations) and (
-                    resource_sku.resource_type == "virtualMachines"
+                if (
+                    resource_sku.locations
+                    and (location in resource_sku.locations)
+                    and (resource_sku.resource_type == "virtualMachines")
                 ):
                     skus[resource_sku.name] = {
                         "GPUs": 0
                     }  # default to 0 GPUs, overriding if appropriate
-                    for capability in resource_sku.capabilities:
-                        skus[resource_sku.name][capability.name] = capability.value
+                    if resource_sku.capabilities:
+                        for capability in resource_sku.capabilities:
+                            skus[resource_sku.name][capability.name] = capability.value
             return skus
         except Exception as exc:
             raise DataSafeHavenAzureException(
@@ -894,7 +914,7 @@ class AzureApi(AzureMixin, LoggingMixin):
             )
             result = poller.result()
             # Return stdout/stderr from the command
-            return result.value[0].message
+            return str(result.value[0].message)
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to run command on '{vm_name}'.\n{str(exc)}"

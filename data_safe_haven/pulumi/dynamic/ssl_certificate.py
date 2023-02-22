@@ -1,11 +1,11 @@
 """Pulumi dynamic component for SSL certificates uploaded to an Azure KeyVault."""
 # Standard library imports
 from contextlib import suppress
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 # Third party imports
-import simple_acme_dns
 from acme.errors import ValidationError
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from cryptography.hazmat.primitives.serialization import (
     NoEncryption,
     load_pem_private_key,
@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives.serialization import (
 from cryptography.x509 import load_pem_x509_certificate
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
+from simple_acme_dns import ACMEClient
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenSSLException
@@ -43,23 +44,24 @@ class SSLCertificateProps:
 
 class SSLCertificateProvider(DshResourceProvider):
     @staticmethod
-    def refresh(props: Dict[str, str]) -> Dict[str, str]:
+    def refresh(props: Dict[str, Any]) -> Dict[str, Any]:
         outs = dict(**props)
         with suppress(Exception):
             azure_api = AzureApi(outs["subscription_name"])
             certificate = azure_api.get_keyvault_certificate(
                 outs["certificate_secret_name"], outs["key_vault_name"]
             )
-            outs["secret_id"] = certificate.secret_id
+            if certificate.secret_id:
+                outs["secret_id"] = certificate.secret_id
         return outs
 
-    def create(self, props: Dict[str, str]) -> CreateResult:
+    def create(self, props: Dict[str, Any]) -> CreateResult:
         """Create new SSL certificate."""
         outs = dict(**props)
         try:
             # Note that we must set the key to RSA-2048 before generating the CSR
             # The default is ecdsa-with-SHA25, which Azure Key Vault cannot read
-            client = simple_acme_dns.ACMEClient(
+            client = ACMEClient(
                 domains=[props["domain_name"]],
                 email=props["admin_email_address"],
                 directory="https://acme-staging-v02.api.letsencrypt.org/directory",
@@ -95,6 +97,10 @@ class SSLCertificateProvider(DshResourceProvider):
             # prepend the private key) we need a PFX certificate for
             # compatibility with ApplicationGateway
             private_key = load_pem_private_key(private_key_bytes, None)
+            if not isinstance(private_key, RSAPrivateKey):
+                raise TypeError(
+                    f"Private key is of type {type(private_key)} not RSAPrivateKey."
+                )
             all_certs = [
                 load_pem_x509_certificate(data)
                 for data in certificate_bytes.split(b"\n\n")
@@ -103,6 +109,7 @@ class SSLCertificateProvider(DshResourceProvider):
                 cert for cert in all_certs if props["domain_name"] in str(cert.subject)
             ][0]
             ca_certs = [cert for cert in all_certs if cert != certificate]
+            pkcs12._ALLOWED_PKCS12_TYPES
             pfx_bytes = pkcs12.serialize_key_and_certificates(
                 props["certificate_secret_name"].encode("utf-8"),
                 private_key,
@@ -126,7 +133,7 @@ class SSLCertificateProvider(DshResourceProvider):
             outs=outs,
         )
 
-    def delete(self, id_: str, props: Dict[str, str]) -> None:
+    def delete(self, id_: str, props: Dict[str, Any]) -> None:
         """Delete an SSL certificate."""
         try:
             # Remove the DNS record
@@ -149,8 +156,8 @@ class SSLCertificateProvider(DshResourceProvider):
     def diff(
         self,
         id_: str,
-        old_props: Dict[str, str],
-        new_props: Dict[str, str],
+        old_props: Dict[str, Any],
+        new_props: Dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
         return self.partial_diff(old_props, new_props, [])

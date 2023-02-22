@@ -3,15 +3,18 @@
 import pathlib
 import time
 from datetime import datetime
-from typing import Dict, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 # Third party imports
 import psycopg2
 import requests
 from azure.core.polling import LROPoller
 from azure.mgmt.rdbms.postgresql import PostgreSQLManagementClient
-from azure.mgmt.rdbms.postgresql.models import FirewallRule, ServerUpdateParameters
-from azure.mgmt.rdbms.postgresql.operations import ServersOperations
+from azure.mgmt.rdbms.postgresql.models import (
+    FirewallRule,
+    Server,
+    ServerUpdateParameters,
+)
 
 # Local imports
 from data_safe_haven.exceptions import (
@@ -19,20 +22,30 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.helpers import FileReader
+from data_safe_haven.helpers.types import PathType
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
 class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
     """Interface for Azure PostgreSQL databases."""
 
+    current_ip: str
+    db_client_: Optional[PostgreSQLManagementClient]
+    db_name: str
+    db_server_: Optional[Server]
+    db_server_admin_password: str
+    resource_group_name: str
+    server_name: str
+    rule_suffix: str
+
     def __init__(
         self,
-        database_name,
-        database_server_admin_password,
-        database_server_name,
-        resource_group_name,
-        subscription_name,
-    ):
+        database_name: str,
+        database_server_admin_password: str,
+        database_server_name: str,
+        resource_group_name: str,
+        subscription_name: str,
+    ) -> None:
         super().__init__(subscription_name=subscription_name)
         self.current_ip = requests.get(
             "https://api.ipify.org", timeout=300
@@ -46,14 +59,14 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         self.rule_suffix = datetime.now().strftime(r"%Y%m%d-%H%M%S")
 
     @staticmethod
-    def wait(poller: LROPoller) -> None:
+    def wait(poller: LROPoller[Any]) -> None:
         """Wait for a polling operation to finish."""
         while not poller.done():
             time.sleep(10)
 
     @property
     def db_client(self) -> PostgreSQLManagementClient:
-        """Get the database client as a PostgreSQLManagementClient object."""
+        """Get the database client."""
         if not self.db_client_:
             self.db_client_ = PostgreSQLManagementClient(
                 self.credential, self.subscription_id
@@ -61,16 +74,16 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         return self.db_client_
 
     @property
-    def db_server(self) -> ServersOperations:
-        """Get the database server as a ServersOperations object."""
+    def db_server(self) -> Server:
+        """Get the database server."""
         if not self.db_server_:
             self.db_server_ = self.db_client.servers.get(
                 self.resource_group_name, self.server_name
             )
         return self.db_server_
 
-    def db_connection(self, n_retries: int = 0) -> psycopg2._psycopg.connection:
-        """Get the database connection as a ServersOperations object."""
+    def db_connection(self, n_retries: int = 0) -> psycopg2.extensions.connection:
+        """Get the database connection."""
         while True:
             try:
                 connection = psycopg2.connect(
@@ -92,7 +105,9 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
                     ) from exc
         return connection
 
-    def load_sql(self, filepath: pathlib.Path, mustache_values: Dict = None) -> str:
+    def load_sql(
+        self, filepath: PathType, mustache_values: Optional[Dict[str, str]] = None
+    ) -> str:
         """Load filepath into a single SQL string."""
         reader = FileReader(filepath)
         # Strip any comment lines
@@ -104,11 +119,14 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         return " ".join([line for line in sql_lines if line])
 
     def execute_scripts(
-        self, filepaths: Sequence[pathlib.Path], mustache_values: Dict = None
-    ) -> Sequence[str]:
+        self,
+        filepaths: Sequence[PathType],
+        mustache_values: Optional[Dict[str, Any]] = None,
+    ) -> List[str]:
         """Execute scripts on the PostgreSQL server."""
-        outputs = []
-        connection = None
+        outputs: List[str] = []
+        connection: Optional[psycopg2.connection] = None
+        cursor = None
 
         try:
             # Add temporary firewall rule
@@ -120,11 +138,12 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
 
             # Apply the Guacamole initialisation script
             for filepath in filepaths:
+                filepath = pathlib.Path(filepath)
                 self.info(f"Running SQL script: <fg=green>{filepath.name}</>.")
                 commands = self.load_sql(filepath, mustache_values)
                 cursor.execute(commands)
                 if "SELECT" in cursor.statusmessage:
-                    outputs += list(cursor)
+                    outputs += [str(msg) for msg in cursor]
 
             # Commit changes
             connection.commit()
@@ -136,7 +155,8 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         finally:
             # Close the connection if it is open
             if connection:
-                cursor.close()
+                if cursor:
+                    cursor.close()  # type: ignore
                 connection.close()
             # Remove temporary firewall rules
             self.set_database_access("disabled")

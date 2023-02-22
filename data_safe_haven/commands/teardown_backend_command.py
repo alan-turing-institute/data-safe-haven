@@ -1,4 +1,7 @@
 """Command-line application for tearing down a Data Safe Haven"""
+# Standard library imports
+from typing import Optional
+
 # Third party imports
 from cleo import Command
 
@@ -12,7 +15,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.mixins import LoggingMixin
 
 
-class TeardownBackendCommand(LoggingMixin, Command):
+class TeardownBackendCommand(LoggingMixin, Command):  # type: ignore
     """
     Teardown a deployed Data Safe Haven backend using local configuration files
 
@@ -20,10 +23,15 @@ class TeardownBackendCommand(LoggingMixin, Command):
         {--o|output= : Path to an output log file}
     """
 
-    def handle(self):
+    output: Optional[str]
+
+    def handle(self) -> int:
         try:
+            # Process command line arguments
+            self.process_arguments()
+
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.option("output"))
+            self.initialise_logging(self.io.verbosity, self.output)
 
             # Use dotfile settings to load the job configuration
             try:
@@ -41,9 +49,20 @@ class TeardownBackendCommand(LoggingMixin, Command):
                 raise DataSafeHavenInputException(
                     f"Unable to teardown Pulumi backend.\n{str(exc)}"
                 ) from exc
-
+            return 0
         except DataSafeHavenException as exc:
             for (
                 line
             ) in f"Could not teardown Data Safe Haven backend.\n{str(exc)}".split("\n"):
                 self.error(line)
+        return 1
+
+    def process_arguments(self) -> None:
+        """Load command line arguments into attributes"""
+        # Output
+        output = self.option("output")
+        if not isinstance(output, str) and (output is not None):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{output}' provided for 'output'."
+            )
+        self.output = output

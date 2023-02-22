@@ -1,7 +1,7 @@
 """Interact with users in an Azure Active Directory"""
 # Standard library imports
 import pathlib
-from typing import Sequence
+from typing import Any, Optional, Sequence
 
 # Local imports
 from data_safe_haven.external.api import AzureApi
@@ -15,12 +15,12 @@ class ActiveDirectoryUsers(LoggingMixin):
 
     def __init__(
         self,
-        resource_group_name,
-        subscription_name,
-        vm_name,
-        *args,
-        **kwargs,
-    ):
+        resource_group_name: str,
+        subscription_name: str,
+        vm_name: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.azure_api = AzureApi(subscription_name)
         self.resource_group_name = resource_group_name
@@ -36,18 +36,26 @@ class ActiveDirectoryUsers(LoggingMixin):
         )
         csv_contents = ["SamAccountName;GivenName;Surname;Mobile;Email;Country"]
         for user in new_users:
-            csv_contents += [
-                ";".join(
-                    [
-                        user.username,
-                        user.given_name,
-                        user.surname,
-                        user.phone_number,
-                        user.email_address,
-                        user.country,
-                    ]
-                )
-            ]
+            if (
+                user.username
+                and user.given_name
+                and user.surname
+                and user.phone_number
+                and user.email_address
+                and user.country
+            ):
+                csv_contents += [
+                    ";".join(
+                        [
+                            user.username,
+                            user.given_name,
+                            user.surname,
+                            user.phone_number,
+                            user.email_address,
+                            user.country,
+                        ]
+                    )
+                ]
         user_details_b64 = b64encode("\n".join(csv_contents))
         output = self.azure_api.run_remote_script(
             self.resource_group_name,
@@ -58,7 +66,7 @@ class ActiveDirectoryUsers(LoggingMixin):
         for line in output.split("\n"):
             self.parse_as_log(line)
 
-    def list(self, sre_name=None) -> Sequence[ResearchUser]:
+    def list(self, sre_name: Optional[str] = None) -> Sequence[ResearchUser]:
         """List users in a local Active Directory"""
         list_users_script = FileReader(
             self.resources_path / "active_directory" / "list_users.ps1"

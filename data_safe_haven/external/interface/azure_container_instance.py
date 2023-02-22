@@ -2,9 +2,11 @@
 # Standard library imports
 import contextlib
 import time
+from typing import List, Optional
 
 # Third party imports
 import websocket
+from azure.core.polling import LROPoller
 from azure.mgmt.containerinstance import ContainerInstanceManagementClient
 from azure.mgmt.containerinstance.models import (
     ContainerExecRequest,
@@ -29,11 +31,11 @@ class AzureContainerInstance(AzureMixin, LoggingMixin):
         self.container_group_name = container_group_name
 
     @staticmethod
-    def wait(poller):
+    def wait(poller: LROPoller[None]) -> None:
         while not poller.done():
             time.sleep(10)
 
-    def restart(self, target_ip_address=None):
+    def restart(self, target_ip_address: Optional[str] = None) -> None:
         """Restart the container group"""
         # Connect to Azure clients
         aci_client = ContainerInstanceManagementClient(
@@ -65,7 +67,7 @@ class AzureContainerInstance(AzureMixin, LoggingMixin):
             overwrite=True,
         )
 
-    def run_executable(self, container_name, executable_path):
+    def run_executable(self, container_name: str, executable_path: str) -> List[str]:
         """
         Run a script or command on one of the containers.
 
@@ -90,7 +92,8 @@ class AzureContainerInstance(AzureMixin, LoggingMixin):
 
         # Get command output via websocket
         socket = websocket.create_connection(cnxn.web_socket_uri)
-        socket.send(cnxn.password)
+        if cnxn.password:
+            socket.send(cnxn.password)
         output = []
         with contextlib.suppress(websocket.WebSocketConnectionClosedException):
             while result := socket.recv():

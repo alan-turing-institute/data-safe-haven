@@ -4,10 +4,11 @@ from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import keyvault, network, managedidentity, resources, storage
+from pulumi_azure_native import keyvault, managedidentity, network, resources, storage
 
 # Local imports
 from data_safe_haven.helpers import alphanumeric, sha256hash
+from data_safe_haven.pulumi.transformations import get_name_from_rg
 from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 
 
@@ -29,7 +30,9 @@ class SREStateProps:
         self.admin_group_id = admin_group_id
         self.dns_record = dns_record
         self.location = location
-        self.networking_resource_group_name = Output.from_input(networking_resource_group).apply(lambda rg: rg.name)
+        self.networking_resource_group_name = Output.from_input(
+            networking_resource_group
+        ).apply(get_name_from_rg)
         self.sre_fqdn = sre_fqdn
         self.subscription_name = subscription_name
         self.tenant_id = tenant_id
@@ -183,9 +186,11 @@ class SREStateComponent(ComponentResource):
                 subscription_name=props.subscription_name,
             ),
             opts=ResourceOptions.merge(
-                ResourceOptions(depends_on=[props.dns_record]), # we need the delegation NS record to exist before generating the certificate
+                ResourceOptions(
+                    depends_on=[props.dns_record]
+                ),  # we need the delegation NS record to exist before generating the certificate
                 child_opts,
-            )
+            ),
         )
 
         # Register outputs

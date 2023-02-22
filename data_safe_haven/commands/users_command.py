@@ -8,7 +8,7 @@ from .users_list import UsersListCommand
 from .users_register import UsersRegisterCommand
 
 
-class UsersCommand(Command):
+class UsersCommand(Command):  # type: ignore
     """
     User management for a Data Safe Haven deployment, delegating the details to a subcommand
 

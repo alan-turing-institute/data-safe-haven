@@ -246,7 +246,12 @@ class SRENetworkingComponent(ComponentResource):
         shm_virtual_network = Output.all(
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=props.shm_virtual_network_name,
-        ).apply(lambda kwargs: network.get_virtual_network(**kwargs))
+        ).apply(
+            lambda kwargs: network.get_virtual_network(
+                resource_group_name=kwargs["resource_group_name"],
+                virtual_network_name=kwargs["virtual_network_name"],
+            )
+        )
         peering_sre_to_shm = network.VirtualNetworkPeering(
             f"{self._name}_sre_to_shm_peering",
             remote_virtual_network=network.SubResourceArgs(id=shm_virtual_network.id),
@@ -268,7 +273,12 @@ class SRENetworkingComponent(ComponentResource):
         shm_dns_zone = Output.all(
             resource_group_name=props.shm_networking_resource_group_name,
             zone_name=props.shm_zone_name,
-        ).apply(lambda kwargs: network.get_zone(**kwargs))
+        ).apply(
+            lambda kwargs: network.get_zone(
+                resource_group_name=kwargs["resource_group_name"],
+                zone_name=kwargs["zone_name"],
+            )
+        )
         sre_subdomain = alphanumeric(sre_name)
         sre_fqdn = Output.from_input(props.shm_fqdn).apply(
             lambda parent: f"{sre_subdomain}.{parent}"

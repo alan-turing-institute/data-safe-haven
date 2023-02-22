@@ -6,6 +6,9 @@ from typing import Optional
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, network, resources
 
+# Local imports
+from data_safe_haven.pulumi.transformations import get_id_from_subnet
+
 
 class SHMMonitoringProps:
     """Properties for SHMMonitoringComponent"""
@@ -15,11 +18,11 @@ class SHMMonitoringProps:
         dns_resource_group_name: Input[str],
         location: Input[str],
         subnet_monitoring: Input[network.GetSubnetResult],
-    ):
+    ) -> None:
         self.dns_resource_group_name = dns_resource_group_name
         self.location = location
         self.subnet_monitoring_id = Output.from_input(subnet_monitoring).apply(
-            lambda s: s.id
+            get_id_from_subnet
         )
 
 
@@ -132,12 +135,14 @@ class SHMMonitoringComponent(ComponentResource):
         self.automation_account_jrds_url = (
             automation_account.automation_hybrid_service_url
         )
-        self.automation_account_agentsvc_url = Output.all(
-            automation_account.automation_hybrid_service_url
-        ).apply(
-            lambda args: args[0]
-            .replace("jrds", "agentsvc")
-            .replace("/automationAccounts/", "/accounts/")
+        self.automation_account_agentsvc_url = (
+            automation_account.automation_hybrid_service_url.apply(
+                lambda url: url.replace("jrds", "agentsvc").replace(
+                    "/automationAccounts/", "/accounts/"
+                )
+                if url
+                else ""
+            )
         )
         self.automation_account_modules = list(modules.keys())
         self.automation_account_primary_key = Output.secret(

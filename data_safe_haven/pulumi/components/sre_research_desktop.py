@@ -1,7 +1,6 @@
 # Standard library imports
-import base64
 import pathlib
-from typing import cast, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 # Third party imports
 import chevron
@@ -9,8 +8,15 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 # Local imports
+from data_safe_haven.exceptions import DataSafeHavenPulumiException
 from data_safe_haven.external.interface import AzureIPv4Range
-from data_safe_haven.helpers import replace_separators
+from data_safe_haven.helpers import b64encode, replace_separators
+from data_safe_haven.pulumi.transformations import (
+    get_available_ips_from_subnet,
+    get_name_from_rg,
+    get_name_from_subnet,
+    get_name_from_vnet,
+)
 from .virtual_machine import LinuxVMProps, VMComponent
 
 
@@ -40,34 +46,31 @@ class SREResearchDesktopProps:
         self.location = location
         self.security_group_name = security_group_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
-            lambda v: v.name
+            get_name_from_vnet
         )
         self.subnet_research_desktops_name = Output.from_input(
             subnet_research_desktops
-        ).apply(lambda s: s.name)
+        ).apply(get_name_from_subnet)
         self.virtual_network_resource_group_name = Output.from_input(
             virtual_network_resource_group
-        ).apply(lambda rg: rg.name)
+        ).apply(get_name_from_rg)
         self.vm_ip_addresses = Output.all(subnet_research_desktops, vm_details).apply(
-            lambda args: self.get_ip_addresses(
-                cast(network.GetSubnetResult, args[0]), len(cast(list, args[1]))
-            )
+            lambda args: self.get_ip_addresses(subnet=args[0], vm_details=args[1])
         )
         vm_lists = Output.from_input(vm_details).apply(
-            lambda d: [(k, v["sku"]) for k, v in d.items()]
+            lambda d: [(name, details["sku"]) for name, details in d.items()]
         )
         self.vm_names = vm_lists.apply(lambda l: [t[0] for t in l])
         self.vm_sizes = vm_lists.apply(lambda l: [t[1] for t in l])
 
-    def get_ip_addresses(
-        self, subnet: network.GetSubnetResult, number: int
-    ) -> List[str]:
-        if not subnet.address_prefix:
-            return []
-        return [
-            str(ip)
-            for ip in AzureIPv4Range.from_cidr(subnet.address_prefix).available()
-        ][:number]
+    def get_ip_addresses(self, subnet: Any, vm_details: Any) -> List[str]:
+        if not isinstance(subnet, network.GetSubnetResult):
+            DataSafeHavenPulumiException(f"'subnet' has invalid type {type(subnet)}")
+        if not isinstance(vm_details, list):
+            DataSafeHavenPulumiException(
+                f"'vm_details' has invalid type {type(vm_details)}"
+            )
+        return get_available_ips_from_subnet(subnet)[: len(vm_details)]
 
 
 class SREResearchDesktopComponent(ComponentResource):
@@ -102,12 +105,14 @@ class SREResearchDesktopComponent(ComponentResource):
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
 
         # Deploy a variable number of VMs depending on the input parameters
-        # Note that deploying inside an apply is advised against but not forbidden
-        Output.all(
+        # We separate the all() and apply() in order to provide a type-hint
+        vm_details: Output[Dict[str, List[str]]] = Output.all(
             vm_ip_addresses=props.vm_ip_addresses,
             vm_names=props.vm_names,
             vm_sizes=props.vm_sizes,
-        ).apply(
+        )
+        # Note that deploying inside an apply is advised against but not forbidden
+        vm_details.apply(
             lambda kwargs: (
                 VMComponent(
                     replace_separators(f"sre-{sre_name}-vm-{vm_name}", "-"),
@@ -115,14 +120,14 @@ class SREResearchDesktopComponent(ComponentResource):
                         admin_password=props.admin_password,
                         admin_username=props.admin_username,
                         b64cloudinit=b64cloudinit,
-                        ip_address_private=vm_ip_address,
+                        ip_address_private=str(vm_ip_address),
                         location=props.location,
                         resource_group_name=resource_group.name,
                         subnet_name=props.subnet_research_desktops_name,
                         virtual_network_name=props.virtual_network_name,
                         virtual_network_resource_group_name=props.virtual_network_resource_group_name,
-                        vm_name=vm_name,
-                        vm_size=vm_size,
+                        vm_name=str(vm_name),
+                        vm_size=str(vm_size),
                     ),
                     opts=child_opts,
                 )
@@ -141,42 +146,6 @@ class SREResearchDesktopComponent(ComponentResource):
             "vm_names": props.vm_names,
         }
 
-    def deploy_vms(
-        self,
-        admin_password: str,
-        admin_username: str,
-        b64cloudinit: str,
-        location: str,
-        resource_group_name: str,
-        sre_name: str,
-        subnet_research_desktops_name: str,
-        virtual_network_name: str,
-        virtual_network_resource_group_name: str,
-        vm_ip_addresses: Sequence[str],
-        vm_names: Sequence[str],
-        vm_sizes: Sequence[str],
-        child_opts: ResourceOptions,
-    ):
-        # Deploy as many VMs as requested
-        for vm_ip_address, vm_name, vm_size in zip(vm_ip_addresses, vm_names, vm_sizes):
-            VMComponent(
-                replace_separators(f"sre-{sre_name}-{vm_name}", "-"),
-                LinuxVMProps(
-                    admin_password=admin_password,
-                    admin_username=admin_username,
-                    b64cloudinit=b64cloudinit,
-                    ip_address_private=vm_ip_address,
-                    location=location,
-                    resource_group_name=resource_group_name,
-                    subnet_name=subnet_research_desktops_name,
-                    virtual_network_name=virtual_network_name,
-                    virtual_network_resource_group_name=virtual_network_resource_group_name,
-                    vm_name=vm_name,
-                    vm_size=vm_size,
-                ),
-                opts=child_opts,
-            )
-
     def read_cloudinit(
         self,
         domain_sid: str,
@@ -184,7 +153,7 @@ class SREResearchDesktopComponent(ComponentResource):
         ldap_search_password: str,
         ldap_server_ip: str,
         security_group_name: str,
-    ):
+    ) -> str:
         resources_path = (
             pathlib.Path(__file__).parent.parent.parent
             / "resources"
@@ -201,4 +170,4 @@ class SREResearchDesktopComponent(ComponentResource):
                 "ldap_sre_security_group": security_group_name,
             }
             cloudinit = chevron.render(f_cloudinit, mustache_values)
-            return base64.b64encode(cloudinit.encode("utf-8")).decode()
+            return b64encode(cloudinit)

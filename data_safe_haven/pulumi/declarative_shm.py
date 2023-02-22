@@ -11,24 +11,24 @@ from .components.shm_domain_controllers import (
     SHMDomainControllersComponent,
     SHMDomainControllersProps,
 )
+from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
 from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
-from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
 from .components.shm_state import SHMStateComponent, SHMStateProps
 
 
 class DeclarativeSHM:
     """Deploy Data Safe Haven Management environment with Pulumi"""
 
-    def __init__(self, config: Config, shm_name: str):
+    def __init__(self, config: Config, shm_name: str) -> None:
         self.cfg = config
         self.shm_name = shm_name
         self.stack_name = f"shm-{shm_name}"
 
-    def work_dir(self, base_path: pathlib.Path):
+    def work_dir(self, base_path: pathlib.Path) -> pathlib.Path:
         return base_path / self.stack_name
 
-    def run(self):
+    def run(self) -> None:
         # Load pulumi configuration secrets
         self.secrets = pulumi.Config()
 

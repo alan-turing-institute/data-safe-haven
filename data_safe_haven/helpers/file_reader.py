@@ -8,6 +8,7 @@ import chevron
 
 # Local imports
 from data_safe_haven.mixins import LoggingMixin
+
 from .functions import sha256hash
 from .types import PathType
 
