@@ -221,6 +221,11 @@ write_files:
     content: |
       xfce4-session
 
+  - path: "/etc/sudoers.d/10-ad-sg-system-administrators"
+    permissions: "0440"
+    content: |
+      %sg\ {{sre.id}}\ system\ administrators ALL=(ALL:ALL) ALL
+
   - path: "/etc/systemd/system/clamav-clamonacc.service"
     permissions: "0644"
     content: |
