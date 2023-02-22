@@ -16,6 +16,11 @@ Sometimes during a project that uses a deployed SRE, researchers may find the av
 - The **simplest way to resize this VM** is by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal) in the Azure portal
 - Alternatively, you can resize this VM by using the instructions below to run the `./Add_Single_SRD.ps1` script. Make a note of the last octet of the IP address, which can be seen in the Azure Portal.
 
+<details>
+<summary>
+Resize VM with Add_Single_SRD.ps1 script
+</summary>
+
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
 ```powershell
@@ -28,6 +33,8 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 - where `<VM size>` is the new [Azure VM size](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes)
 - where `<Upgrade>` is required to ensure the old VM is replaced
 - where `<Force>` ensures that `<Upgrade>` works even when the VM is built with the same image
+
+</details>
 
 ## {{heavy_plus_sign}} Add a new SRD
 
