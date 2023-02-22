@@ -6,10 +6,24 @@
 This document assumes that you already have access to a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
+(create_new_users)=
+
 ## {{beginner}} Create new users
 
 Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
 A helper script for doing this is already uploaded to the domain controller - you will need to prepare a `CSV` file in the appropriate format for it.
+
+(security_groups)=
+
+### {{lock}} SRE Security Groups
+
+Each user should be assigned to one or more Active Directory "security groups", which give them access to a given SRE with appropriate privileges. The security groups are named like so:
+
+- `SG <SRE ID> Research Users`: Default for most researchers. No special permissions.
+- `SG <SRE ID> Data Administrators`: Researchers who can create/modify/delete database tables schemas. Given to a smaller number of researchers. Restricting this access to most users prevents them creating/deleting arbitrary schemas, which is important because some SREs have their input data in database form.
+- `SG <SRE ID> System Administrators` - Researchers with elevated privileges through sudo. Rarely used but could be useful in `Tier 0/1` SREs to let groups manage their own packages.
+
+(generate_user_csv)=
 
 ## {{scroll}} Generate user details CSV file
 
@@ -63,6 +77,66 @@ Once you're certain that you're adding a new user, make sure that the following 
 - Do not use them except where specified and never write them down!
 - Be particularly careful never to use them to log in to any user-accessible VMs (such as the SRDs)
 ```
+
+(adding_users_manually)=
+
+### {{woman}} {{man}} Modifying user SRE access
+
+Users may have been added to one or more {ref}`security_groups` through setting the `GroupName` field in the `user_details_template.csv` (see {ref}`generate_user_csv`). Security Group assignments can also be manually modified via the following:
+
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
+- In Server Manager click `Tools > Active Directory Users and Computers`
+- Click on `Safe Haven Security Groups`
+- Find the group that the user needs to be added to (see {ref}`security_groups`)
+- Right click on the group and click `Properties`
+- Click the `Members` tab
+- To add a user click `Add...`
+    - Enter a part of the user's name and click `Check Names`
+    - Select the correct user and click `OK`, then click `OK` again until the window closes
+- To remove a user click on the username of the person and then `Remove`
+    - Click `Yes` if you're sure this user should no longer have access to this SRE, then click `OK` again until the window closes
+- Open a `Powershell` command window with elevated privileges
+- Run `C:\Installation\Run_ADSync.ps1`
+
+### {{iphone}} Edit user details
+
+The `DC1` is the source of truth for user details. If these details need to be changed, they should be changed in the `DC1` and then synchronised to Azure AD.
+
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
+- In Server Manager click `Tools > Active Directory Users and Computers`
+- Click on `Safe Haven Research Users`
+- Find the person, right click on them and select `Properties`
+- To edit a **phone number**, select the `Telephones` tab and edit the `Mobile` number
+    - Click `OK` to save the new number
+    - Open a `Powershell` command window with elevated privileges
+    - Run `C:\Installation\Run_ADSync.ps1`
+- To edit a user's **email** or their **username** (or first name or last name) you'll need to delete the user entirely and recreate them, meaning they'll have to set up their accounts (including MFA) again
+    - Find the person, right click on them and click `Delete`
+    - Click `OK`
+    - Open a `Powershell` command window with elevated privileges
+    - Run `C:\Installation\Run_ADSync.ps1`
+    - Create a new csv (or edit an existing) one with the correct user details (see {ref}`create_new_users`)
+    - Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
+    - Run `C:\Installation\Run_ADSync.ps1`
+- You can check the changes you made were successful by logging into the Azure Portal as the AAD admin
+    - Open `Azure Active Directory`
+    - Click on `Users` under `Manage` and search for the user
+    - Click on the user and then `Edit properties` and confirm your changes propagated to Azure AD
+
+(deleting_users)=
+
+### {{x}} Deleting users
+
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
+- In Server Manager click `Tools > Active Directory Users and Computers`
+- Click on `Safe Haven Research Users`
+- Find the person, right click on them and click `Delete`
+- Open a `Powershell` command window with elevated privileges
+- Run `C:\Installation\Run_ADSync.ps1`
+- You can check the user is deleted by logging into the Azure Portal as the AAD admin
+    - Open `Azure Active Directory`
+    - Click on `Users` under `Manage` and search for the user
+    - Confirm the user is no longer present
 
 ## {{calling}} Assign MFA licences
 
