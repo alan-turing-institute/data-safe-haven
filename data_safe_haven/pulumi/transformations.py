@@ -3,6 +3,7 @@
 from typing import List
 
 # Third party imports
+from pulumi import Output
 from pulumi_azure_native import network, resources
 
 # Local imports
@@ -16,9 +17,9 @@ def get_available_ips_from_subnet(subnet: network.GetSubnetResult) -> List[str]:
     return []
 
 
-def get_id_from_rg(rg: resources.ResourceGroup) -> str:
-    if id_ := rg.name:
-        return str(id_)
+def get_id_from_rg(rg: resources.ResourceGroup) -> Output[str]:
+    if rg.id:
+        return rg.id
     raise DataSafeHavenPulumiException(f"Resource group '{rg.name}'has no ID.")
 
 
@@ -34,13 +35,13 @@ def get_name_from_subnet(subnet: network.GetSubnetResult) -> str:
     raise DataSafeHavenPulumiException(f"Subnet '{subnet.id}' has no name.")
 
 
-def get_name_from_vnet(vnet: network.VirtualNetwork) -> str:
-    if name := vnet.name:
-        return str(name)
+def get_name_from_vnet(vnet: network.VirtualNetwork) -> Output[str]:
+    if vnet.name:
+        return vnet.name
     raise DataSafeHavenPulumiException(f"Virtual network '{vnet.id}'has no name.")
 
 
-def get_name_from_rg(rg: resources.ResourceGroup) -> str:
-    if name := rg.name:
-        return str(name)
+def get_name_from_rg(rg: resources.ResourceGroup) -> Output[str]:
+    if rg.name:
+        return rg.name
     raise DataSafeHavenPulumiException(f"Resource group '{rg.id}'has no name.")
