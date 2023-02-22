@@ -16,7 +16,7 @@ from data_safe_haven.external.api import GraphApi
 from data_safe_haven.mixins import LoggingMixin
 
 
-class UsersRegisterCommand(LoggingMixin, Command):
+class UsersRegisterCommand(LoggingMixin, Command):  # type: ignore
     """
     Register existing users from a Data Safe Haven deployment with an SRE
 

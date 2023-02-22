@@ -20,4 +20,4 @@ application.add(UsersCommand())
 
 def main() -> int:
     """Command line entrypoint for Data Safe Haven application"""
-    return application.run()
+    return application.run()  # type: ignore

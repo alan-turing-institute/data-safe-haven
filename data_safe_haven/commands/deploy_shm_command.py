@@ -22,7 +22,7 @@ from data_safe_haven.provisioning import SHMProvisioningManager
 from data_safe_haven.pulumi import PulumiStack
 
 
-class DeploySHMCommand(LoggingMixin, Command):
+class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
     """
     Deploy a Safe Haven Management component using local configuration files
 

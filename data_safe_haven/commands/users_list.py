@@ -16,7 +16,7 @@ from data_safe_haven.external.api import GraphApi
 from data_safe_haven.mixins import LoggingMixin
 
 
-class UsersListCommand(LoggingMixin, Command):
+class UsersListCommand(LoggingMixin, Command):  # type: ignore
     """
     List users for a Data Safe Haven deployment
 

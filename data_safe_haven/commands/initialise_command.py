@@ -17,7 +17,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.mixins import LoggingMixin
 
 
-class InitialiseCommand(LoggingMixin, Command):
+class InitialiseCommand(LoggingMixin, Command):  # type: ignore
     """
     Initialise a Data Safe Haven deployment
 

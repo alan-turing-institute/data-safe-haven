@@ -15,7 +15,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.mixins import LoggingMixin
 
 
-class TeardownBackendCommand(LoggingMixin, Command):
+class TeardownBackendCommand(LoggingMixin, Command):  # type: ignore
     """
     Teardown a deployed Data Safe Haven backend using local configuration files
 

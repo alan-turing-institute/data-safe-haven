@@ -25,7 +25,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.mixins import LoggingMixin
 
 
-class LocalTokenCache(SerializableTokenCache):
+class LocalTokenCache(SerializableTokenCache):  # type: ignore
     def __init__(self, token_cache_filename: pathlib.Path) -> None:
         super().__init__()
         self.token_cache_filename = token_cache_filename

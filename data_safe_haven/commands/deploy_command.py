@@ -7,7 +7,7 @@ from .deploy_shm_command import DeploySHMCommand
 from .deploy_sre_command import DeploySRECommand
 
 
-class DeployCommand(Command):
+class DeployCommand(Command):  # type: ignore
     """
     Deploy a Data Safe Haven component, delegating the details to a subcommand
 

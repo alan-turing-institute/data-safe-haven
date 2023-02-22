@@ -1,2 +1,0 @@
-class RawArgs(object):
-    pass

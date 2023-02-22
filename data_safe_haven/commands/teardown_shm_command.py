@@ -15,7 +15,7 @@ from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.pulumi import PulumiStack
 
 
-class TeardownSHMCommand(LoggingMixin, Command):
+class TeardownSHMCommand(LoggingMixin, Command):  # type: ignore
     """
     Teardown a deployed a Safe Haven Management component using local configuration files
 

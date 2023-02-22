@@ -18,7 +18,7 @@ from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.pulumi import PulumiStack
 
 
-class DeploySRECommand(LoggingMixin, Command):
+class DeploySRECommand(LoggingMixin, Command):  # type: ignore
     """
     Deploy a Secure Research Environment using local configuration files
 

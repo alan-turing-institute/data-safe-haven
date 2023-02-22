@@ -1,2 +1,0 @@
-from .chained import ChainedTokenCredential as ChainedTokenCredential
-from .default import DefaultAzureCredential as DefaultAzureCredential

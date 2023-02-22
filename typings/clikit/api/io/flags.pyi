@@ -1,4 +1,0 @@
-NORMAL: int
-VERBOSE: int
-VERY_VERBOSE: int
-DEBUG: int

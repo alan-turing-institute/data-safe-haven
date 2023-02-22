@@ -53,7 +53,14 @@ class AzureFileShare(AzureMixin):
                 raise DataSafeHavenAzureException(
                     f"Could not load keys for storage account {self.storage_account_name}."
                 )
-            self.storage_account_key_ = [key.value for key in storage_keys.keys][0]
+            storage_account_keys = [
+                key.value for key in storage_keys.keys if isinstance(key.value, str)
+            ]
+            if not storage_account_keys:
+                raise DataSafeHavenAzureException(
+                    f"Could not load key values for storage account {self.storage_account_name}."
+                )
+            self.storage_account_key_ = storage_account_keys[0]
         return self.storage_account_key_
 
     def upload(self, destination_path: str, file_contents: str) -> None:

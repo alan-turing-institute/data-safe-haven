@@ -16,7 +16,7 @@ from data_safe_haven.external.api import GraphApi
 from data_safe_haven.mixins import LoggingMixin
 
 
-class UsersAddCommand(LoggingMixin, Command):
+class UsersAddCommand(LoggingMixin, Command):  # type: ignore
     """
     Add users to a Data Safe Haven deployment
 

@@ -19,7 +19,7 @@ def strip_formatting(input_string: str) -> str:
     return re.sub("<[^>]*>", "", first_pass)
 
 
-class CleoStringIO(ConsoleIO):
+class CleoStringIO(ConsoleIO):  # type: ignore
     """
     A wrapper to coerce Cleo IO into a StringIO stream.
     """
@@ -196,17 +196,17 @@ class LoggingMixin:
     def log_confirm(self, message: str, *args: Any, **kwargs: Any) -> str:
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
-        return self.console.io.confirm(formatted, *args, **kwargs)
+        return str(self.console.io.confirm(formatted, *args, **kwargs))
 
     def log_ask(self, message: str, *args: Any, **kwargs: Any) -> str:
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
-        return self.console.io.ask(formatted, *args, **kwargs)
+        return str(self.console.io.ask(formatted, *args, **kwargs))
 
     def log_choose(self, message: str, *args: Any, **kwargs: Any) -> str:
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
-        return self.console.io.choice(formatted, *args, **kwargs)
+        return str(self.console.io.choice(formatted, *args, **kwargs))
 
     def parse_as_log(
         self, message: str, no_newline: bool = False, overwrite: bool = False

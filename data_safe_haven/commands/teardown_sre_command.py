@@ -16,7 +16,7 @@ from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.pulumi import PulumiStack
 
 
-class TeardownSRECommand(LoggingMixin, Command):
+class TeardownSRECommand(LoggingMixin, Command):  # type: ignore
     """
     Teardown a deployed Secure Research Environment using local configuration files
 

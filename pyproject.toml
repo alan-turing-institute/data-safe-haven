@@ -57,6 +57,24 @@ strict = true
 files = "data_safe_haven"
 mypy_path = "typings"
 
+[[tool.mypy.overrides]]
+module = [
+    "azure.mgmt.automation.*",
+    "azure.mgmt.containerinstance.*",
+    "azure.mgmt.dns.*",
+    "azure.mgmt.keyvault.*",
+    "azure.mgmt.rdbms.postgresql.*",
+    "azure.mgmt.resource.*",
+    "azure.mgmt.storage.*",
+    "cleo.*",
+    "clikit.*",
+    "dotmap.*",
+    "msal.*",
+    "simple_acme_dns.*",
+    "websocket.*",
+]
+ignore_missing_imports = true
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
