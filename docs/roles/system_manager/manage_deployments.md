@@ -10,11 +10,20 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 
 ## {{arrow_upper_right}} Resize the Virtual Machine (VM) of a Secure Research Desktop (SRD)
 
-Sometimes during a project that uses a deployed SRE, researchers may find the available compute inadequate for their purposes and wish to increase the size of the SRD's VM.
+Sometimes during a project that uses a deployed SRE, researchers may find the available compute inadequate for their purposes and wish to increase the size of the SRD's VM. The **simplest way to resize a VM is via the Azure Portal**, but it can also be done via script.
+
+To resize via the Azure Portal:
 
 - Log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`
-- The **simplest way to resize this VM** is by [following these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal) in the Azure portal
-- Alternatively, you can resize this VM by using the instructions below to run the `./Add_Single_SRD.ps1` script. Make a note of the last octet of the IP address, which can be seen in the Azure Portal.
+- [Follow these instructions](https://learn.microsoft.com/en-us/azure/virtual-machines/resize-vm?tabs=portal) in the Azure portal
+
+<details>
+<summary>
+To resize via script:
+</summary>
+
+- Log into the Azure portal and locate the VM inside the Resource Group called `RG_SHM_<shm id>_SRE_<sre id>_COMPUTE`
+- Make a note of the last octet of the IP address
 
 ![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
@@ -28,6 +37,16 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 - where `<VM size>` is the new [Azure VM size](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes)
 - where `<Upgrade>` is required to ensure the old VM is replaced
 - where `<Force>` ensures that `<Upgrade>` works even when the VM is built with the same image
+
+</details>
+
+```{note}
+If the new `VM size` is a **GPU** enabled VM, it's possible that you'll need to request an increase in the vCPU quota for the VM family before resizing is allowed:
+- Navigate to the Azure Portal and on the subscription page, click `Usage + quotas` under `Settings`
+- Choose the family appropriate to the VM that you want to resize to, and select a region appropriate for the SRE
+- Click the pen icon and set the `New Limit` to at least the number of vCPUs required by the VM that you want, the click submit
+- After the request is accepted, resize the VM as above
+```
 
 ## {{heavy_plus_sign}} Add a new SRD
 
