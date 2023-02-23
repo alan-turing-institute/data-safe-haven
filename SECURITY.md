@@ -23,14 +23,17 @@ disclosures.
 
 ### Reporting
 
-If you believe you have found a security vulnerability, please submit your report to us
-using the following email: safehavendevs@turing.ac.uk
+If you believe you have found a security vulnerability, please check the list of
+published [security advisories](https://github.com/alan-turing-institute/data-safe-haven/security/advisories)
+and, if the vulnerability you have identified is not covered by an existing advisory, 
+use the "Report a vulnerability" button to submit a vulnerability report.
 
-In your report please include details of:
+In your report please include the details requested in the report form, including:
 
 - The area / component of the Data Safe Haven where the vulnerability can be observed.
 - A brief description of the type of vulnerability, for example; “unexpected outbound data access” or "privilege escalation to admin user".
 - Steps to reproduce. These should be a benign, non-destructive, proof of concept. This helps to ensure that the report can be triaged quickly and accurately. It also reduces the likelihood of duplicate reports, or malicious exploitation of some vulnerabilities.
+- An indication of the severity of the issue.
 
 ### What to expect
 
@@ -49,6 +52,20 @@ invited to confirm that the solution covers the vulnerability adequately.
 Once your vulnerability has been resolved, we welcome requests to disclose your
 report. We’d like to unify guidance to affected users, so please do continue to
 coordinate any public release with us.
+
+We will generally look to publish a public security advisory on this repository's
+[security advisories](https://github.com/alan-turing-institute/data-safe-haven/security/advisories)
+page once a vulnerabilty has been resolved and we have given those organisations
+we know of with active deployments reasonable time to patch or update their deployments.
+We will credit you with reporting the vulnerability and with any other assistance
+you have provided characterising and resolving it in the published security advisory.
+If you would prefer not to be credited in the public security advisory, please let us know.
+
+In some instances we may already be aware of the reported vulnerability but not yet
+have published a public security advisory. We still welcome additional reports in these
+cases as they often provide additional useful information. Where multiple people have reported
+the same vulnerability we will credit each of them in the public advisory when it is 
+published.
 
 ### Guidance
 
