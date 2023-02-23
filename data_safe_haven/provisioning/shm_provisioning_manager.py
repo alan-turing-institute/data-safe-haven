@@ -1,8 +1,8 @@
 """Provisioning manager for a deployed SHM."""
 # Local imports
-from data_safe_haven.config import Config
 from data_safe_haven.external.api import AzureApi
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.pulumi import PulumiStack
 
 
 class SHMProvisioningManager(LoggingMixin):
@@ -10,15 +10,20 @@ class SHMProvisioningManager(LoggingMixin):
 
     def __init__(
         self,
-        config: Config,
+        subscription_name: str,
+        stack: PulumiStack,
     ):
         super().__init__()
-        self.subscription_name = config.subscription_name
+        self.subscription_name = subscription_name
+        domain_controllers_resource_group_name = stack.output("domain_controllers")[
+            "resource_group_name"
+        ]
+        domain_controllers_vm_name = stack.output("domain_controllers")["vm_name"]
 
         # Construct DC restart parameters
         self.dc_restart_params = {
-            "resource_group_name": config.shm.domain_controllers["resource_group_name"],
-            "vm_name": config.shm.domain_controllers["vm_name"],
+            "resource_group_name": domain_controllers_resource_group_name,
+            "vm_name": domain_controllers_vm_name,
         }
 
     def restart_domain_controllers(self) -> None:

@@ -1,6 +1,6 @@
 # Standard library imports
 import pathlib
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional
 
 # Third party imports
 import chevron
@@ -9,7 +9,6 @@ from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
-from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers import b64encode, replace_separators
 from data_safe_haven.pulumi.transformations import (
     get_available_ips_from_subnet,
@@ -58,7 +57,13 @@ class SREResearchDesktopProps:
             lambda args: self.get_ip_addresses(subnet=args[0], vm_details=args[1])
         )
         vm_lists = Output.from_input(vm_details).apply(
-            lambda d: [(name, details["sku"]) for name, details in d.items()]
+            lambda d: [
+                (
+                    name,
+                    details["sku"],
+                )
+                for name, details in d.items()
+            ]
         )
         self.vm_names = vm_lists.apply(lambda l: [t[0] for t in l])
         self.vm_sizes = vm_lists.apply(lambda l: [t[1] for t in l])
@@ -112,8 +117,8 @@ class SREResearchDesktopComponent(ComponentResource):
             vm_sizes=props.vm_sizes,
         )
         # Note that deploying inside an apply is advised against but not forbidden
-        vm_details.apply(
-            lambda kwargs: (
+        vms = vm_details.apply(
+            lambda kwargs: [
                 VMComponent(
                     replace_separators(f"sre-{sre_name}-vm-{vm_name}", "-"),
                     LinuxVMProps(
@@ -134,7 +139,20 @@ class SREResearchDesktopComponent(ComponentResource):
                 for vm_ip_address, vm_name, vm_size in zip(
                     kwargs["vm_ip_addresses"], kwargs["vm_names"], kwargs["vm_sizes"]
                 )
-            )
+            ]
+        )
+        # Get details for each deployed VM
+        vm_outputs = vms.apply(
+            lambda vms: [
+                Output.all(vm.ip_address_private, vm.vm_name, vm.vm_size).apply(
+                    lambda args: {
+                        "ip_address": str(args[0]),
+                        "name": str(args[1]),
+                        "sku": str(args[2]),
+                    }
+                )
+                for vm in vms
+            ]
         )
 
         # Register outputs
@@ -142,8 +160,8 @@ class SREResearchDesktopComponent(ComponentResource):
 
         # Register exports
         self.exports = {
-            "vm_ip_addresses": props.vm_ip_addresses,
-            "vm_names": props.vm_names,
+            "security_group_name": props.security_group_name,
+            "vm_outputs": vm_outputs,
         }
 
     def read_cloudinit(

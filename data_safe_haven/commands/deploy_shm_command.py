@@ -99,9 +99,7 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
                 stack_yaml = yaml.safe_load(f_stack)
             config.pulumi.stacks[stack.stack_name] = stack_yaml
 
-            # Add Pulumi output information to the config file
-            config.shm.domain_controllers = stack.output("domain_controllers")
-            config.shm.networking = stack.output("networking")
+            # Add Pulumi secrets to the config file
             for secret_name in [
                 "password-domain-admin",
                 "password-domain-azure-ad-connect",
@@ -113,7 +111,10 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
             config.upload()
 
             # Provision SHM with anything that could not be done in Pulumi
-            manager = SHMProvisioningManager(config)
+            manager = SHMProvisioningManager(
+                subscription_name=config.subscription_name,
+                stack=stack,
+            )
             manager.run()
             return 0
 

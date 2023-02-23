@@ -1,9 +1,9 @@
 """Provisioning manager for a deployed SRE."""
 # Standard library imports
 import pathlib
+from typing import Any, Dict
 
 # Local imports
-from data_safe_haven.config import Config
 from data_safe_haven.external.api import AzureApi
 from data_safe_haven.external.interface import (
     AzureContainerInstance,
@@ -11,6 +11,7 @@ from data_safe_haven.external.interface import (
 )
 from data_safe_haven.helpers import FileReader
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.pulumi import PulumiStack
 
 
 class SREProvisioningManager(LoggingMixin):
@@ -18,33 +19,44 @@ class SREProvisioningManager(LoggingMixin):
 
     def __init__(
         self,
-        config: Config,
+        available_vm_skus: Dict[str, Dict[str, Any]],
+        shm_stack: PulumiStack,
         sre_name: str,
+        sre_stack: PulumiStack,
+        subscription_name: str,
+        timezone: str,
     ):
         super().__init__()
         self.resources_path = pathlib.Path(__file__).parent.parent / "resources"
         self.sre_name = sre_name
-        self.subscription_name = config.subscription_name
+        self.subscription_name = subscription_name
 
         # Construct remote desktop parameters
-        self.remote_desktop_params = dict(config.sre[sre_name].remote_desktop)
-        self.remote_desktop_params["connection_db_server_password"] = config.get_secret(
-            config.sre[self.sre_name].remote_desktop[
-                "connection_db_server_admin_password_secret"
-            ]
+        self.remote_desktop_params = sre_stack.output("remote_desktop")
+        self.remote_desktop_params["connection_db_server_password"] = sre_stack.secret(
+            "password-user-database-admin"
         )
-        self.remote_desktop_params["timezone"] = config.shm.timezone
+        self.remote_desktop_params["timezone"] = timezone
 
         # Construct security group parameters
         self.security_group_params = {
-            "dn_base": f"DC={config.shm.fqdn.replace('.',',DC=')}",
-            "resource_group_name": config.shm.domain_controllers.resource_group_name,
-            "group_name": config.sre[self.sre_name].security_group_name,
-            "vm_name": config.shm.domain_controllers.vm_name,
+            "dn_base": shm_stack.output("domain_controllers")["ldap_root_dn"],
+            "resource_group_name": shm_stack.output("domain_controllers")[
+                "resource_group_name"
+            ],
+            "group_name": sre_stack.output("research_desktops")["security_group_name"],
+            "vm_name": shm_stack.output("domain_controllers")["vm_name"],
         }
 
         # Construct VM parameters
-        self.research_desktops = dict(config.sre[sre_name].research_desktops)
+        self.research_desktops = {}
+        for vm in sre_stack.output("research_desktops")["vm_outputs"]:
+            self.research_desktops[vm["name"]] = {
+                "cpus": int(available_vm_skus[vm["sku"]]["vCPUs"]),
+                "gpus": int(available_vm_skus[vm["sku"]]["GPUs"]),
+                "ram": int(available_vm_skus[vm["sku"]]["MemoryGB"]),
+                "sku": vm["sku"],
+            }
 
     def create_security_group(self) -> None:
         azure_api = AzureApi(self.subscription_name)
