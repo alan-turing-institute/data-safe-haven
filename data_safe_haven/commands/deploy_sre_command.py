@@ -99,10 +99,10 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 config.sre[self.sre_name].research_desktops[
                     vm_name
                 ].ip_address = vm_ipaddress
-            for secret_name in ["password-user-database-admin"]:
-                config.add_secret(
-                    f"sre-{self.sre_name}-{secret_name}", stack.secret(secret_name)
-                )
+            secret_name = "password-user-database-admin"
+            config.add_secret(
+                f"sre-{self.sre_name}-{secret_name}", stack.secret(secret_name)
+            )
 
             # Upload config to blob storage
             config.upload()
