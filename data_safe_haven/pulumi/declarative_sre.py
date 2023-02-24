@@ -47,13 +47,16 @@ class DeclarativeSRE:
             SRENetworkingProps(
                 location=self.cfg.azure.location,
                 shm_fqdn=self.cfg.shm.fqdn,
-                shm_networking_resource_group_name=self.cfg.shm.networking.resource_group_name,
+                shm_networking_resource_group_name=self.secrets.require(
+                    "shm-networking-resource_group_name"
+                ),
                 shm_zone_name=self.cfg.shm.fqdn,
                 sre_index=self.cfg.sre[self.sre_name].index,
-                shm_virtual_network_name=self.cfg.shm.networking.virtual_network_name,
+                shm_virtual_network_name=self.secrets.require(
+                    "shm-networking-virtual_network_name"
+                ),
             ),
         )
-        networking.sre_fqdn.apply(lambda s: print(f"sre_fqdn {s}"))
 
         # Define state storage
         state = SREStateComponent(
@@ -97,6 +100,8 @@ class DeclarativeSRE:
                 aad_application_fqdn=networking.sre_fqdn,
                 aad_auth_token=self.secrets.require("token-azuread-graphapi"),
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
+                allow_copy=self.cfg.sre[self.sre_name].remote_desktop.allow_copy,
+                allow_paste=self.cfg.sre[self.sre_name].remote_desktop.allow_paste,
                 database_password=self.secrets.require("password-user-database-admin"),
                 location=self.cfg.azure.location,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
@@ -108,7 +113,7 @@ class DeclarativeSRE:
             ),
         )
 
-        srd = SREResearchDesktopComponent(
+        research_desktops = SREResearchDesktopComponent(
             "sre_secure_research_desktop",
             self.stack_name,
             self.sre_name,
@@ -116,14 +121,18 @@ class DeclarativeSRE:
                 admin_password=self.secrets.require(
                     "password-secure-research-desktop-admin"
                 ),
-                domain_sid=self.cfg.shm.domain_controllers.domain_sid,
-                ldap_root_dn=self.cfg.shm.domain_controllers.ldap_root_dn,
+                domain_sid=self.secrets.require("shm-domain_controllers-domain_sid"),
+                ldap_root_dn=self.secrets.require(
+                    "shm-domain_controllers-ldap_root_dn"
+                ),
                 ldap_search_password=self.secrets.require(
                     "password-domain-ldap-searcher"
                 ),
-                ldap_server_ip=self.cfg.shm.domain_controllers.ldap_server_ip,
+                ldap_server_ip=self.secrets.require(
+                    "shm-domain_controllers-ldap_server_ip"
+                ),
                 location=self.cfg.azure.location,
-                security_group_name=self.cfg.sre[self.sre_name].security_group_name,
+                security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
                 subnet_research_desktops=networking.subnet_research_desktops,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
@@ -133,4 +142,4 @@ class DeclarativeSRE:
 
         # Export values for later use
         pulumi.export("remote_desktop", remote_desktop.exports)
-        pulumi.export("srd", srd.exports)
+        pulumi.export("research_desktops", research_desktops.exports)

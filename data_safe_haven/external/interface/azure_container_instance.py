@@ -14,6 +14,7 @@ from azure.mgmt.containerinstance.models import (
 )
 
 # Local imports
+from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.mixins import AzureMixin, LoggingMixin
 
 
@@ -35,37 +36,63 @@ class AzureContainerInstance(AzureMixin, LoggingMixin):
         while not poller.done():
             time.sleep(10)
 
-    def restart(self, target_ip_address: Optional[str] = None) -> None:
-        """Restart the container group"""
-        # Connect to Azure clients
+    @property
+    def current_ip_address(self) -> str:
         aci_client = ContainerInstanceManagementClient(
             self.credential, self.subscription_id
         )
-        if not target_ip_address:
-            target_ip_address = aci_client.container_groups.get(
-                self.resource_group_name, self.container_group_name
-            ).ip_address.ip
+        ip_address = aci_client.container_groups.get(
+            self.resource_group_name, self.container_group_name
+        ).ip_address
+        if ip_address and isinstance(ip_address.ip, str):
+            return ip_address.ip
+        raise DataSafeHavenAzureException(
+            f"Could not determine IP address for container group {self.container_group_name}."
+        )
 
-        # Restart container group
-        self.info(
-            f"Restarting container group <fg=green>{self.container_group_name}</>...",
-            no_newline=True,
-        )
-        while True:
-            self.wait(
-                aci_client.container_groups.begin_restart(
-                    self.resource_group_name, self.container_group_name
-                )
+    def restart(self, target_ip_address: Optional[str] = None) -> None:
+        """Restart the container group"""
+        # Connect to Azure clients
+        try:
+            aci_client = ContainerInstanceManagementClient(
+                self.credential, self.subscription_id
             )
-            final_ip_address = aci_client.container_groups.get(
-                self.resource_group_name, self.container_group_name
-            ).ip_address.ip
-            if final_ip_address == target_ip_address:
-                break
-        self.info(
-            f"Restarted container group <fg=green>{self.container_group_name}</>.",
-            overwrite=True,
-        )
+            if not target_ip_address:
+                target_ip_address = self.current_ip_address
+
+            # Restart container group
+            self.info(
+                f"Restarting container group <fg=green>{self.container_group_name}</>...",
+                no_newline=True,
+            )
+            while True:
+                if (
+                    aci_client.container_groups.get(
+                        self.resource_group_name, self.container_group_name
+                    ).provisioning_state
+                    == "Succeeded"
+                ):
+                    self.wait(
+                        aci_client.container_groups.begin_restart(
+                            self.resource_group_name, self.container_group_name
+                        )
+                    )
+                else:
+                    self.wait(
+                        aci_client.container_groups.begin_start(
+                            self.resource_group_name, self.container_group_name
+                        )
+                    )
+                if self.current_ip_address == target_ip_address:
+                    break
+            self.info(
+                f"Restarted container group <fg=green>{self.container_group_name}</>.",
+                overwrite=True,
+            )
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Could not restart container group {self.container_group_name}.\n{str(exc)}"
+            ) from exc
 
     def run_executable(self, container_name: str, executable_path: str) -> List[str]:
         """

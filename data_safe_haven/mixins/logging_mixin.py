@@ -193,10 +193,10 @@ class LoggingMixin:
         return self.logger.debug(message, extra=self.extra_args(no_newline, overwrite))
 
     # Loggable wrappers for confirm/ask/choice
-    def log_confirm(self, message: str, *args: Any, **kwargs: Any) -> str:
+    def log_confirm(self, message: str, *args: Any, **kwargs: Any) -> bool:
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
-        return str(self.console.io.confirm(formatted, *args, **kwargs))
+        return bool(self.console.io.confirm(formatted, *args, **kwargs))
 
     def log_ask(self, message: str, *args: Any, **kwargs: Any) -> str:
         formatted = self.format_msg(message, logging.INFO)

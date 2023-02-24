@@ -206,6 +206,11 @@ class VMComponent(ComponentResource):
             ),
         )
         # Register outputs
-        self.ip_address_private = Output.from_input(props.ip_address_private)
-        self.resource_group_name = Output.from_input(props.resource_group_name)
-        self.vm_name = virtual_machine.name
+        self.ip_address_private: Output[str] = Output.from_input(
+            props.ip_address_private
+        )
+        self.resource_group_name: Output[str] = Output.from_input(
+            props.resource_group_name
+        )
+        self.vm_name: Output[str] = virtual_machine.name
+        self.vm_size: Output[str] = Output.from_input(props.vm_size)

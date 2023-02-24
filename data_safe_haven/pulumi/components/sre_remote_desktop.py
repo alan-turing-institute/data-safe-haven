@@ -30,6 +30,8 @@ class SRERemoteDesktopProps:
         aad_application_fqdn: Input[str],
         aad_auth_token: Input[str],
         aad_tenant_id: Input[str],
+        allow_copy: Input[bool],
+        allow_paste: Input[bool],
         database_password: Input[str],
         location: Input[str],
         storage_account_name: Input[str],
@@ -46,6 +48,8 @@ class SRERemoteDesktopProps:
         self.aad_tenant_id = aad_tenant_id
         self.database_password = database_password
         self.database_username = database_username
+        self.disable_copy = not allow_copy
+        self.disable_paste = not allow_paste
         self.location = location
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group = storage_account_resource_group
@@ -393,5 +397,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             "connection_db_server_name": connection_db_server_name,
             "container_group_name": container_group.name,
             "container_ip_address": props.subnet_guacamole_containers_ip_addresses[0],
+            "disable_copy": props.disable_copy,
+            "disable_paste": props.disable_paste,
             "resource_group_name": resource_group.name,
         }

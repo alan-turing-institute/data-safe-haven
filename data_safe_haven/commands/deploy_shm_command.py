@@ -71,7 +71,7 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
             )
             verification_record = graph_api.add_custom_domain(config.shm.fqdn)
 
-            # Deploy Azure infrastructure
+            # Initialise Pulumi stack
             stack = PulumiStack(config, "SHM")
             # Set Azure options
             stack.add_option("azure-native:location", config.azure.location)
@@ -85,7 +85,8 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
             stack.add_secret("password-domain-computer-manager", password(20))
             stack.add_secret("password-domain-ldap-searcher", password(20))
             stack.add_secret("verification-azuread-custom-domain", verification_record)
-            # Deploy with Pulumi
+
+            # Deploy Azure infrastructure with Pulumi
             stack.deploy()
 
             # Add the SHM domain as a custom domain in AzureAD
@@ -98,27 +99,22 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
                 stack_yaml = yaml.safe_load(f_stack)
             config.pulumi.stacks[stack.stack_name] = stack_yaml
 
-            # Add Pulumi output information to the config file
-            config.shm.domain_controllers = stack.output("domain_controllers")
-            config.shm.networking = stack.output("networking")
-            config.add_secret(
-                config.shm.domain_controllers["azure_ad_connect_password_secret"],
-                stack.secret("password-domain-azure-ad-connect"),
-            )
-            config.add_secret(
-                config.shm.domain_controllers["ldap_searcher_password_secret"],
-                stack.secret("password-domain-ldap-searcher"),
-            )
-            config.add_secret(
-                config.shm.domain_controllers["domain_admin_password_secret"],
-                stack.secret("password-domain-admin"),
-            )
+            # Add Pulumi secrets to the config file
+            for secret_name in [
+                "password-domain-admin",
+                "password-domain-azure-ad-connect",
+                "password-domain-ldap-searcher",
+            ]:
+                config.add_secret(secret_name, stack.secret(secret_name))
 
             # Upload config to blob storage
             config.upload()
 
             # Provision SHM with anything that could not be done in Pulumi
-            manager = SHMProvisioningManager(config)
+            manager = SHMProvisioningManager(
+                subscription_name=config.subscription_name,
+                stack=stack,
+            )
             manager.run()
             return 0
 
