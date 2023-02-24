@@ -308,5 +308,11 @@ class SHMNetworkingComponent(ComponentResource):
         # Register exports
         self.exports = {
             "resource_group_name": resource_group.name,
+            "subnet_identity_servers_prefix": self.subnet_identity_servers.apply(
+                lambda s: s.address_prefix
+            ),
+            "subnet_update_servers_prefix": self.subnet_update_servers.apply(
+                lambda s: s.address_prefix
+            ),
             "virtual_network_name": virtual_network.name,
         }

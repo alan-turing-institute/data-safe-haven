@@ -19,6 +19,8 @@ class SRENetworkingProps:
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
+        shm_subnet_identity_servers_prefix: Input[str],
+        shm_subnet_update_servers_prefix: Input[str],
         shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
         sre_index: Input[str],
@@ -43,6 +45,8 @@ class SRENetworkingProps:
         self.location = location
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
+        self.shm_subnet_identity_servers_prefix = shm_subnet_identity_servers_prefix
+        self.shm_subnet_update_servers_prefix = shm_subnet_update_servers_prefix
         self.shm_virtual_network_name = shm_virtual_network_name
         self.shm_zone_name = shm_zone_name
 
@@ -145,11 +149,12 @@ class SRENetworkingComponent(ComponentResource):
             network_security_group_name=f"{stack_name}-nsg-research-desktops",
             resource_group_name=resource_group.name,
             security_rules=[
+                # Inbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow connections to SRDs from remote desktop gateway.",
-                    destination_address_prefix="*",
-                    destination_port_range="22",
+                    destination_address_prefix=subnet_research_desktops_prefix,
+                    destination_port_ranges=["22", "3389"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowRemoteDesktopGatewayInbound",
                     priority=800,
@@ -159,26 +164,51 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow LDAP client requests over UDP.",
+                    description="Deny all other inbound traffic.",
                     destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=4096,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to Linux update servers.",
+                    destination_address_prefix=props.shm_subnet_update_servers_prefix,
+                    destination_port_ranges=["8000"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowLinuxUpdatesOutbound",
+                    priority=900,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_research_desktops_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests over UDP.",
+                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
                     destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLDAPClientUDPOutbound",
                     priority=1000,
                     protocol=network.SecurityRuleProtocol.UDP,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=subnet_research_desktops_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over TCP (see https://devopstales.github.io/linux/pfsense-ad-join/ for details).",
-                    destination_address_prefix="*",
+                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
                     destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLDAPClientTCPOutbound",
                     priority=1100,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=subnet_research_desktops_prefix,
                     source_port_range="*",
                 ),
             ],

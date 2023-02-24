@@ -95,10 +95,17 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 shm_stack.output("networking")["resource_group_name"],
             )
             stack.add_option(
+                "shm-networking-subnet_identity_servers_prefix",
+                shm_stack.output("networking")["subnet_identity_servers_prefix"],
+            )
+            stack.add_option(
+                "shm-networking-subnet_update_servers_prefix",
+                shm_stack.output("networking")["subnet_update_servers_prefix"],
+            )
+            stack.add_option(
                 "shm-networking-virtual_network_name",
                 shm_stack.output("networking")["virtual_network_name"],
             )
-
             stack.add_option(
                 "shm-update_servers-ip_address_linux",
                 shm_stack.output("update_servers")["ip_address_linux"],
