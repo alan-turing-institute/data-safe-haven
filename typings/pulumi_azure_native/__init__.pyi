@@ -6,6 +6,7 @@ import pulumi_azure_native.dbforpostgresql as dbforpostgresql
 import pulumi_azure_native.keyvault as keyvault
 import pulumi_azure_native.managedidentity as managedidentity
 import pulumi_azure_native.network as network
+import pulumi_azure_native.operationalinsights as operationalinsights
 import pulumi_azure_native.resources as resources
 import pulumi_azure_native.storage as storage
 
@@ -17,6 +18,7 @@ __all__ = [
     "keyvault",
     "managedidentity",
     "network",
+    "operationalinsights",
     "resources",
     "storage",
     "_utilities",

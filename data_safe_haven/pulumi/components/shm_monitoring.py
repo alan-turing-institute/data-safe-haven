@@ -4,7 +4,7 @@ from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import automation, network, resources
+from pulumi_azure_native import automation, network, operationalinsights, resources
 
 # Local imports
 from data_safe_haven.pulumi.transformations import get_id_from_subnet
@@ -117,6 +117,18 @@ class SHMMonitoringComponent(ComponentResource):
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
             opts=child_opts,
+        )
+
+        # Deploy log analytics workspace
+        workspace = operationalinsights.Workspace(
+            f"{self._name}_log_analytics_workspace",
+            location=props.location,
+            resource_group_name=resource_group.name,
+            retention_in_days=30,
+            sku=operationalinsights.WorkspaceSkuArgs(
+                name=operationalinsights.WorkspaceSkuNameEnum.PER_GB2018,
+            ),
+            workspace_name=f"{stack_name}-law",
         )
 
         # Add a private DNS record for each custom DNS config
