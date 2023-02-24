@@ -131,6 +131,9 @@ class DeclarativeSRE:
                 ldap_server_ip=self.secrets.require(
                     "shm-domain_controllers-ldap_server_ip"
                 ),
+                linux_update_server_ip=self.secrets.require(
+                    "shm-update_servers-ip_address_linux"
+                ),
                 location=self.cfg.azure.location,
                 security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
                 subnet_research_desktops=networking.subnet_research_desktops,

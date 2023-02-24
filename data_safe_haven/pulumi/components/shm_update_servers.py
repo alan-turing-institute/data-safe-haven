@@ -76,6 +76,9 @@ class SHMUpdateServersComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Register exports
+        self.exports = {"ip_address_linux": props.ip_address_linux}
+
     def read_cloudinit(
         self,
     ) -> str:

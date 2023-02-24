@@ -105,7 +105,7 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
                 "password-domain-admin",
                 "password-domain-azure-ad-connect",
                 "password-domain-ldap-searcher",
-                "password-update-server-linux-admin"
+                "password-update-server-linux-admin",
             ]:
                 config.add_secret(secret_name, stack.secret(secret_name))
 
