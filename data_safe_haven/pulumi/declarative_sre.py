@@ -100,6 +100,8 @@ class DeclarativeSRE:
                 aad_application_fqdn=networking.sre_fqdn,
                 aad_auth_token=self.secrets.require("token-azuread-graphapi"),
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
+                allow_copy=self.cfg.sre[self.sre_name].remote_desktop.allow_copy,
+                allow_paste=self.cfg.sre[self.sre_name].remote_desktop.allow_paste,
                 database_password=self.secrets.require("password-user-database-admin"),
                 location=self.cfg.azure.location,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,

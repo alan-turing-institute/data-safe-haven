@@ -54,6 +54,7 @@ class SREProvisioningManager(LoggingMixin):
             self.research_desktops[vm["name"]] = {
                 "cpus": int(available_vm_skus[vm["sku"]]["vCPUs"]),
                 "gpus": int(available_vm_skus[vm["sku"]]["GPUs"]),
+                "ip_address": vm["ip_address"],
                 "ram": int(available_vm_skus[vm["sku"]]["MemoryGB"]),
                 "sku": vm["sku"],
             }
@@ -87,8 +88,8 @@ class SREProvisioningManager(LoggingMixin):
             "connections": [
                 {
                     "connection_name": f"{vm_details['sku']} [{vm_details['cpus']} CPU(s), {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM] ({vm_name})",
-                    "disable_copy": (not self.remote_desktop_params["allow_copy"]),
-                    "disable_paste": (not self.remote_desktop_params["allow_paste"]),
+                    "disable_copy": self.remote_desktop_params["disable_copy"],
+                    "disable_paste": self.remote_desktop_params["disable_paste"],
                     "ip_address": vm_details["ip_address"],
                     "timezone": self.remote_desktop_params["timezone"],
                 }
