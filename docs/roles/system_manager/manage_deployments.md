@@ -68,7 +68,9 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 
 ## {{minidisc}} Using GPUs in SRDs
 
-When you {ref}`resize_vm` or {ref}`add_new_srd` and want a **GPU** optimised VM (N-series in Azure), you'll need to ensure it's one that uses NVIDIA GPUs (as oppose to AMD). See the [Azure docs](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes-gpu) for more information. This is to make sure that CUDA works as expected in the SRE.
+When you {ref}`resize_vm` or {ref}`add_new_srd` size featuring a GPU (N-series in Azure), you'll need to ensure it had an Nvidia GPU (as opposed to AMD or other).
+See the [Azure docs](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes-gpu) for more information.
+This is because only Nvidia GPUs support the drivers and CUDA libraries installed on the SRD image.
 
 To test that a GPU enabled VM is working as expected, log into the SRE and type `nvidia-smi` into the terminal.
 
