@@ -40,19 +40,7 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 
 </details>
 
-```{note}
-If the new `VM size` is a **GPU** optimised VM, you'll need to ensure it's one that uses NVIDIA GPUs (as oppose to AMD). See the [Azure docs](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes-gpu) for more information. This is to make sure that CUDA works as expected in the SRE.
-
-To test that a GPU enabled VM is working as expected, log into the SRE and type `nvidia-smi` into the terminal.
-```
-
-```{note}
-If the new `VM size` is a **GPU** enabled VM, it's possible that you'll need to request an increase in the vCPU quota for the VM family before resizing is allowed:
-- Navigate to the Azure Portal and on the subscription page, click `Usage + quotas` under `Settings`
-- Choose the family appropriate to the VM that you want to resize to, and select a region appropriate for the SRE
-- Click the pen icon and set the `New Limit` to at least the number of vCPUs required by the VM that you want, the click submit
-- After the request is accepted, resize the VM as above
-```
+(add_new_srd)=
 
 ## {{heavy_plus_sign}} Add a new SRD
 
@@ -69,6 +57,20 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 - where `<IP last octet>` is last octet of the IP address (this must be different to any other SRD VMs)
+
+## {{minidisc}} GPU optimised SRDs
+
+When you {ref}`resize_vm` or {ref}`add_new_srd` and want a **GPU** optimised VM (N-series in Azure), you'll need to ensure it's one that uses NVIDIA GPUs (as oppose to AMD). See the [Azure docs](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes-gpu) for more information. This is to make sure that CUDA works as expected in the SRE.
+
+To test that a GPU enabled VM is working as expected, log into the SRE and type `nvidia-smi` into the terminal.
+
+```{note}
+If the new `VM size` you want isn't shown as available in the Azure Portal, it's possible that you'll need to request an increase in the vCPU quota for the VM family before resizing is allowed:
+- Navigate to the Azure Portal and on the subscription page, click `Usage + quotas` under `Settings`
+- Choose the family appropriate to the VM that you want to resize to, and select a region appropriate for the SRE
+- Click the pen icon and set the `New Limit` to at least the number of vCPUs required by the VM that you want, the click submit
+- After the request is accepted, resize the VM as above
+```
 
 ## {{fire}} Remove a single SRE
 
