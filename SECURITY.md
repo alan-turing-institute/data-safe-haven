@@ -25,8 +25,7 @@ disclosures.
 
 If you believe you have found a security vulnerability, please check the list of
 published [security advisories](https://github.com/alan-turing-institute/data-safe-haven/security/advisories)
-and, if the vulnerability you have identified is not covered by an existing advisory, 
-use the "Report a vulnerability" button to submit a vulnerability report.
+and, if the vulnerability you have identified is not covered by an existing advisory, use the "Report a vulnerability" button to submit a vulnerability report.
 
 In your report please include the details requested in the report form, including:
 
@@ -64,8 +63,7 @@ If you would prefer not to be credited in the public security advisory, please l
 In some instances we may already be aware of the reported vulnerability but not yet
 have published a public security advisory. We still welcome additional reports in these
 cases as they often provide additional useful information. Where multiple people have reported
-the same vulnerability we will credit each of them in the public advisory when it is 
-published.
+the same vulnerability we will credit each of them in the public advisory when it is published.
 
 ### Guidance
 
