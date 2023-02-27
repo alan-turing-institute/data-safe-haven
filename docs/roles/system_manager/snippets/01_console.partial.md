@@ -11,7 +11,7 @@ Once you have the `<admin username>` and `<admin password>`, you will be able to
 - From the `Azure` portal, navigate to the correct resource group:
     - `RG_SHM_<SHM ID>_SRE_<SRE ID>_WEBAPPS` for the web applications
     - `RG_SHM_<SHM ID>_SRE_<SRE ID>_COMPUTE` for the compute VM
-- Click on the relevant VM (e.g. `COCALC-SRE-<SRE ID>`)
+- Click on the relevant VM
 - From the menu on the left, scroll down to the `Help` section and select `Serial console`
 - After a short time, you will be shown the console for the VM. You may need to press a key to be shown the login prompt.
 - Log in with the details you retrieved earlier to be given root access to the VM.
