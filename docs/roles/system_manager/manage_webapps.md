@@ -19,7 +19,7 @@ In the rest of this document, `<SHM ID>` is the {ref}`Secure Management Environm
 An initial step could be to check the build logs of the virtual machine to ascertain whether any clear errors occurred during the process (e.g. the installation of the server software may have failed).
 
 - From the `Azure` portal, navigate to the web app resource group `RG_SHM_<SHM ID>_SRE_<SRE ID>_WEBAPPS`.
-- Click on the relevant VM (e.g. `COCALC-SRE-<SRE ID>`)
+- Click on the relevant VM
 - From the menu on the left, scroll down to the `Help` section and select `Boot diagnostics`
 - Click `Serial log` to access a full text log of the booting up of the VM.
 
