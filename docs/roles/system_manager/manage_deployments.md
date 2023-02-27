@@ -74,6 +74,18 @@ This is because only Nvidia GPUs support the drivers and CUDA libraries installe
 
 To test that a GPU enabled VM is working as expected, log into the SRE and type `nvidia-smi` into the terminal.
 
+## {{crown}} Performing operations that require System Administrator privileges
+
+If you need to perform any operations in the SRE that require root access, you will need to log into the `compute` VM via the Serial Console in the Azure Portal.
+
+```{include} snippets/01_console.partial.md
+:relative-images:
+```
+
+```{warning}
+Tier 0 and 1 SREs have internet access and as such, installing anything as root that involves downloading from the internet could introduce malicious software being introduced to the SRE.
+```
+
 ## {{fire}} Remove a single SRE
 
 In order to tear down an SRE, use the following procedure:
