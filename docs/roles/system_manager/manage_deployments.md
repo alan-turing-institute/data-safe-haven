@@ -66,7 +66,7 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 - where `<IP last octet>` is last octet of the IP address (this must be different to any other SRD VMs)
 
-## {{minidisc}} GPU optimised SRDs
+## {{minidisc}} Using GPUs in SRDs
 
 When you {ref}`resize_vm` or {ref}`add_new_srd` and want a **GPU** optimised VM (N-series in Azure), you'll need to ensure it's one that uses NVIDIA GPUs (as oppose to AMD). See the [Azure docs](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes-gpu) for more information. This is to make sure that CUDA works as expected in the SRE.
 
