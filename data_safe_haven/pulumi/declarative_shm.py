@@ -15,6 +15,10 @@ from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
 from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
 from .components.shm_state import SHMStateComponent, SHMStateProps
+from .components.shm_update_servers import (
+    SHMUpdateServersComponent,
+    SHMUpdateServersProps,
+)
 
 
 class DeclarativeSHM:
@@ -89,6 +93,21 @@ class DeclarativeSHM:
         )
 
         # Deploy update servers
+        update_servers = SHMUpdateServersComponent(
+            "shm_update_servers",
+            self.stack_name,
+            self.shm_name,
+            SHMUpdateServersProps(
+                admin_password=self.secrets.require(
+                    "password-update-server-linux-admin"
+                ),
+                location=self.cfg.azure.location,
+                resource_group_name=monitoring.resource_group_name,
+                subnet=networking.subnet_update_servers,
+                virtual_network_name=networking.virtual_network.name,
+                virtual_network_resource_group_name=networking.resource_group_name,
+            ),
+        )
 
         # Deploy domain controllers
         domain_controllers = SHMDomainControllersComponent(
@@ -127,3 +146,4 @@ class DeclarativeSHM:
         pulumi.export("domain_controllers", domain_controllers.exports)
         pulumi.export("fqdn_nameservers", networking.dns_zone.name_servers)
         pulumi.export("networking", networking.exports)
+        pulumi.export("update_servers", update_servers.exports)

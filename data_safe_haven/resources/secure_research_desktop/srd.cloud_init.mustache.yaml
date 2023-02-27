@@ -1,6 +1,11 @@
 #cloud-config
 
 write_files:
+  - path: "/etc/apt/apt.conf.d/00proxy"
+    permissions: "0444"
+    content: |
+      Acquire::http::Proxy "http://{{linux_update_server_ip}}:8000";
+
   - path: "/etc/nslcd.conf"
     permissions: "0400"
     content: |
@@ -40,10 +45,7 @@ write_files:
     content: |
       xfce4-session
 
-package_update: true
-package_upgrade: true
-
-# List of packages to install with apt-get
+# Install necessary apt packages
 packages:
   # System requirements
   - libnss-ldapd # LDAP login
@@ -55,6 +57,8 @@ packages:
   - python-is-python3 # Python language
   - python3           # Python language
   - r-base            # R language
+package_update: true
+package_upgrade: true
 
 runcmd:
   # Allow LDAP users to login

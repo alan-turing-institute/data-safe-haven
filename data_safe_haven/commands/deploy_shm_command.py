@@ -84,6 +84,7 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
             stack.add_secret("password-domain-azure-ad-connect", password(20))
             stack.add_secret("password-domain-computer-manager", password(20))
             stack.add_secret("password-domain-ldap-searcher", password(20))
+            stack.add_secret("password-update-server-linux-admin", password(20))
             stack.add_secret("verification-azuread-custom-domain", verification_record)
 
             # Deploy Azure infrastructure with Pulumi
@@ -104,6 +105,7 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
                 "password-domain-admin",
                 "password-domain-azure-ad-connect",
                 "password-domain-ldap-searcher",
+                "password-update-server-linux-admin",
             ]:
                 config.add_secret(secret_name, stack.secret(secret_name))
 

@@ -29,6 +29,7 @@ class SREResearchDesktopProps:
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
+        linux_update_server_ip: Input[str],
         location: Input[str],
         security_group_name: Input[str],
         subnet_research_desktops: Input[network.GetSubnetResult],
@@ -42,6 +43,7 @@ class SREResearchDesktopProps:
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
+        self.linux_update_server_ip = linux_update_server_ip
         self.location = location
         self.security_group_name = security_group_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
@@ -106,6 +108,7 @@ class SREResearchDesktopComponent(ComponentResource):
             ldap_root_dn=props.ldap_root_dn,
             ldap_search_password=props.ldap_search_password,
             ldap_server_ip=props.ldap_server_ip,
+            linux_update_server_ip=props.linux_update_server_ip,
             security_group_name=props.security_group_name,
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
 
@@ -170,6 +173,7 @@ class SREResearchDesktopComponent(ComponentResource):
         ldap_root_dn: str,
         ldap_search_password: str,
         ldap_server_ip: str,
+        linux_update_server_ip: str,
         security_group_name: str,
     ) -> str:
         resources_path = (
@@ -186,6 +190,7 @@ class SREResearchDesktopComponent(ComponentResource):
                 "ldap_search_password": ldap_search_password,
                 "ldap_server_ip": ldap_server_ip,
                 "ldap_sre_security_group": security_group_name,
+                "linux_update_server_ip": linux_update_server_ip,
             }
             cloudinit = chevron.render(f_cloudinit, mustache_values)
             return b64encode(cloudinit)
