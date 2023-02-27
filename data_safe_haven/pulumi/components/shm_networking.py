@@ -85,7 +85,7 @@ class SHMNetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
+                    access=network.SecurityRuleAccess.DENY,
                     description="Deny all other inbound traffic.",
                     destination_address_prefix="*",
                     destination_port_range="*",
@@ -110,7 +110,7 @@ class SHMNetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
+                    access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
                     destination_address_prefix="*",
                     destination_port_range="*",
