@@ -21,7 +21,6 @@ Each user should be assigned to one or more Active Directory "security groups", 
 
 - `SG <SRE ID> Research Users`: Default for most researchers. No special permissions.
 - `SG <SRE ID> Data Administrators`: Researchers who can create/modify/delete database tables schemas. Given to a smaller number of researchers. Restricting this access to most users prevents them creating/deleting arbitrary schemas, which is important because some SREs have their input data in database form.
-- `SG <SRE ID> System Administrators` - Researchers with elevated privileges through sudo. Rarely used but could be useful in `Tier 0/1` SREs to let groups manage their own packages.
 
 (generate_user_csv)=
 
