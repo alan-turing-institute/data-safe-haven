@@ -119,7 +119,9 @@ class SREResearchDesktopComponent(ComponentResource):
             vm_names=props.vm_names,
             vm_sizes=props.vm_sizes,
         )
-        # Note that deploying inside an apply is advised against but not forbidden
+        # Note that creating resources inside an .apply() is discouraged but not
+        # forbidden. This is the one way to create one resource for each entry in
+        # an Output[Sequence]. See https://github.com/pulumi/pulumi/issues/3849.
         vms = vm_details.apply(
             lambda kwargs: [
                 VMComponent(

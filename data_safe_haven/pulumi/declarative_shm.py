@@ -123,6 +123,8 @@ class DeclarativeSHM:
                 domain_fqdn=networking.dns_zone.name,
                 domain_netbios_name=self.shm_name.upper(),
                 location=self.cfg.azure.location,
+                log_analytics_workspace_id=monitoring.log_analytics_workspace_id,
+                log_analytics_workspace_key=monitoring.log_analytics_workspace_key,
                 password_domain_admin=self.secrets.require("password-domain-admin"),
                 password_domain_azuread_connect=self.secrets.require(
                     "password-domain-azure-ad-connect"

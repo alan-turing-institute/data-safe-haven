@@ -5,7 +5,7 @@ from typing import Optional, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network, resources
+from pulumi_azure_native import compute, network, resources
 
 # Local
 from data_safe_haven.helpers import FileReader
@@ -28,6 +28,8 @@ class SHMDomainControllersProps:
         domain_fqdn: Input[str],
         domain_netbios_name: Input[str],
         location: Input[str],
+        log_analytics_workspace_id: Input[str],
+        log_analytics_workspace_key: Input[str],
         password_domain_admin: Input[str],
         password_domain_azuread_connect: Input[str],
         password_domain_computer_manager: Input[str],
@@ -54,6 +56,8 @@ class SHMDomainControllersProps:
             lambda n: n[:15]
         )  # maximum of 15 characters
         self.location = location
+        self.log_analytics_workspace_id = log_analytics_workspace_id
+        self.log_analytics_workspace_key = Output.secret(log_analytics_workspace_key)
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect
         self.password_domain_computer_manager = password_domain_computer_manager
@@ -179,6 +183,23 @@ class SHMDomainControllersComponent(ComponentResource):
                     ]
                 ),
             ),
+        )
+
+        # Register with Log Analytics workspace
+        # Output.from_input(props.log_analytics_workspace_id).apply(lambda s: print(f"log_analytics_workspace_id {s}"))
+        log_analytics_extension = compute.VirtualMachineExtension(
+            f"{self._name}_log_analytics_extension",
+            auto_upgrade_minor_version=True,
+            location=props.location,
+            publisher="Microsoft.EnterpriseCloud.Monitoring",
+            protected_settings=Output.from_input(props.log_analytics_workspace_key).apply(lambda key: {"workspaceKey": key}),
+            resource_group_name=resource_group.name,
+            settings=Output.from_input(props.log_analytics_workspace_id).apply(lambda id: {"workspaceId": id}),
+            type="MicrosoftMonitoringAgent",
+            type_handler_version="1.0",
+            vm_extension_name="MicrosoftMonitoringAgent",
+            vm_name=primary_domain_controller.vm_name,
+            opts=child_opts,
         )
 
         # Register outputs

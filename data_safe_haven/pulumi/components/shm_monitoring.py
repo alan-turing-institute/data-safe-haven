@@ -128,7 +128,14 @@ class SHMMonitoringComponent(ComponentResource):
             sku=operationalinsights.WorkspaceSkuArgs(
                 name=operationalinsights.WorkspaceSkuNameEnum.PER_GB2018,
             ),
-            workspace_name=f"{stack_name}-law",
+            workspace_name=f"{stack_name}-log",
+            opts=child_opts,
+        )
+
+        # Get workspace keys
+        workspace_keys = operationalinsights.get_shared_keys(
+            resource_group_name=resource_group.name,
+            workspace_name=workspace.name,
         )
 
         # Add a private DNS record for each custom DNS config
@@ -159,6 +166,8 @@ class SHMMonitoringComponent(ComponentResource):
         self.automation_account_primary_key = Output.secret(
             automation_keys.keys[0].value
         )
+        self.log_analytics_workspace_id = workspace.customer_id
+        self.log_analytics_workspace_key = workspace_keys.primary_shared_key if workspace_keys.primary_shared_key else "UNKNOWN"
         self.resource_group_name = resource_group.name
 
     def private_record_set(
