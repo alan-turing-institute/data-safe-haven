@@ -192,9 +192,13 @@ class SHMDomainControllersComponent(ComponentResource):
             auto_upgrade_minor_version=True,
             location=props.location,
             publisher="Microsoft.EnterpriseCloud.Monitoring",
-            protected_settings=Output.from_input(props.log_analytics_workspace_key).apply(lambda key: {"workspaceKey": key}),
+            protected_settings=Output.from_input(
+                props.log_analytics_workspace_key
+            ).apply(lambda key: {"workspaceKey": key}),
             resource_group_name=resource_group.name,
-            settings=Output.from_input(props.log_analytics_workspace_id).apply(lambda id: {"workspaceId": id}),
+            settings=Output.from_input(props.log_analytics_workspace_id).apply(
+                lambda id: {"workspaceId": id}
+            ),
             type="MicrosoftMonitoringAgent",
             type_handler_version="1.0",
             vm_extension_name="MicrosoftMonitoringAgent",

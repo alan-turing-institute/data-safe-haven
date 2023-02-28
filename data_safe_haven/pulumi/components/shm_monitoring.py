@@ -9,6 +9,7 @@ from pulumi_azure_native import (
     insights,
     network,
     operationalinsights,
+    operationsmanagement,
     resources,
 )
 
@@ -200,6 +201,23 @@ class SHMMonitoringComponent(ComponentResource):
             resource_group_name=resource_group.name,
             resource_id=automation_account.id,
             workspace_name=workspace.name,
+        )
+
+        # Deploy automatic update solution
+        update_solution = operationsmanagement.Solution(
+            f"{self._name}_update_solution",
+            location=props.location,
+            plan=operationsmanagement.SolutionPlanArgs(
+                name=Output.concat("Updates(", workspace.name, ")"),
+                product="OMSGallery/Updates",
+                promotion_code="",
+                publisher="Microsoft",
+            ),
+            properties=operationsmanagement.SolutionPropertiesArgs(
+                workspace_resource_id=workspace.id,
+            ),
+            resource_group_name=resource_group.name,
+            solution_name=Output.concat("Updates(", workspace.name, ")"),
         )
 
         # Register outputs
