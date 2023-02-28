@@ -40,12 +40,12 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 
 </details>
 
-```{note}
+```{tip}
 If the new `VM size` you want isn't shown as available in the Azure Portal, there are several steps that can be taken.
 
-Firstly, try stopping the VM and checking again whether the size you want is available, as this can reveal additional options that aren't shown whilst the VM is running. For example, when resizing to an N-series VM in Azure, (see {ref}`using_gpus`) we've found that NVIDIA options such as the  NVv3-series are not always shown as available.
+Firstly, try **stopping the VM** and checking again whether the size you want is available, as this can reveal additional options that aren't shown whilst the VM is running. For example, when resizing to an N-series VM in Azure, (see {ref}`using_gpus`) we've found that NVIDIA options such as the  NVv3-series are not always shown as available.
 
-Next, you can try to request an increase in the vCPU quota for the VM family of the desired VM:
+Next, you can try to **request an increase** in the vCPU quota for the VM family of the desired VM:
 - Navigate to the Azure Portal and on the subscription page, click `Usage + quotas` under `Settings`
 - Choose the family appropriate to the VM that you want to resize to, and select a region appropriate for the SRE
 - Click the pen icon and set the `New Limit` to at least the number of vCPUs required by the VM that you want, the click submit
