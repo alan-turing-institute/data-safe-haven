@@ -3,6 +3,7 @@ import pulumi_azure_native.automation as automation
 import pulumi_azure_native.compute as compute
 import pulumi_azure_native.containerinstance as containerinstance
 import pulumi_azure_native.dbforpostgresql as dbforpostgresql
+import pulumi_azure_native.insights as insights
 import pulumi_azure_native.keyvault as keyvault
 import pulumi_azure_native.managedidentity as managedidentity
 import pulumi_azure_native.network as network
@@ -15,6 +16,7 @@ __all__ = [
     "compute",
     "containerinstance",
     "dbforpostgresql",
+    "insights",
     "keyvault",
     "managedidentity",
     "network",

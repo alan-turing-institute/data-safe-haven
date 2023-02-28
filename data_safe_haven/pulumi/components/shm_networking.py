@@ -31,7 +31,7 @@ class SHMNetworkingProps:
         self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
         # VPN gateway subnet must be at least /29 in size (8 addresses)
         self.subnet_vpn_gateway_iprange = self.vnet_iprange.next_subnet(8)
-        self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(8)
+        self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(16)
         self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
         self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
 

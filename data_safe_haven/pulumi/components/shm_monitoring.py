@@ -4,7 +4,7 @@ from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import automation, network, operationalinsights, resources
+from pulumi_azure_native import automation, insights, network, operationalinsights, resources
 
 # Local imports
 from data_safe_haven.pulumi.transformations import get_id_from_subnet
@@ -29,7 +29,7 @@ class SHMMonitoringProps:
 class SHMMonitoringComponent(ComponentResource):
     """Deploy SHM monitoring with Pulumi"""
 
-    private_zone_names = ["agentsvc.azure-automation.net", "azure-automation.net"]
+    private_zone_names = ["agentsvc.azure-automation.net", "azure-automation.net", "blob.core.windows.net", "monitor.azure.com"]
 
     def __init__(
         self,
@@ -101,8 +101,8 @@ class SHMMonitoringComponent(ComponentResource):
                 opts=child_opts,
             )
 
-        # Set up a private endpoint
-        private_endpoint = network.PrivateEndpoint(
+        # Set up a private endpoint for the automation account
+        automation_private_endpoint = network.PrivateEndpoint(
             f"{self._name}_automation_private_endpoint",
             location=props.location,
             private_endpoint_name=f"{stack_name}-automation-pep",
@@ -119,6 +119,16 @@ class SHMMonitoringComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Add a private DNS record for each automation custom DNS config
+        automation_private_endpoint.custom_dns_configs.apply(
+            lambda cfgs: [
+                self.private_record_set(cfg, props.dns_resource_group_name, child_opts)
+                for cfg in cfgs
+            ]
+            if cfgs
+            else []
+        )
+
         # Deploy log analytics workspace
         workspace = operationalinsights.Workspace(
             f"{self._name}_log_analytics_workspace",
@@ -132,14 +142,38 @@ class SHMMonitoringComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Set up a private linkscope and endpoint for the log analytics workspace
+        workspace_private_link_scope = insights.PrivateLinkScope(
+            f"{self._name}_log_analytics_workspace_private_link_scope",
+            location="Global",
+            resource_group_name=resource_group.name,
+            scope_name=f"{self._name}-log-privatelinkscope"
+        )
+        workspace_private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_log_analytics_workspace_private_endpoint",
+            location=props.location,
+            private_endpoint_name=f"{self._name}-log-privatelinkscope-pep",
+            private_link_service_connections=[
+                network.PrivateLinkServiceConnectionArgs(
+                    group_ids=["AzureMonitor"],
+                    name="LogAnalyticsWorkspacePrivateEndpoint",
+                    private_link_service_id=workspace_private_link_scope.id,
+                    request_message="Connection auto-approved.",
+                )
+            ],
+            resource_group_name=resource_group.name,
+            subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
+            opts=child_opts,
+        )
+
         # Get workspace keys
         workspace_keys = operationalinsights.get_shared_keys(
             resource_group_name=resource_group.name,
             workspace_name=workspace.name,
         )
 
-        # Add a private DNS record for each custom DNS config
-        private_endpoint.custom_dns_configs.apply(
+        # Add a private DNS record for each log analytics workspace custom DNS config
+        workspace_private_endpoint.custom_dns_configs.apply(
             lambda cfgs: [
                 self.private_record_set(cfg, props.dns_resource_group_name, child_opts)
                 for cfg in cfgs
