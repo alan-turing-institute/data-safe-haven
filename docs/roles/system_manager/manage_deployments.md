@@ -43,7 +43,7 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 ```{note}
 If the new `VM size` you want isn't shown as available in the Azure Portal, there are several steps that can be taken.
 
-Firstly, try stopping the VM and checking again whether the size you want is available, as this can reveal additional options that aren't shown whilst the VM is running.
+Firstly, try stopping the VM and checking again whether the size you want is available, as this can reveal additional options that aren't shown whilst the VM is running. For example, when resizing to an N-series VM in Azure, (see {ref}`using_gpus`) we've found that NVIDIA options such as the  NVv3-series are not always shown as available.
 
 Next, you can try to request an increase in the vCPU quota for the VM family of the desired VM:
 - Navigate to the Azure Portal and on the subscription page, click `Usage + quotas` under `Settings`
@@ -70,6 +70,8 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 - where `<IP last octet>` is last octet of the IP address (this must be different to any other SRD VMs)
+
+(using_gpus)=
 
 ## {{minidisc}} Using GPUs in SRDs
 
