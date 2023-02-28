@@ -4,7 +4,13 @@ from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import automation, insights, network, operationalinsights, resources
+from pulumi_azure_native import (
+    automation,
+    insights,
+    network,
+    operationalinsights,
+    resources,
+)
 
 # Local imports
 from data_safe_haven.pulumi.transformations import get_id_from_subnet
@@ -29,7 +35,12 @@ class SHMMonitoringProps:
 class SHMMonitoringComponent(ComponentResource):
     """Deploy SHM monitoring with Pulumi"""
 
-    private_zone_names = ["agentsvc.azure-automation.net", "azure-automation.net", "blob.core.windows.net", "monitor.azure.com"]
+    private_zone_names = [
+        "agentsvc.azure-automation.net",
+        "azure-automation.net",
+        "blob.core.windows.net",
+        "monitor.azure.com",
+    ]
 
     def __init__(
         self,
@@ -147,7 +158,7 @@ class SHMMonitoringComponent(ComponentResource):
             f"{self._name}_log_analytics_workspace_private_link_scope",
             location="Global",
             resource_group_name=resource_group.name,
-            scope_name=f"{self._name}-log-privatelinkscope"
+            scope_name=f"{self._name}-log-privatelinkscope",
         )
         workspace_private_endpoint = network.PrivateEndpoint(
             f"{self._name}_log_analytics_workspace_private_endpoint",
@@ -182,6 +193,15 @@ class SHMMonitoringComponent(ComponentResource):
             else []
         )
 
+        # Link automation account to log analytics workspace
+        automation_log_analytics_link = operationalinsights.LinkedService(
+            f"{self._name}_automation_log_analytics_link",
+            linked_service_name="Automation",
+            resource_group_name=resource_group.name,
+            resource_id=automation_account.id,
+            workspace_name=workspace.name,
+        )
+
         # Register outputs
         self.automation_account = automation_account
         self.automation_account_jrds_url = (
@@ -201,7 +221,11 @@ class SHMMonitoringComponent(ComponentResource):
             automation_keys.keys[0].value
         )
         self.log_analytics_workspace_id = workspace.customer_id
-        self.log_analytics_workspace_key = workspace_keys.primary_shared_key if workspace_keys.primary_shared_key else "UNKNOWN"
+        self.log_analytics_workspace_key = (
+            workspace_keys.primary_shared_key
+            if workspace_keys.primary_shared_key
+            else "UNKNOWN"
+        )
         self.resource_group_name = resource_group.name
 
     def private_record_set(
