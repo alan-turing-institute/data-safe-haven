@@ -82,10 +82,6 @@ If you need to perform any operations in the SRE that require root access, you w
 :relative-images:
 ```
 
-```{warning}
-Tier 0 and 1 SREs have internet access and as such, installing anything as root that involves downloading from the internet could introduce malicious software being introduced to the SRE.
-```
-
 ## {{fire}} Remove a single SRE
 
 In order to tear down an SRE, use the following procedure:
