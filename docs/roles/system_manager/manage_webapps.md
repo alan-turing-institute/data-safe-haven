@@ -39,18 +39,6 @@ If the reason for failure is less clear, accessing the command line interface di
 
 ## Accessing the VM console
 
-Console access to the web app VMs can be achieved through the `Azure` portal. All VMs share the same `<admin username>`, but each has its own `<admin password>`, which will need to be retrieved from the `SRE` key vault before accessing the console.
-
-- From the `Azure` portal, navigate to the Resource Group `RG_SHM_<SHM ID>_SRE_<SRE ID>_SECRETS`
-- Click on the `SRE` keyvault `kv-<SHM ID>_SRE_<SRE ID>`
-- From the menu on the left, select `Secrets` from the `Objects` section.
-- All web app VMs share the same `<admin username>`, found in the `sre-<SRE ID>-vm-admin-username` secret.
-- Each web app has its own `<admin password>`, found in the `sre-<SRE ID>-vm-admin-password-<WEB APP>` secret.
-
-Once you have the `<admin username>` and `<admin password>`, you will be able to log in to the VM console as follows:
-
-- From the `Azure` portal, navigate to the web app resource group `RG_SHM_<SHM ID>_SRE_<SRE ID>_WEBAPPS`.
-- Click on the relevant VM (e.g. `COCALC-SRE-<SRE ID>`)
-- From the menu on the left, scroll down to the `Help` section and select `Serial console`
-- After a short time, you will be shown the console for the VM. You may need to press a key to be shown the login prompt.
-- Log in with the details you retrieved earlier to be given root access to the VM.
+```{include} snippets/01_console.partial.md
+:relative-images:
+```
