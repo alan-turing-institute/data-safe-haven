@@ -74,7 +74,7 @@ This is because only Nvidia GPUs support the drivers and CUDA libraries installe
 
 To test that a GPU enabled VM is working as expected, log into the SRE and type `nvidia-smi` into the terminal.
 
-## {{crown}} Performing operations that require System Administrator privileges
+## {{crown}} Performing operations that require superuser privileges
 
 If you need to perform any operations in the SRE that require root access, you will need to log into the `compute` VM via the Serial Console in the Azure Portal.
 
