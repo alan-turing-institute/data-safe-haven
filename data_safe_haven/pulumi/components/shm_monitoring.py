@@ -1,5 +1,7 @@
 """Pulumi component for SHM monitoring"""
 # Standard library import
+import datetime
+import pytz
 from typing import Optional
 
 # Third party imports
@@ -14,6 +16,10 @@ from pulumi_azure_native import (
 )
 
 # Local imports
+from data_safe_haven.helpers.functions import (
+    ordered_private_dns_zones,
+    replace_separators,
+)
 from data_safe_haven.pulumi.transformations import get_id_from_subnet
 
 
@@ -25,23 +31,27 @@ class SHMMonitoringProps:
         dns_resource_group_name: Input[str],
         location: Input[str],
         subnet_monitoring: Input[network.GetSubnetResult],
+        timezone: Input[str],
     ) -> None:
         self.dns_resource_group_name = dns_resource_group_name
+        dns_zone_example = ordered_private_dns_zones("Azure Automation")[0]
+        self.dns_zone_id_base = Output.from_input(dns_resource_group_name).apply(
+            lambda rg_name: str(
+                network.get_private_zone(
+                    private_zone_name=f"privatelink.{dns_zone_example}",
+                    resource_group_name=rg_name,
+                ).id
+            ).replace(dns_zone_example, "")
+        )
         self.location = location
         self.subnet_monitoring_id = Output.from_input(subnet_monitoring).apply(
             get_id_from_subnet
         )
+        self.timezone = timezone
 
 
 class SHMMonitoringComponent(ComponentResource):
     """Deploy SHM monitoring with Pulumi"""
-
-    private_zone_names = [
-        "agentsvc.azure-automation.net",
-        "azure-automation.net",
-        "blob.core.windows.net",
-        "monitor.azure.com",
-    ]
 
     def __init__(
         self,
@@ -64,12 +74,12 @@ class SHMMonitoringComponent(ComponentResource):
 
         # Deploy automation account
         automation_account = automation.AutomationAccount(
-            f"{self._name}_automationAccount",
-            automation_account_name=f"{stack_name}-automation",
+            f"{self._name}_automation_account",
+            automation_account_name=f"{stack_name}-aa",
             location=props.location,
-            name=f"{stack_name}-automation",
+            name=f"{stack_name}-aa",
             resource_group_name=resource_group.name,
-            sku=automation.SkuArgs(name="Free"),
+            sku=automation.SkuArgs(name=automation.SkuNameEnum.FREE),
             opts=child_opts,
         )
         automation_keys = automation.list_key_by_automation_account(
@@ -97,8 +107,8 @@ class SHMMonitoringComponent(ComponentResource):
             ),
         }
         for module_name, (module_version, sha256_hash) in modules.items():
-            module = automation.Module(
-                f"{self._name}_module_{module_name}",
+            automation.Module(
+                f"{self._name}_module_{module_name}".lower(),
                 automation_account_name=automation_account.name,
                 content_link=automation.ContentLinkArgs(
                     content_hash=automation.ContentHashArgs(
@@ -114,16 +124,15 @@ class SHMMonitoringComponent(ComponentResource):
             )
 
         # Set up a private endpoint for the automation account
-        automation_private_endpoint = network.PrivateEndpoint(
-            f"{self._name}_automation_private_endpoint",
+        automation_account_private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_automation_account_private_endpoint",
             location=props.location,
-            private_endpoint_name=f"{stack_name}-automation-pep",
+            private_endpoint_name=f"{stack_name}-pep-aa",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["DSCAndHybridWorker"],
-                    name="DSCAndHybridWorker",
+                    name=f"{stack_name}-cnxn-pep-aa-to-aa",
                     private_link_service_id=automation_account.id,
-                    request_message="Connection auto-approved.",
                 )
             ],
             resource_group_name=resource_group.name,
@@ -132,18 +141,28 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Add a private DNS record for each automation custom DNS config
-        automation_private_endpoint.custom_dns_configs.apply(
-            lambda cfgs: [
-                self.private_record_set(cfg, props.dns_resource_group_name, child_opts)
-                for cfg in cfgs
-            ]
-            if cfgs
-            else []
+        automation_account_private_dns_zone_group = network.PrivateDnsZoneGroup(
+            f"{self._name}_automation_account_private_dns_zone_group",
+            private_dns_zone_configs=[
+                network.PrivateDnsZoneConfigArgs(
+                    name=replace_separators(f"{stack_name}-aa-to-{dns_zone_name}", "-"),
+                    # private_dns_zone_id=Output.from_input(props.dns_resource_group_name).apply(
+                    #     lambda rg_name: network.get_private_zone(private_zone_name=f"privatelink.{dns_zone_name}", resource_group_name=rg_name).id
+                    # ),
+                    private_dns_zone_id=Output.concat(
+                        props.dns_zone_id_base, dns_zone_name
+                    ),
+                )
+                for dns_zone_name in ordered_private_dns_zones("Azure Automation")
+            ],
+            private_dns_zone_group_name=f"{stack_name}-dzg-aa",
+            private_endpoint_name=automation_account_private_endpoint.name,
+            resource_group_name=resource_group.name,
         )
 
-        # Deploy log analytics workspace
-        workspace = operationalinsights.Workspace(
-            f"{self._name}_log_analytics_workspace",
+        # Deploy log analytics workspace and get workspace keys
+        log_analytics = operationalinsights.Workspace(
+            f"{self._name}_log_analytics",
             location=props.location,
             resource_group_name=resource_group.name,
             retention_in_days=30,
@@ -153,45 +172,60 @@ class SHMMonitoringComponent(ComponentResource):
             workspace_name=f"{stack_name}-log",
             opts=child_opts,
         )
+        log_analytics_keys = operationalinsights.get_shared_keys(
+            resource_group_name=resource_group.name,
+            workspace_name=log_analytics.name,
+        )
 
         # Set up a private linkscope and endpoint for the log analytics workspace
-        workspace_private_link_scope = insights.PrivateLinkScope(
-            f"{self._name}_log_analytics_workspace_private_link_scope",
+        log_analytics_private_link_scope = insights.PrivateLinkScope(
+            f"{self._name}_log_analytics_private_link_scope",
             location="Global",
             resource_group_name=resource_group.name,
-            scope_name=f"{self._name}-log-privatelinkscope",
+            scope_name=f"{stack_name}-ampls-log",
+            opts=child_opts,
         )
-        workspace_private_endpoint = network.PrivateEndpoint(
-            f"{self._name}_log_analytics_workspace_private_endpoint",
+        log_analytics_private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_log_analytics_private_endpoint",
             location=props.location,
-            private_endpoint_name=f"{self._name}-log-privatelinkscope-pep",
+            private_endpoint_name=f"{stack_name}-pep-log",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
-                    group_ids=["AzureMonitor"],
-                    name="LogAnalyticsWorkspacePrivateEndpoint",
-                    private_link_service_id=workspace_private_link_scope.id,
-                    request_message="Connection auto-approved.",
+                    group_ids=["azuremonitor"],
+                    name=f"{stack_name}-cnxn-pep-log-to-ampls-log",
+                    private_link_service_id=log_analytics_private_link_scope.id,
                 )
             ],
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
             opts=child_opts,
         )
-
-        # Get workspace keys
-        workspace_keys = operationalinsights.get_shared_keys(
+        log_analytics_ampls_connection = insights.PrivateLinkScopedResource(
+            f"{self._name}_log_analytics_ampls_connection",
+            linked_resource_id=log_analytics.id,
+            name=f"{stack_name}-cnxn-ampls-log-to-log",
             resource_group_name=resource_group.name,
-            workspace_name=workspace.name,
+            scope_name=log_analytics_private_link_scope.name,
+            opts=child_opts,
         )
 
         # Add a private DNS record for each log analytics workspace custom DNS config
-        workspace_private_endpoint.custom_dns_configs.apply(
-            lambda cfgs: [
-                self.private_record_set(cfg, props.dns_resource_group_name, child_opts)
-                for cfg in cfgs
-            ]
-            if cfgs
-            else []
+        log_analytics_private_dns_zone_group = network.PrivateDnsZoneGroup(
+            f"{self._name}_log_analytics_private_dns_zone_group",
+            private_dns_zone_configs=[
+                network.PrivateDnsZoneConfigArgs(
+                    name=replace_separators(
+                        f"{stack_name}-log-to-{dns_zone_name}", "-"
+                    ),
+                    private_dns_zone_id=Output.concat(
+                        props.dns_zone_id_base, dns_zone_name
+                    ),
+                )
+                for dns_zone_name in ordered_private_dns_zones("Azure Monitor")
+            ],
+            private_dns_zone_group_name=f"{stack_name}-dzg-log",
+            private_endpoint_name=log_analytics_private_endpoint.name,
+            resource_group_name=resource_group.name,
         )
 
         # Link automation account to log analytics workspace
@@ -200,24 +234,122 @@ class SHMMonitoringComponent(ComponentResource):
             linked_service_name="Automation",
             resource_group_name=resource_group.name,
             resource_id=automation_account.id,
-            workspace_name=workspace.name,
+            workspace_name=log_analytics.name,
+            opts=child_opts,
         )
 
-        # Deploy automatic update solution
-        update_solution = operationsmanagement.Solution(
-            f"{self._name}_update_solution",
-            location=props.location,
-            plan=operationsmanagement.SolutionPlanArgs(
-                name=Output.concat("Updates(", workspace.name, ")"),
-                product="OMSGallery/Updates",
-                promotion_code="",
-                publisher="Microsoft",
-            ),
-            properties=operationsmanagement.SolutionPropertiesArgs(
-                workspace_resource_id=workspace.id,
-            ),
+        # Deploy log analytics solutions
+        solutions = {
+            "AgentHealthAssessment": "Agent Health",  # for tracking heartbeats from connected VMs
+            "AzureAutomation": "Azure Automation",  # to allow scheduled updating
+            "ChangeTracking": "Change Tracking",  # for dashboard of applied changes
+            "Updates": "System Update Assessment",  # to assess necessary updates
+        }
+        for product, description in solutions.items():
+            solution_name = Output.concat(product, "(", log_analytics.name, ")")
+            operationsmanagement.Solution(
+                replace_separators(f"{self._name}_soln_{description.lower()}", "_"),
+                location=props.location,
+                plan=operationsmanagement.SolutionPlanArgs(
+                    name=solution_name,
+                    product=f"OMSGallery/{product}",
+                    promotion_code="",
+                    publisher="Microsoft",
+                ),
+                properties=operationsmanagement.SolutionPropertiesArgs(
+                    workspace_resource_id=log_analytics.id,
+                ),
+                resource_group_name=resource_group.name,
+                solution_name=solution_name,
+                opts=child_opts,
+            )
+
+        # Get the current subscription_id for use in scheduling.
+        # This is safe as schedules only apply to VMs that are registered with the log analytics workspace
+        subscription_id = resource_group.id.apply(
+            lambda id_: id_.split("/resourceGroups/")[0]
+        )
+        # Create Windows VM virus definitions update schedule: daily at 01:01
+        schedule_windows_definitions = automation.SoftwareUpdateConfigurationByName(
+            f"{self._name}_schedule_windows_definitions",
+            automation_account_name=automation_account.name,
             resource_group_name=resource_group.name,
-            solution_name=Output.concat("Updates(", workspace.name, ")"),
+            schedule_info=automation.SUCSchedulePropertiesArgs(
+                expiry_time="9999-12-31T23:59:00+00:00",
+                frequency="Day",
+                interval=1,
+                is_enabled=True,
+                start_time=Output.from_input(props.timezone).apply(
+                    lambda tz: self.timestring(1, 1, tz)
+                ),
+                time_zone=props.timezone,
+            ),
+            software_update_configuration_name=f"{stack_name}-windows-definitions",
+            update_configuration=automation.UpdateConfigurationArgs(
+                operating_system=automation.OperatingSystemType.WINDOWS,
+                targets=automation.TargetPropertiesArgs(
+                    azure_queries=[
+                        automation.AzureQueryPropertiesArgs(
+                            locations=[props.location],
+                            scope=[subscription_id],
+                        )
+                    ]
+                ),
+                windows=automation.WindowsPropertiesArgs(
+                    included_update_classifications=automation.WindowsUpdateClasses.DEFINITION,
+                    reboot_setting="IfRequired",
+                ),
+            ),
+            opts=ResourceOptions.merge(
+                ResourceOptions(ignore_changes=["schedule_info"]),
+                child_opts,
+            ),
+        )
+        # Create Windows VM system update schedule: daily at 02:02
+        schedule_windows_updates = automation.SoftwareUpdateConfigurationByName(
+            f"{self._name}_schedule_windows_updates",
+            automation_account_name=automation_account.name,
+            resource_group_name=resource_group.name,
+            schedule_info=automation.SUCSchedulePropertiesArgs(
+                expiry_time="9999-12-31T23:59:00+00:00",
+                frequency="Day",
+                interval=1,
+                is_enabled=True,
+                start_time=Output.from_input(props.timezone).apply(
+                    lambda tz: self.timestring(2, 2, tz)
+                ),
+                time_zone=props.timezone,
+            ),
+            software_update_configuration_name=f"{stack_name}-windows-updates",
+            update_configuration=automation.UpdateConfigurationArgs(
+                operating_system=automation.OperatingSystemType.WINDOWS,
+                targets=automation.TargetPropertiesArgs(
+                    azure_queries=[
+                        automation.AzureQueryPropertiesArgs(
+                            locations=[props.location],
+                            scope=[subscription_id],
+                        )
+                    ]
+                ),
+                windows=automation.WindowsPropertiesArgs(
+                    included_update_classifications=", ".join(
+                        [
+                            automation.WindowsUpdateClasses.CRITICAL,
+                            automation.WindowsUpdateClasses.SECURITY,
+                            automation.WindowsUpdateClasses.UPDATE_ROLLUP,
+                            automation.WindowsUpdateClasses.FEATURE_PACK,
+                            automation.WindowsUpdateClasses.SERVICE_PACK,
+                            automation.WindowsUpdateClasses.TOOLS,
+                            automation.WindowsUpdateClasses.UPDATES,
+                        ]
+                    ),
+                    reboot_setting="IfRequired",
+                ),
+            ),
+            opts=ResourceOptions.merge(
+                ResourceOptions(ignore_changes=["schedule_info"]),
+                child_opts,
+            ),
         )
 
         # Register outputs
@@ -238,39 +370,20 @@ class SHMMonitoringComponent(ComponentResource):
         self.automation_account_primary_key = Output.secret(
             automation_keys.keys[0].value
         )
-        self.log_analytics_workspace_id = workspace.customer_id
+        self.log_analytics_workspace_id = log_analytics.customer_id
         self.log_analytics_workspace_key = (
-            workspace_keys.primary_shared_key
-            if workspace_keys.primary_shared_key
+            log_analytics_keys.primary_shared_key
+            if log_analytics_keys.primary_shared_key
             else "UNKNOWN"
         )
         self.resource_group_name = resource_group.name
 
-    def private_record_set(
-        self,
-        config: network.outputs.CustomDnsConfigPropertiesFormatResponse,
-        resource_group_name: Input[str],
-        child_opts: Optional[ResourceOptions] = None,
-    ) -> network.PrivateRecordSet:
-        """
-        Create a PrivateRecordSet for a given CustomDnsConfigPropertiesFormatResponse
-
-        Note that creating resources inside an .apply() is discouraged but not
-        forbidden. This is the one way to create one resource for each entry in
-        an Output[Sequence]. See https://github.com/pulumi/pulumi/issues/3849.
-        """
-        private_zone_name = [
-            name for name in self.private_zone_names if name in config.fqdn
-        ][0]
-        record_name = config.fqdn.replace(f".{private_zone_name}", "")
-        ip_address = config.ip_addresses[0] if config.ip_addresses else ""
-        return network.PrivateRecordSet(
-            f"{self._name}_private_a_record_{record_name}.{private_zone_name}",
-            a_records=[network.ARecordArgs(ipv4_address=ip_address)],
-            private_zone_name=f"privatelink.{private_zone_name}",
-            record_type="A",
-            relative_record_set_name=record_name,
-            resource_group_name=resource_group_name,
-            ttl=10,
-            opts=child_opts,
-        )
+    def timestring(self, hour: int, minute: int, timezone: str) -> str:
+        dt = datetime.datetime.now().replace(
+            hour=hour,
+            minute=minute,
+            second=0,
+            microsecond=0,
+            tzinfo=pytz.timezone(timezone),
+        ) + datetime.timedelta(days=1)
+        return dt.isoformat()

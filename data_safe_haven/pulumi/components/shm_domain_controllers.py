@@ -186,10 +186,10 @@ class SHMDomainControllersComponent(ComponentResource):
         )
 
         # Register with Log Analytics workspace
-        # Output.from_input(props.log_analytics_workspace_id).apply(lambda s: print(f"log_analytics_workspace_id {s}"))
         log_analytics_extension = compute.VirtualMachineExtension(
             f"{self._name}_log_analytics_extension",
             auto_upgrade_minor_version=True,
+            enable_automatic_upgrade=False,
             location=props.location,
             publisher="Microsoft.EnterpriseCloud.Monitoring",
             protected_settings=Output.from_input(

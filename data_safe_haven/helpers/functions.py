@@ -3,6 +3,7 @@ import base64
 import hashlib
 import secrets
 import string
+from typing import List, Optional
 
 
 def alphanumeric(input_string: str) -> str:
@@ -19,6 +20,27 @@ def b64encode(input_string: str) -> str:
 def hex_string(length: int) -> str:
     """Generate a string of 'length' random hexadecimal characters."""
     return secrets.token_hex(length)
+
+
+def ordered_private_dns_zones(resource_type: Optional[str] = None) -> List[str]:
+    """
+    Return required DNS zones for a given resource type.
+    See https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns for details.
+    """
+    dns_zones = {
+        "Azure Automation": ["azure-automation.net"],
+        "Azure Monitor": [
+            "agentsvc.azure-automation.net",
+            # "applicationinsights.azure.com", # not currently used
+            "blob.core.windows.net",
+            "monitor.azure.com",
+            "ods.opinsights.azure.com",
+            "oms.opinsights.azure.com",
+        ],
+    }
+    if resource_type and (resource_type in dns_zones):
+        return dns_zones[resource_type]
+    return sorted(sum([list(zones) for zones in dns_zones.values()], []))
 
 
 def password(length: int) -> str:
@@ -43,9 +65,10 @@ def random_letters(length: int) -> str:
 def replace_separators(input_string: str, separator: str) -> str:
     """Return a string using underscores as a separator"""
     return (
-        input_string.replace("-", separator)
+        input_string.replace(" ", separator)
         .replace("_", separator)
-        .replace(" ", separator)
+        .replace("-", separator)
+        .replace(".", separator)
     )
 
 

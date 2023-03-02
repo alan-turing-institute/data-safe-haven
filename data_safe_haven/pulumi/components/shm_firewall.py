@@ -83,8 +83,8 @@ class SHMFirewallComponent(ComponentResource):
 
         # Deploy IP address
         public_ip = network.PublicIPAddress(
-            f"{self._name}_public_ip",
-            public_ip_address_name=f"{stack_name}-firewall-public-ip",
+            f"{self._name}_pip_firewall",
+            public_ip_address_name=f"{stack_name}-pip-firewall",
             public_ip_allocation_method="Static",
             resource_group_name=props.resource_group_name,
             sku=network.PublicIPAddressSkuArgs(name="Standard"),

@@ -89,6 +89,7 @@ class DeclarativeSHM:
                 dns_resource_group_name=networking.resource_group_name,
                 location=self.cfg.azure.location,
                 subnet_monitoring=networking.subnet_monitoring,
+                timezone=self.cfg.shm.timezone,
             ),
         )
 

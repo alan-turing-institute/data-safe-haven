@@ -8,6 +8,7 @@ from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.helpers.functions import ordered_private_dns_zones
 
 
 class SHMNetworkingProps:
@@ -31,7 +32,7 @@ class SHMNetworkingProps:
         self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
         # VPN gateway subnet must be at least /29 in size (8 addresses)
         self.subnet_vpn_gateway_iprange = self.vnet_iprange.next_subnet(8)
-        self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(16)
+        self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(32)
         self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
         self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
 
@@ -294,14 +295,7 @@ class SHMNetworkingComponent(ComponentResource):
         )
 
         # Set up private link domains
-        for private_link_domain in [
-            "agentsvc.azure-automation.net",
-            "azure-automation.net",  # note this must come after 'agentsvc.azure-automation.net'
-            "blob.core.windows.net",
-            "monitor.azure.com",
-            "ods.opinsights.azure.com",
-            "oms.opinsights.azure.com",
-        ]:
+        for private_link_domain in ordered_private_dns_zones():
             private_zone = network.PrivateZone(
                 f"{self._name}_private_zone_{private_link_domain}",
                 location="Global",
