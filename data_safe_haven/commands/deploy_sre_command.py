@@ -91,6 +91,14 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 shm_stack.output("domain_controllers")["ldap_server_ip"],
             )
             stack.add_option(
+                "shm-monitoring-automation_account_name",
+                shm_stack.output("monitoring")["automation_account_name"],
+            )
+            stack.add_option(
+                "shm-monitoring-resource_group_name",
+                shm_stack.output("monitoring")["resource_group_name"],
+            )
+            stack.add_option(
                 "shm-networking-resource_group_name",
                 shm_stack.output("networking")["resource_group_name"],
             )

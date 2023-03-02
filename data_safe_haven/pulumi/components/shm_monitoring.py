@@ -1,7 +1,5 @@
 """Pulumi component for SHM monitoring"""
 # Standard library import
-import datetime
-import pytz
 from typing import Optional
 
 # Third party imports
@@ -19,6 +17,7 @@ from pulumi_azure_native import (
 from data_safe_haven.helpers.functions import (
     ordered_private_dns_zones,
     replace_separators,
+    time_as_string,
 )
 from data_safe_haven.pulumi.transformations import get_id_from_subnet
 
@@ -264,9 +263,9 @@ class SHMMonitoringComponent(ComponentResource):
                 opts=child_opts,
             )
 
-        # Get the current subscription_id for use in scheduling.
+        # Get the current subscription_resource_id for use in scheduling.
         # This is safe as schedules only apply to VMs that are registered with the log analytics workspace
-        subscription_id = resource_group.id.apply(
+        subscription_resource_id = resource_group.id.apply(
             lambda id_: id_.split("/resourceGroups/")[0]
         )
         # Create Windows VM virus definitions update schedule: daily at 01:01
@@ -280,7 +279,7 @@ class SHMMonitoringComponent(ComponentResource):
                 interval=1,
                 is_enabled=True,
                 start_time=Output.from_input(props.timezone).apply(
-                    lambda tz: self.timestring(1, 1, tz)
+                    lambda tz: time_as_string(hour=1, minute=1, timezone=tz)
                 ),
                 time_zone=props.timezone,
             ),
@@ -291,7 +290,7 @@ class SHMMonitoringComponent(ComponentResource):
                     azure_queries=[
                         automation.AzureQueryPropertiesArgs(
                             locations=[props.location],
-                            scope=[subscription_id],
+                            scope=[subscription_resource_id],
                         )
                     ]
                 ),
@@ -316,7 +315,7 @@ class SHMMonitoringComponent(ComponentResource):
                 interval=1,
                 is_enabled=True,
                 start_time=Output.from_input(props.timezone).apply(
-                    lambda tz: self.timestring(2, 2, tz)
+                    lambda tz: time_as_string(hour=2, minute=2, timezone=tz)
                 ),
                 time_zone=props.timezone,
             ),
@@ -327,7 +326,7 @@ class SHMMonitoringComponent(ComponentResource):
                     azure_queries=[
                         automation.AzureQueryPropertiesArgs(
                             locations=[props.location],
-                            scope=[subscription_id],
+                            scope=[subscription_resource_id],
                         )
                     ]
                 ),
@@ -335,12 +334,55 @@ class SHMMonitoringComponent(ComponentResource):
                     included_update_classifications=", ".join(
                         [
                             automation.WindowsUpdateClasses.CRITICAL,
-                            automation.WindowsUpdateClasses.SECURITY,
-                            automation.WindowsUpdateClasses.UPDATE_ROLLUP,
                             automation.WindowsUpdateClasses.FEATURE_PACK,
+                            automation.WindowsUpdateClasses.SECURITY,
                             automation.WindowsUpdateClasses.SERVICE_PACK,
                             automation.WindowsUpdateClasses.TOOLS,
+                            automation.WindowsUpdateClasses.UPDATE_ROLLUP,
                             automation.WindowsUpdateClasses.UPDATES,
+                        ]
+                    ),
+                    reboot_setting="IfRequired",
+                ),
+            ),
+            opts=ResourceOptions.merge(
+                ResourceOptions(ignore_changes=["schedule_info"]),
+                child_opts,
+            ),
+        )
+        # Create Linux VM system update schedule: daily at 02:02
+        schedule_linux_updates = automation.SoftwareUpdateConfigurationByName(
+            f"{self._name}_schedule_linux_updates",
+            automation_account_name=automation_account.name,
+            resource_group_name=resource_group.name,
+            schedule_info=automation.SUCSchedulePropertiesArgs(
+                expiry_time="9999-12-31T23:59:00+00:00",
+                frequency="Day",
+                interval=1,
+                is_enabled=True,
+                start_time=Output.from_input(props.timezone).apply(
+                    lambda tz: time_as_string(hour=2, minute=2, timezone=tz)
+                ),
+                time_zone=props.timezone,
+            ),
+            software_update_configuration_name=f"{stack_name}-linux-updates",
+            update_configuration=automation.UpdateConfigurationArgs(
+                operating_system=automation.OperatingSystemType.LINUX,
+                targets=automation.TargetPropertiesArgs(
+                    azure_queries=[
+                        automation.AzureQueryPropertiesArgs(
+                            locations=[props.location],
+                            scope=[subscription_resource_id],
+                        )
+                    ]
+                ),
+                linux=automation.LinuxPropertiesArgs(
+                    included_package_classifications=", ".join(
+                        [
+                            automation.LinuxUpdateClasses.CRITICAL,
+                            automation.LinuxUpdateClasses.OTHER,
+                            automation.LinuxUpdateClasses.SECURITY,
+                            automation.LinuxUpdateClasses.UNCLASSIFIED,
                         ]
                     ),
                     reboot_setting="IfRequired",
@@ -378,12 +420,8 @@ class SHMMonitoringComponent(ComponentResource):
         )
         self.resource_group_name = resource_group.name
 
-    def timestring(self, hour: int, minute: int, timezone: str) -> str:
-        dt = datetime.datetime.now().replace(
-            hour=hour,
-            minute=minute,
-            second=0,
-            microsecond=0,
-            tzinfo=pytz.timezone(timezone),
-        ) + datetime.timedelta(days=1)
-        return dt.isoformat()
+        # Register exports
+        self.exports = {
+            "automation_account_name": automation_account.name,
+            "resource_group_name": resource_group.name,
+        }

@@ -36,7 +36,7 @@ class DeclarativeSHM:
         # Load pulumi configuration secrets
         self.secrets = pulumi.Config()
 
-        # Deploy SHM networking
+        # Deploy networking
         networking = SHMNetworkingComponent(
             "shm_networking",
             self.stack_name,
@@ -51,7 +51,7 @@ class DeclarativeSHM:
             ),
         )
 
-        # Deploy SHM firewall and routing
+        # Deploy firewall and routing
         firewall = SHMFirewallComponent(
             "shm_firewall",
             self.stack_name,
@@ -68,7 +68,7 @@ class DeclarativeSHM:
             ),
         )
 
-        # Deploy SHM state
+        # Deploy state storage
         state = SHMStateComponent(
             "shm_state",
             self.stack_name,
@@ -80,7 +80,7 @@ class DeclarativeSHM:
             ),
         )
 
-        # Deploy SHM monitoring
+        # Deploy automated monitoring
         monitoring = SHMMonitoringComponent(
             "shm_monitoring",
             self.stack_name,
@@ -148,5 +148,6 @@ class DeclarativeSHM:
         # Export values for later use
         pulumi.export("domain_controllers", domain_controllers.exports)
         pulumi.export("fqdn_nameservers", networking.dns_zone.name_servers)
+        pulumi.export("monitoring", monitoring.exports)
         pulumi.export("networking", networking.exports)
         pulumi.export("update_servers", update_servers.exports)

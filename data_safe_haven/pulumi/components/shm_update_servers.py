@@ -5,7 +5,7 @@ from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import automation, network, resources
+from pulumi_azure_native import network
 
 # Local imports
 from data_safe_haven.helpers import b64encode

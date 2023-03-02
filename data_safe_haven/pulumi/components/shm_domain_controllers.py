@@ -167,6 +167,7 @@ class SHMDomainControllersComponent(ComponentResource):
         domain_sid = RemoteScript(
             f"{self._name}_get_ad_sid",
             RemoteScriptProps(
+                force_refresh=True,
                 script_contents=domain_sid_script.file_contents(),
                 script_hash=domain_sid_script.sha256(),
                 script_parameters={},
@@ -175,13 +176,13 @@ class SHMDomainControllersComponent(ComponentResource):
                 vm_resource_group_name=resource_group.name,
             ),
             opts=ResourceOptions.merge(
-                child_opts,
                 ResourceOptions(
                     depends_on=[
                         primary_domain_controller,
                         primary_domain_controller_dsc_node,
                     ]
                 ),
+                child_opts,
             ),
         )
 

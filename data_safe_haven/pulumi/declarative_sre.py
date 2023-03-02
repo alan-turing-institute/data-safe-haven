@@ -11,6 +11,7 @@ from .components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
+from .components.sre_monitoring import SREMonitoringComponent, SREMonitoringProps
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
 from .components.sre_remote_desktop import (
     SRERemoteDesktopComponent,
@@ -39,7 +40,7 @@ class DeclarativeSRE:
         # Load pulumi configuration secrets
         self.secrets = pulumi.Config()
 
-        # Define networking
+        # Deploy networking
         networking = SRENetworkingComponent(
             "sre_networking",
             self.stack_name,
@@ -64,7 +65,27 @@ class DeclarativeSRE:
             ),
         )
 
-        # Define state storage
+        # Deploy automated monitoring
+        monitoring = SREMonitoringComponent(
+            "sre_monitoring",
+            self.stack_name,
+            self.shm_name,
+            SREMonitoringProps(
+                automation_account_name=self.secrets.require(
+                    "shm-monitoring-automation_account_name"
+                ),
+                location=self.cfg.azure.location,
+                subscription_resource_id=networking.resource_group.id.apply(
+                    lambda id_: id_.split("/resourceGroups/")[0]
+                ),
+                resource_group_name=self.secrets.require(
+                    "shm-monitoring-resource_group_name"
+                ),
+                timezone=self.cfg.shm.timezone,
+            ),
+        )
+
+        # Deploy state storage
         state = SREStateComponent(
             "sre_state",
             self.stack_name,
@@ -81,7 +102,7 @@ class DeclarativeSRE:
             ),
         )
 
-        # Define frontend application gateway
+        # Deploy frontend application gateway
         application_gateway = SREApplicationGatewayComponent(
             "sre_application_gateway",
             self.stack_name,
@@ -96,7 +117,7 @@ class DeclarativeSRE:
             ),
         )
 
-        # Define containerised remote desktop gateway
+        # Deploy containerised remote desktop gateway
         remote_desktop = SRERemoteDesktopComponent(
             "sre_remote_desktop",
             self.stack_name,
@@ -119,6 +140,7 @@ class DeclarativeSRE:
             ),
         )
 
+        # Deploy secure research desktops
         research_desktops = SREResearchDesktopComponent(
             "sre_secure_research_desktop",
             self.stack_name,
