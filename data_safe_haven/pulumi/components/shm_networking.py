@@ -354,10 +354,10 @@ class SHMNetworkingComponent(ComponentResource):
         self.exports = {
             "resource_group_name": resource_group.name,
             "subnet_identity_servers_prefix": self.subnet_identity_servers.apply(
-                lambda s: s.address_prefix
+                lambda s: str(s.address_prefix) if s.address_prefix else ""
             ),
             "subnet_update_servers_prefix": self.subnet_update_servers.apply(
-                lambda s: s.address_prefix
+                lambda s: str(s.address_prefix) if s.address_prefix else ""
             ),
             "virtual_network_name": virtual_network.name,
         }

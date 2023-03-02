@@ -192,9 +192,9 @@ class SHMDomainControllersComponent(ComponentResource):
             enable_automatic_upgrade=False,
             location=props.location,
             publisher="Microsoft.EnterpriseCloud.Monitoring",
-            protected_settings=Output.from_input(
-                props.log_analytics_workspace_key
-            ).apply(lambda key: {"workspaceKey": key}),
+            protected_settings=props.log_analytics_workspace_key.apply(
+                lambda key: {"workspaceKey": key}
+            ),
             resource_group_name=resource_group.name,
             settings=Output.from_input(props.log_analytics_workspace_id).apply(
                 lambda id: {"workspaceId": id}

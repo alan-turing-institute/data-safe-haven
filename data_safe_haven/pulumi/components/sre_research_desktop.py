@@ -149,13 +149,11 @@ class SREResearchDesktopComponent(ComponentResource):
         # Get details for each deployed VM
         vm_outputs = vms.apply(
             lambda vms: [
-                Output.all(vm.ip_address_private, vm.vm_name, vm.vm_size).apply(
-                    lambda args: {
-                        "ip_address": str(args[0]),
-                        "name": str(args[1]),
-                        "sku": str(args[2]),
-                    }
-                )
+                {
+                    "ip_address": vm.ip_address_private,
+                    "name": vm.vm_name,
+                    "sku": vm.vm_size,
+                }
                 for vm in vms
             ]
         )
