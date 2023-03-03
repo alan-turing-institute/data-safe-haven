@@ -5,7 +5,7 @@ from typing import Optional, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import compute, network, resources
+from pulumi_azure_native import network, resources
 
 # Local
 from data_safe_haven.helpers import FileReader
