@@ -100,12 +100,24 @@ class SHMNetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to local monitoring tools.",
+                    destination_address_prefix=str(props.subnet_monitoring_iprange),
+                    destination_port_ranges=["443"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowMonitoringToolsOutbound",
+                    priority=1500,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=str(props.subnet_update_servers_iprange),
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to Linux update servers.",
                     destination_address_prefix="Internet",
                     destination_port_ranges=["80", "443"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLinuxUpdatesOutbound",
-                    priority=900,
+                    priority=3600,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=str(props.subnet_update_servers_iprange),
                     source_port_range="*",
@@ -354,6 +366,9 @@ class SHMNetworkingComponent(ComponentResource):
         self.exports = {
             "resource_group_name": resource_group.name,
             "subnet_identity_servers_prefix": self.subnet_identity_servers.apply(
+                lambda s: str(s.address_prefix) if s.address_prefix else ""
+            ),
+            "subnet_monitoring_prefix": self.subnet_monitoring.apply(
                 lambda s: str(s.address_prefix) if s.address_prefix else ""
             ),
             "subnet_update_servers_prefix": self.subnet_update_servers.apply(

@@ -321,6 +321,8 @@ class SHMMonitoringComponent(ComponentResource):
             ),
             software_update_configuration_name=f"{stack_name}-windows-updates",
             update_configuration=automation.UpdateConfigurationArgs(
+                azure_virtual_machines=[],
+                non_azure_computer_names=[],
                 operating_system=automation.OperatingSystemType.WINDOWS,
                 targets=automation.TargetPropertiesArgs(
                     azure_queries=[
@@ -346,7 +348,12 @@ class SHMMonitoringComponent(ComponentResource):
                 ),
             ),
             opts=ResourceOptions.merge(
-                ResourceOptions(ignore_changes=["schedule_info"]),
+                ResourceOptions(
+                    ignore_changes=[
+                        "schedule_info",  # options are added after deployment
+                        "updateConfiguration.windows.included_package_classifications",  # ordering might change
+                    ]
+                ),
                 child_opts,
             ),
         )
@@ -367,15 +374,7 @@ class SHMMonitoringComponent(ComponentResource):
             ),
             software_update_configuration_name=f"{stack_name}-linux-updates",
             update_configuration=automation.UpdateConfigurationArgs(
-                operating_system=automation.OperatingSystemType.LINUX,
-                targets=automation.TargetPropertiesArgs(
-                    azure_queries=[
-                        automation.AzureQueryPropertiesArgs(
-                            locations=[props.location],
-                            scope=[subscription_resource_id],
-                        )
-                    ]
-                ),
+                azure_virtual_machines=[],
                 linux=automation.LinuxPropertiesArgs(
                     included_package_classifications=", ".join(
                         [
@@ -387,9 +386,24 @@ class SHMMonitoringComponent(ComponentResource):
                     ),
                     reboot_setting="IfRequired",
                 ),
+                non_azure_computer_names=[],
+                operating_system=automation.OperatingSystemType.LINUX,
+                targets=automation.TargetPropertiesArgs(
+                    azure_queries=[
+                        automation.AzureQueryPropertiesArgs(
+                            locations=[props.location],
+                            scope=[subscription_resource_id],
+                        )
+                    ]
+                ),
             ),
             opts=ResourceOptions.merge(
-                ResourceOptions(ignore_changes=["schedule_info"]),
+                ResourceOptions(
+                    ignore_changes=[
+                        "schedule_info",  # options are added after deployment
+                        "updateConfiguration.linux.included_package_classifications",  # ordering might change
+                    ]
+                ),
                 child_opts,
             ),
         )

@@ -54,6 +54,9 @@ class DeclarativeSRE:
                 shm_subnet_identity_servers_prefix=self.secrets.require(
                     "shm-networking-subnet_identity_servers_prefix",
                 ),
+                shm_subnet_monitoring_prefix=self.secrets.require(
+                    "shm-networking-subnet_subnet_monitoring_prefix",
+                ),
                 shm_subnet_update_servers_prefix=self.secrets.require(
                     "shm-networking-subnet_update_servers_prefix",
                 ),
@@ -164,6 +167,12 @@ class DeclarativeSRE:
                     "shm-update_servers-ip_address_linux"
                 ),
                 location=self.cfg.azure.location,
+                log_analytics_workspace_id=self.secrets.require(
+                    "shm-monitoring-log_analytics_workspace_id"
+                ),
+                log_analytics_workspace_key=self.secrets.require(
+                    "shm-monitoring-log_analytics_workspace_key"
+                ),
                 security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
                 subnet_research_desktops=networking.subnet_research_desktops,
                 virtual_network_resource_group=networking.resource_group,

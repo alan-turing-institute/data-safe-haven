@@ -18,10 +18,10 @@ class SREMonitoringProps:
     def __init__(
         self,
         automation_account_name: Input[str],
-        subscription_resource_id: Input[str],
         resource_group_name: Input[str],
         location: Input[str],
         sre_index: Input[str],
+        subscription_resource_id: Input[str],
         timezone: Input[str],
     ) -> None:
         self.automation_account_name = automation_account_name
@@ -69,15 +69,7 @@ class SREMonitoringComponent(ComponentResource):
             ),
             software_update_configuration_name=f"{stack_name}-linux-updates",
             update_configuration=automation.UpdateConfigurationArgs(
-                operating_system=automation.OperatingSystemType.LINUX,
-                targets=automation.TargetPropertiesArgs(
-                    azure_queries=[
-                        automation.AzureQueryPropertiesArgs(
-                            locations=[props.location],
-                            scope=[props.subscription_resource_id],
-                        )
-                    ]
-                ),
+                azure_virtual_machines=[],
                 linux=automation.LinuxPropertiesArgs(
                     included_package_classifications=", ".join(
                         [
@@ -89,9 +81,24 @@ class SREMonitoringComponent(ComponentResource):
                     ),
                     reboot_setting="IfRequired",
                 ),
+                non_azure_computer_names=[],
+                operating_system=automation.OperatingSystemType.LINUX,
+                targets=automation.TargetPropertiesArgs(
+                    azure_queries=[
+                        automation.AzureQueryPropertiesArgs(
+                            locations=[props.location],
+                            scope=[props.subscription_resource_id],
+                        )
+                    ]
+                ),
             ),
             opts=ResourceOptions.merge(
-                ResourceOptions(ignore_changes=["schedule_info"]),
+                ResourceOptions(
+                    ignore_changes=[
+                        "schedule_info",  # options are added after deployment
+                        "updateConfiguration.linux.included_package_classifications",  # ordering might change
+                    ]
+                ),
                 child_opts,
             ),
         )

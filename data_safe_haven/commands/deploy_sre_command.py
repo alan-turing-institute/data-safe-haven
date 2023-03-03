@@ -124,6 +124,11 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 True,
             )
             stack.add_option(
+                "shm-networking-subnet_subnet_monitoring_prefix",
+                shm_stack.output("networking")["subnet_monitoring_prefix"],
+                True,
+            )
+            stack.add_option(
                 "shm-networking-subnet_update_servers_prefix",
                 shm_stack.output("networking")["subnet_update_servers_prefix"],
                 True,

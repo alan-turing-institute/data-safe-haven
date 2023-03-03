@@ -31,6 +31,8 @@ class SREResearchDesktopProps:
         ldap_server_ip: Input[str],
         linux_update_server_ip: Input[str],
         location: Input[str],
+        log_analytics_workspace_id: Input[str],
+        log_analytics_workspace_key: Input[str],
         security_group_name: Input[str],
         subnet_research_desktops: Input[network.GetSubnetResult],
         virtual_network_resource_group: Input[resources.ResourceGroup],
@@ -45,6 +47,8 @@ class SREResearchDesktopProps:
         self.ldap_server_ip = ldap_server_ip
         self.linux_update_server_ip = linux_update_server_ip
         self.location = location
+        self.log_analytics_workspace_id = log_analytics_workspace_id
+        self.log_analytics_workspace_key = log_analytics_workspace_key
         self.security_group_name = security_group_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
             get_name_from_vnet
@@ -132,6 +136,8 @@ class SREResearchDesktopComponent(ComponentResource):
                         b64cloudinit=b64cloudinit,
                         ip_address_private=str(vm_ip_address),
                         location=props.location,
+                        log_analytics_workspace_id=props.log_analytics_workspace_id,
+                        log_analytics_workspace_key=props.log_analytics_workspace_key,
                         resource_group_name=resource_group.name,
                         subnet_name=props.subnet_research_desktops_name,
                         virtual_network_name=props.virtual_network_name,
