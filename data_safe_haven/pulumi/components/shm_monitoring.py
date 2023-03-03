@@ -413,7 +413,7 @@ class SHMMonitoringComponent(ComponentResource):
             automation_keys.keys[0].value
         )
         self.log_analytics_workspace_id = log_analytics.customer_id
-        self.log_analytics_workspace_key = (
+        self.log_analytics_workspace_key = Output.secret(
             log_analytics_keys.primary_shared_key
             if log_analytics_keys.primary_shared_key
             else "UNKNOWN"
@@ -423,5 +423,7 @@ class SHMMonitoringComponent(ComponentResource):
         # Register exports
         self.exports = {
             "automation_account_name": automation_account.name,
+            "log_analytics_workspace_id": self.log_analytics_workspace_id,
+            "log_analytics_workspace_key": self.log_analytics_workspace_key,
             "resource_group_name": resource_group.name,
         }

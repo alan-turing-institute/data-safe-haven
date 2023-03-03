@@ -57,7 +57,7 @@ class SHMDomainControllersProps:
         )  # maximum of 15 characters
         self.location = location
         self.log_analytics_workspace_id = log_analytics_workspace_id
-        self.log_analytics_workspace_key = Output.secret(log_analytics_workspace_key)
+        self.log_analytics_workspace_key = log_analytics_workspace_key
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect
         self.password_domain_computer_manager = password_domain_computer_manager
@@ -110,6 +110,8 @@ class SHMDomainControllersComponent(ComponentResource):
                 ip_address_public=False,
                 ip_address_private=props.private_ip_address,
                 location=props.location,
+                log_analytics_workspace_id=props.log_analytics_workspace_id,
+                log_analytics_workspace_key=props.log_analytics_workspace_key,
                 resource_group_name=resource_group.name,
                 subnet_name=props.subnet_name,
                 virtual_network_name=props.virtual_network_name,
@@ -184,27 +186,6 @@ class SHMDomainControllersComponent(ComponentResource):
                 ),
                 child_opts,
             ),
-        )
-
-        # Register with Log Analytics workspace
-        log_analytics_extension = compute.VirtualMachineExtension(
-            f"{self._name}_log_analytics_extension",
-            auto_upgrade_minor_version=True,
-            enable_automatic_upgrade=False,
-            location=props.location,
-            publisher="Microsoft.EnterpriseCloud.Monitoring",
-            protected_settings=props.log_analytics_workspace_key.apply(
-                lambda key: {"workspaceKey": key}
-            ),
-            resource_group_name=resource_group.name,
-            settings=Output.from_input(props.log_analytics_workspace_id).apply(
-                lambda id: {"workspaceId": id}
-            ),
-            type="MicrosoftMonitoringAgent",
-            type_handler_version="1.0",
-            vm_extension_name="MicrosoftMonitoringAgent",
-            vm_name=primary_domain_controller.vm_name,
-            opts=child_opts,
         )
 
         # Register outputs

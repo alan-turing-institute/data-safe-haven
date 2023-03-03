@@ -269,10 +269,16 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             virtual_network_name=f"{stack_name}-vnet",
-            opts=child_opts,
+            virtual_network_peerings=[],
+            opts=ResourceOptions.merge(
+                ResourceOptions(
+                    ignore_changes=["virtual_network_peerings"]
+                ),  # allow peering to SHM virtual network
+                child_opts,
+            ),
         )
 
-        # Peer to the SHM virtual network
+        # Peer the SHM virtual network to the SRE virtual network
         shm_virtual_network = Output.all(
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=props.shm_virtual_network_name,
@@ -292,6 +298,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         peering_shm_to_sre = network.VirtualNetworkPeering(
             f"{self._name}_shm_to_sre_peering",
+            allow_gateway_transit=True,
             remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=shm_virtual_network.name,

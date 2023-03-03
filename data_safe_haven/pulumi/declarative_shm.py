@@ -103,6 +103,8 @@ class DeclarativeSHM:
                     "password-update-server-linux-admin"
                 ),
                 location=self.cfg.azure.location,
+                log_analytics_workspace_id=monitoring.log_analytics_workspace_id,
+                log_analytics_workspace_key=monitoring.log_analytics_workspace_key,
                 resource_group_name=monitoring.resource_group_name,
                 subnet=networking.subnet_update_servers,
                 virtual_network_name=networking.virtual_network.name,

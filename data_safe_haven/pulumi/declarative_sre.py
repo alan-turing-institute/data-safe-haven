@@ -81,6 +81,7 @@ class DeclarativeSRE:
                 resource_group_name=self.secrets.require(
                     "shm-monitoring-resource_group_name"
                 ),
+                sre_index=self.cfg.sre[self.sre_name].index,
                 timezone=self.cfg.shm.timezone,
             ),
         )

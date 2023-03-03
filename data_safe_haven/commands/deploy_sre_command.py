@@ -81,42 +81,62 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
             stack.add_option(
                 "shm-domain_controllers-domain_sid",
                 shm_stack.output("domain_controllers")["domain_sid"],
+                True,
             )
             stack.add_option(
                 "shm-domain_controllers-ldap_root_dn",
                 shm_stack.output("domain_controllers")["ldap_root_dn"],
+                True,
             )
             stack.add_option(
                 "shm-domain_controllers-ldap_server_ip",
                 shm_stack.output("domain_controllers")["ldap_server_ip"],
+                True,
             )
             stack.add_option(
                 "shm-monitoring-automation_account_name",
                 shm_stack.output("monitoring")["automation_account_name"],
+                True,
+            )
+            stack.add_option(
+                "shm-monitoring-log_analytics_workspace_id",
+                shm_stack.output("monitoring")["log_analytics_workspace_id"],
+                True,
+            )
+            stack.add_secret(
+                "shm-monitoring-log_analytics_workspace_key",
+                shm_stack.output("monitoring")["log_analytics_workspace_key"],
+                True,
             )
             stack.add_option(
                 "shm-monitoring-resource_group_name",
                 shm_stack.output("monitoring")["resource_group_name"],
+                True,
             )
             stack.add_option(
                 "shm-networking-resource_group_name",
                 shm_stack.output("networking")["resource_group_name"],
+                True,
             )
             stack.add_option(
                 "shm-networking-subnet_identity_servers_prefix",
                 shm_stack.output("networking")["subnet_identity_servers_prefix"],
+                True,
             )
             stack.add_option(
                 "shm-networking-subnet_update_servers_prefix",
                 shm_stack.output("networking")["subnet_update_servers_prefix"],
+                True,
             )
             stack.add_option(
                 "shm-networking-virtual_network_name",
                 shm_stack.output("networking")["virtual_network_name"],
+                True,
             )
             stack.add_option(
                 "shm-update_servers-ip_address_linux",
                 shm_stack.output("update_servers")["ip_address_linux"],
+                True,
             )
             # Add necessary secrets
             stack.copy_secret("password-domain-ldap-searcher", shm_stack)
