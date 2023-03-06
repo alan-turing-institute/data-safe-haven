@@ -22,7 +22,9 @@ class RemoteScriptProps:
         subscription_name: Input[str],
         vm_name: Input[str],
         vm_resource_group_name: Input[str],
+        force_refresh: Optional[Input[bool]] = False,
     ):
+        self.force_refresh = force_refresh
         self.script_contents = script_contents
         self.script_hash = script_hash
         self.script_parameters = script_parameters
@@ -59,6 +61,13 @@ class RemoteScriptProvider(DshResourceProvider):
         new_props: Dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
+        if new_props["force_refresh"]:
+            return DiffResult(
+                changes=True,
+                replaces=list(new_props.keys()),
+                stables=[],
+                delete_before_replace=True,
+            )
         return self.partial_diff(old_props, new_props, [])
 
 

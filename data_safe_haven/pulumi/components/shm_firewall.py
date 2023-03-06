@@ -13,15 +13,6 @@ from data_safe_haven.pulumi.transformations import get_id_from_subnet
 class SHMFirewallProps:
     """Properties for SHMFirewallComponent"""
 
-    domain_controller_private_ip: Input[str]
-    dns_zone_name: Output[str]
-    location: Input[str]
-    resource_group_name: Input[str]
-    route_table_name: Input[str]
-    subnet_firewall_id: Output[str]
-    subnet_identity_servers_iprange: Output[str]
-    subnet_update_servers_iprange: Output[str]
-
     def __init__(
         self,
         domain_controller_private_ip: Input[str],
@@ -83,8 +74,8 @@ class SHMFirewallComponent(ComponentResource):
 
         # Deploy IP address
         public_ip = network.PublicIPAddress(
-            f"{self._name}_public_ip",
-            public_ip_address_name=f"{stack_name}-firewall-public-ip",
+            f"{self._name}_pip_firewall",
+            public_ip_address_name=f"{stack_name}-pip-firewall",
             public_ip_allocation_method="Static",
             resource_group_name=props.resource_group_name,
             sku=network.PublicIPAddressSkuArgs(name="Standard"),

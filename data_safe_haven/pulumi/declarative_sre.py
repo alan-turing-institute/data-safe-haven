@@ -11,6 +11,7 @@ from .components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
+from .components.sre_monitoring import SREMonitoringComponent, SREMonitoringProps
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
 from .components.sre_remote_desktop import (
     SRERemoteDesktopComponent,
@@ -39,7 +40,7 @@ class DeclarativeSRE:
         # Load pulumi configuration secrets
         self.secrets = pulumi.Config()
 
-        # Define networking
+        # Deploy networking
         networking = SRENetworkingComponent(
             "sre_networking",
             self.stack_name,
@@ -53,6 +54,9 @@ class DeclarativeSRE:
                 shm_subnet_identity_servers_prefix=self.secrets.require(
                     "shm-networking-subnet_identity_servers_prefix",
                 ),
+                shm_subnet_monitoring_prefix=self.secrets.require(
+                    "shm-networking-subnet_subnet_monitoring_prefix",
+                ),
                 shm_subnet_update_servers_prefix=self.secrets.require(
                     "shm-networking-subnet_update_servers_prefix",
                 ),
@@ -64,7 +68,28 @@ class DeclarativeSRE:
             ),
         )
 
-        # Define state storage
+        # Deploy automated monitoring
+        monitoring = SREMonitoringComponent(
+            "sre_monitoring",
+            self.stack_name,
+            self.shm_name,
+            SREMonitoringProps(
+                automation_account_name=self.secrets.require(
+                    "shm-monitoring-automation_account_name"
+                ),
+                location=self.cfg.azure.location,
+                subscription_resource_id=networking.resource_group.id.apply(
+                    lambda id_: id_.split("/resourceGroups/")[0]
+                ),
+                resource_group_name=self.secrets.require(
+                    "shm-monitoring-resource_group_name"
+                ),
+                sre_index=self.cfg.sre[self.sre_name].index,
+                timezone=self.cfg.shm.timezone,
+            ),
+        )
+
+        # Deploy state storage
         state = SREStateComponent(
             "sre_state",
             self.stack_name,
@@ -81,7 +106,7 @@ class DeclarativeSRE:
             ),
         )
 
-        # Define frontend application gateway
+        # Deploy frontend application gateway
         application_gateway = SREApplicationGatewayComponent(
             "sre_application_gateway",
             self.stack_name,
@@ -96,7 +121,7 @@ class DeclarativeSRE:
             ),
         )
 
-        # Define containerised remote desktop gateway
+        # Deploy containerised remote desktop gateway
         remote_desktop = SRERemoteDesktopComponent(
             "sre_remote_desktop",
             self.stack_name,
@@ -119,6 +144,7 @@ class DeclarativeSRE:
             ),
         )
 
+        # Deploy secure research desktops
         research_desktops = SREResearchDesktopComponent(
             "sre_secure_research_desktop",
             self.stack_name,
@@ -141,6 +167,12 @@ class DeclarativeSRE:
                     "shm-update_servers-ip_address_linux"
                 ),
                 location=self.cfg.azure.location,
+                log_analytics_workspace_id=self.secrets.require(
+                    "shm-monitoring-log_analytics_workspace_id"
+                ),
+                log_analytics_workspace_key=self.secrets.require(
+                    "shm-monitoring-log_analytics_workspace_key"
+                ),
                 security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
                 subnet_research_desktops=networking.subnet_research_desktops,
                 virtual_network_resource_group=networking.resource_group,

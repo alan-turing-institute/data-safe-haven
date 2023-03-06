@@ -20,6 +20,7 @@ class SRENetworkingProps:
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
         shm_subnet_identity_servers_prefix: Input[str],
+        shm_subnet_monitoring_prefix: Input[str],
         shm_subnet_update_servers_prefix: Input[str],
         shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
@@ -46,6 +47,7 @@ class SRENetworkingProps:
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
         self.shm_subnet_identity_servers_prefix = shm_subnet_identity_servers_prefix
+        self.shm_subnet_monitoring_prefix = shm_subnet_monitoring_prefix
         self.shm_subnet_update_servers_prefix = shm_subnet_update_servers_prefix
         self.shm_virtual_network_name = shm_virtual_network_name
         self.shm_zone_name = shm_zone_name
@@ -177,6 +179,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to local monitoring tools.",
+                    destination_address_prefix=str(props.shm_subnet_monitoring_prefix),
+                    destination_port_ranges=["443"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowMonitoringToolsOutbound",
+                    priority=1500,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_research_desktops_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to Linux update servers.",
                     destination_address_prefix=props.shm_subnet_update_servers_prefix,
                     destination_port_ranges=["8000"],
@@ -269,10 +283,16 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             virtual_network_name=f"{stack_name}-vnet",
-            opts=child_opts,
+            virtual_network_peerings=[],
+            opts=ResourceOptions.merge(
+                ResourceOptions(
+                    ignore_changes=["virtual_network_peerings"]
+                ),  # allow peering to SHM virtual network
+                child_opts,
+            ),
         )
 
-        # Peer to the SHM virtual network
+        # Peer the SHM virtual network to the SRE virtual network
         shm_virtual_network = Output.all(
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=props.shm_virtual_network_name,
@@ -292,6 +312,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         peering_shm_to_sre = network.VirtualNetworkPeering(
             f"{self._name}_shm_to_sre_peering",
+            allow_gateway_transit=True,
             remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=shm_virtual_network.name,

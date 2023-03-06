@@ -5,7 +5,7 @@ from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import automation, network, resources
+from pulumi_azure_native import network
 
 # Local imports
 from data_safe_haven.helpers import b64encode
@@ -23,6 +23,8 @@ class SHMUpdateServersProps:
         self,
         admin_password: Input[str],
         location: Input[str],
+        log_analytics_workspace_id: Input[str],
+        log_analytics_workspace_key: Input[str],
         resource_group_name: Input[str],
         subnet: Input[network.GetSubnetResult],
         virtual_network_name: Input[str],
@@ -35,6 +37,8 @@ class SHMUpdateServersProps:
         )
         self.ip_address_linux = available_ip_addresses.apply(lambda ips: ips[0])
         self.location = location
+        self.log_analytics_workspace_id = log_analytics_workspace_id
+        self.log_analytics_workspace_key = log_analytics_workspace_key
         self.resource_group_name = resource_group_name
         self.subnet_name = Output.from_input(subnet).apply(get_name_from_subnet)
         self.virtual_network_name = virtual_network_name
@@ -66,6 +70,8 @@ class SHMUpdateServersComponent(ComponentResource):
                 b64cloudinit=b64cloudinit,
                 ip_address_private=props.ip_address_linux,
                 location=props.location,
+                log_analytics_workspace_id=props.log_analytics_workspace_id,
+                log_analytics_workspace_key=props.log_analytics_workspace_key,
                 resource_group_name=props.resource_group_name,
                 subnet_name=props.subnet_name,
                 virtual_network_name=props.virtual_network_name,

@@ -6,11 +6,16 @@ from typing import Any, Dict, Optional
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import compute, network
 
+# Local imports
+from data_safe_haven.helpers import replace_separators
+
 
 class VMProps:
     """Properties for WindowsVMComponent"""
 
     image_reference_args: Optional[compute.ImageReferenceArgs]
+    log_analytics_extension_name: str
+    log_analytics_extension_version: str
     os_profile_args: Optional[compute.OSProfileArgs]
 
     def __init__(
@@ -26,6 +31,8 @@ class VMProps:
         vm_size: Input[str],
         admin_username: Optional[Input[str]] = None,
         ip_address_public: Optional[Input[bool]] = None,
+        log_analytics_workspace_id: Optional[Input[str]] = None,
+        log_analytics_workspace_key: Optional[Input[str]] = None,
     ):
         self.admin_password = admin_password
         self.admin_username = admin_username if admin_username else "dshvmadmin"
@@ -33,6 +40,8 @@ class VMProps:
         self.ip_address_private = ip_address_private
         self.ip_address_public = ip_address_public
         self.location = location
+        self.log_analytics_workspace_id = log_analytics_workspace_id
+        self.log_analytics_workspace_key = log_analytics_workspace_key
         self.os_profile_args = None
         self.resource_group_name = resource_group_name
         self.subnet_name = subnet_name
@@ -80,6 +89,8 @@ class WindowsVMProps(VMProps):
                 provision_vm_agent=True,
             ),
         )
+        self.log_analytics_extension_name = "MicrosoftMonitoringAgent"
+        self.log_analytics_extension_version = "1.0"
 
 
 class LinuxVMProps(VMProps):
@@ -110,6 +121,8 @@ class LinuxVMProps(VMProps):
                 provision_vm_agent=True,
             ),
         )
+        self.log_analytics_extension_name = "OmsAgentForLinux"
+        self.log_analytics_extension_version = "1.14"
 
 
 class VMComponent(ComponentResource):
@@ -167,7 +180,7 @@ class VMComponent(ComponentResource):
 
         # Define virtual machine
         virtual_machine = compute.VirtualMachine(
-            self._name,
+            replace_separators(self._name, "_"),
             diagnostics_profile=compute.DiagnosticsProfileArgs(
                 boot_diagnostics=compute.BootDiagnosticsArgs(enabled=True)
             ),
@@ -205,6 +218,29 @@ class VMComponent(ComponentResource):
                 child_opts,
             ),
         )
+
+        # Register with Log Analytics workspace
+        if props.log_analytics_workspace_key and props.log_analytics_workspace_id:
+            log_analytics_extension = compute.VirtualMachineExtension(
+                replace_separators(f"{self._name}_log_analytics_extension", "_"),
+                auto_upgrade_minor_version=True,
+                enable_automatic_upgrade=False,
+                location=props.location,
+                publisher="Microsoft.EnterpriseCloud.Monitoring",
+                protected_settings=Output.from_input(
+                    props.log_analytics_workspace_key
+                ).apply(lambda key: {"workspaceKey": key}),
+                resource_group_name=props.resource_group_name,
+                settings=Output.from_input(props.log_analytics_workspace_id).apply(
+                    lambda id: {"workspaceId": id}
+                ),
+                type=props.log_analytics_extension_name,
+                type_handler_version=props.log_analytics_extension_version,
+                vm_extension_name=props.log_analytics_extension_name,
+                vm_name=virtual_machine.name,
+                opts=child_opts,
+            )
+
         # Register outputs
         self.ip_address_private: Output[str] = Output.from_input(
             props.ip_address_private

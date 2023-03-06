@@ -31,6 +31,8 @@ class SREResearchDesktopProps:
         ldap_server_ip: Input[str],
         linux_update_server_ip: Input[str],
         location: Input[str],
+        log_analytics_workspace_id: Input[str],
+        log_analytics_workspace_key: Input[str],
         security_group_name: Input[str],
         subnet_research_desktops: Input[network.GetSubnetResult],
         virtual_network_resource_group: Input[resources.ResourceGroup],
@@ -45,6 +47,8 @@ class SREResearchDesktopProps:
         self.ldap_server_ip = ldap_server_ip
         self.linux_update_server_ip = linux_update_server_ip
         self.location = location
+        self.log_analytics_workspace_id = log_analytics_workspace_id
+        self.log_analytics_workspace_key = log_analytics_workspace_key
         self.security_group_name = security_group_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
             get_name_from_vnet
@@ -119,7 +123,9 @@ class SREResearchDesktopComponent(ComponentResource):
             vm_names=props.vm_names,
             vm_sizes=props.vm_sizes,
         )
-        # Note that deploying inside an apply is advised against but not forbidden
+        # Note that creating resources inside an .apply() is discouraged but not
+        # forbidden. This is the one way to create one resource for each entry in
+        # an Output[Sequence]. See https://github.com/pulumi/pulumi/issues/3849.
         vms = vm_details.apply(
             lambda kwargs: [
                 VMComponent(
@@ -130,6 +136,8 @@ class SREResearchDesktopComponent(ComponentResource):
                         b64cloudinit=b64cloudinit,
                         ip_address_private=str(vm_ip_address),
                         location=props.location,
+                        log_analytics_workspace_id=props.log_analytics_workspace_id,
+                        log_analytics_workspace_key=props.log_analytics_workspace_key,
                         resource_group_name=resource_group.name,
                         subnet_name=props.subnet_research_desktops_name,
                         virtual_network_name=props.virtual_network_name,
@@ -147,13 +155,11 @@ class SREResearchDesktopComponent(ComponentResource):
         # Get details for each deployed VM
         vm_outputs = vms.apply(
             lambda vms: [
-                Output.all(vm.ip_address_private, vm.vm_name, vm.vm_size).apply(
-                    lambda args: {
-                        "ip_address": str(args[0]),
-                        "name": str(args[1]),
-                        "sku": str(args[2]),
-                    }
-                )
+                {
+                    "ip_address": vm.ip_address_private,
+                    "name": vm.vm_name,
+                    "sku": vm.vm_size,
+                }
                 for vm in vms
             ]
         )

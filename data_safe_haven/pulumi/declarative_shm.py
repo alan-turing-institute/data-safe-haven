@@ -36,7 +36,7 @@ class DeclarativeSHM:
         # Load pulumi configuration secrets
         self.secrets = pulumi.Config()
 
-        # Deploy SHM networking
+        # Deploy networking
         networking = SHMNetworkingComponent(
             "shm_networking",
             self.stack_name,
@@ -51,7 +51,7 @@ class DeclarativeSHM:
             ),
         )
 
-        # Deploy SHM firewall and routing
+        # Deploy firewall and routing
         firewall = SHMFirewallComponent(
             "shm_firewall",
             self.stack_name,
@@ -68,7 +68,7 @@ class DeclarativeSHM:
             ),
         )
 
-        # Deploy SHM state
+        # Deploy state storage
         state = SHMStateComponent(
             "shm_state",
             self.stack_name,
@@ -80,7 +80,7 @@ class DeclarativeSHM:
             ),
         )
 
-        # Deploy SHM monitoring
+        # Deploy automated monitoring
         monitoring = SHMMonitoringComponent(
             "shm_monitoring",
             self.stack_name,
@@ -89,6 +89,7 @@ class DeclarativeSHM:
                 dns_resource_group_name=networking.resource_group_name,
                 location=self.cfg.azure.location,
                 subnet_monitoring=networking.subnet_monitoring,
+                timezone=self.cfg.shm.timezone,
             ),
         )
 
@@ -102,6 +103,8 @@ class DeclarativeSHM:
                     "password-update-server-linux-admin"
                 ),
                 location=self.cfg.azure.location,
+                log_analytics_workspace_id=monitoring.log_analytics_workspace_id,
+                log_analytics_workspace_key=monitoring.log_analytics_workspace_key,
                 resource_group_name=monitoring.resource_group_name,
                 subnet=networking.subnet_update_servers,
                 virtual_network_name=networking.virtual_network.name,
@@ -123,6 +126,8 @@ class DeclarativeSHM:
                 domain_fqdn=networking.dns_zone.name,
                 domain_netbios_name=self.shm_name.upper(),
                 location=self.cfg.azure.location,
+                log_analytics_workspace_id=monitoring.log_analytics_workspace_id,
+                log_analytics_workspace_key=monitoring.log_analytics_workspace_key,
                 password_domain_admin=self.secrets.require("password-domain-admin"),
                 password_domain_azuread_connect=self.secrets.require(
                     "password-domain-azure-ad-connect"
@@ -145,5 +150,6 @@ class DeclarativeSHM:
         # Export values for later use
         pulumi.export("domain_controllers", domain_controllers.exports)
         pulumi.export("fqdn_nameservers", networking.dns_zone.name_servers)
+        pulumi.export("monitoring", monitoring.exports)
         pulumi.export("networking", networking.exports)
         pulumi.export("update_servers", update_servers.exports)

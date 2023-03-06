@@ -8,6 +8,7 @@ from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.helpers.functions import ordered_private_dns_zones
 
 
 class SHMNetworkingProps:
@@ -31,7 +32,7 @@ class SHMNetworkingProps:
         self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
         # VPN gateway subnet must be at least /29 in size (8 addresses)
         self.subnet_vpn_gateway_iprange = self.vnet_iprange.next_subnet(8)
-        self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(8)
+        self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(32)
         self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
         self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
 
@@ -99,12 +100,24 @@ class SHMNetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to local monitoring tools.",
+                    destination_address_prefix=str(props.subnet_monitoring_iprange),
+                    destination_port_ranges=["443"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowMonitoringToolsOutbound",
+                    priority=1500,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=str(props.subnet_update_servers_iprange),
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to Linux update servers.",
                     destination_address_prefix="Internet",
                     destination_port_ranges=["80", "443"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLinuxUpdatesOutbound",
-                    priority=900,
+                    priority=3600,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=str(props.subnet_update_servers_iprange),
                     source_port_range="*",
@@ -294,14 +307,7 @@ class SHMNetworkingComponent(ComponentResource):
         )
 
         # Set up private link domains
-        for private_link_domain in [
-            "agentsvc.azure-automation.net",
-            "azure-automation.net",  # note this must come after 'agentsvc.azure-automation.net'
-            "blob.core.windows.net",
-            "monitor.azure.com",
-            "ods.opinsights.azure.com",
-            "oms.opinsights.azure.com",
-        ]:
+        for private_link_domain in ordered_private_dns_zones():
             private_zone = network.PrivateZone(
                 f"{self._name}_private_zone_{private_link_domain}",
                 location="Global",
@@ -360,10 +366,13 @@ class SHMNetworkingComponent(ComponentResource):
         self.exports = {
             "resource_group_name": resource_group.name,
             "subnet_identity_servers_prefix": self.subnet_identity_servers.apply(
-                lambda s: s.address_prefix
+                lambda s: str(s.address_prefix) if s.address_prefix else ""
+            ),
+            "subnet_monitoring_prefix": self.subnet_monitoring.apply(
+                lambda s: str(s.address_prefix) if s.address_prefix else ""
             ),
             "subnet_update_servers_prefix": self.subnet_update_servers.apply(
-                lambda s: s.address_prefix
+                lambda s: str(s.address_prefix) if s.address_prefix else ""
             ),
             "virtual_network_name": virtual_network.name,
         }

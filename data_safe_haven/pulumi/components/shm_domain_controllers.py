@@ -28,6 +28,8 @@ class SHMDomainControllersProps:
         domain_fqdn: Input[str],
         domain_netbios_name: Input[str],
         location: Input[str],
+        log_analytics_workspace_id: Input[str],
+        log_analytics_workspace_key: Input[str],
         password_domain_admin: Input[str],
         password_domain_azuread_connect: Input[str],
         password_domain_computer_manager: Input[str],
@@ -54,6 +56,8 @@ class SHMDomainControllersProps:
             lambda n: n[:15]
         )  # maximum of 15 characters
         self.location = location
+        self.log_analytics_workspace_id = log_analytics_workspace_id
+        self.log_analytics_workspace_key = log_analytics_workspace_key
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect
         self.password_domain_computer_manager = password_domain_computer_manager
@@ -106,6 +110,8 @@ class SHMDomainControllersComponent(ComponentResource):
                 ip_address_public=False,
                 ip_address_private=props.private_ip_address,
                 location=props.location,
+                log_analytics_workspace_id=props.log_analytics_workspace_id,
+                log_analytics_workspace_key=props.log_analytics_workspace_key,
                 resource_group_name=resource_group.name,
                 subnet_name=props.subnet_name,
                 virtual_network_name=props.virtual_network_name,
@@ -163,6 +169,7 @@ class SHMDomainControllersComponent(ComponentResource):
         domain_sid = RemoteScript(
             f"{self._name}_get_ad_sid",
             RemoteScriptProps(
+                force_refresh=True,
                 script_contents=domain_sid_script.file_contents(),
                 script_hash=domain_sid_script.sha256(),
                 script_parameters={},
@@ -171,13 +178,13 @@ class SHMDomainControllersComponent(ComponentResource):
                 vm_resource_group_name=resource_group.name,
             ),
             opts=ResourceOptions.merge(
-                child_opts,
                 ResourceOptions(
                     depends_on=[
                         primary_domain_controller,
                         primary_domain_controller_dsc_node,
                     ]
                 ),
+                child_opts,
             ),
         )
 

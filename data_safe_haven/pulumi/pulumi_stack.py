@@ -75,16 +75,19 @@ class PulumiStack(LoggingMixin):
         """Load the Pulumi stack, creating if needed."""
         if not self.stack_:
             self.info(f"Creating/loading stack <fg=green>{self.stack_name}</>.")
-            self.stack_ = automation.create_or_select_stack(
-                project_name="data_safe_haven",
-                stack_name=self.stack_name,
-                program=self.program.run,
-                opts=automation.LocalWorkspaceOptions(
-                    secrets_provider=self.cfg.backend.pulumi_secrets_provider,
-                    work_dir=str(self.work_dir),
-                    env_vars=self.env,
-                ),
-            )
+            try:
+                self.stack_ = automation.create_or_select_stack(
+                    project_name="data_safe_haven",
+                    stack_name=self.stack_name,
+                    program=self.program.run,
+                    opts=automation.LocalWorkspaceOptions(
+                        secrets_provider=self.cfg.backend.pulumi_secrets_provider,
+                        work_dir=str(self.work_dir),
+                        env_vars=self.env,
+                    ),
+                )
+            except automation.errors.CommandError as exc:
+                raise DataSafeHavenPulumiException(f"Could not load Pulumi stack {self.stack_name}.\n{str(exc)}") from exc
         return self.stack_
 
     def add_option(self, name: str, value: str, replace: bool = False) -> None:
