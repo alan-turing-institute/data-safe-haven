@@ -145,9 +145,6 @@ class SHMMonitoringComponent(ComponentResource):
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
                     name=replace_separators(f"{stack_name}-aa-to-{dns_zone_name}", "-"),
-                    # private_dns_zone_id=Output.from_input(props.dns_resource_group_name).apply(
-                    #     lambda rg_name: network.get_private_zone(private_zone_name=f"privatelink.{dns_zone_name}", resource_group_name=rg_name).id
-                    # ),
                     private_dns_zone_id=Output.concat(
                         props.dns_zone_id_base, dns_zone_name
                     ),
