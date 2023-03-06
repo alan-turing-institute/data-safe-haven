@@ -1,6 +1,6 @@
 # Standard library imports
 import pathlib
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional, Tuple
 
 # Third party imports
 import chevron
@@ -37,7 +37,7 @@ class SREResearchDesktopProps:
         subnet_research_desktops: Input[network.GetSubnetResult],
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
-        vm_details: Input[Dict[str, Dict[str, str]]],
+        vm_details: List[Tuple[int, str, str]],  # this must *not* be passed as an Input[T]
     ):
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
@@ -62,17 +62,7 @@ class SREResearchDesktopProps:
         self.vm_ip_addresses = Output.all(subnet_research_desktops, vm_details).apply(
             lambda args: self.get_ip_addresses(subnet=args[0], vm_details=args[1])
         )
-        vm_lists = Output.from_input(vm_details).apply(
-            lambda d: [
-                (
-                    name,
-                    details["sku"],
-                )
-                for name, details in d.items()
-            ]
-        )
-        self.vm_names = vm_lists.apply(lambda l: [t[0] for t in l])
-        self.vm_sizes = vm_lists.apply(lambda l: [t[1] for t in l])
+        self.vm_details = vm_details
 
     def get_ip_addresses(self, subnet: Any, vm_details: Any) -> List[str]:
         if not isinstance(subnet, network.GetSubnetResult):
@@ -117,52 +107,39 @@ class SREResearchDesktopComponent(ComponentResource):
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
 
         # Deploy a variable number of VMs depending on the input parameters
-        # We separate the all() and apply() in order to provide a type-hint
-        vm_details: Output[Dict[str, List[str]]] = Output.all(
-            vm_ip_addresses=props.vm_ip_addresses,
-            vm_names=props.vm_names,
-            vm_sizes=props.vm_sizes,
-        )
-        # Note that creating resources inside an .apply() is discouraged but not
-        # forbidden. This is the one way to create one resource for each entry in
-        # an Output[Sequence]. See https://github.com/pulumi/pulumi/issues/3849.
-        vms = vm_details.apply(
-            lambda kwargs: [
-                VMComponent(
-                    replace_separators(f"sre-{sre_name}-vm-{vm_name}", "-"),
-                    LinuxVMProps(
-                        admin_password=props.admin_password,
-                        admin_username=props.admin_username,
-                        b64cloudinit=b64cloudinit,
-                        ip_address_private=str(vm_ip_address),
-                        location=props.location,
-                        log_analytics_workspace_id=props.log_analytics_workspace_id,
-                        log_analytics_workspace_key=props.log_analytics_workspace_key,
-                        resource_group_name=resource_group.name,
-                        subnet_name=props.subnet_research_desktops_name,
-                        virtual_network_name=props.virtual_network_name,
-                        virtual_network_resource_group_name=props.virtual_network_resource_group_name,
-                        vm_name=str(vm_name),
-                        vm_size=str(vm_size),
-                    ),
-                    opts=child_opts,
-                )
-                for vm_ip_address, vm_name, vm_size in zip(
-                    kwargs["vm_ip_addresses"], kwargs["vm_names"], kwargs["vm_sizes"]
-                )
-            ]
-        )
+        vms = [
+            VMComponent(
+                replace_separators(f"sre-{sre_name}-vm-{vm_name}", "-"),
+                LinuxVMProps(
+                    admin_password=props.admin_password,
+                    admin_username=props.admin_username,
+                    b64cloudinit=b64cloudinit,
+                    ip_address_private=props.vm_ip_addresses[vm_idx],
+                    location=props.location,
+                    log_analytics_workspace_id=props.log_analytics_workspace_id,
+                    log_analytics_workspace_key=props.log_analytics_workspace_key,
+                    resource_group_name=resource_group.name,
+                    subnet_name=props.subnet_research_desktops_name,
+                    virtual_network_name=props.virtual_network_name,
+                    virtual_network_resource_group_name=props.virtual_network_resource_group_name,
+                    vm_name=vm_name,
+                    vm_size=vm_size,
+                ),
+                opts=child_opts,
+            )
+            for vm_idx, vm_name, vm_size in props.vm_details
+        ]
+        # vms = []
+
         # Get details for each deployed VM
-        vm_outputs = vms.apply(
-            lambda vms: [
-                {
-                    "ip_address": vm.ip_address_private,
-                    "name": vm.vm_name,
-                    "sku": vm.vm_size,
-                }
-                for vm in vms
-            ]
-        )
+        vm_outputs = [
+            {
+                "ip_address": vm.ip_address_private,
+                "name": vm.vm_name,
+                "sku": vm.vm_size,
+            }
+            for vm in vms
+        ]
 
         # Register outputs
         self.resource_group = resource_group
