@@ -30,8 +30,9 @@ class SHMNetworkingProps:
         self.vnet_iprange = AzureIPv4Range("10.0.0.0", "10.0.255.255")
         # Firewall subnet must be at least /26 in size (64 addresses)
         self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
-        # VPN gateway subnet must be at least /29 in size (8 addresses)
-        self.subnet_vpn_gateway_iprange = self.vnet_iprange.next_subnet(8)
+        # Bastion subnet must be at least /26 in size (64 addresses)
+        self.subnet_bastion_iprange = self.vnet_iprange.next_subnet(64)
+        # Monitoring subnet needs 2 IP addresses for automation and 13 for log analytics
         self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(32)
         self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
         self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
@@ -172,16 +173,16 @@ class SHMNetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound RDP connections from admins.",
+                    description="Allow inbound RDP connections from admins using AzureBastion.",
                     destination_address_prefix=str(
                         props.subnet_identity_servers_iprange
                     ),
                     destination_port_ranges=["3389"],
                     direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowAdminRDPInbound",
+                    name="AllowBastionAdminsInbound",
                     priority=2000,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefixes=props.public_ip_range_admins,
+                    source_address_prefix=str(props.subnet_bastion_iprange),
                     source_port_range="*",
                 ),
             ],
@@ -205,7 +206,7 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Define the virtual network and its subnets
         subnet_firewall_name = "AzureFirewallSubnet"  # this name is forced by https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
-        subnet_vpn_gateway_name = "GatewaySubnet"  # this name is forced by https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-vpn-faq#do-i-need-a-gatewaysubnet
+        subnet_bastion_name = "AzureBastionSubnet"  # this name is forced by https://learn.microsoft.com/en-us/azure/bastion/configuration-settings#subnet
         subnet_monitoring_name = "MonitoringSubnet"
         subnet_update_servers_name = "UpdateServersSubnet"
         subnet_identity_servers_name = "IdentityServersSubnet"
@@ -223,12 +224,12 @@ class SHMNetworkingComponent(ComponentResource):
                     network_security_group=None,  # the firewall subnet must NOT have an NSG
                     route_table=None,  # the firewall subnet must NOT be attached to the route table
                 ),
-                # VPN gateway subnet
+                # Bastion subnet
                 network.SubnetArgs(
-                    address_prefix=str(props.subnet_vpn_gateway_iprange),
-                    name=subnet_vpn_gateway_name,
-                    network_security_group=None,  # the VPN gateway subnet must NOT have an NSG
-                    route_table=None,  # the VPN gateway subnet must NOT be attached to the route table
+                    address_prefix=str(props.subnet_bastion_iprange),
+                    name=subnet_bastion_name,
+                    network_security_group=None,  # the bastion subnet must NOT have an NSG
+                    route_table=None,  # the bastion subnet must NOT be attached to the route table
                 ),
                 # Monitoring subnet
                 network.SubnetArgs(
@@ -335,6 +336,11 @@ class SHMNetworkingComponent(ComponentResource):
         )
         self.resource_group_name = Output.from_input(resource_group.name)
         self.route_table = route_table
+        self.subnet_bastion = network.get_subnet_output(
+            subnet_name=subnet_bastion_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=virtual_network.name,
+        )
         self.subnet_firewall = network.get_subnet_output(
             subnet_name=subnet_firewall_name,
             resource_group_name=resource_group.name,
@@ -355,16 +361,14 @@ class SHMNetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=virtual_network.name,
         )
-        self.subnet_vpn_gateway = network.get_subnet_output(
-            subnet_name=subnet_vpn_gateway_name,
-            resource_group_name=resource_group.name,
-            virtual_network_name=virtual_network.name,
-        )
         self.virtual_network = virtual_network
 
         # Register exports
         self.exports = {
             "resource_group_name": resource_group.name,
+            "subnet_bastion_prefix": self.subnet_bastion.apply(
+                lambda s: str(s.address_prefix) if s.address_prefix else ""
+            ),
             "subnet_identity_servers_prefix": self.subnet_identity_servers.apply(
                 lambda s: str(s.address_prefix) if s.address_prefix else ""
             ),

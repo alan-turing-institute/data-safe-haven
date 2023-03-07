@@ -76,9 +76,11 @@ class SHMFirewallComponent(ComponentResource):
         public_ip = network.PublicIPAddress(
             f"{self._name}_pip_firewall",
             public_ip_address_name=f"{stack_name}-pip-firewall",
-            public_ip_allocation_method="Static",
+            public_ip_allocation_method=network.IPAllocationMethod.STATIC,
             resource_group_name=props.resource_group_name,
-            sku=network.PublicIPAddressSkuArgs(name="Standard"),
+            sku=network.PublicIPAddressSkuArgs(
+                name=network.PublicIPAddressSkuName.STANDARD
+            ),
             opts=child_opts,
         )
 
@@ -1176,3 +1178,4 @@ class SHMFirewallComponent(ComponentResource):
         self.external_dns_resolver = external_dns_resolver
         self.ntp_fqdns = ntp_fqdns
         self.ntp_ip_addresses = ntp_ip_addresses
+        self.public_ip_id = public_ip.id
