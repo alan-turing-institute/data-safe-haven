@@ -6,6 +6,9 @@ from typing import Optional
 from pulumi import Config, ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, resources
 
+# Local imports
+from data_safe_haven.helpers import password
+
 
 class SHMStateProps:
     """Properties for SHMStateComponent"""
