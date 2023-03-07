@@ -34,8 +34,8 @@ class DeclarativeSHM:
         return base_path / self.stack_name
 
     def run(self) -> None:
-        # Load pulumi configuration secrets
-        self.secrets = pulumi.Config()
+        # Load pulumi configuration options
+        self.pulumi_opts = pulumi.Config()
 
         # Deploy networking
         networking = SHMNetworkingComponent(
@@ -46,7 +46,7 @@ class DeclarativeSHM:
                 fqdn=self.cfg.shm.fqdn,
                 location=self.cfg.azure.location,
                 public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
-                record_domain_verification=self.secrets.require(
+                record_domain_verification=self.pulumi_opts.require(
                     "verification-azuread-custom-domain"
                 ),
             ),
@@ -89,6 +89,7 @@ class DeclarativeSHM:
             SHMStateProps(
                 admin_group_id=self.cfg.azure.admin_group_id,
                 location=self.cfg.azure.location,
+                pulumi_opts=self.pulumi_opts,
                 tenant_id=self.cfg.azure.tenant_id,
             ),
         )
@@ -112,9 +113,7 @@ class DeclarativeSHM:
             self.stack_name,
             self.shm_name,
             SHMUpdateServersProps(
-                admin_password=self.secrets.require(
-                    "password-update-server-linux-admin"
-                ),
+                admin_password=state.password_update_server_linux_admin,
                 location=self.cfg.azure.location,
                 log_analytics_workspace_id=monitoring.log_analytics_workspace_id,
                 log_analytics_workspace_key=monitoring.log_analytics_workspace_key,
@@ -141,16 +140,10 @@ class DeclarativeSHM:
                 location=self.cfg.azure.location,
                 log_analytics_workspace_id=monitoring.log_analytics_workspace_id,
                 log_analytics_workspace_key=monitoring.log_analytics_workspace_key,
-                password_domain_admin=self.secrets.require("password-domain-admin"),
-                password_domain_azuread_connect=self.secrets.require(
-                    "password-domain-azure-ad-connect"
-                ),
-                password_domain_computer_manager=self.secrets.require(
-                    "password-domain-computer-manager"
-                ),
-                password_domain_searcher=self.secrets.require(
-                    "password-domain-ldap-searcher"
-                ),
+                password_domain_admin=state.password_domain_admin,
+                password_domain_azuread_connect=state.password_domain_azure_ad_connect,
+                password_domain_computer_manager=state.password_domain_computer_manager,
+                password_domain_searcher=state.password_domain_searcher,
                 public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
                 private_ip_address=networking.domain_controller_private_ip,
                 subnet_identity_servers=networking.subnet_identity_servers,

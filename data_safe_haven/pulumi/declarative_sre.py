@@ -37,8 +37,8 @@ class DeclarativeSRE:
         return base_path / f"shm-{self.shm_name}" / f"sre-{self.sre_name}"
 
     def run(self) -> None:
-        # Load pulumi configuration secrets
-        self.secrets = pulumi.Config()
+        # Load pulumi configuration options
+        self.pulumi_opts = pulumi.Config()
 
         # Deploy networking
         networking = SRENetworkingComponent(
@@ -48,21 +48,21 @@ class DeclarativeSRE:
             SRENetworkingProps(
                 location=self.cfg.azure.location,
                 shm_fqdn=self.cfg.shm.fqdn,
-                shm_networking_resource_group_name=self.secrets.require(
+                shm_networking_resource_group_name=self.pulumi_opts.require(
                     "shm-networking-resource_group_name"
                 ),
-                shm_subnet_identity_servers_prefix=self.secrets.require(
+                shm_subnet_identity_servers_prefix=self.pulumi_opts.require(
                     "shm-networking-subnet_identity_servers_prefix",
                 ),
-                shm_subnet_monitoring_prefix=self.secrets.require(
+                shm_subnet_monitoring_prefix=self.pulumi_opts.require(
                     "shm-networking-subnet_subnet_monitoring_prefix",
                 ),
-                shm_subnet_update_servers_prefix=self.secrets.require(
+                shm_subnet_update_servers_prefix=self.pulumi_opts.require(
                     "shm-networking-subnet_update_servers_prefix",
                 ),
                 shm_zone_name=self.cfg.shm.fqdn,
                 sre_index=self.cfg.sre[self.sre_name].index,
-                shm_virtual_network_name=self.secrets.require(
+                shm_virtual_network_name=self.pulumi_opts.require(
                     "shm-networking-virtual_network_name"
                 ),
             ),
@@ -74,14 +74,14 @@ class DeclarativeSRE:
             self.stack_name,
             self.shm_name,
             SREMonitoringProps(
-                automation_account_name=self.secrets.require(
+                automation_account_name=self.pulumi_opts.require(
                     "shm-monitoring-automation_account_name"
                 ),
                 location=self.cfg.azure.location,
                 subscription_resource_id=networking.resource_group.id.apply(
                     lambda id_: id_.split("/resourceGroups/")[0]
                 ),
-                resource_group_name=self.secrets.require(
+                resource_group_name=self.pulumi_opts.require(
                     "shm-monitoring-resource_group_name"
                 ),
                 sre_index=self.cfg.sre[self.sre_name].index,
@@ -100,6 +100,7 @@ class DeclarativeSRE:
                 dns_record=networking.shm_ns_record,
                 location=self.cfg.azure.location,
                 networking_resource_group=networking.resource_group,
+                pulumi_opts=self.pulumi_opts,
                 sre_fqdn=networking.sre_fqdn,
                 subscription_name=self.cfg.subscription_name,
                 tenant_id=self.cfg.azure.tenant_id,
@@ -129,11 +130,11 @@ class DeclarativeSRE:
             SRERemoteDesktopProps(
                 aad_application_name=f"sre-{self.sre_name}-azuread-guacamole",
                 aad_application_fqdn=networking.sre_fqdn,
-                aad_auth_token=self.secrets.require("token-azuread-graphapi"),
+                aad_auth_token=self.pulumi_opts.require("token-azuread-graphapi"),
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
                 allow_copy=self.cfg.sre[self.sre_name].remote_desktop.allow_copy,
                 allow_paste=self.cfg.sre[self.sre_name].remote_desktop.allow_paste,
-                database_password=self.secrets.require("password-user-database-admin"),
+                database_password=state.password_user_database_admin,
                 location=self.cfg.azure.location,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
                 subnet_guacamole_database=networking.subnet_guacamole_database,
@@ -150,27 +151,27 @@ class DeclarativeSRE:
             self.stack_name,
             self.sre_name,
             SREResearchDesktopProps(
-                admin_password=self.secrets.require(
-                    "password-secure-research-desktop-admin"
+                admin_password=state.password_secure_research_desktop_admin,
+                domain_sid=self.pulumi_opts.require(
+                    "shm-domain_controllers-domain_sid"
                 ),
-                domain_sid=self.secrets.require("shm-domain_controllers-domain_sid"),
-                ldap_root_dn=self.secrets.require(
+                ldap_root_dn=self.pulumi_opts.require(
                     "shm-domain_controllers-ldap_root_dn"
                 ),
-                ldap_search_password=self.secrets.require(
+                ldap_search_password=self.pulumi_opts.require(
                     "password-domain-ldap-searcher"
                 ),
-                ldap_server_ip=self.secrets.require(
+                ldap_server_ip=self.pulumi_opts.require(
                     "shm-domain_controllers-ldap_server_ip"
                 ),
-                linux_update_server_ip=self.secrets.require(
+                linux_update_server_ip=self.pulumi_opts.require(
                     "shm-update_servers-ip_address_linux"
                 ),
                 location=self.cfg.azure.location,
-                log_analytics_workspace_id=self.secrets.require(
+                log_analytics_workspace_id=self.pulumi_opts.require(
                     "shm-monitoring-log_analytics_workspace_id"
                 ),
-                log_analytics_workspace_key=self.secrets.require(
+                log_analytics_workspace_key=self.pulumi_opts.require(
                     "shm-monitoring-log_analytics_workspace_key"
                 ),
                 security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",

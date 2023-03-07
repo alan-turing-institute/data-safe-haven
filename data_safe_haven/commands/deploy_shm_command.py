@@ -100,15 +100,6 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
                 stack_yaml = yaml.safe_load(f_stack)
             config.pulumi.stacks[stack.stack_name] = stack_yaml
 
-            # Add Pulumi secrets to the config file
-            for secret_name in [
-                "password-domain-admin",
-                "password-domain-azure-ad-connect",
-                "password-domain-ldap-searcher",
-                "password-update-server-linux-admin",
-            ]:
-                config.add_secret(secret_name, stack.secret(secret_name))
-
             # Upload config to blob storage
             config.upload()
 
