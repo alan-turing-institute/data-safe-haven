@@ -10,7 +10,7 @@ from pulumi_azure_native import network, resources
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
 from data_safe_haven.helpers import b64encode, replace_separators
-from data_safe_haven.pulumi.transformations import (
+from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_name_from_rg,
     get_name_from_subnet,

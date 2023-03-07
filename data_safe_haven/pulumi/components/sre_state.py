@@ -8,7 +8,7 @@ from pulumi_azure_native import keyvault, managedidentity, network, resources, s
 
 # Local imports
 from data_safe_haven.helpers import alphanumeric, sha256hash
-from data_safe_haven.pulumi.transformations import get_name_from_rg
+from data_safe_haven.pulumi.common.transformations import get_name_from_rg
 from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 
 

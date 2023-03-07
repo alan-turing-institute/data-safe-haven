@@ -9,6 +9,7 @@ from pulumi_azure_native import network, resources
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers.functions import ordered_private_dns_zones
+from ..common.enums import NetworkingPriorities
 
 
 class SHMNetworkingProps:
@@ -21,11 +22,6 @@ class SHMNetworkingProps:
         public_ip_range_admins: Input[Sequence[str]],
         record_domain_verification: Input[str],
     ):
-        self.fqdn = fqdn
-        self.location = location
-        self.public_ip_range_admins = public_ip_range_admins
-        self.record_domain_verification = record_domain_verification
-
         # Virtual network and subnet IP ranges
         self.vnet_iprange = AzureIPv4Range("10.0.0.0", "10.0.255.255")
         # Firewall subnet must be at least /26 in size (64 addresses)
@@ -36,6 +32,11 @@ class SHMNetworkingProps:
         self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(32)
         self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
         self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
+        # Other variables
+        self.fqdn = fqdn
+        self.location = location
+        self.public_ip_range_admins = public_ip_range_admins
+        self.record_domain_verification = record_domain_verification
 
 
 class SHMNetworkingComponent(ComponentResource):
@@ -68,6 +69,136 @@ class SHMNetworkingComponent(ComponentResource):
             security_rules=[],
             opts=child_opts,
         )
+        nsg_bastion = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_bastion",
+            network_security_group_name=f"{stack_name}-nsg-bastion",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound https connections from admins connecting from approved IP addresses.",
+                    destination_address_prefix="*",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    destination_port_ranges=["443"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowAdminHttpsInbound",
+                    priority=NetworkingPriorities.AUTHORISED_EXTERNAL_ADMIN_IPS,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefixes=props.public_ip_range_admins,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound gateway management service traffic.",
+                    destination_address_prefix="*",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    destination_port_ranges=["443"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowGatewayManagerServiceInbound",
+                    priority=NetworkingPriorities.AZURE_GATEWAY_MANAGER,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix="GatewayManager",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound load balancer service traffic.",
+                    destination_address_prefix="*",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    destination_port_ranges=["443"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowLoadBalancerServiceInbound",
+                    priority=NetworkingPriorities.AZURE_LOAD_BALANCER,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix="AzureLoadBalancer",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound internal bastion host communication.",
+                    destination_address_prefix="VirtualNetwork",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    destination_port_ranges=["5701", "8080"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowBastionHostInbound",
+                    priority=NetworkingPriorities.INTERNAL_SELF,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="VirtualNetwork",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DSH VMs.",
+                    destination_address_prefix="VirtualNetwork",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    destination_port_ranges=["22", "3389"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowRdpOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SHM_BASTION,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to Azure public endpoints.",
+                    destination_address_prefix="AzureCloud",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    destination_port_ranges=["443"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowAzureCloudOutbound",
+                    priority=NetworkingPriorities.AZURE_CLOUD,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix="*",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound internal bastion host communication.",
+                    destination_address_prefix="VirtualNetwork",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    destination_port_ranges=["5701", "8080"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowBastionHostOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SELF,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="VirtualNetwork",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections for session and certificate validation.",
+                    destination_address_prefix="Internet",
+                    destination_port_ranges=["80"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowCertificateValidationOutbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+        )
         nsg_update_servers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_update_servers",
             network_security_group_name=f"{stack_name}-nsg-update-servers",
@@ -81,7 +212,7 @@ class SHMNetworkingComponent(ComponentResource):
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowVirtualNetworkInbound",
-                    priority=1500,
+                    priority=NetworkingPriorities.INTERNAL_DSH_VIRTUAL_NETWORK,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix="VirtualNetwork",
                     source_port_range="*",
@@ -93,7 +224,7 @@ class SHMNetworkingComponent(ComponentResource):
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="DenyAllOtherInbound",
-                    priority=4096,
+                    priority=NetworkingPriorities.ALL_OTHER,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix="*",
                     source_port_range="*",
@@ -106,7 +237,7 @@ class SHMNetworkingComponent(ComponentResource):
                     destination_port_ranges=["443"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowMonitoringToolsOutbound",
-                    priority=1500,
+                    priority=NetworkingPriorities.INTERNAL_SHM_MONITORING_TOOLS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=str(props.subnet_update_servers_iprange),
                     source_port_range="*",
@@ -118,7 +249,7 @@ class SHMNetworkingComponent(ComponentResource):
                     destination_port_ranges=["80", "443"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLinuxUpdatesOutbound",
-                    priority=3600,
+                    priority=NetworkingPriorities.EXTERNAL_LINUX_UPDATES,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=str(props.subnet_update_servers_iprange),
                     source_port_range="*",
@@ -130,7 +261,7 @@ class SHMNetworkingComponent(ComponentResource):
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="DenyAllOtherOutbound",
-                    priority=4096,
+                    priority=NetworkingPriorities.ALL_OTHER,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix="*",
                     source_port_range="*",
@@ -152,7 +283,7 @@ class SHMNetworkingComponent(ComponentResource):
                     destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowLDAPClientUDPInbound",
-                    priority=1000,
+                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_UDP,
                     protocol=network.SecurityRuleProtocol.UDP,
                     source_address_prefix="*",
                     source_port_range="*",
@@ -166,7 +297,7 @@ class SHMNetworkingComponent(ComponentResource):
                     destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowLDAPClientTCPInbound",
-                    priority=1100,
+                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix="*",
                     source_port_range="*",
@@ -180,7 +311,7 @@ class SHMNetworkingComponent(ComponentResource):
                     destination_port_ranges=["3389"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowBastionAdminsInbound",
-                    priority=2000,
+                    priority=NetworkingPriorities.INTERNAL_SHM_BASTION,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=str(props.subnet_bastion_iprange),
                     source_port_range="*",
@@ -228,7 +359,9 @@ class SHMNetworkingComponent(ComponentResource):
                 network.SubnetArgs(
                     address_prefix=str(props.subnet_bastion_iprange),
                     name=subnet_bastion_name,
-                    network_security_group=None,  # the bastion subnet must NOT have an NSG
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_bastion.id
+                    ),
                     route_table=None,  # the bastion subnet must NOT be attached to the route table
                 ),
                 # Monitoring subnet

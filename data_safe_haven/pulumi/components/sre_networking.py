@@ -9,6 +9,7 @@ from pulumi_azure_native import network, resources
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers import alphanumeric
+from ..common.enums import NetworkingPriorities
 
 
 class SRENetworkingProps:
@@ -44,6 +45,7 @@ class SRENetworkingProps:
         )
         # Other variables
         self.location = location
+        self.public_ip_range_users = "Internet"
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
         self.shm_subnet_identity_servers_prefix = shm_subnet_identity_servers_prefix
@@ -97,24 +99,24 @@ class SRENetworkingComponent(ComponentResource):
             security_rules=[
                 network.SecurityRuleArgs(
                     access="Allow",
-                    description="Allow gateway management traffic by service tag.",
+                    description="Allow inbound gateway management service traffic.",
                     destination_address_prefix="*",
                     destination_port_range="*",
                     direction="Inbound",
                     name="AllowGatewayManagerServiceInbound",
-                    priority=1000,
+                    priority=NetworkingPriorities.AZURE_GATEWAY_MANAGER,
                     protocol="*",
                     source_address_prefix="GatewayManager",
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access="Allow",
-                    description="Allow gateway management traffic over the internet.",
+                    description="Allow inbound gateway management traffic over the internet.",
                     destination_address_prefix=subnet_application_gateway_prefix,
                     destination_port_range="65200-65535",
                     direction="Inbound",
                     name="AllowGatewayManagerInternetInbound",
-                    priority=1100,
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
                     protocol="*",
                     source_address_prefix="Internet",
                     source_port_range="*",
@@ -126,9 +128,9 @@ class SRENetworkingComponent(ComponentResource):
                     destination_port_ranges=["80", "443"],
                     direction="Inbound",
                     name="AllowInternetInbound",
-                    priority=3000,
+                    priority=NetworkingPriorities.AUTHORISED_EXTERNAL_USER_IPS,
                     protocol="TCP",
-                    source_address_prefix="Internet",
+                    source_address_prefix=props.public_ip_range_users,
                     source_port_range="*",
                 ),
             ],
@@ -159,7 +161,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_port_ranges=["22", "3389"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowRemoteDesktopGatewayInbound",
-                    priority=800,
+                    priority=NetworkingPriorities.INTERNAL_SRE_REMOTE_DESKTOP,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
@@ -171,7 +173,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="DenyAllOtherInbound",
-                    priority=4096,
+                    priority=NetworkingPriorities.ALL_OTHER,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix="*",
                     source_port_range="*",
@@ -184,7 +186,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_port_ranges=["443"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowMonitoringToolsOutbound",
-                    priority=1500,
+                    priority=NetworkingPriorities.INTERNAL_SHM_MONITORING_TOOLS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_research_desktops_prefix,
                     source_port_range="*",
@@ -196,7 +198,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_port_ranges=["8000"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLinuxUpdatesOutbound",
-                    priority=900,
+                    priority=NetworkingPriorities.INTERNAL_SHM_UPDATE_SERVERS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_research_desktops_prefix,
                     source_port_range="*",
@@ -208,7 +210,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLDAPClientUDPOutbound",
-                    priority=1000,
+                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_UDP,
                     protocol=network.SecurityRuleProtocol.UDP,
                     source_address_prefix=subnet_research_desktops_prefix,
                     source_port_range="*",
@@ -220,7 +222,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLDAPClientTCPOutbound",
-                    priority=1100,
+                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_research_desktops_prefix,
                     source_port_range="*",

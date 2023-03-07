@@ -7,7 +7,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
 # Local imports
-from data_safe_haven.pulumi.transformations import get_id_from_subnet
+from data_safe_haven.pulumi.common.transformations import get_id_from_subnet
 
 
 class SHMFirewallProps:
