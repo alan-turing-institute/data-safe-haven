@@ -26,11 +26,11 @@ packages:
     ipykernel:
     keras:
     lightgbm:
-    llvmlite:
-        "all": [">0.35.0"]  # recent versions are more likely to be pre-compiled
     lxml:
     matplotlib:
     nltk:
+    numba:
+        "3.11": ["uninstallable"]  # does not yet support 3.11
     numpy:
         "all": [">1.0.0"]  # increase solver flexibility
     pandas:
@@ -39,8 +39,8 @@ packages:
     pg8000:
     Pillow:
     plotly:
-    poetry:
-        "all": [">1.0.0"]  # also used by installation scripts
+    poetry:  # also used by installation scripts
+        "all": [">1.0.0"]  # increase solver flexibility
     prophet:
     psycopg2:
     pydot:
@@ -70,10 +70,14 @@ packages:
     sympy:
     tables:
     tensorflow:
+        "3.11": ["uninstallable"]  # does not yet support 3.11
     thinc:
     torch:
     torchvision:
+        "3.11": ["uninstallable"]  # does not yet support 3.11
     tsfresh:
+        "3.11": ["uninstallable"]  # requires numba
     wordcloud:
+        "3.11": ["uninstallable"]  # does not yet support 3.11
     xgboost:
     xlrd:
