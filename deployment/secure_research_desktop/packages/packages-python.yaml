@@ -27,19 +27,20 @@ packages:
     keras:
     lightgbm:
     llvmlite:
-        "all": [">0.35.0"]  # specify llvmlite to increase chance of getting a pre-compiled version
+        "all": [">0.35.0"]  # recent versions are more likely to be pre-compiled
     lxml:
     matplotlib:
     nltk:
     numpy:
-        "all": [">1.0.0"]  # allow flexibility in numpy version
+        "all": [">1.0.0"]  # increase solver flexibility
     pandas:
     pandasql:
     pathos:
     pg8000:
     Pillow:
     plotly:
-    poetry:  # also used by installation scripts
+    poetry:
+        "all": [">1.0.0"]  # also used by installation scripts
     prophet:
     psycopg2:
     pydot:
@@ -55,8 +56,8 @@ packages:
     regex:
     requests:
     safety:  # also used by installation scripts
-        "all": ["<2.1.1"]  # 2.1.1 requires a version of 'packaging' that is incompatible with poetry
     scikit-image:
+        "all": [">0.10.0"]  # increase solver flexibility
     scikit-learn:
     scipy:
     seaborn:
@@ -65,16 +66,14 @@ packages:
     Sphinx:
     SQLAlchemy:
     statsmodels:
-        "all": ["<0.13.2"]  # 0.13.2 requires a version of 'packaging' that is incompatible with poetry
+        "all": [">0.10.0"]  # increase solver flexibility
     sympy:
     tables:
-    tensorboard:
     tensorflow:
     thinc:
     torch:
     torchvision:
     tsfresh:
-        "3.10": ["uninstallable"]
     wordcloud:
     xgboost:
     xlrd:
