@@ -93,7 +93,8 @@ function Get-Dependencies {
                 if ($Repository -eq "pypi") {
                     # The best PyPI results come from the package JSON files
                     $response = Invoke-RestMethod -Uri "https://pypi.org/${Repository}/${Package}/${Version}/json" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
-                    $Cache[$Repository][$Package][$Version] = @($response.info.requires_dist | Where-Object { $_ -and ($_ -notmatch "extra ==") } | ForEach-Object { ($_ -split '[;[( ><=]')[0].Trim() } | Sort-Object -Unique)
+                    # Add canonical names to dependencies
+                    $Cache[$Repository][$Package][$Version] = @($response.info.requires_dist | Where-Object { $_ -and ($_ -notmatch "extra ==") } | ForEach-Object { ($_ -split '[;[( ><=!~]')[0].Trim().ToLower() } | Sort-Object -Unique)
                 } else {
                     # For other repositories we use libraries.io
                     try {
