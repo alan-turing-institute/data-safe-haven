@@ -3,7 +3,7 @@
 from typing import Optional
 
 # Third party imports
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import Config, ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, resources
 
 
@@ -14,11 +14,30 @@ class SHMStateProps:
         self,
         admin_group_id: Input[str],
         location: Input[str],
+        pulumi_opts: Config,
         tenant_id: Input[str],
     ):
         self.admin_group_id = admin_group_id
         self.location = location
+        self.password_domain_admin = self.get_secret(
+            pulumi_opts, "password-domain-admin"
+        )
+        self.password_domain_azure_ad_connect = self.get_secret(
+            pulumi_opts, "password-domain-azure-ad-connect"
+        )
+        self.password_domain_computer_manager = self.get_secret(
+            pulumi_opts, "password-domain-computer-manager"
+        )
+        self.password_domain_searcher = self.get_secret(
+            pulumi_opts, "password-domain-ldap-searcher"
+        )
+        self.password_update_server_linux_admin = self.get_secret(
+            pulumi_opts, "password-update-server-linux-admin"
+        )
         self.tenant_id = tenant_id
+
+    def get_secret(self, pulumi_opts: Config, secret_name: str) -> Output[str]:
+        return Output.secret(pulumi_opts.require(secret_name))
 
 
 class SHMStateComponent(ComponentResource):
@@ -111,6 +130,64 @@ class SHMStateComponent(ComponentResource):
             vault_name=f"{stack_name[:15]}-kv-state",  # maximum of 24 characters
             opts=child_opts,
         )
+
+        # Deploy key vault secrets
+        password_domain_admin = keyvault.Secret(
+            f"{self._name}_kvs_password_domain_admin",
+            properties=keyvault.SecretPropertiesArgs(value=props.password_domain_admin),
+            resource_group_name=resource_group.name,
+            secret_name="password-domain-admin",
+            vault_name=key_vault.name,
+            opts=child_opts,
+        )
+        password_domain_azure_ad_connect = keyvault.Secret(
+            f"{self._name}_kvs_password_domain_azure_ad_connect",
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_domain_azure_ad_connect
+            ),
+            resource_group_name=resource_group.name,
+            secret_name="password-domain-azure-ad-connect",
+            vault_name=key_vault.name,
+            opts=child_opts,
+        )
+        password_domain_computer_manager = keyvault.Secret(
+            f"{self._name}_kvs_password_domain_computer_manager",
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_domain_computer_manager
+            ),
+            resource_group_name=resource_group.name,
+            secret_name="password-domain-computer-manager",
+            vault_name=key_vault.name,
+            opts=child_opts,
+        )
+        password_domain_searcher = keyvault.Secret(
+            f"{self._name}_kvs_password_domain_searcher",
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_domain_searcher
+            ),
+            resource_group_name=resource_group.name,
+            secret_name="password-domain-ldap-searcher",
+            vault_name=key_vault.name,
+            opts=child_opts,
+        )
+        password_update_server_linux_admin = keyvault.Secret(
+            f"{self._name}_kvs_password_update_server_linux_admin",
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_update_server_linux_admin
+            ),
+            resource_group_name=resource_group.name,
+            secret_name="password-update-server-linux-admin",
+            vault_name=key_vault.name,
+            opts=child_opts,
+        )
+
         # Register outputs
+        self.password_domain_admin = props.password_domain_admin
+        self.password_domain_azure_ad_connect = props.password_domain_azure_ad_connect
+        self.password_domain_computer_manager = props.password_domain_computer_manager
+        self.password_domain_searcher = props.password_domain_searcher
+        self.password_update_server_linux_admin = (
+            props.password_update_server_linux_admin
+        )
         self.resource_group_name = Output.from_input(resource_group.name)
         self.vault = key_vault

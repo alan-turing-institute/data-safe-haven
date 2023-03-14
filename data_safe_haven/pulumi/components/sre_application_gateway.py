@@ -7,7 +7,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import managedidentity, network, resources
 
 # Local imports
-from data_safe_haven.pulumi.transformations import (
+from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_id_from_rg,
     get_id_from_subnet,

@@ -157,12 +157,6 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 stack_yaml = yaml.safe_load(f_stack)
             config.pulumi.stacks[stack.stack_name] = stack_yaml
 
-            # Add Pulumi secrets to the config file
-            secret_name = "password-user-database-admin"
-            config.add_secret(
-                f"sre-{self.sre_name}-{secret_name}", stack.secret(secret_name)
-            )
-
             # Upload config to blob storage
             config.upload()
 

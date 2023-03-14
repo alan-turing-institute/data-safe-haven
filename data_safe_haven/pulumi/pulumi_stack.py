@@ -87,7 +87,9 @@ class PulumiStack(LoggingMixin):
                     ),
                 )
             except automation.errors.CommandError as exc:
-                raise DataSafeHavenPulumiException(f"Could not load Pulumi stack {self.stack_name}.\n{str(exc)}") from exc
+                raise DataSafeHavenPulumiException(
+                    f"Could not load Pulumi stack {self.stack_name}.\n{str(exc)}"
+                ) from exc
         return self.stack_
 
     def add_option(self, name: str, value: str, replace: bool = False) -> None:

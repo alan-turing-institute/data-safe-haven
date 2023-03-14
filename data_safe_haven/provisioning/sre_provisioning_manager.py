@@ -51,7 +51,9 @@ class SREProvisioningManager(LoggingMixin):
         # Construct VM parameters
         self.research_desktops = {}
         for vm in sre_stack.output("research_desktops")["vm_outputs"]:
-            vm_short_name = [n for n in self.research_desktops.keys() if n in vm["name"]][0]
+            vm_short_name = [
+                n for n in self.research_desktops.keys() if n in vm["name"]
+            ][0]
             self.research_desktops[vm_short_name] = {
                 "cpus": int(available_vm_skus[vm["sku"]]["vCPUs"]),
                 "gpus": int(available_vm_skus[vm["sku"]]["GPUs"]),

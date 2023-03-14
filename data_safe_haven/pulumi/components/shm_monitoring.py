@@ -19,7 +19,7 @@ from data_safe_haven.helpers.functions import (
     replace_separators,
     time_as_string,
 )
-from data_safe_haven.pulumi.transformations import get_id_from_subnet
+from data_safe_haven.pulumi.common.transformations import get_id_from_subnet
 
 
 class SHMMonitoringProps:

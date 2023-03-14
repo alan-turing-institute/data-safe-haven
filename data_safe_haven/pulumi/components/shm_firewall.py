@@ -7,7 +7,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
 # Local imports
-from data_safe_haven.pulumi.transformations import get_id_from_subnet
+from data_safe_haven.pulumi.common.transformations import get_id_from_subnet
 
 
 class SHMFirewallProps:
@@ -76,9 +76,11 @@ class SHMFirewallComponent(ComponentResource):
         public_ip = network.PublicIPAddress(
             f"{self._name}_pip_firewall",
             public_ip_address_name=f"{stack_name}-pip-firewall",
-            public_ip_allocation_method="Static",
+            public_ip_allocation_method=network.IPAllocationMethod.STATIC,
             resource_group_name=props.resource_group_name,
-            sku=network.PublicIPAddressSkuArgs(name="Standard"),
+            sku=network.PublicIPAddressSkuArgs(
+                name=network.PublicIPAddressSkuName.STANDARD
+            ),
             opts=child_opts,
         )
 
@@ -1072,27 +1074,6 @@ class SHMFirewallComponent(ComponentResource):
                 )
             ],
             location=props.location,
-            nat_rule_collections=[
-                network.AzureFirewallNatRuleCollectionArgs(
-                    action=network.AzureFirewallNatRCActionArgs(type="Dnat"),
-                    name="RDPTrafficToDomainController",
-                    priority=100,
-                    rules=[
-                        network.AzureFirewallNatRuleArgs(
-                            description="Redirect RDP traffic to domain controller",
-                            destination_addresses=public_ip.ip_address.apply(
-                                lambda ip: [ip] if ip else []
-                            ),
-                            destination_ports=["3389"],
-                            name="dc-rdp-traffic",
-                            protocols=["TCP"],
-                            source_addresses=["*"],
-                            translated_address=props.domain_controller_private_ip,
-                            translated_port="3389",
-                        ),
-                    ],
-                )
-            ],
             network_rule_collections=[
                 network.AzureFirewallNetworkRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
@@ -1176,3 +1157,4 @@ class SHMFirewallComponent(ComponentResource):
         self.external_dns_resolver = external_dns_resolver
         self.ntp_fqdns = ntp_fqdns
         self.ntp_ip_addresses = ntp_ip_addresses
+        self.public_ip_id = public_ip.id

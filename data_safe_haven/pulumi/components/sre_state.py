@@ -3,12 +3,12 @@
 from typing import Optional
 
 # Third party imports
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import Config, ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, managedidentity, network, resources, storage
 
 # Local imports
 from data_safe_haven.helpers import alphanumeric, sha256hash
-from data_safe_haven.pulumi.transformations import get_name_from_rg
+from data_safe_haven.pulumi.common.transformations import get_name_from_rg
 from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 
 
@@ -22,6 +22,7 @@ class SREStateProps:
         dns_record: Input[network.RecordSet],
         location: Input[str],
         networking_resource_group: Input[resources.ResourceGroup],
+        pulumi_opts: Config,
         sre_fqdn: Input[str],
         subscription_name: Input[str],
         tenant_id: Input[str],
@@ -33,9 +34,18 @@ class SREStateProps:
         self.networking_resource_group_name = Output.from_input(
             networking_resource_group
         ).apply(get_name_from_rg)
+        self.password_secure_research_desktop_admin = self.get_secret(
+            pulumi_opts, "password-secure-research-desktop-admin"
+        )
+        self.password_user_database_admin = self.get_secret(
+            pulumi_opts, "password-user-database-admin"
+        )
         self.sre_fqdn = sre_fqdn
         self.subscription_name = subscription_name
         self.tenant_id = tenant_id
+
+    def get_secret(self, pulumi_opts: Config, secret_name: str) -> Output[str]:
+        return Output.secret(pulumi_opts.require(secret_name))
 
 
 class SREStateComponent(ComponentResource):
@@ -193,9 +203,35 @@ class SREStateComponent(ComponentResource):
             ),
         )
 
+        # Deploy key vault secrets
+        password_secure_research_desktop_admin = keyvault.Secret(
+            f"{self._name}_kvs_password_secure_research_desktop_admin",
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_secure_research_desktop_admin
+            ),
+            resource_group_name=resource_group.name,
+            secret_name="password-secure-research-desktop-admin",
+            vault_name=key_vault.name,
+            opts=child_opts,
+        )
+        password_user_database_admin = keyvault.Secret(
+            f"{self._name}_kvs_password_user_database_admin",
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_user_database_admin
+            ),
+            resource_group_name=resource_group.name,
+            secret_name="password-user-database-admin",
+            vault_name=key_vault.name,
+            opts=child_opts,
+        )
+
         # Register outputs
         self.access_key = Output.secret(storage_account_keys.keys[0].value)
         self.account_name = Output.from_input(storage_account.name)
         self.certificate_secret_id = certificate.secret_id
         self.managed_identity = key_vault_reader
+        self.password_secure_research_desktop_admin = (
+            props.password_secure_research_desktop_admin
+        )
+        self.password_user_database_admin = props.password_user_database_admin
         self.resource_group_name = resource_group.name
