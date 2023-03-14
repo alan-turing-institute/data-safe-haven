@@ -172,6 +172,10 @@ while ($queue.Count) {
         # Check that the package exists and add it to the allowlist if so
         Add-LogMessage -Level Info "Looking for '${unverifiedName}' in ${Repository}..."
         $packageData = Test-PackageExistence -Repository $Repository -Package $unverifiedName -ApiKey $ApiKey -RepositoryId $RepositoryId
+        if (-not $($packageData.name)) {
+            Add-LogMessage -Level Error "Package '${unverifiedName}' could not be found!"
+            continue
+        }
         if ($packageData.name -cne $unverifiedName) {
             Add-LogMessage -Level Warning "Package '${unverifiedName}' should be '$($packageData.name)'"
         }
