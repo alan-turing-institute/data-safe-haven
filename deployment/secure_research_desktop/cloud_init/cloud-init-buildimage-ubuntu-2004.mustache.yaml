@@ -381,7 +381,10 @@ runcmd:
   # Remove netcat (potential security issue) [Note this will remove the 'ubuntu-minimal' metapackage but does not remove any other real packages]
   # Remove xscreensaver (unnecessary)
   - apt-get remove -y netcat-openbsd xscreensaver
-  - apt --fix-broken install -y
+  # Fix any broken packages then clean and remove any unused packages
+  - apt-get --fix-broken install -y
+  - apt-get autoclean -y
+  - apt-get autoremove -y --purge
   - apt-get clean
   # Remove temporary files
   - tmpreaper 10m /tmp/ /var/tmp/    # remove temporary files that have not been accessed in 10 minutes
