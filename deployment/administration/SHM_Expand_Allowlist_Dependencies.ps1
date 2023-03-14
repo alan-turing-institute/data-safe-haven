@@ -143,6 +143,7 @@ if (-not $NoCache) {
     if (Test-Path $dependencyCachePath -PathType Leaf) {
         $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
     }
+    if (-not $dependencyCache) { $dependencyCache = [ordered]@{} }
 }
 if ($Repository -notin $dependencyCache.Keys) { $dependencyCache[$Repository] = [ordered]@{} }
 if ("unavailable_packages" -notin $dependencyCache.Keys) { $dependencyCache["unavailable_packages"] = [ordered]@{} }
