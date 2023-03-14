@@ -1324,7 +1324,7 @@
       "rg": "RG_SHM_BLUE_SRE_T3MSRDS_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2023031400"
+        "version": "20.04.2023031401"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
