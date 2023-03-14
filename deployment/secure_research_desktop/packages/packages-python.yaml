@@ -25,6 +25,7 @@ packages:
     html5lib:
     ipykernel:
     keras:
+        "3.11": ["uninstallable"]  # requires tensorflow
     lightgbm:
     lxml:
     matplotlib:
