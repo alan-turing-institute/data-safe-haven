@@ -190,6 +190,12 @@
                         ],
                         "fqdnTags": [],
                         "targetFqdns": [
+                            "g0-prod-sn3-011-sb.servicebus.windows.net",
+                            "g3-prod-ch3-006-sb.servicebus.windows.net",
+                            "g5-prod-ch3-006-sb.servicebus.windows.net",
+                            "g7-prod-ch3-006-sb.servicebus.windows.net",
+                            "g7-prod-sn3-011-sb.servicebus.windows.net",
+                            "g8-prod-sn3-011-sb.servicebus.windows.net",
                             "g10-prod-ch3-003-sb.servicebus.windows.net",
                             "g10-prod-ch3-004-sb.servicebus.windows.net",
                             "g10-prod-ch3-005-sb.servicebus.windows.net",
