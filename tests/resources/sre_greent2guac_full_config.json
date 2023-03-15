@@ -1355,7 +1355,7 @@
       "rg": "RG_SHM_GREEN_SRE_T2GUAC_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2022081900"
+        "version": "20.04.2023031401"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },

@@ -6,9 +6,9 @@
 # [Optional] arguments to each package
 #   <Python version or 'all' for all versions>: <list of constraints that may include 'uninstallable' if appropriate>
 versions:
-    - "3.8"
     - "3.9"
     - "3.10"
+    - "3.11"
 packages:
     arviz:
     beautifulsoup4:
@@ -25,14 +25,15 @@ packages:
     html5lib:
     ipykernel:
     keras:
+        "3.11": ["uninstallable"]  # requires tensorflow
     lightgbm:
-    llvmlite:
-        "all": [">0.35.0"]  # specify llvmlite to increase chance of getting a pre-compiled version
     lxml:
     matplotlib:
     nltk:
+    numba:
+        "3.11": ["uninstallable"]  # does not yet support 3.11
     numpy:
-        "all": [">1.0.0"]  # allow flexibility in numpy version
+        "all": [">1.0.0"]  # increase solver flexibility
     pandas:
     pandasql:
     pathos:
@@ -40,6 +41,7 @@ packages:
     Pillow:
     plotly:
     poetry:  # also used by installation scripts
+        "all": [">1.0.0"]  # increase solver flexibility
     prophet:
     psycopg2:
     pydot:
@@ -55,8 +57,8 @@ packages:
     regex:
     requests:
     safety:  # also used by installation scripts
-        "all": ["<2.1.1"]  # 2.1.1 requires a version of 'packaging' that is incompatible with poetry
     scikit-image:
+        "all": [">0.10.0"]  # increase solver flexibility
     scikit-learn:
     scipy:
     seaborn:
@@ -65,16 +67,18 @@ packages:
     Sphinx:
     SQLAlchemy:
     statsmodels:
-        "all": ["<0.13.2"]  # 0.13.2 requires a version of 'packaging' that is incompatible with poetry
+        "all": [">0.10.0"]  # increase solver flexibility
     sympy:
     tables:
-    tensorboard:
     tensorflow:
+        "3.11": ["uninstallable"]  # does not yet support 3.11
     thinc:
     torch:
     torchvision:
+        "3.11": ["uninstallable"]  # does not yet support 3.11
     tsfresh:
-        "3.10": ["uninstallable"]
+        "3.11": ["uninstallable"]  # requires numba
     wordcloud:
+        "3.11": ["uninstallable"]  # does not yet support 3.11
     xgboost:
     xlrd:
