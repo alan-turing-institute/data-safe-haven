@@ -1,7 +1,9 @@
 """Command-line application for deploying a Secure Research Environment from project files"""
-# Third party imports
+# Standard library imports
+import ipaddress
 from typing import Any, Dict, List, Optional
 
+# Third party imports
 import yaml
 from cleo import Command
 
@@ -25,16 +27,20 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
     sre
         {name : Name of SRE to deploy}
         {--c|allow-copy= : Allow copying of text from the SRE (default: False)}
-        {--p|allow-paste= : Allow pasting of text into the SRE (default: False)}
+        {--d|data-ip-address=* : IP addresses or ranges that data providers will be connecting from}
         {--o|output= : Path to an output log file}
+        {--p|allow-paste= : Allow pasting of text into the SRE (default: False)}
         {--r|research-desktop=* : Add a research desktop VM by SKU name}
+        {--u|user-ip-address=* : IP addresses or ranges that users will be connecting from}
     """
 
     allow_copy: Optional[bool]
     allow_paste: Optional[bool]
     available_vm_skus: Dict[str, Dict[str, Any]]
+    data_provider_ip_address_list: Optional[List[str]]
     output: Optional[str]
     research_desktop_skus: Optional[List[str]]
+    research_user_ip_address_list: Optional[List[str]]
 
     def handle(self) -> int:
         try:
@@ -206,6 +212,50 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 )
             config.sre[self.sre_name].remote_desktop.allow_paste = self.allow_paste
 
+        # Request data provider IP addresses if not provided
+        data_provider_ip_addresses: Optional[str] = (
+            " ".join(self.data_provider_ip_address_list) if self.data_provider_ip_address_list else None
+        )
+        while not config.sre[self.sre_name].data_provider_ip_addresses:
+            if not data_provider_ip_addresses:
+                self.info(
+                    "We need to know any IP addresses or ranges that your data providers will be connecting from."
+                )
+                self.info(
+                    "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
+                )
+                data_provider_ip_addresses = self.log_ask(
+                    "Space-separated data provider IP addresses and ranges:", None
+                )
+            config.sre[self.sre_name].data_provider_ip_addresses = [
+                str(ipaddress.ip_network(ipv4))
+                for ipv4 in data_provider_ip_addresses.split()
+                if ipv4
+            ]
+            data_provider_ip_addresses = None
+
+        # Request research user IP addresses if not provided
+        research_user_ip_addresses: Optional[str] = (
+            " ".join(self.research_user_ip_address_list) if self.research_user_ip_address_list else None
+        )
+        while not config.sre[self.sre_name].research_user_ip_addresses:
+            if not research_user_ip_addresses:
+                self.info(
+                    "We need to know any IP addresses or ranges that your research users will be connecting from."
+                )
+                self.info(
+                    "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
+                )
+                research_user_ip_addresses = self.log_ask(
+                    "Space-separated research user IP addresses and ranges:", None
+                )
+            config.sre[self.sre_name].research_user_ip_addresses = [
+                str(ipaddress.ip_network(ipv4))
+                for ipv4 in research_user_ip_addresses.split()
+                if ipv4
+            ]
+            research_user_ip_addresses = None
+
         # Get the list of research desktop VMs to deploy
         while not self.research_desktop_skus:
             self.warning("An SRE deployment needs at least one research desktop.")
@@ -247,6 +297,24 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 f"Invalid value '{allow_paste}' provided for 'allow-paste'."
             )
         self.allow_paste = allow_paste
+        # Data provider IP addresses
+        data_provider_ip_address_list = self.option("data-ip-address")
+        if not isinstance(data_provider_ip_address_list, list) and (
+            data_provider_ip_address_list is not None
+        ):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{data_provider_ip_address_list}' provided for 'data-ip-address'."
+            )
+        self.data_provider_ip_address_list = data_provider_ip_address_list
+        # Research user IP addresses
+        research_user_ip_address_list = self.option("user-ip-address")
+        if not isinstance(research_user_ip_address_list, list) and (
+            research_user_ip_address_list is not None
+        ):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{research_user_ip_address_list}' provided for 'user-ip-address'."
+            )
+        self.research_user_ip_address_list = research_user_ip_address_list
         # Output
         output = self.option("output")
         if not isinstance(output, str) and (output is not None):
