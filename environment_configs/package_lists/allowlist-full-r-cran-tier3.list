@@ -2,7 +2,6 @@ abind
 acepack
 actuar
 anytime
-argon2
 arrow
 askpass
 assertive
@@ -64,6 +63,7 @@ classInt
 cli
 clipr
 clisymbols
+clock
 cluster
 coda
 codetools
@@ -71,6 +71,7 @@ colorspace
 colourpicker
 colourvalues
 commonmark
+conflicted
 conquer
 covr
 cpp11
@@ -102,13 +103,16 @@ dichromat
 diffobj
 digest
 dimRed
+distributional
 doMC
 doParallel
 dotCall64
+downlit
 downloader
 dplyr
 DRR
 DT
+dtplyr
 dygraphs
 e1071
 ellipsis
@@ -130,20 +134,22 @@ fields
 filehash
 float
 fontawesome
+fontBitstreamVera
+fontLiberation
+fontquiver
 forcats
 foreach
 foreign
 formatR
 Formula
 fs
-fts
 furrr
 futile.logger
 futile.options
 future
 future.apply
+gargle
 gbRd
-gdalUtils
 gdata
 gdtools
 generics
@@ -151,10 +157,12 @@ geojson
 geojsonio
 geojsonlint
 geojsonsf
+geometries
 geometry
 geosphere
 gert
 getPass
+gfonts
 ggforce
 ggmap
 ggplot2
@@ -171,7 +179,9 @@ glue
 gmodels
 gmp
 gnm
+googledrive
 googlePolylines
+googlesheets4
 googleVis
 gower
 gpclib
@@ -201,7 +211,9 @@ htmlwidgets
 httpcode
 httpuv
 httr
+httr2
 hunspell
+ids
 igraph
 infer
 influenceR
@@ -271,6 +283,7 @@ markdown
 MASS
 mathjaxr
 Matrix
+MatrixExtra
 MatrixModels
 matrixStats
 mcmc
@@ -282,6 +295,7 @@ mgcv
 mime
 miniUI
 minqa
+mlapi
 mlbench
 MLmetrics
 mlr3
@@ -291,6 +305,7 @@ mnormt
 modeldata
 ModelMetrics
 modelr
+MSSQL
 multcomp
 munsell
 MVA
@@ -310,9 +325,9 @@ odbc
 openssl
 OpenStreetMap
 openxlsx
-osmar
 packcircles
 packrat
+palmerpenguins
 paradox
 parallelly
 parsnip
@@ -326,6 +341,7 @@ pillar
 pixiedust
 pkgbuild
 pkgconfig
+pkgdown
 pkgload
 pkgmaker
 PKI
@@ -337,6 +353,7 @@ png
 pointblank
 polyclip
 polycor
+posterior
 praise
 prettyunits
 pROC
@@ -346,6 +363,7 @@ prodlim
 profileModel
 profvis
 progress
+progressr
 promises
 prophet
 proto
@@ -367,6 +385,7 @@ R.methodsS3
 R.oo
 R.utils
 R6
+ragg
 randomForest
 ranger
 RApiDatetime
@@ -381,8 +400,11 @@ Rcpp
 RcppEigen
 RcppParallel
 RcppRoll
+RcppTOML
 RCurl
 Rdpack
+reactable
+reactR
 readODS
 readr
 readxl
@@ -391,7 +413,6 @@ registry
 relimp
 rematch
 rematch2
-remoter
 remotes
 repr
 reprex
@@ -404,6 +425,7 @@ rgeos
 rgexf
 rgl
 RgoogleMaps
+RhpcBLASctl
 rio
 rJava
 rjson
@@ -426,6 +448,7 @@ RPostgreSQL
 rprojroot
 rsample
 rsconnect
+rsparse
 RSpectra
 RSQLite
 rstan
@@ -451,6 +474,7 @@ sfheaders
 sfsmisc
 shape
 shiny
+shinybusy
 shinyjs
 shinystan
 shinythemes
@@ -485,9 +509,11 @@ svgPanZoom
 swagger
 sys
 systemfonts
+tensorA
 terra
 testthat
 text2vec
+textshaping
 TH.data
 threejs
 tibble
@@ -500,12 +526,14 @@ tidytext
 tidyverse
 tidyxl
 tikzDevice
+timechange
 timeDate
 timeSeries
 tinytex
 tis
 tmap
 tmaptools
+tmvnsim
 tokenizers
 triebeard
 tsbox
@@ -518,6 +546,7 @@ tzdb
 udunits2
 units
 univariateML
+urlchecker
 urltools
 usethis
 utf8
@@ -544,6 +573,7 @@ wk
 wordcloud
 workflows
 workflowsets
+writexl
 xfun
 xgboost
 XLConnect
