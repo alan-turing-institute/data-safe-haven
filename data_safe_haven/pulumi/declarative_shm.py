@@ -43,9 +43,9 @@ class DeclarativeSHM:
             self.stack_name,
             self.shm_name,
             SHMNetworkingProps(
+                admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 fqdn=self.cfg.shm.fqdn,
                 location=self.cfg.azure.location,
-                public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
                 record_domain_verification=self.pulumi_opts.require(
                     "verification-azuread-custom-domain"
                 ),
@@ -88,6 +88,7 @@ class DeclarativeSHM:
             self.shm_name,
             SHMStateProps(
                 admin_group_id=self.cfg.azure.admin_group_id,
+                admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 location=self.cfg.azure.location,
                 pulumi_opts=self.pulumi_opts,
                 tenant_id=self.cfg.azure.tenant_id,
@@ -144,7 +145,6 @@ class DeclarativeSHM:
                 password_domain_azuread_connect=state.password_domain_azure_ad_connect,
                 password_domain_computer_manager=state.password_domain_computer_manager,
                 password_domain_searcher=state.password_domain_searcher,
-                public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
                 private_ip_address=networking.domain_controller_private_ip,
                 subnet_identity_servers=networking.subnet_identity_servers,
                 subscription_name=self.cfg.subscription_name,
@@ -159,3 +159,4 @@ class DeclarativeSHM:
         pulumi.export("monitoring", monitoring.exports)
         pulumi.export("networking", networking.exports)
         pulumi.export("update_servers", update_servers.exports)
+        pulumi.export("state", state.exports)

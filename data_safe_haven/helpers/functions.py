@@ -5,7 +5,7 @@ import hashlib
 import pytz
 import secrets
 import string
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 
 def alphanumeric(input_string: str) -> str:
@@ -64,7 +64,7 @@ def random_letters(length: int) -> str:
     return "".join(secrets.choice(string.ascii_letters) for _ in range(length))
 
 
-def replace_separators(input_string: str, separator: str) -> str:
+def replace_separators(input_string: str, separator: str = "") -> str:
     """Return a string using underscores as a separator"""
     return (
         input_string.replace(" ", separator)
@@ -89,3 +89,15 @@ def time_as_string(hour: int, minute: int, timezone: str) -> str:
         tzinfo=pytz.timezone(timezone),
     ) + datetime.timedelta(days=1)
     return dt.isoformat()
+
+
+def truncate_tokens(tokens: Sequence[str], max_length: int) -> List[str]:
+    output_tokens = list(tokens)
+    token_lengths = [len(t) for t in output_tokens]
+    while sum(token_lengths) > max_length:
+        for idx in range(len(output_tokens)):
+            if len(output_tokens[idx]) == max(token_lengths):
+                output_tokens[idx] = output_tokens[idx][:-1]
+                token_lengths[idx] -= 1
+                break
+    return output_tokens

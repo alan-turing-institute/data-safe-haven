@@ -97,6 +97,10 @@ class DeclarativeSRE:
             SREStateProps(
                 admin_email_address=self.cfg.shm.admin_email_address,
                 admin_group_id=self.cfg.azure.admin_group_id,
+                admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
+                data_provider_ip_addresses=self.cfg.sre[
+                    self.sre_name
+                ].data_provider_ip_addresses,
                 dns_record=networking.shm_ns_record,
                 location=self.cfg.azure.location,
                 networking_resource_group=networking.resource_group,

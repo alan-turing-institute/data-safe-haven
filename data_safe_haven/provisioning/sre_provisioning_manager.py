@@ -88,7 +88,7 @@ class SREProvisioningManager(LoggingMixin):
         connection_data = {
             "connections": [
                 {
-                    "connection_name": f"{vm_details['sku']} [{vm_details['cpus']} CPU(s), {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM] ({vm_name})",
+                    "connection_name": f"{vm_name} [{vm_details['cpus']} CPU(s), {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM] ({vm_details['sku']})",
                     "disable_copy": self.remote_desktop_params["disable_copy"],
                     "disable_paste": self.remote_desktop_params["disable_paste"],
                     "ip_address": vm_details["ip_address"],
@@ -99,7 +99,7 @@ class SREProvisioningManager(LoggingMixin):
         }
         for details in connection_data["connections"]:
             self.info(
-                f"Adding connection {details['connection_name']} at {details['ip_address']}"
+                f"Adding connection <options=bold>{details['connection_name']}</> at <fg=green>{details['ip_address']}</>."
             )
         postgres_script_path = (
             pathlib.Path(__file__).parent.parent

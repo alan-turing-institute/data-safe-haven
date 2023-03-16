@@ -17,9 +17,9 @@ class SHMNetworkingProps:
 
     def __init__(
         self,
+        admin_ip_addresses: Input[Sequence[str]],
         fqdn: Input[str],
         location: Input[str],
-        public_ip_range_admins: Input[Sequence[str]],
         record_domain_verification: Input[str],
     ):
         # Virtual network and subnet IP ranges
@@ -33,9 +33,9 @@ class SHMNetworkingProps:
         self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
         self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
         # Other variables
+        self.admin_ip_addresses = admin_ip_addresses
         self.fqdn = fqdn
         self.location = location
-        self.public_ip_range_admins = public_ip_range_admins
         self.record_domain_verification = record_domain_verification
 
 
@@ -84,7 +84,7 @@ class SHMNetworkingComponent(ComponentResource):
                     name="AllowAdminHttpsInbound",
                     priority=NetworkingPriorities.AUTHORISED_EXTERNAL_ADMIN_IPS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefixes=props.public_ip_range_admins,
+                    source_address_prefixes=props.admin_ip_addresses,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(

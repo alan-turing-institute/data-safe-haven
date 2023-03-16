@@ -145,6 +145,16 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 True,
             )
             stack.add_option(
+                "shm-state_resource_group_name",
+                shm_stack.output("state")["resource_group_name"],
+                True,
+            )
+            stack.add_option(
+                "shm-state_storage_account_name",
+                shm_stack.output("state")["storage_account_name"],
+                True,
+            )
+            stack.add_option(
                 "shm-update_servers-ip_address_linux",
                 shm_stack.output("update_servers")["ip_address_linux"],
                 True,
@@ -214,7 +224,9 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
 
         # Request data provider IP addresses if not provided
         data_provider_ip_addresses: Optional[str] = (
-            " ".join(self.data_provider_ip_address_list) if self.data_provider_ip_address_list else None
+            " ".join(self.data_provider_ip_address_list)
+            if self.data_provider_ip_address_list
+            else None
         )
         while not config.sre[self.sre_name].data_provider_ip_addresses:
             if not data_provider_ip_addresses:
@@ -236,7 +248,9 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
 
         # Request research user IP addresses if not provided
         research_user_ip_addresses: Optional[str] = (
-            " ".join(self.research_user_ip_address_list) if self.research_user_ip_address_list else None
+            " ".join(self.research_user_ip_address_list)
+            if self.research_user_ip_address_list
+            else None
         )
         while not config.sre[self.sre_name].research_user_ip_addresses:
             if not research_user_ip_addresses:

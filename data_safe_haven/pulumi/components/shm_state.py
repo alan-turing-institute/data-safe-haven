@@ -1,13 +1,19 @@
 """Pulumi component for SHM state"""
 # Standard library imports
-from typing import Optional
+from typing import Optional, Sequence
 
 # Third party imports
 from pulumi import Config, ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import keyvault, resources
+from pulumi_azure_native import keyvault, resources, storage
 
 # Local imports
-from data_safe_haven.helpers import password
+from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.helpers.functions import (
+    alphanumeric,
+    replace_separators,
+    sha256hash,
+    truncate_tokens,
+)
 
 
 class SHMStateProps:
@@ -16,11 +22,13 @@ class SHMStateProps:
     def __init__(
         self,
         admin_group_id: Input[str],
+        admin_ip_addresses: Input[Sequence[str]],
         location: Input[str],
         pulumi_opts: Config,
         tenant_id: Input[str],
     ):
         self.admin_group_id = admin_group_id
+        self.admin_ip_addresses = admin_ip_addresses
         self.location = location
         self.password_domain_admin = self.get_secret(
             pulumi_opts, "password-domain-admin"
@@ -130,7 +138,7 @@ class SHMStateComponent(ComponentResource):
                 tenant_id=props.tenant_id,
             ),
             resource_group_name=resource_group.name,
-            vault_name=f"{stack_name[:15]}-kv-state",  # maximum of 24 characters
+            vault_name=f"{replace_separators(stack_name)[:17]}secrets",  # maximum of 24 characters
             opts=child_opts,
         )
 
@@ -184,6 +192,59 @@ class SHMStateComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Deploy persistent data account
+        persistent_data = storage.StorageAccount(
+            f"{self._name}_st_persistent_data",
+            access_tier=storage.AccessTier.COOL,
+            account_name=alphanumeric(
+                f"{''.join(truncate_tokens(stack_name.split('-'), 20))}data{sha256hash(self._name)}"
+            )[
+                :24
+            ],  # maximum of 24 characters
+            enable_https_traffic_only=True,
+            encryption=storage.EncryptionArgs(
+                key_source=storage.KeySource.MICROSOFT_STORAGE,
+                services=storage.EncryptionServicesArgs(
+                    blob=storage.EncryptionServiceArgs(
+                        enabled=True, key_type=storage.KeyType.ACCOUNT
+                    ),
+                    file=storage.EncryptionServiceArgs(
+                        enabled=True, key_type=storage.KeyType.ACCOUNT
+                    ),
+                ),
+            ),
+            kind=storage.Kind.STORAGE_V2,
+            location=props.location,
+            network_rule_set=storage.NetworkRuleSetArgs(
+                bypass=storage.Bypass.AZURE_SERVICES,
+                default_action=storage.DefaultAction.DENY,
+                ip_rules=Output.from_input(props.admin_ip_addresses).apply(
+                    lambda ip_ranges: [
+                        storage.IPRuleArgs(
+                            action=storage.Action.ALLOW,
+                            i_p_address_or_range=str(ip_address),
+                        )
+                        for ip_range in sorted(ip_ranges)
+                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all()
+                    ]
+                ),
+            ),
+            resource_group_name=resource_group.name,
+            sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
+            opts=child_opts,
+        )
+        # Deploy staging container for holding any data that does not have an SRE
+        staging_container = storage.BlobContainer(
+            f"{self._name}_st_data_staging",
+            account_name=persistent_data.name,
+            container_name=replace_separators(f"{stack_name}-staging", "-")[:63],
+            default_encryption_scope="$account-encryption-key",
+            deny_encryption_scope_override=False,
+            public_access=storage.PublicAccess.NONE,
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
+
         # Register outputs
         self.password_domain_admin = props.password_domain_admin
         self.password_domain_azure_ad_connect = props.password_domain_azure_ad_connect
@@ -194,3 +255,9 @@ class SHMStateComponent(ComponentResource):
         )
         self.resource_group_name = Output.from_input(resource_group.name)
         self.vault = key_vault
+
+        # Register exports
+        self.exports = {
+            "resource_group_name": resource_group.name,
+            "storage_account_name": persistent_data.name,
+        }
