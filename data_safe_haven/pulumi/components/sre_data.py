@@ -13,8 +13,8 @@ from data_safe_haven.pulumi.common.transformations import get_name_from_rg
 from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 
 
-class SREStateProps:
-    """Properties for SREStateComponent"""
+class SREDataProps:
+    """Properties for SREDataComponent"""
 
     def __init__(
         self,
@@ -64,7 +64,7 @@ class SREStateProps:
         return Output.secret(pulumi_opts.require(secret_name))
 
 
-class SREStateComponent(ComponentResource):
+class SREDataComponent(ComponentResource):
     """Deploy SRE state with Pulumi"""
 
     def __init__(
@@ -72,23 +72,23 @@ class SREStateComponent(ComponentResource):
         name: str,
         stack_name: str,
         sre_name: str,
-        props: SREStateProps,
+        props: SREDataProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:sre:SREStateComponent", name, {}, opts)
+        super().__init__("dsh:sre:SREDataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"{stack_name}-rg-state",
+            resource_group_name=f"{stack_name}-rg-data",
             opts=child_opts,
         )
 
         # Define Key Vault reader
-        key_vault_reader = managedidentity.UserAssignedIdentity(
-            f"{self._name}_key_vault_reader",
+        identity_key_vault_reader = managedidentity.UserAssignedIdentity(
+            f"{self._name}_id_key_vault_reader",
             location=props.location,
             resource_group_name=resource_group.name,
             resource_name_=f"{stack_name}-id-key-vault-reader",
@@ -97,7 +97,7 @@ class SREStateComponent(ComponentResource):
 
         # Define SRE KeyVault
         key_vault = keyvault.Vault(
-            f"{self._name}_key_vault",
+            f"{self._name}_kv_secrets",
             location=props.location,
             properties=keyvault.VaultPropertiesArgs(
                 access_policies=[
@@ -150,7 +150,7 @@ class SREStateComponent(ComponentResource):
                         tenant_id=props.tenant_id,
                     ),
                     keyvault.AccessPolicyEntryArgs(
-                        object_id=key_vault_reader.principal_id,
+                        object_id=identity_key_vault_reader.principal_id,
                         permissions=keyvault.PermissionsArgs(
                             certificates=[
                                 "get",
@@ -226,14 +226,13 @@ class SREStateComponent(ComponentResource):
         # Deploy state storage account
         storage_account_state = storage.StorageAccount(
             f"{self._name}_storage_account_state",
+            # Note that account names have a maximum of 24 characters
             account_name=alphanumeric(
-                f"{''.join(truncate_tokens(stack_name.split('-'), 19))}state{sha256hash(self._name)}"
-            )[
-                :24
-            ],  # maximum of 24 characters
-            kind="StorageV2",
+                f"{''.join(truncate_tokens(stack_name.split('-'), 19))}state"
+            )[:24],
+            kind=storage.Kind.STORAGE_V2,
             resource_group_name=resource_group.name,
-            sku=storage.SkuArgs(name="Standard_LRS"),
+            sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
             opts=child_opts,
         )
 
@@ -285,8 +284,8 @@ class SREStateComponent(ComponentResource):
             opts=child_opts,
         )
         # Deploy storage containers
-        egress_container = storage.BlobContainer(
-            f"{self._name}_st_data_egress",
+        storage_container_egress = storage.BlobContainer(
+            f"{self._name}_storage_container_egress",
             account_name=storage_account_data.name,
             container_name="egress",
             default_encryption_scope="$account-encryption-key",
@@ -295,8 +294,8 @@ class SREStateComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        ingress_container = storage.BlobContainer(
-            f"{self._name}_st_data_ingress",
+        storage_container_ingress = storage.BlobContainer(
+            f"{self._name}_storage_container_ingress",
             account_name=storage_account_data.name,
             container_name="ingress",
             default_encryption_scope="$account-encryption-key",
@@ -307,10 +306,10 @@ class SREStateComponent(ComponentResource):
         )
 
         # Register outputs
-        self.access_key = Output.secret(storage_account_state_keys.keys[0].value)
-        self.account_name = Output.from_input(storage_account_state.name)
+        self.state_storage_account_key = Output.secret(storage_account_state_keys.keys[0].value)
+        self.state_storage_account_name = Output.from_input(storage_account_state.name)
         self.certificate_secret_id = certificate.secret_id
-        self.managed_identity = key_vault_reader
+        self.managed_identity = identity_key_vault_reader
         self.password_secure_research_desktop_admin = (
             props.password_secure_research_desktop_admin
         )

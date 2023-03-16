@@ -145,16 +145,6 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 True,
             )
             stack.add_option(
-                "shm-state_resource_group_name",
-                shm_stack.output("state")["resource_group_name"],
-                True,
-            )
-            stack.add_option(
-                "shm-state_storage_account_name",
-                shm_stack.output("state")["storage_account_name"],
-                True,
-            )
-            stack.add_option(
                 "shm-update_servers-ip_address_linux",
                 shm_stack.output("update_servers")["ip_address_linux"],
                 True,

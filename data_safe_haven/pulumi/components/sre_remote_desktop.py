@@ -37,6 +37,7 @@ class SRERemoteDesktopProps:
         allow_paste: Input[bool],
         database_password: Input[str],
         location: Input[str],
+        storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group: Input[str],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
@@ -54,6 +55,7 @@ class SRERemoteDesktopProps:
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.location = location
+        self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group = storage_account_resource_group
         self.subnet_guacamole_containers_id = Output.from_input(
@@ -108,20 +110,6 @@ class SRERemoteDesktopComponent(ComponentResource):
             opts=child_opts,
         )
 
-        # Retrieve existing storage account details
-        storage_account_keys = Output.all(
-            account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group,
-        ).apply(
-            lambda kwargs: storage.list_storage_account_keys(
-                account_name=kwargs["account_name"],
-                resource_group_name=kwargs["resource_group_name"],
-            )
-        )
-        storage_account_key_secret = storage_account_keys.apply(
-            lambda keylist: str(keylist.keys[0].value)
-        )
-
         # Define AzureAD application
         aad_application = AzureADApplication(
             f"{self._name}_aad_application",
@@ -153,7 +141,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 destination_path=reader.name,
                 share_name=file_share.name,
                 file_contents=Output.secret(reader.file_contents()),
-                storage_account_key=storage_account_key_secret,
+                storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
             opts=child_opts,
@@ -382,7 +370,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
                         share_name=file_share.name,
-                        storage_account_key=storage_account_key_secret,
+                        storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),
                     name="guacamole-caddy-config",

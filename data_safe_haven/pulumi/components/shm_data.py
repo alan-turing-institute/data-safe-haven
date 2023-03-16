@@ -16,8 +16,8 @@ from data_safe_haven.helpers.functions import (
 )
 
 
-class SHMStateProps:
-    """Properties for SHMStateComponent"""
+class SHMDataProps:
+    """Properties for SHMDataComponent"""
 
     def __init__(
         self,
@@ -51,7 +51,7 @@ class SHMStateProps:
         return Output.secret(pulumi_opts.require(secret_name))
 
 
-class SHMStateComponent(ComponentResource):
+class SHMDataComponent(ComponentResource):
     """Deploy SHM state with Pulumi"""
 
     def __init__(
@@ -59,17 +59,17 @@ class SHMStateComponent(ComponentResource):
         name: str,
         stack_name: str,
         shm_name: str,
-        props: SHMStateProps,
+        props: SHMDataProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:shm:SHMStateComponent", name, {}, opts)
+        super().__init__("dsh:shm:SHMDataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"{stack_name}-rg-state",
+            resource_group_name=f"{stack_name}-rg-data",
             opts=child_opts,
         )
 
@@ -193,14 +193,13 @@ class SHMStateComponent(ComponentResource):
         )
 
         # Deploy persistent data account
-        persistent_data = storage.StorageAccount(
-            f"{self._name}_st_persistent_data",
+        storage_account_persistent_data = storage.StorageAccount(
+            f"{self._name}_storage_account_persistent_data",
             access_tier=storage.AccessTier.COOL,
+            # Note that account names have a maximum of 24 characters
             account_name=alphanumeric(
-                f"{''.join(truncate_tokens(stack_name.split('-'), 20))}data{sha256hash(self._name)}"
-            )[
-                :24
-            ],  # maximum of 24 characters
+                f"{''.join(truncate_tokens(stack_name.split('-'), 20))}data"
+            )[:24],
             enable_https_traffic_only=True,
             encryption=storage.EncryptionArgs(
                 key_source=storage.KeySource.MICROSOFT_STORAGE,
@@ -234,9 +233,9 @@ class SHMStateComponent(ComponentResource):
             opts=child_opts,
         )
         # Deploy staging container for holding any data that does not have an SRE
-        staging_container = storage.BlobContainer(
+        storage_container_staging = storage.BlobContainer(
             f"{self._name}_st_data_staging",
-            account_name=persistent_data.name,
+            account_name=storage_account_persistent_data.name,
             container_name=replace_separators(f"{stack_name}-staging", "-")[:63],
             default_encryption_scope="$account-encryption-key",
             deny_encryption_scope_override=False,
@@ -255,9 +254,3 @@ class SHMStateComponent(ComponentResource):
         )
         self.resource_group_name = Output.from_input(resource_group.name)
         self.vault = key_vault
-
-        # Register exports
-        self.exports = {
-            "resource_group_name": resource_group.name,
-            "storage_account_name": persistent_data.name,
-        }
