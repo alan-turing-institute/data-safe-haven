@@ -27,7 +27,7 @@ class UsersListCommand(LoggingMixin, Command):  # type: ignore
     output: Optional[str]
 
     def handle(self) -> int:
-        config_name = "UNKNOWN"
+        shm_name = "UNKNOWN"
         try:
             # Process command line arguments
             self.process_arguments()
@@ -43,7 +43,7 @@ class UsersListCommand(LoggingMixin, Command):  # type: ignore
                     f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
                 ) from exc
             config = Config(settings.name, settings.subscription_name)
-            config_name = config.name
+            shm_name = config.name
 
             # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
             graph_api = GraphApi(
@@ -58,7 +58,7 @@ class UsersListCommand(LoggingMixin, Command):  # type: ignore
         except DataSafeHavenException as exc:
             for (
                 line
-            ) in f"Could not list users for Data Safe Haven '{config_name}'.\n{str(exc)}".split(
+            ) in f"Could not list users for Data Safe Haven '{shm_name}'.\n{str(exc)}".split(
                 "\n"
             ):
                 self.error(line)

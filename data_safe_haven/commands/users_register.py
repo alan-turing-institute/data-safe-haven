@@ -31,7 +31,7 @@ class UsersRegisterCommand(LoggingMixin, Command):  # type: ignore
     usernames: List[str]
 
     def handle(self) -> int:
-        config_name = "UNKNOWN"
+        shm_name = "UNKNOWN"
         try:
             # Process command line arguments
             self.process_arguments()
@@ -47,7 +47,7 @@ class UsersRegisterCommand(LoggingMixin, Command):  # type: ignore
                     f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
                 ) from exc
             config = Config(settings.name, settings.subscription_name)
-            config_name = config.name
+            shm_name = config.name
 
             # Check that SRE option has been provided
             if not self.sre_name:
@@ -78,7 +78,7 @@ class UsersRegisterCommand(LoggingMixin, Command):  # type: ignore
         except DataSafeHavenException as exc:
             for (
                 line
-            ) in f"Could not register users from Data Safe Haven '{config_name}' with SRE '{self.sre_name}'.\n{str(exc)}".split(
+            ) in f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{self.sre_name}'.\n{str(exc)}".split(
                 "\n"
             ):
                 self.error(line)

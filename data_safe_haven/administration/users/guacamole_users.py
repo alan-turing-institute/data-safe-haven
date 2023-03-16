@@ -10,21 +10,19 @@ from data_safe_haven.exceptions import DataSafeHavenInputException
 from data_safe_haven.external.interface import AzurePostgreSQLDatabase
 from data_safe_haven.helpers import FileReader, hex_string
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.pulumi import PulumiStack
 from .research_user import ResearchUser
 
 
 class GuacamoleUsers(LoggingMixin):
     def __init__(self, config: Config, sre_name: str, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
+        sre_stack = PulumiStack(config, "SRE", sre_name=sre_name)
         self.postgres_provisioner = AzurePostgreSQLDatabase(
-            config.sre[sre_name].remote_desktop.connection_db_name,
-            config.get_secret(
-                config.sre[sre_name].remote_desktop[
-                    "connection_db_server_admin_password_secret"
-                ]
-            ),
-            config.sre[sre_name].remote_desktop.connection_db_server_name,
-            config.sre[sre_name].remote_desktop.resource_group_name,
+            sre_stack.output("remote_desktop")["connection_db_name"],
+            sre_stack.secret("password-user-database-admin"),
+            sre_stack.output("remote_desktop")["connection_db_server_name"],
+            sre_stack.output("remote_desktop")["resource_group_name"],
             config.subscription_name,
         )
         self.users_: Optional[Sequence[ResearchUser]] = None

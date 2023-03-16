@@ -306,7 +306,9 @@ class SREDataComponent(ComponentResource):
         )
 
         # Register outputs
-        self.state_storage_account_key = Output.secret(storage_account_state_keys.keys[0].value)
+        self.state_storage_account_key = Output.secret(
+            storage_account_state_keys.keys[0].value
+        )
         self.state_storage_account_name = Output.from_input(storage_account_state.name)
         self.certificate_secret_id = certificate.secret_id
         self.managed_identity = identity_key_vault_reader
