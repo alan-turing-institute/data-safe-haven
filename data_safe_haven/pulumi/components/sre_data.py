@@ -8,8 +8,17 @@ from pulumi_azure_native import keyvault, managedidentity, network, resources, s
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
-from data_safe_haven.helpers import alphanumeric, sha256hash, truncate_tokens
-from data_safe_haven.pulumi.common.transformations import get_name_from_rg
+from data_safe_haven.helpers import (
+    alphanumeric,
+    ordered_private_dns_zones,
+    replace_separators,
+    sha256hash,
+    truncate_tokens,
+)
+from data_safe_haven.pulumi.common.transformations import (
+    get_id_from_subnet,
+    get_name_from_rg,
+)
 from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 
 
@@ -27,6 +36,7 @@ class SREDataProps:
         networking_resource_group: Input[resources.ResourceGroup],
         pulumi_opts: Config,
         sre_fqdn: Input[str],
+        subnet_private_data: Input[network.GetSubnetResult],
         subscription_name: Input[str],
         tenant_id: Input[str],
     ):
@@ -50,6 +60,9 @@ class SREDataProps:
         self.password_user_database_admin = self.get_secret(
             pulumi_opts, "password-user-database-admin"
         )
+        self.private_dns_zone_base_id = self.get_secret(
+            pulumi_opts, "shm-networking-private_dns_zone_base_id"
+        )
         self.shm_storage_account_name = self.get_secret(
             pulumi_opts, "shm-state_storage_account_name"
         )
@@ -57,6 +70,9 @@ class SREDataProps:
             pulumi_opts, "shm-state_resource_group_name"
         )
         self.sre_fqdn = sre_fqdn
+        self.subnet_private_data_id = Output.from_input(subnet_private_data).apply(
+            get_id_from_subnet
+        )
         self.subscription_name = subscription_name
         self.tenant_id = tenant_id
 
@@ -303,6 +319,42 @@ class SREDataComponent(ComponentResource):
             public_access=storage.PublicAccess.NONE,
             resource_group_name=resource_group.name,
             opts=child_opts,
+        )
+
+        # Set up a private endpoint for the automation account
+        storage_account_data_endpoint = network.PrivateEndpoint(
+            f"{self._name}_storage_account_data_private_endpoint",
+            location=props.location,
+            private_endpoint_name=f"{stack_name}-pep-storage-account-data",
+            private_link_service_connections=[
+                network.PrivateLinkServiceConnectionArgs(
+                    group_ids=["blob"],
+                    name=f"{stack_name}-cnxn-pep-storage-account-data",
+                    private_link_service_id=storage_account_data.id,
+                )
+            ],
+            resource_group_name=resource_group.name,
+            subnet=network.SubnetArgs(id=props.subnet_private_data_id),
+            opts=child_opts,
+        )
+
+        # Add a private DNS record for each storage account custom DNS config
+        storage_account_data_private_dns_zone_group = network.PrivateDnsZoneGroup(
+            f"{self._name}_storage_account_data_private_dns_zone_group",
+            private_dns_zone_configs=[
+                network.PrivateDnsZoneConfigArgs(
+                    name=replace_separators(
+                        f"{stack_name}-storage-account-data-to-{dns_zone_name}", "-"
+                    ),
+                    private_dns_zone_id=Output.concat(
+                        props.private_dns_zone_base_id, dns_zone_name
+                    ),
+                )
+                for dns_zone_name in ordered_private_dns_zones("Storage account")
+            ],
+            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data",
+            private_endpoint_name=storage_account_data_endpoint.name,
+            resource_group_name=resource_group.name,
         )
 
         # Register outputs

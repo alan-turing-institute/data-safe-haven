@@ -120,6 +120,11 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 True,
             )
             stack.add_option(
+                "shm-networking-private_dns_zone_base_id",
+                shm_stack.output("networking")["private_dns_zone_base_id"],
+                True,
+            )
+            stack.add_option(
                 "shm-networking-resource_group_name",
                 shm_stack.output("networking")["resource_group_name"],
                 True,

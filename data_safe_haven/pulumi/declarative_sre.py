@@ -106,6 +106,7 @@ class DeclarativeSRE:
                 networking_resource_group=networking.resource_group,
                 pulumi_opts=self.pulumi_opts,
                 sre_fqdn=networking.sre_fqdn,
+                subnet_private_data=networking.subnet_private_data,
                 subscription_name=self.cfg.subscription_name,
                 tenant_id=self.cfg.azure.tenant_id,
             ),

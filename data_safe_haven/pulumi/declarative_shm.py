@@ -103,6 +103,7 @@ class DeclarativeSHM:
             SHMMonitoringProps(
                 dns_resource_group_name=networking.resource_group_name,
                 location=self.cfg.azure.location,
+                private_dns_zone_base_id=networking.private_dns_zone_base_id,
                 subnet_monitoring=networking.subnet_monitoring,
                 timezone=self.cfg.shm.timezone,
             ),

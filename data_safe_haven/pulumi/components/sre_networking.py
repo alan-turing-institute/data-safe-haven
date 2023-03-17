@@ -8,7 +8,7 @@ from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
-from data_safe_haven.helpers import alphanumeric
+from data_safe_haven.helpers import alphanumeric, ordered_private_dns_zones
 from ..common.enums import NetworkingPriorities
 
 
@@ -42,6 +42,9 @@ class SRENetworkingProps:
         )
         self.subnet_research_desktops_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(256)
+        )
+        self.subnet_private_data_iprange = self.vnet_iprange.apply(
+            lambda r: r.next_subnet(16)
         )
         # Other variables
         self.location = location
@@ -86,6 +89,9 @@ class SRENetworkingComponent(ComponentResource):
         )
         subnet_guacamole_database_prefix = (
             props.subnet_guacamole_database_iprange.apply(lambda r: str(r))
+        )
+        subnet_private_data_prefix = props.subnet_private_data_iprange.apply(
+            lambda r: str(r)
         )
         subnet_research_desktops_prefix = props.subnet_research_desktops_iprange.apply(
             lambda r: str(r)
@@ -148,6 +154,12 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
+        nsg_private_data = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_private_data",
+            network_security_group_name=f"{stack_name}-nsg-private-data",
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
         nsg_research_desktops = network.NetworkSecurityGroup(
             f"{self._name}_nsg_research_desktops",
             network_security_group_name=f"{stack_name}-nsg-research-desktops",
@@ -188,6 +200,18 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowMonitoringToolsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SHM_MONITORING_TOOLS,
                     protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_research_desktops_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to private data endpoints.",
+                    destination_address_prefix=subnet_private_data_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowPrivateDataEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_PRIVATE_DATA,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_research_desktops_prefix,
                     source_port_range="*",
                 ),
@@ -235,6 +259,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_database_name = "GuacamoleDatabaseSubnet"
+        subnet_private_data_name = "PrivateDataSubnet"
         subnet_research_desktops_name = "ResearchDesktopsSubnet"
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
@@ -274,6 +299,14 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_guacamole_database.id
                     ),
                     private_endpoint_network_policies="Disabled",
+                ),
+                # Private data
+                network.SubnetArgs(
+                    address_prefix=subnet_private_data_prefix,
+                    name=subnet_private_data_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_private_data.id
+                    ),
                 ),
                 # Research desktops
                 network.SubnetArgs(
@@ -321,6 +354,21 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_peering_name=f"peer_shm_to_sre_{sre_name}",
             opts=child_opts,
         )
+
+        # Link to SHM private DNS zones
+        for private_link_domain in ordered_private_dns_zones():
+            virtual_network_link = network.VirtualNetworkLink(
+                f"{self._name}_private_zone_{private_link_domain}_vnet_link",
+                location="Global",
+                private_zone_name=f"privatelink.{private_link_domain}",
+                registration_enabled=False,
+                resource_group_name=props.shm_networking_resource_group_name,
+                virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
+                virtual_network_link_name=Output.concat(
+                    "link-to-", sre_virtual_network.name
+                ),
+                opts=child_opts,
+            )
 
         # Define SRE DNS zone
         shm_dns_zone = Output.all(
@@ -389,6 +437,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_guacamole_database = network.get_subnet_output(
             subnet_name=subnet_guacamole_database_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_private_data = network.get_subnet_output(
+            subnet_name=subnet_private_data_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

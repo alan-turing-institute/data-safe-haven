@@ -1,6 +1,6 @@
 """Pulumi component for SHM networking"""
 # Standard library imports
-from typing import Optional, Sequence
+from typing import Optional, List, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -441,6 +441,7 @@ class SHMNetworkingComponent(ComponentResource):
         )
 
         # Set up private link domains
+        private_zone_ids: List[Output[str]] = []
         for private_link_domain in ordered_private_dns_zones():
             private_zone = network.PrivateZone(
                 f"{self._name}_private_zone_{private_link_domain}",
@@ -461,12 +462,18 @@ class SHMNetworkingComponent(ComponentResource):
                 ),
                 opts=child_opts,
             )
+            private_zone_ids.append(
+                private_zone.id.apply(
+                    lambda zone_id: "".join(zone_id.partition("privatelink.")[:-1])
+                )
+            )
 
         # Register outputs
         self.dns_zone = dns_zone
         self.domain_controller_private_ip = str(
             props.subnet_identity_servers_iprange.available()[0]
         )
+        self.private_dns_zone_base_id = private_zone_ids[0]
         self.resource_group_name = Output.from_input(resource_group.name)
         self.route_table = route_table
         self.subnet_bastion = network.get_subnet_output(
@@ -498,6 +505,7 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Register exports
         self.exports = {
+            "private_dns_zone_base_id": self.private_dns_zone_base_id,
             "resource_group_name": resource_group.name,
             "subnet_bastion_prefix": self.subnet_bastion.apply(
                 lambda s: str(s.address_prefix) if s.address_prefix else ""
