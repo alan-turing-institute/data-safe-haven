@@ -50,12 +50,12 @@ class SREProvisioningManager(LoggingMixin):
 
         # Construct VM parameters
         self.research_desktops = {}
-        for vm in sre_stack.output("research_desktops")["vm_outputs"]:
-            vm_short_name = vm["name"].split("-vm-")[1]
-            self.research_desktops[vm_short_name] = {
+        for idx, vm in enumerate(sre_stack.output("research_desktops")["vm_outputs"]):
+            self.research_desktops[f"SRD {idx}"] = {
                 "cpus": int(available_vm_skus[vm["sku"]]["vCPUs"]),
                 "gpus": int(available_vm_skus[vm["sku"]]["GPUs"]),
                 "ip_address": vm["ip_address"],
+                "name": vm["name"],
                 "ram": int(available_vm_skus[vm["sku"]]["MemoryGB"]),
                 "sku": vm["sku"],
             }
@@ -88,13 +88,13 @@ class SREProvisioningManager(LoggingMixin):
         connection_data = {
             "connections": [
                 {
-                    "connection_name": f"{vm_name} [{vm_details['cpus']} CPU(s), {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM] ({vm_details['sku']})",
+                    "connection_name": f"{vm_identifier} [{vm_details['cpus']} CPU(s), {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM]",
                     "disable_copy": self.remote_desktop_params["disable_copy"],
                     "disable_paste": self.remote_desktop_params["disable_paste"],
                     "ip_address": vm_details["ip_address"],
                     "timezone": self.remote_desktop_params["timezone"],
                 }
-                for vm_name, vm_details in self.research_desktops.items()
+                for vm_identifier, vm_details in self.research_desktops.items()
             ]
         }
         for details in connection_data["connections"]:
