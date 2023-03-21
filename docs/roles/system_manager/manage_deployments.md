@@ -6,6 +6,16 @@
 This document assumes that you already have access to a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
+## {{alarm_clock}} SREs running for more than **90** days
+
+SREs will need to periodically have their SSL certificates renewed so that the SRE URL can be accessed with HTTPS. After each 90 day period that the SRE is live, re-run the script to update the certificate.
+
+![Powershell: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
+
+```powershell
+PS> ./Update_SRE_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
 (resize_vm)=
 
 ## {{arrow_upper_right}} Resize the Virtual Machine (VM) of a Secure Research Desktop (SRD)
