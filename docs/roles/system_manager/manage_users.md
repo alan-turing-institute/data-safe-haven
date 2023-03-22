@@ -292,6 +292,29 @@ there are a couple of possible causes.
   - File mounting configuration
 ```
 
+### {{nut_and_bolt}} Password reset failure
+
+When creating an account or resetting a password, the users get the following screen:
+
+```{image} administrator_guide/password_reset_failure.png
+:alt: Password reset failure
+:align: center
+```
+
+```{error}
+**Problem**: the password could not be reset
+
+**Solution**: remove and re-add the password reset configuration on the DC1
+
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
+- Open a `Powershell` command window with elevated privileges
+- Run `$aadConnector = Get-ADSyncConnector | ? {$_.Name -match "onmicrosoft.com - AAD"}`
+- Run `Remove-ADSyncAADPasswordResetConfiguration -Connector $aadConnector.Name`
+- Run `Set-ADSyncAADPasswordResetConfiguration -Connector $aadConnector.Name -Enable $true`
+- Check the configuration is reset by running `Get-ADSyncAADPasswordResetConfiguration -Connector $aadConnector.Name`
+- Ask the user to reset  their password again
+```
+
 ### {{cloud}} Unable to install from package mirrors
 
 If it is not possible to install packages from the package mirrors then this may be for one of the following reasons:
