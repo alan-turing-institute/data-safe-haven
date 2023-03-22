@@ -235,6 +235,21 @@ Users are stuck at the `Opening remote port` message and never receive the MFA p
 - Check that the user has set up MFA (at [https://aka.ms/mfasetup](https://aka.ms/mfasetup) ) and is using the phone-call or app authentication method
 ```
 
+### {{see_no_evil}} Unable to see SRD or SSH connection options
+
+After logging in with Microsoft, users can't see the option to log into the SRE via the SRD or SSH options.
+
+```{image} administrator_guide/no_recent_connections.png
+:alt: Unable to see SRD or SSH connection options
+:align: center
+```
+
+```{tip}
+**Solution**: Ensure the user is added to the correct Security Group for the SRE
+
+- See {ref}`adding_users_manually`
+```
+
 ### {{interrobang}} xrdp login failure on the SRD
 
 If users can get to the login screen:
