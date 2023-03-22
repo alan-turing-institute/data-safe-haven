@@ -250,7 +250,7 @@ After logging in with Microsoft, users can't see the option to log into the SRE 
 - See {ref}`adding_users_manually`
 ```
 
-### {{interrobang}} xrdp login failure on the SRD
+### {{broken_heart}} Xorg login failure on the SRD
 
 If users can get to the login screen:
 
