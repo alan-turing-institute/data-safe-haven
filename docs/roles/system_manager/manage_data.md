@@ -70,28 +70,7 @@ Software ingress must go through the same approval process as is the case for da
       ```
 
     - Leave this portal window open and move to the next step
-- Open `Azure Storage Explorer` ([download](https://azure.microsoft.com/en-us/products/storage/storage-explorer/) it if you don't have it)
-- Click the socket image on the left hand side
-
-    ```{image} ../data_provider_representative/azure_storage_explorer_connect.png
-    :alt: Azure Storage Explorer connection
-    :align: center
-    ```
-
-- On `Select Resource`, choose `Blob container`
-- On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
-
-    ```{image} administrator_guide/connect_azure_storage.png
-    :alt: Connect with SAS token
-    :align: center
-    ```
-
-- On `Enter Connection Info`:
-    - Set the `Display name` to "egress" (or choose an informative name)
-    - Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
-- On the `Summary` page, hit `Connect`
-- On the left hand side, the connection should show up under `Local & Attached > Storage Accounts > (Attached Containers) > Blob Containers > ingress (SAS)`
-- You should now be able to securely download the data from the Safe Haven's output volume by highlighting the relevant file(s) and hitting the `Download` button
+- The data provider should now be able to download data by following {ref}`these instructions <process_data_egress>`
 
 ### The output volume
 
