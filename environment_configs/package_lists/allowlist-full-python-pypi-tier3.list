@@ -254,6 +254,7 @@ joblib
 js-regex
 json5
 jsonschema
+jsonschema-specifications
 jupyter
 jupyter-client
 jupyter-core
@@ -500,6 +501,7 @@ qdldl
 qrcode
 rapidfuzz
 rasterio
+referencing
 regex
 reportlab
 repoze.lru
@@ -519,6 +521,7 @@ rfc3339-validator
 rfc3986-validator
 rfc3987
 rich
+rpds-py
 rpy2
 rsa
 Rtree
