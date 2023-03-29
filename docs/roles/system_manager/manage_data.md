@@ -83,7 +83,7 @@ The {ref}`role_system_manager` creates a time-limited and IP restricted link to 
       ```
 
     - Leave this portal window open and move to the next step
-- The data provider should now be able to download data by following {ref}`these instructions <process_data_egress_removal>`
+- The appropriate person should now be able to download data by following {ref}`these instructions <process_data_egress_removal>`
 
 ### The output volume
 
