@@ -70,7 +70,7 @@ Software ingress must go through the same approval process as is the case for da
       ```
 
     - Leave this portal window open and move to the next step
-- The data provider should now be able to download data by following {ref}`these instructions <process_data_egress>`
+- The data provider should now be able to download data by following {ref}`these instructions <process_data_egress_removal>`
 
 ### The output volume
 

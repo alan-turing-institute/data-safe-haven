@@ -20,6 +20,7 @@ Each time you want to bring code or data out of the environment, you'll have to 
 
 Once the outputs are classified, the classification team should let the {ref}`role_system_manager` know who will be performing the egress and how they want this to be done.
 
+(process_data_egress_removal)=
 ## Bringing data out of the environment
 
 Talk to your {ref}`role_system_manager` to discuss possible methods of bringing data out of the environments.
