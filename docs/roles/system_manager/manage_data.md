@@ -52,6 +52,18 @@ Software ingress must go through the same approval process as is the case for da
 
 ## Data egress
 
+```{important}
+Any data egress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+```
+
+```{important}
+Classification of output must be completed **before** and egress link is created.
+
+The classification process is explained {ref}`here <process_data_egress_classification>`
+```
+
+The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment, after the outputs have been classified and approved for release.
+
 - In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
 - Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
 - Click `Networking` under `Settings` to check the list of pre-approved IP addresses allowed under the `Firewall` header and check your own IP address to ensure you are connecting from one of these

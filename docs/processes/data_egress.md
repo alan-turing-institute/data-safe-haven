@@ -5,6 +5,7 @@
 The outputs of the work being done in a Data Safe Haven are also stored in the SRE.
 There are technical and policy controls that must be satisfied before any data can be brought out of the Data Safe Haven.
 
+(process_data_egress_classification)=
 ## Classification
 
 The first stage of egressing outputs is to classify them.
