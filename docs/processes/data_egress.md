@@ -6,6 +6,7 @@ The outputs of the work being done in a Data Safe Haven are also stored in the S
 There are technical and policy controls that must be satisfied before any data can be brought out of the Data Safe Haven.
 
 (process_data_egress_classification)=
+
 ## Classification
 
 The first stage of egressing outputs is to classify them.
@@ -22,6 +23,7 @@ Each time you want to bring code or data out of the environment, you'll have to 
 Once the outputs are classified, the classification team should let the {ref}`role_system_manager` know who will be performing the egress and how they want this to be done.
 
 (process_data_egress_removal)=
+
 ## Bringing data out of the environment
 
 Talk to your {ref}`role_system_manager` to discuss possible methods of bringing data out of the environments.

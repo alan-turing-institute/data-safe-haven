@@ -67,7 +67,7 @@ The {ref}`role_system_manager` creates a time-limited and IP restricted link to 
 - In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
 - Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
 - Click `Networking` under `Settings` to check the list of pre-approved IP addresses allowed under the `Firewall` header
-  - Ensure that the IP address of the person to receive the outputs is listed and enter it if not
+    - Ensure that the IP address of the person to receive the outputs is listed and enter it if not
 - Click `Containers` under `Data storage`
 - Click `egress`
 - Click `Shared access signature` under `Settings` and do the following:
