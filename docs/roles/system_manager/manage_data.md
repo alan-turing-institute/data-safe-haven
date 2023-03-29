@@ -74,7 +74,7 @@ The {ref}`role_system_manager` creates a time-limited and IP restricted link to 
     - Under `Permissions`, check these boxes:
         - `Read`
         - `List`
-    - Set a time window in the `Start and expiry date/time` that gives you enough time to extract the data
+    - Set a time window in the `Start and expiry date/time` that gives enough time for the person who will perform the secure egress download to do so
     - Leave everything else as default click `Generate SAS token and URL`
 
       ```{image} administrator_guide/read_only_sas_token.png
