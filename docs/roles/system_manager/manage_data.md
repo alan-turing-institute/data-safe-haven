@@ -57,7 +57,7 @@ Any data egress must be signed off by the {ref}`role_data_provider_representativ
 ```
 
 ```{important}
-Classification of output must be completed **before** and egress link is created.
+Classification of output must be completed **before** an egress link is created.
 
 The classification process is explained {ref}`here <process_data_egress_classification>`.
 ```
