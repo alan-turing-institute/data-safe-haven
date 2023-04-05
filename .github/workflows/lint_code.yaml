@@ -33,7 +33,7 @@ jobs:
             --enforce-https=true \
             --ignore-files "/_static/" \
             --ignore-status-codes "502,503" \
-            --ignore-urls "/github.com\/alan-turing-institute\/data-classification-app/,/www.turing.ac.uk/"
+            --ignore-urls "/github.com\/alan-turing-institute\/data-classification-app/,/www.turing.ac.uk/,/data-safe-haven\/edit/"
 
   lint_json:
     runs-on: ubuntu-latest
