@@ -95,6 +95,7 @@ deldir
 DEoptimR
 desc
 devtools
+diagram
 DiagrammeR
 DiagrammeRsvg
 dials
@@ -184,7 +185,6 @@ googlePolylines
 googlesheets4
 googleVis
 gower
-gpclib
 GPfit
 gplots
 gridBase

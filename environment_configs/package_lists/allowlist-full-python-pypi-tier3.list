@@ -12,6 +12,7 @@ aiosignal
 aiosqlite
 alabaster
 altair
+annotated-types
 annoy
 ansimarkup
 anyio
@@ -445,6 +446,7 @@ pycosat
 pycparser
 pycurl
 pydantic
+pydantic-core
 pydot
 pyerfa
 pyflakes
