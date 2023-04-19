@@ -602,6 +602,7 @@ def get_allowlist(allowlist_path, is_cran):
 
     Args:
         allowlist_path: Path to the allowlist file
+        is_cran: True if the allowlist if for CRAN, False if it is for PyPI
 
     Returns:
         List of the package names specified in the file
@@ -609,7 +610,7 @@ def get_allowlist(allowlist_path, is_cran):
     allowlist = []
     with open(allowlist_path, "r") as allowlist_file:
         # Sanitise package names
-        # - convert to lower case if the package is on PyPi. Leave alone on CRAN to prevent issues with case-sensitivity
+        # - convert to lower case if the package is on PyPI. Leave alone on CRAN to prevent issues with case-sensitivity
         # - convert special characters to '-'
         # - remove any blank entries, which act as a wildcard that would allow any package
         special_characters = re.compile(r"[^0-9a-zA-Z]+")
