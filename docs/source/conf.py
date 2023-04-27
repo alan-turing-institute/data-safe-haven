@@ -78,7 +78,7 @@ html_theme_options = {
         "image_light": "logo_turing_light.png",
         "image_dark": "logo_turing_dark.png",
     },
-    "page_sidebar_items": ["edit-this-page", "sourcelink"],
+    "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
     "use_edit_page_button": True,
 }
 
