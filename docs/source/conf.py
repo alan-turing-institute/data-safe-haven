@@ -82,16 +82,6 @@ html_theme_options = {
     "use_edit_page_button": True,
 }
 
-# Set the left-hand sidebars
-html_sidebars = {
-    "**": [
-        "search-field.html",
-        "sidebar-section-navigation.html",
-    ]
-}
-if not os.getenv("DISABLE_VERSION_LINKS"):
-    html_sidebars["**"] += ["sidebar-versions.html"]
-
 # Location of favicon
 html_favicon = "_static/favicon.ico"
 
