@@ -92,7 +92,6 @@ html_context["doc_path"] = "docs"
 # ones.
 extensions = [
     "myst_parser",
-    "rinoh.frontend.sphinx",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -170,27 +169,3 @@ myst_substitutions = {
     emoji_code: emoji.emojize(f":{emoji_code}:", language="alias")
     for emoji_code in emoji_codes
 }
-
-# -- Options for Rinoh  -------------------------------------------------------
-
-# List of documents to convert to PDF
-rinoh_documents = [
-    dict(
-        doc="roles/researcher/user_guide_guacamole",
-        target="pdf/data_safe_haven_user_guide_guacamole",
-        title="Data Safe Haven User Guide\nApache Guacamole",
-        subtitle=pdf_version_string,
-        date=current_commit_date,
-        author=author,
-        template="emoji_support.rtt",
-    ),
-    dict(
-        doc="roles/researcher/user_guide_msrds",
-        target="pdf/data_safe_haven_user_guide_msrds",
-        title="Data Safe Haven User Guide\nMicrosoft Remote Desktop",
-        subtitle=pdf_version_string,
-        date=current_commit_date,
-        author=author,
-        template="emoji_support.rtt",
-    ),
-]
