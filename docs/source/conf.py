@@ -5,7 +5,6 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import datetime
 import emoji
-import git
 import os
 
 
@@ -15,34 +14,9 @@ project = "Data Safe Haven"
 copyright = f"CC-BY-4.0 {datetime.date.today().year}, The Alan Turing Institute."
 author = "The Alan Turing Institute"
 development_branch = "develop"
-earliest_supported_release = "v4.0.0"
-
-
-# -- Git repository details
-repo = git.Repo(search_parent_directories=True)
-repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
-releases = sorted((t.name for t in repo.tags), reverse=True)
-supported_versions = (
-    releases[: releases.index(earliest_supported_release) + 1]
-    + [development_branch]
-)
-default_version = supported_versions[0]  # Latest stable release
-current_version = (
-    [tag.name for tag in repo.tags if tag.commit == repo.head.commit]
-    + [branch.name for branch in repo.branches if branch.commit == repo.head.commit]
-    + [str(repo.head.commit)]
-)[0]  # Tag or branch name or commit ID if no name is available
-current_commit_hash = repo.head.commit.hexsha
-current_commit_date = repo.head.commit.authored_datetime.strftime(r"%d %b %Y")
-del repo  # all unpickleable objects must be deleted
 
 
 # -- Customisation  -----------------------------------------------------------
-
-# Extracted repository variables
-print(f"Supported versions: {supported_versions}")
-print(f"Default version: {default_version}")
-print(f"Current version: {current_version}")
 
 # Construct list of emoji substitutions
 emoji_codes = set(
@@ -59,25 +33,7 @@ emoji_codes = set(
 # Set sidebar variables
 if "html_context" not in globals():
     html_context = dict()
-html_context["display_lower_left"] = True
-html_context["default_version"] = default_version
-html_context["current_version"] = current_version
-html_context["versions"] = [
-    (v, f"/{repo_name}/{v}/index.html") for v in supported_versions
-]
-# Downloadable PDFs
-pdf_version_string = f"Version: {current_version} ({current_commit_hash})"
-print(f"PDF version string: {pdf_version_string}")
-html_context["downloads"] = [
-    (
-        "User guide (Apache Guacamole)",
-        f"/{repo_name}/{current_version}/pdf/data_safe_haven_user_guide_guacamole.pdf",
-    ),
-    (
-        "User guide (Microsoft RDS)",
-        f"/{repo_name}/{current_version}/pdf/data_safe_haven_user_guide_msrds.pdf",
-    ),
-]
+
 # Add 'Edit on GitHub' link
 html_context["github_user"] = "alan-turing-institute"
 html_context["github_repo"] = "data-safe-haven"
@@ -97,18 +53,11 @@ extensions = [
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [
-    "build",
-    "_output",
-    "Thumbs.db",
-    ".DS_Store",
-    "**/*.partial.md",
-]
-
-
+exclude_patterns = ["**/*.partial.md"]
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
