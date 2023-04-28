@@ -52,5 +52,5 @@ jobs:
       - name: Link Checker
         uses: lycheeverse/lychee-action@v1.7.0
         with:
-          args: --verbose --no-progress './docs/build/html/**/*.html'
+          args: --config='./.lychee.toml' --verbose --no-progress './docs/build/html/**/*.html'
           fail: true  # fail on broken links
