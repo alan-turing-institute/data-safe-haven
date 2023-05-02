@@ -63,6 +63,7 @@ better-exceptions-fork
 biscuits
 black
 bleach
+blinker
 blis
 blosc
 blosc2
