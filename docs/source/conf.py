@@ -10,7 +10,7 @@ import emoji
 # -- Project information -----------------------------------------------------
 
 project = "Data Safe Haven"
-copyright = f"CC-BY-4.0 {datetime.date.today().year}, The Alan Turing Institute."
+copyright = f"CC-BY-4.0 {datetime.date.today().year}, The Alan Turing Institute"
 author = "The Alan Turing Institute"
 development_branch = "develop"
 
