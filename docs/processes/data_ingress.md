@@ -57,15 +57,17 @@ If you upload this file then researchers will be able to independently verify da
 Here are instructions to generate a checksum file using the `md5sum` algorithm for a data set stored in a directory called `data`.
 
 ```console
-$ find ./data/ -type fl -exec md5sum {} + > hashes.txt
+find ./data/ -type fl -exec md5sum {} + > hashes.txt
 ```
+
 `find` searches the `data` directory for files and symbolic links (`-type fl`).
 `find` also runs the checksum command `md5sum` on all matching files (`-exec md5sum {} +`).
 Finally, the checksums are written to a file called `hashes.txt` (`> hashes.txt`).
 
 The data can be checked, by comparing to the checksums.
+
 ```console
-$ md5sum -c hashes.txt
+md5sum -c hashes.txt
 ```
 
 If a file has changed the command will return a non-zero exit code (an error).
@@ -73,7 +75,7 @@ The failing files will be listed as `<filename>: FAILED` in the output.
 Those files can be easily identified using `grep`
 
 ```console
-$ md5sum -c hashes.txt | grep FAILED
+md5sum -c hashes.txt | grep FAILED
 ```
 
 To use the `sha256` algorithm, replace `md5sum` with `sha256` in the above commands.
