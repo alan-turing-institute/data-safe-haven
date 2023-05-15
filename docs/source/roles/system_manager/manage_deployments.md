@@ -40,12 +40,17 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 
 </details>
 
-```{note}
-If the new `VM size` you want isn't shown as available in the Azure Portal, it's possible that you'll need to request an increase in the vCPU quota for the VM family before resizing is allowed:
+```{tip}
+If the new `VM size` you want isn't shown as available in the Azure Portal, there are several steps that can be taken.
+
+Firstly, try **stopping the VM** and checking again whether the size you want is available, as this can reveal additional options that aren't shown whilst the VM is running. For example, when resizing to an N-series VM in Azure, (see {ref}`using_gpus`) we've found that NVIDIA options such as the  NVv3-series are not always shown as available.
+
+Next, you can try to **request an increase** in the vCPU quota for the VM family of the desired VM:
 - Navigate to the Azure Portal and on the subscription page, click `Usage + quotas` under `Settings`
 - Choose the family appropriate to the VM that you want to resize to, and select a region appropriate for the SRE
 - Click the pen icon and set the `New Limit` to at least the number of vCPUs required by the VM that you want, the click submit
 - After the request is accepted, resize the VM as above
+- In some cases, the quota increase may require a request to be submitted to Microsoft
 ```
 
 (add_new_srd)=
@@ -66,9 +71,11 @@ PS> ./Add_Single_SRD.ps1 -shmId <SHM ID> -sreId <SRE ID> -ipLastOctet <IP last o
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 - where `<IP last octet>` is last octet of the IP address (this must be different to any other SRD VMs)
 
+(using_gpus)=
+
 ## {{minidisc}} Using GPUs in SRDs
 
-When you {ref}`resize_vm` or {ref}`add_new_srd` size featuring a GPU (N-series in Azure), you'll need to ensure it has an Nvidia GPU (as opposed to AMD or other).
+When you {ref}`resize_vm` or {ref}`add_new_srd` featuring a GPU (N-series in Azure), you'll need to ensure it has an Nvidia GPU (as opposed to AMD or other).
 See the [Azure docs](https://learn.microsoft.com/en-us/azure/virtual-machines/sizes-gpu) for more information.
 This is because only Nvidia GPUs support the drivers and CUDA libraries installed on the SRD image.
 

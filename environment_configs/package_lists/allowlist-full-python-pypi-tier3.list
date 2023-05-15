@@ -63,6 +63,7 @@ better-exceptions-fork
 biscuits
 black
 bleach
+blinker
 blis
 blosc
 blosc2
@@ -169,6 +170,7 @@ flatbuffers
 folium
 fonttools
 formulaic
+freetype-py
 frozenlist
 fsspec
 fst-pso
@@ -441,6 +443,7 @@ pyarrow
 pyasn1
 pyasn1-modules
 pybind11
+pycairo
 pycodestyle
 pycosat
 pycparser
@@ -523,6 +526,7 @@ rfc3339-validator
 rfc3986-validator
 rfc3987
 rich
+rlPyCairo
 rpds-py
 rpy2
 rsa
