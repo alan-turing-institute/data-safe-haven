@@ -1,4 +1,4 @@
-(role_investigator_egress)=
+(role_investigator_ingress)=
 
 # Data ingress process
 
