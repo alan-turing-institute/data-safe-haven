@@ -3,40 +3,19 @@
 # This file only contains a selection of the most common options. For a full
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
+import datetime
 import emoji
-import git
 
 
 # -- Project information -----------------------------------------------------
 
 project = "Data Safe Haven"
-copyright = "CC-BY-4.0 2022, The Alan Turing Institute."
+copyright = f"CC-BY-4.0 {datetime.date.today().year}, The Alan Turing Institute"
 author = "The Alan Turing Institute"
 development_branch = "develop"
-earliest_supported_release = "v4.0.0"
-
-
-# -- Git repository details
-repo = git.Repo(search_parent_directories=True)
-repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
-releases = sorted((t.name for t in repo.tags), reverse=True)
-supported_versions = (
-    releases[: releases.index(earliest_supported_release) + 1]
-    + [development_branch]
-)
-default_version = supported_versions[0]  # Latest stable release
-current_version = (
-    [tag.name for tag in repo.tags if tag.commit == repo.head.commit]
-    + [branch.name for branch in repo.branches if branch.commit == repo.head.commit]
-    + [repo.head.commit]
-)[0]  # Tag or branch name or commit ID if no name is available
 
 
 # -- Customisation  -----------------------------------------------------------
-
-print(f"Supported versions: {supported_versions}")
-print(f"Default version: {default_version}")
-print(f"Current version: {current_version}")
 
 # Construct list of emoji substitutions
 emoji_codes = set(
@@ -53,32 +32,8 @@ emoji_codes = set(
 # Set sidebar variables
 if "html_context" not in globals():
     html_context = dict()
-html_context["display_lower_left"] = True
-html_context["default_version"] = default_version
-html_context["current_version"] = current_version
-html_context["versions"] = [
-    (v, f"/{repo_name}/{v}/index.html") for v in supported_versions
-]
-# Downloadable PDFs
-pdf_commit_hash = repo.git.log("-1", "--format=format:%h", current_version)
-pdf_commit_date = repo.git.log(
-    "-1", "--format=format:%cd", "--date=format:%d %b %Y", current_version
-)
-pdf_version_string = f"Version: {current_version} ({pdf_commit_hash})"
-print(f"PDF version string: {pdf_version_string}")
 
-html_context["downloads"] = [
-    (
-        "User guide (Apache Guacamole)",
-        f"/{repo_name}/{current_version}/pdf/data_safe_haven_user_guide_guacamole.pdf",
-    ),
-    (
-        "User guide (Microsoft RDS)",
-        f"/{repo_name}/{current_version}/pdf/data_safe_haven_user_guide_msrds.pdf",
-    ),
-]
 # Add 'Edit on GitHub' link
-# html_context["display_github"] = True
 html_context["github_user"] = "alan-turing-institute"
 html_context["github_repo"] = "data-safe-haven"
 html_context["github_version"] = development_branch
@@ -92,23 +47,16 @@ html_context["doc_path"] = "docs"
 # ones.
 extensions = [
     "myst_parser",
-    "rinoh.frontend.sphinx",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [
-    "build",
-    "_output",
-    "Thumbs.db",
-    ".DS_Store",
-    "**/*.partial.md",
-]
-
+exclude_patterns = ["**/*.partial.md"]
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -129,17 +77,8 @@ html_theme_options = {
         "image_light": "logo_turing_light.png",
         "image_dark": "logo_turing_dark.png",
     },
-    "page_sidebar_items": ["edit-this-page", "sourcelink"],
+    "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
     "use_edit_page_button": True,
-}
-
-# Set the left-hand sidebars
-html_sidebars = {
-    "**": [
-        "search-field.html",
-        "sidebar-section-navigation.html",
-        "sidebar-versions.html",
-    ]
 }
 
 # Location of favicon
@@ -168,27 +107,3 @@ myst_substitutions = {
     emoji_code: emoji.emojize(f":{emoji_code}:", language="alias")
     for emoji_code in emoji_codes
 }
-
-# -- Options for Rinoh  -------------------------------------------------------
-
-# List of documents to convert to PDF
-rinoh_documents = [
-    dict(
-        doc="roles/researcher/user_guide_guacamole",
-        target="pdf/data_safe_haven_user_guide_guacamole",
-        title="Data Safe Haven User Guide\nApache Guacamole",
-        subtitle=pdf_version_string,
-        date=pdf_commit_date,
-        author=author,
-        template="emoji_support.rtt",
-    ),
-    dict(
-        doc="roles/researcher/user_guide_msrds",
-        target="pdf/data_safe_haven_user_guide_msrds",
-        title="Data Safe Haven User Guide\nMicrosoft Remote Desktop",
-        subtitle=pdf_version_string,
-        date=pdf_commit_date,
-        author=author,
-        template="emoji_support.rtt",
-    ),
-]
