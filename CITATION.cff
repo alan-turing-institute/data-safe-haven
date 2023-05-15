@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "To acknowledge the data safe haven please use the citation and references below."
 title: "Turing Data Safe Haven"
-url: "https://alan-turing-institute.github.io/data-safe-haven/develop/index.html"
+url: "https://data-safe-haven.readthedocs.io"
 repository-code: "https://github.com/alan-turing-institute/data-safe-haven"
 authors:
   - given-names: James
