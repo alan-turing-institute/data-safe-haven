@@ -11,7 +11,7 @@ processes/index.md
 roles/index.md
 ```
 
-```{image} static/scriberia_diagram.jpg
+```{image} _static/scriberia_diagram.jpg
 :alt: Data Safe Haven cartoon by Scriberia for The Alan Turing Institute
 :align: center
 ```
