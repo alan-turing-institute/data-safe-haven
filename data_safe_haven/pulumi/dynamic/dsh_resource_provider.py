@@ -21,7 +21,7 @@ class DshResourceProvider(ResourceProvider):
     def partial_diff(
         old_props: Dict[str, Any],
         new_props: Dict[str, Any],
-        excluded_props: Sequence[str],
+        excluded_props: Sequence[str] = [],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
         # List any values that were not present in old_props or have been changed

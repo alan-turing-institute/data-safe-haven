@@ -1,5 +1,6 @@
 import pulumi_azure_native._utilities as _utilities
 import pulumi_azure_native.automation as automation
+import pulumi_azure_native.authorization as authorization
 import pulumi_azure_native.compute as compute
 import pulumi_azure_native.containerinstance as containerinstance
 import pulumi_azure_native.dbforpostgresql as dbforpostgresql
@@ -14,6 +15,7 @@ import pulumi_azure_native.storage as storage
 
 __all__ = [
     "automation",
+    "authorization",
     "compute",
     "containerinstance",
     "dbforpostgresql",

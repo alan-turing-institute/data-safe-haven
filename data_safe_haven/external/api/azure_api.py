@@ -46,6 +46,7 @@ from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.storage.models import BlobContainer, PublicAccess
 from azure.mgmt.storage.models import Sku as StorageAccountSku
 from azure.mgmt.storage.models import StorageAccount, StorageAccountCreateParameters
+from azure.storage.filedatalake import DataLakeServiceClient
 
 # Local imports
 from data_safe_haven.exceptions import (
@@ -918,6 +919,50 @@ class AzureApi(AzureMixin, LoggingMixin):
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to run command on '{vm_name}'.\n{str(exc)}"
+            ) from exc
+
+    def set_blob_container_acl(
+        self,
+        container_name: str,
+        desired_acl: str,
+        resource_group_name: str,
+        storage_account_name: str,
+    ) -> None:
+        """Set the ACL for a blob container
+
+        Raises:
+            DataSafeHavenAzureException if the ACL could not be set
+        """
+        try:
+            # Ensure that storage container exists in the storage account
+            storage_client = StorageManagementClient(
+                self.credential, self.subscription_id
+            )
+            try:
+                container = storage_client.blob_containers.get(
+                    resource_group_name, storage_account_name, container_name
+                )
+                if container.name != container_name:
+                    raise HttpResponseError("Container could not be found.")
+            except HttpResponseError:
+                self.info(
+                    f"Blob container '<fg=green>{container_name}</>' could not be found in storage account '<fg=green>{storage_account_name}</>'."
+                )
+                return
+
+            # Connect to Azure clients
+            service_client = DataLakeServiceClient(
+                f"https://{storage_account_name}.dfs.core.windows.net", self.credential
+            )
+            file_system_client = service_client.get_file_system_client(
+                file_system=container_name
+            )
+            directory_client = file_system_client._get_root_directory_client()
+            # Set the desired ACL
+            directory_client.set_access_control_recursive(acl=desired_acl)
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Failed to set ACL '{desired_acl}' on container '{container_name}'.\n{str(exc)}"
             ) from exc
 
     def set_keyvault_secret(
