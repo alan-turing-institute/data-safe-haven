@@ -983,8 +983,15 @@
                             "g94-prod-sn3-010-sb.servicebus.windows.net",
                             "g95-prod-sn3-010-sb.servicebus.windows.net",
                             "passwordreset.microsoftonline.com",
+                            "ssprdedicatedsbprodeus2-1.servicebus.windows.net",
+                            "ssprdedicatedsbprodfra-1.servicebus.windows.net",
+                            "ssprdedicatedsbprodncu-2.servicebus.windows.net",
                             "ssprdedicatedsbprodncu.servicebus.windows.net",
-                            "ssprdedicatedsbprodscu.servicebus.windows.net"
+                            "ssprdedicatedsbprodneu.servicebus.windows.net",
+                            "ssprdedicatedsbprodscu-2.servicebus.windows.net",
+                            "ssprdedicatedsbprodscu.servicebus.windows.net",
+                            "ssprdedicatedsbprodsea-1.servicebus.windows.net",
+                            "ssprdedicatedsbprodweu.servicebus.windows.net"
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
