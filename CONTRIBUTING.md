@@ -222,7 +222,7 @@ GitHub has a [nice introduction](https://docs.github.com/en/get-started/quicksta
 
 ### Making a change to the documentation
 
-The docs, including for older releases, are available [here](https://alan-turing-institute.github.io/data-safe-haven).
+The docs, including for older releases, are available [here](https://data-safe-haven.readthedocs.io).
 
 You should follow the same instructions as above to [make a change with a pull request](#making-a-change-with-a-pull-request) when editing the documentation.
 
