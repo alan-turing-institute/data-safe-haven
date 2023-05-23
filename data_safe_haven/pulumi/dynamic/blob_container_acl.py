@@ -20,26 +20,31 @@ class BlobContainerAclProps:
         acl_user: Input[str],
         acl_group: Input[str],
         acl_other: Input[str],
+        apply_default_permissions: bool,
         container_name: Input[str],
         resource_group_name: Input[str],
         storage_account_name: Input[str],
         subscription_name: Input[str],
     ) -> None:
         self.container_name = container_name
-        self.desired_acl = Output.concat(
+        acl_arguments = [
             "user::",
             acl_user,
             ",group::",
             acl_group,
             ",other::",
             acl_other,
-            ",default:user::",
-            acl_user,
-            ",default:group::",
-            acl_group,
-            ",default:other::",
-            acl_other,
-        )
+        ]
+        if apply_default_permissions:
+            acl_arguments += [
+                ",default:user::",
+                acl_user,
+                ",default:group::",
+                acl_group,
+                ",default:other::",
+                acl_other,
+            ]
+        self.desired_acl = Output.concat(*acl_arguments)
         self.resource_group_name = resource_group_name
         self.storage_account_name = storage_account_name
         self.subscription_name = subscription_name
@@ -72,7 +77,7 @@ class BlobContainerAclProvider(DshResourceProvider):
             azure_api = AzureApi(props["subscription_name"])
             azure_api.set_blob_container_acl(
                 container_name=props["container_name"],
-                desired_acl=f"user::rwx,group::r-x,other::---,default:user::rwx,default:group::r-x,default:other::---",
+                desired_acl=f"user::rwx,group::r-x,other::---",
                 resource_group_name=props["resource_group_name"],
                 storage_account_name=props["storage_account_name"],
             )

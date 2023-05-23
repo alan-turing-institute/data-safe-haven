@@ -352,6 +352,7 @@ class SREDataComponent(ComponentResource):
                 acl_user="rwx",
                 acl_group="rwx",
                 acl_other="rwx",
+                apply_default_permissions=False, # due to an Azure bug this also gives ownership of the fileshare to user 65533 (preventing use inside the SRE)
                 container_name=storage_container_egress.name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account_securedata.name,
@@ -365,6 +366,7 @@ class SREDataComponent(ComponentResource):
                 acl_user="rwx",
                 acl_group="r-x",
                 acl_other="r-x",
+                apply_default_permissions=True, # ensure that the above permissions are also set on any newly created files (eg. with Azure Storage Explorer)
                 container_name=storage_container_ingress.name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account_securedata.name,
