@@ -1,4 +1,4 @@
-![Data Safe Haven cartoon by Scriberia for The Alan Turing Institute](docs/_static/scriberia_diagram.jpg)
+![Data Safe Haven cartoon by Scriberia for The Alan Turing Institute](docs/source/_static/scriberia_diagram.jpg)
 
 # :eyes: What is the Turing Data Safe Haven?
 
