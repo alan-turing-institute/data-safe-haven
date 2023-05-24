@@ -107,3 +107,6 @@ myst_substitutions = {
     emoji_code: emoji.emojize(f":{emoji_code}:", language="alias")
     for emoji_code in emoji_codes
 }
+
+# Allow MyST to generate anchors for section titles
+myst_heading_anchors = 4
