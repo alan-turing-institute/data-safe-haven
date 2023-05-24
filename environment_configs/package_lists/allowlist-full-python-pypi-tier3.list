@@ -123,6 +123,7 @@ cssselect2
 cycler
 cymem
 Cython
+dacite
 dash
 dash-core-components
 dash-html-components
