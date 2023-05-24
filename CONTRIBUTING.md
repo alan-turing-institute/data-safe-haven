@@ -226,7 +226,7 @@ The docs, including for older releases, are available [here](https://data-safe-h
 
 You should follow the same instructions as above to [make a change with a pull request](#making-a-change-with-a-pull-request) when editing the documentation.
 
-To preview your changes, you can build the docs locally. See (docs/README.md).
+To preview your changes, you can build the docs locally. See [docs/README.md](docs/README.md).
 
 ### Who's involved in the project
 
