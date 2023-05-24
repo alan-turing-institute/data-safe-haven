@@ -6,6 +6,10 @@
 This document assumes that you already have access to a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
+```{include} ../../deployment/snippets/00_symbols.partial.md
+:relative-images:
+```
+
 ## {{alarm_clock}} Renewing SRE Domain Certificates
 
 SREs will need to periodically have their SSL certificates renewed so that the SRE URL can be accessed with HTTPS. After each 90 day period that the SRE is live, re-run the script to update the certificate.
