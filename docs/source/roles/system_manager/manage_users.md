@@ -183,6 +183,19 @@ A sample email might look like the following
 >
 > --details about network and location/VPN restrictions here--
 
+(modifying_network)=
+
+## Manually modifying network restrictions
+
+Tier 2/3 SREs restrict access based on network addresses. After deployment, the network addresses can be modified manually. 
+
+* In the Azure Portal, navigate to `RG_SHM_<SHM_ID>_SRE_<SRE_ID>_NETWORKING`   
+* On the `Overview` tab, and navigate to the Network Security Group for the remote desktop service, `NSG_SHM_<SHM_ID>_SRE_<SRE_ID>_GUACAMOLE`
+* Navigate to `Inbound Security Rules`, and find the entry called `AllowUsersApprovedHttpsInbound`
+* For the field `Source IP addresses/CIDR ranges`, add the desired IP address or range to the existing entry
+
+`Source IP addresses/CIDR ranges`
+
 ## {{construction_worker}} Common user problems
 
 One of the most common user issues is that they are unable to log in to the environment.
