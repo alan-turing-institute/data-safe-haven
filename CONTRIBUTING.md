@@ -226,21 +226,7 @@ The docs, including for older releases, are available [here](https://data-safe-h
 
 You should follow the same instructions as above to [make a change with a pull request](#making-a-change-with-a-pull-request) when editing the documentation.
 
-To preview your changes, you can build the docs locally.
-The documentation build dependencies are listed in [a requirements file](docs/build/requirements.txt) that can be installed using `pip`:
-
-```{shell}
-pip install -r docs/build/requirements.txt
-```
-
-Check out your branch, navigate to the `docs` folder and `make` them:
-
-```{shell}
-cd data-safe-haven/docs
-make html
-```
-
-This will add the contents to a folder called `_output` inside `docs`. Open the index html from a browser and you should be able to navigate the docs and view your changes.
+To preview your changes, you can build the docs locally. See (docs/README.md).
 
 ### Who's involved in the project
 
