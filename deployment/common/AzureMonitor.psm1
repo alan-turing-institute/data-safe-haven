@@ -70,7 +70,7 @@ function Set-LogAnalyticsDiagnostics {
         [string]$WorkspaceId
     )
     Add-LogMessage -Level Info "Enable logging for $ResourceName to log analytics workspace"
-    $null = Set-AzDiagnosticSetting -ResourceId $ResourceId -WorkspaceId $WorkspaceId -Enabled $true
+    $null = New-AzDiagnosticSetting -Name "LogToWorkspace" -ResourceId $ResourceId -WorkspaceId $WorkspaceId
     if ($?) {
         Add-LogMessage -Level Success "Enabled logging for $ResourceName to log analytics workspace"
     } else {

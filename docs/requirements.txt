@@ -58,7 +58,7 @@ pygments==2.15.1
     #   sphinx
 pyyaml==6.0
     # via myst-parser
-requests==2.30.0
+requests==2.31.0
     # via sphinx
 snowballstemmer==2.2.0
     # via sphinx
@@ -81,7 +81,7 @@ sphinxcontrib-qthelp==1.0.3
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
-typing-extensions==4.5.0
+typing-extensions==4.6.1
     # via pydata-sphinx-theme
 urllib3==2.0.2
     # via requests
