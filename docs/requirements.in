@@ -1,4 +1,4 @@
-emoji==2.2.0
-myst-parser==1.0.0
-pydata-sphinx-theme==0.13.3
-Sphinx==6.2.1
+emoji
+myst-parser
+pydata-sphinx-theme
+Sphinx
