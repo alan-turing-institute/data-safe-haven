@@ -187,14 +187,13 @@ A sample email might look like the following
 
 ## Manually modifying network restrictions
 
-Tier 2/3 SREs restrict access based on network addresses. After deployment, the network addresses can be modified manually. 
+One of the controls used by Tier 2/3 SREs is to restrict access based on network addresses. If the users were to require access from different IP addresses - if their institutional IP address changes, or an additional location with a different network were approved - then the network addresses that are allowed access can be modified manually. 
 
 * In the Azure Portal, navigate to `RG_SHM_<SHM_ID>_SRE_<SRE_ID>_NETWORKING`   
-* On the `Overview` tab, and navigate to the Network Security Group for the remote desktop service, `NSG_SHM_<SHM_ID>_SRE_<SRE_ID>_GUACAMOLE`
+* On the `Overview` tab, and navigate to the Network Security Group for the appropriate remote desktop service (e.g `NSG_SHM_<SHM_ID>_SRE_<SRE_ID>_GUACAMOLE`)
 * Navigate to `Inbound Security Rules`, and find the entry called `AllowUsersApprovedHttpsInbound`
 * For the field `Source IP addresses/CIDR ranges`, add the desired IP address or range to the existing entry
-
-`Source IP addresses/CIDR ranges`
+* Users will then be able to access the remote desktop interface
 
 ## {{construction_worker}} Common user problems
 
