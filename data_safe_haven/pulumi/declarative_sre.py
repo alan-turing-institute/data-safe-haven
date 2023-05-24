@@ -107,6 +107,7 @@ class DeclarativeSRE:
                 pulumi_opts=self.pulumi_opts,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_private_data=networking.subnet_private_data,
+                subscription_id=self.cfg.subscription_id,
                 subscription_name=self.cfg.subscription_name,
                 tenant_id=self.cfg.azure.tenant_id,
             ),
@@ -143,8 +144,8 @@ class DeclarativeSRE:
                 location=self.cfg.azure.location,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
                 subnet_guacamole_database=networking.subnet_guacamole_database,
-                storage_account_key=data.state_storage_account_key,
-                storage_account_name=data.state_storage_account_name,
+                storage_account_key=data.storage_account_state_key,
+                storage_account_name=data.storage_account_state_name,
                 storage_account_resource_group=data.resource_group_name,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
@@ -180,6 +181,8 @@ class DeclarativeSRE:
                 log_analytics_workspace_key=self.pulumi_opts.require(
                     "shm-monitoring-log_analytics_workspace_key"
                 ),
+                storage_account_userdata_name=data.storage_account_userdata_name,
+                storage_account_securedata_name=data.storage_account_securedata_name,
                 security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
                 subnet_research_desktops=networking.subnet_research_desktops,
                 virtual_network_resource_group=networking.resource_group,

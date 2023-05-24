@@ -39,7 +39,7 @@ def ordered_private_dns_zones(resource_type: Optional[str] = None) -> List[str]:
             "ods.opinsights.azure.com",
             "oms.opinsights.azure.com",
         ],
-        "Storage account": ["blob.core.windows.net"],
+        "Storage account": ["blob.core.windows.net", "file.core.windows.net"],
     }
     if resource_type and (resource_type in dns_zones):
         return dns_zones[resource_type]

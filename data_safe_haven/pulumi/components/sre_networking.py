@@ -307,6 +307,12 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_private_data.id
                     ),
+                    service_endpoints=[
+                        network.ServiceEndpointPropertiesFormatArgs(
+                            locations=[props.location],
+                            service="Microsoft.Storage",
+                        )
+                    ],
                 ),
                 # Research desktops
                 network.SubnetArgs(

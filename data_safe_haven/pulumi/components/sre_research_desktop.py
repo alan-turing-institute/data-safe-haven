@@ -33,6 +33,8 @@ class SREResearchDesktopProps:
         location: Input[str],
         log_analytics_workspace_id: Input[str],
         log_analytics_workspace_key: Input[str],
+        storage_account_userdata_name: Input[str],
+        storage_account_securedata_name: Input[str],
         security_group_name: Input[str],
         subnet_research_desktops: Input[network.GetSubnetResult],
         virtual_network_resource_group: Input[resources.ResourceGroup],
@@ -51,6 +53,8 @@ class SREResearchDesktopProps:
         self.location = location
         self.log_analytics_workspace_id = log_analytics_workspace_id
         self.log_analytics_workspace_key = log_analytics_workspace_key
+        self.storage_account_userdata_name = storage_account_userdata_name
+        self.storage_account_securedata_name = storage_account_securedata_name
         self.security_group_name = security_group_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
             get_name_from_vnet
@@ -105,6 +109,8 @@ class SREResearchDesktopComponent(ComponentResource):
             ldap_search_password=props.ldap_search_password,
             ldap_server_ip=props.ldap_server_ip,
             linux_update_server_ip=props.linux_update_server_ip,
+            storage_account_userdata_name=props.storage_account_userdata_name,
+            storage_account_securedata_name=props.storage_account_securedata_name,
             security_group_name=props.security_group_name,
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
 
@@ -158,6 +164,8 @@ class SREResearchDesktopComponent(ComponentResource):
         ldap_search_password: str,
         ldap_server_ip: str,
         linux_update_server_ip: str,
+        storage_account_userdata_name: str,
+        storage_account_securedata_name: str,
         security_group_name: str,
     ) -> str:
         resources_path = (
@@ -175,6 +183,8 @@ class SREResearchDesktopComponent(ComponentResource):
                 "ldap_server_ip": ldap_server_ip,
                 "ldap_sre_security_group": security_group_name,
                 "linux_update_server_ip": linux_update_server_ip,
+                "storage_account_userdata_name": storage_account_userdata_name,
+                "storage_account_securedata_name": storage_account_securedata_name,
             }
             cloudinit = chevron.render(f_cloudinit, mustache_values)
             return b64encode(cloudinit)

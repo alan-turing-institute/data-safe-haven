@@ -45,12 +45,21 @@ write_files:
     content: |
       xfce4-session
 
+mounts:
+  # Secure data is in a blob container mounted as NFSv3
+  - ["{{storage_account_securedata_name}}.blob.core.windows.net:/{{storage_account_securedata_name}}/ingress", /data, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
+  - ["{{storage_account_securedata_name}}.blob.core.windows.net:/{{storage_account_securedata_name}}/egress", /output, nfs, "rw,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
+  # User data is in a file share mounted as NFSv4
+  - ["{{storage_account_userdata_name}}.file.core.windows.net:/{{storage_account_userdata_name}}/shared", /shared, nfs, "_netdev,sec=sys,nconnect=4"]
+  - ["{{storage_account_userdata_name}}.file.core.windows.net:/{{storage_account_userdata_name}}/home", /home, nfs, "_netdev,sec=sys,nconnect=4"]
+
 # Install necessary apt packages
 packages:
   # System requirements
   - libnss-ldapd # LDAP login
   - libpam-ldapd # LDAP login
   - ldap-utils   # LDAP login
+  - nfs-common   # Mounting shared volumes
   - xfce4        # XFCE desktop
   - xrdp         # remote desktop client
   # Programming
@@ -61,8 +70,9 @@ package_update: true
 package_upgrade: true
 
 runcmd:
-  # Allow LDAP users to login
+  # Configure LDAP user login
   # -------------------------
+  - echo ">=== Configure LDAP user login... ===<"
   # Configure nsswitch
   - echo "Adding ldap to /etc/nsswitch.conf"
   - sed -i -r "s|^(passwd\|group\|shadow)(:.*)$|\1\2 ldap|g" /etc/nsswitch.conf
@@ -79,9 +89,21 @@ runcmd:
   - systemctl restart nslcd
   - systemctl restart sshd
 
-  # Ensure that xrdp is running and enabled at startup
-  # --------------------------------------------------
+  # Enable xrdp and session manager at startup
+  # ------------------------------------------
+  - echo ">=== Enable xrdp... ===<"
   - systemctl enable xrdp
   - systemctl enable xrdp-sesman
   - systemctl start xrdp
   - systemctl start xrdp-sesman
+
+  # Mount all external volumes
+  # --------------------------
+  - echo ">=== Mounting all external volumes... ===<"
+  - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
+  - mount -fav
+  - while (! mountpoint -q /data); do sleep 5; mount /data; done
+  - while (! mountpoint -q /home); do sleep 5; mount /home; done
+  - while (! mountpoint -q /output); do sleep 5; mount /output; done
+  - while (! mountpoint -q /shared); do sleep 5; mount /shared; done
+  - findmnt
