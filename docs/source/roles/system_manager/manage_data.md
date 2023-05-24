@@ -52,16 +52,29 @@ Software ingress must go through the same approval process as is the case for da
 
 ## Data egress
 
+```{important}
+Any data egress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+```
+
+```{important}
+Classification of output must be completed **before** an egress link is created.
+
+The classification process is explained {ref}`here <process_data_egress_classification>`.
+```
+
+The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment, after the outputs have been classified and approved for release.
+
 - In the Azure portal select `Subscriptions` then navigate to the subscription containing the relevant SHM
 - Search for the resource group: `RG_SHM_<SHM ID>_PERSISTENT_DATA`, then click through to the storage account called: `<SHM ID><SRE ID>data<storage suffix>` (where `<storage suffix>` is a random string)
-- Click `Networking` under `Settings` to check the list of pre-approved IP addresses allowed under the `Firewall` header and check your own IP address to ensure you are connecting from one of these
+- Click `Networking` under `Settings` to check the list of pre-approved IP addresses allowed under the `Firewall` header
+    - Ensure that the IP address of the person to receive the outputs is listed and enter it if not
 - Click `Containers` under `Data storage`
 - Click `egress`
 - Click `Shared access signature` under `Settings` and do the following:
     - Under `Permissions`, check these boxes:
         - `Read`
         - `List`
-    - Set a time window in the `Start and expiry date/time` that gives you enough time to extract the data
+    - Set a time window in the `Start and expiry date/time` that gives enough time for the person who will perform the secure egress download to do so
     - Leave everything else as default click `Generate SAS token and URL`
 
       ```{image} administrator_guide/read_only_sas_token.png
@@ -70,28 +83,7 @@ Software ingress must go through the same approval process as is the case for da
       ```
 
     - Leave this portal window open and move to the next step
-- Open `Azure Storage Explorer` ([download](https://azure.microsoft.com/en-us/products/storage/storage-explorer/) it if you don't have it)
-- Click the socket image on the left hand side
-
-    ```{image} ../data_provider_representative/azure_storage_explorer_connect.png
-    :alt: Azure Storage Explorer connection
-    :align: center
-    ```
-
-- On `Select Resource`, choose `Blob container`
-- On `Select Connection Method`, choose `Shared access signature URL (SAS)` and hit `Next`
-
-    ```{image} administrator_guide/connect_azure_storage.png
-    :alt: Connect with SAS token
-    :align: center
-    ```
-
-- On `Enter Connection Info`:
-    - Set the `Display name` to "egress" (or choose an informative name)
-    - Copy the `Blob SAS URL` from your Azure portal session into the `Blob container SAS URL` box and hit `Next`
-- On the `Summary` page, hit `Connect`
-- On the left hand side, the connection should show up under `Local & Attached > Storage Accounts > (Attached Containers) > Blob Containers > ingress (SAS)`
-- You should now be able to securely download the data from the Safe Haven's output volume by highlighting the relevant file(s) and hitting the `Download` button
+- The appropriate person should now be able to download data by following {ref}`these instructions <process_data_egress_removal>`
 
 ### The output volume
 

@@ -46,7 +46,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
 USER $USERNAME
 
 # Install Sphinx dependencies
-COPY ./docs/build/requirements.txt /build/requirements.txt
+COPY ./docs/requirements.txt /build/requirements.txt
 RUN pip3 install -r /build/requirements.txt
 
 # Install/check needed powershell modules

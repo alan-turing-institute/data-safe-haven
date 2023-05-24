@@ -34,3 +34,6 @@ docs/_output
 # Files produced during testing
 .mustache_config.json
 expanded.yaml
+
+# Lychee cache
+.lycheecache

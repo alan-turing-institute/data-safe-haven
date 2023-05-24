@@ -235,7 +235,22 @@ Users are stuck at the `Opening remote port` message and never receive the MFA p
 - Check that the user has set up MFA (at [https://aka.ms/mfasetup](https://aka.ms/mfasetup) ) and is using the phone-call or app authentication method
 ```
 
-### {{interrobang}} xrdp login failure on the SRD
+### {{see_no_evil}} Unable to see SRD or SSH connection options
+
+After logging in with Microsoft, users can't see the option to log into the SRE via the SRD or SSH options.
+
+```{image} administrator_guide/no_recent_connections.png
+:alt: Unable to see SRD or SSH connection options
+:align: center
+```
+
+```{tip}
+**Solution**: Ensure the user is added to the correct Security Group for the SRE
+
+- See {ref}`adding_users_manually`
+```
+
+### {{broken_heart}} Xorg login failure on the SRD
 
 If users can get to the login screen:
 
@@ -275,6 +290,29 @@ there are a couple of possible causes.
   - DNS configuration
   - SSS configuration
   - File mounting configuration
+```
+
+### {{nut_and_bolt}} Password reset failure
+
+When creating an account or resetting a password, the users get the following screen:
+
+```{image} administrator_guide/password_reset_failure.png
+:alt: Password reset failure
+:align: center
+```
+
+```{error}
+**Problem**: the password could not be reset
+
+**Solution**: remove and re-add the password reset configuration on the DC1
+
+- Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
+- Open a `Powershell` command window with elevated privileges
+- Run `$aadConnector = Get-ADSyncConnector | ? {$_.Name -match "onmicrosoft.com - AAD"}`
+- Run `Remove-ADSyncAADPasswordResetConfiguration -Connector $aadConnector.Name`
+- Run `Set-ADSyncAADPasswordResetConfiguration -Connector $aadConnector.Name -Enable $true`
+- Check the configuration is reset by running `Get-ADSyncAADPasswordResetConfiguration -Connector $aadConnector.Name`
+- Ask the user to reset  their password again
 ```
 
 ### {{cloud}} Unable to install from package mirrors
