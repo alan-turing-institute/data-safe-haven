@@ -20,7 +20,7 @@
 
   ```{caution}
   We recommend _not_ including special characters in your password as the keyboard layout expected by the login screen may be different from the one you're using.
-  - if you want to reset your password, follow the steps defined in the [**Set your password**](#set-a-password) section above.
+  - if you want to reset your password, follow the steps defined in the [**Password and MFA**](#password-and-mfa) section above.
   - if you want to continue with special characters in your password, please test that they are being entered correctly by typing them in the username field.
   ```
 
