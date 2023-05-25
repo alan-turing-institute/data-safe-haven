@@ -1,21 +1,14 @@
 ARG VARIANT=3.10
 FROM python:${VARIANT}-buster
 
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends libssl-dev git python3-sphinx
+
 # Set package versions
 ARG AZURE_CLI_VERSION="2.42.0"
-ARG PWSH_VERSION="7.2.6"
-ARG PULUMI_VERSION="3.45.0"
-ARG POETRY_VERSION="1.2.2"
+ARG PWSH_VERSION="7.3.2"
 
-RUN apt-get update \
-    && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-      git \
-      libssl-dev \
-      python3-sphinx
-
-# Set up TARGETARCH variable to use to pull the right binaries 
-# for the current architecture.
+# Set up TARGETARCH variable to use to pull the right binaries for the current architecture.
 ARG TARGETARCH
 
 # Install Azure-CLI 
@@ -53,7 +46,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
 USER $USERNAME
 
 # Install Sphinx dependencies
-COPY ./docs/build/requirements.txt /build/requirements.txt
+COPY ./docs/requirements.txt /build/requirements.txt
 RUN pip3 install -r /build/requirements.txt
 
 # Install/check needed powershell modules
@@ -62,11 +55,3 @@ COPY ./deployment/common/Logging.psm1 /build/common/Logging.psm1
 RUN pwsh -Command "& {Set-PSRepository -Name PSGallery -InstallationPolicy Trusted}" \
   && pwsh -File /build/CheckRequirements.ps1 -InstallMissing \
   && sudo rm -rf /build/
-
-# Set PATH for pulumi - pulumi installed as feature to work round installing as root
-ENV PATH=$PATH:/home/${USERNAME}/.pulumi/bin
-
-# Install poetry
-# Respects environment variables $POETRY_HOME and $POETRY_VERSION
-RUN curl -sSL https://install.python-poetry.org | python3 - \
-  && /home/${USERNAME}/.local/bin/poetry config virtualenvs.in-project true

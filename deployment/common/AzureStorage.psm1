@@ -514,7 +514,7 @@ function Send-FilesToLinuxVM {
     Add-LogMessage -Level Info "[ ] Generating download URL..."
     $sasToken = New-ReadOnlyStorageAccountSasToken -AccountName $BlobStorageAccount.StorageAccountName -ResourceGroup $BlobStorageAccount.ResourceGroupName -SubscriptionName $storageAccountSubscription
     $remoteUrl = "$($BlobStorageAccount.PrimaryEndpoints.Blob)${zipFileContainerName}/${zipFileName}${sasToken}"
-    Add-LogMessage -Level Success "Constructed download URL $remoteUrl"
+    Add-LogMessage -Level Success "Constructed download URL for storage account $($BlobStorageAccount.StorageAccountName)."
 
     # Download the zip file onto the remote machine using curl
     $script = @("#!/bin/bash",

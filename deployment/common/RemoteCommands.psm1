@@ -1,4 +1,5 @@
 Import-Module $PSScriptRoot/AzureCompute -ErrorAction Stop
+Import-Module $PSScriptRoot/DataStructures -ErrorAction Stop
 Import-Module $PSScriptRoot/Logging -ErrorAction Stop
 
 

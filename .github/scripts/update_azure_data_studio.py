@@ -5,7 +5,7 @@ import requests
 
 remote_page = requests.get("https://docs.microsoft.com/en-us/sql/azure-data-studio/download-azure-data-studio", allow_redirects=True)
 root = html.fromstring(remote_page.content)
-short_link = root.xpath("//a[contains(text(), '.deb file')]/@href")[0]
+short_link = root.xpath("//a[contains(text(), '.deb')]/@href")[0]
 
 remote_content = requests.get(short_link, allow_redirects=True)
 sha256 = hashlib.sha256(remote_content.content).hexdigest()

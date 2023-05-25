@@ -1,4 +1,4 @@
-![Data Safe Haven cartoon by Scriberia for The Alan Turing Institute](docs/static/scriberia_diagram.jpg)
+![Data Safe Haven cartoon by Scriberia for The Alan Turing Institute](docs/source/_static/scriberia_diagram.jpg)
 
 # :eyes: What is the Turing Data Safe Haven?
 
@@ -6,15 +6,17 @@ The **Turing Data Safe Haven** is an open-source framework for creating secure e
 It provides a set of scripts and templates that will allow you to deploy, administer and use your own secure environment.
 It was developed as part of the Alan Turing Institute's [Data Safe Havens in the Cloud](https://www.turing.ac.uk/research/research-projects/data-safe-havens-cloud) project.
 
-[![Docs](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/build_docs.yaml/badge.svg)](https://alan-turing-institute.github.io/data-safe-haven)
-[![Build status](https://app.travis-ci.com/alan-turing-institute/data-safe-haven.svg?token=fmccRP1RHVJaEoiWy6QF&branch=develop)](https://app.travis-ci.com/alan-turing-institute/data-safe-haven)
+[![Documentation](https://readthedocs.org/projects/data-safe-haven/badge/?version=latest)](https://data-safe-haven.readthedocs.io/en/latest/?badge=latest)
+[![Lint code](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/lint_code.yaml/badge.svg)](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/lint_code.yaml)
+[![Test code](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/test_code.yaml/badge.svg)](https://github.com/alan-turing-institute/data-safe-haven/actions/workflows/test_code.yaml)
 [![Latest version](https://img.shields.io/github/v/release/alan-turing-institute/data-safe-haven?style=flat&label=Latest&color=%234B78E6)](https://github.com/alan-turing-institute/data-safe-haven/releases)
 [![Slack](https://img.shields.io/badge/Join%20us!-yellow?style=flat&logo=slack&logoColor=white&labelColor=4A154B&label=Slack)](https://join.slack.com/t/turingdatasafehaven/signup)
 ![Licence](https://img.shields.io/github/license/alan-turing-institute/data-safe-haven)
+[![Citation](https://img.shields.io/badge/citation-cite%20this%20project-informational)](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/CITATION.cff)
 
 ## :family: Community & support
 
-- Visit the [Data Safe Haven website](https://alan-turing-institute.github.io/data-safe-haven) for full documentation and useful links.
+- Visit the [Data Safe Haven website](https://data-safe-haven.readthedocs.io) for full documentation and useful links.
 - Join our [Slack server](https://join.slack.com/t/turingdatasafehaven/shared_invite/zt-104oyd8wn-DyOufeaAQFiJDlG5dDGk~w) to ask questions, discuss features, and for general API chat.
 - Open a [discussion on GitHub](https://github.com/alan-turing-institute/data-safe-haven/discussions) for general questions, feature suggestions, and help with our deployment scripts.
 - Look through our [issues on GitHub](https://github.com/alan-turing-institute/data-safe-haven/issues) to see what we're working on and progress towards specific fixes.
@@ -48,7 +50,7 @@ If you believe you have found a security vulnerability, please report it as outl
 
 We are grateful for the following support for this project:
 
-- The Alan Turing Institute's core EPSRC funding ([EP/N510129/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N510129/1)).
+- The Alan Turing Institute's core and additional EPSRC funding ([EP/N510129/1](https://gtr.ukri.org/projects?ref=EP%2FN510129%2F1), [EP/W001381/1](https://gtr.ukri.org/projects?ref=EP%2FW001381%2F1), [EP/W037211/1](https://gtr.ukri.org/projects?ref=EP%2FW037211%2F1), [EP/X03870X/1](https://gtr.ukri.org/projects?ref=EP%2FX03870X%2F1)).
 - The UKRI Strategic Priorities Fund - AI for Science, Engineering, Health and Government programme ([EP/T001569/1](https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/T001569/1)), particularly the "Tools, Practices and Systems" theme within that grant.
 - Microsoft's generous [donation of Azure credits](https://www.microsoft.com/en-us/research/blog/microsoft-accelerates-data-science-at-the-alan-turing-institute-with-5m-in-cloud-computing-credits/) to the Alan Turing Institute.
 

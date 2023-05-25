@@ -45,9 +45,9 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 if (Get-MgContext) { Disconnect-MgGraph | Out-Null } # force a refresh of the Microsoft Graph token before starting
 Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph. Please sign in with an account with admin rights over the Azure Active Directory you plan to use."
 if ($UseDeviceAuthentication) {
-    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -UseDeviceAuthentication -ErrorAction Stop
+    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -UseDeviceAuthentication -ErrorAction Stop -ContextScope Process
 } else {
-    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+    Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop -ContextScope Process
 }
 if (Get-MgContext) {
     Add-LogMessage -Level Success "Authenticated with Microsoft Graph as $((Get-MgContext).Account)"

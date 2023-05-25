@@ -588,20 +588,21 @@ def get_allowlists(pypi_package_file, cran_package_file):
     cran_allowlist = []
 
     if pypi_package_file:
-        pypi_allowlist = get_allowlist(pypi_package_file)
+        pypi_allowlist = get_allowlist(pypi_package_file, False)
 
     if cran_package_file:
-        cran_allowlist = get_allowlist(cran_package_file)
+        cran_allowlist = get_allowlist(cran_package_file, True)
 
     return (pypi_allowlist, cran_allowlist)
 
 
-def get_allowlist(allowlist_path):
+def get_allowlist(allowlist_path, is_cran):
     """
     Read list of allowed packages from a file
 
     Args:
         allowlist_path: Path to the allowlist file
+        is_cran: True if the allowlist if for CRAN, False if it is for PyPI
 
     Returns:
         List of the package names specified in the file
@@ -609,12 +610,15 @@ def get_allowlist(allowlist_path):
     allowlist = []
     with open(allowlist_path, "r") as allowlist_file:
         # Sanitise package names
-        # - convert to lower case
+        # - convert to lower case if the package is on PyPI. Leave alone on CRAN to prevent issues with case-sensitivity
         # - convert special characters to '-'
         # - remove any blank entries, which act as a wildcard that would allow any package
         special_characters = re.compile(r"[^0-9a-zA-Z]+")
         for package_name in allowlist_file.readlines():
-            package_name = special_characters.sub("-", package_name.lower().strip())
+            if is_cran:
+                package_name = special_characters.sub("-", package_name.strip())
+            else:
+                package_name = special_characters.sub("-", package_name.lower().strip())
             if package_name:
                 allowlist.append(package_name)
     return allowlist
@@ -725,7 +729,7 @@ def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
                 nexus_api,
                 name=f"cran-{package}",
                 description=f"allow access to {package} on CRAN",
-                expression=f'format == "r" and path=^"/src/contrib/{package}"',
+                expression=f'format == "r" and path=^"/src/contrib/{package}_"',
                 repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
                 repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
             )

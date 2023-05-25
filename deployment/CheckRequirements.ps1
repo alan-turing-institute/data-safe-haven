@@ -8,25 +8,26 @@ param (
 Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
 
 # Requirements
-$PowershellVersionRequired = "7.0.0"
+$PowershellSupportedVersion = "7.3.2"
 $ModuleVersionRequired = @{
-    "Az.Accounts"                                  = @("ge", "2.9.0")
-    "Az.Automation"                                = @("ge", "1.7.3")
-    "Az.Compute"                                   = @("ge", "4.29.0")
+    "Az.Accounts"                                  = @("ge", "2.11.1")
+    "Az.Automation"                                = @("ge", "1.9.0")
+    "Az.Compute"                                   = @("ge", "5.3.0")
     "Az.DataProtection"                            = @("ge", "0.4.0")
     "Az.Dns"                                       = @("ge", "1.1.2")
-    "Az.KeyVault"                                  = @("ge", "4.6.0")
-    "Az.Monitor"                                   = @("ge", "3.0.1")
+    "Az.KeyVault"                                  = @("ge", "4.9.1")
+    "Az.Monitor"                                   = @("ge", "4.2.0")
     "Az.MonitoringSolutions"                       = @("ge", "0.1.0")
-    "Az.Network"                                   = @("ge", "4.18.0")
+    "Az.Network"                                   = @("ge", "5.3.0")
     "Az.OperationalInsights"                       = @("ge", "3.1.0")
     "Az.PrivateDns"                                = @("ge", "1.0.3")
     "Az.RecoveryServices"                          = @("ge", "5.4.1")
-    "Az.Resources"                                 = @("ge", "6.0.1")
+    "Az.Resources"                                 = @("ge", "6.5.1")
     "Az.Storage"                                   = @("ge", "4.7.0")
-    "Microsoft.Graph.Authentication"               = @("ge", "1.10.0")
-    "Microsoft.Graph.Applications"                 = @("ge", "1.10.0")
-    "Microsoft.Graph.Identity.DirectoryManagement" = @("ge", "1.10.0")
+    "Microsoft.Graph.Authentication"               = @("ge", "1.21.0")
+    "Microsoft.Graph.Applications"                 = @("ge", "1.21.0")
+    "Microsoft.Graph.Identity.DirectoryManagement" = @("ge", "1.21.0")
+    "Microsoft.Graph.Users"                        = @("ge", "1.21.0")
     "Poshstache"                                   = @("ge", "0.1.10")
     "Powershell-Yaml"                              = @("ge", "0.4.2")
 }
@@ -36,12 +37,15 @@ if ($IncludeDev.IsPresent) {
 }
 
 # Powershell version
-$PowershellVersion = (Get-Host | Select-Object Version).Version
-if ($PowershellVersion -ge $PowershellVersionRequired) {
-    Add-LogMessage -Level Success "Powershell version: $PowershellVersion"
+$PowershellVersion = $PSVersionTable.PSVersion
+if ($PowershellVersion -ne $PowershellSupportedVersion) {
+    Add-LogMessage -Level Warning "Powershell version: $PowershellVersion"
+    Add-LogMessage -Level Warning "The currently supported version of Powershell is $PowershellSupportedVersion."
+    Add-LogMessage -Level Warning "In case of errors originating from Powershell code, ensure that you are running the currently supported version."
 } else {
-    Add-LogMessage -Level Fatal "Please update your Powershell version to $PowershellVersionRequired or greater (currently using $PowershellVersion)!"
+    Add-LogMessage -Level Success "Powershell version: $PowershellVersion"
 }
+
 
 # Powershell modules
 $RepositoryName = "PSGallery"

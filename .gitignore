@@ -36,8 +36,11 @@ docs/_output
 .mustache_config.json
 expanded.yaml
 
-# Pulumi secrets files
-pulumi/Pulumi.*.yaml
+# Lychee cache
+.lycheecache
 
 # mypy cache
 .mypy_cache
+
+# Pulumi secrets files
+pulumi/Pulumi.*.yaml

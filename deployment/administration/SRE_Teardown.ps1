@@ -39,8 +39,13 @@ if ($dryRun.IsPresent) {
 
 # Remove backup instances and policies. Without this the backup vault cannot be deleted
 # -------------------------------------------------------------------------------------
-Remove-DataProtectionBackupInstances -ResourceGroupName $config.sre.backup.rg -VaultName $config.sre.backup.vault.name
-Remove-DataProtectionBackupDiskSnapshots -ResourceGroupName $config.sre.backup.rg
+if ($dryRun.IsPresent) {
+    Add-LogMessage -Level Info "Backup instances from $($config.sre.backup.vault.name) would be deleted"
+    Add-LogMessage -Level Info "Disk snapshots from from $($config.sre.backup.rg) would be deleted"
+} else {
+    Remove-DataProtectionBackupInstances -ResourceGroupName $config.sre.backup.rg -VaultName $config.sre.backup.vault.name
+    Remove-DataProtectionBackupDiskSnapshots -ResourceGroupName $config.sre.backup.rg
+}
 
 
 # Remove SRE resource groups and the resources they contain
@@ -103,7 +108,7 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     } else {
         Add-LogMessage -Level Info "Ensuring that '$AzureAdApplicationName' is removed from Azure Active Directory..."
         if (-not (Get-MgContext)) {
-            Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop
+            Connect-MgGraph -TenantId $config.shm.azureAdTenantId -Scopes "Application.ReadWrite.All", "Policy.ReadWrite.ApplicationConfiguration" -ErrorAction Stop -ContextScope Process
         }
         try {
             Get-MgApplication -Filter "DisplayName eq '$AzureAdApplicationName'" | ForEach-Object { Remove-MgApplication -ApplicationId $_.Id }

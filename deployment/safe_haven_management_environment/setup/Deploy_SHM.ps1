@@ -1,6 +1,8 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
-    [string]$shmId
+    [string]$shmId,
+    [Parameter(Mandatory = $false, HelpMessage = "Use device authentication for connecting to Azure and Microsoft Graph")]
+    [switch]$UseDeviceAuthentication
 )
 
 Import-Module Az.Accounts -ErrorAction Stop
@@ -13,7 +15,11 @@ Import-Module $PSScriptRoot/../../common/Logging -Force -ErrorAction Stop
 # ----------------
 if (Get-AzContext) { Disconnect-AzAccount | Out-Null } # force a refresh of the Azure token before starting
 Add-LogMessage -Level Info "Attempting to authenticate with Azure. Please sign in with an account with admin rights over the subscriptions you plan to use."
-Connect-AzAccount -ErrorAction Stop | Out-Null
+if ($UseDeviceAuthentication) {
+    Connect-AzAccount -UseDeviceAuthentication -ErrorAction Stop | Out-Null
+} else {
+    Connect-AzAccount -ErrorAction Stop | Out-Null
+}
 if (Get-AzContext) {
     Add-LogMessage -Level Success "Authenticated with Azure as $((Get-AzContext).Account.Id)"
 } else {
@@ -25,7 +31,11 @@ if (Get-AzContext) {
 # --------------------------
 if (Get-MgContext) { Disconnect-MgGraph | Out-Null } # force a refresh of the Microsoft Graph token before starting
 Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph. Please sign in with an account with admin rights over the Azure Active Directory you plan to use."
-Connect-MgGraph -TenantId $config.azureAdTenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop | Out-Null
+if ($UseDeviceAuthentication) {
+    Connect-MgGraph -TenantId $config.azureAdTenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop -ContextScope Process -UseDeviceAuthentication
+} else {
+    Connect-MgGraph -TenantId $config.azureAdTenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop -ContextScope Process | Out-Null
+}
 if (Get-MgContext) {
     Add-LogMessage -Level Success "Authenticated with Microsoft Graph as $((Get-MgContext).Account)"
 } else {

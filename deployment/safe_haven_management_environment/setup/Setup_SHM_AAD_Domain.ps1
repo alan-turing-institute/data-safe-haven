@@ -22,7 +22,7 @@ $null = Set-AzContext -Subscription $config.dns.subscriptionName -ErrorAction St
 # --------------------------
 if (-not (Get-MgContext)) {
     Add-LogMessage -Level Info "Attempting to authenticate with Microsoft Graph. Please sign in with an account with admin rights over the Azure Active Directory you plan to use."
-    Connect-MgGraph -TenantId $config.azureAdTenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop
+    Connect-MgGraph -TenantId $config.azureAdTenantId -Scopes "User.ReadWrite.All", "UserAuthenticationMethod.ReadWrite.All", "Directory.AccessAsUser.All", "RoleManagement.ReadWrite.Directory" -ErrorAction Stop -ContextScope Process
     if (Get-MgContext) {
         Add-LogMessage -Level Success "Authenticated with Microsoft Graph"
     } else {

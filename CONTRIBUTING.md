@@ -26,6 +26,7 @@ Jump to the following sections:
     - [Working in a private repository](#working-in-a-private-repository)
     - [Who's involved in the project](#whos-involved-in-the-project)
     - [Make a change with a pull request](#making-a-change-with-a-pull-request)
+    - [Make a change to the documentation](#making-a-change-to-the-documentation)
 
 ## A DevOps development philosophy
 
@@ -207,7 +208,7 @@ Make sure to [keep your fork up to date](https://docs.github.com/en/pull-request
 #### 3. Make the changes you've discussed
 
 Try to keep the changes focused. If you submit a large amount of work in all in one go it will be much more work for whomever is reviewing your pull request. [Help them help you](https://media.giphy.com/media/uRb2p09vY8lEs/giphy.gif) :wink:
-If you feel tempted to "branch out" then please make a [new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) and a [new issue][https://github.com/alan-turing-institute/data-safe-haven/issues] to go with it.
+If you feel tempted to "branch out" then please make a [new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) and a [new issue](https://github.com/alan-turing-institute/data-safe-haven/issues) to go with it.
 
 #### 4. Submit a pull request
 
@@ -218,6 +219,28 @@ A [review](https://docs.github.com/en/pull-requests/collaborating-with-pull-requ
 You can update your [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) of the data safe haven [repository](https://github.com/alan-turing-institute/data-safe-haven) and the pull request will automatically update with those changes. **You don't need to submit a new pull request when you make a change in response to a review.**
 
 GitHub has a [nice introduction](https://docs.github.com/en/get-started/quickstart/github-flow) to the pull request workflow, but please [get in touch](#get-in-touch) if you have any questions :balloon:.
+
+### Making a change to the documentation
+
+The docs, including for older releases, are available [here](https://data-safe-haven.readthedocs.io).
+
+You should follow the same instructions as above to [make a change with a pull request](#making-a-change-with-a-pull-request) when editing the documentation.
+
+To preview your changes, you can build the docs locally.
+The documentation build dependencies are listed in [a requirements file](docs/build/requirements.txt) that can be installed using `pip`:
+
+```{shell}
+pip install -r docs/build/requirements.txt
+```
+
+Check out your branch, navigate to the `docs` folder and `make` them:
+
+```{shell}
+cd data-safe-haven/docs
+make html
+```
+
+This will add the contents to a folder called `_output` inside `docs`. Open the index html from a browser and you should be able to navigate the docs and view your changes.
 
 ### Who's involved in the project
 

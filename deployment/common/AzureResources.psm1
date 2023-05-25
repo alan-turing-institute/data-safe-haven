@@ -70,28 +70,24 @@ function Deploy-RoleAssignment {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "ID of object that the role will be granted to")]
         [string]$ObjectId,
-        [Parameter(Mandatory = $true, HelpMessage = "Name of resource group containing the resource to apply the role over")]
-        [string]$ResourceGroupName,
         [Parameter(Mandatory = $true, HelpMessage = "Name of role to be assigned")]
         [string]$RoleDefinitionName,
-        [Parameter(Mandatory = $false, HelpMessage = "Type of resource to apply the role over")]
-        [string]$ResourceType,
-        [Parameter(Mandatory = $false, HelpMessage = "Name of resource account to apply the role over")]
-        [string]$ResourceName
+        [Parameter(Mandatory = $false, HelpMessage = "Name of resource group to apply the role over")]
+        [string]$ResourceGroupName,
+        [Parameter(Mandatory = $false, HelpMessage = "URI of the object to apply the role over")]
+        [string]$Scope
     )
     # Validate arguments
-    if ([boolean]$ResourceType -ne [boolean]$ResourceName) {
-        Add-LogMessage -Level Fatal "Failed to create role assignment, both or neither of ResourceType and ResourceName must be declared."
+    if ([boolean]$ResourceGroupName -eq [boolean]$Scope) {
+        Add-LogMessage -Level Fatal "Failed to create role assignment, cannot declare both ResourceGroupName and Scope."
     }
 
     # Check if assignment exists
-    Add-LogMessage -Level Info "Ensuring that role assignment for $ObjectId as $RoleDefinitionName over $($ResourceType ? $ResourceName : $ResourceGroupName) exists..."
-    if ($ResourceType) {
+    Add-LogMessage -Level Info "Ensuring that role assignment for $ObjectId as $RoleDefinitionName over $($Scope ? $Scope : $ResourceGroupName) exists..."
+    if ($Scope) {
         $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
                                            -RoleDefinitionName $RoleDefinitionName `
-                                           -ResourceGroupName $ResourceGroupName `
-                                           -ResourceName $ResourceName `
-                                           -ResourceType $ResourceType `
+                                           -Scope $Scope `
                                            -ErrorAction SilentlyContinue
     } else {
         $Assignment = Get-AzRoleAssignment -ObjectId $ObjectId `
@@ -99,17 +95,16 @@ function Deploy-RoleAssignment {
                                            -ResourceGroupName $ResourceGroupName `
                                            -ErrorAction SilentlyContinue
     }
+
     if ($Assignment) {
-        Add-LogMessage -Level InfoSuccess "Role assignment '$RoleDefinitionName' over '$($ResourceType ? $ResourceName : $ResourceGroupName)' already exists"
+        Add-LogMessage -Level InfoSuccess "Role assignment '$RoleDefinitionName' over '$($Scope ? $Scope : $ResourceGroupName)' already exists"
     } else {
         try {
-            Add-LogMessage -Level Info "[ ] Creating role assignment '$RoleDefinitionName' over '$($ResourceType ? $ResourceName : $ResourceGroupName)'..."
-            if ($ResourceType) {
+            Add-LogMessage -Level Info "[ ] Creating role assignment '$RoleDefinitionName' over '$($Scope ? $Scope : $ResourceGroupName)'..."
+            if ($Scope) {
                 $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
                                                    -RoleDefinitionName $RoleDefinitionName `
-                                                   -ResourceGroupName $ResourceGroupName `
-                                                   -ResourceName $ResourceName `
-                                                   -ResourceType $ResourceType `
+                                                   -Scope $Scope `
                                                    -ErrorAction Stop
             } else {
                 $Assignment = New-AzRoleAssignment -ObjectId $ObjectId `
@@ -117,9 +112,9 @@ function Deploy-RoleAssignment {
                                                    -ResourceGroupName $ResourceGroupName `
                                                    -ErrorAction Stop
             }
-            Add-LogMessage -Level Success "Successfully created role assignment '$RoleDefinitionName' over '$($ResourceType ? $ResourceName : $ResourceGroupName)'"
+            Add-LogMessage -Level Success "Successfully created role assignment '$RoleDefinitionName' over '$($Scope ? $Scope : $ResourceGroupName)'"
         } catch {
-            Add-LogMessage -Level Fatal "Failed to create role assignment '$RoleDefinitionName' over '$($ResourceType ? $ResourceName : $ResourceGroupName)'" -Exception $_.Exception
+            Add-LogMessage -Level Fatal "Failed to create role assignment '$RoleDefinitionName' over '$($Scope ? $Scope : $ResourceGroupName)'" -Exception $_.Exception
         }
     }
     return $Assignment

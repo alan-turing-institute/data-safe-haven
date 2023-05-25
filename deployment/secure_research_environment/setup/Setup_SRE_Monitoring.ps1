@@ -24,14 +24,21 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
-# Connect the private DNS zones to all virtual networks in the SRE
+# Load SRE virtual networks
+# -------------------------
+$sreVirtualNetworks = Get-VirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg
+
+
+# Switch to SHM subscription and connect the private DNS zones to all virtual networks in the SRE
 # Note that this must be done before connecting the VMs to log analytics to ensure that they use the private link
 # ---------------------------------------------------------------------------------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 foreach ($PrivateZone in (Get-AzPrivateDnsZone -ResourceGroupName $config.shm.network.vnet.rg)) {
-    foreach ($virtualNetwork in Get-VirtualNetwork -ResourceGroupName $config.sre.network.vnet.rg) {
+    foreach ($virtualNetwork in $sreVirtualNetworks) {
         $null = Connect-PrivateDnsToVirtualNetwork -DnsZone $privateZone -VirtualNetwork $virtualNetwork
     }
 }
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Get log analytics workspace details
@@ -63,7 +70,9 @@ try {
 
 
 # Schedule updates for all connected VMs
-# --------------------------------------
+# Note that we need to be in the SHM subscription to do so
+# --------------------------------------------------------
+$null = Set-AzContext -SubscriptionId $config.shm.subscriptionName -ErrorAction Stop
 $account = Deploy-AutomationAccount -Name $config.shm.monitoring.automationAccount.name -ResourceGroupName $config.shm.monitoring.rg -Location $config.shm.location
 $sreQuery = Deploy-AutomationAzureQuery -Account $account -ResourceGroups $sreResourceGroups
 $localTimeZone = Get-TimeZone -Id $config.shm.time.timezone.linux
@@ -104,6 +113,7 @@ $null = Register-VmsWithAutomationSchedule -Account $account `
                                            -Query $sreQuery `
                                            -Schedule $linuxWeeklySchedule `
                                            -VmType "Linux"
+$null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
 
 # Switch back to original subscription

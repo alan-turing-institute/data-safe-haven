@@ -93,7 +93,8 @@ function Get-Dependencies {
                 if ($Repository -eq "pypi") {
                     # The best PyPI results come from the package JSON files
                     $response = Invoke-RestMethod -Uri "https://pypi.org/${Repository}/${Package}/${Version}/json" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
-                    $Cache[$Repository][$Package][$Version] = @($response.info.requires_dist | Where-Object { $_ -and ($_ -notmatch "extra ==") } | ForEach-Object { ($_ -split '[;[( ><=]')[0].Trim() } | Sort-Object -Unique)
+                    # Add canonical names to dependencies
+                    $Cache[$Repository][$Package][$Version] = @($response.info.requires_dist | Where-Object { $_ -and ($_ -notmatch "extra ==") } | ForEach-Object { ($_ -split '[;[( ><=!~]')[0].Trim().ToLower() } | Sort-Object -Unique)
                 } else {
                     # For other repositories we use libraries.io
                     try {
@@ -123,10 +124,10 @@ function Get-Dependencies {
 # --------------------------
 $languageName = @{cran = "r"; pypi = "python" }[$Repository]
 $coreAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-core-${languageName}-${Repository}-tier3.list"
+$extraAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-extra-${languageName}-${Repository}-tier3.list"
 $fullAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-full-${languageName}-${Repository}-tier3.list"
 $dependencyCachePath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "dependency-cache.json"
-$corePackageList = Get-Content $coreAllowlistPath | Sort-Object -Unique
-
+$corePackageList = (Get-Content $coreAllowlistPath) + (Get-Content $extraAllowlistPath) | Sort-Object -Unique
 
 # Initialise the package queue
 # ----------------------------
@@ -142,6 +143,7 @@ if (-not $NoCache) {
     if (Test-Path $dependencyCachePath -PathType Leaf) {
         $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
     }
+    if (-not $dependencyCache) { $dependencyCache = [ordered]@{} }
 }
 if ($Repository -notin $dependencyCache.Keys) { $dependencyCache[$Repository] = [ordered]@{} }
 if ("unavailable_packages" -notin $dependencyCache.Keys) { $dependencyCache["unavailable_packages"] = [ordered]@{} }
@@ -171,6 +173,10 @@ while ($queue.Count) {
         # Check that the package exists and add it to the allowlist if so
         Add-LogMessage -Level Info "Looking for '${unverifiedName}' in ${Repository}..."
         $packageData = Test-PackageExistence -Repository $Repository -Package $unverifiedName -ApiKey $ApiKey -RepositoryId $RepositoryId
+        if (-not $($packageData.name)) {
+            Add-LogMessage -Level Error "Package '${unverifiedName}' could not be found!"
+            continue
+        }
         if ($packageData.name -cne $unverifiedName) {
             Add-LogMessage -Level Warning "Package '${unverifiedName}' should be '$($packageData.name)'"
         }
