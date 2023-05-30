@@ -29,7 +29,7 @@ docs/*.pdf
 !docs/tiersflowchart.pdf
 
 # Sphinx output
-docs/_output
+docs/build
 
 # Files produced during testing
 .mustache_config.json
