@@ -74,8 +74,8 @@ html_theme_options = {
         }
     ],
     "logo": {
-        "image_light": "logo_turing_light.png",
-        "image_dark": "logo_turing_dark.png",
+        "image_light": "_static/logo_turing_light.png",
+        "image_dark": "_static/logo_turing_dark.png",
     },
     "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
     "use_edit_page_button": True,
