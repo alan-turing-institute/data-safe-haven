@@ -14,7 +14,8 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 
 ## {{alarm_clock}} Renewing SRE Domain Certificates
 
-SREs will need to periodically have their SSL certificates renewed so that the SRE URL can be accessed with HTTPS. After each 90 day period that the SRE is live, re-run the script to update the certificate.
+The remote desktop frontend of an SRE will need to periodically have its SSL certificate renewed so that it can be accessed via HTTPS.
+After each 90 day period that the SRE is live, re-run the script to update the certificate.
 
 ![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
 
