@@ -47,7 +47,7 @@ html_context["doc_path"] = "docs"
 # ones.
 extensions = [
     "myst_parser",
-    "autosectionlabel"
+
 ]
 
 # Add any paths that contain templates here, relative to this directory.
