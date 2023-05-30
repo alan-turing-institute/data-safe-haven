@@ -23,6 +23,9 @@ After each 90 day period that the SRE is live, re-run the script to update the c
 PS> ./Update_SRE_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID>
 ```
 
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
+
 (resize_vm)=
 
 ## {{arrow_upper_right}} Resize the Virtual Machine (VM) of a Secure Research Desktop (SRD)
