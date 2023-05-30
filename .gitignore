@@ -32,9 +32,6 @@ docs/*.pdf
 docs/build
 docs/venv
 
-# Any logs saved
-logs
-
 # Files produced during testing
 .mustache_config.json
 expanded.yaml
