@@ -11,6 +11,7 @@ from .components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
+from .components.sre_data import SREDataComponent, SREDataProps
 from .components.sre_monitoring import SREMonitoringComponent, SREMonitoringProps
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
 from .components.sre_remote_desktop import (
@@ -21,7 +22,6 @@ from .components.sre_research_desktop import (
     SREResearchDesktopComponent,
     SREResearchDesktopProps,
 )
-from .components.sre_state import SREStateComponent, SREStateProps
 
 
 class DeclarativeSRE:
@@ -89,19 +89,25 @@ class DeclarativeSRE:
             ),
         )
 
-        # Deploy state storage
-        state = SREStateComponent(
-            "sre_state",
+        # Deploy data storage
+        data = SREDataComponent(
+            "sre_data",
             self.stack_name,
             self.sre_name,
-            SREStateProps(
+            SREDataProps(
                 admin_email_address=self.cfg.shm.admin_email_address,
                 admin_group_id=self.cfg.azure.admin_group_id,
+                admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
+                data_provider_ip_addresses=self.cfg.sre[
+                    self.sre_name
+                ].data_provider_ip_addresses,
                 dns_record=networking.shm_ns_record,
                 location=self.cfg.azure.location,
                 networking_resource_group=networking.resource_group,
                 pulumi_opts=self.pulumi_opts,
                 sre_fqdn=networking.sre_fqdn,
+                subnet_private_data=networking.subnet_private_data,
+                subscription_id=self.cfg.subscription_id,
                 subscription_name=self.cfg.subscription_name,
                 tenant_id=self.cfg.azure.tenant_id,
             ),
@@ -113,8 +119,8 @@ class DeclarativeSRE:
             self.stack_name,
             self.sre_name,
             SREApplicationGatewayProps(
-                key_vault_certificate_id=state.certificate_secret_id,
-                key_vault_identity=state.managed_identity,
+                key_vault_certificate_id=data.certificate_secret_id,
+                key_vault_identity=data.managed_identity,
                 resource_group=networking.resource_group,
                 subnet_application_gateway=networking.subnet_application_gateway,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
@@ -134,12 +140,13 @@ class DeclarativeSRE:
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
                 allow_copy=self.cfg.sre[self.sre_name].remote_desktop.allow_copy,
                 allow_paste=self.cfg.sre[self.sre_name].remote_desktop.allow_paste,
-                database_password=state.password_user_database_admin,
+                database_password=data.password_user_database_admin,
                 location=self.cfg.azure.location,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
                 subnet_guacamole_database=networking.subnet_guacamole_database,
-                storage_account_name=state.account_name,
-                storage_account_resource_group=state.resource_group_name,
+                storage_account_key=data.storage_account_state_key,
+                storage_account_name=data.storage_account_state_name,
+                storage_account_resource_group=data.resource_group_name,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
             ),
@@ -151,7 +158,7 @@ class DeclarativeSRE:
             self.stack_name,
             self.sre_name,
             SREResearchDesktopProps(
-                admin_password=state.password_secure_research_desktop_admin,
+                admin_password=data.password_secure_research_desktop_admin,
                 domain_sid=self.pulumi_opts.require(
                     "shm-domain_controllers-domain_sid"
                 ),
@@ -174,6 +181,8 @@ class DeclarativeSRE:
                 log_analytics_workspace_key=self.pulumi_opts.require(
                     "shm-monitoring-log_analytics_workspace_key"
                 ),
+                storage_account_userdata_name=data.storage_account_userdata_name,
+                storage_account_securedata_name=data.storage_account_securedata_name,
                 security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
                 subnet_research_desktops=networking.subnet_research_desktops,
                 virtual_network_resource_group=networking.resource_group,

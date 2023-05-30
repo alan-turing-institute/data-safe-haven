@@ -22,11 +22,7 @@ class UserHandler(LoggingMixin, AzureMixin):
         **kwargs: Any,
     ):
         super().__init__(subscription_name=config.subscription_name, *args, **kwargs)
-        self.active_directory_users = ActiveDirectoryUsers(
-            resource_group_name=config.shm.domain_controllers.resource_group_name,
-            subscription_name=config.subscription_name,
-            vm_name=config.shm.domain_controllers.vm_name,
-        )
+        self.active_directory_users = ActiveDirectoryUsers(config)
         self.azure_ad_users = AzureADUsers(graph_api)
         self.sre_guacamole_users = {
             sre_name: GuacamoleUsers(config, sre_name) for sre_name in config.sre.keys()

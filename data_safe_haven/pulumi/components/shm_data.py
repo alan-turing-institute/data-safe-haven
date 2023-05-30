@@ -1,23 +1,34 @@
 """Pulumi component for SHM state"""
 # Standard library imports
-from typing import Optional
+from typing import Optional, Sequence
 
 # Third party imports
 from pulumi import Config, ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import keyvault, resources
+from pulumi_azure_native import keyvault, resources, storage
+
+# Local imports
+from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.helpers.functions import (
+    alphanumeric,
+    replace_separators,
+    sha256hash,
+    truncate_tokens,
+)
 
 
-class SHMStateProps:
-    """Properties for SHMStateComponent"""
+class SHMDataProps:
+    """Properties for SHMDataComponent"""
 
     def __init__(
         self,
         admin_group_id: Input[str],
+        admin_ip_addresses: Input[Sequence[str]],
         location: Input[str],
         pulumi_opts: Config,
         tenant_id: Input[str],
     ):
         self.admin_group_id = admin_group_id
+        self.admin_ip_addresses = admin_ip_addresses
         self.location = location
         self.password_domain_admin = self.get_secret(
             pulumi_opts, "password-domain-admin"
@@ -40,7 +51,7 @@ class SHMStateProps:
         return Output.secret(pulumi_opts.require(secret_name))
 
 
-class SHMStateComponent(ComponentResource):
+class SHMDataComponent(ComponentResource):
     """Deploy SHM state with Pulumi"""
 
     def __init__(
@@ -48,17 +59,17 @@ class SHMStateComponent(ComponentResource):
         name: str,
         stack_name: str,
         shm_name: str,
-        props: SHMStateProps,
+        props: SHMDataProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:shm:SHMStateComponent", name, {}, opts)
+        super().__init__("dsh:shm:SHMDataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"{stack_name}-rg-state",
+            resource_group_name=f"{stack_name}-rg-data",
             opts=child_opts,
         )
 
@@ -127,7 +138,7 @@ class SHMStateComponent(ComponentResource):
                 tenant_id=props.tenant_id,
             ),
             resource_group_name=resource_group.name,
-            vault_name=f"{stack_name[:15]}-kv-state",  # maximum of 24 characters
+            vault_name=f"{replace_separators(stack_name)[:17]}secrets",  # maximum of 24 characters
             opts=child_opts,
         )
 
@@ -178,6 +189,58 @@ class SHMStateComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-update-server-linux-admin",
             vault_name=key_vault.name,
+            opts=child_opts,
+        )
+
+        # Deploy persistent data account
+        storage_account_persistent_data = storage.StorageAccount(
+            f"{self._name}_storage_account_persistent_data",
+            access_tier=storage.AccessTier.COOL,
+            # Note that account names have a maximum of 24 characters
+            account_name=alphanumeric(
+                f"{''.join(truncate_tokens(stack_name.split('-'), 20))}data"
+            )[:24],
+            enable_https_traffic_only=True,
+            encryption=storage.EncryptionArgs(
+                key_source=storage.KeySource.MICROSOFT_STORAGE,
+                services=storage.EncryptionServicesArgs(
+                    blob=storage.EncryptionServiceArgs(
+                        enabled=True, key_type=storage.KeyType.ACCOUNT
+                    ),
+                    file=storage.EncryptionServiceArgs(
+                        enabled=True, key_type=storage.KeyType.ACCOUNT
+                    ),
+                ),
+            ),
+            kind=storage.Kind.STORAGE_V2,
+            location=props.location,
+            network_rule_set=storage.NetworkRuleSetArgs(
+                bypass=storage.Bypass.AZURE_SERVICES,
+                default_action=storage.DefaultAction.DENY,
+                ip_rules=Output.from_input(props.admin_ip_addresses).apply(
+                    lambda ip_ranges: [
+                        storage.IPRuleArgs(
+                            action=storage.Action.ALLOW,
+                            i_p_address_or_range=str(ip_address),
+                        )
+                        for ip_range in sorted(ip_ranges)
+                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all()
+                    ]
+                ),
+            ),
+            resource_group_name=resource_group.name,
+            sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
+            opts=child_opts,
+        )
+        # Deploy staging container for holding any data that does not have an SRE
+        storage_container_staging = storage.BlobContainer(
+            f"{self._name}_st_data_staging",
+            account_name=storage_account_persistent_data.name,
+            container_name=replace_separators(f"{stack_name}-staging", "-")[:63],
+            default_encryption_scope="$account-encryption-key",
+            deny_encryption_scope_override=False,
+            public_access=storage.PublicAccess.NONE,
+            resource_group_name=resource_group.name,
             opts=child_opts,
         )
 

@@ -1007,7 +1007,10 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=[props.subnet_update_servers_iprange],
+                            source_addresses=[
+                                props.subnet_identity_servers_iprange,
+                                props.subnet_update_servers_iprange,
+                            ],
                             target_fqdns=[
                                 "psg-prod-eastus.azureedge.net",
                                 "www.powershellgallery.com",

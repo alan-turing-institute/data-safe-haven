@@ -12,10 +12,10 @@ from .components.shm_domain_controllers import (
     SHMDomainControllersProps,
 )
 from .components.shm_bastion import SHMBastionComponent, SHMBastionProps
+from .components.shm_data import SHMDataComponent, SHMDataProps
 from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
 from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
-from .components.shm_state import SHMStateComponent, SHMStateProps
 from .components.shm_update_servers import (
     SHMUpdateServersComponent,
     SHMUpdateServersProps,
@@ -43,9 +43,9 @@ class DeclarativeSHM:
             self.stack_name,
             self.shm_name,
             SHMNetworkingProps(
+                admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 fqdn=self.cfg.shm.fqdn,
                 location=self.cfg.azure.location,
-                public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
                 record_domain_verification=self.pulumi_opts.require(
                     "verification-azuread-custom-domain"
                 ),
@@ -81,13 +81,14 @@ class DeclarativeSHM:
             ),
         )
 
-        # Deploy state storage
-        state = SHMStateComponent(
-            "shm_state",
+        # Deploy data storage
+        data = SHMDataComponent(
+            "shm_data",
             self.stack_name,
             self.shm_name,
-            SHMStateProps(
+            SHMDataProps(
                 admin_group_id=self.cfg.azure.admin_group_id,
+                admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 location=self.cfg.azure.location,
                 pulumi_opts=self.pulumi_opts,
                 tenant_id=self.cfg.azure.tenant_id,
@@ -102,6 +103,7 @@ class DeclarativeSHM:
             SHMMonitoringProps(
                 dns_resource_group_name=networking.resource_group_name,
                 location=self.cfg.azure.location,
+                private_dns_zone_base_id=networking.private_dns_zone_base_id,
                 subnet_monitoring=networking.subnet_monitoring,
                 timezone=self.cfg.shm.timezone,
             ),
@@ -113,7 +115,7 @@ class DeclarativeSHM:
             self.stack_name,
             self.shm_name,
             SHMUpdateServersProps(
-                admin_password=state.password_update_server_linux_admin,
+                admin_password=data.password_update_server_linux_admin,
                 location=self.cfg.azure.location,
                 log_analytics_workspace_id=monitoring.log_analytics_workspace_id,
                 log_analytics_workspace_key=monitoring.log_analytics_workspace_key,
@@ -140,11 +142,10 @@ class DeclarativeSHM:
                 location=self.cfg.azure.location,
                 log_analytics_workspace_id=monitoring.log_analytics_workspace_id,
                 log_analytics_workspace_key=monitoring.log_analytics_workspace_key,
-                password_domain_admin=state.password_domain_admin,
-                password_domain_azuread_connect=state.password_domain_azure_ad_connect,
-                password_domain_computer_manager=state.password_domain_computer_manager,
-                password_domain_searcher=state.password_domain_searcher,
-                public_ip_range_admins=self.cfg.shm.admin_ip_addresses,
+                password_domain_admin=data.password_domain_admin,
+                password_domain_azuread_connect=data.password_domain_azure_ad_connect,
+                password_domain_computer_manager=data.password_domain_computer_manager,
+                password_domain_searcher=data.password_domain_searcher,
                 private_ip_address=networking.domain_controller_private_ip,
                 subnet_identity_servers=networking.subnet_identity_servers,
                 subscription_name=self.cfg.subscription_name,

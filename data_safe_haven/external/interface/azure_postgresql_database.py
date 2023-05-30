@@ -3,7 +3,7 @@
 import pathlib
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 # Third party imports
 import psycopg2
@@ -122,10 +122,10 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         self,
         filepaths: Sequence[PathType],
         mustache_values: Optional[Dict[str, Any]] = None,
-    ) -> List[str]:
+    ) -> List[List[str]]:
         """Execute scripts on the PostgreSQL server."""
-        outputs: List[str] = []
-        connection: Optional[psycopg2.connection] = None
+        outputs: List[List[str]] = []
+        connection: Optional[psycopg2.extensions.connection] = None
         cursor = None
 
         try:
@@ -143,7 +143,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
                 commands = self.load_sql(filepath, mustache_values)
                 cursor.execute(commands)
                 if "SELECT" in cursor.statusmessage:
-                    outputs += [str(msg) for msg in cursor]
+                    outputs += [[str(msg) for msg in msg_tuple] for msg_tuple in cursor]
 
             # Commit changes
             connection.commit()

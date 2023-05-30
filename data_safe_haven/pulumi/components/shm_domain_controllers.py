@@ -34,7 +34,6 @@ class SHMDomainControllersProps:
         password_domain_azuread_connect: Input[str],
         password_domain_computer_manager: Input[str],
         password_domain_searcher: Input[str],
-        public_ip_range_admins: Input[Sequence[str]],
         private_ip_address: Input[str],
         subnet_identity_servers: Input[network.GetSubnetResult],
         subscription_name: Input[str],
@@ -62,7 +61,6 @@ class SHMDomainControllersProps:
         self.password_domain_azuread_connect = password_domain_azuread_connect
         self.password_domain_computer_manager = password_domain_computer_manager
         self.password_domain_searcher = password_domain_searcher
-        self.public_ip_range_admins = public_ip_range_admins
         self.private_ip_address = private_ip_address
         self.subnet_name = Output.from_input(subnet_identity_servers).apply(
             get_name_from_subnet

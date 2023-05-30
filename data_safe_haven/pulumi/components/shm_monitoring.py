@@ -28,20 +28,13 @@ class SHMMonitoringProps:
     def __init__(
         self,
         dns_resource_group_name: Input[str],
+        private_dns_zone_base_id: Input[str],
         location: Input[str],
         subnet_monitoring: Input[network.GetSubnetResult],
         timezone: Input[str],
     ) -> None:
         self.dns_resource_group_name = dns_resource_group_name
-        dns_zone_example = ordered_private_dns_zones("Azure Automation")[0]
-        self.dns_zone_id_base = Output.from_input(dns_resource_group_name).apply(
-            lambda rg_name: str(
-                network.get_private_zone(
-                    private_zone_name=f"privatelink.{dns_zone_example}",
-                    resource_group_name=rg_name,
-                ).id
-            ).replace(dns_zone_example, "")
-        )
+        self.private_dns_zone_base_id = private_dns_zone_base_id
         self.location = location
         self.subnet_monitoring_id = Output.from_input(subnet_monitoring).apply(
             get_id_from_subnet
@@ -146,7 +139,7 @@ class SHMMonitoringComponent(ComponentResource):
                 network.PrivateDnsZoneConfigArgs(
                     name=replace_separators(f"{stack_name}-aa-to-{dns_zone_name}", "-"),
                     private_dns_zone_id=Output.concat(
-                        props.dns_zone_id_base, dns_zone_name
+                        props.private_dns_zone_base_id, dns_zone_name
                     ),
                 )
                 for dns_zone_name in ordered_private_dns_zones("Azure Automation")
@@ -154,6 +147,7 @@ class SHMMonitoringComponent(ComponentResource):
             private_dns_zone_group_name=f"{stack_name}-dzg-aa",
             private_endpoint_name=automation_account_private_endpoint.name,
             resource_group_name=resource_group.name,
+            opts=child_opts,
         )
 
         # Deploy log analytics workspace and get workspace keys
@@ -214,7 +208,7 @@ class SHMMonitoringComponent(ComponentResource):
                         f"{stack_name}-log-to-{dns_zone_name}", "-"
                     ),
                     private_dns_zone_id=Output.concat(
-                        props.dns_zone_id_base, dns_zone_name
+                        props.private_dns_zone_base_id, dns_zone_name
                     ),
                 )
                 for dns_zone_name in ordered_private_dns_zones("Azure Monitor")

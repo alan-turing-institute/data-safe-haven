@@ -10,21 +10,19 @@ from data_safe_haven.exceptions import DataSafeHavenInputException
 from data_safe_haven.external.interface import AzurePostgreSQLDatabase
 from data_safe_haven.helpers import FileReader, hex_string
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.pulumi import PulumiStack
 from .research_user import ResearchUser
 
 
 class GuacamoleUsers(LoggingMixin):
     def __init__(self, config: Config, sre_name: str, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
+        sre_stack = PulumiStack(config, "SRE", sre_name=sre_name)
         self.postgres_provisioner = AzurePostgreSQLDatabase(
-            config.sre[sre_name].remote_desktop.connection_db_name,
-            config.get_secret(
-                config.sre[sre_name].remote_desktop[
-                    "connection_db_server_admin_password_secret"
-                ]
-            ),
-            config.sre[sre_name].remote_desktop.connection_db_server_name,
-            config.sre[sre_name].remote_desktop.resource_group_name,
+            sre_stack.output("remote_desktop")["connection_db_name"],
+            sre_stack.secret("password-user-database-admin"),
+            sre_stack.output("remote_desktop")["connection_db_server_name"],
+            sre_stack.output("remote_desktop")["resource_group_name"],
             config.subscription_name,
         )
         self.users_: Optional[Sequence[ResearchUser]] = None
@@ -43,11 +41,11 @@ class GuacamoleUsers(LoggingMixin):
         for new_user in users:
             if new_user in self.list():
                 self.debug(
-                    f"User '{new_user.preferred_username}' already exists in SRE '{self.sre_name}' database"
+                    f"User '<options=bold>{new_user.preferred_username}</>' already exists in SRE '<options=bold>{self.sre_name}</>' database"
                 )
             else:
                 self.info(
-                    f"Adding '{new_user.preferred_username}' to SRE '{self.sre_name}' database"
+                    f"Adding '<options=bold>{new_user.preferred_username}</>' to SRE '<options=bold>{self.sre_name}</>' database"
                 )
                 users_to_add.append(new_user)
 
@@ -79,13 +77,14 @@ class GuacamoleUsers(LoggingMixin):
             postgres_output = self.postgres_provisioner.execute_scripts(
                 [self.postgres_script_path / "list_users.sql"]
             )
+            # The output is of the form [["sam_account_name1", "email_address1"], ["sam_account_name2", "email_address2"]]
             self.users_ = [
                 ResearchUser(
-                    sam_account_name=tokens[0].split("@")[0],
-                    user_principal_name=tokens[0],
-                    email_address=tokens[1],
+                    sam_account_name=user_details[0].split("@")[0],
+                    user_principal_name=user_details[0],
+                    email_address=user_details[1],
                 )
-                for tokens in postgres_output
+                for user_details in postgres_output
             ]
         return self.users_
 

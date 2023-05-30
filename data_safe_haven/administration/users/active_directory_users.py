@@ -4,9 +4,11 @@ import pathlib
 from typing import Any, Optional, Sequence
 
 # Local imports
+from data_safe_haven.config import Config
 from data_safe_haven.external.api import AzureApi
 from data_safe_haven.helpers import FileReader, b64encode
 from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.pulumi import PulumiStack
 from .research_user import ResearchUser
 
 
@@ -15,19 +17,20 @@ class ActiveDirectoryUsers(LoggingMixin):
 
     def __init__(
         self,
-        resource_group_name: str,
-        subscription_name: str,
-        vm_name: str,
+        config: Config,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.azure_api = AzureApi(subscription_name)
-        self.resource_group_name = resource_group_name
+        shm_stack = PulumiStack(config, "SHM")
+        self.azure_api = AzureApi(config.subscription_name)
+        self.resource_group_name = shm_stack.output("domain_controllers")[
+            "resource_group_name"
+        ]
         self.resources_path = (
             pathlib.Path(__file__).parent.parent.parent / "resources"
         ).resolve()
-        self.vm_name = vm_name
+        self.vm_name = shm_stack.output("domain_controllers")["vm_name"]
 
     def add(self, new_users: Sequence[ResearchUser]) -> None:
         """Add list of users to local Active Directory"""
