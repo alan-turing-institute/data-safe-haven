@@ -34,7 +34,7 @@ For the Data Safe Haven project, we follow a DevOps development philosophy.
 This means different things to different people, but the definition that we're using is [best summed up here](https://www.guru99.com/agile-vs-devops.html).
 
 <p align="center">
-   <img src="docs/contributing/devops_gap.png" width="80%" title="Taken from https://www.guru99.com/agile-vs-devops.html">
+   <img src="docs/source/contributing/devops_gap.png" width="80%" title="Taken from https://www.guru99.com/agile-vs-devops.html">
 </p>
 
 This is a software development method which focuses on:
@@ -87,7 +87,7 @@ In order to contribute via GitHub you'll need to set up a free account and sign 
 We use the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
 <p align="center">
-   <img src="docs/contributing/gitflow.svg" width="80%" title="Taken from https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">
+   <img src="docs/source/contributing/gitflow.svg" width="80%" title="Taken from https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">
 </p>
 
 This means that:
@@ -172,7 +172,7 @@ For example, `@KirstieJane` will send a notification to `Kirstie Whitaker` so sh
 Alternatively (and this is encouraged) you can use the issue to keep track of where you're up to with the task and add information about next steps and barriers.
 
 <p align="center">
-   <img src="docs/contributing/example-conversation-in-issue.png" width="80%" title="example-conversation-in-issue">
+   <img src="docs/source/contributing/example-conversation-in-issue.png" width="80%" title="example-conversation-in-issue">
 </p>
 
 ### Working in a private repository
