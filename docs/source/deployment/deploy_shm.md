@@ -384,7 +384,7 @@ Make sure you have activated your account and **successfully logged in** with th
 
 ## 6. {{computer}} Deploy SHM
 
-![Powershell: a few hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20hours) at {{file_folder}} `./deployment/secure_research_environment/setup`
+![Powershell: a few hours](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20hours) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 ```powershell
 PS> ./Deploy_SHM.ps1 -shmId <SHM ID>
