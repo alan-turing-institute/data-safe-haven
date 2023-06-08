@@ -39,7 +39,7 @@ class SRERemoteDesktopProps:
         location: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-        storage_account_resource_group: Input[str],
+        storage_account_resource_group_name: Input[str],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
         subnet_guacamole_database: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
@@ -57,7 +57,7 @@ class SRERemoteDesktopProps:
         self.location = location
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
-        self.storage_account_resource_group = storage_account_resource_group
+        self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_guacamole_containers_id = Output.from_input(
             subnet_guacamole_containers
         ).apply(get_id_from_subnet)
@@ -126,7 +126,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             f"{self._name}_file_share",
             access_tier="TransactionOptimized",
             account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group,
+            resource_group_name=props.storage_account_resource_group_name,
             share_name="remote-desktop-caddy",
             share_quota=5120,
             opts=child_opts,
@@ -317,7 +317,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=8080,
-                            protocol="TCP",
+                            protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                         )
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
@@ -338,7 +338,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=4822,
-                            protocol="TCP",
+                            protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                         )
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
@@ -354,18 +354,18 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ports=[
                     containerinstance.PortArgs(
                         port=80,
-                        protocol="TCP",
+                        protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                     )
                 ],
-                type="Private",
+                type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
             network_profile=containerinstance.ContainerGroupNetworkProfileArgs(
                 id=container_network_profile.id,
             ),
-            os_type="Linux",
+            os_type=containerinstance.OperatingSystemTypes.LINUX,
             resource_group_name=resource_group.name,
-            restart_policy="Always",
-            sku="Standard",
+            restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
+            sku=containerinstance.ContainerGroupSku.STANDARD,
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(

@@ -22,6 +22,7 @@ from .components.sre_research_desktop import (
     SREResearchDesktopComponent,
     SREResearchDesktopProps,
 )
+from .components.sre_user_services import SREUserServicesComponent, SREUserServicesProps
 
 
 class DeclarativeSRE:
@@ -146,7 +147,7 @@ class DeclarativeSRE:
                 subnet_guacamole_database=networking.subnet_guacamole_database,
                 storage_account_key=data.storage_account_state_key,
                 storage_account_name=data.storage_account_state_name,
-                storage_account_resource_group=data.resource_group_name,
+                storage_account_resource_group_name=data.resource_group_name,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
             ),
@@ -193,6 +194,33 @@ class DeclarativeSRE:
                         self.cfg.sre[self.sre_name].research_desktops.items()
                     )
                 ],
+            ),
+        )
+
+        # Deploy containerised user services
+        user_services = SREUserServicesComponent(
+            "sre_user_services",
+            self.stack_name,
+            self.sre_name,
+            SREUserServicesProps(
+                ldap_root_dn=self.pulumi_opts.require(
+                    "shm-domain_controllers-ldap_root_dn"
+                ),
+                ldap_search_password=self.pulumi_opts.require(
+                    "password-domain-ldap-searcher"
+                ),
+                ldap_server_ip=self.pulumi_opts.require(
+                    "shm-domain_controllers-ldap_server_ip"
+                ),
+                ldap_sre_security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
+                location=self.cfg.azure.location,
+                sre_fqdn=networking.sre_fqdn,
+                storage_account_key=data.storage_account_state_key,
+                storage_account_name=data.storage_account_state_name,
+                storage_account_resource_group_name=data.resource_group_name,
+                subnet=networking.subnet_user_services,
+                virtual_network=networking.virtual_network,
+                virtual_network_resource_group_name=networking.resource_group.name,
             ),
         )
 

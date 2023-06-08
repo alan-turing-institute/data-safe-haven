@@ -8,13 +8,14 @@
 # this machine's public IP, then replace ":80" below with your
 # domain name.
 
-:80 {
-    rewrite / /guacamole
-    reverse_proxy http://localhost:8080
-
+{
     log {
         level  DEBUG
     }
+}
+
+:80 {
+    reverse_proxy http://localhost:3000
 }
 
 # Refer to the Caddy docs for more information:

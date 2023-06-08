@@ -274,6 +274,7 @@ class SHMNetworkingComponent(ComponentResource):
             network_security_group_name=f"{stack_name}-nsg-identity",
             resource_group_name=resource_group.name,
             security_rules=[
+                # Inbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound LDAP to domain controllers.",

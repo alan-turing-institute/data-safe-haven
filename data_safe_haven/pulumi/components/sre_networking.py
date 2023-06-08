@@ -46,6 +46,9 @@ class SRENetworkingProps:
         self.subnet_private_data_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(16)
         )
+        self.subnet_user_services_iprange = self.vnet_iprange.apply(
+            lambda r: r.next_subnet(16)
+        )
         # Other variables
         self.location = location
         self.public_ip_range_users = "Internet"
@@ -94,6 +97,9 @@ class SRENetworkingComponent(ComponentResource):
             lambda r: str(r)
         )
         subnet_research_desktops_prefix = props.subnet_research_desktops_iprange.apply(
+            lambda r: str(r)
+        )
+        subnet_user_services_prefix = props.subnet_user_services_iprange.apply(
             lambda r: str(r)
         )
 
@@ -251,7 +257,25 @@ class SRENetworkingComponent(ComponentResource):
                     source_address_prefix=subnet_research_desktops_prefix,
                     source_port_range="*",
                 ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to user services.",
+                    destination_address_prefix=subnet_user_services_prefix,
+                    destination_port_ranges=["22", "80", "443"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowUserServicesOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_research_desktops_prefix,
+                    source_port_range="*",
+                ),
             ],
+            opts=child_opts,
+        )
+        nsg_user_services = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services",
+            network_security_group_name=f"{stack_name}-nsg-user-services",
+            resource_group_name=resource_group.name,
             opts=child_opts,
         )
 
@@ -261,6 +285,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_database_name = "GuacamoleDatabaseSubnet"
         subnet_private_data_name = "PrivateDataSubnet"
         subnet_research_desktops_name = "ResearchDesktopsSubnet"
+        subnet_user_services_name = "UserServicesSubnet"
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
@@ -320,6 +345,21 @@ class SRENetworkingComponent(ComponentResource):
                     name=subnet_research_desktops_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_research_desktops.id
+                    ),
+                ),
+                # User services
+                network.SubnetArgs(
+                    address_prefix=subnet_user_services_prefix,
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
+                    name=subnet_user_services_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_user_services.id
                     ),
                 ),
             ],
@@ -453,6 +493,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_research_desktops = network.get_subnet_output(
             subnet_name=subnet_research_desktops_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_user_services = network.get_subnet_output(
+            subnet_name=subnet_user_services_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

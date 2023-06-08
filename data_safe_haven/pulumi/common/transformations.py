@@ -22,7 +22,7 @@ def get_id_from_rg(rg: resources.ResourceGroup) -> Input[str]:
     """Get the ID of a resource group"""
     if isinstance(rg.id, Output):
         return rg.id
-    raise DataSafeHavenPulumiException(f"Resource group '{rg.name}'has no ID.")
+    raise DataSafeHavenPulumiException(f"Resource group '{rg.name}' has no ID.")
 
 
 def get_id_from_subnet(subnet: network.GetSubnetResult) -> str:
@@ -36,7 +36,7 @@ def get_name_from_rg(rg: resources.ResourceGroup) -> Input[str]:
     """Get the name of a resource group"""
     if isinstance(rg.name, Output):
         return rg.name.apply(lambda s: str(s))
-    raise DataSafeHavenPulumiException(f"Resource group '{rg.id}'has no name.")
+    raise DataSafeHavenPulumiException(f"Resource group '{rg.id}' has no name.")
 
 
 def get_name_from_subnet(subnet: network.GetSubnetResult) -> str:
@@ -50,4 +50,4 @@ def get_name_from_vnet(vnet: network.VirtualNetwork) -> Input[str]:
     """Get the ID of a virtual network"""
     if isinstance(vnet.name, Output):
         return vnet.name.apply(lambda s: str(s))
-    raise DataSafeHavenPulumiException(f"Virtual network '{vnet.id}'has no name.")
+    raise DataSafeHavenPulumiException(f"Virtual network '{vnet.id}' has no name.")

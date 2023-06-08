@@ -5,6 +5,7 @@ write_files:
     permissions: "0444"
     content: |
       Acquire::http::Proxy "http://{{linux_update_server_ip}}:8000";
+      Acquire::https::Proxy "http://{{linux_update_server_ip}}:8000";
 
   - path: "/etc/nslcd.conf"
     permissions: "0400"
@@ -66,6 +67,8 @@ packages:
   - python-is-python3 # Python language
   - python3           # Python language
   - r-base            # R language
+  # Tools
+  - firefox           # web browser
 package_update: true
 package_upgrade: true
 
