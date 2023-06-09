@@ -98,7 +98,7 @@ class AzureContainerInstance(AzureMixin, LoggingMixin):
         """
         Run a script or command on one of the containers.
 
-        The command cannot take any arguments and must be a single expression.
+        It is possible to provide arguments to the command if needed.
         The most likely use-case is running a script already present in the container.
         """
         # Connect to Azure clients

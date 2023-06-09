@@ -11,7 +11,6 @@ from pulumi.dynamic import CreateResult, DiffResult, Resource
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-
 from .dsh_resource_provider import DshResourceProvider
 
 

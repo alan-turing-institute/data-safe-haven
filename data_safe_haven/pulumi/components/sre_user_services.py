@@ -82,6 +82,15 @@ class SREUserServicesComponent(ComponentResource):
             share_quota=1,
             opts=child_opts,
         )
+        file_share_vcs_gitea = storage.FileShare(
+            f"{self._name}_file_share_vcs_gitea",
+            access_tier="TransactionOptimized",
+            account_name=props.storage_account_name,
+            resource_group_name=props.storage_account_resource_group_name,
+            share_name="user-services-vcs-gitea",
+            share_quota=1,
+            opts=child_opts,
+        )
 
         # Set resources path
         resources_path = (
@@ -89,13 +98,48 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Upload caddy file
-        reader = FileReader(resources_path / "vcs" / "caddy" / "Caddyfile")
+        caddy_caddyfile_reader = FileReader(resources_path / "vcs" / "caddy" / "Caddyfile")
         file_share_vcs_caddy_caddyfile = FileShareFile(
             f"{self._name}_file_share_vcs_caddy_caddyfile",
             FileShareFileProps(
-                destination_path=reader.name,
+                destination_path=caddy_caddyfile_reader.name,
                 share_name=file_share_vcs_caddy.name,
-                file_contents=Output.secret(reader.file_contents()),
+                file_contents=Output.secret(caddy_caddyfile_reader.file_contents()),
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
+            ),
+            opts=child_opts,
+        )
+
+        # Upload Gitea configuration script
+        gitea_configure_sh_reader = FileReader(resources_path / "vcs" / "gitea" / "configure.mustache.sh")
+        gitea_configure_sh = Output.all(
+            admin_email="dshadmin@example.com",
+            admin_username="dshadmin",
+            ldap_root_dn=props.ldap_root_dn,
+            ldap_search_password=props.ldap_search_password,
+            ldap_server_ip=props.ldap_server_ip,
+            ldap_security_group_name=props.ldap_security_group_name,
+        ).apply(lambda mustache_values: gitea_configure_sh_reader.file_contents(mustache_values))
+        file_share_vcs_gitea_configure_sh = FileShareFile(
+            f"{self._name}_file_share_vcs_gitea_configure_sh",
+            FileShareFileProps(
+                destination_path=gitea_configure_sh_reader.name,
+                share_name=file_share_vcs_gitea.name,
+                file_contents=Output.secret(gitea_configure_sh),
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
+            ),
+            opts=child_opts,
+        )
+        # Upload Gitea entrypoint script
+        gitea_entrypoint_sh_reader = FileReader(resources_path / "vcs" / "gitea" / "entrypoint.sh")
+        file_share_vcs_gitea_entrypoint_sh = FileShareFile(
+            f"{self._name}_file_share_vcs_gitea_entrypoint_sh",
+            FileShareFileProps(
+                destination_path=gitea_entrypoint_sh_reader.name,
+                share_name=file_share_vcs_gitea.name,
+                file_contents=Output.secret(gitea_entrypoint_sh_reader.file_contents()),
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
@@ -141,21 +185,22 @@ class SREUserServicesComponent(ComponentResource):
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
                         requests=containerinstance.ResourceRequestsArgs(
-                            cpu=1,
-                            memory_in_gb=1,
+                            cpu=0.5,
+                            memory_in_gb=0.5,
                         ),
                     ),
                     volume_mounts=[
                         containerinstance.VolumeMountArgs(
                             mount_path="/etc/caddy",
-                            name="vcs-caddy-caddyfile",
-                            read_only=False,
+                            name="caddy-etc-caddy",
+                            read_only=True,
                         ),
                     ],
                 ),
                 containerinstance.ContainerArgs(
                     image="gitea/gitea:latest",
                     name=f"{stack_name[:37]}-container-group-vcs-gitea",  # maximum of 63 characters
+                    command=["/app/custom/entrypoint.sh"],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="APP_NAME", value="Data Safe Haven Git server"
@@ -165,6 +210,10 @@ class SREUserServicesComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__security__INSTALL_LOCK", value="true"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__log__LEVEL",
+                            value="Debug",  # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
                         ),
                     ],
                     ports=[
@@ -179,7 +228,13 @@ class SREUserServicesComponent(ComponentResource):
                             memory_in_gb=2,
                         ),
                     ),
-                    volume_mounts=[],
+                    volume_mounts=[
+                        containerinstance.VolumeMountArgs(
+                            mount_path="/app/custom",
+                            name="gitea-app-custom",
+                            read_only=True,
+                        ),
+                    ],
                 ),
             ],
             ip_address=containerinstance.IpAddressArgs(
@@ -206,7 +261,15 @@ class SREUserServicesComponent(ComponentResource):
                         storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),
-                    name="vcs-caddy-caddyfile",
+                    name="caddy-etc-caddy",
+                ),
+                containerinstance.VolumeArgs(
+                    azure_file=containerinstance.AzureFileVolumeArgs(
+                        share_name=file_share_vcs_gitea.name,
+                        storage_account_key=props.storage_account_key,
+                        storage_account_name=props.storage_account_name,
+                    ),
+                    name="gitea-app-custom",
                 ),
             ],
             opts=child_opts,
