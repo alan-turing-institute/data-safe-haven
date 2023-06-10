@@ -321,6 +321,7 @@ class SREDataComponent(ComponentResource):
                 "/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
             ),
             scope=storage_account_securedata.id,
+            opts=child_opts,
         )
         # Deploy storage containers
         storage_container_egress = storage.BlobContainer(
@@ -406,6 +407,7 @@ class SREDataComponent(ComponentResource):
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-securedata",
             private_endpoint_name=storage_account_securedata_endpoint.name,
             resource_group_name=resource_group.name,
+            opts=child_opts,
         )
 
         # Deploy userdata files storage account
@@ -495,9 +497,10 @@ class SREDataComponent(ComponentResource):
                 )
                 for dns_zone_name in ordered_private_dns_zones("Storage account")
             ],
-            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data",
+            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-userdata",
             private_endpoint_name=storage_account_userdata_endpoint.name,
             resource_group_name=resource_group.name,
+            opts=child_opts,
         )
 
         # Register outputs
