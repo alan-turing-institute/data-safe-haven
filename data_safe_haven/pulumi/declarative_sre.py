@@ -169,6 +169,7 @@ class DeclarativeSRE:
                 ldap_search_password=self.pulumi_opts.require(
                     "password-domain-ldap-searcher"
                 ),
+                ldap_security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
                 ldap_server_ip=self.pulumi_opts.require(
                     "shm-domain_controllers-ldap_server_ip"
                 ),
@@ -184,7 +185,6 @@ class DeclarativeSRE:
                 ),
                 storage_account_userdata_name=data.storage_account_userdata_name,
                 storage_account_securedata_name=data.storage_account_securedata_name,
-                security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
                 subnet_research_desktops=networking.subnet_research_desktops,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
@@ -212,7 +212,7 @@ class DeclarativeSRE:
                 ldap_server_ip=self.pulumi_opts.require(
                     "shm-domain_controllers-ldap_server_ip"
                 ),
-                ldap_sre_security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
+                ldap_security_group_name=research_desktops.ldap_security_group_name,
                 location=self.cfg.azure.location,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_state_key,

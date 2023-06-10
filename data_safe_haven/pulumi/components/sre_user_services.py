@@ -23,7 +23,7 @@ class SREUserServicesProps:
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
-        ldap_sre_security_group_name: Input[str],
+        ldap_security_group_name: Input[str],
         location: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
@@ -36,7 +36,7 @@ class SREUserServicesProps:
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
-        self.ldap_sre_security_group_name = ldap_sre_security_group_name
+        self.ldap_security_group_name = ldap_security_group_name
         self.location = location
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key

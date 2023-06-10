@@ -44,7 +44,9 @@ class SREProvisioningManager(LoggingMixin):
             "resource_group_name": shm_stack.output("domain_controllers")[
                 "resource_group_name"
             ],
-            "group_name": sre_stack.output("research_desktops")["security_group_name"],
+            "group_name": sre_stack.output("research_desktops")[
+                "ldap_security_group_name"
+            ],
             "vm_name": shm_stack.output("domain_controllers")["vm_name"],
         }
 
@@ -75,6 +77,17 @@ class SREProvisioningManager(LoggingMixin):
         )
         for line in output.split("\n"):
             self.parse_as_log(line)
+
+    def restart_remote_desktop_containers(self) -> None:
+        # Restart the Guacamole container group
+        guacamole_provisioner = AzureContainerInstance(
+            self.remote_desktop_params["container_group_name"],
+            self.remote_desktop_params["resource_group_name"],
+            self.subscription_name,
+        )
+        guacamole_provisioner.restart(
+            self.remote_desktop_params["container_ip_address"]
+        )
 
     def update_remote_desktop_connections(self) -> None:
         """Update connection information on the Guacamole PostgreSQL server"""
@@ -113,17 +126,6 @@ class SREProvisioningManager(LoggingMixin):
                 postgres_script_path / "update_connections.mustache.sql",
             ],
             mustache_values=connection_data,
-        )
-
-    def restart_remote_desktop_containers(self) -> None:
-        # Restart the Guacamole container group
-        guacamole_provisioner = AzureContainerInstance(
-            self.remote_desktop_params["container_group_name"],
-            self.remote_desktop_params["resource_group_name"],
-            self.subscription_name,
-        )
-        guacamole_provisioner.restart(
-            self.remote_desktop_params["container_ip_address"]
         )
 
     def run(self) -> None:
