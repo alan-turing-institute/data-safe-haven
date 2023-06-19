@@ -401,7 +401,7 @@ class GraphApi(LoggingMixin):
                     f"Please sign-in with <fg=green>global administrator</> credentials for Azure Active Directory <fg=green>{self.tenant_id}</>."
                 )
                 self.info(
-                    "Note that the sign-in screen will prompt you to sign-in to <fg=blue>Microsoft Graph Powershell</> - this is expected."
+                    "Note that the sign-in screen will prompt you to sign-in to <fg=blue>Microsoft Graph Command Line Tools</> - this is expected."
                 )
                 self.info(flow["message"])
                 # Block until a response is received
