@@ -25,7 +25,9 @@ class SREUserServicesProps:
         ldap_server_ip: Input[str],
         ldap_security_group_name: Input[str],
         location: Input[str],
+        networking_resource_group_name: Input[str],
         sre_fqdn: Input[str],
+        sre_private_dns_zone_id: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
@@ -38,7 +40,9 @@ class SREUserServicesProps:
         self.ldap_server_ip = ldap_server_ip
         self.ldap_security_group_name = ldap_security_group_name
         self.location = location
+        self.networking_resource_group_name = networking_resource_group_name
         self.sre_fqdn = sre_fqdn
+        self.sre_private_dns_zone_id = sre_private_dns_zone_id
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
@@ -272,5 +276,19 @@ class SREUserServicesComponent(ComponentResource):
                     name="gitea-app-custom",
                 ),
             ],
+            opts=child_opts,
+        )
+
+        # Register this in the SRE private DNS zone
+        gitea_record_set = network.PrivateRecordSet(
+            f"{self._name}_gitea_record_set",
+            a_records=[network.ARecordArgs(
+                ipv4_address=props.subnet_ip_addresses[0],
+            )],
+            private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
+            record_type="A",
+            relative_record_set_name="gitea",
+            resource_group_name=props.networking_resource_group_name,
+            ttl=3600,
             opts=child_opts,
         )

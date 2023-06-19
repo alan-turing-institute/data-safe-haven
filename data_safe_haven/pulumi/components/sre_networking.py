@@ -467,10 +467,33 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Define SRE internal DNS zone
+        sre_private_dns_zone = network.PrivateZone(
+            f"{self._name}_private_zone",
+            location="Global",
+            private_zone_name=Output.concat("privatelink.", sre_fqdn),
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
+        virtual_network_link = network.VirtualNetworkLink(
+            f"{self._name}_private_zone_vnet_link",
+            location="Global",
+            private_zone_name=sre_private_dns_zone.name,
+            registration_enabled=False,
+            resource_group_name=resource_group.name,
+            virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
+            virtual_network_link_name=Output.concat(
+                "link-to-", sre_virtual_network.name
+            ),
+            opts=child_opts,
+        )
+
         # Register outputs
         self.resource_group = resource_group
         self.shm_ns_record = shm_ns_record
         self.sre_fqdn = sre_dns_zone.name
+        self.sre_private_dns_zone_id = sre_private_dns_zone.id
+        self.sre_private_dns_zone = sre_private_dns_zone
         self.subnet_application_gateway = network.get_subnet_output(
             subnet_name=subnet_application_gateway_name,
             resource_group_name=resource_group.name,
