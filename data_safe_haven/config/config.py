@@ -50,7 +50,7 @@ class Config(LoggingMixin, AzureMixin):
                 backend_storage_container_name,
             )
         # ... otherwise create a new DotMap
-        except (DataSafeHavenAzureException, ResourceNotFoundError):
+        except (DataSafeHavenAzureException, ResourceNotFoundError) as exc:
             self.warning(
                 f"Unable to load existing config file from '{backend_storage_account_name}'."
             )
@@ -163,7 +163,7 @@ class Config(LoggingMixin, AzureMixin):
             return str(keys[0].value)
         except Exception as exc:
             raise DataSafeHavenAzureException(
-                "Storage key could not be loaded."
+                f"Storage key could not be loaded.\n{str(exc)}"
             ) from exc
 
     def upload(self) -> None:
