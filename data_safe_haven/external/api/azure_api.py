@@ -1,4 +1,4 @@
-"""Backend for a Data Safe Haven environment"""
+"""Interface to the Azure Python SDK"""
 # Standard library imports
 import time
 from contextlib import suppress
