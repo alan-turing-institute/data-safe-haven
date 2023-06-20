@@ -44,7 +44,7 @@ Import-Csv -Path $UserFilePath -Delimiter ";" | ForEach-Object {
                    -GivenName $_.GivenName `
                    -Mobile $_.Mobile `
                    -Name "$DisplayName" `
-                   -PasswordNeverExpires $False `
+                   -PasswordNeverExpires $True `
                    -Path "$UserOuPath" `
                    -SurName $_.Surname `
                    -UserPrincipalName $UserPrincipalName `
