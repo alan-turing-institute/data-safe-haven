@@ -102,7 +102,9 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Upload caddy file
-        caddy_caddyfile_reader = FileReader(resources_path / "vcs" / "caddy" / "Caddyfile")
+        caddy_caddyfile_reader = FileReader(
+            resources_path / "vcs" / "caddy" / "Caddyfile"
+        )
         file_share_vcs_caddy_caddyfile = FileShareFile(
             f"{self._name}_file_share_vcs_caddy_caddyfile",
             FileShareFileProps(
@@ -116,7 +118,9 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Upload Gitea configuration script
-        gitea_configure_sh_reader = FileReader(resources_path / "vcs" / "gitea" / "configure.mustache.sh")
+        gitea_configure_sh_reader = FileReader(
+            resources_path / "vcs" / "gitea" / "configure.mustache.sh"
+        )
         gitea_configure_sh = Output.all(
             admin_email="dshadmin@example.com",
             admin_username="dshadmin",
@@ -124,7 +128,11 @@ class SREUserServicesComponent(ComponentResource):
             ldap_search_password=props.ldap_search_password,
             ldap_server_ip=props.ldap_server_ip,
             ldap_security_group_name=props.ldap_security_group_name,
-        ).apply(lambda mustache_values: gitea_configure_sh_reader.file_contents(mustache_values))
+        ).apply(
+            lambda mustache_values: gitea_configure_sh_reader.file_contents(
+                mustache_values
+            )
+        )
         file_share_vcs_gitea_configure_sh = FileShareFile(
             f"{self._name}_file_share_vcs_gitea_configure_sh",
             FileShareFileProps(
@@ -137,7 +145,9 @@ class SREUserServicesComponent(ComponentResource):
             opts=child_opts,
         )
         # Upload Gitea entrypoint script
-        gitea_entrypoint_sh_reader = FileReader(resources_path / "vcs" / "gitea" / "entrypoint.sh")
+        gitea_entrypoint_sh_reader = FileReader(
+            resources_path / "vcs" / "gitea" / "entrypoint.sh"
+        )
         file_share_vcs_gitea_entrypoint_sh = FileShareFile(
             f"{self._name}_file_share_vcs_gitea_entrypoint_sh",
             FileShareFileProps(
@@ -280,15 +290,30 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Register this in the SRE private DNS zone
-        gitea_record_set = network.PrivateRecordSet(
-            f"{self._name}_gitea_record_set",
-            a_records=[network.ARecordArgs(
-                ipv4_address=props.subnet_ip_addresses[0],
-            )],
+        gitea_private_record_set = network.PrivateRecordSet(
+            f"{self._name}_gitea_private_record_set",
+            a_records=[
+                network.ARecordArgs(
+                    ipv4_address=props.subnet_ip_addresses[0],
+                )
+            ],
             private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
             record_type="A",
             relative_record_set_name="gitea",
             resource_group_name=props.networking_resource_group_name,
             ttl=3600,
+            opts=child_opts,
+        )
+        # Redirect the public DNS to private DNS
+        gitea_public_record_set = network.RecordSet(
+            f"{self._name}_gitea_public_record_set",
+            cname_record=network.CnameRecordArgs(
+                cname=Output.concat("gitea.privatelink.", props.sre_fqdn)
+            ),
+            record_type="CNAME",
+            relative_record_set_name="gitea",
+            resource_group_name=props.networking_resource_group_name,
+            ttl=3600,
+            zone_name=props.sre_fqdn,
             opts=child_opts,
         )
