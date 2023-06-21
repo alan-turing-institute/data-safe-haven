@@ -56,7 +56,7 @@ class SHMUpdateServersComponent(ComponentResource):
         props: SHMUpdateServersProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:shm:SHMUpdateServersComponent", name, {}, opts)
+        super().__init__("dsh:shm:UpdateServersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Load cloud-init file

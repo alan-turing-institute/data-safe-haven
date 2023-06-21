@@ -65,7 +65,7 @@ class SREGiteaServerComponent(ComponentResource):
         props: SREGiteaServerProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:sre:SREGiteaServerComponent", name, {}, opts)
+        super().__init__("dsh:sre:GiteaServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Define configuration file shares

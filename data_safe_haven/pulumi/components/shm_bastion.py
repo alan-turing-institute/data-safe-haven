@@ -36,7 +36,7 @@ class SHMBastionComponent(ComponentResource):
         props: SHMBastionProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:shm:SHMBastionComponent", name, {}, opts)
+        super().__init__("dsh:shm:BastionComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy IP address

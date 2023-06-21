@@ -99,7 +99,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         props: SRERemoteDesktopProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:sre:SRERemoteDesktopComponent", name, {}, opts)
+        super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group

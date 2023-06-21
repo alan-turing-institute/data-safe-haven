@@ -62,7 +62,7 @@ class SHMDataComponent(ComponentResource):
         props: SHMDataProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:shm:SHMDataComponent", name, {}, opts)
+        super().__init__("dsh:shm:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group

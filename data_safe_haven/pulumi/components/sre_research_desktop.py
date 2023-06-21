@@ -91,7 +91,7 @@ class SREResearchDesktopComponent(ComponentResource):
         props: SREResearchDesktopProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:sre:SREResearchDesktopComponent", name, {}, opts)
+        super().__init__("dsh:sre:ResearchDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group

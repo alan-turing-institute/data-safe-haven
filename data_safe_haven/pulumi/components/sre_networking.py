@@ -72,7 +72,7 @@ class SRENetworkingComponent(ComponentResource):
         props: SRENetworkingProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:sre:SRENetworkingComponent", name, {}, opts)
+        super().__init__("dsh:sre:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group

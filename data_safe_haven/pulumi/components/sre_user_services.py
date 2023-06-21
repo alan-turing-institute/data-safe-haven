@@ -63,7 +63,7 @@ class SREUserServicesComponent(ComponentResource):
         props: SREUserServicesProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:sre:SREUserServicesComponent", name, {}, opts)
+        super().__init__("dsh:sre:UserServicesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group

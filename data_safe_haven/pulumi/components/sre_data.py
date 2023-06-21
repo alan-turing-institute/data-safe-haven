@@ -95,7 +95,7 @@ class SREDataComponent(ComponentResource):
         props: SREDataProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:sre:SREDataComponent", name, {}, opts)
+        super().__init__("dsh:sre:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group

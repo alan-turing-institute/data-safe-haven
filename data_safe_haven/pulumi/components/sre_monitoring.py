@@ -43,7 +43,7 @@ class SREMonitoringComponent(ComponentResource):
         props: SREMonitoringProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:shm:SREMonitoringComponent", name, {}, opts)
+        super().__init__("dsh:sre:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Create Linux VM system update schedule: daily at 03:<index>

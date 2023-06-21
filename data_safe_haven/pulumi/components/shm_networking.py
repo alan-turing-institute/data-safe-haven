@@ -50,7 +50,7 @@ class SHMNetworkingComponent(ComponentResource):
         props: SHMNetworkingProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:shm:SHMNetworkingComponent", name, {}, opts)
+        super().__init__("dsh:shm:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group

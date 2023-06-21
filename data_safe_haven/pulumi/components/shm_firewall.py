@@ -53,7 +53,7 @@ class SHMFirewallComponent(ComponentResource):
         props: SHMFirewallProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:shm:SHMFirewallComponent", name, {}, opts)
+        super().__init__("dsh:shm:FirewallComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Important IP addresses
