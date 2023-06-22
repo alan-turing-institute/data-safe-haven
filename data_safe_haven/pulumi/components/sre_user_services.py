@@ -95,7 +95,9 @@ class SREUserServicesComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 ResourceOptions(
                     depends_on=[props.virtual_network],
-                    ignore_changes=["container_network_interface_configurations"],  # allow container groups to be registered to this interface
+                    ignore_changes=[
+                        "container_network_interface_configurations"
+                    ],  # allow container groups to be registered to this interface
                 ),
                 child_opts,
             ),

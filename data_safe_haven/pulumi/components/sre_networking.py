@@ -46,7 +46,10 @@ class SRENetworkingProps:
         self.subnet_private_data_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(16)
         )
-        self.subnet_user_services_iprange = self.vnet_iprange.apply(
+        self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(
+            lambda r: r.next_subnet(16)
+        )
+        self.subnet_user_services_databases_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(16)
         )
         # Other variables
@@ -99,8 +102,11 @@ class SRENetworkingComponent(ComponentResource):
         subnet_research_desktops_prefix = props.subnet_research_desktops_iprange.apply(
             lambda r: str(r)
         )
-        subnet_user_services_prefix = props.subnet_user_services_iprange.apply(
-            lambda r: str(r)
+        subnet_user_services_containers_prefix = (
+            props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
+        )
+        subnet_user_services_databases_prefix = (
+            props.subnet_user_services_databases_iprange.apply(lambda r: str(r))
         )
 
         # Define NSGs
@@ -260,10 +266,10 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to user services.",
-                    destination_address_prefix=subnet_user_services_prefix,
+                    destination_address_prefix=subnet_user_services_containers_prefix,
                     destination_port_ranges=["22", "80", "443"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowUserServicesOutbound",
+                    name="AllowUserServicesContainersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_research_desktops_prefix,
@@ -272,9 +278,15 @@ class SRENetworkingComponent(ComponentResource):
             ],
             opts=child_opts,
         )
-        nsg_user_services = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_user_services",
-            network_security_group_name=f"{stack_name}-nsg-user-services",
+        nsg_user_services_containers = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_containers",
+            network_security_group_name=f"{stack_name}-nsg-user-services-containers",
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
+        nsg_user_services_databases = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_databases",
+            network_security_group_name=f"{stack_name}-nsg-user-services-databases",
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
@@ -285,7 +297,8 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_database_name = "GuacamoleDatabaseSubnet"
         subnet_private_data_name = "PrivateDataSubnet"
         subnet_research_desktops_name = "ResearchDesktopsSubnet"
-        subnet_user_services_name = "UserServicesSubnet"
+        subnet_user_services_containers_name = "UserServicesContainersSubnet"
+        subnet_user_services_databases_name = "UserServicesDatabasesSubnet"
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
@@ -347,9 +360,9 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_research_desktops.id
                     ),
                 ),
-                # User services
+                # User services containers
                 network.SubnetArgs(
-                    address_prefix=subnet_user_services_prefix,
+                    address_prefix=subnet_user_services_containers_prefix,
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -357,9 +370,17 @@ class SRENetworkingComponent(ComponentResource):
                             type="Microsoft.Network/virtualNetworks/subnets/delegations",
                         ),
                     ],
-                    name=subnet_user_services_name,
+                    name=subnet_user_services_containers_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_user_services.id
+                        id=nsg_user_services_containers.id
+                    ),
+                ),
+                # User services databases
+                network.SubnetArgs(
+                    address_prefix=subnet_user_services_databases_prefix,
+                    name=subnet_user_services_databases_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_user_services_databases.id
                     ),
                 ),
             ],
@@ -519,8 +540,13 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_user_services = network.get_subnet_output(
-            subnet_name=subnet_user_services_name,
+        self.subnet_user_services_containers = network.get_subnet_output(
+            subnet_name=subnet_user_services_containers_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_user_services_databases = network.get_subnet_output(
+            subnet_name=subnet_user_services_databases_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
