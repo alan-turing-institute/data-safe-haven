@@ -23,10 +23,13 @@ class SREHedgeDocServerProps:
         container_ip_address: Input[str],
         database_password: Input[str],
         database_subnet_id: Input[str],
+        domain_netbios_name: Input[str],
+        ldap_bind_dn: Input[str],
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
         ldap_security_group_name: Input[str],
+        ldap_user_search_base: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         network_profile_id: Input[str],
@@ -46,10 +49,13 @@ class SREHedgeDocServerProps:
         self.database_username = (
             database_username if database_username else "postgresadmin"
         )
+        self.domain_netbios_name = domain_netbios_name
+        self.ldap_bind_dn = ldap_bind_dn
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.ldap_security_group_name = ldap_security_group_name
+        self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.network_profile_id = network_profile_id
@@ -207,6 +213,10 @@ class SREHedgeDocServerComponent(ComponentResource):
                     name=f"{stack_name[:29]}-container-group-hedgedoc-hedgedoc",  # maximum of 63 characters
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
+                            name="CMD_ALLOW_ANONYMOUS",
+                            value="false",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_DATABASE",
                             value=hedgedoc_db_database_name,
                         ),
@@ -237,8 +247,40 @@ class SREHedgeDocServerComponent(ComponentResource):
                             value=Output.concat("hedgedoc.", props.sre_fqdn),
                         ),
                         containerinstance.EnvironmentVariableArgs(
+                            name="CMD_EMAIL",
+                            value="false",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_BINDCREDENTIALS",
+                            secure_value=props.ldap_search_password,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_BINDDN",
+                            value=props.ldap_bind_dn,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_PROVIDERNAME",
+                            value=props.domain_netbios_name,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_SEARCHBASE",
+                            value=props.ldap_user_search_base,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_SEARCHFILTER",
+                            value=f"(&(objectClass=user)(memberOf=CN={props.ldap_security_group_name},OU=Data Safe Haven Security Groups,{props.ldap_root_dn})(sAMAccountName={{{{username}}}}))",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_URL",
+                            value=f"ldap://{props.ldap_server_ip}",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_USERIDFIELD",
+                            value="sAMAccountName",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
                             name="CMD_LOGLEVEL",
-                            value="debug",
+                            value="info",
                         ),
                     ],
                     ports=[],

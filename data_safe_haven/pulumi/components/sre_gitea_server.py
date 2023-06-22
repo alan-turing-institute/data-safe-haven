@@ -17,10 +17,12 @@ class SREGiteaServerProps:
     def __init__(
         self,
         container_ip_address: Input[str],
+        ldap_bind_dn: Input[str],
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
         ldap_security_group_name: Input[str],
+        ldap_user_search_base: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         network_profile_id: Input[str],
@@ -34,10 +36,12 @@ class SREGiteaServerProps:
         virtual_network_resource_group_name: Input[str],
     ):
         self.container_ip_address = container_ip_address
+        self.ldap_bind_dn = ldap_bind_dn
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.ldap_security_group_name = ldap_security_group_name
+        self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.network_profile_id = network_profile_id
@@ -111,10 +115,12 @@ class SREGiteaServerComponent(ComponentResource):
         gitea_configure_sh = Output.all(
             admin_email="dshadmin@example.com",
             admin_username="dshadmin",
+            ldap_bind_dn=props.ldap_bind_dn,
             ldap_root_dn=props.ldap_root_dn,
             ldap_search_password=props.ldap_search_password,
-            ldap_server_ip=props.ldap_server_ip,
             ldap_security_group_name=props.ldap_security_group_name,
+            ldap_server_ip=props.ldap_server_ip,
+            ldap_user_search_base=props.ldap_user_search_base,
         ).apply(
             lambda mustache_values: gitea_configure_sh_reader.file_contents(
                 mustache_values

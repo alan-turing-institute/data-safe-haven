@@ -12,12 +12,12 @@ until su-exec "$USER" /usr/local/bin/gitea admin auth list | grep "DataSafeHaven
     echo "$(date -Iseconds) Attempting to register LDAP authentication..." | tee -a /var/log/configuration
     su-exec "$USER" /usr/local/bin/gitea admin auth add-ldap \
         --name DataSafeHavenLDAP \
-        --bind-dn "CN=dshldapsearcher,OU=Data Safe Haven Service Accounts,{{ldap_root_dn}}" \
+        --bind-dn "{{ldap_bind_dn}}" \
         --bind-password "{{ldap_search_password}}" \
         --security-protocol "unencrypted" \
         --host "{{ldap_server_ip}}" \
         --port "389" \
-        --user-search-base "OU=Data Safe Haven Research Users,{{ldap_root_dn}}" \
+        --user-search-base "{{ldap_user_search_base}}" \
         --user-filter "(&(objectClass=user)(memberOf=CN={{ldap_security_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}})(sAMAccountName=%[1]s))" \
         --email-attribute "mail"
     sleep 1

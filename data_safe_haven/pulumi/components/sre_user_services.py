@@ -19,11 +19,14 @@ class SREUserServicesProps:
 
     def __init__(
         self,
+        domain_netbios_name: Input[str],
         hedgedoc_database_password: Input[str],
+        ldap_bind_dn: Input[str],
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
         ldap_security_group_name: Input[str],
+        ldap_user_search_base: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         sre_fqdn: Input[str],
@@ -36,11 +39,14 @@ class SREUserServicesProps:
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
     ):
+        self.domain_netbios_name = domain_netbios_name
         self.hedgedoc_database_password = hedgedoc_database_password
+        self.ldap_bind_dn = ldap_bind_dn
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.ldap_security_group_name = ldap_security_group_name
+        self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.sre_fqdn = sre_fqdn
@@ -122,10 +128,12 @@ class SREUserServicesComponent(ComponentResource):
             sre_name,
             SREGiteaServerProps(
                 container_ip_address=props.subnet_containers_ip_addresses[0],
+                ldap_bind_dn=props.ldap_bind_dn,
                 ldap_root_dn=props.ldap_root_dn,
                 ldap_search_password=props.ldap_search_password,
                 ldap_server_ip=props.ldap_server_ip,
                 ldap_security_group_name=props.ldap_security_group_name,
+                ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
                 network_profile_id=container_network_profile.id,
@@ -150,10 +158,13 @@ class SREUserServicesComponent(ComponentResource):
                 container_ip_address=props.subnet_containers_ip_addresses[1],
                 database_subnet_id=props.subnet_databases_id,
                 database_password=props.hedgedoc_database_password,
+                domain_netbios_name=props.domain_netbios_name,
+                ldap_bind_dn=props.ldap_bind_dn,
                 ldap_root_dn=props.ldap_root_dn,
                 ldap_search_password=props.ldap_search_password,
                 ldap_server_ip=props.ldap_server_ip,
                 ldap_security_group_name=props.ldap_security_group_name,
+                ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
                 network_profile_id=container_network_profile.id,

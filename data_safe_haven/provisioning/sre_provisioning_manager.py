@@ -44,9 +44,7 @@ class SREProvisioningManager(LoggingMixin):
             "resource_group_name": shm_stack.output("domain_controllers")[
                 "resource_group_name"
             ],
-            "group_name": sre_stack.output("research_desktops")[
-                "ldap_security_group_name"
-            ],
+            "group_name": sre_stack.output("ldap")["security_group_name"],
             "vm_name": shm_stack.output("domain_controllers")["vm_name"],
         }
 

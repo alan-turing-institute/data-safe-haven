@@ -100,6 +100,11 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 True,
             )
             stack.add_option(
+                "shm-domain_controllers-netbios_name",
+                shm_stack.output("domain_controllers")["netbios_name"],
+                True,
+            )
+            stack.add_option(
                 "shm-monitoring-automation_account_name",
                 shm_stack.output("monitoring")["automation_account_name"],
                 True,
