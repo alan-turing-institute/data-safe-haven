@@ -2,6 +2,10 @@
 
 # User Guide: Microsoft Remote Desktop
 
+```{warning}
+Use of Microsoft Remote Desktop is deprecated. It will be removed in an upcoming release of the Data Safe Haven.
+```
+
 ## {{beginner}} Introduction
 
 {{tada}} Welcome to the Turing Data Safe Haven! {{tada}}
