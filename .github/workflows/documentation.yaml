@@ -46,9 +46,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-      - name: Sphinx build
+      - name: Sphinx build 
+        # Set warnings to be treated as errors
         run: |
-          make html
+          make html SPHINXOPTS="-W" 
       - name: Link Checker
         uses: lycheeverse/lychee-action@v1.7.0
         with:
