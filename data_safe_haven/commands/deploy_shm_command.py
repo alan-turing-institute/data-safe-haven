@@ -112,11 +112,11 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
             return 0
 
         except DataSafeHavenException as exc:
-            error_msg = (
-                f"Could not deploy Data Safe Haven Management environment.\n{str(exc)}"
-            )
-            for line in error_msg.split("\n"):
-                self.error(line)
+            exception_text = f"Could not deploy Data Safe Haven Management environment.\n{str(exc)}"
+        except Exception as exc:
+            exception_text = f"Uncaught exception of type '{type(exc)}'.\n{str(exc)}"
+        for line in exception_text.split("\n"):
+            self.error(line)
         return 1
 
     def add_missing_values(self, config: Config) -> None:

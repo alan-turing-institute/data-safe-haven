@@ -190,12 +190,11 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
             return 0
 
         except DataSafeHavenException as exc:
-            for (
-                line
-            ) in f"Could not deploy Secure Research Environment {self.sre_name}.\n{str(exc)}".split(
-                "\n"
-            ):
-                self.error(line)
+            exception_text = f"Could not deploy Secure Research Environment {self.sre_name}.\n{str(exc)}"
+        except Exception as exc:
+            exception_text = f"Uncaught exception of type '{type(exc)}'.\n{str(exc)}"
+        for line in exception_text.split("\n"):
+            self.error(line)
         return 1
 
     def add_missing_values(self, config: Config) -> None:
