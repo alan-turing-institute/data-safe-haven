@@ -32,6 +32,23 @@ def get_id_from_subnet(subnet: network.GetSubnetResult) -> str:
     raise DataSafeHavenPulumiException(f"Subnet '{subnet.name}' has no ID.")
 
 
+def get_ip_addresses_from_private_endpoint(
+    endpoint: network.PrivateEndpoint,
+) -> Input[List[str]]:
+    """Get a list of IP addresses from a private endpoint"""
+    if isinstance(endpoint.custom_dns_configs, Output):
+        return endpoint.custom_dns_configs.apply(
+            lambda cfgs: sum(
+                [list(cfg.ip_addresses) if cfg.ip_addresses else [] for cfg in cfgs], []
+            )
+            if cfgs
+            else []
+        )
+    raise DataSafeHavenPulumiException(
+        f"Private endpoint '{endpoint.name}' has no IP addresses."
+    )
+
+
 def get_name_from_rg(rg: resources.ResourceGroup) -> Input[str]:
     """Get the name of a resource group"""
     if isinstance(rg.name, Output):
