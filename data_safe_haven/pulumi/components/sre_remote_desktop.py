@@ -228,7 +228,13 @@ class SRERemoteDesktopComponent(ComponentResource):
             network_profile_name=f"{stack_name}-np-guacamole",
             resource_group_name=props.virtual_network_resource_group_name,
             opts=ResourceOptions.merge(
-                ResourceOptions(depends_on=[props.virtual_network]), child_opts
+                ResourceOptions(
+                    depends_on=[props.virtual_network],
+                    ignore_changes=[
+                        "container_network_interface_configurations"
+                    ],  # allow container groups to be registered to this interface
+                ),
+                child_opts,
             ),
         )
 

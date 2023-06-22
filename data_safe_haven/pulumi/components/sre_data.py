@@ -217,7 +217,7 @@ class SREDataComponent(ComponentResource):
                 ResourceOptions(
                     depends_on=[props.dns_record]
                 ),  # we need the delegation NS record to exist before generating the certificate
-                child_opts,
+                ResourceOptions(parent=key_vault),
             ),
         )
 
@@ -230,7 +230,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-secure-research-desktop-admin",
             vault_name=key_vault.name,
-            opts=child_opts,
+            opts=ResourceOptions(parent=key_vault),
         )
         password_user_database_admin = keyvault.Secret(
             f"{self._name}_kvs_password_user_database_admin",
@@ -240,7 +240,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-user-database-admin",
             vault_name=key_vault.name,
-            opts=child_opts,
+            opts=ResourceOptions(parent=key_vault),
         )
 
         # Deploy state storage account
@@ -321,7 +321,7 @@ class SREDataComponent(ComponentResource):
                 "/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
             ),
             scope=storage_account_securedata.id,
-            opts=child_opts,
+            opts=ResourceOptions(parent=storage_account_securedata),
         )
         # Deploy storage containers
         storage_container_egress = storage.BlobContainer(
@@ -332,7 +332,7 @@ class SREDataComponent(ComponentResource):
             deny_encryption_scope_override=False,
             public_access=storage.PublicAccess.NONE,
             resource_group_name=resource_group.name,
-            opts=child_opts,
+            opts=ResourceOptions(parent=storage_account_securedata),
         )
         storage_container_ingress = storage.BlobContainer(
             f"{self._name}_storage_container_ingress",
@@ -342,7 +342,7 @@ class SREDataComponent(ComponentResource):
             deny_encryption_scope_override=False,
             public_access=storage.PublicAccess.NONE,
             resource_group_name=resource_group.name,
-            opts=child_opts,
+            opts=ResourceOptions(parent=storage_account_securedata),
         )
         # Set storage container ACLs
         storage_container_egress_acl = BlobContainerAcl(
@@ -357,7 +357,7 @@ class SREDataComponent(ComponentResource):
                 storage_account_name=storage_account_securedata.name,
                 subscription_name=props.subscription_name,
             ),
-            opts=child_opts,
+            opts=ResourceOptions(parent=storage_container_egress),
         )
         storage_container_ingress_acl = BlobContainerAcl(
             f"{self._name}_storage_container_ingress_acl",
@@ -371,7 +371,7 @@ class SREDataComponent(ComponentResource):
                 storage_account_name=storage_account_securedata.name,
                 subscription_name=props.subscription_name,
             ),
-            opts=child_opts,
+            opts=ResourceOptions(parent=storage_container_ingress),
         )
         # Set up a private endpoint for the securedata data account
         storage_account_securedata_endpoint = network.PrivateEndpoint(
@@ -387,7 +387,7 @@ class SREDataComponent(ComponentResource):
             ],
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_private_data_id),
-            opts=child_opts,
+            opts=ResourceOptions(parent=storage_account_securedata),
         )
         # Add a private DNS record for each securedata data custom DNS config
         storage_account_securedata_private_dns_zone_group = network.PrivateDnsZoneGroup(
@@ -407,7 +407,7 @@ class SREDataComponent(ComponentResource):
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-securedata",
             private_endpoint_name=storage_account_securedata_endpoint.name,
             resource_group_name=resource_group.name,
-            opts=child_opts,
+            opts=ResourceOptions(parent=storage_account_securedata),
         )
 
         # Deploy userdata files storage account
@@ -454,7 +454,7 @@ class SREDataComponent(ComponentResource):
             root_squash=storage.RootSquashType.NO_ROOT_SQUASH,  # Squashing prevents root from creating user home directories
             share_name="home",
             share_quota=1024,
-            opts=child_opts,
+            opts=ResourceOptions(parent=storage_account_userdata),
         )
         file_container_shared = storage.FileShare(
             f"{self._name}_storage_container_shared",
@@ -465,7 +465,7 @@ class SREDataComponent(ComponentResource):
             root_squash=storage.RootSquashType.ROOT_SQUASH,
             share_name="shared",
             share_quota=1024,
-            opts=child_opts,
+            opts=ResourceOptions(parent=storage_account_userdata),
         )
         # Set up a private endpoint for the userdata storage account
         storage_account_userdata_endpoint = network.PrivateEndpoint(
@@ -481,7 +481,7 @@ class SREDataComponent(ComponentResource):
             ],
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_private_data_id),
-            opts=child_opts,
+            opts=ResourceOptions(parent=storage_account_userdata),
         )
         # Add a private DNS record for each userdata custom DNS config
         storage_account_userdata_private_dns_zone_group = network.PrivateDnsZoneGroup(
