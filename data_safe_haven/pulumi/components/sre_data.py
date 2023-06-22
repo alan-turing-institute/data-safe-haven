@@ -66,6 +66,9 @@ class SREDataProps:
         self.password_secure_research_desktop_admin = self.get_secret(
             pulumi_opts, "password-secure-research-desktop-admin"
         )
+        self.password_gitea_database_admin = self.get_secret(
+            pulumi_opts, "password-gitea-database-admin"
+        )
         self.password_hedgedoc_database_admin = self.get_secret(
             pulumi_opts, "password-hedgedoc-database-admin"
         )
@@ -232,6 +235,16 @@ class SREDataComponent(ComponentResource):
             ),
             resource_group_name=resource_group.name,
             secret_name="password-secure-research-desktop-admin",
+            vault_name=key_vault.name,
+            opts=ResourceOptions(parent=key_vault),
+        )
+        password_gitea_database_admin = keyvault.Secret(
+            f"{self._name}_kvs_password_gitea_database_admin",
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_gitea_database_admin
+            ),
+            resource_group_name=resource_group.name,
+            secret_name="password-gitea-database-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
         )
@@ -528,6 +541,7 @@ class SREDataComponent(ComponentResource):
         self.password_secure_research_desktop_admin = (
             props.password_secure_research_desktop_admin
         )
+        self.password_gitea_database_admin = props.password_gitea_database_admin
         self.password_hedgedoc_database_admin = props.password_hedgedoc_database_admin
         self.password_user_database_admin = props.password_user_database_admin
         self.resource_group_name = resource_group.name

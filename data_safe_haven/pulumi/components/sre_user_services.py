@@ -20,6 +20,7 @@ class SREUserServicesProps:
     def __init__(
         self,
         domain_netbios_name: Input[str],
+        gitea_database_password: Input[str],
         hedgedoc_database_password: Input[str],
         ldap_bind_dn: Input[str],
         ldap_root_dn: Input[str],
@@ -40,6 +41,7 @@ class SREUserServicesProps:
         virtual_network_resource_group_name: Input[str],
     ):
         self.domain_netbios_name = domain_netbios_name
+        self.gitea_database_password = gitea_database_password
         self.hedgedoc_database_password = hedgedoc_database_password
         self.ldap_bind_dn = ldap_bind_dn
         self.ldap_root_dn = ldap_root_dn
@@ -128,6 +130,8 @@ class SREUserServicesComponent(ComponentResource):
             sre_name,
             SREGiteaServerProps(
                 container_ip_address=props.subnet_containers_ip_addresses[0],
+                database_subnet_id=props.subnet_databases_id,
+                database_password=props.gitea_database_password,
                 ldap_bind_dn=props.ldap_bind_dn,
                 ldap_root_dn=props.ldap_root_dn,
                 ldap_search_password=props.ldap_search_password,

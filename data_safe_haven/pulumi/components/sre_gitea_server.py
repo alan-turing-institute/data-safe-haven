@@ -4,10 +4,11 @@ from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, network, storage
+from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
 # Local imports
 from data_safe_haven.helpers import FileReader
+from ..common.transformations import get_ip_addresses_from_private_endpoint
 from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 
 
@@ -17,6 +18,8 @@ class SREGiteaServerProps:
     def __init__(
         self,
         container_ip_address: Input[str],
+        database_password: Input[str],
+        database_subnet_id: Input[str],
         ldap_bind_dn: Input[str],
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
@@ -34,8 +37,14 @@ class SREGiteaServerProps:
         user_services_resource_group_name: Input[str],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
+        database_username: Optional[Input[str]] = None,
     ):
         self.container_ip_address = container_ip_address
+        self.database_password = database_password
+        self.database_subnet_id = database_subnet_id
+        self.database_username = (
+            database_username if database_username else "postgresadmin"
+        )
         self.ldap_bind_dn = ldap_bind_dn
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
@@ -153,6 +162,68 @@ class SREGiteaServerComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Define a PostgreSQL server and default database
+        gitea_db_server_name = f"{stack_name}-db-gitea"
+        gitea_db_server = dbforpostgresql.Server(
+            f"{self._name}_gitea_db_server",
+            properties={
+                "administratorLogin": props.database_username,
+                "administratorLoginPassword": props.database_password,
+                "infrastructureEncryption": "Disabled",
+                "minimalTlsVersion": "TLSEnforcementDisabled",
+                "publicNetworkAccess": "Disabled",
+                "sslEnforcement": "Enabled",
+                "storageProfile": {
+                    "backupRetentionDays": 7,
+                    "geoRedundantBackup": "Disabled",
+                    "storageAutogrow": "Enabled",
+                    "storageMB": 5120,
+                },
+                "version": "11",
+            },
+            resource_group_name=props.user_services_resource_group_name,
+            server_name=gitea_db_server_name,
+            sku=dbforpostgresql.SkuArgs(
+                capacity=2,
+                family="Gen5",
+                name="GP_Gen5_2",
+                tier=dbforpostgresql.SkuTier.GENERAL_PURPOSE,  # required to use private link
+            ),
+            opts=child_opts,
+        )
+        gitea_db_database_name = "gitea"
+        gitea_db = dbforpostgresql.Database(
+            f"{self._name}_gitea_db",
+            charset="UTF8",
+            database_name=gitea_db_database_name,
+            resource_group_name=props.user_services_resource_group_name,
+            server_name=gitea_db_server.name,
+            opts=ResourceOptions(parent=gitea_db_server),
+        )
+        # Deploy a private endpoint to the PostgreSQL server
+        gitea_db_private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_gitea_db_private_endpoint",
+            private_endpoint_name=f"{stack_name}-endpoint-gitea-db",
+            private_link_service_connections=[
+                network.PrivateLinkServiceConnectionArgs(
+                    group_ids=["postgresqlServer"],
+                    name=f"{stack_name}-privatelink-gitea-db",
+                    private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
+                        actions_required="None",
+                        description="Auto-approved",
+                        status="Approved",
+                    ),
+                    private_link_service_id=gitea_db_server.id,
+                )
+            ],
+            resource_group_name=props.user_services_resource_group_name,
+            subnet=network.SubnetArgs(id=props.database_subnet_id),
+            opts=child_opts,
+        )
+        gitea_db_private_ip_address = Output.from_input(
+            get_ip_addresses_from_private_endpoint(gitea_db_private_endpoint)
+        ).apply(lambda ips: ips[0])
+
         # Define the container group with guacd, guacamole and caddy
         container_group_gitea = containerinstance.ContainerGroup(
             f"{self._name}_container_group_gitea",
@@ -193,11 +264,34 @@ class SREGiteaServerComponent(ComponentResource):
                             name="RUN_MODE", value="dev"
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="GITEA__security__INSTALL_LOCK", value="true"
+                            name="GITEA__database__DB_TYPE", value="postgres"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__database__HOST",
+                            value=gitea_db_private_ip_address,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__database__NAME", value=gitea_db_database_name
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__database__USER",
+                            value=Output.concat(
+                                props.database_username, "@", gitea_db_server_name
+                            ),
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__database__PASSWD",
+                            secure_value=props.database_password,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__database__SSL_MODE", value="require"
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__log__LEVEL",
                             value="Debug",  # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__security__INSTALL_LOCK", value="true"
                         ),
                     ],
                     ports=[

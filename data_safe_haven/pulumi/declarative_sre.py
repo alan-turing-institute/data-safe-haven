@@ -216,7 +216,8 @@ class DeclarativeSRE:
                 domain_netbios_name=self.pulumi_opts.require(
                     "shm-domain_controllers-netbios_name"
                 ),
-                hedgedoc_database_password=data.password_user_database_admin,
+                gitea_database_password=data.password_gitea_database_admin,
+                hedgedoc_database_password=data.password_hedgedoc_database_admin,
                 ldap_bind_dn=ldap_bind_dn,
                 ldap_root_dn=ldap_root_dn,
                 ldap_search_password=ldap_search_password,
