@@ -3,7 +3,7 @@
 # User Guide: Microsoft Remote Desktop
 
 ```{warning}
-Support for Microsoft Remote Desktop is deprecated. Deployment scripts and related documentation will be removed in an upcoming release of the Data Safe Haven.
+Support for Microsoft Remote Desktop is deprecated. Deployment scripts and related documentation will be removed in version `4.1.0` of the Data Safe Haven.
 ```
 
 ## {{beginner}} Introduction

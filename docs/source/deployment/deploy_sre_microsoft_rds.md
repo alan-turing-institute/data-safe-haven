@@ -3,7 +3,7 @@
 # Deploy an SRE with Microsoft RDS
 
 ```{warning}
-Support for Microsoft Remote Desktop is deprecated. Deployment scripts and related documentation will be removed in an upcoming release of the Data Safe Haven.
+Support for Microsoft Remote Desktop is deprecated. Deployment scripts and related documentation will be removed in version `4.1.0` of the Data Safe Haven.
 ```
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
