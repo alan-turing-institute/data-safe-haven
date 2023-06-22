@@ -112,7 +112,9 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
             return 0
 
         except DataSafeHavenException as exc:
-            exception_text = f"Could not deploy Data Safe Haven Management environment.\n{str(exc)}"
+            exception_text = (
+                f"Could not deploy Data Safe Haven Management environment.\n{str(exc)}"
+            )
         except Exception as exc:
             exception_text = f"Uncaught exception of type '{type(exc)}'.\n{str(exc)}"
         for line in exception_text.split("\n"):
