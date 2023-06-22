@@ -11,6 +11,7 @@ from data_safe_haven.pulumi.common.transformations import (
     get_id_from_subnet,
 )
 from .sre_gitea_server import SREGiteaServerComponent, SREGiteaServerProps
+from .sre_hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
 
 
 class SREUserServicesProps:
@@ -18,6 +19,7 @@ class SREUserServicesProps:
 
     def __init__(
         self,
+        hedgedoc_database_password: Input[str],
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
@@ -29,10 +31,12 @@ class SREUserServicesProps:
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
-        subnet: Input[network.GetSubnetResult],
+        subnet_containers: Input[network.GetSubnetResult],
+        subnet_databases: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
     ):
+        self.hedgedoc_database_password = hedgedoc_database_password
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
@@ -44,8 +48,16 @@ class SREUserServicesProps:
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
-        self.subnet_id = Output.from_input(subnet).apply(get_id_from_subnet)
-        self.subnet_ip_addresses = Output.from_input(subnet).apply(
+        self.subnet_containers_id = Output.from_input(subnet_containers).apply(
+            get_id_from_subnet
+        )
+        self.subnet_databases_id = Output.from_input(subnet_databases).apply(
+            get_id_from_subnet
+        )
+        self.subnet_containers_ip_addresses = Output.from_input(
+            subnet_containers
+        ).apply(get_available_ips_from_subnet)
+        self.subnet_databases_ip_addresses = Output.from_input(subnet_databases).apply(
             get_available_ips_from_subnet
         )
         self.virtual_network = virtual_network
@@ -83,7 +95,7 @@ class SREUserServicesComponent(ComponentResource):
                         network.IPConfigurationProfileArgs(
                             name="ipconfiguserservices",
                             subnet=network.SubnetArgs(
-                                id=props.subnet_id,
+                                id=props.subnet_containers_id,
                             ),
                         )
                     ],
@@ -103,11 +115,13 @@ class SREUserServicesComponent(ComponentResource):
             ),
         )
 
+        # Deploy the Gitea server
         gitea_server = SREGiteaServerComponent(
             "sre_gitea_server",
             stack_name,
             sre_name,
             SREGiteaServerProps(
+                container_ip_address=props.subnet_containers_ip_addresses[0],
                 ldap_root_dn=props.ldap_root_dn,
                 ldap_search_password=props.ldap_search_password,
                 ldap_server_ip=props.ldap_server_ip,
@@ -120,8 +134,34 @@ class SREUserServicesComponent(ComponentResource):
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
                 storage_account_resource_group_name=props.storage_account_resource_group_name,
-                subnet_id=props.subnet_id,
-                subnet_ip_address=props.subnet_ip_addresses[0],
+                user_services_resource_group_name=resource_group.name,
+                virtual_network=props.virtual_network,
+                virtual_network_resource_group_name=props.virtual_network_resource_group_name,
+            ),
+            opts=child_opts,
+        )
+
+        # Deploy the HedgeDoc server
+        hedgedoc_server = SREHedgeDocServerComponent(
+            "sre_hedgedoc_server",
+            stack_name,
+            sre_name,
+            SREHedgeDocServerProps(
+                container_ip_address=props.subnet_containers_ip_addresses[1],
+                database_subnet_id=props.subnet_databases_id,
+                database_password=props.hedgedoc_database_password,
+                ldap_root_dn=props.ldap_root_dn,
+                ldap_search_password=props.ldap_search_password,
+                ldap_server_ip=props.ldap_server_ip,
+                ldap_security_group_name=props.ldap_security_group_name,
+                location=props.location,
+                networking_resource_group_name=props.networking_resource_group_name,
+                network_profile_id=container_network_profile.id,
+                sre_fqdn=props.sre_fqdn,
+                sre_private_dns_zone_id=props.sre_private_dns_zone_id,
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
+                storage_account_resource_group_name=props.storage_account_resource_group_name,
                 user_services_resource_group_name=resource_group.name,
                 virtual_network=props.virtual_network,
                 virtual_network_resource_group_name=props.virtual_network_resource_group_name,

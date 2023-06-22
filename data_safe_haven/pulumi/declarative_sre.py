@@ -203,6 +203,7 @@ class DeclarativeSRE:
             self.stack_name,
             self.sre_name,
             SREUserServicesProps(
+                hedgedoc_database_password=data.password_user_database_admin,
                 ldap_root_dn=self.pulumi_opts.require(
                     "shm-domain_controllers-ldap_root_dn"
                 ),
@@ -220,7 +221,8 @@ class DeclarativeSRE:
                 storage_account_key=data.storage_account_state_key,
                 storage_account_name=data.storage_account_state_name,
                 storage_account_resource_group_name=data.resource_group_name,
-                subnet=networking.subnet_user_services,
+                subnet_containers=networking.subnet_user_services_containers,
+                subnet_databases=networking.subnet_user_services_databases,
                 virtual_network=networking.virtual_network,
                 virtual_network_resource_group_name=networking.resource_group.name,
             ),
