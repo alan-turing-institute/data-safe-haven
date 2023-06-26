@@ -43,8 +43,8 @@ class SRERemoteDesktopProps:
         subnet_guacamole_containers: Input[network.GetSubnetResult],
         subnet_guacamole_database: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
-        virtual_network_resource_group: Input[resources.ResourceGroup],
-        database_username: Optional[Input[str]] = None,
+        virtual_network_resource_group_name: Input[str],
+        database_username: Optional[Input[str]] = "postgresadmin",
     ):
         self.aad_application_name = aad_application_name
         self.aad_application_url = Output.concat("https://", aad_application_fqdn)
@@ -85,9 +85,7 @@ class SRERemoteDesktopProps:
             else []
         )
         self.virtual_network = virtual_network
-        self.virtual_network_resource_group_name = Output.from_input(
-            virtual_network_resource_group
-        ).apply(get_name_from_rg)
+        self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
 
 class SRERemoteDesktopComponent(ComponentResource):

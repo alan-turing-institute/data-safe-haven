@@ -22,6 +22,7 @@ from .components.sre_research_desktop import (
     SREResearchDesktopComponent,
     SREResearchDesktopProps,
 )
+from .components.sre_software_repositories import SRESoftwareRepositoriesComponent, SRESoftwareRepositoriesProps
 from .components.sre_user_services import SREUserServicesComponent, SREUserServicesProps
 
 
@@ -161,7 +162,7 @@ class DeclarativeSRE:
                 storage_account_key=data.storage_account_state_key,
                 storage_account_name=data.storage_account_state_name,
                 storage_account_resource_group_name=data.resource_group_name,
-                virtual_network_resource_group=networking.resource_group,
+                virtual_network_resource_group_name=networking.resource_group.name,
                 virtual_network=networking.virtual_network,
             ),
         )
@@ -204,6 +205,22 @@ class DeclarativeSRE:
                         self.cfg.sre[self.sre_name].research_desktops.items()
                     )
                 ],
+            ),
+        )
+
+        # Deploy software repository servers
+        software_repositories = SRESoftwareRepositoriesComponent(
+            "shm_update_servers",
+            self.stack_name,
+            self.shm_name,
+            SRESoftwareRepositoriesProps(
+                location=self.cfg.azure.location,
+                storage_account_key=data.storage_account_state_key,
+                storage_account_name=data.storage_account_state_name,
+                storage_account_resource_group_name=data.resource_group_name,
+                subnet=networking.subnet_software_repositories,
+                virtual_network=networking.virtual_network,
+                virtual_network_resource_group_name=networking.resource_group.name,
             ),
         )
 
