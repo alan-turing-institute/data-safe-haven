@@ -1,0 +1,12 @@
+{
+    "production": {
+        "db": {
+            "dialectOptions": {
+                "ssl": {
+                    "require": true,
+                    "rejectUnauthorized": false
+                }
+            }
+        }
+    }
+}

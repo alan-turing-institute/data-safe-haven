@@ -100,6 +100,11 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 True,
             )
             stack.add_option(
+                "shm-domain_controllers-netbios_name",
+                shm_stack.output("domain_controllers")["netbios_name"],
+                True,
+            )
+            stack.add_option(
                 "shm-monitoring-automation_account_name",
                 shm_stack.output("monitoring")["automation_account_name"],
                 True,
@@ -156,6 +161,8 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
             )
             # Add necessary secrets
             stack.copy_secret("password-domain-ldap-searcher", shm_stack)
+            stack.add_secret("password-gitea-database-admin", password(20))
+            stack.add_secret("password-hedgedoc-database-admin", password(20))
             stack.add_secret("password-user-database-admin", password(20))
             stack.add_secret("password-secure-research-desktop-admin", password(20))
             stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
@@ -184,12 +191,11 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
             return 0
 
         except DataSafeHavenException as exc:
-            for (
-                line
-            ) in f"Could not deploy Secure Research Environment {self.sre_name}.\n{str(exc)}".split(
-                "\n"
-            ):
-                self.error(line)
+            exception_text = f"Could not deploy Secure Research Environment {self.sre_name}.\n{str(exc)}"
+        except Exception as exc:
+            exception_text = f"Uncaught exception of type '{type(exc)}'.\n{str(exc)}"
+        for line in exception_text.split("\n"):
+            self.error(line)
         return 1
 
     def add_missing_values(self, config: Config) -> None:

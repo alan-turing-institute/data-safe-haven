@@ -53,7 +53,7 @@ class SHMMonitoringComponent(ComponentResource):
         props: SHMMonitoringProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:shm:SHMMonitoringComponent", name, {}, opts)
+        super().__init__("dsh:shm:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group

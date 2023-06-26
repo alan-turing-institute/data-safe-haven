@@ -5,6 +5,7 @@ write_files:
     permissions: "0444"
     content: |
       Acquire::http::Proxy "http://{{linux_update_server_ip}}:8000";
+      Acquire::https::Proxy "http://{{linux_update_server_ip}}:8000";
 
   - path: "/etc/nslcd.conf"
     permissions: "0400"
@@ -19,18 +20,18 @@ write_files:
 
       # General connection options
       uri ldap://{{ldap_server_ip}}:389
-      binddn CN=dshldapsearcher,OU=Data Safe Haven Service Accounts,{{ldap_root_dn}}
+      binddn {{ldap_bind_dn}}
       bindpw {{ldap_search_password}}
 
       # Search/mapping options
-      base OU=Data Safe Haven Research Users,{{ldap_root_dn}}
-      base OU=Data Safe Haven Security Groups,{{ldap_root_dn}}
+      base {{ldap_user_search_base}}
+      base {{ldap_group_search_base}}
 
       # All users that are members of the correct security group
-      filter passwd (&(objectClass=user)(memberOf=CN={{ldap_sre_security_group}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}}))
+      filter passwd (&(objectClass=user)(memberOf=CN={{ldap_security_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}}))
 
       # One group for each security group and for each user
-      filter group (|(objectclass=group)(&(objectClass=user)(memberOf=CN={{ldap_sre_security_group}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}})))
+      filter group (|(objectclass=group)(&(objectClass=user)(memberOf=CN={{ldap_security_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}})))
 
       # Attribute mappings
       map  passwd  uid                sAMAccountName
@@ -66,6 +67,8 @@ packages:
   - python-is-python3 # Python language
   - python3           # Python language
   - r-base            # R language
+  # Tools
+  - firefox           # web browser
 package_update: true
 package_upgrade: true
 

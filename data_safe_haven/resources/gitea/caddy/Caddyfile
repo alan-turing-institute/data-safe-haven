@@ -8,7 +8,5 @@
 }
 
 :80 {
-    rewrite / /guacamole
-    reverse_proxy http://localhost:8080
+    reverse_proxy http://localhost:3000
 }
-

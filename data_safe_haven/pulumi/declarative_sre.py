@@ -22,6 +22,7 @@ from .components.sre_research_desktop import (
     SREResearchDesktopComponent,
     SREResearchDesktopProps,
 )
+from .components.sre_user_services import SREUserServicesComponent, SREUserServicesProps
 
 
 class DeclarativeSRE:
@@ -39,6 +40,19 @@ class DeclarativeSRE:
     def run(self) -> None:
         # Load pulumi configuration options
         self.pulumi_opts = pulumi.Config()
+
+        # Construct LDAP paths
+        ldap_root_dn = self.pulumi_opts.require("shm-domain_controllers-ldap_root_dn")
+        ldap_bind_dn = (
+            f"CN=dshldapsearcher,OU=Data Safe Haven Service Accounts,{ldap_root_dn}"
+        )
+        ldap_group_search_base = f"OU=Data Safe Haven Security Groups,{ldap_root_dn}"
+        ldap_user_search_base = f"OU=Data Safe Haven Research Users,{ldap_root_dn}"
+        ldap_search_password = self.pulumi_opts.require("password-domain-ldap-searcher")
+        ldap_server_ip = self.pulumi_opts.require(
+            "shm-domain_controllers-ldap_server_ip"
+        )
+        ldap_security_group_name = f"Data Safe Haven Users SRE {self.sre_name}"
 
         # Deploy networking
         networking = SRENetworkingComponent(
@@ -146,7 +160,7 @@ class DeclarativeSRE:
                 subnet_guacamole_database=networking.subnet_guacamole_database,
                 storage_account_key=data.storage_account_state_key,
                 storage_account_name=data.storage_account_state_name,
-                storage_account_resource_group=data.resource_group_name,
+                storage_account_resource_group_name=data.resource_group_name,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
             ),
@@ -162,15 +176,13 @@ class DeclarativeSRE:
                 domain_sid=self.pulumi_opts.require(
                     "shm-domain_controllers-domain_sid"
                 ),
-                ldap_root_dn=self.pulumi_opts.require(
-                    "shm-domain_controllers-ldap_root_dn"
-                ),
-                ldap_search_password=self.pulumi_opts.require(
-                    "password-domain-ldap-searcher"
-                ),
-                ldap_server_ip=self.pulumi_opts.require(
-                    "shm-domain_controllers-ldap_server_ip"
-                ),
+                ldap_bind_dn=ldap_bind_dn,
+                ldap_group_search_base=ldap_group_search_base,
+                ldap_root_dn=ldap_root_dn,
+                ldap_search_password=ldap_search_password,
+                ldap_security_group_name=ldap_security_group_name,
+                ldap_server_ip=ldap_server_ip,
+                ldap_user_search_base=ldap_user_search_base,
                 linux_update_server_ip=self.pulumi_opts.require(
                     "shm-update_servers-ip_address_linux"
                 ),
@@ -183,7 +195,6 @@ class DeclarativeSRE:
                 ),
                 storage_account_userdata_name=data.storage_account_userdata_name,
                 storage_account_securedata_name=data.storage_account_securedata_name,
-                security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
                 subnet_research_desktops=networking.subnet_research_desktops,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
@@ -196,6 +207,38 @@ class DeclarativeSRE:
             ),
         )
 
+        # Deploy containerised user services
+        user_services = SREUserServicesComponent(
+            "sre_user_services",
+            self.stack_name,
+            self.sre_name,
+            SREUserServicesProps(
+                domain_netbios_name=self.pulumi_opts.require(
+                    "shm-domain_controllers-netbios_name"
+                ),
+                gitea_database_password=data.password_gitea_database_admin,
+                hedgedoc_database_password=data.password_hedgedoc_database_admin,
+                ldap_bind_dn=ldap_bind_dn,
+                ldap_root_dn=ldap_root_dn,
+                ldap_search_password=ldap_search_password,
+                ldap_server_ip=ldap_server_ip,
+                ldap_security_group_name=ldap_security_group_name,
+                ldap_user_search_base=ldap_user_search_base,
+                location=self.cfg.azure.location,
+                networking_resource_group_name=networking.resource_group.name,
+                sre_fqdn=networking.sre_fqdn,
+                sre_private_dns_zone_id=networking.sre_private_dns_zone_id,
+                storage_account_key=data.storage_account_state_key,
+                storage_account_name=data.storage_account_state_name,
+                storage_account_resource_group_name=data.resource_group_name,
+                subnet_containers=networking.subnet_user_services_containers,
+                subnet_databases=networking.subnet_user_services_databases,
+                virtual_network=networking.virtual_network,
+                virtual_network_resource_group_name=networking.resource_group.name,
+            ),
+        )
+
         # Export values for later use
+        pulumi.export("ldap", {"security_group_name": ldap_security_group_name})
         pulumi.export("remote_desktop", remote_desktop.exports)
         pulumi.export("research_desktops", research_desktops.exports)

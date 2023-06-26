@@ -39,25 +39,27 @@ class SRERemoteDesktopProps:
         location: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-        storage_account_resource_group: Input[str],
+        storage_account_resource_group_name: Input[str],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
         subnet_guacamole_database: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group: Input[resources.ResourceGroup],
-        database_username: Optional[Input[str]] = "postgresadmin",
+        database_username: Optional[Input[str]] = None,
     ):
         self.aad_application_name = aad_application_name
         self.aad_application_url = Output.concat("https://", aad_application_fqdn)
         self.aad_auth_token = aad_auth_token
         self.aad_tenant_id = aad_tenant_id
         self.database_password = database_password
-        self.database_username = database_username
+        self.database_username = (
+            database_username if database_username else "postgresadmin"
+        )
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.location = location
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
-        self.storage_account_resource_group = storage_account_resource_group
+        self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_guacamole_containers_id = Output.from_input(
             subnet_guacamole_containers
         ).apply(get_id_from_subnet)
@@ -99,7 +101,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         props: SRERemoteDesktopProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:sre:SRERemoteDesktopComponent", name, {}, opts)
+        super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
@@ -126,7 +128,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             f"{self._name}_file_share",
             access_tier="TransactionOptimized",
             account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group,
+            resource_group_name=props.storage_account_resource_group_name,
             share_name="remote-desktop-caddy",
             share_quota=5120,
             opts=child_opts,
@@ -151,21 +153,22 @@ class SRERemoteDesktopComponent(ComponentResource):
         connection_db_server_name = f"{stack_name}-db-postgresql-guacamole"
         connection_db_server = dbforpostgresql.Server(
             f"{self._name}_connection_db_server",
-            properties={
-                "administratorLogin": props.database_username,
-                "administratorLoginPassword": props.database_password,
-                "infrastructureEncryption": "Disabled",
-                "minimalTlsVersion": "TLSEnforcementDisabled",
-                "publicNetworkAccess": "Disabled",
-                "sslEnforcement": "Enabled",
-                "storageProfile": {
-                    "backupRetentionDays": 7,
-                    "geoRedundantBackup": "Disabled",
-                    "storageAutogrow": "Enabled",
-                    "storageMB": 5120,
-                },
-                "version": "11",
-            },
+            properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
+                administrator_login=props.database_username,
+                administrator_login_password=props.database_password,
+                create_mode="Default",
+                infrastructure_encryption=dbforpostgresql.InfrastructureEncryption.DISABLED,
+                minimal_tls_version=dbforpostgresql.MinimalTlsVersionEnum.TLS_ENFORCEMENT_DISABLED,
+                public_network_access=dbforpostgresql.PublicNetworkAccessEnum.DISABLED,
+                ssl_enforcement=dbforpostgresql.SslEnforcementEnum.ENABLED,
+                storage_profile=dbforpostgresql.StorageProfileArgs(
+                    backup_retention_days=7,
+                    geo_redundant_backup=dbforpostgresql.GeoRedundantBackup.DISABLED,
+                    storage_autogrow=dbforpostgresql.StorageAutogrow.ENABLED,
+                    storage_mb=5120,
+                ),
+                version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
+            ),
             resource_group_name=resource_group.name,
             server_name=connection_db_server_name,
             sku=dbforpostgresql.SkuArgs(
@@ -228,34 +231,40 @@ class SRERemoteDesktopComponent(ComponentResource):
             network_profile_name=f"{stack_name}-np-guacamole",
             resource_group_name=props.virtual_network_resource_group_name,
             opts=ResourceOptions.merge(
-                ResourceOptions(depends_on=[props.virtual_network]), child_opts
+                ResourceOptions(
+                    depends_on=[props.virtual_network],
+                    ignore_changes=[
+                        "container_network_interface_configurations"
+                    ],  # allow container groups to be registered to this interface
+                ),
+                child_opts,
             ),
         )
 
         # Define the container group with guacd, guacamole and caddy
         container_group = containerinstance.ContainerGroup(
-            f"{self._name}_container_group",
-            container_group_name=f"{stack_name}-container-remote-desktop",
+            f"{self._name}_container_group_remote_desktop",
+            container_group_name=f"{stack_name}-container-group-remote-desktop",
             containers=[
                 containerinstance.ContainerArgs(
                     image="caddy:latest",
-                    name=f"{stack_name[:32]}-container-remote-desktop-caddy",  # maximum of 63 characters
+                    name=f"{stack_name[:26]}-container-group-remote-desktop-caddy",  # maximum of 63 characters
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=80,
-                            protocol="TCP",
+                            protocol=containerinstance.ContainerNetworkProtocol.TCP,
                         )
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
                         requests=containerinstance.ResourceRequestsArgs(
-                            cpu=1,
-                            memory_in_gb=1.5,
+                            cpu=0.5,
+                            memory_in_gb=0.5,
                         ),
                     ),
                     volume_mounts=[
                         containerinstance.VolumeMountArgs(
                             mount_path="/etc/caddy",
-                            name="guacamole-caddy-config",
+                            name="caddy-etc-caddy",
                             read_only=False,
                         ),
                     ],
@@ -263,8 +272,8 @@ class SRERemoteDesktopComponent(ComponentResource):
                 # Note that the environment variables are not all documented.
                 # More information at https://github.com/apache/guacamole-client/blob/master/guacamole-docker/bin/start.sh
                 containerinstance.ContainerArgs(
-                    image="guacamole/guacamole:1.4.0",
-                    name=f"{stack_name[:28]}-container-remote-desktop-guacamole",  # maximum of 63 characters
+                    image="guacamole/guacamole:1.5.2",
+                    name=f"{stack_name[:22]}-container-group-remote-desktop-guacamole",  # maximum of 63 characters
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="GUACD_HOSTNAME", value="localhost"
@@ -314,37 +323,25 @@ class SRERemoteDesktopComponent(ComponentResource):
                             value=f"{props.database_username}@{connection_db_server_name}",
                         ),
                     ],
-                    ports=[
-                        containerinstance.ContainerPortArgs(
-                            port=8080,
-                            protocol="TCP",
-                        )
-                    ],
                     resources=containerinstance.ResourceRequirementsArgs(
                         requests=containerinstance.ResourceRequestsArgs(
                             cpu=1,
-                            memory_in_gb=1.5,
+                            memory_in_gb=1,
                         ),
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="guacamole/guacd:1.4.0",
-                    name=f"{stack_name[:32]}-container-remote-desktop-guacd",  # maximum of 63 characters
+                    image="guacamole/guacd:1.5.2",
+                    name=f"{stack_name[:26]}-container-group-remote-desktop-guacd",  # maximum of 63 characters
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="GUACD_LOG_LEVEL", value="debug"
                         ),
                     ],
-                    ports=[
-                        containerinstance.ContainerPortArgs(
-                            port=4822,
-                            protocol="TCP",
-                        )
-                    ],
                     resources=containerinstance.ResourceRequirementsArgs(
                         requests=containerinstance.ResourceRequestsArgs(
                             cpu=1,
-                            memory_in_gb=1.5,
+                            memory_in_gb=1,
                         ),
                     ),
                 ),
@@ -354,18 +351,18 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ports=[
                     containerinstance.PortArgs(
                         port=80,
-                        protocol="TCP",
+                        protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                     )
                 ],
-                type="Private",
+                type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
             network_profile=containerinstance.ContainerGroupNetworkProfileArgs(
                 id=container_network_profile.id,
             ),
-            os_type="Linux",
+            os_type=containerinstance.OperatingSystemTypes.LINUX,
             resource_group_name=resource_group.name,
-            restart_policy="Always",
-            sku="Standard",
+            restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
+            sku=containerinstance.ContainerGroupSku.STANDARD,
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
@@ -373,7 +370,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),
-                    name="guacamole-caddy-config",
+                    name="caddy-etc-caddy",
                 ),
             ],
             opts=child_opts,

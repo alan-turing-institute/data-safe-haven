@@ -86,7 +86,7 @@ class SHMDomainControllersComponent(ComponentResource):
         props: SHMDomainControllersProps,
         opts: Optional[ResourceOptions] = None,
     ):
-        super().__init__("dsh:shm:SHMDomainControllersComponent", name, {}, opts)
+        super().__init__("dsh:shm:DomainControllersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 
@@ -195,6 +195,7 @@ class SHMDomainControllersComponent(ComponentResource):
             "ldap_root_dn": props.domain_root_dn,
             "ldap_search_username": props.username_domain_searcher,
             "ldap_server_ip": primary_domain_controller.ip_address_private,
+            "netbios_name": props.domain_netbios_name,
             "resource_group_name": resource_group.name,
             "vm_name": primary_domain_controller.vm_name,
         }
