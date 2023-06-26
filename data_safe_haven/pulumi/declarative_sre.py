@@ -222,6 +222,7 @@ class DeclarativeSRE:
                 networking_resource_group_name=networking.resource_group.name,
                 nexus_admin_password=data.password_nexus_admin,
                 sre_fqdn=networking.sre_fqdn,
+                software_packages=self.cfg.sre[self.sre_name].software_packages,
                 storage_account_key=data.storage_account_state_key,
                 storage_account_name=data.storage_account_state_name,
                 storage_account_resource_group_name=data.resource_group_name,

@@ -31,6 +31,7 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
         {--o|output= : Path to an output log file}
         {--p|allow-paste= : Allow pasting of text into the SRE (default: False)}
         {--r|research-desktop=* : Add a research desktop VM by SKU name}
+        {--s|software-packages= : Select what category of software packages users can install ("any", "pre-approved", "none")}
         {--u|user-ip-address=* : IP addresses or ranges that users will be connecting from}
     """
 
@@ -41,6 +42,7 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
     output: Optional[str]
     research_desktop_skus: Optional[List[str]]
     research_user_ip_address_list: Optional[List[str]]
+    software_packages: Optional[str]
 
     def handle(self) -> int:
         try:
@@ -224,6 +226,15 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 )
             config.sre[self.sre_name].remote_desktop.allow_paste = self.allow_paste
 
+        # Select which software packages can be installed by users
+        while not isinstance(config.sre[self.sre_name].software_packages, str):
+            if not self.software_packages:
+                self.software_packages = self.log_choose(
+                    "Which packages should users be allowed to install from CRAN/PyPI?",
+                    choices=["any", "pre-approved", "none"],
+                )
+            config.sre[self.sre_name].software_packages = self.software_packages
+
         # Request data provider IP addresses if not provided
         data_provider_ip_addresses: Optional[str] = (
             " ".join(self.data_provider_ip_address_list)
@@ -322,6 +333,13 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
                 f"Invalid value '{data_provider_ip_address_list}' provided for 'data-ip-address'."
             )
         self.data_provider_ip_address_list = data_provider_ip_address_list
+        # Select which software packages can be installed by users
+        software_packages = self.option("software-packages")
+        if not isinstance(software_packages, str) and (software_packages is not None):
+            raise DataSafeHavenInputException(
+                f"Invalid value '{software_packages}' provided for 'software-packages'."
+            )
+        self.software_packages = software_packages
         # Research user IP addresses
         research_user_ip_address_list = self.option("user-ip-address")
         if not isinstance(research_user_ip_address_list, list) and (

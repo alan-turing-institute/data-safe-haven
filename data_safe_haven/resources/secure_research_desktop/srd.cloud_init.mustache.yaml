@@ -76,6 +76,7 @@ packages:
   - python-is-python3 # Python language
   - python3           # Python language
   - python3-pip       # Python language
+  - python3-venv      # Python language
   - r-base            # R language
   # Tools
   - firefox           # web browser

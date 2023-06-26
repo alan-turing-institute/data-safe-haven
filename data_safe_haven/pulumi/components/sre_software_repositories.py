@@ -26,6 +26,7 @@ class SRESoftwareRepositoriesProps:
         location: Input[str],
         networking_resource_group_name: Input[str],
         nexus_admin_password: Input[str],
+        software_packages: str,
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
@@ -37,6 +38,12 @@ class SRESoftwareRepositoriesProps:
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.nexus_admin_password = Output.secret(nexus_admin_password)
+        try:
+            self.nexus_packages = {"any": "all", "pre-approved": "selected"}[
+                software_packages
+            ]
+        except KeyError:
+            self.nexus_packages = None
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
@@ -177,164 +184,166 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         )
 
         # Define the container group with nexus and caddy
-        container_group = containerinstance.ContainerGroup(
-            f"{self._name}_container_group",
-            container_group_name=f"{stack_name}-container-software-repositories",
-            containers=[
-                containerinstance.ContainerArgs(
-                    image="caddy:latest",
-                    name=f"{stack_name[:25]}-container-software-repositories-caddy",  # maximum of 63 characters
+        if props.nexus_packages:
+            container_group = containerinstance.ContainerGroup(
+                f"{self._name}_container_group",
+                container_group_name=f"{stack_name}-container-software-repositories",
+                containers=[
+                    containerinstance.ContainerArgs(
+                        image="caddy:latest",
+                        name=f"{stack_name[:25]}-container-software-repositories-caddy",  # maximum of 63 characters
+                        ports=[
+                            containerinstance.ContainerPortArgs(
+                                port=80,
+                                protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
+                            )
+                        ],
+                        resources=containerinstance.ResourceRequirementsArgs(
+                            requests=containerinstance.ResourceRequestsArgs(
+                                cpu=0.5,
+                                memory_in_gb=0.5,
+                            ),
+                        ),
+                        volume_mounts=[
+                            containerinstance.VolumeMountArgs(
+                                mount_path="/etc/caddy",
+                                name="caddy-etc-caddy",
+                                read_only=True,
+                            ),
+                        ],
+                    ),
+                    containerinstance.ContainerArgs(
+                        image="sonatype/nexus3:latest",
+                        name=f"{stack_name[:25]}-container-software-repositories-nexus",  # maximum of 63 characters
+                        environment_variables=[],
+                        ports=[],
+                        resources=containerinstance.ResourceRequirementsArgs(
+                            requests=containerinstance.ResourceRequestsArgs(
+                                cpu=4,
+                                memory_in_gb=4,
+                            ),
+                        ),
+                        volume_mounts=[
+                            containerinstance.VolumeMountArgs(
+                                mount_path="/nexus-data",
+                                name="nexus-nexus-data",
+                                read_only=False,
+                            ),
+                        ],
+                    ),
+                    containerinstance.ContainerArgs(
+                        image="ghcr.io/alan-turing-institute/nexus-allowlist:main",
+                        name=f"{stack_name[:15]}-container-software-repositories-nexus-allowlist",  # maximum of 63 characters
+                        environment_variables=[
+                            containerinstance.EnvironmentVariableArgs(
+                                name="NEXUS_ADMIN_PASSWORD",
+                                secure_value=props.nexus_admin_password,
+                            ),
+                            containerinstance.EnvironmentVariableArgs(
+                                name="NEXUS_PACKAGES",
+                                value=props.nexus_packages,
+                            ),
+                            containerinstance.EnvironmentVariableArgs(
+                                name="NEXUS_HOST",
+                                value="localhost",
+                            ),
+                            containerinstance.EnvironmentVariableArgs(
+                                name="NEXUS_PORT",
+                                value="8081",
+                            ),
+                        ],
+                        ports=[],
+                        resources=containerinstance.ResourceRequirementsArgs(
+                            requests=containerinstance.ResourceRequestsArgs(
+                                cpu=0.5,
+                                memory_in_gb=0.5,
+                            ),
+                        ),
+                        volume_mounts=[
+                            containerinstance.VolumeMountArgs(
+                                mount_path="/allowlists",
+                                name="nexus-allowlists-allowlists",
+                                read_only=True,
+                            ),
+                            containerinstance.VolumeMountArgs(
+                                mount_path="/nexus-data",
+                                name="nexus-nexus-data",
+                                read_only=True,
+                            ),
+                        ],
+                    ),
+                ],
+                ip_address=containerinstance.IpAddressArgs(
                     ports=[
-                        containerinstance.ContainerPortArgs(
+                        containerinstance.PortArgs(
                             port=80,
                             protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                         )
                     ],
-                    resources=containerinstance.ResourceRequirementsArgs(
-                        requests=containerinstance.ResourceRequestsArgs(
-                            cpu=0.5,
-                            memory_in_gb=0.5,
-                        ),
-                    ),
-                    volume_mounts=[
-                        containerinstance.VolumeMountArgs(
-                            mount_path="/etc/caddy",
-                            name="caddy-etc-caddy",
-                            read_only=True,
-                        ),
-                    ],
+                    type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
                 ),
-                containerinstance.ContainerArgs(
-                    image="sonatype/nexus3:latest",
-                    name=f"{stack_name[:25]}-container-software-repositories-nexus",  # maximum of 63 characters
-                    environment_variables=[],
-                    ports=[],
-                    resources=containerinstance.ResourceRequirementsArgs(
-                        requests=containerinstance.ResourceRequestsArgs(
-                            cpu=1,
-                            memory_in_gb=3,
-                        ),
-                    ),
-                    volume_mounts=[
-                        containerinstance.VolumeMountArgs(
-                            mount_path="/nexus-data",
-                            name="nexus-nexus-data",
-                            read_only=False,
-                        ),
-                    ],
+                network_profile=containerinstance.ContainerGroupNetworkProfileArgs(
+                    id=container_network_profile.id,
                 ),
-                containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/nexus-allowlist:main",
-                    name=f"{stack_name[:15]}-container-software-repositories-nexus-allowlist",  # maximum of 63 characters
-                    environment_variables=[
-                        containerinstance.EnvironmentVariableArgs(
-                            name="NEXUS_ADMIN_PASSWORD",
-                            secure_value=props.nexus_admin_password,
+                os_type=containerinstance.OperatingSystemTypes.LINUX,
+                resource_group_name=resource_group.name,
+                restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
+                sku=containerinstance.ContainerGroupSku.STANDARD,
+                volumes=[
+                    containerinstance.VolumeArgs(
+                        azure_file=containerinstance.AzureFileVolumeArgs(
+                            share_name=file_share_caddy.name,
+                            storage_account_key=props.storage_account_key,
+                            storage_account_name=props.storage_account_name,
                         ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="NEXUS_PACKAGES",
-                            value="all",  # Whether to allow all packages or only selected packages [all, selected]
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="NEXUS_HOST",
-                            value="localhost",
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="NEXUS_PORT",
-                            value="8081",
-                        ),
-                    ],
-                    ports=[],
-                    resources=containerinstance.ResourceRequirementsArgs(
-                        requests=containerinstance.ResourceRequestsArgs(
-                            cpu=0.5,
-                            memory_in_gb=0.5,
-                        ),
+                        name="caddy-etc-caddy",
                     ),
-                    volume_mounts=[
-                        containerinstance.VolumeMountArgs(
-                            mount_path="/allowlists",
-                            name="nexus-allowlists-allowlists",
-                            read_only=True,
+                    containerinstance.VolumeArgs(
+                        azure_file=containerinstance.AzureFileVolumeArgs(
+                            share_name=file_share_nexus.name,
+                            storage_account_key=props.storage_account_key,
+                            storage_account_name=props.storage_account_name,
                         ),
-                        containerinstance.VolumeMountArgs(
-                            mount_path="/nexus-data",
-                            name="nexus-nexus-data",
-                            read_only=True,
+                        name="nexus-nexus-data",
+                    ),
+                    containerinstance.VolumeArgs(
+                        azure_file=containerinstance.AzureFileVolumeArgs(
+                            share_name=file_share_nexus_allowlists.name,
+                            storage_account_key=props.storage_account_key,
+                            storage_account_name=props.storage_account_name,
                         ),
-                    ],
-                ),
-            ],
-            ip_address=containerinstance.IpAddressArgs(
-                ports=[
-                    containerinstance.PortArgs(
-                        port=80,
-                        protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
+                        name="nexus-allowlists-allowlists",
+                    ),
+                ],
+                opts=child_opts,
+            )
+            # Register the container group in the SRE private DNS zone
+            nexus_private_record_set = network.PrivateRecordSet(
+                f"{self._name}_nexus_private_record_set",
+                a_records=[
+                    network.ARecordArgs(
+                        ipv4_address=get_ip_address_from_container_group(
+                            container_group
+                        ),
                     )
                 ],
-                type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
-            ),
-            network_profile=containerinstance.ContainerGroupNetworkProfileArgs(
-                id=container_network_profile.id,
-            ),
-            os_type=containerinstance.OperatingSystemTypes.LINUX,
-            resource_group_name=resource_group.name,
-            restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
-            sku=containerinstance.ContainerGroupSku.STANDARD,
-            volumes=[
-                containerinstance.VolumeArgs(
-                    azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_caddy.name,
-                        storage_account_key=props.storage_account_key,
-                        storage_account_name=props.storage_account_name,
-                    ),
-                    name="caddy-etc-caddy",
+                private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
+                record_type="A",
+                relative_record_set_name="nexus",
+                resource_group_name=props.networking_resource_group_name,
+                ttl=3600,
+                opts=child_opts,
+            )
+            # Redirect the public DNS to private DNS
+            nexus_public_record_set = network.RecordSet(
+                f"{self._name}_nexus_public_record_set",
+                cname_record=network.CnameRecordArgs(
+                    cname=Output.concat("nexus.privatelink.", props.sre_fqdn)
                 ),
-                containerinstance.VolumeArgs(
-                    azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_nexus.name,
-                        storage_account_key=props.storage_account_key,
-                        storage_account_name=props.storage_account_name,
-                    ),
-                    name="nexus-nexus-data",
-                ),
-                containerinstance.VolumeArgs(
-                    azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_nexus_allowlists.name,
-                        storage_account_key=props.storage_account_key,
-                        storage_account_name=props.storage_account_name,
-                    ),
-                    name="nexus-allowlists-allowlists",
-                ),
-            ],
-            opts=child_opts,
-        )
-
-        # Register this in the SRE private DNS zone
-        nexus_private_record_set = network.PrivateRecordSet(
-            f"{self._name}_nexus_private_record_set",
-            a_records=[
-                network.ARecordArgs(
-                    ipv4_address=get_ip_address_from_container_group(container_group),
-                )
-            ],
-            private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
-            record_type="A",
-            relative_record_set_name="nexus",
-            resource_group_name=props.networking_resource_group_name,
-            ttl=3600,
-            opts=child_opts,
-        )
-        # Redirect the public DNS to private DNS
-        nexus_public_record_set = network.RecordSet(
-            f"{self._name}_nexus_public_record_set",
-            cname_record=network.CnameRecordArgs(
-                cname=Output.concat("nexus.privatelink.", props.sre_fqdn)
-            ),
-            record_type="CNAME",
-            relative_record_set_name="nexus",
-            resource_group_name=props.networking_resource_group_name,
-            ttl=3600,
-            zone_name=props.sre_fqdn,
-            opts=child_opts,
-        )
+                record_type="CNAME",
+                relative_record_set_name="nexus",
+                resource_group_name=props.networking_resource_group_name,
+                ttl=3600,
+                zone_name=props.sre_fqdn,
+                opts=child_opts,
+            )

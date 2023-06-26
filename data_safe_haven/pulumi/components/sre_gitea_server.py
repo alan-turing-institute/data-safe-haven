@@ -362,8 +362,7 @@ class SREGiteaServerComponent(ComponentResource):
                 child_opts,
             ),
         )
-
-        # Register this in the SRE private DNS zone
+        # Register the container group in the SRE private DNS zone
         gitea_private_record_set = network.PrivateRecordSet(
             f"{self._name}_gitea_private_record_set",
             a_records=[
