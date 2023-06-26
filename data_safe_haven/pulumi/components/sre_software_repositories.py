@@ -10,8 +10,11 @@ from pulumi_azure_native import containerinstance, network, resources, storage
 
 # Local imports
 from data_safe_haven.helpers import FileReader
-from data_safe_haven.pulumi.common.transformations import get_available_ips_from_subnet, get_id_from_subnet
-# from .virtual_machine import VMComponent, LinuxVMProps
+from data_safe_haven.pulumi.common.transformations import (
+    get_available_ips_from_subnet,
+    get_id_from_subnet,
+    get_ip_address_from_container_group,
+)
 from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 
 
@@ -21,6 +24,8 @@ class SRESoftwareRepositoriesProps:
     def __init__(
         self,
         location: Input[str],
+        networking_resource_group_name: Input[str],
+        sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
@@ -29,11 +34,15 @@ class SRESoftwareRepositoriesProps:
         virtual_network_resource_group_name: Input[str],
     ) -> None:
         self.location = location
+        self.networking_resource_group_name = networking_resource_group_name
+        self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_id = Output.from_input(subnet).apply(get_id_from_subnet)
-        self.subnet_ip_addresses = Output.from_input(subnet).apply(get_available_ips_from_subnet)
+        self.subnet_ip_addresses = Output.from_input(subnet).apply(
+            get_available_ips_from_subnet
+        )
         self.virtual_network = virtual_network
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
@@ -91,7 +100,9 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
 
         # Upload Caddyfile
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
-        caddyfile_reader = FileReader(resources_path / "software_repositories" / "caddy" / "Caddyfile")
+        caddyfile_reader = FileReader(
+            resources_path / "software_repositories" / "caddy" / "Caddyfile"
+        )
         caddyfile = FileShareFile(
             f"{self._name}_file_share_caddyfile",
             FileShareFileProps(
@@ -105,7 +116,9 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         )
 
         # Upload Nexus allowlists
-        cran_reader = FileReader(resources_path / "software_repositories" / "allowlists" / "cran.allowlist")
+        cran_reader = FileReader(
+            resources_path / "software_repositories" / "allowlists" / "cran.allowlist"
+        )
         cran_allowlist = FileShareFile(
             f"{self._name}_file_share_cran_allowlist",
             FileShareFileProps(
@@ -117,7 +130,9 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             ),
             opts=child_opts,
         )
-        pypi_reader = FileReader(resources_path / "software_repositories" / "allowlists" / "pypi.allowlist")
+        pypi_reader = FileReader(
+            resources_path / "software_repositories" / "allowlists" / "pypi.allowlist"
+        )
         pypi_allowlist = FileShareFile(
             f"{self._name}_file_share_pypi_allowlist",
             FileShareFileProps(
@@ -212,19 +227,19 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="NEXUS_ADMIN_PASSWORD",
-                            value="nexuspassword",
+                            secure_value="nexuspassword",
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="NEXUS_PACKAGES",
-                            value="all", # Whether to allow all packages or only selected packages [all, selected]
+                            value="all",  # Whether to allow all packages or only selected packages [all, selected]
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="NEXUS_HOST",
-                            value="localhost", # Hostname of Nexus OSS host
+                            value="localhost",
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="NEXUS_PORT",
-                            value="8081", # Port of Nexus OSS
+                            value="8081",
                         ),
                     ],
                     ports=[],
@@ -249,14 +264,13 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 ),
             ],
             ip_address=containerinstance.IpAddressArgs(
-                ip=props.subnet_ip_addresses[0],
                 ports=[
                     containerinstance.PortArgs(
                         port=80,
                         protocol="TCP",
                     )
                 ],
-                type="Private",
+                type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
             network_profile=containerinstance.ContainerGroupNetworkProfileArgs(
                 id=container_network_profile.id,
@@ -291,5 +305,34 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     name="nexus-allowlists-allowlists",
                 ),
             ],
+            opts=child_opts,
+        )
+
+        # Register this in the SRE private DNS zone
+        nexus_private_record_set = network.PrivateRecordSet(
+            f"{self._name}_nexus_private_record_set",
+            a_records=[
+                network.ARecordArgs(
+                    ipv4_address=get_ip_address_from_container_group(container_group),
+                )
+            ],
+            private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
+            record_type="A",
+            relative_record_set_name="nexus",
+            resource_group_name=props.networking_resource_group_name,
+            ttl=3600,
+            opts=child_opts,
+        )
+        # Redirect the public DNS to private DNS
+        nexus_public_record_set = network.RecordSet(
+            f"{self._name}_nexus_public_record_set",
+            cname_record=network.CnameRecordArgs(
+                cname=Output.concat("nexus.privatelink.", props.sre_fqdn)
+            ),
+            record_type="CNAME",
+            relative_record_set_name="nexus",
+            resource_group_name=props.networking_resource_group_name,
+            ttl=3600,
+            zone_name=props.sre_fqdn,
             opts=child_opts,
         )

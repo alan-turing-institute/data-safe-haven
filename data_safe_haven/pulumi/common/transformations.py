@@ -4,7 +4,7 @@ from typing import List
 
 # Third party imports
 from pulumi import Input, Output
-from pulumi_azure_native import network, resources
+from pulumi_azure_native import containerinstance, network, resources
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
@@ -18,7 +18,7 @@ def get_available_ips_from_subnet(subnet: network.GetSubnetResult) -> List[str]:
     return []
 
 
-def get_id_from_rg(rg: resources.ResourceGroup) -> Input[str]:
+def get_id_from_rg(rg: resources.ResourceGroup) -> Output[str]:
     """Get the ID of a resource group"""
     if isinstance(rg.id, Output):
         return rg.id
@@ -32,9 +32,19 @@ def get_id_from_subnet(subnet: network.GetSubnetResult) -> str:
     raise DataSafeHavenPulumiException(f"Subnet '{subnet.name}' has no ID.")
 
 
+def get_ip_address_from_container_group(
+    container_group: containerinstance.ContainerGroup,
+) -> Output[str]:
+    return container_group.ip_address.apply(
+        lambda ip_address: (ip_address.ip if ip_address.ip else "")
+        if ip_address
+        else ""
+    )
+
+
 def get_ip_addresses_from_private_endpoint(
     endpoint: network.PrivateEndpoint,
-) -> Input[List[str]]:
+) -> Output[List[str]]:
     """Get a list of IP addresses from a private endpoint"""
     if isinstance(endpoint.custom_dns_configs, Output):
         return endpoint.custom_dns_configs.apply(
@@ -49,7 +59,7 @@ def get_ip_addresses_from_private_endpoint(
     )
 
 
-def get_name_from_rg(rg: resources.ResourceGroup) -> Input[str]:
+def get_name_from_rg(rg: resources.ResourceGroup) -> Output[str]:
     """Get the name of a resource group"""
     if isinstance(rg.name, Output):
         return rg.name.apply(lambda s: str(s))
@@ -63,7 +73,7 @@ def get_name_from_subnet(subnet: network.GetSubnetResult) -> str:
     raise DataSafeHavenPulumiException(f"Subnet '{subnet.id}' has no name.")
 
 
-def get_name_from_vnet(vnet: network.VirtualNetwork) -> Input[str]:
+def get_name_from_vnet(vnet: network.VirtualNetwork) -> Output[str]:
     """Get the ID of a virtual network"""
     if isinstance(vnet.name, Output):
         return vnet.name.apply(lambda s: str(s))

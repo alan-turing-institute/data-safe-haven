@@ -105,8 +105,8 @@ class SRENetworkingComponent(ComponentResource):
         subnet_research_desktops_prefix = props.subnet_research_desktops_iprange.apply(
             lambda r: str(r)
         )
-        subnet_software_repositories_prefix = props.subnet_software_repositories_iprange.apply(
-            lambda r: str(r)
+        subnet_software_repositories_prefix = (
+            props.subnet_software_repositories_iprange.apply(lambda r: str(r))
         )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
