@@ -18,7 +18,7 @@ from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers import FileReader
 from data_safe_haven.pulumi.common.transformations import (
     get_id_from_subnet,
-    get_name_from_rg,
+    get_ip_address_from_container_group,
 )
 from ..dynamic.azuread_application import AzureADApplication, AzureADApplicationProps
 from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
@@ -345,7 +345,6 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ),
             ],
             ip_address=containerinstance.IpAddressArgs(
-                ip=props.subnet_guacamole_containers_ip_addresses[0],
                 ports=[
                     containerinstance.PortArgs(
                         port=80,
@@ -382,7 +381,9 @@ class SRERemoteDesktopComponent(ComponentResource):
             "connection_db_name": connection_db.name,
             "connection_db_server_name": connection_db_server_name,
             "container_group_name": container_group.name,
-            "container_ip_address": props.subnet_guacamole_containers_ip_addresses[0],
+            "container_ip_address": get_ip_address_from_container_group(
+                container_group
+            ),
             "disable_copy": props.disable_copy,
             "disable_paste": props.disable_paste,
             "resource_group_name": resource_group.name,

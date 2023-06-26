@@ -11,7 +11,10 @@ from data_safe_haven.helpers import (
     b64encode,
     FileReader,
 )
-from ..common.transformations import get_ip_addresses_from_private_endpoint
+from ..common.transformations import (
+    get_ip_address_from_container_group,
+    get_ip_addresses_from_private_endpoint,
+)
 from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 
 
@@ -20,7 +23,6 @@ class SREHedgeDocServerProps:
 
     def __init__(
         self,
-        container_ip_address: Input[str],
         database_password: Input[str],
         database_subnet_id: Input[str],
         domain_netbios_name: Input[str],
@@ -43,7 +45,6 @@ class SREHedgeDocServerProps:
         virtual_network_resource_group_name: Input[str],
         database_username: Optional[Input[str]] = None,
     ):
-        self.container_ip_address = container_ip_address
         self.database_subnet_id = database_subnet_id
         self.database_password = database_password
         self.database_username = (
@@ -182,8 +183,8 @@ class SREHedgeDocServerComponent(ComponentResource):
         ).apply(lambda ips: ips[0])
 
         # Define the container group with guacd, guacamole and caddy
-        container_group_hedgedoc = containerinstance.ContainerGroup(
-            f"{self._name}_container_group_hedgedoc",
+        container_group = containerinstance.ContainerGroup(
+            f"{self._name}_container_group",
             container_group_name=f"{stack_name}-container-group-hedgedoc",
             containers=[
                 containerinstance.ContainerArgs(
@@ -301,7 +302,6 @@ class SREHedgeDocServerComponent(ComponentResource):
                 ),
             ],
             ip_address=containerinstance.IpAddressArgs(
-                ip=props.container_ip_address,
                 ports=[
                     containerinstance.PortArgs(
                         port=80,
@@ -350,7 +350,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             f"{self._name}_hedgedoc_private_record_set",
             a_records=[
                 network.ARecordArgs(
-                    ipv4_address=props.container_ip_address,
+                    ipv4_address=get_ip_address_from_container_group(container_group),
                 )
             ],
             private_zone_name=Output.concat("privatelink.", props.sre_fqdn),

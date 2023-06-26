@@ -62,12 +62,6 @@ class SREUserServicesProps:
         self.subnet_databases_id = Output.from_input(subnet_databases).apply(
             get_id_from_subnet
         )
-        self.subnet_containers_ip_addresses = Output.from_input(
-            subnet_containers
-        ).apply(get_available_ips_from_subnet)
-        self.subnet_databases_ip_addresses = Output.from_input(subnet_databases).apply(
-            get_available_ips_from_subnet
-        )
         self.virtual_network = virtual_network
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
@@ -129,7 +123,6 @@ class SREUserServicesComponent(ComponentResource):
             stack_name,
             sre_name,
             SREGiteaServerProps(
-                container_ip_address=props.subnet_containers_ip_addresses[0],
                 database_subnet_id=props.subnet_databases_id,
                 database_password=props.gitea_database_password,
                 ldap_bind_dn=props.ldap_bind_dn,
@@ -159,7 +152,6 @@ class SREUserServicesComponent(ComponentResource):
             stack_name,
             sre_name,
             SREHedgeDocServerProps(
-                container_ip_address=props.subnet_containers_ip_addresses[1],
                 database_subnet_id=props.subnet_databases_id,
                 database_password=props.hedgedoc_database_password,
                 domain_netbios_name=props.domain_netbios_name,
