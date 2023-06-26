@@ -25,6 +25,7 @@ class SRESoftwareRepositoriesProps:
         self,
         location: Input[str],
         networking_resource_group_name: Input[str],
+        nexus_admin_password: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
@@ -35,6 +36,7 @@ class SRESoftwareRepositoriesProps:
     ) -> None:
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
+        self.nexus_admin_password = Output.secret(nexus_admin_password)
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
@@ -185,7 +187,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=80,
-                            protocol="TCP",
+                            protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                         )
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
@@ -227,7 +229,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="NEXUS_ADMIN_PASSWORD",
-                            secure_value="nexuspassword",
+                            secure_value=props.nexus_admin_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="NEXUS_PACKAGES",
@@ -267,7 +269,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 ports=[
                     containerinstance.PortArgs(
                         port=80,
-                        protocol="TCP",
+                        protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                     )
                 ],
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
@@ -275,10 +277,10 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             network_profile=containerinstance.ContainerGroupNetworkProfileArgs(
                 id=container_network_profile.id,
             ),
-            os_type="Linux",
+            os_type=containerinstance.OperatingSystemTypes.LINUX,
             resource_group_name=resource_group.name,
-            restart_policy="Always",
-            sku="Standard",
+            restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
+            sku=containerinstance.ContainerGroupSku.STANDARD,
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(

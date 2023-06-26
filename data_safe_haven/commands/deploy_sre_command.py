@@ -163,6 +163,7 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
             stack.copy_secret("password-domain-ldap-searcher", shm_stack)
             stack.add_secret("password-gitea-database-admin", password(20))
             stack.add_secret("password-hedgedoc-database-admin", password(20))
+            stack.add_secret("password-nexus-admin", password(20))
             stack.add_secret("password-user-database-admin", password(20))
             stack.add_secret("password-secure-research-desktop-admin", password(20))
             stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)

@@ -220,6 +220,7 @@ class DeclarativeSRE:
             SRESoftwareRepositoriesProps(
                 location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,
+                nexus_admin_password=data.password_nexus_admin,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_state_key,
                 storage_account_name=data.storage_account_state_name,
