@@ -44,14 +44,16 @@ class SRERemoteDesktopProps:
         subnet_guacamole_database: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group: Input[resources.ResourceGroup],
-        database_username: Optional[Input[str]] = "postgresadmin",
+        database_username: Optional[Input[str]] = None,
     ):
         self.aad_application_name = aad_application_name
         self.aad_application_url = Output.concat("https://", aad_application_fqdn)
         self.aad_auth_token = aad_auth_token
         self.aad_tenant_id = aad_tenant_id
         self.database_password = database_password
-        self.database_username = database_username
+        self.database_username = (
+            database_username if database_username else "postgresadmin"
+        )
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.location = location
@@ -151,21 +153,22 @@ class SRERemoteDesktopComponent(ComponentResource):
         connection_db_server_name = f"{stack_name}-db-postgresql-guacamole"
         connection_db_server = dbforpostgresql.Server(
             f"{self._name}_connection_db_server",
-            properties={
-                "administratorLogin": props.database_username,
-                "administratorLoginPassword": props.database_password,
-                "infrastructureEncryption": "Disabled",
-                "minimalTlsVersion": "TLSEnforcementDisabled",
-                "publicNetworkAccess": "Disabled",
-                "sslEnforcement": "Enabled",
-                "storageProfile": {
-                    "backupRetentionDays": 7,
-                    "geoRedundantBackup": "Disabled",
-                    "storageAutogrow": "Enabled",
-                    "storageMB": 5120,
-                },
-                "version": "11",
-            },
+            properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
+                administrator_login=props.database_username,
+                administrator_login_password=props.database_password,
+                create_mode="Default",
+                infrastructure_encryption=dbforpostgresql.InfrastructureEncryption.DISABLED,
+                minimal_tls_version=dbforpostgresql.MinimalTlsVersionEnum.TLS_ENFORCEMENT_DISABLED,
+                public_network_access=dbforpostgresql.PublicNetworkAccessEnum.DISABLED,
+                ssl_enforcement=dbforpostgresql.SslEnforcementEnum.ENABLED,
+                storage_profile=dbforpostgresql.StorageProfileArgs(
+                    backup_retention_days=7,
+                    geo_redundant_backup=dbforpostgresql.GeoRedundantBackup.DISABLED,
+                    storage_autogrow=dbforpostgresql.StorageAutogrow.ENABLED,
+                    storage_mb=5120,
+                ),
+                version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
+            ),
             resource_group_name=resource_group.name,
             server_name=connection_db_server_name,
             sku=dbforpostgresql.SkuArgs(
