@@ -8,10 +8,10 @@ Replace the empty checkboxes [ ] below with checked ones [x] accordingly.
 -->
 
 - [ ] You have given your pull request a meaningful title (_e.g._ `Enable foobar integration` rather than `515 foobar`).
-- [ ] You are targeting the **develop branch**.
-- [ ] Your branch is up-to-date with the **develop branch** (you probably started your branch from `develop` but it may have changed since then).
-- [ ] If-and-only-if your changes are not yet ready to merge, you have marked this pull request as a **draft** pull request and added '[WIP]' to the title.
-- [ ] If-and-only-if you have changed any Powershell code, you have run the code formatter. You can do this with `./tests/AutoFormat_Powershell.ps1 -TargetPath <path to file or directory>`.
+- [ ] You are targeting the appropriate branch. If you're not certain which one this is, it should be **`develop`**.
+- [ ] Your branch is up-to-date with the **target branch** (it probably was when you started, but it may have changed since then).
+- [ ] You have marked this pull request as a **draft** and added `'[WIP]'` to the title if needed (if you're not yet ready to merge).
+- [ ] You have formatted your code using appropriate automated tools (for example `./tests/AutoFormat_Powershell.ps1 -TargetPath <path to file or directory>` for Powershell).
 
 ### :arrow_heading_up: Summary
 

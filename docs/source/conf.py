@@ -74,8 +74,8 @@ html_theme_options = {
         }
     ],
     "logo": {
-        "image_light": "logo_turing_light.png",
-        "image_dark": "logo_turing_dark.png",
+        "image_light": "_static/logo_turing_light.png",
+        "image_dark": "_static/logo_turing_dark.png",
     },
     "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
     "use_edit_page_button": True,
@@ -107,3 +107,6 @@ myst_substitutions = {
     emoji_code: emoji.emojize(f":{emoji_code}:", language="alias")
     for emoji_code in emoji_codes
 }
+
+# Allow MyST to generate anchors for section titles
+myst_heading_anchors = 4

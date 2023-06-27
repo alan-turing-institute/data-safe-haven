@@ -212,10 +212,7 @@ If the certificate for the SRE domain has expired, users will not be able to log
 ```{tip}
 **Solution**: Replace the SSL certificate with a new one
 
-- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
-- Open a `Powershell` terminal and navigate to the `deployment/secure_research_environment/setup` directory within the Data Safe Haven repository
-- Ensure you are logged into the `Azure` within `Powershell` using the command: `Connect-AzAccount`
-- Run `./Update_SRE_RDS_Ssl_Certificate.ps1 -sreId <SRE ID>`, where the SRE ID is the one specified in the config
+- {ref}`renew_ssl`
 ```
 
 ### {{red_circle}} Unable to log into remote desktop gateway
