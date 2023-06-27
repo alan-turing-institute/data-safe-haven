@@ -246,7 +246,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             containers=[
                 containerinstance.ContainerArgs(
                     image="caddy:latest",
-                    name=f"{stack_name[:26]}-container-group-remote-desktop-caddy",  # maximum of 63 characters
+                    name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=80,
@@ -271,7 +271,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 # More information at https://github.com/apache/guacamole-client/blob/master/guacamole-docker/bin/start.sh
                 containerinstance.ContainerArgs(
                     image="guacamole/guacamole:1.5.2",
-                    name=f"{stack_name[:22]}-container-group-remote-desktop-guacamole",  # maximum of 63 characters
+                    name="guacamole"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="GUACD_HOSTNAME", value="localhost"
@@ -330,7 +330,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ),
                 containerinstance.ContainerArgs(
                     image="guacamole/guacd:1.5.2",
-                    name=f"{stack_name[:26]}-container-group-remote-desktop-guacd",  # maximum of 63 characters
+                    name="guacd"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="GUACD_LOG_LEVEL", value="debug"

@@ -191,7 +191,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 containers=[
                     containerinstance.ContainerArgs(
                         image="caddy:latest",
-                        name=f"{stack_name[:25]}-container-software-repositories-caddy",  # maximum of 63 characters
+                        name="caddy"[:63],
                         ports=[
                             containerinstance.ContainerPortArgs(
                                 port=80,
@@ -214,7 +214,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     ),
                     containerinstance.ContainerArgs(
                         image="sonatype/nexus3:latest",
-                        name=f"{stack_name[:25]}-container-software-repositories-nexus",  # maximum of 63 characters
+                        name="nexus"[:63],
                         environment_variables=[],
                         ports=[],
                         resources=containerinstance.ResourceRequirementsArgs(
@@ -233,7 +233,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     ),
                     containerinstance.ContainerArgs(
                         image="ghcr.io/alan-turing-institute/nexus-allowlist:main",
-                        name=f"{stack_name[:15]}-container-software-repositories-nexus-allowlist",  # maximum of 63 characters
+                        name="nexus-allowlist"[:63],
                         environment_variables=[
                             containerinstance.EnvironmentVariableArgs(
                                 name="NEXUS_ADMIN_PASSWORD",

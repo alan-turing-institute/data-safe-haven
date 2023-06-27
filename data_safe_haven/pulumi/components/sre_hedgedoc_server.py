@@ -189,7 +189,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             containers=[
                 containerinstance.ContainerArgs(
                     image="caddy:latest",
-                    name=f"{stack_name[:35]}-container-group-hedgedoc-caddy",  # maximum of 63 characters
+                    name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=80,
@@ -212,7 +212,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                 ),
                 containerinstance.ContainerArgs(
                     image="quay.io/hedgedoc/hedgedoc:latest",
-                    name=f"{stack_name[:29]}-container-group-hedgedoc-hedgedoc",  # maximum of 63 characters
+                    name="hedgedoc"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_ALLOW_ANONYMOUS",
