@@ -51,6 +51,7 @@ class PulumiStack(LoggingMixin):
             )
         self.stack_name = self.program.stack_name
         self.work_dir = self.program.work_dir(pathlib.Path.cwd() / "pulumi")
+        self.login()  # Log in to the Pulumi backend
 
     @property
     def local_stack_path(self) -> pathlib.Path:
@@ -77,7 +78,6 @@ class PulumiStack(LoggingMixin):
         if not self.stack_:
             self.info(f"Creating/loading stack <fg=green>{self.stack_name}</>.")
             try:
-                AzureCli().login()  # this is needed to read the encryption key from the keyvault
                 self.stack_ = automation.create_or_select_stack(
                     project_name="data_safe_haven",
                     stack_name=self.stack_name,
@@ -123,7 +123,6 @@ class PulumiStack(LoggingMixin):
         """Deploy the infrastructure with Pulumi."""
         try:
             self.initialise_workdir()
-            self.login()
             self.install_plugins()
             self.apply_config_options()
             self.refresh()
@@ -210,6 +209,7 @@ class PulumiStack(LoggingMixin):
     def login(self) -> None:
         """Login to Pulumi."""
         try:
+            AzureCli().login()  # this is needed to read the encryption key from the keyvault
             env_vars = " ".join([f"{k}={v}" for k, v in self.env.items()])
             command = f"pulumi login azblob://{self.cfg.pulumi.storage_container_name}?storage_account={self.cfg.backend.storage_account_name}"
             with subprocess.Popen(
@@ -283,7 +283,6 @@ class PulumiStack(LoggingMixin):
         """Teardown the infrastructure deployed with Pulumi."""
         try:
             self.initialise_workdir()
-            self.login()
             self.install_plugins()
             self.refresh()
             self.destroy()
