@@ -219,7 +219,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ports=[],
                         resources=containerinstance.ResourceRequirementsArgs(
                             requests=containerinstance.ResourceRequestsArgs(
-                                cpu=4,
+                                cpu=3,
                                 memory_in_gb=4,
                             ),
                         ),
