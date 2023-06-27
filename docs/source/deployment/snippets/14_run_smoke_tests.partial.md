@@ -10,4 +10,4 @@ They are automatically uploaded to the SRD during the deployment step.
     - if any of the tests fail, check the `README.md` in this folder for help in diagnosing the issues
 - Copy `tests/test_jupyter.ipynb` to your home directory
     - activate each of the available Python versions in turn
-    - run `jupyter notebook` in each case and check that you can run the notebook and that all versions and paths match throughout. See {ref}`Available Python Versions <available_python_and_r_versions>`.
+    - run `jupyter notebook` in each case and check that you can run the notebook and that all versions and paths match throughout. See [Available Python and R versions](/roles/researcher/user_guide_guacamole.md#available-python-and-r-versions)
