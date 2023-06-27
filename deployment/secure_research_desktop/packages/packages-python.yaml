@@ -41,7 +41,7 @@ packages:
     Pillow:
     plotly:
     poetry:  # also used by installation scripts
-        "all": [">1.0.0"]  # increase solver flexibility
+        "all": ["1.3.0,<1.4.0"]  # increase solver flexibility
     prophet:
     psycopg2:
     pydot:
