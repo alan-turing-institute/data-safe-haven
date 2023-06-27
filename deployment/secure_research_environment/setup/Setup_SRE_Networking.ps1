@@ -88,6 +88,7 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $guacamoleNsg -Rules $rules
     $remoteDesktopSubnet = Set-SubnetNetworkSecurityGroup -Subnet $remoteDesktopSubnet -NetworkSecurityGroup $guacamoleNsg
 } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+    Add-LogMessage -Level Warning "Support for Microsoft RDS is deprecated and will be removed in release v4.1.0"
     # Ensure that gateway NSG exists with correct rules
     $gatewayNsg = Deploy-NetworkSecurityGroup -Name $config.sre.remoteDesktop.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
     $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.remoteDesktop.gateway.nsg.rules) -Parameters $config -AsHashtable

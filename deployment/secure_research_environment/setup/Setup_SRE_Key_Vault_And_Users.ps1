@@ -51,6 +51,7 @@ try {
     if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.guacamole.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
+        Add-LogMessage -Level Warning "Support for Microsoft RDS is deprecated and will be removed in release v4.1.0"
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     } else {
