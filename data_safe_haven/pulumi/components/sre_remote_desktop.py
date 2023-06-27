@@ -128,7 +128,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
             share_name="remote-desktop-caddy",
-            share_quota=5120,
+            share_quota=1,
             opts=child_opts,
         )
 
