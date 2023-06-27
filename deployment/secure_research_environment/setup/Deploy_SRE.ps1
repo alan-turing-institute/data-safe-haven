@@ -59,9 +59,6 @@ if (Get-MgContext) {
 # Check that we are using the correct provider
 # --------------------------------------------
 if ($config.sre.remoteDesktop.provider -ne "ApacheGuacamole") {
-    if ($config.sre.remoteDesktop.provider -wq "MicrosoftRDS") {
-        Add-LogMessage -Level Warning "Support for Microsoft RDS is deprecated and will be removed in release v4.1.0"
-    }
     Add-LogMessage -Level Fatal "You should not be running this script when using remote desktop provider '$($config.sre.remoteDesktop.provider)'"
 }
 
