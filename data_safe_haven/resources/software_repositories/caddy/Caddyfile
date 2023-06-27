@@ -8,5 +8,8 @@
 }
 
 :80 {
-    reverse_proxy http://localhost:8081
+    reverse_proxy http://localhost:8081 {
+        @error status 401
+        replace_status @error 403
+    }
 }
