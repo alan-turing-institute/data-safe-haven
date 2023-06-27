@@ -73,9 +73,6 @@ packages:
     tensorflow:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     thinc:
-    torch:
-    torchvision:
-        "3.11": ["uninstallable"]  # does not yet support 3.11
     tsfresh:
         "3.11": ["uninstallable"]  # requires numba
     wordcloud:
