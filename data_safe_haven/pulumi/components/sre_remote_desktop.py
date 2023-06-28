@@ -366,7 +366,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_BIND_PASSWORD",
-                            value=props.ldap_search_password,
+                            secure_value=props.ldap_search_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_GROUP_BASE_DN",
@@ -374,7 +374,6 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_GROUP_FILTER",
-                            # value=Output.concat("(&(objectClass=group)(CN=", props.ldap_user_security_group_name, "))"),
                             value=Output.concat("(objectClass=group)"),
                         ),
                         containerinstance.EnvironmentVariableArgs(
@@ -405,7 +404,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_PASSWORD",
-                            value=props.database_password,
+                            secure_value=props.database_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_USERNAME",
@@ -414,8 +413,8 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
                         requests=containerinstance.ResourceRequestsArgs(
-                            cpu=1,
-                            memory_in_gb=1,
+                            cpu=0.5,
+                            memory_in_gb=0.5,
                         ),
                     ),
                 ),

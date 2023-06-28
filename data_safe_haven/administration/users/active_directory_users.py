@@ -117,4 +117,7 @@ class ActiveDirectoryUsers(LoggingMixin):
 
     def set(self, users: Sequence[ResearchUser]) -> None:
         """Set local Active Directory users to specified list"""
-        pass
+        users_to_remove = [user for user in self.list() if user not in users]
+        self.remove(users_to_remove)
+        users_to_add = [user for user in users if user not in self.list()]
+        self.add(users_to_add)
