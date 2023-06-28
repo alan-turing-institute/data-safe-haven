@@ -43,11 +43,11 @@ INSERT INTO guacamole_connection_permission (entity_id, connection_id, permissio
     FROM
         (
             VALUES
-                ('System Administrators', 'READ'),
-                ('System Administrators', 'UPDATE'),
-                ('System Administrators', 'DELETE'),
-                ('System Administrators', 'ADMINISTER'),
-                ('Research Users', 'READ')
+                ('{{system_administrator_group_name}}', 'READ'),
+                ('{{system_administrator_group_name}}', 'UPDATE'),
+                ('{{system_administrator_group_name}}', 'DELETE'),
+                ('{{system_administrator_group_name}}', 'ADMINISTER'),
+                ('{{user_group_name}}', 'READ')
         ) group_permissions (username, permission)
         CROSS JOIN guacamole_connection
         JOIN guacamole_entity ON group_permissions.username = guacamole_entity.name

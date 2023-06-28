@@ -33,6 +33,7 @@ class GuacamoleUsers(LoggingMixin):
             / "postgresql"
         )
         self.sre_name = sre_name
+        self.group_name = f"Data Safe Haven Users SRE {sre_name}"
 
     def add(self, users: Sequence[ResearchUser]) -> None:
         """Add sequence of users to Guacamole"""
@@ -63,7 +64,7 @@ class GuacamoleUsers(LoggingMixin):
                 }
                 for user in users_to_add
             ],
-            "group_name": "Research Users",
+            "group_name": self.group_name,
         }
         if user_data:
             self.postgres_provisioner.execute_scripts(
@@ -75,7 +76,8 @@ class GuacamoleUsers(LoggingMixin):
         """List all Guacamole users"""
         if self.users_ is None:  # Allow for the possibility of an empty list of users
             postgres_output = self.postgres_provisioner.execute_scripts(
-                [self.postgres_script_path / "list_users.sql"]
+                [self.postgres_script_path / "list_users.mustache.sql"],
+                mustache_values={"group_name": self.group_name},
             )
             # The output is of the form [["sam_account_name1", "email_address1"], ["sam_account_name2", "email_address2"]]
             self.users_ = [

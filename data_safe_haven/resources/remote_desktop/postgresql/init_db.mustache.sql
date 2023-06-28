@@ -762,8 +762,7 @@ CREATE INDEX IF NOT EXISTS guacamole_user_password_history_user_id
 INSERT INTO
     guacamole_entity (name, type)
 VALUES
-    ('System Administrators', 'USER_GROUP'),
-    ('Research Users', 'USER_GROUP')
+    ('{{system_administrator_group_name}}', 'USER_GROUP')
 ON CONFLICT DO NOTHING;
 
 -- Create user groups
@@ -776,18 +775,18 @@ WHERE
     guacamole_entity.type = 'USER_GROUP'
 ON CONFLICT DO NOTHING;
 
--- Grant administration permissions to members of the System Administrators group
+-- Grant administration permissions to members of the system administrators group
 INSERT INTO guacamole_system_permission (entity_id, permission)
 SELECT entity_id, permission :: guacamole_system_permission_type
 FROM
     (
         VALUES
-            ('System Administrators', 'CREATE_CONNECTION'),
-            ('System Administrators', 'CREATE_CONNECTION_GROUP'),
-            ('System Administrators', 'CREATE_SHARING_PROFILE'),
-            ('System Administrators', 'CREATE_USER'),
-            ('System Administrators', 'CREATE_USER_GROUP'),
-            ('System Administrators', 'ADMINISTER')
+            ('{{system_administrator_group_name}}', 'CREATE_CONNECTION'),
+            ('{{system_administrator_group_name}}', 'CREATE_CONNECTION_GROUP'),
+            ('{{system_administrator_group_name}}', 'CREATE_SHARING_PROFILE'),
+            ('{{system_administrator_group_name}}', 'CREATE_USER'),
+            ('{{system_administrator_group_name}}', 'CREATE_USER_GROUP'),
+            ('{{system_administrator_group_name}}', 'ADMINISTER')
     ) group_permissions (username, permission)
     JOIN guacamole_entity ON group_permissions.username = guacamole_entity.name AND guacamole_entity.type = 'USER_GROUP'
 ON CONFLICT DO NOTHING;

@@ -106,7 +106,9 @@ class SREProvisioningManager(LoggingMixin):
                     "timezone": self.remote_desktop_params["timezone"],
                 }
                 for vm_identifier, vm_details in self.research_desktops.items()
-            ]
+            ],
+            "system_administrator_group_name": "Data Safe Haven Server Administrators",
+            "user_group_name": self.security_group_params["group_name"],
         }
         for details in connection_data["connections"]:
             self.info(
@@ -120,7 +122,7 @@ class SREProvisioningManager(LoggingMixin):
         )
         postgres_provisioner.execute_scripts(
             [
-                postgres_script_path / "init_db.sql",
+                postgres_script_path / "init_db.mustache.sql",
                 postgres_script_path / "update_connections.mustache.sql",
             ],
             mustache_values=connection_data,
