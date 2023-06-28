@@ -56,7 +56,13 @@ class DeclarativeSRE:
         ldap_server_ip = self.pulumi_opts.require(
             "shm-domain_controllers-ldap_server_ip"
         )
-        ldap_user_security_group_name = f"Data Safe Haven Users SRE {self.sre_name}"
+        ldap_admin_security_group_name = (
+            f"Data Safe Haven SRE {self.sre_name} Administrators"
+        )
+        ldap_privileged_user_security_group_name = (
+            f"Data Safe Haven SRE {self.sre_name} Privileged Users"
+        )
+        ldap_user_security_group_name = f"Data Safe Haven SRE {self.sre_name} Users"
 
         # Deploy networking
         networking = SRENetworkingComponent(
@@ -270,6 +276,13 @@ class DeclarativeSRE:
         )
 
         # Export values for later use
-        pulumi.export("ldap", {"security_group_name": ldap_user_security_group_name})
+        pulumi.export(
+            "ldap",
+            {
+                "admin_security_group_name": ldap_admin_security_group_name,
+                "privileged_user_security_group_name": ldap_privileged_user_security_group_name,
+                "user_security_group_name": ldap_user_security_group_name,
+            },
+        )
         pulumi.export("remote_desktop", remote_desktop.exports)
         pulumi.export("research_desktops", research_desktops.exports)

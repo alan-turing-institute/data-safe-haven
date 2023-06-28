@@ -44,7 +44,17 @@ class SREProvisioningManager(LoggingMixin):
             "resource_group_name": shm_stack.output("domain_controllers")[
                 "resource_group_name"
             ],
-            "group_name": sre_stack.output("ldap")["security_group_name"],
+            "security_group_names": {
+                "admin_security_group_name": sre_stack.output("ldap")[
+                    "admin_security_group_name"
+                ],
+                "privileged_user_security_group_name": sre_stack.output("ldap")[
+                    "privileged_user_security_group_name"
+                ],
+                "user_security_group_name": sre_stack.output("ldap")[
+                    "user_security_group_name"
+                ],
+            },
             "vm_name": shm_stack.output("domain_controllers")["vm_name"],
         }
 
@@ -60,21 +70,22 @@ class SREProvisioningManager(LoggingMixin):
                 "sku": vm["sku"],
             }
 
-    def create_security_group(self) -> None:
+    def create_security_groups(self) -> None:
         azure_api = AzureApi(self.subscription_name)
         script = FileReader(self.resources_path / "active_directory" / "add_group.ps1")
-        script_parameters = {
-            "GroupName": self.security_group_params["group_name"],
-            "OuPath": f"OU=Data Safe Haven Security Groups,{self.security_group_params['dn_base']}",
-        }
-        output = azure_api.run_remote_script(
-            self.security_group_params["resource_group_name"],
-            script.file_contents(),
-            script_parameters,
-            self.security_group_params["vm_name"],
-        )
-        for line in output.split("\n"):
-            self.parse_as_log(line)
+        for group_name in self.security_group_params["security_group_names"].values():
+            script_parameters = {
+                "GroupName": group_name,
+                "OuPath": f"OU=Data Safe Haven Security Groups,{self.security_group_params['dn_base']}",
+            }
+            output = azure_api.run_remote_script(
+                self.security_group_params["resource_group_name"],
+                script.file_contents(),
+                script_parameters,
+                self.security_group_params["vm_name"],
+            )
+            for line in output.split("\n"):
+                self.parse_as_log(line)
 
     def restart_remote_desktop_containers(self) -> None:
         # Restart the Guacamole container group
@@ -107,8 +118,12 @@ class SREProvisioningManager(LoggingMixin):
                 }
                 for vm_identifier, vm_details in self.research_desktops.items()
             ],
-            "system_administrator_group_name": "Data Safe Haven Server Administrators",
-            "user_group_name": self.security_group_params["group_name"],
+            "system_administrator_group_name": self.security_group_params[
+                "security_group_names"
+            ]["admin_security_group_name"],
+            "user_group_name": self.security_group_params["security_group_names"][
+                "user_security_group_name"
+            ],
         }
         for details in connection_data["connections"]:
             self.info(
@@ -130,6 +145,6 @@ class SREProvisioningManager(LoggingMixin):
 
     def run(self) -> None:
         """Apply SRE configuration"""
-        self.create_security_group()
+        self.create_security_groups()
         self.update_remote_desktop_connections()
         self.restart_remote_desktop_containers()

@@ -110,3 +110,11 @@ class ActiveDirectoryUsers(LoggingMixin):
         )
         for line in output.split("\n"):
             self.parse_as_log(line)
+
+    def remove(self, users: Sequence[ResearchUser]) -> None:
+        """Remove list of users from local Active Directory"""
+        pass
+
+    def set(self, users: Sequence[ResearchUser]) -> None:
+        """Set local Active Directory users to specified list"""
+        pass
