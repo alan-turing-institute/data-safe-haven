@@ -22,6 +22,10 @@ from .components.sre_research_desktop import (
     SREResearchDesktopComponent,
     SREResearchDesktopProps,
 )
+from .components.sre_software_repositories import (
+    SRESoftwareRepositoriesComponent,
+    SRESoftwareRepositoriesProps,
+)
 from .components.sre_user_services import SREUserServicesComponent, SREUserServicesProps
 
 
@@ -161,7 +165,7 @@ class DeclarativeSRE:
                 storage_account_key=data.storage_account_state_key,
                 storage_account_name=data.storage_account_state_name,
                 storage_account_resource_group_name=data.resource_group_name,
-                virtual_network_resource_group=networking.resource_group,
+                virtual_network_resource_group_name=networking.resource_group.name,
                 virtual_network=networking.virtual_network,
             ),
         )
@@ -193,6 +197,7 @@ class DeclarativeSRE:
                 log_analytics_workspace_key=self.pulumi_opts.require(
                     "shm-monitoring-log_analytics_workspace_key"
                 ),
+                sre_fqdn=networking.sre_fqdn,
                 storage_account_userdata_name=data.storage_account_userdata_name,
                 storage_account_securedata_name=data.storage_account_securedata_name,
                 subnet_research_desktops=networking.subnet_research_desktops,
@@ -204,6 +209,26 @@ class DeclarativeSRE:
                         self.cfg.sre[self.sre_name].research_desktops.items()
                     )
                 ],
+            ),
+        )
+
+        # Deploy software repository servers
+        software_repositories = SRESoftwareRepositoriesComponent(
+            "shm_update_servers",
+            self.stack_name,
+            self.shm_name,
+            SRESoftwareRepositoriesProps(
+                location=self.cfg.azure.location,
+                networking_resource_group_name=networking.resource_group.name,
+                nexus_admin_password=data.password_nexus_admin,
+                sre_fqdn=networking.sre_fqdn,
+                software_packages=self.cfg.sre[self.sre_name].software_packages,
+                storage_account_key=data.storage_account_state_key,
+                storage_account_name=data.storage_account_state_name,
+                storage_account_resource_group_name=data.resource_group_name,
+                subnet=networking.subnet_software_repositories,
+                virtual_network=networking.virtual_network,
+                virtual_network_resource_group_name=networking.resource_group.name,
             ),
         )
 

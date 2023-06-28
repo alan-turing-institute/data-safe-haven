@@ -8,7 +8,10 @@ from pulumi_azure_native import containerinstance, dbforpostgresql, network, sto
 
 # Local imports
 from data_safe_haven.helpers import FileReader
-from ..common.transformations import get_ip_addresses_from_private_endpoint
+from ..common.transformations import (
+    get_ip_address_from_container_group,
+    get_ip_addresses_from_private_endpoint,
+)
 from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 
 
@@ -17,7 +20,6 @@ class SREGiteaServerProps:
 
     def __init__(
         self,
-        container_ip_address: Input[str],
         database_password: Input[str],
         database_subnet_id: Input[str],
         ldap_bind_dn: Input[str],
@@ -39,7 +41,6 @@ class SREGiteaServerProps:
         virtual_network_resource_group_name: Input[str],
         database_username: Optional[Input[str]] = None,
     ):
-        self.container_ip_address = container_ip_address
         self.database_password = database_password
         self.database_subnet_id = database_subnet_id
         self.database_username = (
@@ -226,13 +227,13 @@ class SREGiteaServerComponent(ComponentResource):
         ).apply(lambda ips: ips[0])
 
         # Define the container group with guacd, guacamole and caddy
-        container_group_gitea = containerinstance.ContainerGroup(
-            f"{self._name}_container_group_gitea",
+        container_group = containerinstance.ContainerGroup(
+            f"{self._name}_container_group",
             container_group_name=f"{stack_name}-container-group-gitea",
             containers=[
                 containerinstance.ContainerArgs(
                     image="caddy:latest",
-                    name=f"{stack_name[:35]}-container-group-gitea-caddy",  # maximum of 63 characters
+                    name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=80,
@@ -255,7 +256,7 @@ class SREGiteaServerComponent(ComponentResource):
                 ),
                 containerinstance.ContainerArgs(
                     image="gitea/gitea:latest",
-                    name=f"{stack_name[:35]}-container-group-gitea-gitea",  # maximum of 63 characters
+                    name="gitea"[:63],
                     command=["/app/custom/entrypoint.sh"],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
@@ -317,7 +318,6 @@ class SREGiteaServerComponent(ComponentResource):
                 ),
             ],
             ip_address=containerinstance.IpAddressArgs(
-                ip=props.container_ip_address,
                 ports=[
                     containerinstance.PortArgs(
                         port=80,
@@ -362,13 +362,12 @@ class SREGiteaServerComponent(ComponentResource):
                 child_opts,
             ),
         )
-
-        # Register this in the SRE private DNS zone
+        # Register the container group in the SRE private DNS zone
         gitea_private_record_set = network.PrivateRecordSet(
             f"{self._name}_gitea_private_record_set",
             a_records=[
                 network.ARecordArgs(
-                    ipv4_address=props.container_ip_address,
+                    ipv4_address=get_ip_address_from_container_group(container_group),
                 )
             ],
             private_zone_name=Output.concat("privatelink.", props.sre_fqdn),

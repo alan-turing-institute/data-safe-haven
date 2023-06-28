@@ -18,7 +18,7 @@ from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers import FileReader
 from data_safe_haven.pulumi.common.transformations import (
     get_id_from_subnet,
-    get_name_from_rg,
+    get_ip_address_from_container_group,
 )
 from ..dynamic.azuread_application import AzureADApplication, AzureADApplicationProps
 from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
@@ -43,8 +43,8 @@ class SRERemoteDesktopProps:
         subnet_guacamole_containers: Input[network.GetSubnetResult],
         subnet_guacamole_database: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
-        virtual_network_resource_group: Input[resources.ResourceGroup],
-        database_username: Optional[Input[str]] = None,
+        virtual_network_resource_group_name: Input[str],
+        database_username: Optional[Input[str]] = "postgresadmin",
     ):
         self.aad_application_name = aad_application_name
         self.aad_application_url = Output.concat("https://", aad_application_fqdn)
@@ -85,9 +85,7 @@ class SRERemoteDesktopProps:
             else []
         )
         self.virtual_network = virtual_network
-        self.virtual_network_resource_group_name = Output.from_input(
-            virtual_network_resource_group
-        ).apply(get_name_from_rg)
+        self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
 
 class SRERemoteDesktopComponent(ComponentResource):
@@ -248,7 +246,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             containers=[
                 containerinstance.ContainerArgs(
                     image="caddy:latest",
-                    name=f"{stack_name[:26]}-container-group-remote-desktop-caddy",  # maximum of 63 characters
+                    name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=80,
@@ -273,7 +271,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 # More information at https://github.com/apache/guacamole-client/blob/master/guacamole-docker/bin/start.sh
                 containerinstance.ContainerArgs(
                     image="guacamole/guacamole:1.5.2",
-                    name=f"{stack_name[:22]}-container-group-remote-desktop-guacamole",  # maximum of 63 characters
+                    name="guacamole"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="GUACD_HOSTNAME", value="localhost"
@@ -332,7 +330,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ),
                 containerinstance.ContainerArgs(
                     image="guacamole/guacd:1.5.2",
-                    name=f"{stack_name[:26]}-container-group-remote-desktop-guacd",  # maximum of 63 characters
+                    name="guacd"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
                             name="GUACD_LOG_LEVEL", value="debug"
@@ -347,7 +345,6 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ),
             ],
             ip_address=containerinstance.IpAddressArgs(
-                ip=props.subnet_guacamole_containers_ip_addresses[0],
                 ports=[
                     containerinstance.PortArgs(
                         port=80,
@@ -384,7 +381,9 @@ class SRERemoteDesktopComponent(ComponentResource):
             "connection_db_name": connection_db.name,
             "connection_db_server_name": connection_db_server_name,
             "container_group_name": container_group.name,
-            "container_ip_address": props.subnet_guacamole_containers_ip_addresses[0],
+            "container_ip_address": get_ip_address_from_container_group(
+                container_group
+            ),
             "disable_copy": props.disable_copy,
             "disable_paste": props.disable_paste,
             "resource_group_name": resource_group.name,

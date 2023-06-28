@@ -41,6 +41,15 @@ write_files:
       map  group   cn                 sAMAccountName
       map  group   gidNumber          objectSid:{{domain_sid}}
 
+  - path: "/etc/pip.conf"
+    permissions: "0444"
+    content: |
+      # Add the PyPI mirror to our global settings
+      [global]
+      index = http://nexus.{{sre_fqdn}}/repository/pypi-proxy
+      index-url = http://nexus.{{sre_fqdn}}/repository/pypi-proxy/simple
+      trusted-host = nexus.{{sre_fqdn}}
+
   - path: "/etc/skel/.xsession"
     permissions: "0444"
     content: |
@@ -66,6 +75,8 @@ packages:
   # Programming
   - python-is-python3 # Python language
   - python3           # Python language
+  - python3-pip       # Python language
+  - python3-venv      # Python language
   - r-base            # R language
   # Tools
   - firefox           # web browser

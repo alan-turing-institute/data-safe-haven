@@ -37,6 +37,7 @@ class SREResearchDesktopProps:
         location: Input[str],
         log_analytics_workspace_id: Input[str],
         log_analytics_workspace_key: Input[str],
+        sre_fqdn: Input[str],
         storage_account_userdata_name: Input[str],
         storage_account_securedata_name: Input[str],
         subnet_research_desktops: Input[network.GetSubnetResult],
@@ -60,6 +61,7 @@ class SREResearchDesktopProps:
         self.location = location
         self.log_analytics_workspace_id = log_analytics_workspace_id
         self.log_analytics_workspace_key = log_analytics_workspace_key
+        self.sre_fqdn = sre_fqdn
         self.storage_account_userdata_name = storage_account_userdata_name
         self.storage_account_securedata_name = storage_account_securedata_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
@@ -119,6 +121,7 @@ class SREResearchDesktopComponent(ComponentResource):
             ldap_server_ip=props.ldap_server_ip,
             ldap_user_search_base=props.ldap_user_search_base,
             linux_update_server_ip=props.linux_update_server_ip,
+            sre_fqdn=props.sre_fqdn,
             storage_account_userdata_name=props.storage_account_userdata_name,
             storage_account_securedata_name=props.storage_account_securedata_name,
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
@@ -176,6 +179,7 @@ class SREResearchDesktopComponent(ComponentResource):
         ldap_server_ip: str,
         ldap_user_search_base: str,
         linux_update_server_ip: str,
+        sre_fqdn: str,
         storage_account_userdata_name: str,
         storage_account_securedata_name: str,
     ) -> str:
@@ -197,6 +201,7 @@ class SREResearchDesktopComponent(ComponentResource):
                 "ldap_server_ip": ldap_server_ip,
                 "ldap_user_search_base": ldap_user_search_base,
                 "linux_update_server_ip": linux_update_server_ip,
+                "sre_fqdn": sre_fqdn,
                 "storage_account_userdata_name": storage_account_userdata_name,
                 "storage_account_securedata_name": storage_account_securedata_name,
             }
