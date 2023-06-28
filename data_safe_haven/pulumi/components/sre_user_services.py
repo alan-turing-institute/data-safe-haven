@@ -26,8 +26,8 @@ class SREUserServicesProps:
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
-        ldap_security_group_name: Input[str],
         ldap_user_search_base: Input[str],
+        ldap_user_security_group_name: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         sre_fqdn: Input[str],
@@ -47,8 +47,8 @@ class SREUserServicesProps:
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
-        self.ldap_security_group_name = ldap_security_group_name
         self.ldap_user_search_base = ldap_user_search_base
+        self.ldap_user_security_group_name = ldap_user_security_group_name
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.sre_fqdn = sre_fqdn
@@ -129,7 +129,7 @@ class SREUserServicesComponent(ComponentResource):
                 ldap_root_dn=props.ldap_root_dn,
                 ldap_search_password=props.ldap_search_password,
                 ldap_server_ip=props.ldap_server_ip,
-                ldap_security_group_name=props.ldap_security_group_name,
+                ldap_user_security_group_name=props.ldap_user_security_group_name,
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
@@ -159,7 +159,7 @@ class SREUserServicesComponent(ComponentResource):
                 ldap_root_dn=props.ldap_root_dn,
                 ldap_search_password=props.ldap_search_password,
                 ldap_server_ip=props.ldap_server_ip,
-                ldap_security_group_name=props.ldap_security_group_name,
+                ldap_user_security_group_name=props.ldap_user_security_group_name,
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
