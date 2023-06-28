@@ -115,18 +115,14 @@ class UserHandler(LoggingMixin, AzureMixin):
             ) from exc
 
     def register(self, sre_name: str, user_names: Sequence[str]) -> None:
-        """Register usernames with Guacamole database
+        """Register usernames with SRE
 
         Raises:
-            DataSafeHavenUserHandlingException if the users could not be registered in the Guacamole database
+            DataSafeHavenUserHandlingException if the users could not be registered in the SRE
         """
         try:
-            # Register users in correct security group
+            # Add users to the SRE security group
             self.active_directory_users.register(sre_name, user_names)
-            # Retrieve list of users
-            users = self.active_directory_users.list(sre_name)
-            # Add specified users to Guacamole
-            self.sre_guacamole_users[sre_name].add(users)
         except Exception as exc:
             raise DataSafeHavenUserHandlingException(
                 f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{str(exc)}"
@@ -202,4 +198,18 @@ class UserHandler(LoggingMixin, AzureMixin):
         except Exception as exc:
             raise DataSafeHavenUserHandlingException(
                 f"Could not set users from '{users_csv_path}'.\n{str(exc)}"
+            ) from exc
+
+    def unregister(self, sre_name: str, user_names: Sequence[str]) -> None:
+        """Unregister usernames with SRE
+
+        Raises:
+            DataSafeHavenUserHandlingException if the users could not be registered in the SRE
+        """
+        try:
+            # Remove users from the SRE security group
+            self.active_directory_users.unregister(sre_name, user_names)
+        except Exception as exc:
+            raise DataSafeHavenUserHandlingException(
+                f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{str(exc)}"
             ) from exc

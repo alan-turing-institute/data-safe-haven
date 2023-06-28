@@ -98,7 +98,7 @@ class ActiveDirectoryUsers(LoggingMixin):
         return users
 
     def register(self, sre_name: str, usernames: Sequence[str]) -> None:
-        """Register usernames with correct security group"""
+        """Add usernames to SRE security group"""
         register_users_script = FileReader(
             self.resources_path / "active_directory" / "add_users_to_group.ps1"
         )
@@ -132,3 +132,17 @@ class ActiveDirectoryUsers(LoggingMixin):
         self.remove(users_to_remove)
         users_to_add = [user for user in users if user not in self.list()]
         self.add(users_to_add)
+
+    def unregister(self, sre_name: str, usernames: Sequence[str]) -> None:
+        """Remove usernames from SRE security group"""
+        register_users_script = FileReader(
+            self.resources_path / "active_directory" / "remove_users_from_group.ps1"
+        )
+        output = self.azure_api.run_remote_script(
+            self.resource_group_name,
+            register_users_script.file_contents(),
+            {"SREName": sre_name, "UsernamesB64": b64encode("\n".join(usernames))},
+            self.vm_name,
+        )
+        for line in output.split("\n"):
+            self.parse_as_log(line)
