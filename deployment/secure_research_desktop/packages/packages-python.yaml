@@ -52,6 +52,7 @@ packages:
     pyproj:
     pyshp:
     pystan:
+        "all": [">=3.0"]
     pytest:
     PyYAML:
     regex:
