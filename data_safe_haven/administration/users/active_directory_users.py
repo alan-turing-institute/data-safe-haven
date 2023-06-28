@@ -113,7 +113,18 @@ class ActiveDirectoryUsers(LoggingMixin):
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
         """Remove list of users from local Active Directory"""
-        pass
+        remove_users_script = FileReader(
+            self.resources_path / "active_directory" / "remove_users.ps1"
+        )
+        user_list_b64 = b64encode("\n".join(user.username for user in users))
+        output = self.azure_api.run_remote_script(
+            self.resource_group_name,
+            remove_users_script.file_contents(),
+            {"UserListB64": user_list_b64},
+            self.vm_name,
+        )
+        for line in output.split("\n"):
+            self.parse_as_log(line)
 
     def set(self, users: Sequence[ResearchUser]) -> None:
         """Set local Active Directory users to specified list"""

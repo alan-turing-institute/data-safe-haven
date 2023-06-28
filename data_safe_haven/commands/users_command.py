@@ -6,6 +6,7 @@ from cleo import Command
 from .users_add import UsersAddCommand
 from .users_list import UsersListCommand
 from .users_register import UsersRegisterCommand
+from .users_remove import UsersRemoveCommand
 
 
 class UsersCommand(Command):  # type: ignore
@@ -15,4 +16,9 @@ class UsersCommand(Command):  # type: ignore
     users
     """
 
-    commands = [UsersAddCommand(), UsersListCommand(), UsersRegisterCommand()]
+    commands = [
+        UsersAddCommand(),
+        UsersListCommand(),
+        UsersRegisterCommand(),
+        UsersRemoveCommand(),
+    ]
