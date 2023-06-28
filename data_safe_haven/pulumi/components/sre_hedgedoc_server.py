@@ -337,9 +337,11 @@ class SREHedgeDocServerComponent(ComponentResource):
             ],
             opts=ResourceOptions.merge(
                 ResourceOptions(
+                    delete_before_replace=True,
                     depends_on=[
                         file_share_hedgedoc_caddy_caddyfile,
-                    ]
+                    ],
+                    replace_on_changes=["containers"],
                 ),
                 child_opts,
             ),

@@ -370,7 +370,12 @@ class SRERemoteDesktopComponent(ComponentResource):
                     name="caddy-etc-caddy",
                 ),
             ],
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                ResourceOptions(
+                    delete_before_replace=True, replace_on_changes=["containers"]
+                ),
+                child_opts,
+            ),
         )
 
         # Register outputs

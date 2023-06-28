@@ -353,11 +353,13 @@ class SREGiteaServerComponent(ComponentResource):
             ],
             opts=ResourceOptions.merge(
                 ResourceOptions(
+                    delete_before_replace=True,
                     depends_on=[
                         file_share_gitea_caddy_caddyfile,
                         file_share_gitea_gitea_configure_sh,
                         file_share_gitea_gitea_entrypoint_sh,
-                    ]
+                    ],
+                    replace_on_changes=["containers"],
                 ),
                 child_opts,
             ),

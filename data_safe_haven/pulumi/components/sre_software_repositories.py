@@ -315,7 +315,12 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         name="nexus-allowlists-allowlists",
                     ),
                 ],
-                opts=child_opts,
+                opts=ResourceOptions.merge(
+                    ResourceOptions(
+                        delete_before_replace=True, replace_on_changes=["containers"]
+                    ),
+                    child_opts,
+                ),
             )
             # Register the container group in the SRE private DNS zone
             nexus_private_record_set = network.PrivateRecordSet(
