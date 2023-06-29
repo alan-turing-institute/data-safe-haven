@@ -415,6 +415,9 @@ runcmd:
   # Run installation tests
   - python3 /opt/build/check_installation.py || die "Installation check failed!";
 
+  # Fix installation failures
+  apt-get update --fix-missing
+
 final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 
 # Shutdown at the end of the job to save on running costs
