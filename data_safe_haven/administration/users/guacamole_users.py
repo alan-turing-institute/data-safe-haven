@@ -33,7 +33,7 @@ class GuacamoleUsers(LoggingMixin):
 
     def add(self, users: Sequence[ResearchUser]) -> None:
         """Add sequence of users to Guacamole"""
-        pass
+        raise NotImplementedError("Users should not be directly added to Guacamole.")
 
     def list(self) -> Sequence[ResearchUser]:
         """List all Guacamole users"""
@@ -55,8 +55,10 @@ class GuacamoleUsers(LoggingMixin):
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
         """Remove list of users from Guacamole"""
-        pass
+        raise NotImplementedError(
+            "Users should not be directly removed from Guacamole."
+        )
 
     def set(self, users: Sequence[ResearchUser]) -> None:
         """Set Guacamole users to specified list"""
-        pass
+        raise NotImplementedError("Users should not be directly altered in Guacamole.")
