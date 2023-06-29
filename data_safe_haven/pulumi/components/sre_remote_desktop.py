@@ -357,7 +357,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:main",
+                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.1.0",
                     name="guacamole-user-sync"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
@@ -409,6 +409,10 @@ class SRERemoteDesktopComponent(ComponentResource):
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_USERNAME",
                             value=f"{props.database_username}@{connection_db_server_name}",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="REPEAT_INTERVAL",
+                            value="180",
                         ),
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
