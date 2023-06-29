@@ -8,7 +8,7 @@ param (
 )
 
 # Find SRE security group
-$SREGroup = Get-ADGroup -Filter "Name -like '*SRE $SREName*'" | Where-Object { $_.DistinguishedName -like '*Data Safe Haven Security Groups*' } | Select-Object -First 1
+$SREGroup = Get-ADGroup -Filter "Name -eq 'Data Safe Haven SRE $SREName Users'" | Where-Object { $_.DistinguishedName -like '*Data Safe Haven Security Groups*' } | Select-Object -First 1
 
 # Load usernames
 $Usernames = ([Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($UsernamesB64))).Split()

@@ -8,7 +8,7 @@ param (
 )
 
 # Find SRE security group
-$SREGroup = Get-ADGroup -Filter "Name -like '*SRE $SREName*'" | Where-Object { $_.DistinguishedName -like '*Data Safe Haven Security Groups*' } | Select-Object -First 1
+$SREGroup = Get-ADGroup -Filter "Name -eq 'Data Safe Haven SRE $SREName Users'" | Where-Object { $_.DistinguishedName -like '*Data Safe Haven Security Groups*' } | Select-Object -First 1
 
 # Load usernames
 $Usernames = ([Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($UsernamesB64))).Split()
@@ -17,6 +17,6 @@ $Usernames = ([Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($Usern
 if ($SREGroup -and $Usernames) {
     foreach ($Username in $Usernames) {
         Write-Output "INFO: Removing user '<fg=green>$Username</>' from group '<fg=green>$($SREGroup.Name)</>'"
-        Remove-ADGroupMember -Identity "$($SREGroup.Name)" -Members $Username
+        Remove-ADGroupMember -Identity "$($SREGroup.Name)" -Members $Username -Confirm:$false
     }
 }
