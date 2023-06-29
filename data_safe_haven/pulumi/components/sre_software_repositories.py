@@ -213,7 +213,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="sonatype/nexus3:latest",
+                        image="sonatype/nexus3:3.56.0",
                         name="nexus"[:63],
                         environment_variables=[],
                         ports=[],
