@@ -24,8 +24,6 @@ packages:
     gym:
     html5lib:
     ipykernel:
-    keras:
-        "3.11": ["uninstallable"]  # requires tensorflow
     lightgbm:
     lxml:
     matplotlib:
@@ -72,8 +70,6 @@ packages:
     tensorflow:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     thinc:
-    tsfresh:
-        "3.11": ["uninstallable"]  # requires numba
     wordcloud:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     xgboost:
