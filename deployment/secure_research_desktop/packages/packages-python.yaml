@@ -51,8 +51,6 @@ packages:
     pyodbc:
     pyproj:
     pyshp:
-    pystan:
-        "3.9": ["uninstallable"]  # incompatible with poetry < 1.4
     pytest:
     PyYAML:
     regex:
