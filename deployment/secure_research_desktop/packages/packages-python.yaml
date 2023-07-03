@@ -28,8 +28,6 @@ packages:
     lxml:
     matplotlib:
     nltk:
-    numba:
-        "3.11": ["uninstallable"]  # does not yet support 3.11
     numpy:
         "all": [">1.0.0"]  # increase solver flexibility
     pandas:
@@ -70,7 +68,5 @@ packages:
     tensorflow:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     thinc:
-    wordcloud:
-        "3.11": ["uninstallable"]  # does not yet support 3.11
     xgboost:
     xlrd:
