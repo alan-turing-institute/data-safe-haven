@@ -8,8 +8,7 @@ import yaml
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenInputException
-from data_safe_haven.helpers.types import PathType
-from data_safe_haven.mixins import Logger
+from data_safe_haven.utility import Logger, PathType
 
 
 class DotFileSettings:

@@ -15,7 +15,7 @@ from pulumi_azure_native import (
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
-from data_safe_haven.helpers import (
+from data_safe_haven.functions import (
     alphanumeric,
     ordered_private_dns_zones,
     replace_separators,

@@ -15,7 +15,8 @@ from azure.mgmt.containerinstance.models import (
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.mixins import AzureMixin, Logger
+from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.utility import Logger
 
 
 class AzureContainerInstance(AzureMixin):

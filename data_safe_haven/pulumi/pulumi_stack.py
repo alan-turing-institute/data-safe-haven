@@ -15,7 +15,7 @@ from pulumi import automation
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
 from data_safe_haven.external.api import AzureCli
-from data_safe_haven.mixins import Logger
+from data_safe_haven.utility import Logger
 from .declarative_shm import DeclarativeSHM
 from .declarative_sre import DeclarativeSRE
 

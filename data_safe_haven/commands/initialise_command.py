@@ -14,7 +14,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.mixins import Logger
+from data_safe_haven.utility import Logger
 
 
 class InitialiseCommand(Command):  # type: ignore

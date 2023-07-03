@@ -9,9 +9,8 @@ from data_safe_haven.external.interface import (
     AzureContainerInstance,
     AzurePostgreSQLDatabase,
 )
-from data_safe_haven.helpers import FileReader
-from data_safe_haven.mixins import Logger
 from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.utility import FileReader, Logger
 
 
 class SREProvisioningManager:

@@ -8,7 +8,7 @@ from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
-from data_safe_haven.helpers.functions import ordered_private_dns_zones
+from data_safe_haven.functions import ordered_private_dns_zones
 from ..common.enums import NetworkingPriorities
 
 

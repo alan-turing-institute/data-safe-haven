@@ -4,8 +4,8 @@ from typing import Any, Sequence
 
 # Local imports
 from data_safe_haven.external.api import GraphApi
-from data_safe_haven.helpers import password
-from data_safe_haven.mixins import Logger
+from data_safe_haven.functions import password
+from data_safe_haven.utility import Logger
 from .research_user import ResearchUser
 
 

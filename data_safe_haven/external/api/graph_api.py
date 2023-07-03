@@ -22,7 +22,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalException,
     DataSafeHavenMicrosoftGraphException,
 )
-from data_safe_haven.mixins import Logger
+from data_safe_haven.utility import Logger
 
 
 class LocalTokenCache(SerializableTokenCache):  # type: ignore

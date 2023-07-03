@@ -5,7 +5,7 @@ from typing import Any
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.mixins import Logger
+from data_safe_haven.utility import Logger
 
 
 class AzureCli:
@@ -13,7 +13,7 @@ class AzureCli:
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self.logger = Logger
+        self.logger = Logger()
 
     def login(self) -> None:
         """Force log in via the Azure CLI"""

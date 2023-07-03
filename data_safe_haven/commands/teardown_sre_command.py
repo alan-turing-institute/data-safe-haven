@@ -11,9 +11,9 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.helpers import alphanumeric
-from data_safe_haven.mixins import Logger
+from data_safe_haven.functions import alphanumeric
 from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.utility import Logger
 
 
 class TeardownSRECommand(Command):  # type: ignore

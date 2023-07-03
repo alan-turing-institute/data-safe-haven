@@ -21,9 +21,8 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.helpers import FileReader
-from data_safe_haven.helpers.types import PathType
-from data_safe_haven.mixins import AzureMixin, Logger
+from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.utility import FileReader, Logger, PathType
 
 
 class AzurePostgreSQLDatabase(AzureMixin):

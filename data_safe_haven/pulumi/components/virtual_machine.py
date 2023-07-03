@@ -7,7 +7,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import compute, network
 
 # Local imports
-from data_safe_haven.helpers import replace_separators
+from data_safe_haven.functions import replace_separators
 
 
 class VMProps:

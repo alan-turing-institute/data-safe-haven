@@ -53,7 +53,8 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInternalException,
 )
-from data_safe_haven.mixins import AzureMixin, Logger
+from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.utility import Logger
 
 
 class AzureApi(AzureMixin):

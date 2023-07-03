@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 import chevron
 
 # Local imports
-from .functions import sha256hash
+from data_safe_haven.functions import sha256hash
 from .types import PathType
 
 

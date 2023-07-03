@@ -4,12 +4,10 @@ from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import (
-    automation,
-)
+from pulumi_azure_native import automation
 
 # Local imports
-from data_safe_haven.helpers.functions import time_as_string
+from data_safe_haven.functions import time_as_string
 
 
 class SREMonitoringProps:

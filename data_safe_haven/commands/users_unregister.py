@@ -13,7 +13,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external.api import GraphApi
-from data_safe_haven.mixins import Logger
+from data_safe_haven.utility import Logger
 
 
 class UsersUnregisterCommand(Command):  # type: ignore
