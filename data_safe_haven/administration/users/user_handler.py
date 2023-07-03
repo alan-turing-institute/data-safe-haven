@@ -38,7 +38,7 @@ class UserHandler(LoggingMixin, AzureMixin):
             # Construct user list
             with open(users_csv_path, encoding="utf-8") as f_csv:
                 reader = csv.DictReader(f_csv)
-                for required_field in ["GivenName", "Surname", "Phone", "Email"]:
+                for required_field in ["GivenName", "Surname", "Phone", "Email", "CountryCode"]:
                     if (not reader.fieldnames) or (
                         required_field not in reader.fieldnames
                     ):
@@ -47,7 +47,7 @@ class UserHandler(LoggingMixin, AzureMixin):
                         )
                 users = [
                     ResearchUser(
-                        country="GB",
+                        country=user["CountryCode"],
                         email_address=user["Email"],
                         given_name=user["GivenName"],
                         phone_number=user["Phone"],
