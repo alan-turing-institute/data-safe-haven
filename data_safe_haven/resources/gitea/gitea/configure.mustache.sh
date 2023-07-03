@@ -18,7 +18,7 @@ until su-exec "$USER" /usr/local/bin/gitea admin auth list | grep "DataSafeHaven
         --host "{{ldap_server_ip}}" \
         --port "389" \
         --user-search-base "{{ldap_user_search_base}}" \
-        --user-filter "(&(objectClass=user)(memberOf=CN={{ldap_security_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}})(sAMAccountName=%[1]s))" \
+        --user-filter "(&(objectClass=user)(memberOf=CN={{ldap_user_security_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}})(sAMAccountName=%[1]s))" \
         --email-attribute "mail"
     sleep 1
 done

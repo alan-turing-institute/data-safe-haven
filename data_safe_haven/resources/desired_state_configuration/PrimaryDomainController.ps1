@@ -205,10 +205,6 @@ Configuration ConfigureActiveDirectory {
         }
     }
     $DataSafeHavenGroups = @{
-        DataAdministrators   = @{
-            Description = "Data Safe Haven Data Administrators"
-            Members     = @()
-        }
         ServerAdministrators = @{
             Description = "Data Safe Haven Server Administrators"
             Members     = @($CADDomainAdministratorUsername)

@@ -16,7 +16,7 @@ $Usernames = ([Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($Usern
 # Add each user to the SRE group
 if ($SREGroup -and $Usernames) {
     foreach ($Username in $Usernames) {
-        Write-Output "INFO: Adding user '<fg=green>$Username</>' to group '<fg=green>$($SREGroup.Name)</>'"
-        Add-ADGroupMember -Identity "$($SREGroup.Name)" -Members $Username
+        Write-Output "INFO: Removing user '<fg=green>$Username</>' from group '<fg=green>$($SREGroup.Name)</>'"
+        Remove-ADGroupMember -Identity "$($SREGroup.Name)" -Members $Username -Confirm:$false
     }
 }

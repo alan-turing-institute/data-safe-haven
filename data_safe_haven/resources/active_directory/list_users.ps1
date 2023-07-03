@@ -1,11 +1,12 @@
 param (
     [Parameter(Mandatory = $false, HelpMessage = "SRE name")]
-    [string]$SREName = $null 
+    [ValidateNotNullOrEmpty()]
+    [string]$SREName = $null
 )
 
 # Find SRE security group if an SRE name is specified
 if (![string]::IsNullOrEmpty($SREName)) {
-    $SREGroup = Get-ADGroup -Filter "Name -like '*SRE $SREName*'" | Where-Object { $_.DistinguishedName -like '*Data Safe Haven Security Groups*' } | Select-Object -First 1
+    $SREGroup = Get-ADGroup -Filter "Name -eq 'Data Safe Haven SRE $SREName Users'" | Where-Object { $_.DistinguishedName -like '*Data Safe Haven Security Groups*' } | Select-Object -First 1
 }
 
 # Return all matching users

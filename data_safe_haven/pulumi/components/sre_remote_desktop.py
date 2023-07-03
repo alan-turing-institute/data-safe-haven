@@ -36,6 +36,12 @@ class SRERemoteDesktopProps:
         allow_copy: Input[bool],
         allow_paste: Input[bool],
         database_password: Input[str],
+        ldap_bind_dn: Input[str],
+        ldap_group_search_base: Input[str],
+        ldap_search_password: Input[str],
+        ldap_server_ip: Input[str],
+        ldap_user_search_base: Input[str],
+        ldap_user_security_group_name: Input[str],
         location: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
@@ -56,6 +62,12 @@ class SRERemoteDesktopProps:
         )
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
+        self.ldap_bind_dn = ldap_bind_dn
+        self.ldap_group_search_base = ldap_group_search_base
+        self.ldap_search_password = ldap_search_password
+        self.ldap_server_ip = ldap_server_ip
+        self.ldap_user_search_base = ldap_user_search_base
+        self.ldap_user_security_group_name = ldap_user_security_group_name
         self.location = location
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
@@ -128,7 +140,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
             share_name="remote-desktop-caddy",
-            share_quota=5120,
+            share_quota=1,
             opts=child_opts,
         )
 
@@ -201,10 +213,11 @@ class SRERemoteDesktopComponent(ComponentResource):
             subnet=network.SubnetArgs(id=props.subnet_guacamole_database_id),
             opts=child_opts,
         )
+        connection_db_name = "guacamole"
         connection_db = dbforpostgresql.Database(
             f"{self._name}_connection_db",
             charset="UTF8",
-            database_name="guacamole",
+            database_name=connection_db_name,
             resource_group_name=resource_group.name,
             server_name=connection_db_server.name,
             opts=child_opts,
@@ -303,7 +316,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                             value="preferred_username",  # this is 'username@domain'
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_DATABASE", value="guacamole"
+                            name="POSTGRES_DATABASE", value=connection_db_name
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_HOSTNAME",
@@ -343,6 +356,72 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                     ),
                 ),
+                containerinstance.ContainerArgs(
+                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.1.0",
+                    name="guacamole-user-sync"[:63],
+                    environment_variables=[
+                        containerinstance.EnvironmentVariableArgs(
+                            name="LDAP_BIND_DN",
+                            value=props.ldap_bind_dn,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="LDAP_BIND_PASSWORD",
+                            secure_value=props.ldap_search_password,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="LDAP_GROUP_BASE_DN",
+                            value=props.ldap_group_search_base,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="LDAP_GROUP_FILTER",
+                            value=Output.concat("(objectClass=group)"),
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="LDAP_HOST",
+                            value=props.ldap_server_ip,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="LDAP_USER_BASE_DN",
+                            value=props.ldap_user_search_base,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="LDAP_USER_FILTER",
+                            value=Output.concat(
+                                "(&(objectClass=user)(memberOf=CN=",
+                                props.ldap_user_security_group_name,
+                                ",",
+                                props.ldap_group_search_base,
+                                "))",
+                            ),
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="POSTGRES_DB_NAME",
+                            value=connection_db_name,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="POSTGRES_HOST",
+                            value=props.subnet_guacamole_database_ip_addresses[0],
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="POSTGRES_PASSWORD",
+                            secure_value=props.database_password,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="POSTGRES_USERNAME",
+                            value=f"{props.database_username}@{connection_db_server_name}",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="REPEAT_INTERVAL",
+                            value="180",
+                        ),
+                    ],
+                    resources=containerinstance.ResourceRequirementsArgs(
+                        requests=containerinstance.ResourceRequestsArgs(
+                            cpu=0.5,
+                            memory_in_gb=0.5,
+                        ),
+                    ),
+                ),
             ],
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
@@ -370,7 +449,12 @@ class SRERemoteDesktopComponent(ComponentResource):
                     name="caddy-etc-caddy",
                 ),
             ],
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                ResourceOptions(
+                    delete_before_replace=True, replace_on_changes=["containers"]
+                ),
+                child_opts,
+            ),
         )
 
         # Register outputs

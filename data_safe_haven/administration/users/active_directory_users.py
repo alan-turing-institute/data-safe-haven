@@ -98,9 +98,45 @@ class ActiveDirectoryUsers(LoggingMixin):
         return users
 
     def register(self, sre_name: str, usernames: Sequence[str]) -> None:
-        """Register usernames with correct security group"""
+        """Add usernames to SRE security group"""
         register_users_script = FileReader(
             self.resources_path / "active_directory" / "add_users_to_group.ps1"
+        )
+        output = self.azure_api.run_remote_script(
+            self.resource_group_name,
+            register_users_script.file_contents(),
+            {"SREName": sre_name, "UsernamesB64": b64encode("\n".join(usernames))},
+            self.vm_name,
+        )
+        for line in output.split("\n"):
+            self.parse_as_log(line)
+
+    def remove(self, users: Sequence[ResearchUser]) -> None:
+        """Remove list of users from local Active Directory"""
+        remove_users_script = FileReader(
+            self.resources_path / "active_directory" / "remove_users.ps1"
+        )
+        usernames_b64 = b64encode("\n".join(user.username for user in users))
+        output = self.azure_api.run_remote_script(
+            self.resource_group_name,
+            remove_users_script.file_contents(),
+            {"UsernamesB64": usernames_b64},
+            self.vm_name,
+        )
+        for line in output.split("\n"):
+            self.parse_as_log(line)
+
+    def set(self, users: Sequence[ResearchUser]) -> None:
+        """Set local Active Directory users to specified list"""
+        users_to_remove = [user for user in self.list() if user not in users]
+        self.remove(users_to_remove)
+        users_to_add = [user for user in users if user not in self.list()]
+        self.add(users_to_add)
+
+    def unregister(self, sre_name: str, usernames: Sequence[str]) -> None:
+        """Remove usernames from SRE security group"""
+        register_users_script = FileReader(
+            self.resources_path / "active_directory" / "remove_users_from_group.ps1"
         )
         output = self.azure_api.run_remote_script(
             self.resource_group_name,

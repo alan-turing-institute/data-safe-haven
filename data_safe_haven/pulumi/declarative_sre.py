@@ -56,7 +56,13 @@ class DeclarativeSRE:
         ldap_server_ip = self.pulumi_opts.require(
             "shm-domain_controllers-ldap_server_ip"
         )
-        ldap_security_group_name = f"Data Safe Haven Users SRE {self.sre_name}"
+        ldap_admin_security_group_name = (
+            f"Data Safe Haven SRE {self.sre_name} Administrators"
+        )
+        ldap_privileged_user_security_group_name = (
+            f"Data Safe Haven SRE {self.sre_name} Privileged Users"
+        )
+        ldap_user_security_group_name = f"Data Safe Haven SRE {self.sre_name} Users"
 
         # Deploy networking
         networking = SRENetworkingComponent(
@@ -159,6 +165,12 @@ class DeclarativeSRE:
                 allow_copy=self.cfg.sre[self.sre_name].remote_desktop.allow_copy,
                 allow_paste=self.cfg.sre[self.sre_name].remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
+                ldap_bind_dn=ldap_bind_dn,
+                ldap_group_search_base=ldap_group_search_base,
+                ldap_search_password=ldap_search_password,
+                ldap_server_ip=ldap_server_ip,
+                ldap_user_search_base=ldap_user_search_base,
+                ldap_user_security_group_name=ldap_user_security_group_name,
                 location=self.cfg.azure.location,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
                 subnet_guacamole_database=networking.subnet_guacamole_database,
@@ -184,9 +196,9 @@ class DeclarativeSRE:
                 ldap_group_search_base=ldap_group_search_base,
                 ldap_root_dn=ldap_root_dn,
                 ldap_search_password=ldap_search_password,
-                ldap_security_group_name=ldap_security_group_name,
                 ldap_server_ip=ldap_server_ip,
                 ldap_user_search_base=ldap_user_search_base,
+                ldap_user_security_group_name=ldap_user_security_group_name,
                 linux_update_server_ip=self.pulumi_opts.require(
                     "shm-update_servers-ip_address_linux"
                 ),
@@ -247,7 +259,7 @@ class DeclarativeSRE:
                 ldap_root_dn=ldap_root_dn,
                 ldap_search_password=ldap_search_password,
                 ldap_server_ip=ldap_server_ip,
-                ldap_security_group_name=ldap_security_group_name,
+                ldap_user_security_group_name=ldap_user_security_group_name,
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,
@@ -264,6 +276,13 @@ class DeclarativeSRE:
         )
 
         # Export values for later use
-        pulumi.export("ldap", {"security_group_name": ldap_security_group_name})
+        pulumi.export(
+            "ldap",
+            {
+                "admin_security_group_name": ldap_admin_security_group_name,
+                "privileged_user_security_group_name": ldap_privileged_user_security_group_name,
+                "user_security_group_name": ldap_user_security_group_name,
+            },
+        )
         pulumi.export("remote_desktop", remote_desktop.exports)
         pulumi.export("research_desktops", research_desktops.exports)
