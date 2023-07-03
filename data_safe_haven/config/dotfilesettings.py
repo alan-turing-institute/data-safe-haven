@@ -9,10 +9,10 @@ import yaml
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenInputException
 from data_safe_haven.helpers.types import PathType
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 
 
-class DotFileSettings(LoggingMixin):
+class DotFileSettings:
     """Load global and local settings from dotfiles with structure like the following
 
     azure:
@@ -37,6 +37,7 @@ class DotFileSettings(LoggingMixin):
         subscription_name: Optional[str] = None,
     ):
         super().__init__()
+        self.logger = Logger()
         # Load local dotfile settings (if any)
         local_values: Dict[str, str] = {}
         local_dotfile = pathlib.Path.cwd() / self.config_file_name
@@ -53,7 +54,7 @@ class DotFileSettings(LoggingMixin):
             admin_group_id = (
                 local_values["admin_group_id"]
                 if "admin_group_id" in local_values
-                else self.log_ask(
+                else self.logger.ask(
                     "Please enter the ID for an Azure group containing all administrators:",
                     None,
                 )
@@ -63,7 +64,7 @@ class DotFileSettings(LoggingMixin):
             location = (
                 local_values["location"]
                 if "location" in local_values
-                else self.log_ask(
+                else self.logger.ask(
                     "Please enter the Azure location to deploy resources into:", None
                 )
             )
@@ -72,7 +73,7 @@ class DotFileSettings(LoggingMixin):
             name = (
                 local_values["name"]
                 if "name" in local_values
-                else self.log_ask(
+                else self.logger.ask(
                     "Please enter the name for this Data Safe Haven deployment:", None
                 )
             )
@@ -81,7 +82,7 @@ class DotFileSettings(LoggingMixin):
             subscription_name = (
                 local_values["subscription_name"]
                 if "subscription_name" in local_values
-                else self.log_ask(
+                else self.logger.ask(
                     "Please enter the Azure subscription to deploy resources into:",
                     None,
                 )

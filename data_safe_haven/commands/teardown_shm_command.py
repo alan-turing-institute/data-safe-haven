@@ -11,11 +11,11 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 from data_safe_haven.pulumi import PulumiStack
 
 
-class TeardownSHMCommand(LoggingMixin, Command):  # type: ignore
+class TeardownSHMCommand(Command):  # type: ignore
     """
     Teardown a deployed a Safe Haven Management component using local configuration files
 
@@ -31,7 +31,7 @@ class TeardownSHMCommand(LoggingMixin, Command):  # type: ignore
             self.process_arguments()
 
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.output)
+            self.logger = Logger(self.io.verbosity, self.output)
 
             # Use dotfile settings to load the job configuration
             try:
@@ -66,7 +66,7 @@ class TeardownSHMCommand(LoggingMixin, Command):  # type: ignore
             ) in f"Could not teardown Safe Haven Management component.\n{str(exc)}".split(
                 "\n"
             ):
-                self.error(line)
+                self.logger.error(line)
         return 1
 
     def process_arguments(self) -> None:

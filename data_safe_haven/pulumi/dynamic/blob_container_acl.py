@@ -77,7 +77,7 @@ class BlobContainerAclProvider(DshResourceProvider):
             azure_api = AzureApi(props["subscription_name"])
             azure_api.set_blob_container_acl(
                 container_name=props["container_name"],
-                desired_acl=f"user::rwx,group::r-x,other::---",
+                desired_acl="user::rwx,group::r-x,other::---",
                 resource_group_name=props["resource_group_name"],
                 storage_account_name=props["storage_account_name"],
             )

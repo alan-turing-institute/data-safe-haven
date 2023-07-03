@@ -12,11 +12,11 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.helpers import alphanumeric
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 from data_safe_haven.pulumi import PulumiStack
 
 
-class TeardownSRECommand(LoggingMixin, Command):  # type: ignore
+class TeardownSRECommand(Command):  # type: ignore
     """
     Teardown a deployed Secure Research Environment using local configuration files
 
@@ -35,7 +35,7 @@ class TeardownSRECommand(LoggingMixin, Command):  # type: ignore
             self.process_arguments()
 
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.output)
+            self.logger = Logger(self.io.verbosity, self.output)
 
             # Use dotfile settings to load the job configuration
             try:
@@ -76,7 +76,7 @@ class TeardownSRECommand(LoggingMixin, Command):  # type: ignore
             ) in f"Could not teardown Data Safe Haven '{environment_name}'.\n{str(exc)}".split(
                 "\n"
             ):
-                self.error(line)
+                self.logger.error(line)
         return 1
 
     def process_arguments(self) -> None:

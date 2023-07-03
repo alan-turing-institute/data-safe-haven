@@ -17,12 +17,12 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external.api import GraphApi
 from data_safe_haven.helpers import password
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 from data_safe_haven.provisioning import SHMProvisioningManager
 from data_safe_haven.pulumi import PulumiStack
 
 
-class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
+class DeploySHMCommand(Command):  # type: ignore
     """
     Deploy a Safe Haven Management component using local configuration files
 
@@ -48,7 +48,7 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
             self.process_arguments()
 
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.output)
+            self.logger = Logger(self.io.verbosity, self.output)
 
             # Use dotfile settings to load the job configuration
             try:
@@ -118,7 +118,7 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
         except Exception as exc:
             exception_text = f"Uncaught exception of type '{type(exc)}'.\n{str(exc)}"
         for line in exception_text.split("\n"):
-            self.error(line)
+            self.logger.error(line)
         return 1
 
     def add_missing_values(self, config: Config) -> None:
@@ -128,7 +128,7 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
             if self.fqdn:
                 config.shm.fqdn = self.fqdn
             else:
-                self.fqdn = self.log_ask(
+                self.fqdn = self.logger.ask(
                     "Please enter the domain that SHM users will belong to:", None
                 )
 
@@ -140,21 +140,21 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
             ):
                 config.shm.aad_tenant_id = self.aad_tenant_id
             else:
-                self.info(
+                self.logger.info(
                     "We need to know the tenant ID for the AzureAD where users will be created, for example '10de18e7-b238-6f1e-a4ad-772708929203'."
                 )
-                self.aad_tenant_id = self.log_ask("AzureAD tenant ID:", None)
+                self.aad_tenant_id = self.logger.ask("AzureAD tenant ID:", None)
 
         # Request admin email address if not provided
         while not config.shm.admin_email_address:
             if not self.admin_email_address:
-                self.info(
+                self.logger.info(
                     "We need to know an email address that your system deployers and administrators can be contacted on."
                 )
-                self.info(
+                self.logger.info(
                     "Please enter a single email address, for example 'sherlock@holmes.com'."
                 )
-                self.admin_email_address = self.log_ask(
+                self.admin_email_address = self.logger.ask(
                     "Administrator email address:", None
                 )
             if self.admin_email_address:
@@ -166,13 +166,13 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
         )
         while not config.shm.admin_ip_addresses:
             if not admin_ip_addresses:
-                self.info(
+                self.logger.info(
                     "We need to know any IP addresses or ranges that your system deployers and administrators will be connecting from."
                 )
-                self.info(
+                self.logger.info(
                     "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
                 )
-                admin_ip_addresses = self.log_ask(
+                admin_ip_addresses = self.logger.ask(
                     "Space-separated administrator IP addresses and ranges:", None
                 )
             config.shm.admin_ip_addresses = [
@@ -188,8 +188,8 @@ class DeploySHMCommand(LoggingMixin, Command):  # type: ignore
                 config.shm.timezone = self.timezone
             else:
                 if self.timezone:
-                    self.error(f"Timezone '{self.timezone}' not recognised")
-                self.timezone = self.log_ask(
+                    self.logger.error(f"Timezone '{self.timezone}' not recognised")
+                self.timezone = self.logger.ask(
                     "Please enter the timezone that this SHM will use (default: 'Europe/London'):",
                     "Europe/London",
                 )

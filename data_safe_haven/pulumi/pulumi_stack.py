@@ -15,12 +15,12 @@ from pulumi import automation
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
 from data_safe_haven.external.api import AzureCli
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 from .declarative_shm import DeclarativeSHM
 from .declarative_sre import DeclarativeSRE
 
 
-class PulumiStack(LoggingMixin):
+class PulumiStack:
     """Interact with infrastructure using Pulumi"""
 
     options: Dict[str, Tuple[str, bool, bool]]
@@ -37,6 +37,7 @@ class PulumiStack(LoggingMixin):
         super().__init__(*args, **kwargs)
         self.cfg: Config = config
         self.env_: Optional[Dict[str, Any]] = None
+        self.logger = Logger()
         self.stack_: Optional[automation.Stack] = None
         self.options = {}
         if deployment_type == "SHM":
@@ -76,7 +77,7 @@ class PulumiStack(LoggingMixin):
     def stack(self) -> automation.Stack:
         """Load the Pulumi stack, creating if needed."""
         if not self.stack_:
-            self.info(f"Creating/loading stack <fg=green>{self.stack_name}</>.")
+            self.logger.info(f"Creating/loading stack <fg=green>{self.stack_name}</>.")
             try:
                 self.stack_ = automation.create_or_select_stack(
                     project_name="data_safe_haven",
@@ -141,7 +142,7 @@ class PulumiStack(LoggingMixin):
             while True:
                 try:
                     result = self.stack.destroy(
-                        color="always", on_output=self.info, parallel=1
+                        color="always", on_output=self.logger.info, parallel=1
                     )
                     self.evaluate(result.summary.result)
                     break
@@ -171,25 +172,25 @@ class PulumiStack(LoggingMixin):
     def evaluate(self, result: str) -> None:
         """Evaluate a Pulumi operation."""
         if result == "succeeded":
-            self.info("Pulumi operation <fg=green>succeeded</>.")
+            self.logger.info("Pulumi operation <fg=green>succeeded</>.")
         else:
-            self.error("Pulumi operation <fg=red>failed</>.")
+            self.logger.error("Pulumi operation <fg=red>failed</>.")
             raise DataSafeHavenPulumiException("Pulumi operation failed.")
 
     def initialise_workdir(self) -> None:
         """Create project directory if it does not exist and update local stack."""
         try:
-            self.info(
+            self.logger.info(
                 f"Ensuring that <fg=green>{self.work_dir}</> exists...", no_newline=True
             )
             if not self.work_dir.exists():
                 self.work_dir.mkdir(parents=True)
-            self.info(
+            self.logger.info(
                 f"Ensured that <fg=green>{self.work_dir}</> exists.", overwrite=True
             )
             # If stack information is saved in the config file then apply it here
             if self.stack_name in self.cfg.pulumi.stacks.keys():
-                self.info(
+                self.logger.info(
                     f"Loading stack <fg=green>{self.stack_name}</> information from config"
                 )
                 stack_yaml = yaml.dump(
@@ -221,7 +222,7 @@ class PulumiStack(LoggingMixin):
                 encoding="UTF-8",
             ) as process:
                 if process.stdout:
-                    self.info(process.stdout.readline().strip())
+                    self.logger.info(process.stdout.readline().strip())
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Logging into Pulumi failed.\n{str(exc)}."
@@ -234,10 +235,12 @@ class PulumiStack(LoggingMixin):
         """Preview the Pulumi stack."""
         try:
             with suppress(automation.errors.CommandError):
-                self.info(
+                self.logger.info(
                     f"Previewing changes for stack <fg=green>{self.stack.name}</>."
                 )
-                self.stack.preview(color="always", diff=True, on_output=self.info)
+                self.stack.preview(
+                    color="always", diff=True, on_output=self.logger.info
+                )
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Pulumi preview failed.\n{str(exc)}."
@@ -246,7 +249,7 @@ class PulumiStack(LoggingMixin):
     def refresh(self) -> None:
         """Refresh the Pulumi stack."""
         try:
-            self.info(f"Refreshing stack <fg=green>{self.stack.name}</>.")
+            self.logger.info(f"Refreshing stack <fg=green>{self.stack.name}</>.")
             # Note that we disable parallelisation which can cause deadlock
             self.stack.refresh(color="always", parallel=1)
         except automation.errors.CommandError as exc:
@@ -257,10 +260,12 @@ class PulumiStack(LoggingMixin):
     def remove_workdir(self) -> None:
         """Remove project directory if it exists."""
         try:
-            self.info(f"Removing <fg=green>{self.work_dir}</>...", no_newline=True)
+            self.logger.info(
+                f"Removing <fg=green>{self.work_dir}</>...", no_newline=True
+            )
             if self.work_dir.exists():
                 shutil.rmtree(self.work_dir)
-            self.info(f"Removed <fg=green>{self.work_dir}</>.", overwrite=True)
+            self.logger.info(f"Removed <fg=green>{self.work_dir}</>.", overwrite=True)
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Removing Pulumi working directory failed.\n{str(exc)}."
@@ -295,7 +300,7 @@ class PulumiStack(LoggingMixin):
     def update(self) -> None:
         """Update deployed infrastructure."""
         try:
-            result = self.stack.up(color="always", on_output=self.info)
+            result = self.stack.up(color="always", on_output=self.logger.info)
             self.evaluate(result.summary.result)
         except automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException(

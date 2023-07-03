@@ -13,10 +13,10 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external.api import GraphApi
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 
 
-class UsersUnregisterCommand(LoggingMixin, Command):  # type: ignore
+class UsersUnregisterCommand(Command):  # type: ignore
     """
     Unregister existing users from a Data Safe Haven deployment with an SRE
 
@@ -37,7 +37,7 @@ class UsersUnregisterCommand(LoggingMixin, Command):  # type: ignore
             self.process_arguments()
 
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.output)
+            self.logger = Logger(self.io.verbosity, self.output)
 
             # Use dotfile settings to load the job configuration
             try:
@@ -52,7 +52,7 @@ class UsersUnregisterCommand(LoggingMixin, Command):  # type: ignore
             # Check that SRE option has been provided
             if not self.sre_name:
                 raise DataSafeHavenException("SRE name must be specified.")
-            self.info(
+            self.logger.info(
                 f"Preparing to unregister {len(self.usernames)} users with SRE '{self.sre_name}'"
             )
 
@@ -70,7 +70,7 @@ class UsersUnregisterCommand(LoggingMixin, Command):  # type: ignore
                 if username in available_usernames:
                     usernames_to_unregister.append(username)
                 else:
-                    self.error(
+                    self.logger.error(
                         f"Username '{username}' does not belong to this Data Safe Haven deployment. Please use 'dsh users add' to create it."
                     )
             users.unregister(self.sre_name, usernames_to_unregister)
@@ -81,7 +81,7 @@ class UsersUnregisterCommand(LoggingMixin, Command):  # type: ignore
             ) in f"Could not unregister users from Data Safe Haven '{shm_name}' with SRE '{self.sre_name}'.\n{str(exc)}".split(
                 "\n"
             ):
-                self.error(line)
+                self.logger.error(line)
         return 1
 
     def process_arguments(self) -> None:

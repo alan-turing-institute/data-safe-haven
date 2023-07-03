@@ -11,7 +11,6 @@ from data_safe_haven.external.interface import AzureIPv4Range
 from data_safe_haven.helpers.functions import (
     alphanumeric,
     replace_separators,
-    sha256hash,
     truncate_tokens,
 )
 

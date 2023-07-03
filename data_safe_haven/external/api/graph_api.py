@@ -22,12 +22,13 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalException,
     DataSafeHavenMicrosoftGraphException,
 )
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 
 
 class LocalTokenCache(SerializableTokenCache):  # type: ignore
     def __init__(self, token_cache_filename: pathlib.Path) -> None:
         super().__init__()
+        self.logger = Logger
         self.token_cache_filename = token_cache_filename
         try:
             if self.token_cache_filename.exists():
@@ -41,7 +42,7 @@ class LocalTokenCache(SerializableTokenCache):  # type: ignore
             f_token.write(self.serialize())
 
 
-class GraphApi(LoggingMixin):
+class GraphApi:
     """Interface to the Microsoft Graph REST API"""
 
     linux_schema = "extj8xolrvw_linux"  # this is the "Extension with Properties for Linux User and Groups" extension
@@ -142,7 +143,7 @@ class GraphApi(LoggingMixin):
             ).json()
             # If user already belongs to group then do nothing further
             if any(user_id == member["id"] for member in json_response["value"]):
-                self.info(
+                self.logger.info(
                     f"User <fg=green>'{username}'</> is already a member of group <fg=green>'{group_name}'</>."
                 )
             # Otherwise add the user to the group
@@ -154,7 +155,7 @@ class GraphApi(LoggingMixin):
                     f"{self.base_endpoint}/groups/{group_id}/members/$ref",
                     json=request_json,
                 )
-                self.info(
+                self.logger.info(
                     f"Added user <fg=green>'{username}'</> to group <fg=green>'{group_name}'</>."
                 )
         except (DataSafeHavenMicrosoftGraphException, IndexError) as exc:
@@ -178,13 +179,13 @@ class GraphApi(LoggingMixin):
             # Check for an existing application
             json_response: Dict[str, Any]
             if existing_application := self.get_application_by_name(application_name):
-                self.info(
+                self.logger.info(
                     f"Application '<fg=green>{application_name}</>' already exists."
                 )
                 json_response = existing_application
             else:
                 # Create a new application
-                self.info(
+                self.logger.info(
                     f"Creating new application '<fg=green>{application_name}</>'...",
                     no_newline=True,
                 )
@@ -225,7 +226,7 @@ class GraphApi(LoggingMixin):
                     f"{self.base_endpoint}/applications",
                     json=request_json,
                 ).json()
-                self.info(
+                self.logger.info(
                     f"Created new application '<fg=green>{json_response['displayName']}</>'.",
                     overwrite=True,
                 )
@@ -237,13 +238,13 @@ class GraphApi(LoggingMixin):
                     application_sp
                     and self.read_application_permissions(application_sp["id"])
                 ):
-                    self.info(
+                    self.logger.info(
                         f"Application <fg=green>{application_name}</> has requested permissions that need administrator approval."
                     )
-                    self.info(
+                    self.logger.info(
                         "Please sign-in with <fg=green>global administrator</> credentials for the Azure Active Directory where your users are stored."
                     )
-                    self.info(
+                    self.logger.info(
                         f"To sign in, use a web browser to open the page <fg=green>https://login.microsoftonline.com/{self.tenant_id}/adminconsent?client_id={application_id}&redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient</> and follow the instructions."
                     )
                     while True:
@@ -286,7 +287,7 @@ class GraphApi(LoggingMixin):
                     f"Secret '{application_secret_name}' already exists in application '{application_name}'."
                 )
             # Create the application secret if it does not exist
-            self.info(
+            self.logger.info(
                 f"Creating application secret '<fg=green>{application_secret_name}</>'...",
                 no_newline=True,
             )
@@ -303,7 +304,7 @@ class GraphApi(LoggingMixin):
                 f"{self.base_endpoint}/applications/{application_json['id']}/addPassword",
                 json=request_json,
             ).json()
-            self.info(
+            self.logger.info(
                 f"Created application secret '<fg=green>{application_secret_name}</>'.",
                 overwrite=True,
             )
@@ -324,12 +325,12 @@ class GraphApi(LoggingMixin):
         try:
             if self.get_id_from_groupname(group_name):
                 if verbose:
-                    self.info(
+                    self.logger.info(
                         f"Found existing AzureAD group '<fg=green>{group_name}</>'.",
                     )
                 return
             if verbose:
-                self.info(
+                self.logger.info(
                     f"Creating AzureAD group '<fg=green>{group_name}</>'...",
                     no_newline=True,
                 )
@@ -357,7 +358,7 @@ class GraphApi(LoggingMixin):
                 json=patch_json,
             )
             if verbose:
-                self.info(
+                self.logger.info(
                     f"Created AzureAD group '<fg=green>{group_name}</>'.",
                     overwrite=True,
                 )
@@ -394,16 +395,16 @@ class GraphApi(LoggingMixin):
                     raise DataSafeHavenMicrosoftGraphException(
                         f"Could not initiate device login for scopes {self.default_scopes}."
                     )
-                self.info(
+                self.logger.info(
                     "Administrator approval is needed in order to interact with Azure Active Directory."
                 )
-                self.info(
+                self.logger.info(
                     f"Please sign-in with <fg=green>global administrator</> credentials for Azure Active Directory <fg=green>{self.tenant_id}</>."
                 )
-                self.info(
+                self.logger.info(
                     "Note that the sign-in screen will prompt you to sign-in to <fg=blue>Microsoft Graph Command Line Tools</> - this is expected."
                 )
-                self.info(flow["message"])
+                self.logger.info(flow["message"])
                 # Block until a response is received
                 result = app.acquire_token_by_device_flow(flow)
             return str(result["access_token"])
@@ -466,13 +467,13 @@ class GraphApi(LoggingMixin):
             user_id = self.get_id_from_username(username)
             final_verb = ""
             if user_id:
-                self.info(
+                self.logger.info(
                     f"Updating AzureAD user '<fg=green>{username}</>'...",
                     no_newline=True,
                 )
                 final_verb = "Updated"
             else:
-                self.info(
+                self.logger.info(
                     f"Creating AzureAD user '<fg=green>{username}</>'...",
                     no_newline=True,
                 )
@@ -507,7 +508,7 @@ class GraphApi(LoggingMixin):
                 f"{self.base_endpoint}/users/{user_id}",
                 json={"accountEnabled": True},
             )
-            self.info(
+            self.logger.info(
                 f"{final_verb} AzureAD user '<fg=green>{username}</>'.",
                 overwrite=True,
             )
@@ -528,14 +529,14 @@ class GraphApi(LoggingMixin):
         try:
             # Delete the application if it exists
             if application := self.get_application_by_name(application_name):
-                self.info(
+                self.logger.info(
                     f"Deleting application '<fg=green>{application_name}</>'...",
                     no_newline=True,
                 )
                 self.http_delete(
                     f"{self.base_endpoint}/applications/{application['id']}",
                 )
-                self.info(
+                self.logger.info(
                     f"Deleted application '<fg=green>{application_name}</>'.",
                     overwrite=True,
                 )
@@ -892,20 +893,20 @@ class GraphApi(LoggingMixin):
                     active_nameservers = [
                         str(ns) for ns in resolver.resolve(domain_name, "NS")
                     ]
-                    self.info("Checking domain verification status.")
+                    self.logger.info("Checking domain verification status.")
                     if all(
                         any(nameserver in n for n in active_nameservers)
                         for nameserver in expected_nameservers
                     ):
                         break
                 # Prompt user to set domain delegation manually
-                self.info(
+                self.logger.info(
                     f"To proceed you will need to delegate <fg=green>{domain_name}</> to Azure (https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain)"
                 )
-                self.info(
+                self.logger.info(
                     f"You will need to delegate to the following nameservers: {', '.join([f'<fg=green>{n}</>' for n in expected_nameservers])}"
                 )
-                self.log_confirm(
+                self.logger.confirm(
                     f"Have you delegated {domain_name} to the Azure nameservers above?",
                     True,
                 )

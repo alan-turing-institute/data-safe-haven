@@ -12,10 +12,10 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 
 
-class TeardownBackendCommand(LoggingMixin, Command):  # type: ignore
+class TeardownBackendCommand(Command):  # type: ignore
     """
     Teardown a deployed Data Safe Haven backend using local configuration files
 
@@ -31,7 +31,7 @@ class TeardownBackendCommand(LoggingMixin, Command):  # type: ignore
             self.process_arguments()
 
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.output)
+            self.logger = Logger(self.io.verbosity, self.output)
 
             # Use dotfile settings to load the job configuration
             try:
@@ -54,7 +54,7 @@ class TeardownBackendCommand(LoggingMixin, Command):  # type: ignore
             for (
                 line
             ) in f"Could not teardown Data Safe Haven backend.\n{str(exc)}".split("\n"):
-                self.error(line)
+                self.logger.error(line)
         return 1
 
     def process_arguments(self) -> None:

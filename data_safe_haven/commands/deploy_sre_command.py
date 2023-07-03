@@ -15,12 +15,12 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external.api import AzureApi, GraphApi
 from data_safe_haven.helpers import alphanumeric, password
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.pulumi import PulumiStack
 
 
-class DeploySRECommand(LoggingMixin, Command):  # type: ignore
+class DeploySRECommand(Command):  # type: ignore
     """
     Deploy a Secure Research Environment using local configuration files
 
@@ -50,7 +50,7 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
             self.process_arguments()
 
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.output)
+            self.logger = Logger(self.io.verbosity, self.output)
 
             # Use dotfile settings to load the job configuration
             try:
@@ -198,7 +198,7 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
         except Exception as exc:
             exception_text = f"Uncaught exception of type '{type(exc)}'.\n{str(exc)}"
         for line in exception_text.split("\n"):
-            self.error(line)
+            self.logger.error(line)
         return 1
 
     def add_missing_values(self, config: Config) -> None:
@@ -211,7 +211,7 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
         # Set whether copying is allowed
         while not isinstance(config.sre[self.sre_name].remote_desktop.allow_copy, bool):
             if not self.allow_copy:
-                self.allow_copy = self.log_confirm(
+                self.allow_copy = self.logger.confirm(
                     "Should users be allowed to copy text out of the SRE?", False
                 )
             config.sre[self.sre_name].remote_desktop.allow_copy = self.allow_copy
@@ -221,7 +221,7 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
             config.sre[self.sre_name].remote_desktop.allow_paste, bool
         ):
             if not self.allow_paste:
-                self.allow_paste = self.log_confirm(
+                self.allow_paste = self.logger.confirm(
                     "Should users be allowed to paste text into the SRE?", False
                 )
             config.sre[self.sre_name].remote_desktop.allow_paste = self.allow_paste
@@ -229,7 +229,7 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
         # Select which software packages can be installed by users
         while not isinstance(config.sre[self.sre_name].software_packages, str):
             if not self.software_packages:
-                self.software_packages = self.log_choose(
+                self.software_packages = self.logger.choose(
                     "Which packages should users be allowed to install from CRAN/PyPI?",
                     choices=["any", "pre-approved", "none"],
                 )
@@ -243,13 +243,13 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
         )
         while not config.sre[self.sre_name].data_provider_ip_addresses:
             if not data_provider_ip_addresses:
-                self.info(
+                self.logger.info(
                     "We need to know any IP addresses or ranges that your data providers will be connecting from."
                 )
-                self.info(
+                self.logger.info(
                     "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
                 )
-                data_provider_ip_addresses = self.log_ask(
+                data_provider_ip_addresses = self.logger.ask(
                     "Space-separated data provider IP addresses and ranges:", None
                 )
             config.sre[self.sre_name].data_provider_ip_addresses = [
@@ -267,13 +267,13 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
         )
         while not config.sre[self.sre_name].research_user_ip_addresses:
             if not research_user_ip_addresses:
-                self.info(
+                self.logger.info(
                     "We need to know any IP addresses or ranges that your research users will be connecting from."
                 )
-                self.info(
+                self.logger.info(
                     "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
                 )
-                research_user_ip_addresses = self.log_ask(
+                research_user_ip_addresses = self.logger.ask(
                     "Space-separated research user IP addresses and ranges:", None
                 )
             config.sre[self.sre_name].research_user_ip_addresses = [
@@ -285,12 +285,14 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
 
         # Get the list of research desktop VMs to deploy
         while not self.research_desktop_skus:
-            self.warning("An SRE deployment needs at least one research desktop.")
-            self.info(
+            self.logger.warning(
+                "An SRE deployment needs at least one research desktop."
+            )
+            self.logger.info(
                 "Please enter the VM SKU for each desktop you want to create, separated by spaces, for example 'Standard_D2s_v3 Standard_D2s_v3'."
             )
-            self.info("Available SKUs can be seen here: https://azureprice.net/")
-            candidate_skus = self.log_ask("Space-separated VM sizes:", None)
+            self.logger.info("Available SKUs can be seen here: https://azureprice.net/")
+            candidate_skus = self.logger.ask("Space-separated VM sizes:", None)
             self.research_desktop_skus = [
                 sku for sku in candidate_skus.split() if sku in self.available_vm_skus
             ]

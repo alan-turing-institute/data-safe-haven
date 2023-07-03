@@ -13,10 +13,10 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external.api import GraphApi
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 
 
-class UsersRemoveCommand(LoggingMixin, Command):  # type: ignore
+class UsersRemoveCommand(Command):  # type: ignore
     """
     Remove users from a Data Safe Haven deployment
 
@@ -35,7 +35,7 @@ class UsersRemoveCommand(LoggingMixin, Command):  # type: ignore
             self.process_arguments()
 
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.output)
+            self.logger = Logger(self.io.verbosity, self.output)
 
             # Use dotfile settings to load the job configuration
             try:
@@ -64,7 +64,7 @@ class UsersRemoveCommand(LoggingMixin, Command):  # type: ignore
             ) in f"Could not remove users from Data Safe Haven '{shm_name}'.\n{str(exc)}".split(
                 "\n"
             ):
-                self.error(line)
+                self.logger.error(line)
         return 1
 
     def process_arguments(self) -> None:

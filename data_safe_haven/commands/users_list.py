@@ -13,10 +13,10 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external.api import GraphApi
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 
 
-class UsersListCommand(LoggingMixin, Command):  # type: ignore
+class UsersListCommand(Command):  # type: ignore
     """
     List users for a Data Safe Haven deployment
 
@@ -33,7 +33,7 @@ class UsersListCommand(LoggingMixin, Command):  # type: ignore
             self.process_arguments()
 
             # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.output)
+            self.logger = Logger(self.io.verbosity, self.output)
 
             # Use dotfile settings to load the job configuration
             try:
@@ -61,7 +61,7 @@ class UsersListCommand(LoggingMixin, Command):  # type: ignore
             ) in f"Could not list users for Data Safe Haven '{shm_name}'.\n{str(exc)}".split(
                 "\n"
             ):
-                self.error(line)
+                self.logger.error(line)
         return 1
 
     def process_arguments(self) -> None:

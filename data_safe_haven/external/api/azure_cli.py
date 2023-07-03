@@ -5,14 +5,15 @@ from typing import Any
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 
 
-class AzureCli(LoggingMixin):
+class AzureCli:
     """Interface to the Azure CLI"""
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
+        self.logger = Logger
 
     def login(self) -> None:
         """Force log in via the Azure CLI"""
@@ -21,10 +22,10 @@ class AzureCli(LoggingMixin):
                 process = subprocess.run(["az", "account", "show"], capture_output=True)
                 if process.returncode == 0:
                     break
-                self.info(
+                self.logger.info(
                     "Please login in your web browser at https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize."
                 )
-                self.info(
+                self.logger.info(
                     "If no web browser is available, please run `az login --use-device-code` in a command line window."
                 )
                 subprocess.run(["az", "login"], capture_output=True)

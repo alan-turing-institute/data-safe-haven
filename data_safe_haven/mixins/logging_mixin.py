@@ -101,20 +101,32 @@ class LoggingHandlerPlainFile(logging.FileHandler):
         super().emit(record)
 
 
-class LoggingMixin:
-    """Mixin class for anything needing logging"""
+class Logger:
+    """Logging singleton that can be used for anything needing logging"""
 
     date_fmt = r"%Y-%m-%d %H:%M:%S"
     coloured_fmt = "<fg=blue>%(asctime)s</> <%(style)s>[%(levelname)8s]</> %(message)s"
     is_setup = False
+    _instance: Optional["Logger"] = None
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+    def __new__(
+        cls, verbosity: Optional[int] = None, log_file: Optional[str] = None
+    ) -> "Logger":
+        if not cls._instance:
+            cls._instance = super(Logger, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(
+        self, verbosity: Optional[int] = None, log_file: Optional[str] = None
+    ) -> None:
         self.logger = logging.getLogger("data_safe_haven")
         self.console = LoggingHandlerClikit(
             fmt=self.coloured_fmt, datefmt=self.date_fmt
         )
         self.console.addFilter(LoggingFilterColouredLevel())
+        self.initialise_logging(
+            verbosity=verbosity if verbosity else 0, log_file=log_file
+        )
 
     @property
     def prefix(self) -> str:
@@ -193,22 +205,22 @@ class LoggingMixin:
         return self.logger.debug(message, extra=self.extra_args(no_newline, overwrite))
 
     # Loggable wrappers for confirm/ask/choice
-    def log_confirm(self, message: str, *args: Any, **kwargs: Any) -> bool:
+    def confirm(self, message: str, *args: Any, **kwargs: Any) -> bool:
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
         return bool(self.console.io.confirm(formatted, *args, **kwargs))
 
-    def log_ask(self, message: str, *args: Any, **kwargs: Any) -> str:
+    def ask(self, message: str, *args: Any, **kwargs: Any) -> str:
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
         return str(self.console.io.ask(formatted, *args, **kwargs))
 
-    def log_choose(self, message: str, *args: Any, **kwargs: Any) -> str:
+    def choose(self, message: str, *args: Any, **kwargs: Any) -> str:
         formatted = self.format_msg(message, logging.INFO)
         self.logger.info(message, extra={"tag": "no_console"})
         return str(self.console.io.choice(formatted, *args, **kwargs))
 
-    def parse_as_log(
+    def parse(
         self, message: str, no_newline: bool = False, overwrite: bool = False
     ) -> None:
         tokens = message.split(":")

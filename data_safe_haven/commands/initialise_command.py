@@ -14,10 +14,10 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.mixins import Logger
 
 
-class InitialiseCommand(LoggingMixin, Command):  # type: ignore
+class InitialiseCommand(Command):  # type: ignore
     """
     Initialise a Data Safe Haven deployment
 
@@ -40,12 +40,12 @@ class InitialiseCommand(LoggingMixin, Command):  # type: ignore
             # Process command line arguments
             self.process_arguments()
 
-            # Set up logging for anything called by this command
-            self.initialise_logging(self.io.verbosity, self.output)
+            # # Set up logging for anything called by this command
+            self.logger = Logger(self.io.verbosity, self.output)
 
             # Confirm project path
             project_base_path = pathlib.Path.cwd().resolve()
-            if not self.log_confirm(
+            if not self.logger.confirm(
                 f"Do you want to initialise a Data Safe Haven project at <fg=green>{project_base_path}</>?",
                 True,
             ):
@@ -69,18 +69,20 @@ class InitialiseCommand(LoggingMixin, Command):  # type: ignore
 
             # Ensure that the project directory exists
             if not project_base_path.exists():
-                self.info(
+                self.logger.info(
                     f"Creating project directory '<fg=green>{project_base_path}</>'."
                 )
                 project_base_path.mkdir(parents=True)
             settings_path = settings.write(project_base_path)
-            self.info(f"Saved project settings to '<fg=green>{settings_path}</>'.")
+            self.logger.info(
+                f"Saved project settings to '<fg=green>{settings_path}</>'."
+            )
             return 0
         except DataSafeHavenException as exc:
             for line in f"Could not initialise Data Safe Haven.\n{str(exc)}".split(
                 "\n"
             ):
-                self.error(line)
+                self.logger.error(line)
         return 1
 
     def process_arguments(self) -> None:
