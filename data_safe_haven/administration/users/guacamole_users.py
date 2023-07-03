@@ -31,10 +31,6 @@ class GuacamoleUsers(LoggingMixin):
         self.sre_name = sre_name
         self.group_name = f"Data Safe Haven Users SRE {sre_name}"
 
-    def add(self, users: Sequence[ResearchUser]) -> None:
-        """Add sequence of users to Guacamole"""
-        raise NotImplementedError("Users should not be directly added to Guacamole.")
-
     def list(self) -> Sequence[ResearchUser]:
         """List all Guacamole users"""
         if self.users_ is None:  # Allow for the possibility of an empty list of users
@@ -52,13 +48,3 @@ class GuacamoleUsers(LoggingMixin):
                 for user_details in postgres_output
             ]
         return self.users_
-
-    def remove(self, users: Sequence[ResearchUser]) -> None:
-        """Remove list of users from Guacamole"""
-        raise NotImplementedError(
-            "Users should not be directly removed from Guacamole."
-        )
-
-    def set(self, users: Sequence[ResearchUser]) -> None:
-        """Set Guacamole users to specified list"""
-        raise NotImplementedError("Users should not be directly altered in Guacamole.")
