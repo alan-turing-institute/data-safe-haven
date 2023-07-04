@@ -15,6 +15,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.external.api import GraphApi
 from data_safe_haven.utility import Logger
 
+
 class UsersAddCommand(Command):  # type: ignore
     """
     Add users to a Data Safe Haven deployment

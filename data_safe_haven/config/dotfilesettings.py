@@ -55,7 +55,6 @@ class DotFileSettings:
                 if "admin_group_id" in local_values
                 else self.logger.ask(
                     "Please enter the ID for an Azure group containing all administrators:",
-                    None,
                 )
             )
         self.admin_group_id = admin_group_id
@@ -64,7 +63,7 @@ class DotFileSettings:
                 local_values["location"]
                 if "location" in local_values
                 else self.logger.ask(
-                    "Please enter the Azure location to deploy resources into:", None
+                    "Please enter the Azure location to deploy resources into:"
                 )
             )
         self.location = location
@@ -73,7 +72,7 @@ class DotFileSettings:
                 local_values["name"]
                 if "name" in local_values
                 else self.logger.ask(
-                    "Please enter the name for this Data Safe Haven deployment:", None
+                    "Please enter the name for this Data Safe Haven deployment:"
                 )
             )
         self.name = name
@@ -83,7 +82,6 @@ class DotFileSettings:
                 if "subscription_name" in local_values
                 else self.logger.ask(
                     "Please enter the Azure subscription to deploy resources into:",
-                    None,
                 )
             )
         self.subscription_name = subscription_name

@@ -19,6 +19,7 @@ from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.pulumi import PulumiStack
 from data_safe_haven.utility import Logger
 
+
 class DeploySRECommand(Command):  # type: ignore
     """
     Deploy a Secure Research Environment using local configuration files
@@ -249,7 +250,7 @@ class DeploySRECommand(Command):  # type: ignore
                     "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
                 )
                 data_provider_ip_addresses = self.logger.ask(
-                    "Space-separated data provider IP addresses and ranges:", None
+                    "Space-separated data provider IP addresses and ranges:"
                 )
             config.sre[self.sre_name].data_provider_ip_addresses = [
                 str(ipaddress.ip_network(ipv4))
@@ -273,7 +274,7 @@ class DeploySRECommand(Command):  # type: ignore
                     "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
                 )
                 research_user_ip_addresses = self.logger.ask(
-                    "Space-separated research user IP addresses and ranges:", None
+                    "Space-separated research user IP addresses and ranges:"
                 )
             config.sre[self.sre_name].research_user_ip_addresses = [
                 str(ipaddress.ip_network(ipv4))
@@ -291,7 +292,7 @@ class DeploySRECommand(Command):  # type: ignore
                 "Please enter the VM SKU for each desktop you want to create, separated by spaces, for example 'Standard_D2s_v3 Standard_D2s_v3'."
             )
             self.logger.info("Available SKUs can be seen here: https://azureprice.net/")
-            candidate_skus = self.logger.ask("Space-separated VM sizes:", None)
+            candidate_skus = self.logger.ask("Space-separated VM sizes:")
             self.research_desktop_skus = [
                 sku for sku in candidate_skus.split() if sku in self.available_vm_skus
             ]

@@ -125,15 +125,6 @@ class Logger:
             cls.logger = logging.getLogger("data_safe_haven")
         return cls._instance
 
-    @staticmethod
-    def extra_args(no_newline: bool = False, overwrite: bool = False) -> Dict[str, str]:
-        extra = {}
-        if no_newline:
-            extra["action"] = "no_newline"
-        if overwrite:
-            extra["action"] = "overwrite"
-        return extra
-
     def format_msg(self, message: str, level: int = logging.INFO) -> str:
         for handler in self.logger.handlers:
             if isinstance(handler, RichHandler):
@@ -151,42 +142,30 @@ class Logger:
         return message
 
     # Pass log levels through to the logger
-    def critical(
-        self, message: str, no_newline: bool = False, overwrite: bool = False
-    ) -> None:
-        return self.logger.critical(
-            message, extra=self.extra_args(no_newline, overwrite)
-        )
+    def critical(self, message: str) -> None:
+        return self.logger.critical(message)
 
-    def error(
-        self, message: str, no_newline: bool = False, overwrite: bool = False
-    ) -> None:
-        return self.logger.error(message, extra=self.extra_args(no_newline, overwrite))
+    def error(self, message: str) -> None:
+        return self.logger.error(message)
 
-    def warning(
-        self, message: str, no_newline: bool = False, overwrite: bool = False
-    ) -> None:
-        return self.logger.warning(
-            message, extra=self.extra_args(no_newline, overwrite)
-        )
+    def warning(self, message: str) -> None:
+        return self.logger.warning(message)
 
-    def info(
-        self, message: str, no_newline: bool = False, overwrite: bool = False
-    ) -> None:
-        return self.logger.info(message, extra=self.extra_args(no_newline, overwrite))
+    def info(self, message: str) -> None:
+        return self.logger.info(message)
 
-    def debug(
-        self, message: str, no_newline: bool = False, overwrite: bool = False
-    ) -> None:
-        return self.logger.debug(message, extra=self.extra_args(no_newline, overwrite))
+    def debug(self, message: str) -> None:
+        return self.logger.debug(message)
 
     # Loggable wrappers for confirm/ask/choice
     def confirm(self, message: str, default_to_yes: bool = True) -> bool:
         formatted = self.format_msg(message, logging.INFO)
         return Confirm.ask(formatted, default=default_to_yes)
 
-    def ask(self, message: str) -> str:
+    def ask(self, message: str, default: Optional[str] = None) -> str:
         formatted = self.format_msg(message, logging.INFO)
+        if default:
+            return Prompt.ask(formatted, default=default)
         return Prompt.ask(formatted)
 
     def choose(
@@ -200,23 +179,21 @@ class Logger:
             return Prompt.ask(formatted, choices=choices, default=default)
         return Prompt.ask(formatted, choices=choices)
 
-    def parse(
-        self, message: str, no_newline: bool = False, overwrite: bool = False
-    ) -> None:
+    def parse(self, message: str) -> None:
         tokens = message.split(":")
         level, remainder = tokens[0], ":".join(tokens[1:]).strip()
         if level == "CRITICAL":
-            return self.critical(remainder, no_newline, overwrite)
+            return self.critical(remainder)
         elif level == "ERROR":
-            return self.error(remainder, no_newline, overwrite)
+            return self.error(remainder)
         elif level == "WARNING":
-            return self.warning(remainder, no_newline, overwrite)
+            return self.warning(remainder)
         elif level == "INFO":
-            return self.info(remainder, no_newline, overwrite)
+            return self.info(remainder)
         elif level == "DEBUG":
-            return self.debug(remainder, no_newline, overwrite)
+            return self.debug(remainder)
         else:
-            return self.info(message.strip(), no_newline, overwrite)
+            return self.info(message.strip())
 
     # Create a table
     def tabulate(

@@ -170,9 +170,8 @@ class Config(AzureMixin):
 
     def upload(self) -> None:
         """Dump the config file to Azure storage"""
-        self.logger.info(
-            f"Uploading config <fg=green>{self.name}</> to blob storage.",
-            no_newline=True,
+        self.logger.debug(
+            f"Uploading config [green]{self.name}[/] to blob storage.",
         )
         try:
             # Connect to blob storage
@@ -192,8 +191,7 @@ class Config(AzureMixin):
             )
             blob_client.upload_blob(str(self), overwrite=True)
             self.logger.info(
-                f"Uploaded config <fg=green>{self.name}</> to blob storage.",
-                overwrite=True,
+                f"Uploaded config [green]{self.name}[/] to blob storage.",
             )
         except Exception as exc:
             raise DataSafeHavenAzureException(

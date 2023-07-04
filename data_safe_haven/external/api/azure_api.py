@@ -44,7 +44,10 @@ from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import ResourceGroup
 from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.storage.models import BlobContainer, PublicAccess
-from azure.mgmt.storage.models import Sku as StorageAccountSku
+from azure.mgmt.storage.models import (
+    Sku as StorageAccountSku,
+    Kind as StorageAccountKind,
+)
 from azure.mgmt.storage.models import StorageAccount, StorageAccountCreateParameters
 from azure.storage.filedatalake import DataLakeServiceClient
 
@@ -155,9 +158,8 @@ class AzureApi(AzureMixin):
             dns_client = DnsManagementClient(self.credential, self.subscription_id)
 
             # Ensure that record exists
-            self.logger.info(
+            self.logger.debug(
                 f"Ensuring that DNS record {record_name} exists in zone {zone_name}...",
-                no_newline=True,
             )
             record_set = dns_client.record_sets.create_or_update(
                 parameters=RecordSet(
@@ -170,7 +172,6 @@ class AzureApi(AzureMixin):
             )
             self.logger.info(
                 f"Ensured that DNS record {record_name} exists in zone {zone_name}.",
-                overwrite=True,
             )
             return record_set
         except Exception as exc:
@@ -195,9 +196,8 @@ class AzureApi(AzureMixin):
             DataSafeHavenAzureException if the existence of the KeyVault could not be verified
         """
         try:
-            self.logger.info(
-                f"Ensuring that key vault <fg=green>{key_vault_name}</> exists...",
-                no_newline=True,
+            self.logger.debug(
+                f"Ensuring that key vault [green]{key_vault_name}[/] exists...",
             )
             tenant_id = tenant_id if tenant_id else self.tenant_id
 
@@ -247,8 +247,7 @@ class AzureApi(AzureMixin):
                 kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name
             ]
             self.logger.info(
-                f"Ensured that key vault <fg=green>{key_vaults[0].name}</> exists.",
-                overwrite=True,
+                f"Ensured that key vault [green]{key_vaults[0].name}[/] exists.",
             )
             return key_vaults[0]
         except Exception as exc:
@@ -276,9 +275,8 @@ class AzureApi(AzureMixin):
             )
 
             # Ensure that key exists
-            self.logger.info(
-                f"Ensuring that key <fg=green>{key_name}</> exists...",
-                no_newline=True,
+            self.logger.debug(
+                f"Ensuring that key [green]{key_name}[/] exists...",
             )
             key = None
             try:
@@ -287,8 +285,7 @@ class AzureApi(AzureMixin):
                 key_client.create_rsa_key(key_name, size=2048)
                 key = key_client.get_key(key_name)
             self.logger.info(
-                f"Ensured that key <fg=green>{key_name}</> exists.",
-                overwrite=True,
+                f"Ensured that key [green]{key_name}[/] exists.",
             )
             return key
         except Exception as exc:
@@ -308,9 +305,8 @@ class AzureApi(AzureMixin):
             DataSafeHavenAzureException if the existence of the secret could not be verified
         """
         # Ensure that key exists
-        self.logger.info(
-            f"Ensuring that secret <fg=green>{secret_name}</> exists...",
-            no_newline=True,
+        self.logger.debug(
+            f"Ensuring that secret [green]{secret_name}[/] exists...",
         )
         try:
             # Connect to Azure clients
@@ -325,8 +321,7 @@ class AzureApi(AzureMixin):
                 self.set_keyvault_secret(key_vault_name, secret_name, secret_value)
                 secret = secret_client.get_secret(secret_name)
             self.logger.info(
-                f"Ensured that secret <fg=green>{secret_name}</> exists.",
-                overwrite=True,
+                f"Ensured that secret [green]{secret_name}[/] exists.",
             )
             return secret
         except Exception as exc:
@@ -356,9 +351,8 @@ class AzureApi(AzureMixin):
             )
 
             # Ensure that certificate exists
-            self.logger.info(
-                f"Ensuring that certificate <fg=green>{certificate_url}</> exists...",
-                no_newline=True,
+            self.logger.debug(
+                f"Ensuring that certificate [green]{certificate_url}[/] exists...",
             )
             policy = CertificatePolicy(
                 issuer_name="Self",
@@ -377,8 +371,7 @@ class AzureApi(AzureMixin):
             )
             certificate = poller.result()
             self.logger.info(
-                f"Ensured that certificate <fg=green>{certificate_url}</> exists.",
-                overwrite=True,
+                f"Ensured that certificate [green]{certificate_url}[/] exists.",
             )
             return certificate
         except Exception as exc:
@@ -401,9 +394,8 @@ class AzureApi(AzureMixin):
             DataSafeHavenAzureException if the existence of the managed identity could not be verified
         """
         try:
-            self.logger.info(
-                f"Ensuring that managed identity <fg=green>{identity_name}</> exists...",
-                no_newline=True,
+            self.logger.debug(
+                f"Ensuring that managed identity [green]{identity_name}[/] exists...",
             )
             msi_client = ManagedServiceIdentityClient(
                 self.credential, self.subscription_id
@@ -415,8 +407,7 @@ class AzureApi(AzureMixin):
                 Identity(location=location),
             )
             self.logger.info(
-                f"Ensured that managed identity <fg=green>{identity_name}</> exists.",
-                overwrite=True,
+                f"Ensured that managed identity [green]{identity_name}[/] exists.",
             )
             return managed_identity  # type: ignore
         except Exception as exc:
@@ -442,9 +433,8 @@ class AzureApi(AzureMixin):
             )
 
             # Ensure that resource group exists
-            self.logger.info(
-                f"Ensuring that resource group <fg=green>{resource_group_name}</> exists...",
-                no_newline=True,
+            self.logger.debug(
+                f"Ensuring that resource group [green]{resource_group_name}[/] exists...",
             )
             resource_client.resource_groups.create_or_update(
                 resource_group_name,
@@ -456,8 +446,7 @@ class AzureApi(AzureMixin):
                 if rg.name == resource_group_name
             ]
             self.logger.info(
-                f"Ensured that resource group <fg=green>{resource_groups[0].name}</> exists in <fg=green>{resource_groups[0].location}</>.",
-                overwrite=True,
+                f"Ensured that resource group [green]{resource_groups[0].name}[/] exists in [green]{resource_groups[0].location}[/].",
             )
             return resource_groups[0]
         except Exception as exc:
@@ -485,24 +474,22 @@ class AzureApi(AzureMixin):
             storage_client = StorageManagementClient(
                 self.credential, self.subscription_id
             )
-            self.logger.info(
-                f"Ensuring that storage account <fg=green>{storage_account_name}</> exists...",
-                no_newline=True,
+            self.logger.debug(
+                f"Ensuring that storage account [green]{storage_account_name}[/] exists...",
             )
             poller = storage_client.storage_accounts.begin_create(
                 resource_group_name,
                 storage_account_name,
                 StorageAccountCreateParameters(
                     sku=StorageAccountSku(name="Standard_LRS"),
-                    kind="StorageV2",
+                    kind=StorageAccountKind.STORAGE_V2,
                     location=location,
                     tags=tags,
                 ),
             )
             storage_account = poller.result()
             self.logger.info(
-                f"Ensured that storage account <fg=green>{storage_account.name}</> exists.",
-                overwrite=True,
+                f"Ensured that storage account [green]{storage_account.name}[/] exists.",
             )
             return storage_account
         except Exception as exc:
@@ -527,9 +514,8 @@ class AzureApi(AzureMixin):
         # Connect to Azure clients
         storage_client = StorageManagementClient(self.credential, self.subscription_id)
 
-        self.logger.info(
-            f"Ensuring that storage container <fg=green>{container_name}</> exists...",
-            no_newline=True,
+        self.logger.debug(
+            f"Ensuring that storage container [green]{container_name}[/] exists...",
         )
         try:
             container = storage_client.blob_containers.create(
@@ -539,13 +525,12 @@ class AzureApi(AzureMixin):
                 BlobContainer(public_access=PublicAccess.NONE),
             )
             self.logger.info(
-                f"Ensured that storage container <fg=green>{container.name}</> exists.",
-                overwrite=True,
+                f"Ensured that storage container [green]{container.name}[/] exists.",
             )
             return container
         except HttpResponseError as exc:
             raise DataSafeHavenAzureException(
-                f"Failed to create storage container <fg=green>{container_name}."
+                f"Failed to create storage container [green]{container_name}."
             ) from exc
 
     def get_keyvault_certificate(
@@ -637,9 +622,8 @@ class AzureApi(AzureMixin):
                 credential=self.credential,
             )
             # Import the certificate, overwriting any existing certificate with the same name
-            self.logger.info(
-                f"Importing certificate <fg=green>{certificate_name}</>...",
-                no_newline=True,
+            self.logger.debug(
+                f"Importing certificate [green]{certificate_name}[/]...",
             )
             while True:
                 try:
@@ -654,8 +638,7 @@ class AzureApi(AzureMixin):
                     # Purge any existing deleted certificate with the same name
                     self.purge_keyvault_certificate(certificate_name, key_vault_name)
             self.logger.info(
-                f"Imported certificate <fg=green>{certificate_name}</>.",
-                overwrite=True,
+                f"Imported certificate [green]{certificate_name}[/].",
             )
             return certificate
         except Exception as exc:
@@ -706,9 +689,8 @@ class AzureApi(AzureMixin):
                 credential=self.credential,
             )
             # Ensure that record is removed
-            self.logger.info(
-                f"Purging certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>...",
-                no_newline=True,
+            self.logger.debug(
+                f"Purging certificate [green]{certificate_name}[/] from Key Vault [green]{key_vault_name}[/]...",
             )
             # Purge the certificate
             with suppress(HttpResponseError):
@@ -721,8 +703,7 @@ class AzureApi(AzureMixin):
                 except ResourceNotFoundError:
                     break
             self.logger.info(
-                f"Purged certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>.",
-                overwrite=True,
+                f"Purged certificate [green]{certificate_name}[/] from Key Vault [green]{key_vault_name}[/].",
             )
         except Exception as exc:
             raise DataSafeHavenAzureException(
@@ -744,9 +725,8 @@ class AzureApi(AzureMixin):
             # Connect to Azure clients
             dns_client = DnsManagementClient(self.credential, self.subscription_id)
             # Ensure that record is removed
-            self.logger.info(
-                f"Ensuring that DNS record {record_name} is removed from zone {zone_name}...",
-                no_newline=True,
+            self.logger.debug(
+                f"Ensuring that DNS record [green]{record_name}[/] is removed from zone [green]{zone_name}[/]...",
             )
             dns_client.record_sets.delete(
                 record_type="TXT",
@@ -755,12 +735,11 @@ class AzureApi(AzureMixin):
                 zone_name=zone_name,
             )
             self.logger.info(
-                f"Ensured that DNS record {record_name} is removed from zone {zone_name}.",
-                overwrite=True,
+                f"Ensured that DNS record [green]{record_name}[/] is removed from zone [green]{zone_name}[/].",
             )
         except Exception as exc:
             raise DataSafeHavenAzureException(
-                f"Failed to remove DNS record {record_name} from zone {zone_name}.\n{str(exc)}"
+                f"Failed to remove DNS record [green]{record_name}[/] from zone [green]{zone_name}[/].\n{str(exc)}"
             ) from exc
 
     def remove_keyvault_certificate(
@@ -780,9 +759,8 @@ class AzureApi(AzureMixin):
                 credential=self.credential,
             )
             # Remove certificate if it exists
-            self.logger.info(
-                f"Removing certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>...",
-                no_newline=True,
+            self.logger.debug(
+                f"Removing certificate [green]{certificate_name}[/] from Key Vault [green]{key_vault_name}[/]...",
             )
             # Attempt to delete the certificate, catching the error if it does not exist
             with suppress(ResourceNotFoundError):
@@ -797,8 +775,7 @@ class AzureApi(AzureMixin):
                 with suppress(HttpResponseError):
                     certificate_client.purge_deleted_certificate(certificate_name)
             self.logger.info(
-                f"Removed certificate <fg=green>{certificate_name}</> from Key Vault <fg=green>{key_vault_name}</>.",
-                overwrite=True,
+                f"Removed certificate [green]{certificate_name}[/] from Key Vault [green]{key_vault_name}[/].",
             )
         except ResourceNotFoundError:
             pass
@@ -820,9 +797,8 @@ class AzureApi(AzureMixin):
             )
 
             # Ensure that resource group exists
-            self.logger.info(
-                f"Removing resource group <fg=green>{resource_group_name}</> if it exists...",
-                no_newline=True,
+            self.logger.debug(
+                f"Removing resource group [green]{resource_group_name}[/] if it exists...",
             )
             poller = resource_client.resource_groups.begin_delete(
                 resource_group_name,
@@ -839,8 +815,7 @@ class AzureApi(AzureMixin):
                     f"There are still {len(resource_groups)} resource group(s) remaining."
                 )
             self.logger.info(
-                f"Ensured that resource group <fg=green>{resource_group_name}</> does not exist.",
-                overwrite=True,
+                f"Ensured that resource group [green]{resource_group_name}[/] does not exist.",
             )
         except Exception as exc:
             raise DataSafeHavenAzureException(
@@ -849,9 +824,8 @@ class AzureApi(AzureMixin):
 
     def restart_virtual_machine(self, resource_group_name: str, vm_name: str) -> None:
         try:
-            self.logger.info(
-                f"Attempting to restart virtual machine '<fg=green>{vm_name}</>' in resource group '<fg=green>{resource_group_name}</>'...",
-                no_newline=True,
+            self.logger.debug(
+                f"Attempting to restart virtual machine '[green]{vm_name}[/]' in resource group '[green]{resource_group_name}[/]'...",
             )
             # Connect to Azure clients
             compute_client = ComputeManagementClient(
@@ -864,8 +838,7 @@ class AzureApi(AzureMixin):
                 poller.result()
             )  # returns 'None' on success or raises an exception on failure
             self.logger.info(
-                f"Restarted virtual machine '<fg=green>{vm_name}</>' in resource group '<fg=green>{resource_group_name}</>'.",
-                overwrite=True,
+                f"Restarted virtual machine '[green]{vm_name}[/]' in resource group '[green]{resource_group_name}[/]'.",
             )
         except Exception as exc:
             raise DataSafeHavenAzureException(
@@ -947,8 +920,8 @@ class AzureApi(AzureMixin):
                 if container.name != container_name:
                     raise HttpResponseError("Container could not be found.")
             except HttpResponseError:
-                self.logger.info(
-                    f"Blob container '<fg=green>{container_name}</>' could not be found in storage account '<fg=green>{storage_account_name}</>'."
+                self.logger.warning(
+                    f"Blob container '[green]{container_name}[/]' could not be found in storage account '[green]{storage_account_name}[/]'."
                 )
                 return
 

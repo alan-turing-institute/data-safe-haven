@@ -63,9 +63,8 @@ class AzureContainerInstance(AzureMixin):
                 target_ip_address = self.current_ip_address
 
             # Restart container group
-            self.logger.info(
-                f"Restarting container group <fg=green>{self.container_group_name}</> with IP address <fg=green>{target_ip_address}</>...",
-                no_newline=True,
+            self.logger.debug(
+                f"Restarting container group [green]{self.container_group_name}[/] with IP address [green]{target_ip_address}[/]...",
             )
             while True:
                 if (
@@ -88,8 +87,7 @@ class AzureContainerInstance(AzureMixin):
                 if self.current_ip_address == target_ip_address:
                     break
             self.logger.info(
-                f"Restarted container group <fg=green>{self.container_group_name}</> with IP address <fg=green>{self.current_ip_address}</>.",
-                overwrite=True,
+                f"Restarted container group [green]{self.container_group_name}[/] with IP address [green]{self.current_ip_address}[/].",
             )
         except Exception as exc:
             raise DataSafeHavenAzureException(

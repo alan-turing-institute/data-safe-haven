@@ -139,7 +139,7 @@ class AzurePostgreSQLDatabase(AzureMixin):
             # Apply the Guacamole initialisation script
             for filepath in filepaths:
                 filepath = pathlib.Path(filepath)
-                self.logger.info(f"Running SQL script: <fg=green>{filepath.name}</>.")
+                self.logger.info(f"Running SQL script: [green]{filepath.name}[/].")
                 commands = self.load_sql(filepath, mustache_values)
                 cursor.execute(commands)
                 if "SELECT" in cursor.statusmessage:
@@ -167,9 +167,8 @@ class AzurePostgreSQLDatabase(AzureMixin):
         rule_name = f"AllowConfigurationUpdate-{self.rule_suffix}"
 
         if action == "enabled":
-            self.logger.info(
-                f"Adding temporary firewall rule for <fg=green>{self.current_ip}</>...",
-                no_newline=True,
+            self.logger.debug(
+                f"Adding temporary firewall rule for [green]{self.current_ip}[/]...",
             )
             self.wait(
                 self.db_client.servers.begin_update(
@@ -190,13 +189,11 @@ class AzurePostgreSQLDatabase(AzureMixin):
             )
             self.db_connection(n_retries=5)
             self.logger.info(
-                f"Added temporary firewall rule for <fg=green>{self.current_ip}</>.",
-                overwrite=True,
+                f"Added temporary firewall rule for [green]{self.current_ip}[/].",
             )
         elif action == "disabled":
-            self.logger.info(
-                f"Removing temporary firewall rule for <fg=green>{self.current_ip}</>...",
-                no_newline=True,
+            self.logger.debug(
+                f"Removing temporary firewall rule for [green]{self.current_ip}[/]...",
             )
             self.wait(
                 self.db_client.firewall_rules.begin_delete(
@@ -211,8 +208,7 @@ class AzurePostgreSQLDatabase(AzureMixin):
                 )
             )
             self.logger.info(
-                f"Removed temporary firewall rule for <fg=green>{self.current_ip}</>.",
-                overwrite=True,
+                f"Removed temporary firewall rule for [green]{self.current_ip}[/].",
             )
         else:
             raise DataSafeHavenInputException(
@@ -220,5 +216,5 @@ class AzurePostgreSQLDatabase(AzureMixin):
             )
         self.db_server_ = None  # Force refresh of self.db_server
         self.logger.info(
-            f"Public network access to <fg=green>{self.server_name}</> is <fg=green>{self.db_server.public_network_access}</>."
+            f"Public network access to [green]{self.server_name}[/] is [green]{self.db_server.public_network_access}[/]."
         )

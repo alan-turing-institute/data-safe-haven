@@ -77,7 +77,7 @@ class AzureFileShare(AzureMixin):
             file_client.upload_file(file_contents.encode("utf-8"))
         except Exception as exc:
             raise DataSafeHavenAzureException(
-                f"Failed to upload data to <fg=green>{target}</> in <fg=green>{self.share_name}</>."
+                f"Failed to upload data to [green]{target}[/] in [green]{self.share_name}[/]."
             ) from exc
 
     def delete(self, destination_path: str) -> None:
@@ -95,7 +95,7 @@ class AzureFileShare(AzureMixin):
                 file_client.delete_file()
         except Exception as exc:
             raise DataSafeHavenAzureException(
-                f"Failed to delete file <fg=green>{target}</> in <fg=green>{self.share_name}</>."
+                f"Failed to delete file [green]{target}[/] in [green]{self.share_name}[/]."
             ) from exc
 
     @staticmethod

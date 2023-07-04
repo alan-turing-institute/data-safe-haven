@@ -62,7 +62,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             outs["application_id"] = json_response["appId"]
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
-                f"Failed to create application <fg=green>{props['application_name']}</> in AzureAD.\n{str(exc)}"
+                f"Failed to create application [green]{props['application_name']}[/] in AzureAD.\n{str(exc)}"
             ) from exc
         return CreateResult(
             f"AzureADApplication-{props['application_name']}",
@@ -78,7 +78,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             graph_api.delete_application(props["application_name"])
         except Exception as exc:
             raise DataSafeHavenMicrosoftGraphException(
-                f"Failed to delete application <fg=green>{props['application_name']}</> from AzureAD.\n{str(exc)}"
+                f"Failed to delete application [green]{props['application_name']}[/] from AzureAD.\n{str(exc)}"
             ) from exc
 
     def diff(

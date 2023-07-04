@@ -127,7 +127,7 @@ class SREProvisioningManager:
         }
         for details in connection_data["connections"]:
             self.logger.info(
-                f"Adding connection <options=bold>{details['connection_name']}</> at <fg=green>{details['ip_address']}</>."
+                f"Adding connection [bold]{details['connection_name']}[/] at [green]{details['ip_address']}[/]."
             )
         postgres_script_path = (
             pathlib.Path(__file__).parent.parent

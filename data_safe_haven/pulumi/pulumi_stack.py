@@ -77,7 +77,7 @@ class PulumiStack:
     def stack(self) -> automation.Stack:
         """Load the Pulumi stack, creating if needed."""
         if not self.stack_:
-            self.logger.info(f"Creating/loading stack <fg=green>{self.stack_name}</>.")
+            self.logger.info(f"Creating/loading stack [green]{self.stack_name}[/].")
             try:
                 self.stack_ = automation.create_or_select_stack(
                     project_name="data_safe_haven",
@@ -172,26 +172,22 @@ class PulumiStack:
     def evaluate(self, result: str) -> None:
         """Evaluate a Pulumi operation."""
         if result == "succeeded":
-            self.logger.info("Pulumi operation <fg=green>succeeded</>.")
+            self.logger.info("Pulumi operation [green]succeeded[/].")
         else:
-            self.logger.error("Pulumi operation <fg=red>failed</>.")
+            self.logger.error("Pulumi operation [red]failed[/].")
             raise DataSafeHavenPulumiException("Pulumi operation failed.")
 
     def initialise_workdir(self) -> None:
         """Create project directory if it does not exist and update local stack."""
         try:
-            self.logger.info(
-                f"Ensuring that <fg=green>{self.work_dir}</> exists...", no_newline=True
-            )
+            self.logger.info(f"Ensuring that [green]{self.work_dir}[/] exists...")
             if not self.work_dir.exists():
                 self.work_dir.mkdir(parents=True)
-            self.logger.info(
-                f"Ensured that <fg=green>{self.work_dir}</> exists.", overwrite=True
-            )
+            self.logger.info(f"Ensured that [green]{self.work_dir}[/] exists.")
             # If stack information is saved in the config file then apply it here
             if self.stack_name in self.cfg.pulumi.stacks.keys():
                 self.logger.info(
-                    f"Loading stack <fg=green>{self.stack_name}</> information from config"
+                    f"Loading stack [green]{self.stack_name}[/] information from config"
                 )
                 stack_yaml = yaml.dump(
                     self.cfg.pulumi.stacks[self.stack_name].toDict(), indent=2
@@ -236,7 +232,7 @@ class PulumiStack:
         try:
             with suppress(automation.errors.CommandError):
                 self.logger.info(
-                    f"Previewing changes for stack <fg=green>{self.stack.name}</>."
+                    f"Previewing changes for stack [green]{self.stack.name}[/]."
                 )
                 self.stack.preview(
                     color="always", diff=True, on_output=self.logger.info
@@ -249,7 +245,7 @@ class PulumiStack:
     def refresh(self) -> None:
         """Refresh the Pulumi stack."""
         try:
-            self.logger.info(f"Refreshing stack <fg=green>{self.stack.name}</>.")
+            self.logger.info(f"Refreshing stack [green]{self.stack.name}[/].")
             # Note that we disable parallelisation which can cause deadlock
             self.stack.refresh(color="always", parallel=1)
         except automation.errors.CommandError as exc:
@@ -260,12 +256,10 @@ class PulumiStack:
     def remove_workdir(self) -> None:
         """Remove project directory if it exists."""
         try:
-            self.logger.info(
-                f"Removing <fg=green>{self.work_dir}</>...", no_newline=True
-            )
+            self.logger.info(f"Removing [green]{self.work_dir}[/]...")
             if self.work_dir.exists():
                 shutil.rmtree(self.work_dir)
-            self.logger.info(f"Removed <fg=green>{self.work_dir}</>.", overwrite=True)
+            self.logger.info(f"Removed [green]{self.work_dir}[/].")
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Removing Pulumi working directory failed.\n{str(exc)}."

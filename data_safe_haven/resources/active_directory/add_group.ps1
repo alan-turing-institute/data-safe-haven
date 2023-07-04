@@ -8,7 +8,7 @@ param (
 )
 
 if (Get-ADGroup -Filter "Name -eq '$GroupName'" -SearchBase $OuPath -ErrorAction SilentlyContinue) {
-    Write-Output "INFO: Group <fg=green>'$GroupName'</> already exists."
+    Write-Output "INFO: Group [green]'$GroupName'[/] already exists."
 } else {
     try {
         New-ADGroup -Description "$GroupName" `
@@ -17,8 +17,8 @@ if (Get-ADGroup -Filter "Name -eq '$GroupName'" -SearchBase $OuPath -ErrorAction
                     -Name "$GroupName" `
                     -Path $OuPath `
                     -ErrorAction Stop
-        Write-Output "INFO: Created group <fg=green>'$GroupName'</>."
+        Write-Output "INFO: Created group [green]'$GroupName'[/]."
     } catch {
-        Write-Output "ERROR: Failed to create group <fg=green>'$GroupName'</>."
+        Write-Output "ERROR: Failed to create group [green]'$GroupName'[/]."
     }
 }

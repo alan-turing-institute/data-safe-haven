@@ -46,7 +46,7 @@ class InitialiseCommand(Command):  # type: ignore
             # Confirm project path
             project_base_path = pathlib.Path.cwd().resolve()
             if not self.logger.confirm(
-                f"Do you want to initialise a Data Safe Haven project at <fg=green>{project_base_path}</>?",
+                f"Do you want to initialise a Data Safe Haven project at [green]{project_base_path}[/]?",
                 True,
             ):
                 sys.exit(0)
@@ -70,13 +70,11 @@ class InitialiseCommand(Command):  # type: ignore
             # Ensure that the project directory exists
             if not project_base_path.exists():
                 self.logger.info(
-                    f"Creating project directory '<fg=green>{project_base_path}</>'."
+                    f"Creating project directory '[green]{project_base_path}[/]'."
                 )
                 project_base_path.mkdir(parents=True)
             settings_path = settings.write(project_base_path)
-            self.logger.info(
-                f"Saved project settings to '<fg=green>{settings_path}</>'."
-            )
+            self.logger.info(f"Saved project settings to '[green]{settings_path}[/]'.")
             return 0
         except DataSafeHavenException as exc:
             for line in f"Could not initialise Data Safe Haven.\n{str(exc)}".split(

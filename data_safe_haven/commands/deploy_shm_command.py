@@ -129,7 +129,7 @@ class DeploySHMCommand(Command):  # type: ignore
                 config.shm.fqdn = self.fqdn
             else:
                 self.fqdn = self.logger.ask(
-                    "Please enter the domain that SHM users will belong to:", None
+                    "Please enter the domain that SHM users will belong to:"
                 )
 
         # Request admin IP addresses if not provided
@@ -143,7 +143,7 @@ class DeploySHMCommand(Command):  # type: ignore
                 self.logger.info(
                     "We need to know the tenant ID for the AzureAD where users will be created, for example '10de18e7-b238-6f1e-a4ad-772708929203'."
                 )
-                self.aad_tenant_id = self.logger.ask("AzureAD tenant ID:", None)
+                self.aad_tenant_id = self.logger.ask("AzureAD tenant ID:")
 
         # Request admin email address if not provided
         while not config.shm.admin_email_address:
@@ -155,7 +155,7 @@ class DeploySHMCommand(Command):  # type: ignore
                     "Please enter a single email address, for example 'sherlock@holmes.com'."
                 )
                 self.admin_email_address = self.logger.ask(
-                    "Administrator email address:", None
+                    "Administrator email address:"
                 )
             if self.admin_email_address:
                 config.shm.admin_email_address = self.admin_email_address.strip()
@@ -173,7 +173,7 @@ class DeploySHMCommand(Command):  # type: ignore
                     "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
                 )
                 admin_ip_addresses = self.logger.ask(
-                    "Space-separated administrator IP addresses and ranges:", None
+                    "Space-separated administrator IP addresses and ranges:"
                 )
             config.shm.admin_ip_addresses = [
                 str(ipaddress.ip_network(ipv4))
