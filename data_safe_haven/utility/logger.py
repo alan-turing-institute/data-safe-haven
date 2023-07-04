@@ -1,112 +1,99 @@
-"""Mixin class for anything needing logging"""
+"""Standalone logging class implemented as a singleton"""
 # Standard library imports
-import datetime
 import io
 import logging
-import re
 from typing import Any, Dict, List, Optional
 
 # Third party imports
-from cleo.io import ConsoleIO
-from clikit.api.io import Output, flags
-from clikit.formatter import AnsiFormatter, PlainFormatter
-from clikit.io.output_stream import StreamOutputStream
-from clikit.ui.components import Table
-
-
-def strip_formatting(input_string: str) -> str:
-    first_pass = PlainFormatter().remove_format(input_string)
-    return re.sub("<[^>]*>", "", first_pass)
-
-
-class CleoStringIO(ConsoleIO):  # type: ignore
-    """
-    A wrapper to coerce Cleo IO into a StringIO stream.
-    """
-
-    def __init__(self, *args: Any, **kwargs: Any):
-        self.stdout = io.StringIO()
-        kwargs["output"] = Output(StreamOutputStream(self.stdout), AnsiFormatter())
-        super().__init__(*args, **kwargs)
-
-
-class LoggingFilterColouredLevel(logging.Filter):
-    STYLES = {
-        "DEBUG": "fg=light_cyan",
-        "INFO": "fg=white",
-        "WARNING": "fg=yellow",
-        "ERROR": "fg=light_red",
-        "CRITICAL": "bg=red",
-    }
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        record.style = LoggingFilterColouredLevel.STYLES[record.levelname]
-        return True
-
-
-class LoggingHandlerClikit(logging.Handler):
-    """Logging handler that redirects all messages to clikit io object."""
-
-    def __init__(
-        self,
-        level: int = logging.NOTSET,
-        fmt: Optional[str] = None,
-        datefmt: Optional[str] = None,
-    ):
-        super().__init__(level=level)
-        self.io = ConsoleIO()
-        if fmt:
-            if datefmt:
-                self.setFormatter(logging.Formatter(fmt, datefmt))
-            else:
-                self.setFormatter(logging.Formatter(fmt))
-
-    def emit(self, record: logging.LogRecord) -> None:
-        msg = self.format(record)
-        if hasattr(record, "tag") and record.tag == "no_console":
-            return
-        # Send error and above to stderr
-        if record.levelno >= logging.ERROR:
-            # If overwrite is allowed then call the appropriate function
-            if hasattr(record, "action"):
-                if record.action == "no_newline":
-                    self.io.error(msg)
-                    self.io._last_message_err = msg  # workaround for a bug in clikit
-                elif record.action == "overwrite":
-                    self.io.overwrite_error(msg)
-                    self.io.error_line("")  # needed to correctly insert a newline
-            # Otherwise use the default function
-            else:
-                self.io.error_line(msg, flags.NORMAL)
-        # Send other messages to stdout
-        else:
-            # If overwrite is allowed then call the appropriate function
-            if hasattr(record, "action"):
-                if record.action == "no_newline":
-                    self.io.write(msg)
-                elif record.action == "overwrite":
-                    self.io.overwrite(msg)
-                    self.io.write_line("")  # needed to correctly insert a newline
-            # Otherwise use the default function
-            else:
-                self.io.write_line(msg, flags.NORMAL)
+from rich.logging import RichHandler
+from rich.highlighter import RegexHighlighter
+from rich.prompt import Confirm, Prompt
+from rich.text import Text
+from rich.table import Table
+from rich.console import Console
 
 
 class LoggingHandlerPlainFile(logging.FileHandler):
-    """Logging handler that cleans messages before sending them to a log file."""
+    """
+    Logging handler that cleans messages before sending them to a log file.
+    """
+
+    def __init__(
+        self, fmt: str, datefmt: str, filename: str, *args: Any, **kwargs: Any
+    ):
+        """Constructor"""
+        super().__init__(filename=filename, *args, **kwargs)
+        self.setFormatter(logging.Formatter(self.strip_formatting(fmt), datefmt))
+
+    @staticmethod
+    def strip_formatting(input_string: str) -> str:
+        """Strip console markup formatting from a string"""
+        text = Text.from_markup(input_string)
+        text.spans = []
+        return str(text)
 
     def emit(self, record: logging.LogRecord) -> None:
-        # Strip formatting from the record before logging it
-        record.msg = strip_formatting(record.msg)
+        """Emit a record without formatting"""
+        record.msg = self.strip_formatting(record.msg)
         super().emit(record)
 
 
+class LoggingHandlerRichConsole(RichHandler):
+    """
+    Logging handler that uses Rich.
+    """
+
+    def __init__(self, fmt: str, datefmt: str, *args: Any, **kwargs: Any):
+        super().__init__(
+            *args,
+            highlighter=LogLevelHighlighter(),
+            markup=True,
+            omit_repeated_times=False,
+            rich_tracebacks=True,
+            show_level=False,
+            show_time=False,
+            tracebacks_show_locals=True,
+            **kwargs,
+        )
+        self.setFormatter(logging.Formatter(fmt, datefmt))
+
+
+class LogLevelHighlighter(RegexHighlighter):
+    """
+    Highlighter that looks for [level-name] and applies default formatting.
+    """
+
+    base_style = "logging.level."
+    highlights = [
+        r"(?P<critical>\[CRITICAL\])",
+        r"(?P<debug>\[   DEBUG\])",
+        r"(?P<error>\[   ERROR\])",
+        r"(?P<info>\[    INFO\])",
+        r"(?P<warning>\[ WARNING\])",
+    ]
+
+
+class RichStringAdaptor:
+    """
+    A wrapper to convert Rich objects into strings.
+    """
+
+    def __init__(self):
+        self.string_io = io.StringIO()
+        self.console = Console(file=self.string_io)
+
+    def to_string(self, *renderables: Any) -> str:
+        self.console.print(*renderables)
+        return self.string_io.getvalue()
+
+
 class Logger:
-    """Logging singleton that can be used for anything needing logging"""
+    """
+    Logging singleton that can be used for anything needing logging
+    """
 
     date_fmt = r"%Y-%m-%d %H:%M:%S"
-    coloured_fmt = "<fg=blue>%(asctime)s</> <%(style)s>[%(levelname)8s]</> %(message)s"
-    is_setup = False
+    rich_format = r"[log.time]%(asctime)s[/] [%(levelname)8s] %(message)s"
     _instance: Optional["Logger"] = None
 
     def __new__(
@@ -114,23 +101,29 @@ class Logger:
     ) -> "Logger":
         if not cls._instance:
             cls._instance = super(Logger, cls).__new__(cls)
+            # Initialise console handler
+            console_handler = LoggingHandlerRichConsole(cls.rich_format, cls.date_fmt)
+            handlers = [console_handler]
+            # Initialise file handler
+            if log_file:
+                file_handler = LoggingHandlerPlainFile(
+                    cls.rich_format, cls.date_fmt, log_file
+                )
+                handlers += [file_handler]
+            # Set basic logging config
+            desired_log_level = logging.INFO - 10 * (verbosity if verbosity else 0)
+            logging.basicConfig(
+                handlers=handlers,
+                level=max(desired_log_level, 0),
+            )
+            # Disable unnecessarily verbose Azure logging
+            logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
+            logging.getLogger("azure.identity._credentials").setLevel(logging.ERROR)
+            logging.getLogger("azure.identity._internal").setLevel(logging.ERROR)
+            logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
+            # Expose the data safe haven logger
+            cls.logger = logging.getLogger("data_safe_haven")
         return cls._instance
-
-    def __init__(
-        self, verbosity: Optional[int] = None, log_file: Optional[str] = None
-    ) -> None:
-        self.logger = logging.getLogger("data_safe_haven")
-        self.console = LoggingHandlerClikit(
-            fmt=self.coloured_fmt, datefmt=self.date_fmt
-        )
-        self.console.addFilter(LoggingFilterColouredLevel())
-        self.initialise_logging(
-            verbosity=verbosity if verbosity else 0, log_file=log_file
-        )
-
-    @property
-    def prefix(self) -> str:
-        return f"<fg=blue>[{datetime.datetime.now().isoformat(timespec='seconds')}]</>"
 
     @staticmethod
     def extra_args(no_newline: bool = False, overwrite: bool = False) -> Dict[str, str]:
@@ -142,37 +135,20 @@ class Logger:
         return extra
 
     def format_msg(self, message: str, level: int = logging.INFO) -> str:
-        record = self.logger.makeRecord(
-            name=self.logger.name,
-            level=level,
-            fn="",
-            lno=0,
-            msg=message,
-            args={},
-            exc_info=None,
-        )
-        record.style = LoggingFilterColouredLevel.STYLES[record.levelname]
-        return self.console.format(record)
-
-    def initialise_logging(self, verbosity: int, log_file: Optional[str]) -> None:
-        """Initialise logging handlers and formatters."""
-        if not self.is_setup:
-            # Setup handlers
-            handlers: List[logging.Handler] = [self.console]
-            if log_file:
-                handlers += [LoggingHandlerPlainFile(log_file)]
-            # Set basic logging config
-            logging.basicConfig(
-                datefmt=self.date_fmt,
-                format=strip_formatting(self.coloured_fmt),
-                handlers=handlers,
-                level=max(logging.INFO - 10 * verbosity, 0),
-            )
-            # Disable unnecessarily verbose Azure logging
-            logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
-            logging.getLogger("azure.identity._credentials").setLevel(logging.ERROR)
-            logging.getLogger("azure.identity._internal").setLevel(logging.ERROR)
-            logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
+        for handler in self.logger.handlers:
+            if isinstance(handler, RichHandler):
+                return handler.format(
+                    self.logger.makeRecord(
+                        name=self.logger.name,
+                        level=level,
+                        fn="",
+                        lno=0,
+                        msg=message,
+                        args={},
+                        exc_info=None,
+                    )
+                )
+        return message
 
     # Pass log levels through to the logger
     def critical(
@@ -205,20 +181,24 @@ class Logger:
         return self.logger.debug(message, extra=self.extra_args(no_newline, overwrite))
 
     # Loggable wrappers for confirm/ask/choice
-    def confirm(self, message: str, *args: Any, **kwargs: Any) -> bool:
+    def confirm(self, message: str, default_to_yes: bool = True) -> bool:
         formatted = self.format_msg(message, logging.INFO)
-        self.logger.info(message, extra={"tag": "no_console"})
-        return bool(self.console.io.confirm(formatted, *args, **kwargs))
+        return Confirm.ask(formatted, default=default_to_yes)
 
-    def ask(self, message: str, *args: Any, **kwargs: Any) -> str:
+    def ask(self, message: str) -> str:
         formatted = self.format_msg(message, logging.INFO)
-        self.logger.info(message, extra={"tag": "no_console"})
-        return str(self.console.io.ask(formatted, *args, **kwargs))
+        return Prompt.ask(formatted)
 
-    def choose(self, message: str, *args: Any, **kwargs: Any) -> str:
+    def choose(
+        self,
+        message: str,
+        choices: Optional[List[str]] = None,
+        default: Optional[str] = None,
+    ) -> str:
         formatted = self.format_msg(message, logging.INFO)
-        self.logger.info(message, extra={"tag": "no_console"})
-        return str(self.console.io.choice(formatted, *args, **kwargs))
+        if default:
+            return Prompt.ask(formatted, choices=choices, default=default)
+        return Prompt.ask(formatted, choices=choices)
 
     def parse(
         self, message: str, no_newline: bool = False, overwrite: bool = False
@@ -244,10 +224,10 @@ class Logger:
     ) -> List[str]:
         table = Table()
         if header:
-            table.set_header_row(header)
+            for item in header:
+                table.add_column(item)
         if rows:
-            table.set_rows(rows)
-        string_io = CleoStringIO()
-        table.render(string_io)
-        string_io.stdout.seek(0)
-        return [line.strip() for line in string_io.stdout.readlines()]
+            for row in rows:
+                table.add_row(*row)
+        adaptor = RichStringAdaptor()
+        return [l.strip() for l in adaptor.to_string(table).split("\n")]
