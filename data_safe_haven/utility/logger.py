@@ -103,7 +103,7 @@ class Logger:
             cls._instance = super(Logger, cls).__new__(cls)
             # Initialise console handler
             console_handler = LoggingHandlerRichConsole(cls.rich_format, cls.date_fmt)
-            handlers = [console_handler]
+            handlers: List[logging.Handler] = [console_handler]
             # Initialise file handler
             if log_file:
                 file_handler = LoggingHandlerPlainFile(
@@ -112,31 +112,33 @@ class Logger:
                 handlers += [file_handler]
             # Set basic logging config
             desired_log_level = logging.INFO - 10 * (verbosity if verbosity else 0)
-            logging.basicConfig(
-                handlers=handlers,
-                level=max(desired_log_level, 0),
-            )
-            # Disable unnecessarily verbose Azure logging
+            cls.logger = logging.getLogger("data_safe_haven")
+            cls.logger.handlers = handlers
+            cls.logger.level = max(desired_log_level, 0)
+            # Disable unnecessarily verbose external logging
             logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
             logging.getLogger("azure.identity._credentials").setLevel(logging.ERROR)
             logging.getLogger("azure.identity._internal").setLevel(logging.ERROR)
             logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
+            logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
             # Expose the data safe haven logger
-            cls.logger = logging.getLogger("data_safe_haven")
         return cls._instance
 
     def format_msg(self, message: str, level: int = logging.INFO) -> str:
         for handler in self.logger.handlers:
             if isinstance(handler, RichHandler):
+                fn, lno, func, sinfo = self.logger.findCaller(False, 1)
                 return handler.format(
                     self.logger.makeRecord(
                         name=self.logger.name,
                         level=level,
-                        fn="",
-                        lno=0,
+                        fn=fn,
+                        lno=lno,
                         msg=message,
                         args={},
                         exc_info=None,
+                        func=func,
+                        sinfo=sinfo,
                     )
                 )
         return message
