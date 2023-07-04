@@ -10,36 +10,23 @@ versions:
     - "3.10"
     - "3.11"
 packages:
-    arviz:
-    beautifulsoup4:
     black:
     Cython:
-    dash:
-    dask:
-    flair:
     flake8:
-    folium:
-    gensim:
     geopandas:
-    gym:
     html5lib:
     ipykernel:
-    lightgbm:
     lxml:
     matplotlib:
-    nltk:
     numpy:
         "all": [">1.0.0"]  # increase solver flexibility
     pandas:
     pandasql:
-    pathos:
-    pg8000:
     Pillow:
     plotly:
     poetry:  # also used by installation scripts
         "all": [">=1.3.0,<1.4.0"]  # avoid known installation issue https://github.com/python-poetry/poetry/issues/7611
     prophet:
-    psycopg2:
     pydot:
     pygrib:
     pylint:
@@ -52,21 +39,7 @@ packages:
     regex:
     requests:
     safety:  # also used by installation scripts
-    scikit-image:
-        "all": [">0.10.0"]  # increase solver flexibility
-    scikit-learn:
-    scipy:
     seaborn:
-    spacy-langdetect:
-    spacy:
     Sphinx:
     SQLAlchemy:
-    statsmodels:
-        "all": [">0.10.0"]  # increase solver flexibility
-    sympy:
     tables:
-    tensorflow:
-        "3.11": ["uninstallable"]  # does not yet support 3.11
-    thinc:
-    xgboost:
-    xlrd:
