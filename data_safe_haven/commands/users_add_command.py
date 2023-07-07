@@ -20,7 +20,7 @@ from data_safe_haven.utility import Logger
 from .base_command import BaseCommand
 
 
-class UsersAddCommand(BaseCommand):  # type: ignore
+class UsersAddCommand(BaseCommand):
     """Add users to a deployed Data Safe Haven"""
 
     def entrypoint(
@@ -34,12 +34,6 @@ class UsersAddCommand(BaseCommand):  # type: ignore
     ) -> None:
         shm_name = "UNKNOWN"
         try:
-            # # Process command line arguments
-            # self.process_arguments()
-
-            # # Set up logging for anything called by this command
-            # self.logger = Logger(self.io.verbosity, self.output)
-
             # Use dotfile settings to load the job configuration
             try:
                 settings = DotFileSettings()
