@@ -92,6 +92,7 @@ class DeploySRECommand(BaseCommand):
         ] = None,
     ) -> None:
         """Typer command line entrypoint"""
+        sre_name = "UNKNOWN"
         try:
             # Use a JSON-safe SRE name
             sre_name = alphanumeric(name)

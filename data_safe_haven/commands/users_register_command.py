@@ -37,6 +37,7 @@ class UsersRegisterCommand(BaseCommand):  # type: ignore
         ],
     ) -> None:
         shm_name = "UNKNOWN"
+        sre_name = "UNKNOWN"
         try:
             # Use a JSON-safe SRE name
             sre_name = alphanumeric(sre)

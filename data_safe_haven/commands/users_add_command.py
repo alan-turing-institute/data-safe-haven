@@ -1,11 +1,9 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Standard library imports
 import pathlib
-from typing import Optional
 from typing_extensions import Annotated
 
 # Third party imports
-from cleo import Command
 import typer
 
 # Local imports
@@ -16,7 +14,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external.api import GraphApi
-from data_safe_haven.utility import Logger
 from .base_command import BaseCommand
 
 

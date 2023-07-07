@@ -1,10 +1,4 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
-# Standard library imports
-from typing import Optional
-
-# Third party imports
-from cleo import Command
-
 # Local imports
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config, DotFileSettings

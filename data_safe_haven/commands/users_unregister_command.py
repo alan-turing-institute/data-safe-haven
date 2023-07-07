@@ -15,7 +15,6 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external.api import GraphApi
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.utility import Logger
 from .base_command import BaseCommand
 
 
@@ -38,6 +37,7 @@ class UsersUnregisterCommand(BaseCommand):
         ],
     ) -> None:
         shm_name = "UNKNOWN"
+        sre_name = "UNKNOWN"
         try:
             # Use a JSON-safe SRE name
             sre_name = alphanumeric(sre)
