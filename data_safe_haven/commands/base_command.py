@@ -11,6 +11,7 @@ from data_safe_haven.utility import Logger
 
 class IBaseCommand(ABC):
     """Command with entrypoint for use with Typer"""
+
     @abstractmethod
     def entrypoint(self, *args: Any, **kwargs: Any) -> None:
         """Typer command line entrypoint"""

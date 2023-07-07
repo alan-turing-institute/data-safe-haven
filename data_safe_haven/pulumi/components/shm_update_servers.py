@@ -13,7 +13,7 @@ from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_name_from_subnet,
 )
-from .virtual_machine import VMComponent, LinuxVMProps
+from .virtual_machine import LinuxVMProps, VMComponent
 
 
 class SHMUpdateServersProps:

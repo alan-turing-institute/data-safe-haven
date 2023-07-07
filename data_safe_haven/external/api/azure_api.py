@@ -24,10 +24,7 @@ from azure.mgmt.automation.models import (
     DscConfigurationAssociationProperty,
 )
 from azure.mgmt.compute import ComputeManagementClient
-from azure.mgmt.compute.models import (
-    RunCommandInput,
-    RunCommandInputParameter,
-)
+from azure.mgmt.compute.models import RunCommandInput, RunCommandInputParameter
 from azure.mgmt.dns import DnsManagementClient
 from azure.mgmt.dns.models import RecordSet, TxtRecord
 from azure.mgmt.keyvault import KeyVaultManagementClient
@@ -43,12 +40,14 @@ from azure.mgmt.msi.models import Identity
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.resource.resources.models import ResourceGroup
 from azure.mgmt.storage import StorageManagementClient
-from azure.mgmt.storage.models import BlobContainer, PublicAccess
 from azure.mgmt.storage.models import (
-    Sku as StorageAccountSku,
+    BlobContainer,
     Kind as StorageAccountKind,
+    PublicAccess,
+    Sku as StorageAccountSku,
+    StorageAccount,
+    StorageAccountCreateParameters,
 )
-from azure.mgmt.storage.models import StorageAccount, StorageAccountCreateParameters
 from azure.storage.filedatalake import DataLakeServiceClient
 
 # Local imports

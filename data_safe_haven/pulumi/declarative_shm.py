@@ -7,12 +7,12 @@ import pulumi
 
 # Local imports
 from data_safe_haven.config import Config
+from .components.shm_bastion import SHMBastionComponent, SHMBastionProps
+from .components.shm_data import SHMDataComponent, SHMDataProps
 from .components.shm_domain_controllers import (
     SHMDomainControllersComponent,
     SHMDomainControllersProps,
 )
-from .components.shm_bastion import SHMBastionComponent, SHMBastionProps
-from .components.shm_data import SHMDataComponent, SHMDataProps
 from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
 from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps

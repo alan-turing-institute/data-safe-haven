@@ -3,7 +3,7 @@
 from typing import Optional, Sequence
 
 # Third party imports
-from pulumi import Config, ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
     keyvault,
