@@ -1,6 +1,6 @@
 # Standard library imports
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Callable
 
 # Third-party imports
 import typer

@@ -10,10 +10,10 @@ from typing_extensions import Annotated
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.commands import (
+    AdminCommand,
     DeployCommand,
     InitialiseCommand,
     TeardownCommand,
-    UsersCommand,
 )
 from data_safe_haven.exceptions import DataSafeHavenException
 from data_safe_haven.utility import Logger
@@ -44,7 +44,7 @@ def callback(
     ] = None,
 ):
     """Arguments to the main executable"""
-    Logger(verbosity, output)  # initialise logger
+    Logger(verbosity, output)  # initialise logging singleton
     if version:
         print(f"Data Safe Haven {__version__}")
         raise typer.Exit()
@@ -63,7 +63,12 @@ def main() -> None:
     # Register arguments to the main executable
     application.callback()(callback)
 
-    # Register subcommands
+    # Register command groups
+    application.add_typer(
+        AdminCommand(),
+        name="admin",
+        help="Perform administrative tasks on a deployed Data Safe Haven.",
+    )
     application.add_typer(
         DeployCommand(), name="deploy", help="Deploy a Data Safe Haven component."
     )
@@ -73,14 +78,9 @@ def main() -> None:
         help="Tear down a Data Safe Haven component.",
     )
 
-    # Register commands
+    # Register direct subcommands
     application.command(name="init", help="Initialise a Data Safe Haven deployment.")(
         InitialiseCommand().entrypoint
-    )
-    application.add_typer(
-        UsersCommand(),
-        name="users",
-        help="Manage users for a deployed Data Safe Haven.",
     )
 
     # Start the application
