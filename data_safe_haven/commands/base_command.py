@@ -29,6 +29,10 @@ class BaseCommand(IBaseCommand):
 class CommandGroup(typer.Typer):
     """Command group containing subcommands"""
 
+    def subgroup(self, cls: type["CommandGroup"], name: str, help: str) -> None:
+        """Register a command group"""
+        self.add_typer(cls(), name=name, help=help)
+
     def subcommand(self, cls: type[BaseCommand], name: str, help: str) -> None:
-        """Register a sub command"""
+        """Register a command"""
         self.command(name=name, help=help)(cls().entrypoint)

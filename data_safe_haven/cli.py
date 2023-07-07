@@ -11,6 +11,7 @@ from typing_extensions import Annotated
 from data_safe_haven import __version__
 from data_safe_haven.commands import (
     AdminCommand,
+    CommandGroup,
     DeployCommand,
     InitialiseCommand,
     TeardownCommand,
@@ -54,7 +55,7 @@ def main() -> None:
     """Command line entrypoint for Data Safe Haven application"""
 
     # Create the application
-    application = typer.Typer(
+    application = CommandGroup(
         context_settings={"help_option_names": ["-h", "--help"]},
         invoke_without_command=True,
         no_args_is_help=True,
@@ -64,23 +65,25 @@ def main() -> None:
     application.callback()(callback)
 
     # Register command groups
-    application.add_typer(
-        AdminCommand(),
+    application.subgroup(
+        AdminCommand,
         name="admin",
         help="Perform administrative tasks on a deployed Data Safe Haven.",
     )
-    application.add_typer(
-        DeployCommand(), name="deploy", help="Deploy a Data Safe Haven component."
+    application.subgroup(
+        DeployCommand, name="deploy", help="Deploy a Data Safe Haven component."
     )
-    application.add_typer(
-        TeardownCommand(),
+    application.subgroup(
+        TeardownCommand,
         name="teardown",
         help="Tear down a Data Safe Haven component.",
     )
 
     # Register direct subcommands
-    application.command(name="init", help="Initialise a Data Safe Haven deployment.")(
-        InitialiseCommand().entrypoint
+    application.subcommand(
+        InitialiseCommand,
+        name="init",
+        help="Initialise a Data Safe Haven deployment.",
     )
 
     # Start the application
