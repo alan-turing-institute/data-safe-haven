@@ -2,15 +2,18 @@
 # Standard library imports
 import io
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 # Third party imports
-from rich.logging import RichHandler
-from rich.highlighter import RegexHighlighter
-from rich.prompt import Confirm, Prompt
-from rich.text import Text
-from rich.table import Table
 from rich.console import Console
+from rich.highlighter import RegexHighlighter
+from rich.logging import RichHandler
+from rich.prompt import Confirm, Prompt
+from rich.table import Table
+from rich.text import Text
+
+# Local imports
+from .types import PathType
 
 
 class LoggingHandlerPlainFile(logging.FileHandler):
@@ -78,9 +81,9 @@ class RichStringAdaptor:
     A wrapper to convert Rich objects into strings.
     """
 
-    def __init__(self):
+    def __init__(self, coloured=False):
         self.string_io = io.StringIO()
-        self.console = Console(file=self.string_io)
+        self.console = Console(file=self.string_io, force_terminal=coloured)
 
     def to_string(self, *renderables: Any) -> str:
         self.console.print(*renderables)
@@ -97,9 +100,22 @@ class Logger:
     _instance: Optional["Logger"] = None
 
     def __new__(
-        cls, verbosity: Optional[int] = None, log_file: Optional[str] = None
+        cls, verbosity: Optional[int] = None, log_file: Optional[PathType] = None
     ) -> "Logger":
-        if not cls._instance:
+        desired_log_level = max(
+            logging.INFO - 10 * (verbosity if verbosity else 0), logging.DEBUG
+        )
+        if cls._instance:
+            # If we've already instantiated a logger check that the verbosity and log file are set correctly
+            if verbosity:
+                cls._instance.logger.setLevel(desired_log_level)
+            if log_file:
+                cls._instance.logger.addHandler(
+                    LoggingHandlerPlainFile(
+                        cls.rich_format, cls.date_fmt, str(log_file)
+                    )
+                )
+        else:
             cls._instance = super(Logger, cls).__new__(cls)
             # Initialise console handler
             console_handler = LoggingHandlerRichConsole(cls.rich_format, cls.date_fmt)
@@ -107,14 +123,13 @@ class Logger:
             # Initialise file handler
             if log_file:
                 file_handler = LoggingHandlerPlainFile(
-                    cls.rich_format, cls.date_fmt, log_file
+                    cls.rich_format, cls.date_fmt, str(log_file)
                 )
                 handlers += [file_handler]
             # Set basic logging config
-            desired_log_level = logging.INFO - 10 * (verbosity if verbosity else 0)
             cls.logger = logging.getLogger("data_safe_haven")
             cls.logger.handlers = handlers
-            cls.logger.level = max(desired_log_level, 0)
+            cls.logger.level = desired_log_level
             # Disable unnecessarily verbose external logging
             logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
             logging.getLogger("azure.identity._credentials").setLevel(logging.ERROR)
@@ -125,6 +140,7 @@ class Logger:
         return cls._instance
 
     def format_msg(self, message: str, level: int = logging.INFO) -> str:
+        """Format a message using rich handler"""
         for handler in self.logger.handlers:
             if isinstance(handler, RichHandler):
                 fn, lno, func, sinfo = self.logger.findCaller(False, 1)
@@ -142,6 +158,11 @@ class Logger:
                     )
                 )
         return message
+
+    def style(self, message: str) -> str:
+        """Apply logging style to a string"""
+        markup = self.format_msg(message)
+        return RichStringAdaptor(coloured=True).to_string(markup)
 
     # Pass log levels through to the logger
     def critical(self, message: str) -> None:
@@ -181,6 +202,7 @@ class Logger:
             return Prompt.ask(formatted, choices=choices, default=default)
         return Prompt.ask(formatted, choices=choices)
 
+    # Apply a level to non-leveled messages
     def parse(self, message: str) -> None:
         tokens = message.split(":")
         level, remainder = tokens[0], ":".join(tokens[1:]).strip()
