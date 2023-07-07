@@ -1,5 +1,6 @@
 # Standard library imports
 import csv
+import pathlib
 from typing import Any, Dict, List, Sequence
 
 # Local imports
@@ -8,6 +9,7 @@ from data_safe_haven.exceptions import DataSafeHavenUserHandlingException
 from data_safe_haven.external.api import GraphApi
 from data_safe_haven.mixins import AzureMixin
 from data_safe_haven.utility import Logger
+
 from .active_directory_users import ActiveDirectoryUsers
 from .azure_ad_users import AzureADUsers
 from .guacamole_users import GuacamoleUsers
@@ -30,7 +32,7 @@ class UserHandler(AzureMixin):
             sre_name: GuacamoleUsers(config, sre_name) for sre_name in config.sre.keys()
         }
 
-    def add(self, users_csv_path: str) -> None:
+    def add(self, users_csv_path: pathlib.Path) -> None:
         """Add AzureAD and Guacamole users
 
         Raises:

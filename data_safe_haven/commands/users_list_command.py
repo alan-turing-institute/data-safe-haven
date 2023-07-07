@@ -14,27 +14,15 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external.api import GraphApi
 from data_safe_haven.utility import Logger
+from .base_command import BaseCommand
 
 
-class UsersListCommand(Command):  # type: ignore
-    """
-    List users for a Data Safe Haven deployment
+class UsersListCommand(BaseCommand):  # type: ignore
+    """List users from a deployed Data Safe Haven"""
 
-    list
-        {--o|output= : Path to an output log file}
-    """
-
-    output: Optional[str]
-
-    def handle(self) -> int:
+    def entrypoint(self) -> None:
         shm_name = "UNKNOWN"
         try:
-            # Process command line arguments
-            self.process_arguments()
-
-            # Set up logging for anything called by this command
-            self.logger = Logger(self.io.verbosity, self.output)
-
             # Use dotfile settings to load the job configuration
             try:
                 settings = DotFileSettings()
@@ -54,22 +42,7 @@ class UsersListCommand(Command):  # type: ignore
             # List users from all sources
             users = UserHandler(config, graph_api)
             users.list()
-            return 0
         except DataSafeHavenException as exc:
-            for (
-                line
-            ) in f"Could not list users for Data Safe Haven '{shm_name}'.\n{str(exc)}".split(
-                "\n"
-            ):
-                self.logger.error(line)
-        return 1
-
-    def process_arguments(self) -> None:
-        """Load command line arguments into attributes"""
-        # Output
-        output = self.option("output")
-        if not isinstance(output, str) and (output is not None):
-            raise DataSafeHavenInputException(
-                f"Invalid value '{output}' provided for 'output'."
-            )
-        self.output = output
+            raise DataSafeHavenException(
+                f"Could not list users for Data Safe Haven '{shm_name}'.\n{str(exc)}"
+            ) from exc

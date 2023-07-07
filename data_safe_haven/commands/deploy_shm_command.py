@@ -1,55 +1,86 @@
 """Command-line application for deploying a Data Safe Haven from project files"""
 # Standard library imports
-import ipaddress
-import re
 from typing import List, Optional
+from typing_extensions import Annotated
 
 # Third party imports
+import dotmap
 import pytz
 import yaml
-from cleo import Command
+import typer
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
 from data_safe_haven.exceptions import (
+    DataSafeHavenConfigException,
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
 from data_safe_haven.external.api import GraphApi
-from data_safe_haven.functions import password
+from data_safe_haven.functions import (
+    password,
+    validate_aad_guid,
+    validate_email_address,
+    validate_ip_address,
+    validate_timezone,
+)
 from data_safe_haven.provisioning import SHMProvisioningManager
 from data_safe_haven.pulumi import PulumiStack
-from data_safe_haven.utility import Logger
+from .base_command import BaseCommand
 
 
-class DeploySHMCommand(Command):  # type: ignore
-    """
-    Deploy a Safe Haven Management component using local configuration files
+class DeploySHMCommand(BaseCommand):
+    """Deploy a Safe Haven Management component"""
 
-    shm
-        {--a|aad-tenant-id= : Tenant ID for the AzureAD where users will be created}
-        {--e|email= : A single email address that your system deployers and administrators can be contacted on}
-        {--f|fqdn= : Domain that SHM users will belong to}
-        {--i|ip-address=* : IP addresses or ranges that system deployers and administrators will be connecting from}
-        {--o|output= : Path to an output log file}
-        {--t|timezone= : Timezone to use}
-    """
-
-    aad_tenant_id: Optional[str]
-    admin_email_address: Optional[str]
-    fqdn: Optional[str]
-    admin_ip_address_list: Optional[List[str]]
-    output: Optional[str]
-    timezone: Optional[str]
-
-    def handle(self) -> int:
+    def entrypoint(
+        self,
+        aad_tenant_id: Annotated[
+            Optional[str],
+            typer.Option(
+                "--aad-tenant-id",
+                "-a",
+                help="The tenant ID for the AzureAD where users will be created, for example '10de18e7-b238-6f1e-a4ad-772708929203'.",
+                callback=validate_aad_guid,
+            ),
+        ] = None,
+        admin_email_address: Annotated[
+            Optional[str],
+            typer.Option(
+                "--email",
+                "-e",
+                help="The email address where your system deployers and administrators can be contacted.",
+                callback=validate_email_address,
+            ),
+        ] = None,
+        admin_ip_addresses: Annotated[
+            Optional[List[str]],
+            typer.Option(
+                "--ip-address",
+                "-i",
+                help="An IP address or range used by your system deployers and administrators. [*may be specified several times*]",
+                callback=lambda ips: [validate_ip_address(ip) for ip in ips],
+            ),
+        ] = None,
+        fqdn: Annotated[
+            Optional[str],
+            typer.Option(
+                "--fqdn",
+                "-f",
+                help="The domain that SHM users will belong to.",
+            ),
+        ] = None,
+        timezone: Annotated[
+            Optional[str],
+            typer.Option(
+                "--timezone",
+                "-t",
+                help="The timezone that this Data Safe Haven deployment will use.",
+                callback=validate_timezone,
+            ),
+        ] = None,
+    ) -> None:
+        """Typer command line entrypoint"""
         try:
-            # Process command line arguments
-            self.process_arguments()
-
-            # Set up logging for anything called by this command
-            self.logger = Logger(self.io.verbosity, self.output)
-
             # Use dotfile settings to load the job configuration
             try:
                 settings = DotFileSettings()
@@ -58,7 +89,14 @@ class DeploySHMCommand(Command):  # type: ignore
                     f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
                 ) from exc
             config = Config(settings.name, settings.subscription_name)
-            self.add_missing_values(config)
+            self.update_config(
+                config,
+                aad_tenant_id=aad_tenant_id,
+                admin_email_address=admin_email_address,
+                admin_ip_addresses=admin_ip_addresses,
+                fqdn=fqdn,
+                timezone=timezone,
+            )
 
             # Add the SHM domain to AzureAD as a custom domain
             graph_api = GraphApi(
@@ -109,136 +147,98 @@ class DeploySHMCommand(Command):  # type: ignore
                 stack=stack,
             )
             manager.run()
-            return 0
-
         except DataSafeHavenException as exc:
-            exception_text = (
+            raise DataSafeHavenException(
                 f"Could not deploy Data Safe Haven Management environment.\n{str(exc)}"
-            )
-        except Exception as exc:
-            exception_text = f"Uncaught exception of type '{type(exc)}'.\n{str(exc)}"
-        for line in exception_text.split("\n"):
-            self.logger.error(line)
-        return 1
+            ) from exc
 
-    def add_missing_values(self, config: Config) -> None:
-        """Request any missing config values and add them to the config"""
-        # Request FQDN if not provided
-        while not config.shm.fqdn:
-            if self.fqdn:
-                config.shm.fqdn = self.fqdn
-            else:
-                self.fqdn = self.logger.ask(
-                    "Please enter the domain that SHM users will belong to:"
+    def update_config(
+        self,
+        config: Config,
+        aad_tenant_id: Optional[str] = None,
+        admin_email_address: Optional[str] = None,
+        admin_ip_addresses: Optional[List[str]] = None,
+        fqdn: Optional[str] = None,
+        timezone: Optional[str] = None,
+    ) -> None:
+        # Update AzureAD tenant ID
+        if aad_tenant_id is not None:
+            if config.shm.aad_tenant_id and (config.shm.aad_tenant_id != aad_tenant_id):
+                self.logger.debug(
+                    f"Overwriting existing AzureAD tenant ID {config.shm.aad_tenant_id}"
                 )
+            self.logger.info(
+                f"Setting [bold]AzureAD tenant ID[/] to [green]{aad_tenant_id}[/]."
+            )
+            config.shm.aad_tenant_id = aad_tenant_id
+        if isinstance(config.shm.aad_tenant_id, dotmap.DotMap):
+            raise DataSafeHavenConfigException(
+                "No AzureAD tenant ID was found. Use [bright_cyan]'--aad-tenant-id / -a'[/] to set one."
+            )
 
-        # Request admin IP addresses if not provided
-        while not config.shm.aad_tenant_id:
-            if self.aad_tenant_id and re.match(
-                r"^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$",
-                self.aad_tenant_id,
+        # Update admin email address
+        if admin_email_address is not None:
+            if config.shm.admin_email_address and (
+                config.shm.admin_email_address != admin_email_address
             ):
-                config.shm.aad_tenant_id = self.aad_tenant_id
+                self.logger.debug(
+                    f"Overwriting existing admin email address {config.shm.admin_email_address}"
+                )
+            self.logger.info(
+                f"Setting [bold]admin email address[/] to [green]{admin_email_address}[/]."
+            )
+            config.shm.admin_email_address = admin_email_address
+        if isinstance(config.shm.admin_email_address, dotmap.DotMap):
+            raise DataSafeHavenConfigException(
+                "No admin email address was found. Use [bright_cyan]'--email / -e'[/] to set one."
+            )
+
+        # Update admin IP addresses
+        if admin_ip_addresses:
+            if config.shm.admin_ip_addresses and (
+                config.shm.admin_ip_addresses != admin_ip_addresses
+            ):
+                self.logger.debug(
+                    f"Overwriting existing admin IP addresses {config.shm.admin_ip_addresses}"
+                )
+            self.logger.info(
+                f"Setting [bold]admin IP addresses[/] to [green]{admin_ip_addresses}[/]."
+            )
+            config.shm.admin_ip_addresses = admin_ip_addresses
+        if len(config.shm.admin_ip_addresses) == 0:
+            raise DataSafeHavenConfigException(
+                "No admin IP addresses were found. Use [bright_cyan]'--ip-address / -i'[/] to set one."
+            )
+
+        # Update FQDN
+        if fqdn is not None:
+            if config.shm.fqdn and (config.shm.fqdn != fqdn):
+                self.logger.debug(
+                    f"Overwriting existing fully-qualified domain name {config.shm.fqdn}"
+                )
+            self.logger.info(
+                f"Setting [bold]fully-qualified domain name[/] to [green]{fqdn}[/]."
+            )
+            config.shm.fqdn = fqdn
+        if isinstance(config.shm.fqdn, dotmap.DotMap):
+            raise DataSafeHavenConfigException(
+                "No fully-qualified domain name was found. Use [bright_cyan]'--fqdn / -f'[/] to set one."
+            )
+
+        # Update timezone if it passes validation
+        if timezone is not None:
+            if timezone not in pytz.all_timezones:
+                self.logger.error(
+                    f"Invalid value '{timezone}' provided for 'timezone'."
+                )
             else:
-                self.logger.info(
-                    "We need to know the tenant ID for the AzureAD where users will be created, for example '10de18e7-b238-6f1e-a4ad-772708929203'."
-                )
-                self.aad_tenant_id = self.logger.ask("AzureAD tenant ID:")
-
-        # Request admin email address if not provided
-        while not config.shm.admin_email_address:
-            if not self.admin_email_address:
-                self.logger.info(
-                    "We need to know an email address that your system deployers and administrators can be contacted on."
-                )
-                self.logger.info(
-                    "Please enter a single email address, for example 'sherlock@holmes.com'."
-                )
-                self.admin_email_address = self.logger.ask(
-                    "Administrator email address:"
-                )
-            if self.admin_email_address:
-                config.shm.admin_email_address = self.admin_email_address.strip()
-
-        # Request admin IP addresses if not provided
-        admin_ip_addresses: Optional[str] = (
-            " ".join(self.admin_ip_address_list) if self.admin_ip_address_list else None
-        )
-        while not config.shm.admin_ip_addresses:
-            if not admin_ip_addresses:
-                self.logger.info(
-                    "We need to know any IP addresses or ranges that your system deployers and administrators will be connecting from."
-                )
-                self.logger.info(
-                    "Please enter all of them at once, separated by spaces, for example '10.1.1.1  2.2.2.0/24  5.5.5.5'."
-                )
-                admin_ip_addresses = self.logger.ask(
-                    "Space-separated administrator IP addresses and ranges:"
-                )
-            config.shm.admin_ip_addresses = [
-                str(ipaddress.ip_network(ipv4))
-                for ipv4 in admin_ip_addresses.split()
-                if ipv4
-            ]
-            admin_ip_addresses = None
-
-        # Request timezone if not provided
-        while not config.shm.timezone:
-            if self.timezone in pytz.all_timezones:
-                config.shm.timezone = self.timezone
-            else:
-                if self.timezone:
-                    self.logger.error(f"Timezone '{self.timezone}' not recognised")
-                self.timezone = self.logger.ask(
-                    "Please enter the timezone that this SHM will use (default: 'Europe/London'):",
-                    "Europe/London",
-                )
-
-    def process_arguments(self) -> None:
-        """Load command line arguments into attributes"""
-        # AAD tenant ID
-        aad_tenant_id = self.option("aad-tenant-id")
-        if not isinstance(aad_tenant_id, str) and (aad_tenant_id is not None):
-            raise DataSafeHavenInputException(
-                f"Invalid value '{aad_tenant_id}' provided for 'aad-tenant-id'."
+                if config.shm.timezone and (config.shm.timezone != timezone):
+                    self.logger.debug(
+                        f"Overwriting existing timezone {config.shm.timezone}"
+                    )
+                self.logger.info(f"Setting [bold]timezone[/] to [green]{timezone}[/].")
+                config.shm.timezone = timezone
+        if isinstance(config.shm.timezone, dotmap.DotMap):
+            raise DataSafeHavenConfigException(
+                "No timezone was found. Use [bright_cyan]'--timezone / -t'[/] to set one."
             )
-        self.aad_tenant_id = aad_tenant_id
-        # Email
-        admin_email_address = self.option("email")
-        if not isinstance(admin_email_address, str) and (
-            admin_email_address is not None
-        ):
-            raise DataSafeHavenInputException(
-                f"Invalid value '{admin_email_address}' provided for 'email'."
-            )
-        self.admin_email_address = admin_email_address
-        # FQDN
-        fqdn = self.option("fqdn")
-        if not isinstance(fqdn, str) and (fqdn is not None):
-            raise DataSafeHavenInputException(
-                f"Invalid value '{fqdn}' provided for 'fqdn'."
-            )
-        self.fqdn = fqdn
-        # Admin IP address
-        admin_ip_address_list = self.option("ip-address")
-        if not isinstance(admin_ip_address_list, list) and (
-            admin_ip_address_list is not None
-        ):
-            raise DataSafeHavenInputException(
-                f"Invalid value '{admin_ip_address_list}' provided for 'ip-address'."
-            )
-        self.admin_ip_address_list = admin_ip_address_list
-        # Output
-        output = self.option("output")
-        if not isinstance(output, str) and (output is not None):
-            raise DataSafeHavenInputException(
-                f"Invalid value '{output}' provided for 'output'."
-            )
-        self.output = output
-        # Timezone
-        timezone = self.option("timezone")
-        if not isinstance(timezone, str) and (timezone is not None):
-            raise DataSafeHavenInputException(
-                f"Invalid value '{timezone}' provided for 'timezone'."
-            )
-        self.timezone = timezone

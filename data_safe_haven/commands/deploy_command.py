@@ -1,17 +1,22 @@
 """Command-line application for deploying a Data Safe Haven component, delegating the details to a subcommand"""
-# Third party imports
-from cleo import Command
-
 # Local imports
+from .base_command import CommandGroup
 from .deploy_shm_command import DeploySHMCommand
 from .deploy_sre_command import DeploySRECommand
 
 
-class DeployCommand(Command):  # type: ignore
-    """
-    Deploy a Data Safe Haven component, delegating the details to a subcommand
+class DeployCommand(CommandGroup):
+    """Deploy a Data Safe Haven component, delegating the details to a subcommand"""
 
-    deploy
-    """
-
-    commands = [DeploySHMCommand(), DeploySRECommand()]
+    def __init__(self):
+        super().__init__()
+        self.subcommand(
+            DeploySHMCommand,
+            name="shm",
+            help="Deploy a Safe Haven Management component.",
+        )
+        self.subcommand(
+            DeploySRECommand,
+            name="sre",
+            help="Deploy a Safe Haven Management component.",
+        )

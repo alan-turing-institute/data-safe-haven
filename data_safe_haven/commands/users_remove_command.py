@@ -1,9 +1,10 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Standard library imports
 from typing import List, Optional
+from typing_extensions import Annotated
 
 # Third party imports
-from cleo import Command
+import typer
 
 # Local imports
 from data_safe_haven.administration.users import UserHandler
@@ -13,30 +14,23 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external.api import GraphApi
-from data_safe_haven.utility import Logger
+from .base_command import BaseCommand
 
 
-class UsersRemoveCommand(Command):  # type: ignore
-    """
-    Remove users from a Data Safe Haven deployment
+class UsersRemoveCommand(BaseCommand):
+    """Remove existing users from a deployed Data Safe Haven"""
 
-    remove
-        {usernames* : Usernames of users to remove from this Data Safe Haven}
-        {--o|output= : Path to an output log file}
-    """
-
-    usernames: List[str]
-    output: Optional[str]
-
-    def handle(self) -> int:
+    def entrypoint(
+        self,
+        usernames: Annotated[
+            List[str],
+            typer.Argument(
+                help="Username of a user to remove from this Data Safe Haven. [*may be specified several times*]",
+            ),
+        ],
+    ) -> None:
         shm_name = "UNKNOWN"
         try:
-            # Process command line arguments
-            self.process_arguments()
-
-            # Set up logging for anything called by this command
-            self.logger = Logger(self.io.verbosity, self.output)
-
             # Use dotfile settings to load the job configuration
             try:
                 settings = DotFileSettings()
@@ -54,10 +48,9 @@ class UsersRemoveCommand(Command):  # type: ignore
             )
 
             # Remove users from SHM
-            if self.usernames:
+            if usernames:
                 users = UserHandler(config, graph_api)
-                users.remove(self.usernames)
-            return 0
+                users.remove(usernames)
         except DataSafeHavenException as exc:
             for (
                 line
@@ -65,21 +58,3 @@ class UsersRemoveCommand(Command):  # type: ignore
                 "\n"
             ):
                 self.logger.error(line)
-        return 1
-
-    def process_arguments(self) -> None:
-        """Load command line arguments into attributes"""
-        # Usernames
-        usernames = self.argument("usernames")
-        if not isinstance(usernames, list) and (usernames is not None):
-            raise DataSafeHavenInputException(
-                f"Invalid value '{usernames}' provided for 'usernames'."
-            )
-        self.usernames = usernames if usernames else []
-        # Output
-        output = self.option("output")
-        if not isinstance(output, str) and (output is not None):
-            raise DataSafeHavenInputException(
-                f"Invalid value '{output}' provided for 'output'."
-            )
-        self.output = output

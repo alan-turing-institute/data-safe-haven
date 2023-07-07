@@ -1,26 +1,39 @@
 """Command-line application for managing users for a Data Safe Haven deployment, delegating the details to a subcommand"""
-# Third party imports
-from cleo import Command
-
 # Local imports
-from .users_add import UsersAddCommand
-from .users_list import UsersListCommand
-from .users_register import UsersRegisterCommand
-from .users_remove import UsersRemoveCommand
-from .users_unregister import UsersUnregisterCommand
+from .base_command import CommandGroup
+from .users_add_command import UsersAddCommand
+from .users_list_command import UsersListCommand
+from .users_register_command import UsersRegisterCommand
+from .users_remove_command import UsersRemoveCommand
+from .users_unregister_command import UsersUnregisterCommand
 
 
-class UsersCommand(Command):  # type: ignore
-    """
-    User management for a Data Safe Haven deployment, delegating the details to a subcommand
+class UsersCommand(CommandGroup):
+    """Manage users for a Data Safe Haven deployment, delegating the details to a subcommand"""
 
-    users
-    """
-
-    commands = [
-        UsersAddCommand(),
-        UsersListCommand(),
-        UsersRegisterCommand(),
-        UsersRemoveCommand(),
-        UsersUnregisterCommand(),
-    ]
+    def __init__(self):
+        super().__init__()
+        # Register commands
+        self.subcommand(
+            UsersAddCommand, name="add", help="Add users to a deployed Data Safe Haven."
+        )
+        self.subcommand(
+            UsersListCommand,
+            name="list",
+            help="List users from a deployed Data Safe Haven.",
+        )
+        self.subcommand(
+            UsersRegisterCommand,
+            name="register",
+            help="Register existing users with a deployed SRE.",
+        )
+        self.subcommand(
+            UsersRemoveCommand,
+            name="remove",
+            help="Remove existing users from a deployed Data Safe Haven.",
+        )
+        self.subcommand(
+            UsersUnregisterCommand,
+            name="unregister",
+            help="Unregister existing users from a deployed SRE.",
+        )

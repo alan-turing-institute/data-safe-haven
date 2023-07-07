@@ -1,10 +1,4 @@
 """Command-line application for tearing down a Data Safe Haven"""
-# Standard library imports
-from typing import Optional
-
-# Third party imports
-from cleo import Command
-
 # Local imports
 from data_safe_haven.backend import Backend
 from data_safe_haven.config import DotFileSettings
@@ -12,27 +6,15 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.utility import Logger
+from .base_command import BaseCommand
 
 
-class TeardownBackendCommand(Command):  # type: ignore
-    """
-    Teardown a deployed Data Safe Haven backend using local configuration files
+class TeardownBackendCommand(BaseCommand):
+    """Tear down a deployed Data Safe Haven backend"""
 
-    backend
-        {--o|output= : Path to an output log file}
-    """
-
-    output: Optional[str]
-
-    def handle(self) -> int:
+    def entrypoint(self) -> None:
+        """Typer command line entrypoint"""
         try:
-            # Process command line arguments
-            self.process_arguments()
-
-            # Set up logging for anything called by this command
-            self.logger = Logger(self.io.verbosity, self.output)
-
             # Use dotfile settings to load the job configuration
             try:
                 settings = DotFileSettings()
@@ -49,20 +31,7 @@ class TeardownBackendCommand(Command):  # type: ignore
                 raise DataSafeHavenInputException(
                     f"Unable to teardown Pulumi backend.\n{str(exc)}"
                 ) from exc
-            return 0
         except DataSafeHavenException as exc:
-            for (
-                line
-            ) in f"Could not teardown Data Safe Haven backend.\n{str(exc)}".split("\n"):
-                self.logger.error(line)
-        return 1
-
-    def process_arguments(self) -> None:
-        """Load command line arguments into attributes"""
-        # Output
-        output = self.option("output")
-        if not isinstance(output, str) and (output is not None):
-            raise DataSafeHavenInputException(
-                f"Invalid value '{output}' provided for 'output'."
-            )
-        self.output = output
+            raise DataSafeHavenException(
+                f"Could not teardown Data Safe Haven backend.\n{str(exc)}"
+            ) from exc
