@@ -21,12 +21,7 @@ from .base_command import BaseCommand
 
 
 class UsersAddCommand(BaseCommand):  # type: ignore
-    """
-    Add users to a deployed Data Safe Haven
-    """
-
-    csv_path: Optional[str]
-    output: Optional[str]
+    """Add users to a deployed Data Safe Haven"""
 
     def entrypoint(
         self,
