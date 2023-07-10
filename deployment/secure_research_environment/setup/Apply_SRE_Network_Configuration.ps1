@@ -94,9 +94,6 @@ if ($computeSubnet.NetworkSecurityGroup.Id -eq $nsgs["compute"].Id) {
 if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     Add-LogMessage -Level Info "Setting inbound connection rules on Guacamole NSG..."
     $null = Update-NetworkSecurityGroupRule -Name $inboundApprovedUsersRuleName -NetworkSecurityGroup $nsgs["remoteDesktop"] -SourceAddressPrefix $allowedSources
-} elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-    Add-LogMessage -Level Info "Setting inbound connection rules on RDS Gateway NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name $inboundApprovedUsersRuleName -NetworkSecurityGroup $nsgs["gateway"] -SourceAddressPrefix $allowedSources
 } else {
     Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
 }
