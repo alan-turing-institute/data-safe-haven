@@ -34,8 +34,8 @@ $nsgs = @{}
 Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sre.id)' (Tier $($config.sre.tier)), hosted on subscription '$($config.sre.subscriptionName)'"
 
 
-# ApacheGuacamole and MicrosoftRDS have several NSGs
-# --------------------------------------------------
+# ApacheGuacamole has several NSGs
+# --------------------------------
 # Remote desktop
 if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     # RDS gateway
@@ -47,15 +47,6 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     } else {
         Add-LogMessage -Level Fatal "Guacamole server is not bound to NSG '$($nsgs["remoteDesktop"].Name)'!"
     }
-} elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-    # RDS gateway
-    Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
-    Add-VmToNSG -VMName $config.sre.remoteDesktop.gateway.vmName -VmResourceGroupName $config.sre.remoteDesktop.rg -NSGName $config.sre.remoteDesktop.gateway.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["gateway"] = Get-AzNetworkSecurityGroup -Name $config.sre.remoteDesktop.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-    # RDS sesssion hosts
-    Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
-    Add-VmToNSG -VMName $config.sre.remoteDesktop.appSessionHost.vmName -VmResourceGroupName $config.sre.remoteDesktop.rg -NSGName $config.sre.remoteDesktop.appSessionHost.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["sessionhosts"] = Get-AzNetworkSecurityGroup -Name $config.sre.remoteDesktop.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 } else {
     Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
 }
