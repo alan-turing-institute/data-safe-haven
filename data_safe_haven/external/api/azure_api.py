@@ -50,6 +50,7 @@ from azure.mgmt.storage.models import (
     StorageAccountKey,
     StorageAccountListKeysResult,
 )
+from azure.storage.blob import BlobServiceClient
 from azure.storage.filedatalake import DataLakeServiceClient
 
 # Local imports
@@ -64,11 +65,8 @@ from ..interface.azure_authenticator import AzureAuthenticator
 class AzureApi(AzureAuthenticator):
     """Interface to the Azure REST API"""
 
-    def __init__(self, subscription_name: str, *args: Any, **kwargs: Any):
-        kwargs[
-            "subscription_name"
-        ] = subscription_name  # workaround for erroneous 'multiple values for keyword' mypy warning
-        super().__init__(*args, **kwargs)
+    def __init__(self, subscription_name: str):
+        super().__init__(subscription_name)
         self.logger = Logger()
 
     def compile_desired_state(
@@ -138,6 +136,36 @@ class AzureApi(AzureAuthenticator):
                     raise DataSafeHavenAzureException(
                         f"Could not compile DSC '{configuration_name}'\n{result.exception}."
                     )
+
+    def download_blob(
+        self,
+        blob_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        storage_container_name: str,
+    ) -> str:
+        """Download a blob file from Azure storage"""
+        try:
+            # Connect to Azure client
+            storage_account_keys = self.get_storage_account_keys(
+                storage_account_name, resource_group_name
+            )
+            blob_service_client = BlobServiceClient.from_connection_string(
+                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={str(storage_account_keys[0].value)};EndpointSuffix=core.windows.net"
+            )
+            if not isinstance(blob_service_client, BlobServiceClient):
+                raise DataSafeHavenAzureException(
+                    f"Could not connect to storage account '{storage_account_name}'."
+                )
+            # Download the requested file
+            blob_client = blob_service_client.get_blob_client(
+                container=storage_container_name, blob=blob_name
+            )
+            return blob_client.download_blob(encoding="utf-8").readall()
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Blob file could not be downloaded from '{storage_account_name}'\n{str(exc)}."
+            ) from exc
 
     def ensure_dns_txt_record(
         self,
