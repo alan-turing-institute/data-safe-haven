@@ -10,10 +10,10 @@ from azure.storage.fileshare import ShareDirectoryClient, ShareFileClient
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.external import AzureAuthenticator
 
 
-class AzureFileShare(AzureMixin):
+class AzureFileShare(AzureAuthenticator):
     """Interface for Azure fileshares"""
 
     def __init__(

@@ -4,7 +4,7 @@ from typing import Any, Optional, Sequence
 
 # Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.external.interface import AzurePostgreSQLDatabase
+from data_safe_haven.external import AzurePostgreSQLDatabase
 from data_safe_haven.pulumi import PulumiStack
 from .research_user import ResearchUser
 

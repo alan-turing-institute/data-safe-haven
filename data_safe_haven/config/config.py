@@ -13,13 +13,12 @@ from azure.storage.blob import BlobServiceClient
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.external.api import AzureApi
+from data_safe_haven.external import AzureApi, AzureAuthenticator
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.mixins import AzureMixin
 from data_safe_haven.utility import Logger
 
 
-class Config(AzureMixin):
+class Config(AzureAuthenticator):
     """Configuration file backed by blob storage"""
 
     def __init__(
@@ -29,7 +28,7 @@ class Config(AzureMixin):
         *args: Optional[Any],
         **kwargs: Optional[Any],
     ):
-        # Load the Azure mixin
+        # Initialise Azure authentication
         super().__init__(*args, subscription_name=subscription_name, **kwargs)
         self.logger = Logger()
 

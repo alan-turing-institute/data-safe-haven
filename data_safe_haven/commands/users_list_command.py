@@ -6,8 +6,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.external.api import GraphApi
-from data_safe_haven.utility import Logger
+from data_safe_haven.external import GraphApi
 from .base_command import BaseCommand
 
 

@@ -15,7 +15,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.external.api import AzureApi, GraphApi
+from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.functions import (
     alphanumeric,
     password,

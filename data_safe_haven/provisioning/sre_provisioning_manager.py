@@ -4,8 +4,8 @@ import pathlib
 from typing import Any, Dict
 
 # Local imports
-from data_safe_haven.external.api import AzureApi
-from data_safe_haven.external.interface import (
+from data_safe_haven.external import (
+    AzureApi,
     AzureContainerInstance,
     AzurePostgreSQLDatabase,
 )

@@ -15,11 +15,11 @@ from azure.mgmt.containerinstance.models import (
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.external import AzureAuthenticator
 from data_safe_haven.utility import Logger
 
 
-class AzureContainerInstance(AzureMixin):
+class AzureContainerInstance(AzureAuthenticator):
     """Interface for Azure container instances."""
 
     def __init__(

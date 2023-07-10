@@ -55,11 +55,11 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInternalException,
 )
-from data_safe_haven.mixins import AzureMixin
 from data_safe_haven.utility import Logger
+from ..interface.azure_authenticator import AzureAuthenticator
 
 
-class AzureApi(AzureMixin):
+class AzureApi(AzureAuthenticator):
     """Interface to the Azure REST API"""
 
     def __init__(self, subscription_name: str, *args: Any, **kwargs: Any):

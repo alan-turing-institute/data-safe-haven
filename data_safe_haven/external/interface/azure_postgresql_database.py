@@ -21,11 +21,11 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.external import AzureAuthenticator
 from data_safe_haven.utility import FileReader, Logger, PathType
 
 
-class AzurePostgreSQLDatabase(AzureMixin):
+class AzurePostgreSQLDatabase(AzureAuthenticator):
     """Interface for Azure PostgreSQL databases."""
 
     current_ip: str

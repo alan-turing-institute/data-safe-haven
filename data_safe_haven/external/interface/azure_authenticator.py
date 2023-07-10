@@ -1,4 +1,4 @@
-"""Mixin class for anything Azure-aware"""
+"""Standalone utility class for anything that needs to authenticate against Azure"""
 # Standard library imports
 from typing import Any, Optional
 
@@ -14,8 +14,8 @@ from data_safe_haven.exceptions import (
 )
 
 
-class AzureMixin:
-    """Mixin class for anything Azure-aware"""
+class AzureAuthenticator:
+    """Standalone utility class for anything that needs to authenticate against Azure"""
 
     def __init__(self, subscription_name: str, *args: Any, **kwargs: Any) -> None:
         self.subscription_name: str = subscription_name
