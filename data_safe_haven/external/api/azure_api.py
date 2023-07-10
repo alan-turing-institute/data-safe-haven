@@ -2,7 +2,7 @@
 # Standard library imports
 import time
 from contextlib import suppress
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 # Third party imports
 from azure.core.exceptions import (
@@ -47,6 +47,8 @@ from azure.mgmt.storage.models import (
     Sku as StorageAccountSku,
     StorageAccount,
     StorageAccountCreateParameters,
+    StorageAccountKey,
+    StorageAccountListKeysResult,
 )
 from azure.storage.filedatalake import DataLakeServiceClient
 
@@ -578,6 +580,41 @@ class AzureApi(AzureAuthenticator):
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to retrieve secret {secret_name}."
+            ) from exc
+
+    def get_storage_account_keys(
+        self, storage_account_name: str, resource_group_name: str
+    ) -> List[StorageAccountKey]:
+        """Retrieve the storage account keys for an existing storage account
+
+        Returns:
+            List[StorageAccountKey]: The keys for this storage account
+
+        Raises:
+            DataSafeHavenAzureException if the keys could not be loaded
+        """
+        # Connect to Azure client
+        try:
+            storage_client = StorageManagementClient(
+                self.credential, self.subscription_id
+            )
+            storage_keys = storage_client.storage_accounts.list_keys(
+                resource_group_name,
+                storage_account_name,
+            )
+            if not isinstance(storage_keys, StorageAccountListKeysResult):
+                raise DataSafeHavenAzureException(
+                    f"Could not connect to storage account '{storage_account_name}' in resource group '{resource_group_name}'."
+                )
+            keys = storage_keys.keys
+            if not keys or len(keys) == 0:
+                raise DataSafeHavenAzureException(
+                    f"No keys were retrieved for storage account '{storage_account_name}' in resource group '{resource_group_name}'."
+                )
+            return keys
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Keys could not be loaded for storage account '{storage_account_name}' in resource group '{resource_group_name}'.\n{str(exc)}"
             ) from exc
 
     def get_vm_sku_details(self, sku: str) -> Tuple[str, str, str]:
