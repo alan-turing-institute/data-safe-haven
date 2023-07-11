@@ -1,6 +1,7 @@
 from .miscellaneous import ordered_private_dns_zones, time_as_string
 from .strings import (
     alphanumeric,
+    b64decode,
     b64encode,
     hex_string,
     password,
@@ -19,6 +20,7 @@ from .validators import (
 
 __all__ = [
     "alphanumeric",
+    "b64decode",
     "b64encode",
     "hex_string",
     "ordered_private_dns_zones",
