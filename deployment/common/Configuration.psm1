@@ -626,20 +626,7 @@ function Get-SreConfig {
 
     # Secure research environment config
     # ----------------------------------
-    # Check that one of the allowed remote desktop providers is selected
-    $remoteDesktopProviders = @("ApacheGuacamole", "MicrosoftRDS")
-    if (-not $sreConfigBase.remoteDesktopProvider) {
-        Add-LogMessage -Level Warning "No remoteDesktopType was provided. Defaulting to $($remoteDesktopProviders[0])"
-        $sreConfigBase.remoteDesktopProvider = $remoteDesktopProviders[0]
-    }
-    if (-not $remoteDesktopProviders.Contains($sreConfigBase.remoteDesktopProvider)) {
-        Add-LogMessage -Level Fatal "Did not recognise remote desktop provider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
-    }
-    if (
-        ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") -and (-not @(2, 3, 4).Contains([int]$sreConfigBase.tier))
-    ) {
-        Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($sreConfigBase.tier)'"
-    }
+ 
     # Setup the basic config
     $config = [ordered]@{
         shm = Get-ShmConfig -shmId $sreConfigBase.shmId
@@ -894,44 +881,6 @@ function Get-SreConfig {
             vmSize                          = "Standard_DS2_v2"
             ip                              = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
             disks                           = [ordered]@{
-                os = [ordered]@{
-                    sizeGb = "128"
-                    type   = $config.sre.diskTypeDefault
-                }
-            }
-        }
-    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        $config.sre.remoteDesktop.gateway = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
-            vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
-            vmSize                  = "Standard_DS2_v2"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
-            installationDirectory   = "C:\Installation"
-            nsg                     = [ordered]@{
-                name  = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
-                rules = "sre-nsg-rules-gateway.json"
-            }
-            disks                   = [ordered]@{
-                data = [ordered]@{
-                    sizeGb = "1023"
-                    type   = $config.sre.diskTypeDefault
-                }
-                os   = [ordered]@{
-                    sizeGb = "128"
-                    type   = $config.sre.diskTypeDefault
-                }
-            }
-        }
-        $config.sre.remoteDesktop.appSessionHost = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
-            vmName                  = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
-            vmSize                  = "Standard_DS2_v2"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 5
-            nsg                     = [ordered]@{
-                name  = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
-                rules = "sre-nsg-rules-session-hosts.json"
-            }
-            disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
                     type   = $config.sre.diskTypeDefault
