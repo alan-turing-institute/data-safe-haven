@@ -10,10 +10,10 @@ from azure.storage.fileshare import ShareDirectoryClient, ShareFileClient
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.external import AzureAuthenticator
+from data_safe_haven.external import AzureApi
 
 
-class AzureFileShare(AzureAuthenticator):
+class AzureFileShare:
     """Interface for Azure fileshares"""
 
     def __init__(
@@ -22,13 +22,8 @@ class AzureFileShare(AzureAuthenticator):
         storage_account_resource_group_name: str,
         subscription_name: str,
         share_name: str,
-        *args: Any,
-        **kwargs: Any,
     ):
-        kwargs[
-            "subscription_name"
-        ] = subscription_name  # workaround for erroneous 'multiple values for keyword' mypy warning
-        super().__init__(*args, **kwargs)
+        self.azure_api = AzureApi(subscription_name)
         self.storage_client_: Optional[StorageManagementClient] = None
         self.storage_account_key_: Optional[str] = None
         self.storage_account_name: str = storage_account_name
@@ -39,22 +34,19 @@ class AzureFileShare(AzureAuthenticator):
     def storage_client(self) -> StorageManagementClient:
         if not self.storage_client_:
             self.storage_client_ = StorageManagementClient(
-                self.credential, self.subscription_id
+                self.azure_api.credential, self.azure_api.subscription_id
             )
         return self.storage_client_
 
     @property
     def storage_account_key(self) -> str:
         if not self.storage_account_key_:
-            storage_keys = self.storage_client.storage_accounts.list_keys(
-                self.resource_group_name, self.storage_account_name
-            )
-            if not storage_keys.keys:
-                raise DataSafeHavenAzureException(
-                    f"Could not load keys for storage account {self.storage_account_name}."
-                )
             storage_account_keys = [
-                key.value for key in storage_keys.keys if isinstance(key.value, str)
+                k.value
+                for k in self.azure_api.get_storage_account_keys(
+                    self.storage_account_name, self.resource_group_name
+                )
+                if isinstance(k.value, str)
             ]
             if not storage_account_keys:
                 raise DataSafeHavenAzureException(

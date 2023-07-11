@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Sequence
 # Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingException
-from data_safe_haven.external import AzureAuthenticator, GraphApi
+from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import Logger
 
 from .active_directory_users import ActiveDirectoryUsers
@@ -15,15 +15,12 @@ from .guacamole_users import GuacamoleUsers
 from .research_user import ResearchUser
 
 
-class UserHandler(AzureAuthenticator):
+class UserHandler:
     def __init__(
         self,
         config: Config,
         graph_api: GraphApi,
-        *args: Any,
-        **kwargs: Any,
     ):
-        super().__init__(subscription_name=config.subscription_name, *args, **kwargs)
         self.active_directory_users = ActiveDirectoryUsers(config)
         self.azure_ad_users = AzureADUsers(graph_api)
         self.logger = Logger()

@@ -1,35 +1,31 @@
 """Configuration file backed by blob storage"""
 # Standard library imports
-from typing import Any, List, Optional
+from typing import Any
 
 # Third party imports
 import dotmap
 import yaml
 from azure.core.exceptions import ResourceNotFoundError
-from azure.mgmt.storage import StorageManagementClient
-from azure.mgmt.storage.models import StorageAccountKey, StorageAccountListKeysResult
 from azure.storage.blob import BlobServiceClient
 
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.external import AzureApi, AzureAuthenticator
+from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.utility import Logger
 
 
-class Config(AzureAuthenticator):
+class Config:
     """Configuration file backed by blob storage"""
 
     def __init__(
         self,
         name: str,
         subscription_name: str,
-        *args: Optional[Any],
-        **kwargs: Optional[Any],
     ):
         # Initialise Azure authentication
-        super().__init__(*args, subscription_name=subscription_name, **kwargs)
+        self.azure_api = AzureApi(subscription_name)
         self.logger = Logger()
 
         # Set names
@@ -137,26 +133,16 @@ class Config(AzureAuthenticator):
 
     def get_secret(self, name: str) -> str:
         """Get a secret from the backend key vault"""
-        azure_api = AzureApi(self.subscription_name)
-        return azure_api.get_keyvault_secret(self.backend.key_vault_name, name)
+        return self.azure_api.get_keyvault_secret(self.backend.key_vault_name, name)
 
     def storage_account_key(
         self, backend_resource_group_name: str, backend_storage_account_name: str
     ) -> str:
         """Load the key for the backend storage account"""
         try:
-            storage_client = StorageManagementClient(
-                self.credential, self.subscription_id
+            keys = self.azure_api.get_storage_account_keys(
+                backend_storage_account_name, backend_resource_group_name
             )
-            storage_keys = storage_client.storage_accounts.list_keys(
-                backend_resource_group_name,
-                backend_storage_account_name,
-            )
-            if not isinstance(storage_keys, StorageAccountListKeysResult):
-                raise DataSafeHavenAzureException(
-                    "Storage client could not be created."
-                )
-            keys: Optional[List[StorageAccountKey]] = storage_keys.keys
             if not keys:
                 raise DataSafeHavenAzureException(
                     "Storage keys could not be retrieved."

@@ -15,11 +15,11 @@ from azure.mgmt.containerinstance.models import (
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.external import AzureAuthenticator
+from data_safe_haven.external import AzureApi
 from data_safe_haven.utility import Logger
 
 
-class AzureContainerInstance(AzureAuthenticator):
+class AzureContainerInstance:
     """Interface for Azure container instances."""
 
     def __init__(
@@ -28,7 +28,7 @@ class AzureContainerInstance(AzureAuthenticator):
         resource_group_name: str,
         subscription_name: str,
     ):
-        super().__init__(subscription_name=subscription_name)
+        self.azure_api = AzureApi(subscription_name)
         self.logger = Logger()
         self.resource_group_name = resource_group_name
         self.container_group_name = container_group_name
@@ -41,7 +41,7 @@ class AzureContainerInstance(AzureAuthenticator):
     @property
     def current_ip_address(self) -> str:
         aci_client = ContainerInstanceManagementClient(
-            self.credential, self.subscription_id
+            self.azure_api.credential, self.azure_api.subscription_id
         )
         ip_address = aci_client.container_groups.get(
             self.resource_group_name, self.container_group_name
@@ -57,7 +57,7 @@ class AzureContainerInstance(AzureAuthenticator):
         # Connect to Azure clients
         try:
             aci_client = ContainerInstanceManagementClient(
-                self.credential, self.subscription_id
+                self.azure_api.credential, self.azure_api.subscription_id
             )
             if not target_ip_address:
                 target_ip_address = self.current_ip_address
@@ -103,7 +103,7 @@ class AzureContainerInstance(AzureAuthenticator):
         """
         # Connect to Azure clients
         aci_client = ContainerInstanceManagementClient(
-            self.credential, self.subscription_id
+            self.azure_api.credential, self.azure_api.subscription_id
         )
 
         # Run command
