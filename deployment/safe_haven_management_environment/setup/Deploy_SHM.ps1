@@ -85,11 +85,6 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_DC.ps1')" 
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Update_Servers.ps1')" -shmId $shmId }
 
 
-# Setup SHM network policy server
-# -------------------------------
-Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_NPS.ps1')" -shmId $shmId }
-
-
 # Setup SHM package repositories
 # ------------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Package_Repositories.ps1')" -shmId $shmId }
