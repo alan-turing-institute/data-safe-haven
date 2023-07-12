@@ -145,8 +145,6 @@ if ($sreResources -or $sreResourceGroups) {
             # Remote desktop server CNAME record
             if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
                 $serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
-            } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-                $serverHostname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
             } else {
                 Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
             }
