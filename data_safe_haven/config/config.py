@@ -1,184 +1,400 @@
 """Configuration file backed by blob storage"""
 # Standard library imports
-from typing import Any
+import pathlib
+from collections import defaultdict
+from contextlib import suppress
+from typing import List, Optional
 
 # Third party imports
-import dotmap
+from dataclasses import dataclass, field, asdict
+from typing import Dict, List, Optional
 import yaml
-from azure.core.exceptions import ResourceNotFoundError
-from azure.storage.blob import BlobServiceClient
 
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.utility import Logger
+from data_safe_haven.functions import (
+    alphanumeric,
+    b64decode,
+    b64encode,
+    validate_aad_guid,
+    validate_azure_location,
+    validate_azure_vm_sku,
+    validate_email_address,
+    validate_ip_address,
+    validate_timezone,
+)
+from data_safe_haven.utility import SoftwarePackageCategory, YamlType
+
+
+@dataclass
+class ConfigSectionAzure:
+    admin_group_id: str = ""
+    location: str = ""
+    subscription_id: str = ""
+    tenant_id: str = ""
+
+    def validate(self) -> None:
+        """Validate input parameters"""
+        try:
+            validate_aad_guid(self.admin_group_id)
+        except Exception as exc:
+            raise TypeError(
+                f"Invalid value for 'admin_group_id' ({self.admin_group_id}).\n{str(exc)}"
+            )
+        try:
+            validate_azure_location(self.location)
+        except Exception as exc:
+            raise TypeError(
+                f"Invalid value for 'location' ({self.location}).\n{str(exc)}"
+            )
+        try:
+            validate_aad_guid(self.subscription_id)
+        except Exception as exc:
+            raise TypeError(
+                f"Invalid value for 'subscription_id' ({self.subscription_id}).\n{str(exc)}"
+            )
+        try:
+            validate_aad_guid(self.tenant_id)
+        except Exception as exc:
+            raise TypeError(
+                f"Invalid value for 'tenant_id' ({self.tenant_id}).\n{str(exc)}"
+            )
+
+    def to_dict(self):
+        self.validate()
+        return asdict(self)
+
+
+@dataclass
+class ConfigSectionBackend:
+    key_vault_name: str = ""
+    managed_identity_name: str = ""
+    resource_group_name: str = ""
+    storage_account_name: str = ""
+    storage_container_name: str = ""
+
+    def validate(self) -> None:
+        """Validate input parameters"""
+        if not self.key_vault_name:
+            raise TypeError(
+                f"Invalid value for 'key_vault_name' ({self.key_vault_name})."
+            )
+        if not self.managed_identity_name:
+            raise TypeError(
+                f"Invalid value for 'managed_identity_name' ({self.managed_identity_name})."
+            )
+        if not self.resource_group_name:
+            raise TypeError(
+                f"Invalid value for 'resource_group_name' ({self.resource_group_name})."
+            )
+        if not self.storage_account_name:
+            raise TypeError(
+                f"Invalid value for 'storage_account_name' ({self.storage_account_name})."
+            )
+        if not self.storage_container_name:
+            raise TypeError(
+                f"Invalid value for 'storage_container_name' ({self.storage_container_name})."
+            )
+
+    def to_dict(self):
+        self.validate()
+        return asdict(self)
+
+
+@dataclass
+class ConfigSectionPulumi:
+    encryption_key_id: str = ""
+    encryption_key_name: str = "pulumi-encryption-key"
+    stacks: Dict[str, str] = field(default_factory=dict)
+    storage_container_name: str = "pulumi"
+
+    def validate(self) -> None:
+        """Validate input parameters"""
+        if not isinstance(self.encryption_key_id, str) or not self.encryption_key_id:
+            raise TypeError(
+                f"Invalid value for 'encryption_key_id' ({self.encryption_key_id})."
+            )
+
+    def to_dict(self):
+        return asdict(self)
+
+
+@dataclass
+class ConfigSectionSHM:
+    aad_tenant_id: str = ""
+    admin_email_address: str = ""
+    admin_ip_addresses: List[str] = field(default_factory=list)
+    fqdn: str = ""
+    name: str = ""
+    timezone: str = ""
+
+    def validate(self) -> None:
+        """Validate input parameters"""
+        try:
+            validate_aad_guid(self.aad_tenant_id)
+        except Exception as exc:
+            raise TypeError(
+                f"Invalid value for 'aad_tenant_id' ({self.aad_tenant_id}).\n{str(exc)}"
+            )
+        try:
+            validate_email_address(self.admin_email_address)
+        except Exception as exc:
+            raise TypeError(
+                f"Invalid value for 'admin_email_address' ({self.admin_email_address}).\n{str(exc)}"
+            )
+        try:
+            for ip in self.admin_ip_addresses:
+                validate_ip_address(ip)
+        except Exception as exc:
+            raise TypeError(
+                f"Invalid value for 'admin_ip_addresses' ({self.admin_ip_addresses}).\n{str(exc)}"
+            )
+        if not isinstance(self.fqdn, str) or not self.fqdn:
+            raise TypeError(f"Invalid value for 'fqdn' ({self.fqdn}).")
+        if not isinstance(self.name, str) or not self.name:
+            raise TypeError(f"Invalid value for 'name' ({self.name}).")
+        try:
+            validate_timezone(self.timezone)
+        except Exception as exc:
+            raise TypeError(
+                f"Invalid value for 'timezone' ({self.timezone}).\n{str(exc)}"
+            )
+
+    def to_dict(self):
+        self.validate()
+        return asdict(self)
+
+
+@dataclass
+class ConfigSectionSRE:
+    @dataclass
+    class ConfigSectionRemoteDesktopOpts:
+        allow_copy: bool = False
+        allow_paste: bool = False
+
+        def validate(self) -> None:
+            """Validate input parameters"""
+            if not isinstance(self.allow_copy, bool):
+                raise TypeError(f"Invalid value for 'allow_copy' ({self.allow_copy}).")
+            if not isinstance(self.allow_paste, bool):
+                raise TypeError(
+                    f"Invalid value for 'allow_paste' ({self.allow_paste})."
+                )
+
+        def to_dict(self):
+            self.validate()
+            return asdict(self)
+
+    @dataclass
+    class ConfigSectionResearchDesktopOpts:
+        sku: str = ""
+
+        def validate(self) -> None:
+            """Validate input parameters"""
+            try:
+                validate_azure_vm_sku(self.sku)
+            except Exception as exc:
+                raise TypeError(f"Invalid value for 'sku' ({self.sku}).\n{str(exc)}")
+
+        def to_dict(self):
+            self.validate()
+            return asdict(self)
+
+    data_provider_ip_addresses: List[str] = field(default_factory=list)
+    index: int = 0
+    remote_desktop: ConfigSectionRemoteDesktopOpts = field(
+        default_factory=ConfigSectionRemoteDesktopOpts
+    )
+    # NB. we cannot use defaultdict here until https://github.com/python/cpython/pull/32056 is included in the Python version we are using
+    research_desktops: Dict[str, ConfigSectionResearchDesktopOpts] = field(
+        default_factory=dict
+    )
+    research_user_ip_addresses: List[str] = field(default_factory=list)
+    software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
+
+    def add_research_desktop(self, name: str):
+        self.research_desktops[
+            name
+        ] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts()
+
+    def validate(self) -> None:
+        """Validate input parameters"""
+        try:
+            for ip in self.data_provider_ip_addresses:
+                validate_ip_address(ip)
+        except Exception as exc:
+            raise TypeError(
+                f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{str(exc)}"
+            )
+        self.remote_desktop.validate()
+        # self.research_desktops.validate()
+        try:
+            for ip in self.research_user_ip_addresses:
+                validate_ip_address(ip)
+        except Exception as exc:
+            raise TypeError(
+                f"Invalid value for 'research_user_ip_addresses' ({self.research_user_ip_addresses}).\n{str(exc)}"
+            )
+
+    def to_dict(self):
+        self.validate()
+        return asdict(self)
+
+
+@dataclass
+class ConfigSectionTags:
+    deployment: str = ""
+    deployed_by: str = "Python"
+    project: str = "Data Safe Haven"
+    version: str = __version__
+
+    def validate(self) -> None:
+        """Validate input parameters"""
+        if not self.deployment:
+            raise TypeError(f"Invalid value for 'deployment' ({self.deployment}).")
+
+    def to_dict(self):
+        self.validate()
+        return asdict(self)
 
 
 class Config:
-    """Configuration file backed by blob storage"""
-
-    def __init__(
-        self,
-        name: str,
-        subscription_name: str,
-    ):
-        # Initialise Azure authentication
-        self.azure_api = AzureApi(subscription_name)
-        self.logger = Logger()
-
+    def __init__(self, name: str, subscription_name: str):
         # Set names
         self.name = name
-        self.shm_name = alphanumeric(self.name).lower()
-
-        # Construct backend storage variables
-        backend_resource_group_name = f"shm-{self.shm_name}-rg-backend"
-        backend_storage_account_name = (
-            f"shm{self.shm_name[:12]}backend"  # maximum of 24 characters allowed
+        self.shm_name_ = alphanumeric(self.name).lower()
+        self.filename = f"config-{self.shm_name_}.yaml"
+        self.subscription_name = subscription_name
+        # Set remote storage names
+        self.backend_resource_group_name = f"shm-{self.shm_name_}-rg-backend"
+        self.backend_storage_account_name = (
+            f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
         )
-        backend_storage_container_name = "config"
-
-        # Try to load the full config from blob storage
-        try:
-            self._map = self.download(
-                backend_resource_group_name,
-                backend_storage_account_name,
-                backend_storage_container_name,
-            )
-        # ... otherwise create a new DotMap
-        except (DataSafeHavenAzureException, ResourceNotFoundError) as exc:
-            self.logger.warning(
-                f"Unable to load existing config file from '{backend_storage_account_name}'."
-            )
-            self._map = dotmap.DotMap()
-
-        # Update the map with local config variables
-        # Set defaults by checking whether the variable has been set or defaults to a DotMap
-        if isinstance(self.tags.deployed_by, dotmap.DotMap):
-            self.tags.deployed_by = "Python"
-        if isinstance(self.tags.deployment, dotmap.DotMap):
-            self.tags.deployment = self.name
-        if isinstance(self.tags.project, dotmap.DotMap):
-            self.tags.project = "Data Safe Haven"
-        if isinstance(self.tags.version, dotmap.DotMap):
-            self.tags.version = __version__
-        if isinstance(self.backend.key_vault_name, dotmap.DotMap):
-            self.backend.key_vault_name = f"shm-{self.shm_name[:9]}-kv-backend"
-        if isinstance(self.backend.resource_group_name, dotmap.DotMap):
-            self.backend.resource_group_name = backend_resource_group_name
-        if isinstance(self.backend.storage_account_name, dotmap.DotMap):
-            self.backend.storage_account_name = backend_storage_account_name
-        if isinstance(self.backend.storage_container_name, dotmap.DotMap):
-            self.backend.storage_container_name = backend_storage_container_name
-        if isinstance(self.backend.managed_identity_name, dotmap.DotMap):
-            self.backend.managed_identity_name = (
-                f"shm-{self.shm_name}-identity-reader-backend"
-            )
-        if isinstance(self.backend.pulumi_encryption_key_name, dotmap.DotMap):
-            self.backend.pulumi_encryption_key_name = "pulumi-encryption-key"
-        if isinstance(self.pulumi.storage_container_name, dotmap.DotMap):
-            self.pulumi.storage_container_name = "pulumi"
-        if isinstance(self.shm.name, dotmap.DotMap):
-            self.shm.name = self.shm_name
-
-    def __repr__(self) -> str:
-        return f"{self.__class__} containing: {self._map}"
-
-    def __str__(self) -> str:
-        return str(yaml.dump(self._map.toDict(), indent=2))
-
-    def __getattr__(self, name: str) -> Any:
-        """Access unknown attributes from the internal map"""
-        return self._map[name]
+        self.backend_storage_container_name = "config"
+        # Config sections
+        self.azure_api_: Optional[AzureApi] = None
+        self.azure_: Optional[ConfigSectionAzure] = None
+        self.backend_: Optional[ConfigSectionBackend] = None
+        self.pulumi_: Optional[ConfigSectionPulumi] = None
+        self.shm_: Optional[ConfigSectionSHM] = None
+        self.tags_: Optional[ConfigSectionTags] = None
+        self.sres: Dict[str, ConfigSectionSRE] = defaultdict(ConfigSectionSRE)
+        # Attempt to load from blob storage
+        with suppress(DataSafeHavenAzureException):
+            self.download()
 
     @property
-    def filename(self) -> str:
-        """Filename where this configuration will be stored"""
-        return f"config-{self.shm_name}.yaml"
+    def azure_api(self) -> AzureApi:
+        """Load AzureAPI on demand
 
-    def add_secret(self, name: str, value: str) -> None:
-        """Add a secret to the backend key vault"""
-        azure_api = AzureApi(self.subscription_name)
-        azure_api.set_keyvault_secret(self.backend.key_vault_name, name, value)
+        Returns:
+            AzureApi: An initialised AzureApi object
+        """
+        if not self.azure_api_:
+            self.azure_api_ = AzureApi(
+                subscription_name=self.subscription_name,
+            )
+        return self.azure_api_
 
-    def download(
-        self,
-        backend_resource_group_name: str,
-        backend_storage_account_name: str,
-        backend_storage_container_name: str,
-    ) -> dotmap.DotMap:
-        """Load the config file from Azure storage"""
-        try:
-            # Connect to blob storage
-            storage_account_key = self.storage_account_key(
-                backend_resource_group_name, backend_storage_account_name
+    @property
+    def azure(self) -> ConfigSectionAzure:
+        if not self.azure_:
+            self.azure_ = ConfigSectionAzure()
+        return self.azure_
+
+    @property
+    def backend(self) -> ConfigSectionBackend:
+        if not self.backend_:
+            self.backend_ = ConfigSectionBackend(
+                key_vault_name=f"shm-{self.shm_name_[:9]}-kv-backend",
+                managed_identity_name=f"shm-{self.shm_name_}-identity-reader-backend",
+                resource_group_name=self.backend_resource_group_name,
+                storage_account_name=self.backend_storage_account_name,
+                storage_container_name=self.backend_storage_container_name,
             )
-            blob_service_client: BlobServiceClient = BlobServiceClient.from_connection_string(
-                f"DefaultEndpointsProtocol=https;AccountName={backend_storage_account_name};AccountKey={storage_account_key};EndpointSuffix=core.windows.net"
-            )
-            if not isinstance(blob_service_client, BlobServiceClient):
-                raise DataSafeHavenAzureException(
-                    "Blob storage client could not be created."
+        return self.backend_
+
+    @property
+    def pulumi(self) -> ConfigSectionPulumi:
+        if not self.pulumi_:
+            self.pulumi_ = ConfigSectionPulumi()
+        return self.pulumi_
+
+    @property
+    def shm(self) -> ConfigSectionSHM:
+        if not self.shm_:
+            self.shm_ = ConfigSectionSHM(name=self.shm_name_)
+        return self.shm_
+
+    @property
+    def tags(self) -> ConfigSectionTags:
+        if not self.tags_:
+            self.tags_ = ConfigSectionTags(deployment=self.name)
+        return self.tags_
+
+    def __str__(self) -> str:
+        """String representation of the Config object"""
+        contents = {}
+        if self.azure_:
+            contents["azure"] = self.azure.to_dict()
+        if self.backend_:
+            contents["backend"] = self.backend.to_dict()
+        if self.pulumi_:
+            contents["pulumi"] = self.pulumi.to_dict()
+        if self.shm_:
+            contents["shm"] = self.shm.to_dict()
+        if self.sres:
+            contents["sre"] = ({k: v.to_dict() for k, v in self.sres.items()},)
+        return str(yaml.dump(contents, indent=2))
+
+    def read_stack(self, name: str, path: pathlib.Path):
+        """Add a Pulumi stack file to config"""
+        with open(path, "r", encoding="utf-8") as f_stack:
+            stack_yaml = yaml.safe_load(f_stack)
+        self.pulumi.stacks[name] = b64encode(yaml.dump(stack_yaml))
+
+    def write_stack(self, name: str, path: pathlib.Path):
+        """Write a Pulumi stack file from config"""
+        stack_yaml = yaml.dump(b64decode(self.pulumi.stacks[name]), indent=2)
+        with open(name, "w", encoding="utf-8") as f_stack:
+            f_stack.writelines(stack_yaml)
+
+    def download(self):
+        """Download config from Azure storage and interpret it"""
+        self.from_yaml(
+            yaml.safe_load(
+                self.azure_api.download_blob(
+                    self.filename,
+                    self.backend_resource_group_name,
+                    self.backend_storage_account_name,
+                    self.backend_storage_container_name,
                 )
-            # Download the created file
-            blob_client = blob_service_client.get_blob_client(
-                container=backend_storage_container_name, blob=self.filename
             )
-            return dotmap.DotMap(yaml.safe_load(blob_client.download_blob().readall()))
-        except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Configuration file could not be downloaded from '{backend_storage_account_name}'\n{str(exc)}."
-            ) from exc
-
-    def get_secret(self, name: str) -> str:
-        """Get a secret from the backend key vault"""
-        return self.azure_api.get_keyvault_secret(self.backend.key_vault_name, name)
-
-    def storage_account_key(
-        self, backend_resource_group_name: str, backend_storage_account_name: str
-    ) -> str:
-        """Load the key for the backend storage account"""
-        try:
-            keys = self.azure_api.get_storage_account_keys(
-                backend_storage_account_name, backend_resource_group_name
-            )
-            if not keys:
-                raise DataSafeHavenAzureException(
-                    "Storage keys could not be retrieved."
-                )
-            return str(keys[0].value)
-        except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Storage key could not be loaded.\n{str(exc)}"
-            ) from exc
-
-    def upload(self) -> None:
-        """Dump the config file to Azure storage"""
-        self.logger.debug(
-            f"Uploading config [green]{self.name}[/] to blob storage.",
         )
-        try:
-            # Connect to blob storage
-            storage_account_key = self.storage_account_key(
-                self.backend.resource_group_name, self.backend.storage_account_name
-            )
-            blob_service_client: BlobServiceClient = BlobServiceClient.from_connection_string(
-                f"DefaultEndpointsProtocol=https;AccountName={self.backend.storage_account_name};AccountKey={storage_account_key};EndpointSuffix=core.windows.net"
-            )
-            if not isinstance(blob_service_client, BlobServiceClient):
-                raise DataSafeHavenAzureException(
-                    "Blob storage client could not be created."
-                )
-            # Upload the created file
-            blob_client = blob_service_client.get_blob_client(
-                container=self.backend.storage_container_name, blob=self.filename
-            )
-            blob_client.upload_blob(str(self), overwrite=True)
-            self.logger.info(
-                f"Uploaded config [green]{self.name}[/] to blob storage.",
-            )
-        except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Configuration file could not be uploaded to '{self.backend.storage_account_name}'."
-            ) from exc
+
+    def from_yaml(self, yaml_input: YamlType) -> None:
+        """Construct a config object from YAML"""
+        if "azure" in yaml_input:
+            self.azure_ = ConfigSectionAzure(**yaml_input["azure"])
+        if "backend" in yaml_input:
+            self.backend_ = ConfigSectionBackend(**yaml_input["backend"])
+        if "pulumi" in yaml_input:
+            self.pulumi_ = ConfigSectionPulumi(**yaml_input["pulumi"])
+        if "shm" in yaml_input:
+            self.shm_ = ConfigSectionSHM(**yaml_input["shm"])
+        if "sre" in yaml_input:
+            for sre_name, sre_details in dict(yaml_input["sre"]).items():
+                self.sres[sre_name] = ConfigSectionSRE(**sre_details)
+
+    def upload(self):
+        """Upload config to Azure storage"""
+        self.azure_api.upload_blob(
+            str(self),
+            self.filename,
+            self.backend_resource_group_name,
+            self.backend_storage_account_name,
+            self.backend_storage_container_name,
+        )

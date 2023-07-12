@@ -15,7 +15,7 @@ class DotFileSettings:
     """Load global and local settings from dotfiles with structure like the following
 
     azure:
-      admin_group_id: 347c68cb-261f-4a3e-ac3e-6af860b5fec9
+      admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
       location: uksouth
       subscription_name: Data Safe Haven Development
     shm:

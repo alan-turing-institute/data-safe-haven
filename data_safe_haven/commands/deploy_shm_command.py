@@ -4,9 +4,7 @@ from typing import List, Optional
 from typing_extensions import Annotated
 
 # Third party imports
-import dotmap
 import pytz
-import yaml
 import typer
 
 # Local imports
@@ -134,9 +132,7 @@ class DeploySHMCommand(BaseCommand):
             )
 
             # Add Pulumi infrastructure information to the config file
-            with open(stack.local_stack_path, "r", encoding="utf-8") as f_stack:
-                stack_yaml = yaml.safe_load(f_stack)
-            config.pulumi.stacks[stack.stack_name] = stack_yaml
+            config.read_stack(stack.stack_name, stack.local_stack_path)
 
             # Upload config to blob storage
             config.upload()
@@ -162,6 +158,7 @@ class DeploySHMCommand(BaseCommand):
         timezone: Optional[str] = None,
     ) -> None:
         # Update AzureAD tenant ID
+        print(config)
         if aad_tenant_id is not None:
             if config.shm.aad_tenant_id and (config.shm.aad_tenant_id != aad_tenant_id):
                 self.logger.debug(
@@ -171,7 +168,7 @@ class DeploySHMCommand(BaseCommand):
                 f"Setting [bold]AzureAD tenant ID[/] to [green]{aad_tenant_id}[/]."
             )
             config.shm.aad_tenant_id = aad_tenant_id
-        if isinstance(config.shm.aad_tenant_id, dotmap.DotMap):
+        if not config.shm.aad_tenant_id:
             raise DataSafeHavenConfigException(
                 "No AzureAD tenant ID was found. Use [bright_cyan]'--aad-tenant-id / -a'[/] to set one."
             )
@@ -188,7 +185,7 @@ class DeploySHMCommand(BaseCommand):
                 f"Setting [bold]admin email address[/] to [green]{admin_email_address}[/]."
             )
             config.shm.admin_email_address = admin_email_address
-        if isinstance(config.shm.admin_email_address, dotmap.DotMap):
+        if not config.shm.admin_email_address:
             raise DataSafeHavenConfigException(
                 "No admin email address was found. Use [bright_cyan]'--email / -e'[/] to set one."
             )
@@ -220,7 +217,7 @@ class DeploySHMCommand(BaseCommand):
                 f"Setting [bold]fully-qualified domain name[/] to [green]{fqdn}[/]."
             )
             config.shm.fqdn = fqdn
-        if isinstance(config.shm.fqdn, dotmap.DotMap):
+        if not config.shm.fqdn:
             raise DataSafeHavenConfigException(
                 "No fully-qualified domain name was found. Use [bright_cyan]'--fqdn / -f'[/] to set one."
             )
@@ -238,7 +235,7 @@ class DeploySHMCommand(BaseCommand):
                     )
                 self.logger.info(f"Setting [bold]timezone[/] to [green]{timezone}[/].")
                 config.shm.timezone = timezone
-        if isinstance(config.shm.timezone, dotmap.DotMap):
+        if not config.shm.timezone:
             raise DataSafeHavenConfigException(
                 "No timezone was found. Use [bright_cyan]'--timezone / -t'[/] to set one."
             )

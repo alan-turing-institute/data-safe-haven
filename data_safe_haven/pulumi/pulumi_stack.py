@@ -14,7 +14,7 @@ from pulumi import automation
 # Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
-from data_safe_haven.external import AzureCli
+from data_safe_haven.external import AzureCli, AzureApi
 from data_safe_haven.utility import Logger
 from .declarative_shm import DeclarativeSHM
 from .declarative_sre import DeclarativeSRE
@@ -62,13 +62,14 @@ class PulumiStack:
     @property
     def env(self) -> Dict[str, Any]:
         if not self.env_:
-            backend_storage_account_key = self.cfg.storage_account_key(
+            azure_api = AzureApi(self.cfg.subscription_name)
+            backend_storage_account_keys = azure_api.get_storage_account_keys(
                 self.cfg.backend.resource_group_name,
                 self.cfg.backend.storage_account_name,
             )
             self.env_ = {
                 "AZURE_STORAGE_ACCOUNT": self.cfg.backend.storage_account_name,
-                "AZURE_STORAGE_KEY": backend_storage_account_key,
+                "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
             }
         return self.env_
@@ -84,7 +85,7 @@ class PulumiStack:
                     stack_name=self.stack_name,
                     program=self.program.run,
                     opts=automation.LocalWorkspaceOptions(
-                        secrets_provider=self.cfg.backend.pulumi_secrets_provider,
+                        secrets_provider=f"azurekeyvault://{self.cfg.backend.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi.encryption_key_id}",
                         work_dir=str(self.work_dir),
                         env_vars=self.env,
                     ),
@@ -180,7 +181,7 @@ class PulumiStack:
     def initialise_workdir(self) -> None:
         """Create project directory if it does not exist and update local stack."""
         try:
-            self.logger.info(f"Ensuring that [green]{self.work_dir}[/] exists...")
+            self.logger.debug(f"Ensuring that [green]{self.work_dir}[/] exists...")
             if not self.work_dir.exists():
                 self.work_dir.mkdir(parents=True)
             self.logger.info(f"Ensured that [green]{self.work_dir}[/] exists.")
@@ -189,11 +190,7 @@ class PulumiStack:
                 self.logger.info(
                     f"Loading stack [green]{self.stack_name}[/] information from config"
                 )
-                stack_yaml = yaml.dump(
-                    self.cfg.pulumi.stacks[self.stack_name].toDict(), indent=2
-                )
-                with open(self.local_stack_path, "w", encoding="utf-8") as f_stack:
-                    f_stack.writelines(stack_yaml)
+                self.cfg.write_stack(self.stack_name, self.local_stack_path)
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Initialising Pulumi working directory failed.\n{str(exc)}."
@@ -207,8 +204,10 @@ class PulumiStack:
         """Login to Pulumi."""
         try:
             AzureCli().login()  # this is needed to read the encryption key from the keyvault
-            env_vars = " ".join([f"{k}={v}" for k, v in self.env.items()])
-            command = f"pulumi login azblob://{self.cfg.pulumi.storage_container_name}?storage_account={self.cfg.backend.storage_account_name}"
+            env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
+            command = (
+                f"pulumi login 'azblob://{self.cfg.pulumi.storage_container_name}'"
+            )
             with subprocess.Popen(
                 f"{env_vars} {command}",
                 shell=True,

@@ -12,6 +12,7 @@ from .strings import (
 )
 from .validators import (
     validate_aad_guid,
+    validate_azure_location,
     validate_azure_vm_sku,
     validate_email_address,
     validate_ip_address,
@@ -31,6 +32,7 @@ __all__ = [
     "time_as_string",
     "truncate_tokens",
     "validate_aad_guid",
+    "validate_azure_location",
     "validate_azure_vm_sku",
     "validate_email_address",
     "validate_ip_address",

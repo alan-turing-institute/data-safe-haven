@@ -155,7 +155,7 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure client
             storage_account_keys = self.get_storage_account_keys(
-                storage_account_name, resource_group_name
+                resource_group_name, storage_account_name
             )
             blob_service_client = BlobServiceClient.from_connection_string(
                 f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={str(storage_account_keys[0].value)};EndpointSuffix=core.windows.net"
@@ -618,7 +618,7 @@ class AzureApi(AzureAuthenticator):
             ) from exc
 
     def get_storage_account_keys(
-        self, storage_account_name: str, resource_group_name: str
+        self, resource_group_name: str, storage_account_name: str
     ) -> List[StorageAccountKey]:
         """Retrieve the storage account keys for an existing storage account
 
@@ -1059,7 +1059,7 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure client
             storage_account_keys = self.get_storage_account_keys(
-                storage_account_name, resource_group_name
+                resource_group_name, storage_account_name
             )
             blob_service_client = BlobServiceClient.from_connection_string(
                 f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={str(storage_account_keys[0].value)};EndpointSuffix=core.windows.net"

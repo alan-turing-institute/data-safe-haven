@@ -44,7 +44,7 @@ class AzureFileShare:
             storage_account_keys = [
                 k.value
                 for k in self.azure_api.get_storage_account_keys(
-                    self.storage_account_name, self.resource_group_name
+                    self.resource_group_name, self.storage_account_name
                 )
                 if isinstance(k.value, str)
             ]
