@@ -186,14 +186,12 @@ function Get-ShmConfig {
         netbiosName = ($shmConfigBase.netbiosName ? $shmConfigBase.netbiosName : $shm.id).ToUpper() | Limit-StringLength -MaximumLength 15 -FailureIsFatal
         dn          = "DC=$(($shmConfigBase.domain).Replace('.',',DC='))"
         ous         = [ordered]@{
-            databaseServers   = [ordered]@{ name = "Secure Research Environment Database Servers" }
-            linuxServers      = [ordered]@{ name = "Secure Research Environment Linux Servers" }
-            rdsGatewayServers = [ordered]@{ name = "Secure Research Environment RDS Gateway Servers" }
-            rdsSessionServers = [ordered]@{ name = "Secure Research Environment RDS Session Servers" }
-            researchUsers     = [ordered]@{ name = "Safe Haven Research Users" }
-            securityGroups    = [ordered]@{ name = "Safe Haven Security Groups" }
-            serviceAccounts   = [ordered]@{ name = "Safe Haven Service Accounts" }
-            identityServers   = [ordered]@{ name = "Safe Haven Identity Servers" }
+            databaseServers = [ordered]@{ name = "Secure Research Environment Database Servers" }
+            linuxServers    = [ordered]@{ name = "Secure Research Environment Linux Servers" }
+            researchUsers   = [ordered]@{ name = "Safe Haven Research Users" }
+            securityGroups  = [ordered]@{ name = "Safe Haven Security Groups" }
+            serviceAccounts = [ordered]@{ name = "Safe Haven Service Accounts" }
+            identityServers = [ordered]@{ name = "Safe Haven Identity Servers" }
         }
     }
     $shm.domain.fqdnLower = ($shm.domain.fqdn).ToLower()
@@ -400,30 +398,20 @@ function Get-ShmConfig {
     # ---------
     $shm.users = [ordered]@{
         computerManagers = [ordered]@{
-            databaseServers   = [ordered]@{
+            databaseServers = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Database Servers Manager"
                 samAccountName     = "$($shm.id)databasesrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-database-servers".ToLower()
             }
-            identityServers   = [ordered]@{
+            identityServers = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Identity Servers Manager"
                 samAccountName     = "$($shm.id)identitysrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-identity-servers".ToLower()
             }
-            linuxServers      = [ordered]@{
+            linuxServers    = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Linux Servers Manager"
                 samAccountName     = "$($shm.id)linuxsrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-linux-servers".ToLower()
-            }
-            rdsGatewayServers = [ordered]@{
-                name               = "$($shm.domain.netbiosName) RDS Gateway Manager"
-                samAccountName     = "$($shm.id)gatewaysrvrs".ToLower() | Limit-StringLength -MaximumLength 20
-                passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-gateway-servers".ToLower()
-            }
-            rdsSessionServers = [ordered]@{
-                name               = "$($shm.domain.netbiosName) RDS Session Servers Manager"
-                samAccountName     = "$($shm.id)sessionsrvrs".ToLower() | Limit-StringLength -MaximumLength 20
-                passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-session-servers".ToLower()
             }
         }
         serviceAccounts  = [ordered]@{
