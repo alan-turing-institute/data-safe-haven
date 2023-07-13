@@ -15,7 +15,7 @@ This infrastructure comprises:
 - A `Gitlab` server to provide source code management and version control
 - A `CodiMD` server for collaborative writing
 - A `CoCalc` server for collaborative editing of computational notebook
-- A remote desktop server to provide secure remote desktop access to the SRE resources. This can be configured on a per-SRE basis as either `Apache Guacamole` or `Microsoft Remote Desktop Services`.
+- `Apache Guacamole` provides a clientless remote desktop gateway to provide secure remote desktop access to the SRE resources. 
 
 Hosting each secure project environment in its own resource group supports a clean lifecycle management process, making it easy to verifiably delete all project data and resources at the end of a project.
 
@@ -26,7 +26,7 @@ Hosting each secure project environment in its own resource group supports a cle
 :align: center
 ```
 
-The SREs use either `Microsoft Remote Desktop Services` or `Apache Guacamole` to provide a secure connection to the resources within the environment.
+The SREs use `Apache Guacamole` to provide a secure connection to the resources within the environment.
 Only the remote desktop server is accessible from outside the SRE.
 Connections to this are made via an SSL/TLS secured connection that requires the user to authenticate using credentials provided by the Data Safe Haven and validated with MFA.
 
