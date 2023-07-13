@@ -1,7 +1,7 @@
 """Helper class for Azure fileshares"""
 # Standard library imports
 from contextlib import suppress
-from typing import Any, Optional
+from typing import Optional
 
 # Third party imports
 from azure.core.exceptions import ResourceNotFoundError

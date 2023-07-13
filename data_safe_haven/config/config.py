@@ -3,18 +3,16 @@
 import pathlib
 from collections import defaultdict
 from contextlib import suppress
-from typing import List, Optional
+from dataclasses import asdict, dataclass, field
+from typing import Dict, List, Optional
 
 # Third party imports
-from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional
 import yaml
 
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.external import AzureApi
-from data_safe_haven.functions import alphanumeric
 from data_safe_haven.functions import (
     alphanumeric,
     b64decode,

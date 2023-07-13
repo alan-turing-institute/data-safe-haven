@@ -1,12 +1,10 @@
 """Command-line application for deploying a Secure Research Environment from project files"""
 # Standard library imports
 from typing import Any, Dict, List, Optional
-from typing_extensions import Annotated
 
 # Third party imports
-import dotmap
 import typer
-import yaml
+from typing_extensions import Annotated
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings

@@ -3,17 +3,15 @@
 import pathlib
 import sys
 from typing import Optional
-from typing_extensions import Annotated
 
 # Third party imports
 import typer
+from typing_extensions import Annotated
 
 # Local imports
 from data_safe_haven.backend import Backend
 from data_safe_haven.config import DotFileSettings
-from data_safe_haven.exceptions import (
-    DataSafeHavenException,
-)
+from data_safe_haven.exceptions import DataSafeHavenException
 from data_safe_haven.functions import validate_aad_guid
 from .base_command import BaseCommand
 

@@ -1,10 +1,10 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Standard library imports
 import pathlib
-from typing_extensions import Annotated
 
 # Third party imports
 import typer
+from typing_extensions import Annotated
 
 # Local imports
 from data_safe_haven.administration.users import UserHandler

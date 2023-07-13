@@ -1,9 +1,7 @@
 """Command-line application for tearing down a Secure Research Environment"""
-# Standard library imports
-from typing_extensions import Annotated
-
 # Third party imports
 import typer
+from typing_extensions import Annotated
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings

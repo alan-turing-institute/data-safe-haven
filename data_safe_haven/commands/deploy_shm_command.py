@@ -1,11 +1,11 @@
 """Command-line application for deploying a Data Safe Haven from project files"""
 # Standard library imports
 from typing import List, Optional
-from typing_extensions import Annotated
 
 # Third party imports
 import pytz
 import typer
+from typing_extensions import Annotated
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
