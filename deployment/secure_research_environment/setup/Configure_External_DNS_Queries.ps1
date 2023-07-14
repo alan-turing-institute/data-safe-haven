@@ -29,7 +29,7 @@ $allowedFqdns = @($firewallRules.applicationRuleCollections | ForEach-Object { $
                 @(Get-PrivateDnsZones -ResourceGroupName $config.shm.network.vnet.rg -SubscriptionName $config.shm.subscriptionName | ForEach-Object { $_.Name })
 # List all unique FQDNs
 $allowedFqdns = $allowedFqdns |
-                Where-Object { $_ -notlike "g*.servicebus.windows.net" } | # Remove AzureADConnect password reset endpoints
+                Where-Object { $_ -notlike "*-sb.servicebus.windows.net" } | # Remove AzureADConnect password reset endpoints
                 Where-Object { $_ -notlike "pksproddatastore*.blob.core.windows.net" } | # Remove AzureAD operations endpoints
                 Sort-Object -Unique
 Add-LogMessage -Level Info "Restricted networks will be allowed to run DNS lookup on the following $($allowedFqdns.Count) FQDNs:"
