@@ -11,22 +11,33 @@ versions:
     - "3.11"
 packages:
     arviz:
+        "3.11": ["uninstallable"]
     beautifulsoup4:
+        "3.11": ["uninstallable"]
     black:
     Cython:
     dash:
+        "3.11": ["uninstallable"]
     dask:
+        "3.11": ["uninstallable"]
     flair:
+        "3.11": ["uninstallable"]
     flake8:
     folium:
+        "3.11": ["uninstallable"]
     gensim:
+        "3.11": ["uninstallable"]
     geopandas:
     gym:
+        "3.11": ["uninstallable"]
     html5lib:
+        "3.11": ["uninstallable"]
     ipykernel:
     lxml:
+        "3.11": ["uninstallable"]
     matplotlib:
     nltk:
+        "3.11": ["uninstallable"]
     numba:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     numpy:
@@ -35,31 +46,42 @@ packages:
     pandasql:
     pathos:
     pg8000:
+        "3.11": ["uninstallable"]
     Pillow:
     plotly:
     poetry:  # also used by installation scripts
         "all": [">=1.3.0,<1.4.0"]  # avoid known installation issue https://github.com/python-poetry/poetry/issues/7611
     prophet:
     pydot:
-    pygrib:
-        "3.9": ["uninstallable"]
+        "3.11": ["uninstallable"]
+    # pygrib:
+    #     "3.9": ["uninstallable"]
     pylint:
+        "3.11": ["uninstallable"]
     pymc:
+        "3.11": ["uninstallable"]
     pyodbc:
+        "3.11": ["uninstallable"]
     pyproj:
+        "3.11": ["uninstallable"]
     pyshp:
+        "3.11": ["uninstallable"]
     pytest:
     PyYAML:
     regex:
     requests:
     safety:  # also used by installation scripts
-    scikit-image:
-        "all": [">0.10.0"]  # increase solver flexibility
+    # scikit-image:
+    #     "all": [">0.10.0"]  # increase solver flexibility
     scikit-learn:
+        "3.11": ["uninstallable"]
     scipy:
+        "3.11": ["uninstallable"]
     seaborn:
     spacy-langdetect:
+        "3.11": ["uninstallable"]
     spacy:
+        "3.11": ["uninstallable"]
     Sphinx:
     SQLAlchemy:
     statsmodels:
@@ -71,4 +93,6 @@ packages:
     wordcloud:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     xgboost:
+        "3.11": ["uninstallable"]
     xlrd:
+        "3.11": ["uninstallable"]
