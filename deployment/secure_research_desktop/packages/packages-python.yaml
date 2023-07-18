@@ -14,40 +14,26 @@ packages:
     Cython:
     flake8:
     geopandas:
-        "3.11": ["uninstallable"]
     html5lib:
-        "3.11": ["uninstallable"]
     ipykernel:
     lxml:
-        "3.11": ["uninstallable"]
     matplotlib:
     numpy:
         "all": [">1.0.0"]  # increase solver flexibility
     pandas:
     pandasql:
-        "3.11": ["uninstallable"]
     Pillow:
-        "3.11": ["uninstallable"]
     plotly:
-        "3.11": ["uninstallable"]
     poetry:  # also used by installation scripts
         "all": [">=1.3.0,<1.4.0"]  # avoid known installation issue https://github.com/python-poetry/poetry/issues/7611
     prophet:
-        "3.11": ["uninstallable"]
     pydot:
-        "3.11": ["uninstallable"]
     pygrib:
-        "3.11": ["uninstallable"]
     pylint:
-        "3.11": ["uninstallable"]
     pymc:
-        "3.11": ["uninstallable"]
     pyodbc:
-        "3.11": ["uninstallable"]
     pyproj:
-        "3.11": ["uninstallable"]
     pyshp:
-        "3.11": ["uninstallable"]
     pytest:
     PyYAML:
     regex:
@@ -56,6 +42,4 @@ packages:
     seaborn:
     Sphinx:
     SQLAlchemy:
-        "3.11": ["uninstallable"]
     tables:
-        "3.11": ["uninstallable"]
