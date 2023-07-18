@@ -25,6 +25,7 @@ packages:
     html5lib:
     ipykernel:
     lightgbm:
+        "3.9": ["uninstallable"]
     lxml:
     matplotlib:
     nltk:
@@ -42,8 +43,10 @@ packages:
         "all": [">=1.3.0,<1.4.0"]  # avoid known installation issue https://github.com/python-poetry/poetry/issues/7611
     prophet:
     psycopg2:
+        "3.9": ["uninstallable"]
     pydot:
     pygrib:
+        "3.9": ["uninstallable"]
     pylint:
     pymc:
     pyodbc:
@@ -67,6 +70,7 @@ packages:
         "all": [">0.10.0"]  # increase solver flexibility
     sympy:
     tables:
+        "3.9": ["uninstallable"]
     tensorflow:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     thinc:
