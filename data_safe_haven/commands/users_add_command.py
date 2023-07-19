@@ -1,10 +1,6 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Standard library imports
 import pathlib
-from typing_extensions import Annotated
-
-# Third party imports
-import typer
 
 # Local imports
 from data_safe_haven.administration.users import UserHandler
@@ -14,21 +10,13 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external.api import GraphApi
-from .base_command import BaseCommand
 
 
-class UsersAddCommand(BaseCommand):
+class UsersAddCommand:
     """Add users to a deployed Data Safe Haven"""
 
-    def entrypoint(
-        self,
-        csv: Annotated[
-            pathlib.Path,
-            typer.Argument(
-                help="A CSV file containing details of users to add.",
-            ),
-        ],
-    ) -> None:
+    def __call__(self, csv_path: pathlib.Path) -> None:
+        """Typer command line entrypoint"""
         shm_name = "UNKNOWN"
         try:
             # Use dotfile settings to load the job configuration
@@ -49,7 +37,7 @@ class UsersAddCommand(BaseCommand):
 
             # Add users to SHM
             users = UserHandler(config, graph_api)
-            users.add(csv)
+            users.add(csv_path)
         except DataSafeHavenException as exc:
             raise DataSafeHavenException(
                 f"Could not add users to Data Safe Haven '{shm_name}'.\n{str(exc)}"

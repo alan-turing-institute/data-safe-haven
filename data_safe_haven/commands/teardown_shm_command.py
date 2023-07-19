@@ -6,13 +6,12 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.pulumi import PulumiStack
-from .base_command import BaseCommand
 
 
-class TeardownSHMCommand(BaseCommand):
+class TeardownSHMCommand:
     """Teardown a deployed a Safe Haven Management component"""
 
-    def entrypoint(self) -> None:
+    def __call__(self) -> None:
         """Typer command line entrypoint"""
         try:
             # Use dotfile settings to load the job configuration

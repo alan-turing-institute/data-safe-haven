@@ -1,10 +1,6 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Standard library imports
 from typing import List
-from typing_extensions import Annotated
-
-# Third party imports
-import typer
 
 # Local imports
 from data_safe_haven.administration.users import UserHandler
@@ -14,20 +10,19 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external.api import GraphApi
-from .base_command import BaseCommand
+from data_safe_haven.utility import Logger
 
 
-class UsersRemoveCommand(BaseCommand):
+class UsersRemoveCommand:
     """Remove existing users from a deployed Data Safe Haven"""
 
-    def entrypoint(
+    def __init__(self):
+        """Constructor"""
+        self.logger = Logger()
+
+    def __call__(
         self,
-        usernames: Annotated[
-            List[str],
-            typer.Argument(
-                help="Username of a user to remove from this Data Safe Haven. [*may be specified several times*]",
-            ),
-        ],
+        usernames: List[str],
     ) -> None:
         shm_name = "UNKNOWN"
         try:
