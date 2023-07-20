@@ -54,8 +54,6 @@ packages:
     prophet:
     pydot:
         "3.11": ["uninstallable"]
-    # pygrib:
-    #     "3.9": ["uninstallable"]
     pylint:
         "3.11": ["uninstallable"]
     pymc:
@@ -71,8 +69,6 @@ packages:
     regex:
     requests:
     safety:  # also used by installation scripts
-    # scikit-image:
-    #     "all": [">0.10.0"]  # increase solver flexibility
     scikit-learn:
         "3.11": ["uninstallable"]
     scipy:
