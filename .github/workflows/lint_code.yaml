@@ -53,12 +53,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Install requirements
-        shell: bash
-        run: pip install flake8
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: Install hatch
+        run: pip install hatch
       - name: Lint Python
-        shell: bash
-        run: flake8 . --statistics --count
+        run: hatch run lint:all
 
   lint_shell:
     runs-on: ubuntu-latest
