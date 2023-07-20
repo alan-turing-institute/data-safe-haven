@@ -3,7 +3,7 @@
 from typing import Any, Dict, List, Optional
 
 # Local imports
-from data_safe_haven.config import Config, DotFileSettings
+from data_safe_haven.config import BackendSettings, Config
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigException,
     DataSafeHavenException,
@@ -42,7 +42,7 @@ class DeploySRECommand:
 
             # Use dotfile settings to load the job configuration
             try:
-                settings = DotFileSettings()
+                settings = BackendSettings()
             except DataSafeHavenException as exc:
                 raise DataSafeHavenInputException(
                     f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"

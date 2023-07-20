@@ -3,7 +3,7 @@
 from typing import Any, Optional
 
 # Local imports
-from data_safe_haven.config import Config, DotFileSettings
+from data_safe_haven.config import BackendSettings, Config
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.external import AzureApi
 
@@ -11,7 +11,7 @@ from data_safe_haven.external import AzureApi
 class Backend:
     """Azure backend for a Data Safe Haven deployment"""
 
-    def __init__(self, settings: DotFileSettings, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, settings: BackendSettings, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.azure_api_: Optional[AzureApi] = None
         self.config: Config = Config(

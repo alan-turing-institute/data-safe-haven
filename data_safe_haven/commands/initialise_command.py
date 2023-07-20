@@ -6,7 +6,7 @@ from typing import Optional
 
 # Local imports
 from data_safe_haven.backend import Backend
-from data_safe_haven.config import DotFileSettings
+from data_safe_haven.config import BackendSettings
 from data_safe_haven.exceptions import DataSafeHavenException
 from data_safe_haven.utility import Logger
 
@@ -36,7 +36,7 @@ class InitialiseCommand:
                 sys.exit(0)
 
             # Load settings from dotfiles
-            settings = DotFileSettings(
+            settings = BackendSettings(
                 admin_group_id=admin_group,
                 location=location,
                 name=name,

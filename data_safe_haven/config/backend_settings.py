@@ -11,7 +11,7 @@ from data_safe_haven.exceptions import DataSafeHavenInputException
 from data_safe_haven.utility import Logger, PathType
 
 
-class DotFileSettings:
+class BackendSettings:
     """Load global and local settings from dotfiles with structure like the following
 
     azure:
