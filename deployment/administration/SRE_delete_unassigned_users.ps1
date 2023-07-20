@@ -10,7 +10,7 @@ Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
 
 # Get config and original context 
 # -------------------------------
-$config = Get-ShmConfig -shmId $oldShmId
+$config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 
 # Extract list of users
