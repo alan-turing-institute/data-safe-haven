@@ -228,7 +228,6 @@ class ConfigSectionSRE:
                 f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{str(exc)}"
             )
         self.remote_desktop.validate()
-        # self.research_desktops.validate()
         try:
             for ip in self.research_user_ip_addresses:
                 validate_ip_address(ip)

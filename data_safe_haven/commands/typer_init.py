@@ -34,7 +34,6 @@ def initialise_command(
             "--deployment-name",
             "-d",
             help="The name to give this Data Safe Haven deployment.",
-            callback=validate_aad_guid,
         ),
     ] = None,
     subscription: Annotated[

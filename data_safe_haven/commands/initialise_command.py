@@ -57,8 +57,6 @@ class InitialiseCommand:
                     f"Creating project directory '[green]{project_base_path}[/]'."
                 )
                 project_base_path.mkdir(parents=True)
-            settings_path = settings.write(project_base_path)
-            self.logger.info(f"Saved project settings to '[green]{settings_path}[/]'.")
         except DataSafeHavenException as exc:
             raise DataSafeHavenException(
                 f"Could not initialise Data Safe Haven.\n{str(exc)}"
