@@ -39,6 +39,7 @@ simple-acme-dns = "^1.2.0"
 typer = "^0.9.0"
 websocket-client = "^1.5.0"
 appdirs = "^1.4.4"
+chili = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.12.0"

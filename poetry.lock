@@ -619,6 +619,21 @@ files = [
 ]
 
 [[package]]
+name = "chili"
+version = "2.1.0"
+description = "Chili is serialisation library. It can serialise/deserialise almost any object."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "chili-2.1.0-py3-none-any.whl", hash = "sha256:5cecbb8735583c293d06b78673b52ddbd8da864f888e13bf3c494457192913a3"},
+    {file = "chili-2.1.0.tar.gz", hash = "sha256:0f20a7668b3dbda3f6797c91dcc4aef3c7e844a5e14364a144650142279bc61d"},
+]
+
+[package.dependencies]
+gaffe = "0.2.0"
+typing-extensions = ">=4.2,<5.0"
+
+[[package]]
 name = "click"
 version = "8.1.4"
 description = "Composable command line interface toolkit"
@@ -751,6 +766,17 @@ files = [
 
 [package.extras]
 test = ["pytest (>=6)"]
+
+[[package]]
+name = "gaffe"
+version = "0.2.0"
+description = "Simple structured exceptions for python."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "gaffe-0.2.0-py3-none-any.whl", hash = "sha256:579adebf44310ef2a55a6363152ce217f13afe918374f37bc5c749d98a49d70b"},
+    {file = "gaffe-0.2.0.tar.gz", hash = "sha256:1948b01116d17e381c40415c7dcd6799c4894bdb80ff7f36beaad50fc698f3d0"},
+]
 
 [[package]]
 name = "grpcio"
@@ -1670,4 +1696,4 @@ test = ["websockets"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "7880aca6d80fb5bec5425f61eed40b3e809d1608fac01ed5012e1a0cab5cb67c"
+content-hash = "e223086672320cf8f1f39273302e7d31e602d2d9b776a19c208f3550478dcc7f"

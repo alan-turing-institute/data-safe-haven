@@ -3,10 +3,11 @@
 import pathlib
 from collections import defaultdict
 from contextlib import suppress
-from dataclasses import asdict, dataclass, field
-from typing import Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
 
 # Third party imports
+import chili
 import yaml
 
 # Local imports
@@ -61,9 +62,9 @@ class ConfigSectionAzure:
                 f"Invalid value for 'tenant_id' ({self.tenant_id}).\n{str(exc)}"
             )
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, str]:
         self.validate()
-        return asdict(self)
+        return chili.encode(self)  # type: ignore
 
 
 @dataclass
@@ -97,9 +98,9 @@ class ConfigSectionBackend:
                 f"Invalid value for 'storage_container_name' ({self.storage_container_name})."
             )
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, str]:
         self.validate()
-        return asdict(self)
+        return chili.encode(self)  # type: ignore
 
 
 @dataclass
@@ -116,8 +117,9 @@ class ConfigSectionPulumi:
                 f"Invalid value for 'encryption_key_id' ({self.encryption_key_id})."
             )
 
-    def to_dict(self):
-        return asdict(self)
+    def to_dict(self) -> Dict[str, Any]:
+        self.validate()
+        return chili.encode(self)  # type: ignore
 
 
 @dataclass
@@ -161,9 +163,9 @@ class ConfigSectionSHM:
                 f"Invalid value for 'timezone' ({self.timezone}).\n{str(exc)}"
             )
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         self.validate()
-        return asdict(self)
+        return chili.encode(self)  # type: ignore
 
 
 @dataclass
@@ -182,9 +184,9 @@ class ConfigSectionSRE:
                     f"Invalid value for 'allow_paste' ({self.allow_paste})."
                 )
 
-        def to_dict(self):
+        def to_dict(self) -> Dict[str, bool]:
             self.validate()
-            return asdict(self)
+            return chili.encode(self)  # type: ignore
 
     @dataclass
     class ConfigSectionResearchDesktopOpts:
@@ -197,9 +199,9 @@ class ConfigSectionSRE:
             except Exception as exc:
                 raise TypeError(f"Invalid value for 'sku' ({self.sku}).\n{str(exc)}")
 
-        def to_dict(self):
+        def to_dict(self) -> Dict[str, str]:
             self.validate()
-            return asdict(self)
+            return chili.encode(self)  # type: ignore
 
     data_provider_ip_addresses: List[str] = field(default_factory=list)
     index: int = 0
@@ -236,9 +238,9 @@ class ConfigSectionSRE:
                 f"Invalid value for 'research_user_ip_addresses' ({self.research_user_ip_addresses}).\n{str(exc)}"
             )
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         self.validate()
-        return asdict(self)
+        return chili.encode(self)  # type: ignore
 
 
 @dataclass
@@ -253,9 +255,9 @@ class ConfigSectionTags:
         if not self.deployment:
             raise TypeError(f"Invalid value for 'deployment' ({self.deployment}).")
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, str]:
         self.validate()
-        return asdict(self)
+        return chili.encode(self)  # type: ignore
 
 
 class Config:
@@ -375,16 +377,16 @@ class Config:
     def from_yaml(self, yaml_input: YamlType) -> None:
         """Construct a config object from YAML"""
         if "azure" in yaml_input:
-            self.azure_ = ConfigSectionAzure(**yaml_input["azure"])
+            self.azure_ = chili.decode(yaml_input["azure"], ConfigSectionAzure)
         if "backend" in yaml_input:
-            self.backend_ = ConfigSectionBackend(**yaml_input["backend"])
+            self.backend_ = chili.decode(yaml_input["backend"], ConfigSectionBackend)
         if "pulumi" in yaml_input:
-            self.pulumi_ = ConfigSectionPulumi(**yaml_input["pulumi"])
+            self.pulumi_ = chili.decode(yaml_input["pulumi"], ConfigSectionPulumi)
         if "shm" in yaml_input:
-            self.shm_ = ConfigSectionSHM(**yaml_input["shm"])
+            self.shm_ = chili.decode(yaml_input["shm"], ConfigSectionSHM)
         if "sre" in yaml_input:
             for sre_name, sre_details in dict(yaml_input["sre"]).items():
-                self.sres[sre_name] = ConfigSectionSRE(**sre_details)
+                self.sres[sre_name] = chili.decode(sre_details, ConfigSectionSRE)
 
     def upload(self):
         """Upload config to Azure storage"""
