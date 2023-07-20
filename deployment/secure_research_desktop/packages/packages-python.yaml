@@ -52,14 +52,10 @@ packages:
     requests:
     safety:  # also used by installation scripts
     scikit-learn:
-        "3.11": ["uninstallable"]
     scipy:
-        "3.11": ["uninstallable"]
     seaborn:
     spacy-langdetect:
-        "3.11": ["uninstallable"]
     spacy:
-        "3.11": ["uninstallable"]
     Sphinx:
     SQLAlchemy:
     statsmodels:
@@ -71,6 +67,4 @@ packages:
     wordcloud:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     xgboost:
-        "3.11": ["uninstallable"]
     xlrd:
-        "3.11": ["uninstallable"]
