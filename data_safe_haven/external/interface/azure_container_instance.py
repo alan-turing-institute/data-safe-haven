@@ -15,10 +15,11 @@ from azure.mgmt.containerinstance.models import (
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.mixins import AzureMixin, LoggingMixin
+from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.utility import Logger
 
 
-class AzureContainerInstance(AzureMixin, LoggingMixin):
+class AzureContainerInstance(AzureMixin):
     """Interface for Azure container instances."""
 
     def __init__(
@@ -28,6 +29,7 @@ class AzureContainerInstance(AzureMixin, LoggingMixin):
         subscription_name: str,
     ):
         super().__init__(subscription_name=subscription_name)
+        self.logger = Logger()
         self.resource_group_name = resource_group_name
         self.container_group_name = container_group_name
 
@@ -61,9 +63,8 @@ class AzureContainerInstance(AzureMixin, LoggingMixin):
                 target_ip_address = self.current_ip_address
 
             # Restart container group
-            self.info(
-                f"Restarting container group <fg=green>{self.container_group_name}</> with IP address <fg=green>{target_ip_address}</>...",
-                no_newline=True,
+            self.logger.debug(
+                f"Restarting container group [green]{self.container_group_name}[/] with IP address [green]{target_ip_address}[/]...",
             )
             while True:
                 if (
@@ -85,9 +86,8 @@ class AzureContainerInstance(AzureMixin, LoggingMixin):
                     )
                 if self.current_ip_address == target_ip_address:
                     break
-            self.info(
-                f"Restarted container group <fg=green>{self.container_group_name}</> with IP address <fg=green>{self.current_ip_address}</>.",
-                overwrite=True,
+            self.logger.info(
+                f"Restarted container group [green]{self.container_group_name}[/] with IP address [green]{self.current_ip_address}[/].",
             )
         except Exception as exc:
             raise DataSafeHavenAzureException(

@@ -8,8 +8,8 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 # Local
-from data_safe_haven.helpers import FileReader
 from data_safe_haven.pulumi.common.transformations import get_name_from_subnet
+from data_safe_haven.utility import FileReader
 from ..dynamic.remote_powershell import RemoteScript, RemoteScriptProps
 from .automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
 from .virtual_machine import VMComponent, WindowsVMProps

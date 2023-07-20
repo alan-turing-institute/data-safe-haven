@@ -3,7 +3,7 @@
 from typing import Optional, Sequence
 
 # Third party imports
-from pulumi import Config, ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
     keyvault,
@@ -15,7 +15,7 @@ from pulumi_azure_native import (
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
-from data_safe_haven.helpers import (
+from data_safe_haven.functions import (
     alphanumeric,
     ordered_private_dns_zones,
     replace_separators,

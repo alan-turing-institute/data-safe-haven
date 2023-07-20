@@ -9,12 +9,11 @@ from data_safe_haven.external.interface import (
     AzureContainerInstance,
     AzurePostgreSQLDatabase,
 )
-from data_safe_haven.helpers import FileReader
-from data_safe_haven.mixins import LoggingMixin
 from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.utility import FileReader, Logger
 
 
-class SREProvisioningManager(LoggingMixin):
+class SREProvisioningManager:
     """Provisioning manager for a deployed SRE."""
 
     def __init__(
@@ -27,6 +26,7 @@ class SREProvisioningManager(LoggingMixin):
         timezone: str,
     ):
         super().__init__()
+        self.logger = Logger()
         self.resources_path = pathlib.Path(__file__).parent.parent / "resources"
         self.sre_name = sre_name
         self.subscription_name = subscription_name
@@ -85,7 +85,7 @@ class SREProvisioningManager(LoggingMixin):
                 self.security_group_params["vm_name"],
             )
             for line in output.split("\n"):
-                self.parse_as_log(line)
+                self.logger.parse(line)
 
     def restart_remote_desktop_containers(self) -> None:
         # Restart the Guacamole container group
@@ -126,8 +126,8 @@ class SREProvisioningManager(LoggingMixin):
             ],
         }
         for details in connection_data["connections"]:
-            self.info(
-                f"Adding connection <options=bold>{details['connection_name']}</> at <fg=green>{details['ip_address']}</>."
+            self.logger.info(
+                f"Adding connection [bold]{details['connection_name']}[/] at [green]{details['ip_address']}[/]."
             )
         postgres_script_path = (
             pathlib.Path(__file__).parent.parent

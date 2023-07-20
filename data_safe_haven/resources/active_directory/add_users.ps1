@@ -50,11 +50,11 @@ Import-Csv -Path $UserFilePath -Delimiter ";" | ForEach-Object {
                    -UserPrincipalName $UserPrincipalName `
                    -SamAccountName $_.SamAccountName `
                    -ErrorAction Stop
-        Write-Output "INFO: Created a user with name '<fg=green>$UserPrincipalName</>'"
+        Write-Output "INFO: Created a user with name '[green]$UserPrincipalName[/]'."
     } catch [Microsoft.ActiveDirectory.Management.ADIdentityAlreadyExistsException] {
-        Write-Output "WARNING: User with name '<fg=green>$UserPrincipalName</>' already exists"
+        Write-Output "WARNING: User with name '[green]$UserPrincipalName[/]' already exists."
     } catch {
-        Write-Output "ERROR: Failed to create user with name '<fg=green>$UserPrincipalName</>'!"
+        Write-Output "ERROR: Failed to create user with name '[green]$UserPrincipalName[/]'!"
         Write-Output "ERROR: Cause of error: $($_.Exception)"
     }
 }

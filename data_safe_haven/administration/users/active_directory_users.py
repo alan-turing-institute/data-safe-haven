@@ -6,13 +6,13 @@ from typing import Any, Optional, Sequence
 # Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.external.api import AzureApi
-from data_safe_haven.helpers import FileReader, b64encode
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.functions import b64encode
 from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.utility import FileReader, Logger
 from .research_user import ResearchUser
 
 
-class ActiveDirectoryUsers(LoggingMixin):
+class ActiveDirectoryUsers:
     """Interact with users in an Azure Active Directory"""
 
     def __init__(
@@ -24,6 +24,7 @@ class ActiveDirectoryUsers(LoggingMixin):
         super().__init__(*args, **kwargs)
         shm_stack = PulumiStack(config, "SHM")
         self.azure_api = AzureApi(config.subscription_name)
+        self.logger = Logger()
         self.resource_group_name = shm_stack.output("domain_controllers")[
             "resource_group_name"
         ]
@@ -67,7 +68,7 @@ class ActiveDirectoryUsers(LoggingMixin):
             self.vm_name,
         )
         for line in output.split("\n"):
-            self.parse_as_log(line)
+            self.logger.parse(line)
 
     def list(self, sre_name: Optional[str] = None) -> Sequence[ResearchUser]:
         """List users in a local Active Directory"""
@@ -109,7 +110,7 @@ class ActiveDirectoryUsers(LoggingMixin):
             self.vm_name,
         )
         for line in output.split("\n"):
-            self.parse_as_log(line)
+            self.logger.parse(line)
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
         """Remove list of users from local Active Directory"""
@@ -124,7 +125,7 @@ class ActiveDirectoryUsers(LoggingMixin):
             self.vm_name,
         )
         for line in output.split("\n"):
-            self.parse_as_log(line)
+            self.logger.parse(line)
 
     def set(self, users: Sequence[ResearchUser]) -> None:
         """Set local Active Directory users to specified list"""
@@ -145,4 +146,4 @@ class ActiveDirectoryUsers(LoggingMixin):
             self.vm_name,
         )
         for line in output.split("\n"):
-            self.parse_as_log(line)
+            self.logger.parse(line)

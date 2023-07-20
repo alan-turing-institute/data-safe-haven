@@ -7,14 +7,13 @@ from typing import Optional
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources, storage
 
-
 # Local imports
-from data_safe_haven.helpers import FileReader
 from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
+from data_safe_haven.utility import FileReader
 from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 
 

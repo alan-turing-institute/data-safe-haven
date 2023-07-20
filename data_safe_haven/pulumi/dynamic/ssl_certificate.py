@@ -126,7 +126,7 @@ class SSLCertificateProvider(DshResourceProvider):
             outs["secret_id"] = kvcert.secret_id
         except Exception as exc:
             raise DataSafeHavenSSLException(
-                f"Failed to create SSL certificate <fg=green>{props['certificate_secret_name']}</> for <fg=green>{props['domain_name']}</>.\n{str(exc)}"
+                f"Failed to create SSL certificate [green]{props['certificate_secret_name']}[/] for [green]{props['domain_name']}[/].\n{str(exc)}"
             ) from exc
         return CreateResult(
             f"SSLCertificate-{props['certificate_secret_name']}",
@@ -150,7 +150,7 @@ class SSLCertificateProvider(DshResourceProvider):
             )
         except Exception as exc:
             raise DataSafeHavenSSLException(
-                f"Failed to delete SSL certificate <fg=green>{props['certificate_secret_name']}</> for <fg=green>{props['domain_name']}</>.\n{str(exc)}"
+                f"Failed to delete SSL certificate [green]{props['certificate_secret_name']}[/] for [green]{props['domain_name']}[/].\n{str(exc)}"
             ) from exc
 
     def diff(

@@ -6,9 +6,6 @@ from typing import Optional
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
-# Local imports
-from data_safe_haven.helpers.functions import time_as_string
-
 
 class SHMBastionProps:
     """Properties for SHMBastionComponent"""

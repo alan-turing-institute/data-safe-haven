@@ -6,10 +6,9 @@ from typing import Any, Optional
 from data_safe_haven.config import Config, DotFileSettings
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.external.api import AzureApi
-from data_safe_haven.mixins import LoggingMixin
 
 
-class Backend(LoggingMixin):
+class Backend:
     """Azure backend for a Data Safe Haven deployment"""
 
     def __init__(self, settings: DotFileSettings, *args: Any, **kwargs: Any) -> None:

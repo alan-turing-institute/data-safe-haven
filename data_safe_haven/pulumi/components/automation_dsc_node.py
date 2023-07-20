@@ -9,7 +9,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, compute
 
 # Local imports
-from data_safe_haven.helpers import FileReader
+from data_safe_haven.utility import FileReader
 from ..dynamic.compiled_dsc import CompiledDsc, CompiledDscProps
 
 

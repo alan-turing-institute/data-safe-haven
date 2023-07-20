@@ -6,6 +6,10 @@ class DataSafeHavenCloudException(DataSafeHavenException):
     pass
 
 
+class DataSafeHavenConfigException(DataSafeHavenException):
+    pass
+
+
 class DataSafeHavenInputException(DataSafeHavenException):
     pass
 

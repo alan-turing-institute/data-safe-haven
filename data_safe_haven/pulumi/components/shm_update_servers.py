@@ -8,12 +8,12 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
 # Local imports
-from data_safe_haven.helpers import b64encode
+from data_safe_haven.functions import b64encode
 from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_name_from_subnet,
 )
-from .virtual_machine import VMComponent, LinuxVMProps
+from .virtual_machine import LinuxVMProps, VMComponent
 
 
 class SHMUpdateServersProps:

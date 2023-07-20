@@ -1,6 +1,6 @@
 """Pulumi component for SHM networking"""
 # Standard library imports
-from typing import Optional, List, Sequence
+from typing import List, Optional, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -8,7 +8,7 @@ from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
-from data_safe_haven.helpers.functions import ordered_private_dns_zones
+from data_safe_haven.functions import ordered_private_dns_zones
 from ..common.enums import NetworkingPriorities
 
 

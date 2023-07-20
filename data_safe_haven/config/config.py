@@ -14,11 +14,12 @@ from azure.storage.blob import BlobServiceClient
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.external.api import AzureApi
-from data_safe_haven.helpers import alphanumeric
-from data_safe_haven.mixins import AzureMixin, LoggingMixin
+from data_safe_haven.functions import alphanumeric
+from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.utility import Logger
 
 
-class Config(LoggingMixin, AzureMixin):
+class Config(AzureMixin):
     """Configuration file backed by blob storage"""
 
     def __init__(
@@ -30,6 +31,7 @@ class Config(LoggingMixin, AzureMixin):
     ):
         # Load the Azure mixin
         super().__init__(*args, subscription_name=subscription_name, **kwargs)
+        self.logger = Logger()
 
         # Set names
         self.name = name
@@ -51,7 +53,7 @@ class Config(LoggingMixin, AzureMixin):
             )
         # ... otherwise create a new DotMap
         except (DataSafeHavenAzureException, ResourceNotFoundError) as exc:
-            self.warning(
+            self.logger.warning(
                 f"Unable to load existing config file from '{backend_storage_account_name}'."
             )
             self._map = dotmap.DotMap()
@@ -168,9 +170,8 @@ class Config(LoggingMixin, AzureMixin):
 
     def upload(self) -> None:
         """Dump the config file to Azure storage"""
-        self.info(
-            f"Uploading config <fg=green>{self.name}</> to blob storage.",
-            no_newline=True,
+        self.logger.debug(
+            f"Uploading config [green]{self.name}[/] to blob storage.",
         )
         try:
             # Connect to blob storage
@@ -189,9 +190,8 @@ class Config(LoggingMixin, AzureMixin):
                 container=self.backend.storage_container_name, blob=self.filename
             )
             blob_client.upload_blob(str(self), overwrite=True)
-            self.info(
-                f"Uploaded config <fg=green>{self.name}</> to blob storage.",
-                overwrite=True,
+            self.logger.info(
+                f"Uploaded config [green]{self.name}[/] to blob storage.",
             )
         except Exception as exc:
             raise DataSafeHavenAzureException(

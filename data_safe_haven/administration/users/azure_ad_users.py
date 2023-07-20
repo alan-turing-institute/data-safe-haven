@@ -4,12 +4,12 @@ from typing import Any, Sequence
 
 # Local imports
 from data_safe_haven.external.api import GraphApi
-from data_safe_haven.helpers import password
-from data_safe_haven.mixins import LoggingMixin
+from data_safe_haven.functions import password
+from data_safe_haven.utility import Logger
 from .research_user import ResearchUser
 
 
-class AzureADUsers(LoggingMixin):
+class AzureADUsers:
     """Interact with users in an Azure Active Directory"""
 
     def __init__(
@@ -20,6 +20,7 @@ class AzureADUsers(LoggingMixin):
     ) -> None:
         super().__init__(*args, **kwargs)
         self.graph_api = graph_api
+        self.logger = Logger()
 
     def add(self, new_users: Sequence[ResearchUser]) -> None:
         """Add list of users to AzureAD"""
@@ -43,7 +44,9 @@ class AzureADUsers(LoggingMixin):
                 self.graph_api.create_user(
                     request_json, user.email_address, user.phone_number
                 )
-            self.info(f"Ensured user '{user.preferred_username}' exists in AzureAD")
+            self.logger.info(
+                f"Ensured user '{user.preferred_username}' exists in AzureAD"
+            )
         # Decorate all users with the Linux schema
         self.set_user_attributes()
         # # Ensure that all users belong to an associated group the same name and UID
@@ -91,13 +94,13 @@ class AzureADUsers(LoggingMixin):
         #         if self.graph_api.remove_user_from_group(
         #             user.username, self.researchers_group_name
         #         ):
-        #             self.info(
+        #             self.logger.info(
         #                 f"Removed '{user.preferred_username}' from group '{self.researchers_group_name}'"
         #             )
         #         else:
         #             raise DataSafeHavenMicrosoftGraphException
         #     except DataSafeHavenMicrosoftGraphException:
-        #         self.error(
+        #         self.logger.error(
         #             f"Unable to remove '{user.preferred_username}' from group '{self.researchers_group_name}'"
         #         )
         pass
@@ -121,24 +124,24 @@ class AzureADUsers(LoggingMixin):
         #         username = user.user_principal_name.split("@")[0]
         #         if not user.homedir:
         #             user.homedir = f"/home/{username}"
-        #             self.debug(
+        #             self.logger.debug(
         #                 f"Added homedir {user.homedir} to user {user.preferred_username}"
         #             )
         #         if not user.shell:
         #             user.shell = "/bin/bash"
-        #             self.debug(
+        #             self.logger.debug(
         #                 f"Added shell {user.shell} to user {user.preferred_username}"
         #             )
         #         if not user.uid_number:
         #             # Set UID to the next unused one
         #             user.uid_number = next_uid
         #             next_uid += 1
-        #             self.debug(
+        #             self.logger.debug(
         #                 f"Added uid {user.uid_number} to user {user.preferred_username}"
         #             )
         #         if not user.username:
         #             user.username = username
-        #             self.debug(
+        #             self.logger.debug(
         #                 f"Added username {user.username} to user {user.preferred_username}"
         #             )
         #         # Ensure that the remote user matches the local model
@@ -155,9 +158,9 @@ class AzureADUsers(LoggingMixin):
         #             f"{self.graph_api.base_endpoint}/users/{user.azure_oid}",
         #             json=patch_json,
         #         )
-        #         self.debug(f"Set Linux attributes for user {user.preferred_username}.")
+        #         self.logger.debug(f"Set Linux attributes for user {user.preferred_username}.")
         #     except Exception as exc:
-        #         self.error(
+        #         self.logger.error(
         #             f"Failed to set Linux attributes for user {user.preferred_username}.\n{str(exc)}"
         #         )
         pass

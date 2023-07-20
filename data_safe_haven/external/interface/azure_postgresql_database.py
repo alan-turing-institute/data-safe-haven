@@ -3,7 +3,7 @@
 import pathlib
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence
 
 # Third party imports
 import psycopg2
@@ -21,12 +21,11 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.helpers import FileReader
-from data_safe_haven.helpers.types import PathType
-from data_safe_haven.mixins import AzureMixin, LoggingMixin
+from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.utility import FileReader, Logger, PathType
 
 
-class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
+class AzurePostgreSQLDatabase(AzureMixin):
     """Interface for Azure PostgreSQL databases."""
 
     current_ip: str
@@ -54,6 +53,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         self.db_name = database_name
         self.db_server_ = None
         self.db_server_admin_password = database_server_admin_password
+        self.logger = Logger()
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
         self.rule_suffix = datetime.now().strftime(r"%Y%m%d-%H%M%S")
@@ -139,7 +139,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
             # Apply the Guacamole initialisation script
             for filepath in filepaths:
                 filepath = pathlib.Path(filepath)
-                self.info(f"Running SQL script: <fg=green>{filepath.name}</>.")
+                self.logger.info(f"Running SQL script: [green]{filepath.name}[/].")
                 commands = self.load_sql(filepath, mustache_values)
                 cursor.execute(commands)
                 if "SELECT" in cursor.statusmessage:
@@ -147,7 +147,7 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
 
             # Commit changes
             connection.commit()
-            self.info(f"Finished running {len(filepaths)} SQL scripts.")
+            self.logger.info(f"Finished running {len(filepaths)} SQL scripts.")
         except (Exception, psycopg2.Error) as exc:
             raise DataSafeHavenAzureException(
                 f"Error while connecting to PostgreSQL.\n{str(exc)}"
@@ -167,9 +167,8 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
         rule_name = f"AllowConfigurationUpdate-{self.rule_suffix}"
 
         if action == "enabled":
-            self.info(
-                f"Adding temporary firewall rule for <fg=green>{self.current_ip}</>...",
-                no_newline=True,
+            self.logger.debug(
+                f"Adding temporary firewall rule for [green]{self.current_ip}[/]...",
             )
             self.wait(
                 self.db_client.servers.begin_update(
@@ -189,14 +188,12 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
                 )
             )
             self.db_connection(n_retries=5)
-            self.info(
-                f"Added temporary firewall rule for <fg=green>{self.current_ip}</>.",
-                overwrite=True,
+            self.logger.info(
+                f"Added temporary firewall rule for [green]{self.current_ip}[/].",
             )
         elif action == "disabled":
-            self.info(
-                f"Removing temporary firewall rule for <fg=green>{self.current_ip}</>...",
-                no_newline=True,
+            self.logger.debug(
+                f"Removing temporary firewall rule for [green]{self.current_ip}[/]...",
             )
             self.wait(
                 self.db_client.firewall_rules.begin_delete(
@@ -210,15 +207,14 @@ class AzurePostgreSQLDatabase(AzureMixin, LoggingMixin):
                     ServerUpdateParameters(public_network_access="Disabled"),
                 )
             )
-            self.info(
-                f"Removed temporary firewall rule for <fg=green>{self.current_ip}</>.",
-                overwrite=True,
+            self.logger.info(
+                f"Removed temporary firewall rule for [green]{self.current_ip}[/].",
             )
         else:
             raise DataSafeHavenInputException(
                 f"Database access action {action} was not recognised."
             )
         self.db_server_ = None  # Force refresh of self.db_server
-        self.info(
-            f"Public network access to <fg=green>{self.server_name}</> is <fg=green>{self.db_server.public_network_access}</>."
+        self.logger.info(
+            f"Public network access to [green]{self.server_name}[/] is [green]{self.db_server.public_network_access}[/]."
         )

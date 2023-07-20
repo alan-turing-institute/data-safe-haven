@@ -3,17 +3,12 @@
 from typing import Optional, Sequence
 
 # Third party imports
-from pulumi import Config, ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, resources, storage
 
 # Local imports
 from data_safe_haven.external.interface import AzureIPv4Range
-from data_safe_haven.helpers.functions import (
-    alphanumeric,
-    replace_separators,
-    sha256hash,
-    truncate_tokens,
-)
+from data_safe_haven.functions import alphanumeric, replace_separators, truncate_tokens
 
 
 class SHMDataProps:

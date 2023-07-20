@@ -7,13 +7,11 @@ from typing import Any, Dict, Optional
 import chevron
 
 # Local imports
-from data_safe_haven.mixins import LoggingMixin
-
-from .functions import sha256hash
+from data_safe_haven.functions import sha256hash
 from .types import PathType
 
 
-class FileReader(LoggingMixin):
+class FileReader:
     """Read local files, handling template expansion if needed"""
 
     def __init__(self, file_path: PathType, *args: Any, **kwargs: Any):

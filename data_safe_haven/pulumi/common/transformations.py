@@ -3,7 +3,7 @@
 from typing import List
 
 # Third party imports
-from pulumi import Input, Output
+from pulumi import Output
 from pulumi_azure_native import containerinstance, network, resources
 
 # Local imports

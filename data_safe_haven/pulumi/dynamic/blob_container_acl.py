@@ -64,7 +64,7 @@ class BlobContainerAclProvider(DshResourceProvider):
             )
         except Exception as exc:
             raise DataSafeHavenPulumiException(
-                f"Failed to set ACLs on storage account <fg=green>{props['storage_account_name']}</>.\n{str(exc)}"
+                f"Failed to set ACLs on storage account [green]{props['storage_account_name']}[/].\n{str(exc)}"
             ) from exc
         return CreateResult(
             f"BlobContainerAcl-{props['container_name']}",
@@ -77,13 +77,13 @@ class BlobContainerAclProvider(DshResourceProvider):
             azure_api = AzureApi(props["subscription_name"])
             azure_api.set_blob_container_acl(
                 container_name=props["container_name"],
-                desired_acl=f"user::rwx,group::r-x,other::---",
+                desired_acl="user::rwx,group::r-x,other::---",
                 resource_group_name=props["resource_group_name"],
                 storage_account_name=props["storage_account_name"],
             )
         except Exception as exc:
             raise DataSafeHavenPulumiException(
-                f"Failed to delete custom ACLs on storage account <fg=green>{props['storage_account_name']}</>.\n{str(exc)}"
+                f"Failed to delete custom ACLs on storage account [green]{props['storage_account_name']}[/].\n{str(exc)}"
             ) from exc
         return
 

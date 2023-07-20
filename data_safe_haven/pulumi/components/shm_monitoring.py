@@ -14,7 +14,7 @@ from pulumi_azure_native import (
 )
 
 # Local imports
-from data_safe_haven.helpers.functions import (
+from data_safe_haven.functions import (
     ordered_private_dns_zones,
     replace_separators,
     time_as_string,

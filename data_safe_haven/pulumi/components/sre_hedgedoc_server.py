@@ -7,10 +7,8 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
 # Local imports
-from data_safe_haven.helpers import (
-    b64encode,
-    FileReader,
-)
+from data_safe_haven.functions import b64encode
+from data_safe_haven.utility import FileReader
 from ..common.transformations import (
     get_ip_address_from_container_group,
     get_ip_addresses_from_private_endpoint,

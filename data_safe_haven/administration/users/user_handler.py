@@ -1,19 +1,22 @@
 # Standard library imports
 import csv
+import pathlib
 from typing import Any, Dict, List, Sequence
 
 # Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingException
 from data_safe_haven.external.api import GraphApi
-from data_safe_haven.mixins import AzureMixin, LoggingMixin
+from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.utility import Logger
+
 from .active_directory_users import ActiveDirectoryUsers
 from .azure_ad_users import AzureADUsers
 from .guacamole_users import GuacamoleUsers
 from .research_user import ResearchUser
 
 
-class UserHandler(LoggingMixin, AzureMixin):
+class UserHandler(AzureMixin):
     def __init__(
         self,
         config: Config,
@@ -24,11 +27,12 @@ class UserHandler(LoggingMixin, AzureMixin):
         super().__init__(subscription_name=config.subscription_name, *args, **kwargs)
         self.active_directory_users = ActiveDirectoryUsers(config)
         self.azure_ad_users = AzureADUsers(graph_api)
+        self.logger = Logger()
         self.sre_guacamole_users = {
             sre_name: GuacamoleUsers(config, sre_name) for sre_name in config.sre.keys()
         }
 
-    def add(self, users_csv_path: str) -> None:
+    def add(self, users_csv_path: pathlib.Path) -> None:
         """Add AzureAD and Guacamole users
 
         Raises:
@@ -38,7 +42,13 @@ class UserHandler(LoggingMixin, AzureMixin):
             # Construct user list
             with open(users_csv_path, encoding="utf-8") as f_csv:
                 reader = csv.DictReader(f_csv)
-                for required_field in ["GivenName", "Surname", "Phone", "Email", "CountryCode"]:
+                for required_field in [
+                    "GivenName",
+                    "Surname",
+                    "Phone",
+                    "Email",
+                    "CountryCode",
+                ]:
                     if (not reader.fieldnames) or (
                         required_field not in reader.fieldnames
                     ):
@@ -56,7 +66,7 @@ class UserHandler(LoggingMixin, AzureMixin):
                     for user in reader
                 ]
             for user in users:
-                self.debug(f"Processing new user: {user}")
+                self.logger.debug(f"Processing new user: {user}")
 
             # Commit changes
             self.active_directory_users.add(users)
@@ -107,8 +117,8 @@ class UserHandler(LoggingMixin, AzureMixin):
                 user_data.append(user_memberships)
 
             # Write user information as a table
-            for line in self.tabulate(user_headers, user_data):
-                self.info(line)
+            for line in self.logger.tabulate(user_headers, user_data):
+                self.logger.info(line)
         except Exception as exc:
             raise DataSafeHavenUserHandlingException(
                 f"Could not list users.\n{str(exc)}"
@@ -177,7 +187,7 @@ class UserHandler(LoggingMixin, AzureMixin):
                     for user in reader
                 ]
             for user in desired_users:
-                self.debug(f"Processing user: {user}")
+                self.logger.debug(f"Processing user: {user}")
 
             # Keep existing users with the same username
             active_directory_desired_users = [
