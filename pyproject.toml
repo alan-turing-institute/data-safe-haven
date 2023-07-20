@@ -55,8 +55,11 @@ path = "data_safe_haven/__about__.py"
 
 [tool.hatch.envs.lint]
 detached = true
-black = "^22.12.0"
-mypy = "^1.0.0"
+dependencies = [
+  "black>=23.1.0",
+  "mypy>=1.0.0",
+  "ruff>=0.0.243",
+]
 
 [tool.hatch.envs.lint.scripts]
 typing = "mypy --strict --install-types --non-interactive --namespace-packages --explicit-package-bases {args:data_safe_haven}"
