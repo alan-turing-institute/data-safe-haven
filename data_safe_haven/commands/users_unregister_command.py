@@ -2,10 +2,6 @@
 # Standard library imports
 from typing import List
 
-# Third party imports
-import typer
-from typing_extensions import Annotated
-
 # Local imports
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config, DotFileSettings
@@ -15,26 +11,20 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric
-from .base_command import BaseCommand
+from data_safe_haven.utility import Logger
 
 
-class UsersUnregisterCommand(BaseCommand):
+class UsersUnregisterCommand:
     """Unregister existing users from a deployed SRE"""
 
-    def entrypoint(
+    def __init__(self):
+        """Constructor"""
+        self.logger = Logger()
+
+    def __call__(
         self,
-        usernames: Annotated[
-            List[str],
-            typer.Argument(
-                help="Username of a user to unregister from this SRE. [*may be specified several times*]",
-            ),
-        ],
-        sre: Annotated[
-            str,
-            typer.Argument(
-                help="The name of the SRE to unregister the users from.",
-            ),
-        ],
+        usernames: List[str],
+        sre: str,
     ) -> None:
         shm_name = "UNKNOWN"
         sre_name = "UNKNOWN"

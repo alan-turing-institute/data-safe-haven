@@ -4,57 +4,26 @@ import pathlib
 import sys
 from typing import Optional
 
-# Third party imports
-import typer
-from typing_extensions import Annotated
-
 # Local imports
 from data_safe_haven.backend import Backend
 from data_safe_haven.config import DotFileSettings
 from data_safe_haven.exceptions import DataSafeHavenException
-from data_safe_haven.functions import validate_aad_guid
-from .base_command import BaseCommand
+from data_safe_haven.utility import Logger
 
 
-class InitialiseCommand(BaseCommand):
+class InitialiseCommand:
     """Initialise a Data Safe Haven deployment"""
 
-    def entrypoint(
+    def __init__(self):
+        """Constructor"""
+        self.logger = Logger()
+
+    def __call__(
         self,
-        admin_group: Annotated[
-            Optional[str],
-            typer.Option(
-                "--admin-group",
-                "-a",
-                help="The ID of an Azure group containing all administrators.",
-                callback=validate_aad_guid,
-            ),
-        ] = None,
-        location: Annotated[
-            Optional[str],
-            typer.Option(
-                "--location",
-                "-l",
-                help="The Azure location to deploy resources into.",
-            ),
-        ] = None,
-        name: Annotated[
-            Optional[str],
-            typer.Option(
-                "--deployment-name",
-                "-d",
-                help="The name to give this Data Safe Haven deployment.",
-                callback=validate_aad_guid,
-            ),
-        ] = None,
-        subscription: Annotated[
-            Optional[str],
-            typer.Option(
-                "--subscription",
-                "-s",
-                help="The name of an Azure subscription to deploy resources into.",
-            ),
-        ] = None,
+        admin_group: Optional[str] = None,
+        location: Optional[str] = None,
+        name: Optional[str] = None,
+        subscription: Optional[str] = None,
     ) -> None:
         """Typer command line entrypoint"""
         try:

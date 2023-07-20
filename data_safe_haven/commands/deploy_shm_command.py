@@ -4,8 +4,6 @@ from typing import List, Optional
 
 # Third party imports
 import pytz
-import typer
-from typing_extensions import Annotated
 
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
@@ -15,67 +13,26 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external import GraphApi
-from data_safe_haven.functions import (
-    password,
-    validate_aad_guid,
-    validate_email_address,
-    validate_ip_address,
-    validate_timezone,
-)
+from data_safe_haven.functions import password
 from data_safe_haven.provisioning import SHMProvisioningManager
 from data_safe_haven.pulumi import PulumiStack
-from .base_command import BaseCommand
+from data_safe_haven.utility import Logger
 
 
-class DeploySHMCommand(BaseCommand):
+class DeploySHMCommand:
     """Deploy a Safe Haven Management component"""
 
-    def entrypoint(
+    def __init__(self):
+        """Constructor"""
+        self.logger = Logger()
+
+    def __call__(
         self,
-        aad_tenant_id: Annotated[
-            Optional[str],
-            typer.Option(
-                "--aad-tenant-id",
-                "-a",
-                help="The tenant ID for the AzureAD where users will be created, for example '10de18e7-b238-6f1e-a4ad-772708929203'.",
-                callback=validate_aad_guid,
-            ),
-        ] = None,
-        admin_email_address: Annotated[
-            Optional[str],
-            typer.Option(
-                "--email",
-                "-e",
-                help="The email address where your system deployers and administrators can be contacted.",
-                callback=validate_email_address,
-            ),
-        ] = None,
-        admin_ip_addresses: Annotated[
-            Optional[List[str]],
-            typer.Option(
-                "--ip-address",
-                "-i",
-                help="An IP address or range used by your system deployers and administrators. [*may be specified several times*]",
-                callback=lambda ips: [validate_ip_address(ip) for ip in ips],
-            ),
-        ] = None,
-        fqdn: Annotated[
-            Optional[str],
-            typer.Option(
-                "--fqdn",
-                "-f",
-                help="The domain that SHM users will belong to.",
-            ),
-        ] = None,
-        timezone: Annotated[
-            Optional[str],
-            typer.Option(
-                "--timezone",
-                "-t",
-                help="The timezone that this Data Safe Haven deployment will use.",
-                callback=validate_timezone,
-            ),
-        ] = None,
+        aad_tenant_id: Optional[str] = None,
+        admin_email_address: Optional[str] = None,
+        admin_ip_addresses: Optional[List[str]] = None,
+        fqdn: Optional[str] = None,
+        timezone: Optional[str] = None,
     ) -> None:
         """Typer command line entrypoint"""
         try:

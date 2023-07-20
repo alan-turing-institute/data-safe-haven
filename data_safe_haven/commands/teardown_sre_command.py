@@ -1,8 +1,4 @@
 """Command-line application for tearing down a Secure Research Environment"""
-# Third party imports
-import typer
-from typing_extensions import Annotated
-
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
 from data_safe_haven.exceptions import (
@@ -11,15 +7,14 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.pulumi import PulumiStack
-from .base_command import BaseCommand
 
 
-class TeardownSRECommand(BaseCommand):
+class TeardownSRECommand:
     """Teardown a deployed Secure Research Environment"""
 
-    def entrypoint(
+    def __call__(
         self,
-        name: Annotated[str, typer.Argument(help="Name of SRE to teardown.")],
+        name: str,
     ) -> None:
         """Typer command line entrypoint"""
         environment_name = "UNKNOWN"

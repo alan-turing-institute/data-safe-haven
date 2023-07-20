@@ -1,13 +1,11 @@
-from .admin_command import AdminCommand
-from .base_command import CommandGroup
-from .deploy_command import DeployCommand
-from .initialise_command import InitialiseCommand
-from .teardown_command import TeardownCommand
+from .typer_admin import admin_command_group
+from .typer_deploy import deploy_command_group
+from .typer_init import initialise_command
+from .typer_teardown import teardown_command_group
 
 __all__ = [
-    "AdminCommand",
-    "CommandGroup",
-    "DeployCommand",
-    "InitialiseCommand",
-    "TeardownCommand",
+    "admin_command_group",
+    "deploy_command_group",
+    "initialise_command",
+    "teardown_command_group",
 ]

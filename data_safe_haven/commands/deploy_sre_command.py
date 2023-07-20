@@ -2,10 +2,6 @@
 # Standard library imports
 from typing import Any, Dict, List, Optional
 
-# Third party imports
-import typer
-from typing_extensions import Annotated
-
 # Local imports
 from data_safe_haven.config import Config, DotFileSettings
 from data_safe_haven.exceptions import (
@@ -14,80 +10,29 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external import AzureApi, GraphApi
-from data_safe_haven.functions import (
-    alphanumeric,
-    password,
-    validate_azure_vm_sku,
-    validate_ip_address,
-)
+from data_safe_haven.functions import alphanumeric, password
 from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.pulumi import PulumiStack
-from data_safe_haven.utility import SoftwarePackageCategory
-from .base_command import BaseCommand
+from data_safe_haven.utility import Logger, SoftwarePackageCategory
 
 
-class DeploySRECommand(BaseCommand):
+class DeploySRECommand:
     """Deploy a Secure Research Environment component"""
 
     def __init__(self):
         """Constructor"""
-        super().__init__()
         self._available_vm_skus: Dict[str, Dict[str, Any]] = {}
+        self.logger = Logger()
 
-    def entrypoint(
+    def __call__(
         self,
-        name: Annotated[str, typer.Argument(help="Name of SRE to deploy")],
-        allow_copy: Annotated[
-            Optional[bool],
-            typer.Option(
-                "--allow-copy",
-                "-c",
-                help="Whether to allow text to be copied out of the SRE.",
-            ),
-        ] = None,
-        allow_paste: Annotated[
-            Optional[bool],
-            typer.Option(
-                "--allow-paste",
-                "-p",
-                help="Whether to allow text to be pasted into the SRE.",
-            ),
-        ] = None,
-        data_provider_ip_addresses: Annotated[
-            Optional[List[str]],
-            typer.Option(
-                "--data-provider-ip-address",
-                "-d",
-                help="An IP address or range used by your data providers. [*may be specified several times*]",
-                callback=lambda vms: [validate_ip_address(vm) for vm in vms],
-            ),
-        ] = None,
-        research_desktops: Annotated[
-            Optional[List[str]],
-            typer.Option(
-                "--research-desktop",
-                "-r",
-                help="A virtual machine SKU to make available to your users as a research desktop. [*may be specified several times*]",
-                callback=lambda ips: [validate_azure_vm_sku(ip) for ip in ips],
-            ),
-        ] = None,
-        software_packages: Annotated[
-            Optional[SoftwarePackageCategory],
-            typer.Option(
-                "--software-packages",
-                "-s",
-                help="The category of package to allow users to install from enabled software repositories.",
-            ),
-        ] = None,
-        user_ip_addresses: Annotated[
-            Optional[List[str]],
-            typer.Option(
-                "--user-ip-address",
-                "-u",
-                help="An IP address or range used by your users. [*may be specified several times*]",
-                callback=lambda ips: [validate_ip_address(ip) for ip in ips],
-            ),
-        ] = None,
+        name: str,
+        allow_copy: Optional[bool] = None,
+        allow_paste: Optional[bool] = None,
+        data_provider_ip_addresses: Optional[List[str]] = None,
+        research_desktops: Optional[List[str]] = None,
+        software_packages: Optional[SoftwarePackageCategory] = None,
+        user_ip_addresses: Optional[List[str]] = None,
     ) -> None:
         """Typer command line entrypoint"""
         sre_name = "UNKNOWN"

@@ -1,20 +1,18 @@
 """Command line entrypoint for Data Safe Haven application"""
 # Standard library imports
 import pathlib
-from typing import Optional
+from typing import Annotated, Optional
 
 # Third party imports
 import typer
-from typing_extensions import Annotated
 
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.commands import (
-    AdminCommand,
-    CommandGroup,
-    DeployCommand,
-    InitialiseCommand,
-    TeardownCommand,
+    admin_command_group,
+    deploy_command_group,
+    initialise_command,
+    teardown_command_group,
 )
 from data_safe_haven.exceptions import DataSafeHavenException
 from data_safe_haven.utility import Logger
@@ -43,7 +41,7 @@ def callback(
             "--version", "-V", help="Display the version of this application."
         ),
     ] = None,
-):
+) -> None:
     """Arguments to the main executable"""
     Logger(verbosity, output)  # initialise logging singleton
     if version:
@@ -55,7 +53,7 @@ def main() -> None:
     """Command line entrypoint for Data Safe Haven application"""
 
     # Create the application
-    application = CommandGroup(
+    application = typer.Typer(
         context_settings={"help_option_names": ["-h", "--help"]},
         invoke_without_command=True,
         no_args_is_help=True,
@@ -65,25 +63,25 @@ def main() -> None:
     application.callback()(callback)
 
     # Register command groups
-    application.subgroup(
-        AdminCommand,
+    application.add_typer(
+        admin_command_group,
         name="admin",
-        help="Perform administrative tasks on a deployed Data Safe Haven.",
+        help="Perform administrative tasks for a Data Safe Haven deployment.",
     )
-    application.subgroup(
-        DeployCommand, name="deploy", help="Deploy a Data Safe Haven component."
+    application.add_typer(
+        deploy_command_group,
+        name="deploy",
+        help="Deploy a Data Safe Haven component.",
     )
-    application.subgroup(
-        TeardownCommand,
+    application.add_typer(
+        teardown_command_group,
         name="teardown",
         help="Tear down a Data Safe Haven component.",
     )
 
     # Register direct subcommands
-    application.subcommand(
-        InitialiseCommand,
-        name="init",
-        help="Initialise a Data Safe Haven deployment.",
+    application.command(name="init", help="Initialise a Data Safe Haven deployment.")(
+        initialise_command
     )
 
     # Start the application

@@ -6,13 +6,12 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from .base_command import BaseCommand
 
 
-class TeardownBackendCommand(BaseCommand):
+class TeardownBackendCommand:
     """Tear down a deployed Data Safe Haven backend"""
 
-    def entrypoint(self) -> None:
+    def __call__(self) -> None:
         """Typer command line entrypoint"""
         try:
             # Use dotfile settings to load the job configuration

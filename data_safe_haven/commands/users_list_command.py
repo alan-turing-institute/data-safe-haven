@@ -7,13 +7,12 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputException,
 )
 from data_safe_haven.external import GraphApi
-from .base_command import BaseCommand
 
 
-class UsersListCommand(BaseCommand):  # type: ignore
+class UsersListCommand:
     """List users from a deployed Data Safe Haven"""
 
-    def entrypoint(self) -> None:
+    def __call__(self) -> None:
         shm_name = "UNKNOWN"
         try:
             # Use dotfile settings to load the job configuration

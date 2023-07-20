@@ -136,7 +136,7 @@ class Logger:
             logging.getLogger("azure.identity._internal").setLevel(logging.ERROR)
             logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
             logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
-            # Expose the data safe haven logger
+        # Expose the data safe haven logger
         return cls._instance
 
     def format_msg(self, message: str, level: int = logging.INFO) -> str:
