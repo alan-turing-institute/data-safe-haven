@@ -11,33 +11,22 @@ versions:
     - "3.11"
 packages:
     arviz:
-        "3.11": ["uninstallable"]
     beautifulsoup4:
-        "3.11": ["uninstallable"]
     black:
     Cython:
     dash:
-        "3.11": ["uninstallable"]
     dask:
-        "3.11": ["uninstallable"]
     flair:
-        "3.11": ["uninstallable"]
     flake8:
     folium:
-        "3.11": ["uninstallable"]
     gensim:
-        "3.11": ["uninstallable"]
     geopandas:
     gym:
-        "3.11": ["uninstallable"]
     html5lib:
-        "3.11": ["uninstallable"]
     ipykernel:
     lxml:
-        "3.11": ["uninstallable"]
     matplotlib:
     nltk:
-        "3.11": ["uninstallable"]
     numba:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     numpy:
