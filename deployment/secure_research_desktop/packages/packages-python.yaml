@@ -35,24 +35,17 @@ packages:
     pandasql:
     pathos:
     pg8000:
-        "3.11": ["uninstallable"]
     Pillow:
     plotly:
     poetry:  # also used by installation scripts
         "all": [">=1.3.0,<1.4.0"]  # avoid known installation issue https://github.com/python-poetry/poetry/issues/7611
     prophet:
     pydot:
-        "3.11": ["uninstallable"]
     pylint:
-        "3.11": ["uninstallable"]
     pymc:
-        "3.11": ["uninstallable"]
     pyodbc:
-        "3.11": ["uninstallable"]
     pyproj:
-        "3.11": ["uninstallable"]
     pyshp:
-        "3.11": ["uninstallable"]
     pytest:
     PyYAML:
     regex:
