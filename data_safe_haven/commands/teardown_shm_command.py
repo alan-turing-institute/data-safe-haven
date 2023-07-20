@@ -14,13 +14,8 @@ class TeardownSHMCommand:
     def __call__(self) -> None:
         """Typer command line entrypoint"""
         try:
-            # Use dotfile settings to load the job configuration
-            try:
-                settings = BackendSettings()
-            except DataSafeHavenInputException as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
-                ) from exc
+            # Load config file
+            settings = BackendSettings()
             config = Config(settings.name, settings.subscription_name)
 
             # Remove infrastructure deployed with Pulumi

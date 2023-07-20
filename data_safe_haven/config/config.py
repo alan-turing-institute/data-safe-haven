@@ -26,6 +26,7 @@ from data_safe_haven.functions import (
     validate_timezone,
 )
 from data_safe_haven.utility import SoftwarePackageCategory, YamlType
+from .backend_settings import BackendSettings
 
 
 @dataclass
@@ -346,7 +347,7 @@ class Config:
         if self.shm_:
             contents["shm"] = self.shm.to_dict()
         if self.sres:
-            contents["sre"] = ({k: v.to_dict() for k, v in self.sres.items()},)
+            contents["sre"] = {k: v.to_dict() for k, v in self.sres.items()}
         return str(yaml.dump(contents, indent=2))
 
     def read_stack(self, name: str, path: pathlib.Path):
@@ -358,7 +359,7 @@ class Config:
     def write_stack(self, name: str, path: pathlib.Path):
         """Write a Pulumi stack file from config"""
         stack_yaml = yaml.dump(b64decode(self.pulumi.stacks[name]), indent=2)
-        with open(name, "w", encoding="utf-8") as f_stack:
+        with open(path, "w", encoding="utf-8") as f_stack:
             f_stack.writelines(stack_yaml)
 
     def download(self):

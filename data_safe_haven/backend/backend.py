@@ -11,8 +11,7 @@ from data_safe_haven.external import AzureApi
 class Backend:
     """Azure backend for a Data Safe Haven deployment"""
 
-    def __init__(self, settings: BackendSettings, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, settings: BackendSettings) -> None:
         self.azure_api_: Optional[AzureApi] = None
         self.config: Config = Config(
             name=settings.name,

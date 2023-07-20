@@ -15,13 +15,8 @@ class UsersListCommand:
     def __call__(self) -> None:
         shm_name = "UNKNOWN"
         try:
-            # Use dotfile settings to load the job configuration
-            try:
-                settings = BackendSettings()
-            except DataSafeHavenException as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
-                ) from exc
+            # Load config file
+            settings = BackendSettings()
             config = Config(settings.name, settings.subscription_name)
             shm_name = config.name
 

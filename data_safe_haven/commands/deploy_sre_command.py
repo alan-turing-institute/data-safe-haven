@@ -40,13 +40,8 @@ class DeploySRECommand:
             # Use a JSON-safe SRE name
             sre_name = alphanumeric(name)
 
-            # Use dotfile settings to load the job configuration
-            try:
-                settings = BackendSettings()
-            except DataSafeHavenException as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
-                ) from exc
+            # Load config file
+            settings = BackendSettings()
             config = Config(settings.name, settings.subscription_name)
             self.update_config(
                 sre_name,

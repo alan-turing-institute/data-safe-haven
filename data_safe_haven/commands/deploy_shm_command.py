@@ -36,13 +36,8 @@ class DeploySHMCommand:
     ) -> None:
         """Typer command line entrypoint"""
         try:
-            # Use dotfile settings to load the job configuration
-            try:
-                settings = BackendSettings()
-            except DataSafeHavenInputException as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
-                ) from exc
+            # Load config file
+            settings = BackendSettings()
             config = Config(settings.name, settings.subscription_name)
             self.update_config(
                 config,
@@ -115,7 +110,6 @@ class DeploySHMCommand:
         timezone: Optional[str] = None,
     ) -> None:
         # Update AzureAD tenant ID
-        print(config)
         if aad_tenant_id is not None:
             if config.shm.aad_tenant_id and (config.shm.aad_tenant_id != aad_tenant_id):
                 self.logger.debug(

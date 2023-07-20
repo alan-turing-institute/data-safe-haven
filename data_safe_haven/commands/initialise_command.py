@@ -27,15 +27,7 @@ class InitialiseCommand:
     ) -> None:
         """Typer command line entrypoint"""
         try:
-            # Confirm project path
-            project_base_path = pathlib.Path.cwd().resolve()
-            if not self.logger.confirm(
-                f"Do you want to initialise a Data Safe Haven project at [green]{project_base_path}[/]?",
-                True,
-            ):
-                sys.exit(0)
-
-            # Load settings from dotfiles
+            # Update backend settings with command line arguments (if provided)
             settings = BackendSettings(
                 admin_group_id=admin_group,
                 location=location,
@@ -47,16 +39,10 @@ class InitialiseCommand:
             backend = Backend(settings)
             backend.create()
 
-            # Load the generated configuration object and upload it to blob storage
+            # Load the generated configuration file and upload it to blob storage
             config = backend.config
             config.upload()
 
-            # Ensure that the project directory exists
-            if not project_base_path.exists():
-                self.logger.info(
-                    f"Creating project directory '[green]{project_base_path}[/]'."
-                )
-                project_base_path.mkdir(parents=True)
         except DataSafeHavenException as exc:
             raise DataSafeHavenException(
                 f"Could not initialise Data Safe Haven.\n{str(exc)}"

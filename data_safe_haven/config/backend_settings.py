@@ -9,6 +9,8 @@ import yaml
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenParameterException
+from data_safe_haven.functions import alphanumeric
+from data_safe_haven.utility import Logger
 
 
 class BackendSettings:
@@ -34,26 +36,35 @@ class BackendSettings:
         self._location: Optional[str] = None
         self._name: Optional[str] = None
         self._subscription_name: Optional[str] = None
+        self.logger = Logger()
 
-        # Load previous backend settings
-        self.config_file_path: pathlib.Path = (
-            pathlib.Path(appdirs.user_config_dir("data_safe_haven")) / ".dshconfig"
+        # Load previous backend settings (if any)
+        self.config_directory = pathlib.Path(
+            appdirs.user_config_dir("data_safe_haven")
         ).resolve()
-        self.read()
+        config_file_path = self.config_directory / ".dshconfig"
+        self.read(config_file_path)
 
         # Overwrite with any provided parameters
         if admin_group_id:
+            self.logger.debug(
+                f"Updating '[green]{admin_group_id}[/]' to '{admin_group_id}'."
+            )
             self._admin_group_id = admin_group_id
         if location:
+            self.logger.debug(f"Updating '[green]{location}[/]' to '{location}'.")
             self._location = location
         if name:
+            self.logger.debug(f"Updating '[green]{name}[/]' to '{name}'.")
             self._name = name
         if subscription_name:
+            self.logger.debug(
+                f"Updating '[green]{subscription_name}[/]' to '{subscription_name}'."
+            )
             self._subscription_name = subscription_name
 
         # Write backend settings to disk (this will trigger errors for uninitialised parameters)
-        self.write()
-        # self.logger.info(f"Saved project settings to '[green]{settings_path}[/]'.")
+        self.write(config_file_path)
 
     @property
     def admin_group_id(self) -> str:
@@ -87,13 +98,15 @@ class BackendSettings:
             )
         return self._subscription_name
 
-    def read(self) -> None:
+    def read(self, config_file_path: pathlib.Path) -> None:
         """Read settings from YAML file"""
-        print(self.config_file_path)
-        if self.config_file_path.exists():
-            with open(self.config_file_path, "r", encoding="utf-8") as f_yaml:
+        if config_file_path.exists():
+            with open(config_file_path, "r", encoding="utf-8") as f_yaml:
                 settings = yaml.safe_load(f_yaml)
             if isinstance(settings, dict):
+                self.logger.info(
+                    f"Reading project settings from '[green]{config_file_path}[/]'."
+                )
                 if admin_group_id := settings.get("azure", {}).get(
                     "admin_group_id", None
                 ):
@@ -107,7 +120,7 @@ class BackendSettings:
                 ):
                     self._subscription_name = subscription_name
 
-    def write(self) -> None:
+    def write(self, config_file_path: pathlib.Path) -> None:
         """Write settings to YAML file"""
         settings = {
             "shm": {
@@ -120,6 +133,7 @@ class BackendSettings:
             },
         }
         # Create the parent directory if it does not exist then write YAML
-        self.config_file_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.config_file_path, "w", encoding="utf-8") as f_yaml:
+        config_file_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(config_file_path, "w", encoding="utf-8") as f_yaml:
             yaml.dump(settings, f_yaml, indent=2)
+        self.logger.info(f"Saved project settings to '[green]{config_file_path}[/]'.")
