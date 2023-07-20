@@ -6,11 +6,10 @@ from typing import List, Optional
 import pytz
 
 # Local imports
-from data_safe_haven.config import BackendSettings, Config
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigException,
     DataSafeHavenException,
-    DataSafeHavenInputException,
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
@@ -37,8 +36,7 @@ class DeploySHMCommand:
         """Typer command line entrypoint"""
         try:
             # Load config file
-            settings = BackendSettings()
-            config = Config(settings.name, settings.subscription_name)
+            config = Config()
             self.update_config(
                 config,
                 aad_tenant_id=aad_tenant_id,

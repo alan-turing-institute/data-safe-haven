@@ -4,10 +4,9 @@ from typing import List
 
 # Local imports
 from data_safe_haven.administration.users import UserHandler
-from data_safe_haven.config import BackendSettings, Config
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
-    DataSafeHavenInputException,
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import Logger
@@ -27,8 +26,7 @@ class UsersRemoveCommand:
         shm_name = "UNKNOWN"
         try:
             # Load config file
-            settings = BackendSettings()
-            config = Config(settings.name, settings.subscription_name)
+            config = Config()
             shm_name = config.name
 
             # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command

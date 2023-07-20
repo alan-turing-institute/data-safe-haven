@@ -1,6 +1,6 @@
 """Command-line application for tearing down a Secure Research Environment"""
 # Local imports
-from data_safe_haven.config import BackendSettings, Config
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
@@ -23,8 +23,7 @@ class TeardownSRECommand:
             sre_name = alphanumeric(name)
 
             # Load config file
-            settings = BackendSettings()
-            config = Config(settings.name, settings.subscription_name)
+            config = Config()
             environment_name = config.name
 
             # Remove infrastructure deployed with Pulumi

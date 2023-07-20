@@ -1,6 +1,6 @@
 """Command-line application for tearing down a Data Safe Haven"""
 # Local imports
-from data_safe_haven.config import BackendSettings, Config
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
@@ -15,8 +15,7 @@ class TeardownSHMCommand:
         """Typer command line entrypoint"""
         try:
             # Load config file
-            settings = BackendSettings()
-            config = Config(settings.name, settings.subscription_name)
+            config = Config()
 
             # Remove infrastructure deployed with Pulumi
             try:
@@ -30,8 +29,6 @@ class TeardownSHMCommand:
             # Remove information from config file
             if stack.stack_name in config.pulumi.stacks.keys():
                 del config.pulumi.stacks[stack.stack_name]
-            if config.shm.keys():
-                del config._map.shm
 
             # Upload config to blob storage
             config.upload()

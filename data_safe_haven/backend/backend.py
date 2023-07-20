@@ -1,9 +1,9 @@
 """Azure backend for a Data Safe Haven deployment"""
 # Standard library imports
-from typing import Any, Optional
+from typing import Optional
 
 # Local imports
-from data_safe_haven.config import BackendSettings, Config
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.external import AzureApi
 
@@ -11,15 +11,9 @@ from data_safe_haven.external import AzureApi
 class Backend:
     """Azure backend for a Data Safe Haven deployment"""
 
-    def __init__(self, settings: BackendSettings) -> None:
+    def __init__(self) -> None:
         self.azure_api_: Optional[AzureApi] = None
-        self.config: Config = Config(
-            name=settings.name,
-            subscription_name=settings.subscription_name,
-        )
-        # Add Azure metadata from the input settings
-        self.config.azure.location = settings.location
-        self.config.azure.admin_group_id = settings.admin_group_id
+        self.config: Config = Config()
         self.tags = {"component": "backend"} | self.config.tags.to_dict()
 
     @property

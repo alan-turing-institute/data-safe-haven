@@ -4,10 +4,9 @@ from typing import List
 
 # Local imports
 from data_safe_haven.administration.users import UserHandler
-from data_safe_haven.config import BackendSettings, Config
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
-    DataSafeHavenInputException,
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric
@@ -33,8 +32,7 @@ class UsersRegisterCommand:
             sre_name = alphanumeric(sre)
 
             # Load config file
-            settings = BackendSettings()
-            config = Config(settings.name, settings.subscription_name)
+            config = Config()
             shm_name = config.name
 
             # Check that SRE option has been provided

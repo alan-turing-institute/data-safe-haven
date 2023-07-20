@@ -27,8 +27,8 @@ class InitialiseCommand:
     ) -> None:
         """Typer command line entrypoint"""
         try:
-            # Update backend settings with command line arguments (if provided)
-            settings = BackendSettings(
+            # Create/update backend settings with command line arguments (if provided)
+            _ = BackendSettings(
                 admin_group_id=admin_group,
                 location=location,
                 name=name,
@@ -36,7 +36,7 @@ class InitialiseCommand:
             )
 
             # Ensure that the Pulumi backend exists
-            backend = Backend(settings)
+            backend = Backend()
             backend.create()
 
             # Load the generated configuration file and upload it to blob storage

@@ -262,18 +262,21 @@ class ConfigSectionTags:
 
 
 class Config:
-    def __init__(self, name: str, subscription_name: str):
-        # Set names
-        self.name = name
+    def __init__(self):
+        # Read backend settings
+        settings = BackendSettings()
+        self.name = settings.name
+        self.subscription_name = settings.subscription_name
+        self.azure.location = settings.location
+        self.azure.admin_group_id = settings.admin_group_id
+        self.backend_storage_container_name = "config"
+        # Set derived names
         self.shm_name_ = alphanumeric(self.name).lower()
         self.filename = f"config-{self.shm_name_}.yaml"
-        self.subscription_name = subscription_name
-        # Set remote storage names
         self.backend_resource_group_name = f"shm-{self.shm_name_}-rg-backend"
         self.backend_storage_account_name = (
             f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
         )
-        self.backend_storage_container_name = "config"
         # Config sections
         self.azure_api_: Optional[AzureApi] = None
         self.azure_: Optional[ConfigSectionAzure] = None

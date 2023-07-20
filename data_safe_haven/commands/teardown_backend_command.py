@@ -1,7 +1,6 @@
 """Command-line application for tearing down a Data Safe Haven"""
 # Local imports
 from data_safe_haven.backend import Backend
-from data_safe_haven.config import BackendSettings
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
@@ -14,12 +13,9 @@ class TeardownBackendCommand:
     def __call__(self) -> None:
         """Typer command line entrypoint"""
         try:
-            # Load backend settings
-            settings = BackendSettings()
-
             # Remove the Pulumi backend
             try:
-                backend = Backend(settings)
+                backend = Backend()
                 backend.teardown()
             except Exception as exc:
                 raise DataSafeHavenInputException(

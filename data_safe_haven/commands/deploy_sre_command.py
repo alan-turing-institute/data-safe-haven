@@ -3,11 +3,10 @@
 from typing import Any, Dict, List, Optional
 
 # Local imports
-from data_safe_haven.config import BackendSettings, Config
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigException,
     DataSafeHavenException,
-    DataSafeHavenInputException,
 )
 from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.functions import alphanumeric, password
@@ -41,8 +40,7 @@ class DeploySRECommand:
             sre_name = alphanumeric(name)
 
             # Load config file
-            settings = BackendSettings()
-            config = Config(settings.name, settings.subscription_name)
+            config = Config()
             self.update_config(
                 sre_name,
                 config,
