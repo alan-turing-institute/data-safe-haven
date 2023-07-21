@@ -20,6 +20,15 @@ def validate_aad_guid(aad_guid: Optional[str]) -> Optional[str]:
     return aad_guid
 
 
+def validate_azure_location(azure_location: Optional[str]) -> Optional[str]:
+    if azure_location is not None:
+        if not re.match(r"^[a-z]+[0-9]?[a-z]*$", azure_location):
+            raise typer.BadParameter(
+                "Expected valid Azure location, for example 'uksouth'"
+            )
+    return azure_location
+
+
 def validate_azure_vm_sku(azure_vm_sku: Optional[str]) -> Optional[str]:
     if azure_vm_sku is not None:
         if not re.match(r"^(Standard|Basic)_\w+$", azure_vm_sku):
@@ -47,95 +56,6 @@ def validate_ip_address(
         return None
     except Exception:
         raise typer.BadParameter("Expected valid IPv4 address, for example '1.1.1.1'")
-
-
-def validate_azure_location(location: Optional[str]) -> Optional[str]:
-    if not location:
-        return None
-    if location in (
-        "asia",
-        "asiapacific",
-        "australia",
-        "australiacentral",
-        "australiacentral2",
-        "australiaeast",
-        "australiasoutheast",
-        "brazil",
-        "brazilsouth",
-        "brazilsoutheast",
-        "brazilus",
-        "canada",
-        "canadacentral",
-        "canadaeast",
-        "centralindia",
-        "centralus",
-        "centraluseuap",
-        "centralusstage",
-        "devfabric",
-        "eastasia",
-        "eastasiastage",
-        "eastus",
-        "eastus2",
-        "eastus2euap",
-        "eastus2stage",
-        "eastusstage",
-        "eastusstg",
-        "europe",
-        "france",
-        "francecentral",
-        "francesouth",
-        "germany",
-        "germanynorth",
-        "germanywestcentral",
-        "global",
-        "india",
-        "japan",
-        "japaneast",
-        "japanwest",
-        "jioindiacentral",
-        "jioindiawest",
-        "korea",
-        "koreacentral",
-        "koreasouth",
-        "northcentralus",
-        "northcentralusstage",
-        "northeurope",
-        "norway",
-        "norwayeast",
-        "norwaywest",
-        "qatarcentral",
-        "singapore",
-        "southafrica",
-        "southafricanorth",
-        "southafricawest",
-        "southcentralus",
-        "southcentralusstage",
-        "southeastasia",
-        "southeastasiastage",
-        "southindia",
-        "swedencentral",
-        "switzerland",
-        "switzerlandnorth",
-        "switzerlandwest",
-        "uae",
-        "uaecentral",
-        "uaenorth",
-        "uk",
-        "uksouth",
-        "ukwest",
-        "unitedstates",
-        "unitedstateseuap",
-        "westcentralus",
-        "westeurope",
-        "westindia",
-        "westus",
-        "westus2",
-        "westus2stage",
-        "westus3",
-        "westusstage",
-    ):
-        return location
-    raise typer.BadParameter("Expected valid Azure location, for example 'uksouth'")
 
 
 def validate_timezone(timezone: Optional[str]) -> Optional[str]:
