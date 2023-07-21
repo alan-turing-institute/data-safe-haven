@@ -1,9 +1,19 @@
 # Standard library imports
 import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 # Third-party imports
 import pytz
+
+
+def as_dict(object: Any) -> Dict[str, Any]:
+    if (
+        not isinstance(object, dict)
+        and hasattr(object, "keys")
+        and all(isinstance(x, str) for x in object.keys())
+    ):
+        raise TypeError(f"{object} {type(object)} is not a valid Dict[str, Any]")
+    return object
 
 
 def ordered_private_dns_zones(resource_type: Optional[str] = None) -> List[str]:

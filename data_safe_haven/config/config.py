@@ -17,6 +17,7 @@ from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
     alphanumeric,
+    as_dict,
     b64decode,
     b64encode,
     validate_aad_guid,
@@ -26,7 +27,7 @@ from data_safe_haven.functions import (
     validate_ip_address,
     validate_timezone,
 )
-from data_safe_haven.utility import SoftwarePackageCategory, YamlType
+from data_safe_haven.utility import SoftwarePackageCategory
 from .backend_settings import BackendSettings
 
 
@@ -66,7 +67,7 @@ class ConfigSectionAzure:
 
     def to_dict(self) -> Dict[str, str]:
         self.validate()
-        return chili.encode(self)  # type: ignore
+        return as_dict(chili.encode(self))
 
 
 @dataclass
@@ -102,7 +103,7 @@ class ConfigSectionBackend:
 
     def to_dict(self) -> Dict[str, str]:
         self.validate()
-        return chili.encode(self)  # type: ignore
+        return as_dict(chili.encode(self))
 
 
 @dataclass
@@ -121,7 +122,7 @@ class ConfigSectionPulumi:
 
     def to_dict(self) -> Dict[str, Any]:
         self.validate()
-        return chili.encode(self)  # type: ignore
+        return as_dict(chili.encode(self))
 
 
 @dataclass
@@ -167,7 +168,7 @@ class ConfigSectionSHM:
 
     def to_dict(self) -> Dict[str, Any]:
         self.validate()
-        return chili.encode(self)  # type: ignore
+        return as_dict(chili.encode(self))
 
 
 @dataclass
@@ -188,7 +189,7 @@ class ConfigSectionSRE:
 
         def to_dict(self) -> Dict[str, bool]:
             self.validate()
-            return chili.encode(self)  # type: ignore
+            return as_dict(chili.encode(self))
 
     @dataclass
     class ConfigSectionResearchDesktopOpts:
@@ -203,7 +204,7 @@ class ConfigSectionSRE:
 
         def to_dict(self) -> Dict[str, str]:
             self.validate()
-            return chili.encode(self)  # type: ignore
+            return as_dict(chili.encode(self))
 
     data_provider_ip_addresses: List[str] = field(default_factory=list)
     index: int = 0
@@ -242,7 +243,7 @@ class ConfigSectionSRE:
 
     def to_dict(self) -> Dict[str, Any]:
         self.validate()
-        return chili.encode(self)  # type: ignore
+        return as_dict(chili.encode(self))
 
 
 @dataclass
@@ -259,7 +260,7 @@ class ConfigSectionTags:
 
     def to_dict(self) -> Dict[str, str]:
         self.validate()
-        return chili.encode(self)  # type: ignore
+        return as_dict(chili.encode(self))
 
 
 class Config:
