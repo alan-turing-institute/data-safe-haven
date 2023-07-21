@@ -13,6 +13,5 @@ foreach ($user in $users) {
     if (!($user.GroupName)) {
         $name = $user.SamAccountName
         Remove-ADUser -Identity $name
-        Write-Out "Deleted $name"
     }
 }
