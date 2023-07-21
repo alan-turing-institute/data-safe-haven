@@ -29,7 +29,7 @@ class UsersUnregisterCommand:
         sre_name = "UNKNOWN"
         try:
             # Use a JSON-safe SRE name
-            sre_name = alphanumeric(sre)
+            sre_name = alphanumeric(sre).lower()
 
             # Load config file
             config = Config()

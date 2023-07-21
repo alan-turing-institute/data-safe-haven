@@ -1,7 +1,5 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Standard library imports
-import pathlib
-import sys
 from typing import Optional
 
 # Local imports
@@ -27,8 +25,9 @@ class InitialiseCommand:
     ) -> None:
         """Typer command line entrypoint"""
         try:
-            # Create/update backend settings with command line arguments (if provided)
-            _ = BackendSettings(
+            # Load backend settings and update with command line arguments
+            settings = BackendSettings()
+            settings.update(
                 admin_group_id=admin_group,
                 location=location,
                 name=name,
@@ -40,8 +39,7 @@ class InitialiseCommand:
             backend.create()
 
             # Load the generated configuration file and upload it to blob storage
-            config = backend.config
-            config.upload()
+            backend.config.upload()
 
         except DataSafeHavenException as exc:
             raise DataSafeHavenException(

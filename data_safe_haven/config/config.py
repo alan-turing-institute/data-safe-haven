@@ -351,6 +351,8 @@ class Config:
             contents["shm"] = self.shm.to_dict()
         if self.sres:
             contents["sre"] = {k: v.to_dict() for k, v in self.sres.items()}
+        if self.tags:
+            contents["tags"] = self.tags.to_dict()
         return str(yaml.dump(contents, indent=2))
 
     def read_stack(self, name: str, path: pathlib.Path):

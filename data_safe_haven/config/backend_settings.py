@@ -20,17 +20,13 @@ class BackendSettings:
       admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
       location: uksouth
       subscription_name: Data Safe Haven Development
-    shm:
+    current:
       name: Turing Development
     """
 
     def __init__(
         self,
-        admin_group_id: Optional[str] = None,
-        location: Optional[str] = None,
-        name: Optional[str] = None,
-        subscription_name: Optional[str] = None,
-    ):
+    ) -> None:
         # Define instance variables
         self._admin_group_id: Optional[str] = None
         self._location: Optional[str] = None
@@ -42,10 +38,18 @@ class BackendSettings:
         self.config_directory = pathlib.Path(
             appdirs.user_config_dir("data_safe_haven")
         ).resolve()
-        config_file_path = self.config_directory / ".dshconfig"
-        self.read(config_file_path)
+        self.config_file_path = self.config_directory / ".dshconfig"
+        self.read()
 
-        # Overwrite with any provided parameters
+    def update(
+        self,
+        *,
+        admin_group_id: Optional[str] = None,
+        location: Optional[str] = None,
+        name: Optional[str] = None,
+        subscription_name: Optional[str] = None,
+    ) -> None:
+        """Overwrite defaults with provided parameters"""
         if admin_group_id:
             self.logger.debug(
                 f"Updating '[green]{admin_group_id}[/]' to '{admin_group_id}'."
@@ -64,7 +68,7 @@ class BackendSettings:
             self._subscription_name = subscription_name
 
         # Write backend settings to disk (this will trigger errors for uninitialised parameters)
-        self.write(config_file_path)
+        self.write()
 
     @property
     def admin_group_id(self) -> str:
@@ -98,14 +102,14 @@ class BackendSettings:
             )
         return self._subscription_name
 
-    def read(self, config_file_path: pathlib.Path) -> None:
+    def read(self) -> None:
         """Read settings from YAML file"""
-        if config_file_path.exists():
-            with open(config_file_path, "r", encoding="utf-8") as f_yaml:
+        if self.config_file_path.exists():
+            with open(self.config_file_path, "r", encoding="utf-8") as f_yaml:
                 settings = yaml.safe_load(f_yaml)
             if isinstance(settings, dict):
                 self.logger.info(
-                    f"Reading project settings from '[green]{config_file_path}[/]'."
+                    f"Reading project settings from '[green]{self.config_file_path}[/]'."
                 )
                 if admin_group_id := settings.get("azure", {}).get(
                     "admin_group_id", None
@@ -113,27 +117,29 @@ class BackendSettings:
                     self._admin_group_id = admin_group_id
                 if location := settings.get("azure", {}).get("location", None):
                     self._location = location
-                if name := settings.get("shm", {}).get("name", None):
+                if name := settings.get("current", {}).get("name", None):
                     self._name = name
                 if subscription_name := settings.get("azure", {}).get(
                     "subscription_name", None
                 ):
                     self._subscription_name = subscription_name
 
-    def write(self, config_file_path: pathlib.Path) -> None:
+    def write(self) -> None:
         """Write settings to YAML file"""
         settings = {
-            "shm": {
-                "name": self.name,
-            },
             "azure": {
                 "admin_group_id": self.admin_group_id,
                 "location": self.location,
                 "subscription_name": self.subscription_name,
             },
+            "current": {
+                "name": self.name,
+            },
         }
         # Create the parent directory if it does not exist then write YAML
-        config_file_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(config_file_path, "w", encoding="utf-8") as f_yaml:
+        self.config_file_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.config_file_path, "w", encoding="utf-8") as f_yaml:
             yaml.dump(settings, f_yaml, indent=2)
-        self.logger.info(f"Saved project settings to '[green]{config_file_path}[/]'.")
+        self.logger.info(
+            f"Saved project settings to '[green]{self.config_file_path}[/]'."
+        )

@@ -475,7 +475,7 @@ class SRENetworkingComponent(ComponentResource):
                 zone_name=kwargs["zone_name"],
             )
         )
-        sre_subdomain = alphanumeric(sre_name)
+        sre_subdomain = alphanumeric(sre_name).lower()
         sre_fqdn = Output.from_input(props.shm_fqdn).apply(
             lambda parent: f"{sre_subdomain}.{parent}"
         )

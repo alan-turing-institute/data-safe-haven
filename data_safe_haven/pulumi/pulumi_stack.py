@@ -204,7 +204,9 @@ class PulumiStack:
     def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
         try:
-            self.stack.workspace.install_plugin("azure-native", metadata.version("pulumi-azure-native"))
+            self.stack.workspace.install_plugin(
+                "azure-native", metadata.version("pulumi-azure-native")
+            )
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Installing Pulumi plugins failed.\n{str(exc)}."

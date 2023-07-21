@@ -20,7 +20,7 @@ class TeardownSRECommand:
         environment_name = "UNKNOWN"
         try:
             # Use a JSON-safe SRE name
-            sre_name = alphanumeric(name)
+            sre_name = alphanumeric(name).lower()
 
             # Load config file
             config = Config()

@@ -13,7 +13,7 @@ class Backend:
 
     def __init__(self) -> None:
         self.azure_api_: Optional[AzureApi] = None
-        self.config: Config = Config()
+        self.config = Config()
         self.tags = {"component": "backend"} | self.config.tags.to_dict()
 
     @property
