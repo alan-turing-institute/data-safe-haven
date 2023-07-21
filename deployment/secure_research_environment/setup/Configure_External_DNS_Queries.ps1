@@ -81,8 +81,8 @@ Add-LogMessage -Level Info "Looking for SRD with IP address '$vmIpAddress'..."
 if (-not $vmIpAddress) {
     Add-LogMessage -Level Fatal "No SRD found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution."
 } else {
-    # Match on both IP address and resource group
-    $vmName = @(Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress -and $_.ResourceGroupName -eq $config.sre.srd.rg } | ForEach-Object { $_.VirtualMachine.Id.Split("/")[-1] })[0]
+    # Match on IP address within approriate SRE resource group
+    $vmName = @(Get-AzNetworkInterface -ResourceGroupName $config.sre.srd.rg | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress } | ForEach-Object { $_.VirtualMachine.Id.Split("/")[-1] })[0]
     Add-LogMessage -Level Info "Testing external DNS resolution on VM '$vmName'..."
     $params = @{
         SHM_DOMAIN_FQDN   = $config.shm.domain.fqdn
