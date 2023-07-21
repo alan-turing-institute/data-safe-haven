@@ -3,7 +3,7 @@ from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 
 class UsersRemoveCommand:
@@ -11,7 +11,7 @@ class UsersRemoveCommand:
 
     def __init__(self):
         """Constructor"""
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
 
     def __call__(
         self,

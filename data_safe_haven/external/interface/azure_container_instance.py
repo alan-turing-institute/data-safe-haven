@@ -12,7 +12,7 @@ from azure.mgmt.containerinstance.models import (
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 
 class AzureContainerInstance:
@@ -25,7 +25,7 @@ class AzureContainerInstance:
         subscription_name: str,
     ):
         self.azure_api = AzureApi(subscription_name)
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
         self.resource_group_name = resource_group_name
         self.container_group_name = container_group_name
 

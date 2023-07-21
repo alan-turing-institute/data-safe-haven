@@ -87,18 +87,18 @@ class RichStringAdaptor:
         return self.string_io.getvalue()
 
 
-class Logger:
+class LoggingSingleton:
     """
     Logging singleton that can be used for anything needing logging
     """
 
     date_fmt = r"%Y-%m-%d %H:%M:%S"
     rich_format = r"[log.time]%(asctime)s[/] [%(levelname)8s] %(message)s"
-    _instance: Optional["Logger"] = None
+    _instance: "LoggingSingleton" | None = None
 
     def __new__(
         cls, verbosity: int | None = None, log_file: PathType | None = None
-    ) -> "Logger":
+    ) -> "LoggingSingleton":
         desired_log_level = max(
             logging.INFO - 10 * (verbosity if verbosity else 0), logging.DEBUG
         )
@@ -141,7 +141,7 @@ class Logger:
         for handler in self.logger.handlers:
             if isinstance(handler, RichHandler):
                 fn, lno, func, sinfo = self.logger.findCaller(
-                    stack_info=False, stack_level=1
+                    stack_info=False, stacklevel=1
                 )
                 return handler.format(
                     self.logger.makeRecord(

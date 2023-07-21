@@ -9,7 +9,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 
 class BackendSettings:
@@ -31,7 +31,7 @@ class BackendSettings:
         self._location: str | None = None
         self._name: str | None = None
         self._subscription_name: str | None = None
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
 
         # Load previous backend settings (if any)
         self.config_directory = pathlib.Path(

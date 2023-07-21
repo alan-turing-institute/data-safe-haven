@@ -1,11 +1,11 @@
 from .enums import SoftwarePackageCategory
 from .file_reader import FileReader
-from .logger import Logger
+from .logger import LoggingSingleton
 from .types import PathType
 
 __all__ = [
     "FileReader",
-    "Logger",
+    "LoggingSingleton",
     "PathType",
     "SoftwarePackageCategory",
 ]

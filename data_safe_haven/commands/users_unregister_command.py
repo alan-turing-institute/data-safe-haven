@@ -4,7 +4,7 @@ from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 
 class UsersUnregisterCommand:
@@ -12,7 +12,7 @@ class UsersUnregisterCommand:
 
     def __init__(self):
         """Constructor"""
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
 
     def __call__(
         self,

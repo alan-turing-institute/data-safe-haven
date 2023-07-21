@@ -10,7 +10,7 @@ from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
 from data_safe_haven.provisioning import SHMProvisioningManager
 from data_safe_haven.pulumi import PulumiSHMStack
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 
 class DeploySHMCommand:
@@ -18,7 +18,7 @@ class DeploySHMCommand:
 
     def __init__(self):
         """Constructor"""
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
 
     def __call__(
         self,

@@ -12,7 +12,7 @@ from data_safe_haven.commands import (
     teardown_command_group,
 )
 from data_safe_haven.exceptions import DataSafeHavenError
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 
 def callback(
@@ -40,7 +40,7 @@ def callback(
     ] = None,
 ) -> None:
     """Arguments to the main executable"""
-    Logger(verbosity, output)  # initialise logging singleton
+    LoggingSingleton(verbosity, output)  # initialise logging singleton
     if version:
         print(f"Data Safe Haven {__version__}")  # noqa: T201
         raise typer.Exit()
@@ -85,6 +85,6 @@ def main() -> None:
     try:
         application()
     except DataSafeHavenError as exc:
-        logger = Logger()
+        logger = LoggingSingleton()
         for line in str(exc).split("\n"):
             logger.error(line)

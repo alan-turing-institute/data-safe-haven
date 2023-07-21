@@ -20,7 +20,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalError,
     DataSafeHavenMicrosoftGraphError,
 )
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 
 class LocalTokenCache(SerializableTokenCache):  # type: ignore
@@ -76,7 +76,7 @@ class GraphApi:
             base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
         )
         self.default_scopes = list(default_scopes)
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
         self.tenant_id = tenant_id
         if auth_token:
             self.token = auth_token
