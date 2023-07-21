@@ -32,16 +32,12 @@ foreach (`$user in `$users) {
 $result = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
 $null = Set-AzContext -Context $originalContext -ErrorAction Stop
 
-Write-Output $result
 
-# Construct list of groups
-# ------------------------
-Add-LogMessage -Level Info "Constructing list of user groups from $($config.shm.id)..."
+# Delete users not found in any group (with exception for named SG e.g. "Sandbox")
+# --------------------------------------------------------------------------------
+Add-LogMessage -Level Info "Deleting users from $($config.shm.id) not in any security group..."
 $users = $result.Value[0].Message | ConvertFrom-Csv
-$securityGroups = @()
 foreach ($user in $users) {
-    $securityGroups += @($user.GroupName.Split("|"))
+    Write-Output $user.GroupName
+    Write-Output $user.SamAccountName
 }
-$securityGroups = $securityGroups | Sort-Object | Get-Unique
-
-Write-Output $securityGroups
