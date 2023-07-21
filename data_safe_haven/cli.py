@@ -40,7 +40,11 @@ def callback(
     ] = None,
 ) -> None:
     """Arguments to the main executable"""
-    LoggingSingleton(verbosity, output)  # initialise logging singleton
+    logger = LoggingSingleton()
+    if output:
+        logger.log_file(output)
+    if verbosity:
+        logger.verbosity(verbosity)
     if version:
         print(f"Data Safe Haven {__version__}")  # noqa: T201
         raise typer.Exit()
