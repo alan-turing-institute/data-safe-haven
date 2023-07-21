@@ -14,7 +14,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
 from data_safe_haven.provisioning import SHMProvisioningManager
-from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.pulumi import PulumiSHMStack
 from data_safe_haven.utility import Logger
 
 
@@ -58,7 +58,7 @@ class DeploySHMCommand:
             verification_record = graph_api.add_custom_domain(config.shm.fqdn)
 
             # Initialise Pulumi stack
-            stack = PulumiStack(config, "SHM")
+            stack = PulumiSHMStack(config)
             # Set Azure options
             stack.add_option("azure-native:location", config.azure.location)
             stack.add_option(

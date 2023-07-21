@@ -5,7 +5,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.pulumi import PulumiSHMStack
 
 
 class TeardownSHMCommand:
@@ -19,7 +19,7 @@ class TeardownSHMCommand:
 
             # Remove infrastructure deployed with Pulumi
             try:
-                stack = PulumiStack(config, "SHM")
+                stack = PulumiSHMStack(config)
                 stack.teardown()
             except Exception as exc:
                 raise DataSafeHavenInputException(

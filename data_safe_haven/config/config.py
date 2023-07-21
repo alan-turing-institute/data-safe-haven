@@ -285,6 +285,7 @@ class Config:
         self.backend_storage_account_name = (
             f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
         )
+        self.work_directory = settings.config_directory / self.shm_name_
         # Attempt to load from blob storage
         with suppress(DataSafeHavenAzureException):
             self.download()

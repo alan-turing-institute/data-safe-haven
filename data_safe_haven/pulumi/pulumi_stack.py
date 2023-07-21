@@ -23,35 +23,21 @@ from .declarative_sre import DeclarativeSRE
 class PulumiStack:
     """Interact with infrastructure using Pulumi"""
 
-    options: Dict[str, Tuple[str, bool, bool]]
-    program: DeclarativeSHM | DeclarativeSRE
-
     def __init__(
         self,
         config: Config,
-        deployment_type: str,
-        *args: Optional[Any],
-        sre_name: Optional[str] = None,
-        **kwargs: Optional[Any],
-    ):
-        super().__init__(*args, **kwargs)
+        program: DeclarativeSHM | DeclarativeSRE,
+        # sre_name: Optional[str] = None,
+    ) -> None:
         self.cfg: Config = config
         self.env_: Optional[Dict[str, Any]] = None
         self.logger = Logger()
         self.stack_: Optional[automation.Stack] = None
-        self.options = {}
-        if deployment_type == "SHM":
-            self.program = DeclarativeSHM(config, config.shm.name)
-        elif deployment_type == "SRE":
-            if not sre_name:
-                raise DataSafeHavenPulumiException("No sre_name was provided.")
-            self.program = DeclarativeSRE(config, config.shm.name, sre_name)
-        else:
-            raise DataSafeHavenPulumiException(
-                f"Deployment type '{deployment_type}' was not recognised."
-            )
+        self.options: Dict[str, Tuple[str, bool, bool]] = {}
+        self.program = program
         self.stack_name = self.program.stack_name
-        self.work_dir = self.program.work_dir(pathlib.Path.cwd() / "pulumi")
+        self.work_dir = config.work_directory / "pulumi"
+        self.work_dir.mkdir(parents=True, exist_ok=True)
         self.login()  # Log in to the Pulumi backend
 
     @property
@@ -340,3 +326,26 @@ class PulumiStack:
             raise DataSafeHavenPulumiException(
                 f"Pulumi user check failed.\n{str(exc)}."
             ) from exc
+
+
+class PulumiSHMStack(PulumiStack):
+    """Interact with an SHM using Pulumi"""
+
+    def __init__(
+        self,
+        config: Config,
+    ) -> None:
+        """Constructor"""
+        super().__init__(config, DeclarativeSHM(config, config.shm.name))
+
+
+class PulumiSREStack(PulumiStack):
+    """Interact with an SRE using Pulumi"""
+
+    def __init__(
+        self,
+        config: Config,
+        sre_name: str,
+    ) -> None:
+        """Constructor"""
+        super().__init__(config, DeclarativeSRE(config, config.shm.name, sre_name))

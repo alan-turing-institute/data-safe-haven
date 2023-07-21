@@ -7,7 +7,7 @@ from typing import Any, Optional, Sequence
 from data_safe_haven.config import Config
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import b64encode
-from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.pulumi import PulumiSHMStack
 from data_safe_haven.utility import FileReader, Logger
 from .research_user import ResearchUser
 
@@ -22,7 +22,7 @@ class ActiveDirectoryUsers:
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        shm_stack = PulumiStack(config, "SHM")
+        shm_stack = PulumiSHMStack(config)
         self.azure_api = AzureApi(config.subscription_name)
         self.logger = Logger()
         self.resource_group_name = shm_stack.output("domain_controllers")[

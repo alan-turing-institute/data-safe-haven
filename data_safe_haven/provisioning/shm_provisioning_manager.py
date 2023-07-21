@@ -1,7 +1,7 @@
 """Provisioning manager for a deployed SHM."""
 # Local imports
 from data_safe_haven.external import AzureApi
-from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.pulumi import PulumiSHMStack
 
 
 class SHMProvisioningManager:
@@ -10,7 +10,7 @@ class SHMProvisioningManager:
     def __init__(
         self,
         subscription_name: str,
-        stack: PulumiStack,
+        stack: PulumiSHMStack,
     ):
         super().__init__()
         self.subscription_name = subscription_name

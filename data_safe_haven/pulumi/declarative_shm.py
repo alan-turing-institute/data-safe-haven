@@ -30,9 +30,6 @@ class DeclarativeSHM:
         self.shm_name = shm_name
         self.stack_name = f"shm-{shm_name}"
 
-    def work_dir(self, base_path: pathlib.Path) -> pathlib.Path:
-        return base_path / self.stack_name
-
     def run(self) -> None:
         # Load pulumi configuration options
         self.pulumi_opts = pulumi.Config()

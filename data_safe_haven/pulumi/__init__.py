@@ -1,5 +1,6 @@
-from .pulumi_stack import PulumiStack
+from .pulumi_stack import PulumiSHMStack, PulumiSREStack
 
 __all__ = [
-    "PulumiStack",
+    "PulumiSHMStack",
+    "PulumiSREStack",
 ]

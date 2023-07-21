@@ -38,9 +38,6 @@ class DeclarativeSRE:
         self.sre_name = sre_name
         self.stack_name = f"shm-{shm_name}-sre-{sre_name}"
 
-    def work_dir(self, base_path: pathlib.Path) -> pathlib.Path:
-        return base_path / f"shm-{self.shm_name}" / f"sre-{self.sre_name}"
-
     def run(self) -> None:
         # Load pulumi configuration options
         self.pulumi_opts = pulumi.Config()
