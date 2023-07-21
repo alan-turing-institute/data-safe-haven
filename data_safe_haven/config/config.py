@@ -41,25 +41,25 @@ class ConfigSectionAzure:
         try:
             validate_aad_guid(self.admin_group_id)
         except Exception as exc:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'admin_group_id' ({self.admin_group_id}).\n{str(exc)}"
             )
         try:
             validate_azure_location(self.location)
         except Exception as exc:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'location' ({self.location}).\n{str(exc)}"
             )
         try:
             validate_aad_guid(self.subscription_id)
         except Exception as exc:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'subscription_id' ({self.subscription_id}).\n{str(exc)}"
             )
         try:
             validate_aad_guid(self.tenant_id)
         except Exception as exc:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'tenant_id' ({self.tenant_id}).\n{str(exc)}"
             )
 
@@ -79,23 +79,23 @@ class ConfigSectionBackend:
     def validate(self) -> None:
         """Validate input parameters"""
         if not self.key_vault_name:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'key_vault_name' ({self.key_vault_name})."
             )
         if not self.managed_identity_name:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'managed_identity_name' ({self.managed_identity_name})."
             )
         if not self.resource_group_name:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'resource_group_name' ({self.resource_group_name})."
             )
         if not self.storage_account_name:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'storage_account_name' ({self.storage_account_name})."
             )
         if not self.storage_container_name:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'storage_container_name' ({self.storage_container_name})."
             )
 
@@ -114,7 +114,7 @@ class ConfigSectionPulumi:
     def validate(self) -> None:
         """Validate input parameters"""
         if not isinstance(self.encryption_key_id, str) or not self.encryption_key_id:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'encryption_key_id' ({self.encryption_key_id})."
             )
 
@@ -137,30 +137,30 @@ class ConfigSectionSHM:
         try:
             validate_aad_guid(self.aad_tenant_id)
         except Exception as exc:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'aad_tenant_id' ({self.aad_tenant_id}).\n{str(exc)}"
             )
         try:
             validate_email_address(self.admin_email_address)
         except Exception as exc:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'admin_email_address' ({self.admin_email_address}).\n{str(exc)}"
             )
         try:
             for ip in self.admin_ip_addresses:
                 validate_ip_address(ip)
         except Exception as exc:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'admin_ip_addresses' ({self.admin_ip_addresses}).\n{str(exc)}"
             )
         if not isinstance(self.fqdn, str) or not self.fqdn:
-            raise TypeError(f"Invalid value for 'fqdn' ({self.fqdn}).")
+            raise ValueError(f"Invalid value for 'fqdn' ({self.fqdn}).")
         if not isinstance(self.name, str) or not self.name:
-            raise TypeError(f"Invalid value for 'name' ({self.name}).")
+            raise ValueError(f"Invalid value for 'name' ({self.name}).")
         try:
             validate_timezone(self.timezone)
         except Exception as exc:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'timezone' ({self.timezone}).\n{str(exc)}"
             )
 
@@ -179,9 +179,9 @@ class ConfigSectionSRE:
         def validate(self) -> None:
             """Validate input parameters"""
             if not isinstance(self.allow_copy, bool):
-                raise TypeError(f"Invalid value for 'allow_copy' ({self.allow_copy}).")
+                raise ValueError(f"Invalid value for 'allow_copy' ({self.allow_copy}).")
             if not isinstance(self.allow_paste, bool):
-                raise TypeError(
+                raise ValueError(
                     f"Invalid value for 'allow_paste' ({self.allow_paste})."
                 )
 
@@ -198,7 +198,7 @@ class ConfigSectionSRE:
             try:
                 validate_azure_vm_sku(self.sku)
             except Exception as exc:
-                raise TypeError(f"Invalid value for 'sku' ({self.sku}).\n{str(exc)}")
+                raise ValueError(f"Invalid value for 'sku' ({self.sku}).\n{str(exc)}")
 
         def to_dict(self) -> Dict[str, str]:
             self.validate()
@@ -227,7 +227,7 @@ class ConfigSectionSRE:
             for ip in self.data_provider_ip_addresses:
                 validate_ip_address(ip)
         except Exception as exc:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{str(exc)}"
             )
         self.remote_desktop.validate()
@@ -235,7 +235,7 @@ class ConfigSectionSRE:
             for ip in self.research_user_ip_addresses:
                 validate_ip_address(ip)
         except Exception as exc:
-            raise TypeError(
+            raise ValueError(
                 f"Invalid value for 'research_user_ip_addresses' ({self.research_user_ip_addresses}).\n{str(exc)}"
             )
 
@@ -254,7 +254,7 @@ class ConfigSectionTags:
     def validate(self) -> None:
         """Validate input parameters"""
         if not self.deployment:
-            raise TypeError(f"Invalid value for 'deployment' ({self.deployment}).")
+            raise ValueError(f"Invalid value for 'deployment' ({self.deployment}).")
 
     def to_dict(self) -> Dict[str, str]:
         self.validate()
