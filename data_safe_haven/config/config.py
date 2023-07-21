@@ -265,7 +265,6 @@ class ConfigSectionTags:
 class Config:
     def __init__(self):
         # Initialise config sections
-        self.azure_api_: Optional[AzureApi] = None
         self.azure_: Optional[ConfigSectionAzure] = None
         self.backend_: Optional[ConfigSectionBackend] = None
         self.pulumi_: Optional[ConfigSectionPulumi] = None
@@ -287,6 +286,7 @@ class Config:
             f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
         )
         self.work_directory = settings.config_directory / self.shm_name_
+        self.azure_api = AzureApi(subscription_name=self.subscription_name)
         # Attempt to load YAML dictionary from blob storage
         yaml_input = {}
         with suppress(DataSafeHavenAzureException, ParserError):
@@ -313,19 +313,6 @@ class Config:
             if "sre" in yaml_input:
                 for sre_name, sre_details in dict(yaml_input["sre"]).items():
                     self.sres[sre_name] = chili.decode(sre_details, ConfigSectionSRE)
-
-    @property
-    def azure_api(self) -> AzureApi:
-        """Load AzureAPI on demand
-
-        Returns:
-            AzureApi: An initialised AzureApi object
-        """
-        if not self.azure_api_:
-            self.azure_api_ = AzureApi(
-                subscription_name=self.subscription_name,
-            )
-        return self.azure_api_
 
     @property
     def azure(self) -> ConfigSectionAzure:
