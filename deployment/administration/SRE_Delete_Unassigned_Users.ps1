@@ -40,7 +40,6 @@ $users = $result.Value[0].Message | ConvertFrom-Csv
 $unassignedUsers = @()
 foreach ($user in $users) {
     if (!($user.GroupName)) {
-        $unassignedUsers += @($user.SamAccountName)
+        Remove-ADUser -Identity $user.SamAccountName
     }
 }
-Write-Output $unassignedUsers
