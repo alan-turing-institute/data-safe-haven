@@ -25,7 +25,8 @@ class UserHandler:
         self.azure_ad_users = AzureADUsers(graph_api)
         self.logger = Logger()
         self.sre_guacamole_users = {
-            sre_name: GuacamoleUsers(config, sre_name) for sre_name in config.sre.keys()
+            sre_name: GuacamoleUsers(config, sre_name)
+            for sre_name in config.sres.keys()
         }
 
     def add(self, users_csv_path: pathlib.Path) -> None:

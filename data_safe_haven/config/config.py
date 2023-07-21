@@ -361,6 +361,16 @@ class Config:
             b64string = f_stack.read()
         self.pulumi.stacks[name] = b64encode(b64string)
 
+    def remove_sre(self, name: str) -> None:
+        """Remove SRE config section by name"""
+        if name in self.sres.keys():
+            del self.sres[name]
+
+    def remove_stack(self, name: str) -> None:
+        """Remove Pulumi stack section by name"""
+        if name in self.pulumi.stacks.keys():
+            del self.pulumi.stacks[name]
+
     def write_stack(self, name: str, path: pathlib.Path):
         """Write a Pulumi stack file from config"""
         b64string = b64decode(self.pulumi.stacks[name])

@@ -25,7 +25,7 @@ class SRENetworkingProps:
         shm_subnet_update_servers_prefix: Input[str],
         shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
-        sre_index: Input[str],
+        sre_index: Input[int],
     ):
         # Virtual network and subnet IP ranges
         self.vnet_iprange = Output.from_input(sre_index).apply(

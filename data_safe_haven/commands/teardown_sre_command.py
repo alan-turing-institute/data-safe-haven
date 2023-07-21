@@ -41,10 +41,8 @@ class TeardownSRECommand:
                 ) from exc
 
             # Remove information from config file
-            if stack.stack_name in config.pulumi.stacks.keys():
-                del config.pulumi.stacks[stack.stack_name]
-            if sre_name in config.sre.keys():
-                del config.sre[sre_name]
+            config.remove_stack(stack.stack_name)
+            config.remove_sre(sre_name)
 
             # Upload config to blob storage
             config.upload()

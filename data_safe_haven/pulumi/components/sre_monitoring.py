@@ -18,7 +18,7 @@ class SREMonitoringProps:
         automation_account_name: Input[str],
         resource_group_name: Input[str],
         location: Input[str],
-        sre_index: Input[str],
+        sre_index: Input[int],
         subscription_resource_id: Input[str],
         timezone: Input[str],
     ) -> None:
@@ -60,7 +60,7 @@ class SREMonitoringComponent(ComponentResource):
                     lambda kwargs: time_as_string(
                         hour=3,
                         minute=int(kwargs["minute"]),
-                        timezone=kwargs["timezone"],
+                        timezone=str(kwargs["timezone"]),
                     )
                 ),
                 time_zone=props.timezone,
