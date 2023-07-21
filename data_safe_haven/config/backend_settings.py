@@ -37,7 +37,7 @@ class BackendSettings:
         self.config_directory = pathlib.Path(
             appdirs.user_config_dir("data_safe_haven")
         ).resolve()
-        self.config_file_path = self.config_directory / ".dshconfig"
+        self.config_file_path = self.config_directory / "config.yaml"
         self.read()
 
     def update(
