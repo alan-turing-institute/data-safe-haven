@@ -39,7 +39,7 @@ Add-LogMessage -Level Info "Deleting users from $($config.shm.id) not in any sec
 $users = $result.Value[0].Message | ConvertFrom-Csv
 $unassignedUsers = @()
 foreach ($user in $users) {
-    if ( $user.GroupName ) {
+    if (!($user.GroupName)) {
         $unassignedUsers += @($user.SamAccountName)
     }
 }
