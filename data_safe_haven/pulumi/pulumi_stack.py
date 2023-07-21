@@ -215,21 +215,25 @@ class PulumiStack:
     def login(self) -> None:
         """Login to Pulumi."""
         try:
-            AzureCli().login()  # this is needed to read the encryption key from the keyvault
-            env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
-            command = (
-                f"pulumi login 'azblob://{self.cfg.pulumi.storage_container_name}'"
-            )
-            with subprocess.Popen(
-                f"{env_vars} {command}",
-                shell=True,
-                cwd=self.work_dir,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                encoding="UTF-8",
-            ) as process:
-                if process.stdout:
-                    self.logger.info(process.stdout.readline().strip())
+            try:
+                username = self.whoami()
+                self.logger.info(f"Logged into Pulumi as [green]{username}[/]")
+            except:
+                AzureCli().login()  # this is needed to read the encryption key from the keyvault
+                env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
+                command = (
+                    f"pulumi login 'azblob://{self.cfg.pulumi.storage_container_name}'"
+                )
+                with subprocess.Popen(
+                    f"{env_vars} {command}",
+                    shell=True,
+                    cwd=self.work_dir,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    encoding="UTF-8",
+                ) as process:
+                    if process.stdout:
+                        self.logger.info(process.stdout.readline().strip())
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Logging into Pulumi failed.\n{str(exc)}."
@@ -310,4 +314,29 @@ class PulumiStack:
         except automation.errors.CommandError as exc:
             raise DataSafeHavenPulumiException(
                 f"Pulumi update failed.\n{str(exc)}"
+            ) from exc
+
+    def whoami(self) -> str:
+        """Check current Pulumi user."""
+        try:
+            AzureCli().login()  # this is needed to read the encryption key from the keyvault
+            env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
+            command = "pulumi whoami"
+            self.work_dir.mkdir(parents=True, exist_ok=True)
+            with subprocess.Popen(
+                f"{env_vars} {command}",
+                shell=True,
+                cwd=self.work_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                encoding="UTF-8",
+            ) as process:
+                if not process.stdout:
+                    raise DataSafeHavenPulumiException(
+                        f"No Pulumi user found {process.stderr}."
+                    )
+                return process.stdout.readline().strip()
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Pulumi user check failed.\n{str(exc)}."
             ) from exc
