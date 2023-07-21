@@ -263,6 +263,14 @@ class ConfigSectionTags:
 
 class Config:
     def __init__(self):
+        # Initialise config sections
+        self.azure_api_: Optional[AzureApi] = None
+        self.azure_: Optional[ConfigSectionAzure] = None
+        self.backend_: Optional[ConfigSectionBackend] = None
+        self.pulumi_: Optional[ConfigSectionPulumi] = None
+        self.shm_: Optional[ConfigSectionSHM] = None
+        self.tags_: Optional[ConfigSectionTags] = None
+        self.sres: Dict[str, ConfigSectionSRE] = defaultdict(ConfigSectionSRE)
         # Read backend settings
         settings = BackendSettings()
         self.name = settings.name
@@ -277,14 +285,6 @@ class Config:
         self.backend_storage_account_name = (
             f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
         )
-        # Config sections
-        self.azure_api_: Optional[AzureApi] = None
-        self.azure_: Optional[ConfigSectionAzure] = None
-        self.backend_: Optional[ConfigSectionBackend] = None
-        self.pulumi_: Optional[ConfigSectionPulumi] = None
-        self.shm_: Optional[ConfigSectionSHM] = None
-        self.tags_: Optional[ConfigSectionTags] = None
-        self.sres: Dict[str, ConfigSectionSRE] = defaultdict(ConfigSectionSRE)
         # Attempt to load from blob storage
         with suppress(DataSafeHavenAzureException):
             self.download()
@@ -356,14 +356,14 @@ class Config:
     def read_stack(self, name: str, path: pathlib.Path):
         """Add a Pulumi stack file to config"""
         with open(path, "r", encoding="utf-8") as f_stack:
-            stack_yaml = yaml.safe_load(f_stack)
-        self.pulumi.stacks[name] = b64encode(yaml.dump(stack_yaml))
+            b64string = f_stack.read()
+        self.pulumi.stacks[name] = b64encode(b64string)
 
     def write_stack(self, name: str, path: pathlib.Path):
         """Write a Pulumi stack file from config"""
-        stack_yaml = yaml.dump(b64decode(self.pulumi.stacks[name]), indent=2)
+        b64string = b64decode(self.pulumi.stacks[name])
         with open(path, "w", encoding="utf-8") as f_stack:
-            f_stack.writelines(stack_yaml)
+            f_stack.write(b64string)
 
     def download(self):
         """Download config from Azure storage and interpret it"""
