@@ -30,16 +30,17 @@ foreach (`$user in `$users) {
          ForEach-Object { `$_.replace('"','') }
 "@
 $result = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
-$null = Set-AzContext -Context $originalContext -ErrorAction Stop
-
 
 # Delete users not found in any group (with exception for named SG e.g. "Sandbox")
 # --------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Deleting users from $($config.shm.id) not in any security group..."
 $users = $result.Value[0].Message | ConvertFrom-Csv
-$unassignedUsers = @()
 foreach ($user in $users) {
     if (!($user.GroupName)) {
-        Remove-ADUser -Identity $user.SamAccountName
+        $name = $user.SamAccountName
+        $script = "Remove-ADUser -Identity $name"
+        Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
     }
 }
+
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop
