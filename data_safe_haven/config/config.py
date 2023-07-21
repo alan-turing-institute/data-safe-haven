@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 # Third party imports
 import chili
 import yaml
+from yaml.parser import ParserError
 
 # Local imports
 from data_safe_haven import __version__
@@ -286,9 +287,32 @@ class Config:
             f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
         )
         self.work_directory = settings.config_directory / self.shm_name_
-        # Attempt to load from blob storage
-        with suppress(DataSafeHavenAzureException):
-            self.download()
+        # Attempt to load YAML dictionary from blob storage
+        yaml_input = {}
+        with suppress(DataSafeHavenAzureException, ParserError):
+            yaml_input = yaml.safe_load(
+                self.azure_api.download_blob(
+                    self.filename,
+                    self.backend_resource_group_name,
+                    self.backend_storage_account_name,
+                    self.backend_storage_container_name,
+                )
+            )
+        # Attempt to decode each config section
+        if yaml_input:
+            if "azure" in yaml_input:
+                self.azure_ = chili.decode(yaml_input["azure"], ConfigSectionAzure)
+            if "backend" in yaml_input:
+                self.backend_ = chili.decode(
+                    yaml_input["backend"], ConfigSectionBackend
+                )
+            if "pulumi" in yaml_input:
+                self.pulumi_ = chili.decode(yaml_input["pulumi"], ConfigSectionPulumi)
+            if "shm" in yaml_input:
+                self.shm_ = chili.decode(yaml_input["shm"], ConfigSectionSHM)
+            if "sre" in yaml_input:
+                for sre_name, sre_details in dict(yaml_input["sre"]).items():
+                    self.sres[sre_name] = chili.decode(sre_details, ConfigSectionSRE)
 
     @property
     def azure_api(self) -> AzureApi:
@@ -377,33 +401,6 @@ class Config:
         b64string = b64decode(self.pulumi.stacks[name])
         with open(path, "w", encoding="utf-8") as f_stack:
             f_stack.write(b64string)
-
-    def download(self):
-        """Download config from Azure storage and interpret it"""
-        self.from_yaml(
-            yaml.safe_load(
-                self.azure_api.download_blob(
-                    self.filename,
-                    self.backend_resource_group_name,
-                    self.backend_storage_account_name,
-                    self.backend_storage_container_name,
-                )
-            )
-        )
-
-    def from_yaml(self, yaml_input: YamlType) -> None:
-        """Construct a config object from YAML"""
-        if "azure" in yaml_input:
-            self.azure_ = chili.decode(yaml_input["azure"], ConfigSectionAzure)
-        if "backend" in yaml_input:
-            self.backend_ = chili.decode(yaml_input["backend"], ConfigSectionBackend)
-        if "pulumi" in yaml_input:
-            self.pulumi_ = chili.decode(yaml_input["pulumi"], ConfigSectionPulumi)
-        if "shm" in yaml_input:
-            self.shm_ = chili.decode(yaml_input["shm"], ConfigSectionSHM)
-        if "sre" in yaml_input:
-            for sre_name, sre_details in dict(yaml_input["sre"]).items():
-                self.sres[sre_name] = chili.decode(sre_details, ConfigSectionSRE)
 
     def upload(self):
         """Upload config to Azure storage"""
