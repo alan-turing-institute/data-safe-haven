@@ -37,7 +37,7 @@ from azure.mgmt.keyvault.models import (
 )
 from azure.mgmt.msi import ManagedServiceIdentityClient
 from azure.mgmt.msi.models import Identity
-from azure.mgmt.resource import ResourceManagementClient
+from azure.mgmt.resource import ResourceManagementClient, SubscriptionClient
 from azure.mgmt.resource.resources.models import ResourceGroup
 from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.storage.models import (
@@ -615,6 +615,25 @@ class AzureApi(AzureAuthenticator):
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to retrieve secret {secret_name}."
+            ) from exc
+
+    def get_locations(self) -> List[str]:
+        """Retrieve list of Azure locations
+
+        Returns:
+            List[str]: Names of Azure locations
+        """
+        try:
+            subscription_client = SubscriptionClient(self.credential)
+            return [
+                location.name
+                for location in subscription_client.subscriptions.list_locations(
+                    subscription_id=self.subscription_id
+                )
+            ]
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Azure locations could not be loaded.\n{str(exc)}"
             ) from exc
 
     def get_storage_account_keys(
