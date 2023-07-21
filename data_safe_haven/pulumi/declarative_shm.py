@@ -1,7 +1,4 @@
 """Deploy Data Safe Haven Management environment with Pulumi"""
-# Standard library imports
-import pathlib
-
 # Third party imports
 import pulumi
 

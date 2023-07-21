@@ -9,7 +9,6 @@ import yaml
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenParameterException
-from data_safe_haven.functions import alphanumeric
 from data_safe_haven.utility import Logger
 
 

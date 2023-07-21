@@ -1,7 +1,7 @@
 # Standard library imports
 import csv
 import pathlib
-from typing import Any, Dict, List, Sequence
+from typing import Dict, List, Sequence
 
 # Local imports
 from data_safe_haven.config import Config

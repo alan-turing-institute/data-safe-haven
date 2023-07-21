@@ -1,7 +1,4 @@
 """Pulumi declarative program"""
-# Standard library imports
-import pathlib
-
 # Third party imports
 import pulumi
 

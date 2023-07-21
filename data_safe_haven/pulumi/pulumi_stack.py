@@ -204,7 +204,7 @@ class PulumiStack:
             try:
                 username = self.whoami()
                 self.logger.info(f"Logged into Pulumi as [green]{username}[/]")
-            except:
+            except DataSafeHavenPulumiException:
                 AzureCli().login()  # this is needed to read the encryption key from the keyvault
                 env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
                 command = (
