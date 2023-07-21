@@ -1,5 +1,6 @@
 """Deploy with Pulumi"""
 # Standard library imports
+import importlib.metadata as metadata
 import pathlib
 import shutil
 import subprocess
@@ -105,12 +106,17 @@ class PulumiStack:
 
     def apply_config_options(self) -> None:
         """Set Pulumi config options"""
-        for name, (value, is_secret, replace) in self.options.items():
-            if replace:
-                self.set_config(name, value, is_secret)
-            else:
-                self.ensure_config(name, value, is_secret)
-        self.options = {}
+        try:
+            for name, (value, is_secret, replace) in self.options.items():
+                if replace:
+                    self.set_config(name, value, is_secret)
+                else:
+                    self.ensure_config(name, value, is_secret)
+            self.options = {}
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Applying Pulumi configuration options failed.\n{str(exc)}."
+            ) from exc
 
     def copy_option(self, name: str, other_stack: "PulumiStack") -> None:
         """Copy a public configuration option from another Pulumi stack"""
@@ -197,7 +203,12 @@ class PulumiStack:
 
     def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
-        self.stack.workspace.install_plugin("azure-native", "1.60.0")
+        try:
+            self.stack.workspace.install_plugin("azure-native", metadata.version("pulumi-azure-native"))
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Installing Pulumi plugins failed.\n{str(exc)}."
+            ) from exc
 
     def login(self) -> None:
         """Login to Pulumi."""
