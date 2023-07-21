@@ -6,9 +6,13 @@ from typing import Optional
 # Third party imports
 import appdirs
 import yaml
+from yaml.parser import ParserError
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenParameterException
+from data_safe_haven.exceptions import (
+    DataSafeHavenParameterException,
+    DataSafeHavenConfigException,
+)
 from data_safe_haven.utility import Logger
 
 
@@ -103,25 +107,30 @@ class BackendSettings:
 
     def read(self) -> None:
         """Read settings from YAML file"""
-        if self.config_file_path.exists():
-            with open(self.config_file_path, "r", encoding="utf-8") as f_yaml:
-                settings = yaml.safe_load(f_yaml)
-            if isinstance(settings, dict):
-                self.logger.info(
-                    f"Reading project settings from '[green]{self.config_file_path}[/]'."
-                )
-                if admin_group_id := settings.get("azure", {}).get(
-                    "admin_group_id", None
-                ):
-                    self._admin_group_id = admin_group_id
-                if location := settings.get("azure", {}).get("location", None):
-                    self._location = location
-                if name := settings.get("current", {}).get("name", None):
-                    self._name = name
-                if subscription_name := settings.get("azure", {}).get(
-                    "subscription_name", None
-                ):
-                    self._subscription_name = subscription_name
+        try:
+            if self.config_file_path.exists():
+                with open(self.config_file_path, "r", encoding="utf-8") as f_yaml:
+                    settings = yaml.safe_load(f_yaml)
+                if isinstance(settings, dict):
+                    self.logger.info(
+                        f"Reading project settings from '[green]{self.config_file_path}[/]'."
+                    )
+                    if admin_group_id := settings.get("azure", {}).get(
+                        "admin_group_id", None
+                    ):
+                        self._admin_group_id = admin_group_id
+                    if location := settings.get("azure", {}).get("location", None):
+                        self._location = location
+                    if name := settings.get("current", {}).get("name", None):
+                        self._name = name
+                    if subscription_name := settings.get("azure", {}).get(
+                        "subscription_name", None
+                    ):
+                        self._subscription_name = subscription_name
+        except ParserError as exc:
+            raise DataSafeHavenConfigException(
+                f"Could not load settings from {self.config_file_path}.\n{str(exc)}"
+            ) from exc
 
     def write(self) -> None:
         """Write settings to YAML file"""
