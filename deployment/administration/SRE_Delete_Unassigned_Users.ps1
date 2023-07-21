@@ -37,7 +37,10 @@ $null = Set-AzContext -Context $originalContext -ErrorAction Stop
 # --------------------------------------------------------------------------------
 Add-LogMessage -Level Info "Deleting users from $($config.shm.id) not in any security group..."
 $users = $result.Value[0].Message | ConvertFrom-Csv
+$unassignedUsers = @()
 foreach ($user in $users) {
-    Write-Output $user.GroupName
-    Write-Output $user.SamAccountName
+    if ( $user.GroupName ) {
+        $unassignedUsers += @($user.SamAccountName)
+    }
 }
+Write-Output $unassignedUsers
