@@ -1,7 +1,7 @@
-from .enums import SoftwarePackageCategory
-from .file_reader import FileReader
-from .logger import Logger
-from .types import PathType, YamlType
+from data_safe_haven.utility.enums import SoftwarePackageCategory
+from data_safe_haven.utility.file_reader import FileReader
+from data_safe_haven.utility.logger import Logger
+from data_safe_haven.utility.types import PathType, YamlType
 
 __all__ = [
     "FileReader",

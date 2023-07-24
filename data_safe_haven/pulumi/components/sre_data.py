@@ -1,6 +1,7 @@
 """Pulumi component for SRE state"""
 # Standard library imports
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
@@ -26,8 +27,8 @@ from data_safe_haven.pulumi.common.transformations import (
     get_id_from_subnet,
     get_name_from_rg,
 )
-from ..dynamic.blob_container_acl import BlobContainerAcl, BlobContainerAclProps
-from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
+from data_safe_haven.pulumi.dynamic.blob_container_acl import BlobContainerAcl, BlobContainerAclProps
+from data_safe_haven.pulumi.dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
 
 
 class SREDataProps:
@@ -51,38 +52,22 @@ class SREDataProps:
     ):
         self.admin_email_address = admin_email_address
         self.admin_group_id = admin_group_id
-        self.approved_ip_addresses = Output.all(
-            admin_ip_addresses, data_provider_ip_addresses
-        ).apply(
-            lambda address_lists: {
-                ip for address_list in address_lists for ip in address_list
-            }
+        self.approved_ip_addresses = Output.all(admin_ip_addresses, data_provider_ip_addresses).apply(
+            lambda address_lists: {ip for address_list in address_lists for ip in address_list}
         )
         self.dns_record = dns_record
         self.location = location
-        self.networking_resource_group_name = Output.from_input(
-            networking_resource_group
-        ).apply(get_name_from_rg)
+        self.networking_resource_group_name = Output.from_input(networking_resource_group).apply(get_name_from_rg)
         self.password_secure_research_desktop_admin = self.get_secret(
             pulumi_opts, "password-secure-research-desktop-admin"
         )
-        self.password_gitea_database_admin = self.get_secret(
-            pulumi_opts, "password-gitea-database-admin"
-        )
-        self.password_hedgedoc_database_admin = self.get_secret(
-            pulumi_opts, "password-hedgedoc-database-admin"
-        )
+        self.password_gitea_database_admin = self.get_secret(pulumi_opts, "password-gitea-database-admin")
+        self.password_hedgedoc_database_admin = self.get_secret(pulumi_opts, "password-hedgedoc-database-admin")
         self.password_nexus_admin = self.get_secret(pulumi_opts, "password-nexus-admin")
-        self.password_user_database_admin = self.get_secret(
-            pulumi_opts, "password-user-database-admin"
-        )
-        self.private_dns_zone_base_id = self.get_secret(
-            pulumi_opts, "shm-networking-private_dns_zone_base_id"
-        )
+        self.password_user_database_admin = self.get_secret(pulumi_opts, "password-user-database-admin")
+        self.private_dns_zone_base_id = self.get_secret(pulumi_opts, "shm-networking-private_dns_zone_base_id")
         self.sre_fqdn = sre_fqdn
-        self.subnet_private_data_id = Output.from_input(subnet_private_data).apply(
-            get_id_from_subnet
-        )
+        self.subnet_private_data_id = Output.from_input(subnet_private_data).apply(get_id_from_subnet)
         self.subscription_id = subscription_id
         self.subscription_name = subscription_name
         self.tenant_id = tenant_id
@@ -100,7 +85,7 @@ class SREDataComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SREDataProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -229,37 +214,31 @@ class SREDataComponent(ComponentResource):
         )
 
         # Deploy key vault secrets
-        password_secure_research_desktop_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_secure_research_desktop_admin",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_secure_research_desktop_admin
-            ),
+            properties=keyvault.SecretPropertiesArgs(value=props.password_secure_research_desktop_admin),
             resource_group_name=resource_group.name,
             secret_name="password-secure-research-desktop-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
         )
-        password_gitea_database_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_gitea_database_admin",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_gitea_database_admin
-            ),
+            properties=keyvault.SecretPropertiesArgs(value=props.password_gitea_database_admin),
             resource_group_name=resource_group.name,
             secret_name="password-gitea-database-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
         )
-        password_hedgedoc_database_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_hedgedoc_database_admin",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_hedgedoc_database_admin
-            ),
+            properties=keyvault.SecretPropertiesArgs(value=props.password_hedgedoc_database_admin),
             resource_group_name=resource_group.name,
             secret_name="password-hedgedoc-database-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
         )
-        password_nexus_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_nexus_admin",
             properties=keyvault.SecretPropertiesArgs(value=props.password_nexus_admin),
             resource_group_name=resource_group.name,
@@ -267,11 +246,9 @@ class SREDataComponent(ComponentResource):
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
         )
-        password_user_database_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_user_database_admin",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_user_database_admin
-            ),
+            properties=keyvault.SecretPropertiesArgs(value=props.password_user_database_admin),
             resource_group_name=resource_group.name,
             secret_name="password-user-database-admin",
             vault_name=key_vault.name,
@@ -282,9 +259,7 @@ class SREDataComponent(ComponentResource):
         storage_account_state = storage.StorageAccount(
             f"{self._name}_storage_account_state",
             # Note that account names have a maximum of 24 characters
-            account_name=alphanumeric(
-                f"{''.join(truncate_tokens(stack_name.split('-'), 19))}state"
-            )[:24],
+            account_name=alphanumeric(f"{''.join(truncate_tokens(stack_name.split('-'), 19))}state")[:24],
             kind=storage.Kind.STORAGE_V2,
             resource_group_name=resource_group.name,
             sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
@@ -310,12 +285,8 @@ class SREDataComponent(ComponentResource):
             encryption=storage.EncryptionArgs(
                 key_source=storage.KeySource.MICROSOFT_STORAGE,
                 services=storage.EncryptionServicesArgs(
-                    blob=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
-                    file=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
+                    blob=storage.EncryptionServiceArgs(enabled=True, key_type=storage.KeyType.ACCOUNT),
+                    file=storage.EncryptionServiceArgs(enabled=True, key_type=storage.KeyType.ACCOUNT),
                 ),
             ),
             kind=storage.Kind.BLOCK_BLOB_STORAGE,
@@ -345,7 +316,7 @@ class SREDataComponent(ComponentResource):
             opts=child_opts,
         )
         # Give the "Storage Blob Data Owner" role to the Azure admin group
-        storage_account_securedata_data_owner_role_assignment = authorization.RoleAssignment(
+        authorization.RoleAssignment(
             f"{self._name}_storage_account_securedata_data_owner_role_assignment",
             principal_id=props.admin_group_id,
             principal_type=authorization.PrincipalType.GROUP,
@@ -380,7 +351,7 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions(parent=storage_account_securedata),
         )
         # Set storage container ACLs
-        storage_container_egress_acl = BlobContainerAcl(
+        BlobContainerAcl(
             f"{self._name}_storage_container_egress_acl",
             BlobContainerAclProps(
                 acl_user="rwx",
@@ -394,7 +365,7 @@ class SREDataComponent(ComponentResource):
             ),
             opts=ResourceOptions(parent=storage_container_egress),
         )
-        storage_container_ingress_acl = BlobContainerAcl(
+        BlobContainerAcl(
             f"{self._name}_storage_container_ingress_acl",
             BlobContainerAclProps(
                 acl_user="rwx",
@@ -425,7 +396,7 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions(parent=storage_account_securedata),
         )
         # Add a private DNS record for each securedata data custom DNS config
-        storage_account_securedata_private_dns_zone_group = network.PrivateDnsZoneGroup(
+        network.PrivateDnsZoneGroup(
             f"{self._name}_storage_account_securedata_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
@@ -433,9 +404,7 @@ class SREDataComponent(ComponentResource):
                         f"{stack_name}-storage-account-securedata-to-{dns_zone_name}",
                         "-",
                     ),
-                    private_dns_zone_id=Output.concat(
-                        props.private_dns_zone_base_id, dns_zone_name
-                    ),
+                    private_dns_zone_id=Output.concat(props.private_dns_zone_base_id, dns_zone_name),
                 )
                 for dns_zone_name in ordered_private_dns_zones("Storage account")
             ],
@@ -460,9 +429,7 @@ class SREDataComponent(ComponentResource):
             encryption=storage.EncryptionArgs(
                 key_source=storage.KeySource.MICROSOFT_STORAGE,
                 services=storage.EncryptionServicesArgs(
-                    file=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
+                    file=storage.EncryptionServiceArgs(enabled=True, key_type=storage.KeyType.ACCOUNT),
                 ),
             ),
             kind=storage.Kind.FILE_STORAGE,
@@ -480,7 +447,7 @@ class SREDataComponent(ComponentResource):
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
         )
-        file_container_home = storage.FileShare(
+        storage.FileShare(
             f"{self._name}_storage_container_home",
             access_tier=storage.ShareAccessTier.PREMIUM,
             account_name=storage_account_userdata.name,
@@ -491,7 +458,7 @@ class SREDataComponent(ComponentResource):
             share_quota=1024,
             opts=ResourceOptions(parent=storage_account_userdata),
         )
-        file_container_shared = storage.FileShare(
+        storage.FileShare(
             f"{self._name}_storage_container_shared",
             access_tier=storage.ShareAccessTier.PREMIUM,
             account_name=storage_account_userdata.name,
@@ -519,16 +486,12 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions(parent=storage_account_userdata),
         )
         # Add a private DNS record for each userdata custom DNS config
-        storage_account_userdata_private_dns_zone_group = network.PrivateDnsZoneGroup(
+        network.PrivateDnsZoneGroup(
             f"{self._name}_storage_account_userdata_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
-                    name=replace_separators(
-                        f"{stack_name}-storage-account-userdata-to-{dns_zone_name}", "-"
-                    ),
-                    private_dns_zone_id=Output.concat(
-                        props.private_dns_zone_base_id, dns_zone_name
-                    ),
+                    name=replace_separators(f"{stack_name}-storage-account-userdata-to-{dns_zone_name}", "-"),
+                    private_dns_zone_id=Output.concat(props.private_dns_zone_base_id, dns_zone_name),
                 )
                 for dns_zone_name in ordered_private_dns_zones("Storage account")
             ],
@@ -541,23 +504,13 @@ class SREDataComponent(ComponentResource):
         # Register outputs
         self.storage_account_userdata_name = storage_account_userdata.name
         self.storage_account_securedata_name = storage_account_securedata.name
-        self.storage_account_state_key = Output.secret(
-            storage_account_state_keys.keys[0].value
-        )
+        self.storage_account_state_key = Output.secret(storage_account_state_keys.keys[0].value)
         self.storage_account_state_name = storage_account_state.name
         self.certificate_secret_id = certificate.secret_id
         self.managed_identity = identity_key_vault_reader
         self.password_nexus_admin = Output.secret(props.password_nexus_admin)
-        self.password_secure_research_desktop_admin = Output.secret(
-            props.password_secure_research_desktop_admin
-        )
-        self.password_gitea_database_admin = Output.secret(
-            props.password_gitea_database_admin
-        )
-        self.password_hedgedoc_database_admin = Output.secret(
-            props.password_hedgedoc_database_admin
-        )
-        self.password_user_database_admin = Output.secret(
-            props.password_user_database_admin
-        )
+        self.password_secure_research_desktop_admin = Output.secret(props.password_secure_research_desktop_admin)
+        self.password_gitea_database_admin = Output.secret(props.password_gitea_database_admin)
+        self.password_hedgedoc_database_admin = Output.secret(props.password_hedgedoc_database_admin)
+        self.password_user_database_admin = Output.secret(props.password_user_database_admin)
         self.resource_group_name = resource_group.name

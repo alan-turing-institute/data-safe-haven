@@ -13,7 +13,7 @@ from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_name_from_subnet,
 )
-from .virtual_machine import LinuxVMProps, VMComponent
+from data_safe_haven.pulumi.components.virtual_machine import LinuxVMProps, VMComponent
 
 
 class SHMUpdateServersProps:
@@ -32,9 +32,7 @@ class SHMUpdateServersProps:
     ) -> None:
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
-        available_ip_addresses = Output.from_input(subnet).apply(
-            get_available_ips_from_subnet
-        )
+        available_ip_addresses = Output.from_input(subnet).apply(get_available_ips_from_subnet)
         self.ip_address_linux = available_ip_addresses.apply(lambda ips: ips[0])
         self.location = location
         self.log_analytics_workspace_id = log_analytics_workspace_id
@@ -54,7 +52,7 @@ class SHMUpdateServersComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMUpdateServersProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:UpdateServersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -88,12 +86,9 @@ class SHMUpdateServersComponent(ComponentResource):
     def read_cloudinit(
         self,
     ) -> str:
-        resources_path = (
-            pathlib.Path(__file__).parent.parent.parent / "resources" / "update_servers"
-        )
+        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources" / "update_servers"
         with open(
             resources_path / "update_server_linux.cloud_init.yaml",
-            "r",
             encoding="utf-8",
         ) as f_cloudinit:
             cloudinit = f_cloudinit.read()

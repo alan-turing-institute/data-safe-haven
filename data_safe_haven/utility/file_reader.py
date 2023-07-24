@@ -8,7 +8,7 @@ import chevron
 
 # Local imports
 from data_safe_haven.functions import sha256hash
-from .types import PathType
+from data_safe_haven.utility.types import PathType
 
 
 class FileReader:
@@ -22,9 +22,9 @@ class FileReader:
     def name(self) -> str:
         return self.file_path.name.replace(".mustache", "")
 
-    def file_contents(self, mustache_values: Optional[Dict[str, Any]] = None) -> str:
+    def file_contents(self, mustache_values: dict[str, Any] | None = None) -> str:
         """Read a local file into a string, expanding template values"""
-        with open(self.file_path, "r", encoding="utf-8") as source_file:
+        with open(self.file_path, encoding="utf-8") as source_file:
             if mustache_values:
                 contents = chevron.render(source_file, mustache_values)
             else:

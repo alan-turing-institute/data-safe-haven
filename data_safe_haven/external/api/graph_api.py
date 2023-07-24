@@ -3,9 +3,10 @@
 import datetime
 import pathlib
 import time
+from collections.abc import Sequence
 from contextlib import suppress
 from io import UnsupportedOperation
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional
 
 # Third party imports
 import requests
@@ -31,7 +32,7 @@ class LocalTokenCache(SerializableTokenCache):  # type: ignore
         self.token_cache_filename = token_cache_filename
         try:
             if self.token_cache_filename.exists():
-                with open(self.token_cache_filename, "r", encoding="utf-8") as f_token:
+                with open(self.token_cache_filename, encoding="utf-8") as f_token:
                     self.deserialize(f_token.read())
         except (FileNotFoundError, UnsupportedOperation):
             self.deserialize(None)
@@ -63,27 +64,23 @@ class GraphApi:
     def __init__(
         self,
         *args: Any,
-        tenant_id: Optional[str] = None,
-        auth_token: Optional[str] = None,
-        application_id: Optional[str] = None,
-        application_secret: Optional[str] = None,
+        tenant_id: str | None = None,
+        auth_token: str | None = None,
+        application_id: str | None = None,
+        application_secret: str | None = None,
         base_endpoint: str = "",
         default_scopes: Sequence[str] = [],
         **kwargs: Any,
     ):
         super().__init__(*args, **kwargs)
-        self.base_endpoint = (
-            base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
-        )
+        self.base_endpoint = base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
         self.default_scopes = list(default_scopes)
         self.logger = Logger()
         self.tenant_id = tenant_id
         if auth_token:
             self.token = auth_token
         elif application_id and application_secret:
-            self.token = self.create_token_application(
-                application_id, application_secret
-            )
+            self.token = self.create_token_application(application_id, application_secret)
         else:
             self.token = self.create_token_administrator()
 
@@ -106,22 +103,20 @@ class GraphApi:
                     json={"id": domain_name},
                 )
             # Get the DNS verification records for the custom domain
-            response = self.http_get(
-                f"{self.base_endpoint}/domains/{domain_name}/verificationDnsRecords"
-            )
-            txt_records: List[str] = [
-                record["text"]
-                for record in response.json()["value"]
-                if record["recordType"] == "Txt"
+            response = self.http_get(f"{self.base_endpoint}/domains/{domain_name}/verificationDnsRecords")
+            txt_records: list[str] = [
+                record["text"] for record in response.json()["value"] if record["recordType"] == "Txt"
             ]
             if not txt_records:
+                msg = f"Could not retrieve verification DNS records for {domain_name}."
                 raise DataSafeHavenMicrosoftGraphException(
-                    f"Could not retrieve verification DNS records for {domain_name}."
+                    msg
                 )
             return txt_records[0]
         except Exception as exc:
+            msg = f"Could not register domain '{domain_name}'.\n{exc!s}"
             raise DataSafeHavenMicrosoftGraphException(
-                f"Could not register domain '{domain_name}'.\n{str(exc)}"
+                msg
             ) from exc
 
     def add_user_to_group(
@@ -142,24 +137,19 @@ class GraphApi:
             ).json()
             # If user already belongs to group then do nothing further
             if any(user_id == member["id"] for member in json_response["value"]):
-                self.logger.info(
-                    f"User [green]'{username}'[/] is already a member of group [green]'{group_name}'[/]."
-                )
+                self.logger.info(f"User [green]'{username}'[/] is already a member of group [green]'{group_name}'[/].")
             # Otherwise add the user to the group
             else:
-                request_json = {
-                    "@odata.id": f"https://graph.microsoft.com/v1.0/directoryObjects/{user_id}"
-                }
+                request_json = {"@odata.id": f"https://graph.microsoft.com/v1.0/directoryObjects/{user_id}"}
                 self.http_post(
                     f"{self.base_endpoint}/groups/{group_id}/members/$ref",
                     json=request_json,
                 )
-                self.logger.info(
-                    f"Added user [green]'{username}'[/] to group [green]'{group_name}'[/]."
-                )
+                self.logger.info(f"Added user [green]'{username}'[/] to group [green]'{group_name}'[/].")
         except (DataSafeHavenMicrosoftGraphException, IndexError) as exc:
+            msg = f"Could not add user '{username}' to group '{group_name}'.\n{exc!s}"
             raise DataSafeHavenMicrosoftGraphException(
-                f"Could not add user '{username}' to group '{group_name}'.\n{str(exc)}"
+                msg
             ) from exc
 
     def create_application(
@@ -167,8 +157,8 @@ class GraphApi:
         application_name: str,
         application_scopes: Sequence[str] = [],
         delegated_scopes: Sequence[str] = [],
-        request_json: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        request_json: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Create an AzureAD application if it does not already exist
 
         Raises:
@@ -176,11 +166,9 @@ class GraphApi:
         """
         try:
             # Check for an existing application
-            json_response: Dict[str, Any]
+            json_response: dict[str, Any]
             if existing_application := self.get_application_by_name(application_name):
-                self.logger.info(
-                    f"Application '[green]{application_name}[/]' already exists."
-                )
+                self.logger.info(f"Application '[green]{application_name}[/]' already exists.")
                 json_response = existing_application
             else:
                 # Create a new application
@@ -231,10 +219,7 @@ class GraphApi:
             if application_scopes or delegated_scopes:
                 application_id = self.get_id_from_application_name(application_name)
                 application_sp = self.get_service_principal_by_name(application_name)
-                if not (
-                    application_sp
-                    and self.read_application_permissions(application_sp["id"])
-                ):
+                if not (application_sp and self.read_application_permissions(application_sp["id"])):
                     self.logger.info(
                         f"Application [green]{application_name}[/] has requested permissions that need administrator approval."
                     )
@@ -245,22 +230,19 @@ class GraphApi:
                         f"To sign in, use a web browser to open the page [green]https://login.microsoftonline.com/{self.tenant_id}/adminconsent?client_id={application_id}&redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient[/] and follow the instructions."
                     )
                     while True:
-                        if application_sp := self.get_service_principal_by_name(
-                            application_name
-                        ):
+                        if application_sp := self.get_service_principal_by_name(application_name):
                             if self.read_application_permissions(application_sp["id"]):
                                 break
                         time.sleep(10)
             # Return JSON representation of the AzureAD application
             return json_response
         except Exception as exc:
+            msg = f"Could not create application '{application_name}'.\n{exc!s}"
             raise DataSafeHavenMicrosoftGraphException(
-                f"Could not create application '{application_name}'.\n{str(exc)}"
+                msg
             ) from exc
 
-    def create_application_secret(
-        self, application_secret_name: str, application_name: str
-    ) -> str:
+    def create_application_secret(self, application_secret_name: str, application_name: str) -> str:
         """Add a secret to an existing AzureAD application
 
         Returns:
@@ -272,16 +254,15 @@ class GraphApi:
         try:
             application_json = self.get_application_by_name(application_name)
             if not application_json:
-                raise DataSafeHavenMicrosoftGraphException(
-                    f"Could not retrieve application '{application_name}'"
-                )
+                msg = f"Could not retrieve application '{application_name}'"
+                raise DataSafeHavenMicrosoftGraphException(msg)
             # If the secret already exists then raise an exception
             if "passwordCredentials" in application_json and any(
-                cred["displayName"] == application_secret_name
-                for cred in application_json["passwordCredentials"]
+                cred["displayName"] == application_secret_name for cred in application_json["passwordCredentials"]
             ):
+                msg = f"Secret '{application_secret_name}' already exists in application '{application_name}'."
                 raise DataSafeHavenInputException(
-                    f"Secret '{application_secret_name}' already exists in application '{application_name}'."
+                    msg
                 )
             # Create the application secret if it does not exist
             self.logger.debug(
@@ -291,8 +272,7 @@ class GraphApi:
                 "passwordCredential": {
                     "displayName": application_secret_name,
                     "endDateTime": (
-                        datetime.datetime.now(datetime.timezone.utc)
-                        + datetime.timedelta(weeks=520)
+                        datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(weeks=520)
                     ).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 }
             }
@@ -305,8 +285,9 @@ class GraphApi:
             )
             return str(json_response["secretText"])
         except Exception as exc:
+            msg = f"Could not create application secret '{application_secret_name}'.\n{exc!s}"
             raise DataSafeHavenMicrosoftGraphException(
-                f"Could not create application secret '{application_secret_name}'.\n{str(exc)}"
+                msg
             ) from exc
 
     def create_group(self, group_name: str, group_id: str) -> None:
@@ -351,8 +332,9 @@ class GraphApi:
                 f"Created AzureAD group '[green]{group_name}[/]'.",
             )
         except Exception as exc:
+            msg = f"Could not create AzureAD group '{group_name}'.\n{exc!s}"
             raise DataSafeHavenMicrosoftGraphException(
-                f"Could not create AzureAD group '{group_name}'.\n{str(exc)}"
+                msg
             ) from exc
 
     def create_token_administrator(self) -> str:
@@ -373,19 +355,16 @@ class GraphApi:
             )
             # Attempt to load token from cache
             if accounts := app.get_accounts():
-                result = app.acquire_token_silent(
-                    self.default_scopes, account=accounts[0]
-                )
+                result = app.acquire_token_silent(self.default_scopes, account=accounts[0])
             # Initiate device code flow
             if not result:
                 flow = app.initiate_device_flow(scopes=self.default_scopes)
                 if "user_code" not in flow:
+                    msg = f"Could not initiate device login for scopes {self.default_scopes}."
                     raise DataSafeHavenMicrosoftGraphException(
-                        f"Could not initiate device login for scopes {self.default_scopes}."
+                        msg
                     )
-                self.logger.info(
-                    "Administrator approval is needed in order to interact with Azure Active Directory."
-                )
+                self.logger.info("Administrator approval is needed in order to interact with Azure Active Directory.")
                 self.logger.info(
                     f"Please sign-in with [bold]global administrator[/] credentials for Azure Active Directory [green]{self.tenant_id}[/]."
                 )
@@ -400,13 +379,10 @@ class GraphApi:
             error_description = "Could not create access token"
             if isinstance(result, dict) and "error_description" in result:
                 error_description += f": {result['error_description']}"
-            raise DataSafeHavenMicrosoftGraphException(
-                f"{error_description}.\n{str(exc)}"
-            ) from exc
+            msg = f"{error_description}.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
-    def create_token_application(
-        self, application_id: str, application_secret: str
-    ) -> str:
+    def create_token_application(self, application_id: str, application_secret: str) -> str:
         """Return an access token for the given application ID and secret
 
         Raises:
@@ -422,25 +398,21 @@ class GraphApi:
             )
             # Block until a response is received
             # For this call the scopes are pre-defined by the application privileges
-            result = app.acquire_token_for_client(
-                scopes=["https://graph.microsoft.com/.default"]
-            )
-            if not isinstance(result, Dict):
-                raise DataSafeHavenMicrosoftGraphException(
-                    "Invalid application token returned from Microsoft Graph."
-                )
+            result = app.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
+            if not isinstance(result, dict):
+                msg = "Invalid application token returned from Microsoft Graph."
+                raise DataSafeHavenMicrosoftGraphException(msg)
             return str(result["access_token"])
         except Exception as exc:
             error_description = "Could not create access token"
             if result and "error_description" in result:
                 error_description += f": {result['error_description']}"
-            raise DataSafeHavenMicrosoftGraphException(
-                f"{error_description}.\n{str(exc)}"
-            ) from exc
+            msg = f"{error_description}.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def create_user(
         self,
-        request_json: Dict[str, Any],
+        request_json: dict[str, Any],
         email_address: str,
         phone_number: str,
     ) -> None:
@@ -498,9 +470,8 @@ class GraphApi:
                 f"{final_verb} AzureAD user '[green]{username}[/]'.",
             )
         except (DataSafeHavenMicrosoftGraphException, IndexError) as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not create/update user {username}.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not create/update user {username}.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def delete_application(
         self,
@@ -524,11 +495,12 @@ class GraphApi:
                     f"Deleted application '[green]{application_name}[/]'.",
                 )
         except Exception as exc:
+            msg = f"Could not delete application '{application_name}'.\n{exc!s}"
             raise DataSafeHavenMicrosoftGraphException(
-                f"Could not delete application '{application_name}'.\n{str(exc)}"
+                msg
             ) from exc
 
-    def get_application_by_name(self, application_name: str) -> Dict[str, Any] | None:
+    def get_application_by_name(self, application_name: str) -> dict[str, Any] | None:
         try:
             return [
                 application
@@ -538,9 +510,7 @@ class GraphApi:
         except (DataSafeHavenMicrosoftGraphException, IndexError):
             return None
 
-    def get_service_principal_by_name(
-        self, service_principal_name: str
-    ) -> Dict[str, Any] | None:
+    def get_service_principal_by_name(self, service_principal_name: str) -> dict[str, Any] | None:
         try:
             return [
                 service_principal
@@ -561,25 +531,13 @@ class GraphApi:
 
     def get_id_from_groupname(self, group_name: str) -> str | None:
         try:
-            return str(
-                [
-                    group
-                    for group in self.read_groups()
-                    if group["displayName"] == group_name
-                ][0]["id"]
-            )
+            return str([group for group in self.read_groups() if group["displayName"] == group_name][0]["id"])
         except (DataSafeHavenMicrosoftGraphException, IndexError):
             return None
 
     def get_id_from_username(self, username: str) -> str | None:
         try:
-            return str(
-                [
-                    user
-                    for user in self.read_users()
-                    if user["mailNickname"] == username
-                ][0]["id"]
-            )
+            return str([user for user in self.read_users() if user["mailNickname"] == username][0]["id"])
         except (DataSafeHavenMicrosoftGraphException, IndexError):
             return None
 
@@ -603,9 +561,8 @@ class GraphApi:
                 raise DataSafeHavenInternalException(response.content)
             return response
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not execute DELETE request.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not execute DELETE request.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def http_get(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP GET request
@@ -627,9 +584,8 @@ class GraphApi:
                 raise DataSafeHavenInternalException(response.content)
             return response
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not execute GET request.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not execute GET request.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP PATCH request
@@ -651,9 +607,8 @@ class GraphApi:
                 raise DataSafeHavenInternalException(response.content)
             return response
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not execute PATCH request.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not execute PATCH request.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def http_post(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP POST request
@@ -676,11 +631,10 @@ class GraphApi:
             time.sleep(30)  # wait for operation to complete
             return response
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not execute POST request.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not execute POST request.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
-    def read_applications(self) -> Sequence[Dict[str, Any]]:
+    def read_applications(self) -> Sequence[dict[str, Any]]:
         """Get list of applications
 
         Returns:
@@ -690,20 +644,12 @@ class GraphApi:
             DataSafeHavenMicrosoftGraphException if applications could not be loaded
         """
         try:
-            return [
-                dict(obj)
-                for obj in self.http_get(f"{self.base_endpoint}/applications").json()[
-                    "value"
-                ]
-            ]
+            return [dict(obj) for obj in self.http_get(f"{self.base_endpoint}/applications").json()["value"]]
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not load list of applications.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not load list of applications.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
-    def read_application_permissions(
-        self, application_service_principal_id: str
-    ) -> Sequence[Dict[str, Any]]:
+    def read_application_permissions(self, application_service_principal_id: str) -> Sequence[dict[str, Any]]:
         """Get list of application permissions
 
         Returns:
@@ -721,11 +667,12 @@ class GraphApi:
             ).json()["value"]
             return [dict(obj) for obj in (delegated + application)]
         except Exception as exc:
+            msg = f"Could not load list of application permissions.\n{exc!s}"
             raise DataSafeHavenMicrosoftGraphException(
-                f"Could not load list of application permissions.\n{str(exc)}"
+                msg
             ) from exc
 
-    def read_domains(self) -> Sequence[Dict[str, Any]]:
+    def read_domains(self) -> Sequence[dict[str, Any]]:
         """Get details of AzureAD domains
 
         Returns:
@@ -738,14 +685,13 @@ class GraphApi:
             json_response = self.http_get(f"{self.base_endpoint}/domains").json()
             return [dict(obj) for obj in json_response["value"]]
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not load list of domains.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not load list of domains.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def read_groups(
         self,
         attributes: Sequence[str] | None = None,
-    ) -> Sequence[Dict[str, Any]]:
+    ) -> Sequence[dict[str, Any]]:
         """Get details of AzureAD groups
 
         Returns:
@@ -760,27 +706,20 @@ class GraphApi:
                 endpoint += f"?$select={','.join(attributes)}"
             return [dict(obj) for obj in self.http_get(endpoint).json()["value"]]
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not load list of groups.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not load list of groups.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
-    def read_service_principals(self) -> Sequence[Dict[str, Any]]:
+    def read_service_principals(self) -> Sequence[dict[str, Any]]:
         """Get list of service principals"""
         try:
-            return [
-                dict(obj)
-                for obj in self.http_get(
-                    f"{self.base_endpoint}/servicePrincipals"
-                ).json()["value"]
-            ]
+            return [dict(obj) for obj in self.http_get(f"{self.base_endpoint}/servicePrincipals").json()["value"]]
         except Exception as exc:
+            msg = f"Could not load list of service principals.\n{exc!s}"
             raise DataSafeHavenMicrosoftGraphException(
-                f"Could not load list of service principals.\n{str(exc)}"
+                msg
             ) from exc
 
-    def read_users(
-        self, attributes: Sequence[str] | None = None
-    ) -> Sequence[Dict[str, Any]]:
+    def read_users(self, attributes: Sequence[str] | None = None) -> Sequence[dict[str, Any]]:
         """Get details of AzureAD users
 
         Returns:
@@ -810,7 +749,7 @@ class GraphApi:
                 self.linux_schema,
             ]
         )
-        users: Sequence[Dict[str, Any]]
+        users: Sequence[dict[str, Any]]
         try:
             endpoint = f"{self.base_endpoint}/users"
             if attributes:
@@ -820,17 +759,14 @@ class GraphApi:
                 f"{self.base_endpoint}/directoryRoles/roleTemplateId={self.role_template_ids['Global Administrator']}/members"
             ).json()["value"]
             for user in users:
-                user["isGlobalAdmin"] = any(
-                    user["id"] == admin["id"] for admin in administrators
-                )
+                user["isGlobalAdmin"] = any(user["id"] == admin["id"] for admin in administrators)
                 for key, value in user.get(self.linux_schema, {}).items():
                     user[key] = value
                 user[self.linux_schema] = {}
             return users
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not load list of users.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not load list of users.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def remove_user_from_group(
         self,
@@ -850,13 +786,12 @@ class GraphApi:
                 f"{self.base_endpoint}/groups/{group_id}/members/{user_id}/$ref",
             )
         except Exception as exc:
+            msg = f"Could not remove user '{username}' from group '{group_name}'.\n{exc!s}"
             raise DataSafeHavenMicrosoftGraphException(
-                f"Could not remove user '{username}' from group '{group_name}'.\n{str(exc)}"
+                msg
             ) from exc
 
-    def verify_custom_domain(
-        self, domain_name: str, expected_nameservers: Sequence[str]
-    ) -> None:
+    def verify_custom_domain(self, domain_name: str, expected_nameservers: Sequence[str]) -> None:
         """Verify AzureAD custom domain
 
         Raises:
@@ -866,21 +801,15 @@ class GraphApi:
             # Create the AzureAD custom domain if it does not already exist
             domains = self.read_domains()
             if not any(d["id"] == domain_name for d in domains):
-                raise DataSafeHavenMicrosoftGraphException(
-                    f"Domain {domain_name} has not been added to AzureAD."
-                )
+                msg = f"Domain {domain_name} has not been added to AzureAD."
+                raise DataSafeHavenMicrosoftGraphException(msg)
             # Wait until domain delegation is complete
             while True:
                 # Check whether all expected nameservers are active
                 with suppress(resolver.NXDOMAIN):
-                    active_nameservers = [
-                        str(ns) for ns in resolver.resolve(domain_name, "NS")
-                    ]
+                    active_nameservers = [str(ns) for ns in resolver.resolve(domain_name, "NS")]
                     self.logger.info("Checking domain verification status.")
-                    if all(
-                        any(nameserver in n for n in active_nameservers)
-                        for nameserver in expected_nameservers
-                    ):
+                    if all(any(nameserver in n for n in active_nameservers) for nameserver in expected_nameservers):
                         break
                 # Prompt user to set domain delegation manually
                 self.logger.info(
@@ -895,12 +824,9 @@ class GraphApi:
                 )
             # Send verification request if needed
             if not any((d["id"] == domain_name and d["isVerified"]) for d in domains):
-                response = self.http_post(
-                    f"{self.base_endpoint}/domains/{domain_name}/verify"
-                )
+                response = self.http_post(f"{self.base_endpoint}/domains/{domain_name}/verify")
                 if not response.json()["isVerified"]:
                     raise DataSafeHavenMicrosoftGraphException(response.content)
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Could not verify domain '{domain_name}'.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not verify domain '{domain_name}'.\n{exc!s}"
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc

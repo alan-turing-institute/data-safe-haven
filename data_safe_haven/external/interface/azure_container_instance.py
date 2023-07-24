@@ -40,25 +40,20 @@ class AzureContainerInstance:
 
     @property
     def current_ip_address(self) -> str:
-        aci_client = ContainerInstanceManagementClient(
-            self.azure_api.credential, self.azure_api.subscription_id
-        )
-        ip_address = aci_client.container_groups.get(
-            self.resource_group_name, self.container_group_name
-        ).ip_address
+        aci_client = ContainerInstanceManagementClient(self.azure_api.credential, self.azure_api.subscription_id)
+        ip_address = aci_client.container_groups.get(self.resource_group_name, self.container_group_name).ip_address
         if ip_address and isinstance(ip_address.ip, str):
             return ip_address.ip
+        msg = f"Could not determine IP address for container group {self.container_group_name}."
         raise DataSafeHavenAzureException(
-            f"Could not determine IP address for container group {self.container_group_name}."
+            msg
         )
 
-    def restart(self, target_ip_address: Optional[str] = None) -> None:
+    def restart(self, target_ip_address: str | None = None) -> None:
         """Restart the container group"""
         # Connect to Azure clients
         try:
-            aci_client = ContainerInstanceManagementClient(
-                self.azure_api.credential, self.azure_api.subscription_id
-            )
+            aci_client = ContainerInstanceManagementClient(self.azure_api.credential, self.azure_api.subscription_id)
             if not target_ip_address:
                 target_ip_address = self.current_ip_address
 
@@ -74,15 +69,11 @@ class AzureContainerInstance:
                     == "Succeeded"
                 ):
                     self.wait(
-                        aci_client.container_groups.begin_restart(
-                            self.resource_group_name, self.container_group_name
-                        )
+                        aci_client.container_groups.begin_restart(self.resource_group_name, self.container_group_name)
                     )
                 else:
                     self.wait(
-                        aci_client.container_groups.begin_start(
-                            self.resource_group_name, self.container_group_name
-                        )
+                        aci_client.container_groups.begin_start(self.resource_group_name, self.container_group_name)
                     )
                 if self.current_ip_address == target_ip_address:
                     break
@@ -90,11 +81,12 @@ class AzureContainerInstance:
                 f"Restarted container group [green]{self.container_group_name}[/] with IP address [green]{self.current_ip_address}[/].",
             )
         except Exception as exc:
+            msg = f"Could not restart container group {self.container_group_name}.\n{exc!s}"
             raise DataSafeHavenAzureException(
-                f"Could not restart container group {self.container_group_name}.\n{str(exc)}"
+                msg
             ) from exc
 
-    def run_executable(self, container_name: str, executable_path: str) -> List[str]:
+    def run_executable(self, container_name: str, executable_path: str) -> list[str]:
         """
         Run a script or command on one of the containers.
 
@@ -102,9 +94,7 @@ class AzureContainerInstance:
         The most likely use-case is running a script already present in the container.
         """
         # Connect to Azure clients
-        aci_client = ContainerInstanceManagementClient(
-            self.azure_api.credential, self.azure_api.subscription_id
-        )
+        aci_client = ContainerInstanceManagementClient(self.azure_api.credential, self.azure_api.subscription_id)
 
         # Run command
         cnxn = aci_client.containers.execute_command(

@@ -7,11 +7,11 @@ from typing import Annotated, List
 import typer
 
 # Local imports
-from .users_add_command import UsersAddCommand
-from .users_list_command import UsersListCommand
-from .users_register_command import UsersRegisterCommand
-from .users_remove_command import UsersRemoveCommand
-from .users_unregister_command import UsersUnregisterCommand
+from data_safe_haven.commands.users_add_command import UsersAddCommand
+from data_safe_haven.commands.users_list_command import UsersListCommand
+from data_safe_haven.commands.users_register_command import UsersRegisterCommand
+from data_safe_haven.commands.users_remove_command import UsersRemoveCommand
+from data_safe_haven.commands.users_unregister_command import UsersUnregisterCommand
 
 admin_command_group = typer.Typer()
 
@@ -33,12 +33,10 @@ def list_users() -> None:
     UsersListCommand()()
 
 
-@admin_command_group.command(
-    help="Register existing users with a deployed Secure Research Environment."
-)
+@admin_command_group.command(help="Register existing users with a deployed Secure Research Environment.")
 def register_users(
     usernames: Annotated[
-        List[str],
+        list[str],
         typer.Option(
             "--username",
             "-u",
@@ -55,12 +53,10 @@ def register_users(
     UsersRegisterCommand()(usernames, sre)
 
 
-@admin_command_group.command(
-    help="Remove existing users from a deployed Data Safe Haven."
-)
+@admin_command_group.command(help="Remove existing users from a deployed Data Safe Haven.")
 def remove_users(
     usernames: Annotated[
-        List[str],
+        list[str],
         typer.Option(
             "--username",
             "-u",
@@ -74,7 +70,7 @@ def remove_users(
 @admin_command_group.command(help="Unregister existing users from a deployed SRE.")
 def unregister_users(
     usernames: Annotated[
-        List[str],
+        list[str],
         typer.Option(
             "--username",
             "-u",

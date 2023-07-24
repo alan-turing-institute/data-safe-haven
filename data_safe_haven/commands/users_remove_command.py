@@ -21,7 +21,7 @@ class UsersRemoveCommand:
 
     def __call__(
         self,
-        usernames: List[str],
+        usernames: list[str],
     ) -> None:
         shm_name = "UNKNOWN"
         try:
@@ -40,9 +40,5 @@ class UsersRemoveCommand:
                 users = UserHandler(config, graph_api)
                 users.remove(usernames)
         except DataSafeHavenException as exc:
-            for (
-                line
-            ) in f"Could not remove users from Data Safe Haven '{shm_name}'.\n{str(exc)}".split(
-                "\n"
-            ):
+            for line in f"Could not remove users from Data Safe Haven '{shm_name}'.\n{exc!s}".split("\n"):
                 self.logger.error(line)

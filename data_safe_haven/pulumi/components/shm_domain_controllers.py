@@ -1,7 +1,8 @@
 """Pulumi component for SHM domain controllers"""
 # Standard library import
 import pathlib
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -9,10 +10,10 @@ from pulumi_azure_native import network, resources
 
 # Local
 from data_safe_haven.pulumi.common.transformations import get_name_from_subnet
+from data_safe_haven.pulumi.components.automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
+from data_safe_haven.pulumi.components.virtual_machine import VMComponent, WindowsVMProps
+from data_safe_haven.pulumi.dynamic.remote_powershell import RemoteScript, RemoteScriptProps
 from data_safe_haven.utility import FileReader
-from ..dynamic.remote_powershell import RemoteScript, RemoteScriptProps
-from .automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
-from .virtual_machine import VMComponent, WindowsVMProps
 
 
 class SHMDomainControllersProps:
@@ -44,13 +45,9 @@ class SHMDomainControllersProps:
         self.automation_account_name = automation_account_name
         self.automation_account_registration_url = automation_account_registration_url
         self.automation_account_registration_key = automation_account_registration_key
-        self.automation_account_resource_group_name = (
-            automation_account_resource_group_name
-        )
+        self.automation_account_resource_group_name = automation_account_resource_group_name
         self.domain_fqdn = domain_fqdn
-        self.domain_root_dn = Output.from_input(domain_fqdn).apply(
-            lambda dn: f"DC={dn.replace('.', ',DC=')}"
-        )
+        self.domain_root_dn = Output.from_input(domain_fqdn).apply(lambda dn: f"DC={dn.replace('.', ',DC=')}")
         self.domain_netbios_name = Output.from_input(domain_netbios_name).apply(
             lambda n: n[:15]
         )  # maximum of 15 characters
@@ -62,9 +59,7 @@ class SHMDomainControllersProps:
         self.password_domain_computer_manager = password_domain_computer_manager
         self.password_domain_searcher = password_domain_searcher
         self.private_ip_address = private_ip_address
-        self.subnet_name = Output.from_input(subnet_identity_servers).apply(
-            get_name_from_subnet
-        )
+        self.subnet_name = Output.from_input(subnet_identity_servers).apply(get_name_from_subnet)
         self.subscription_name = subscription_name
         # Note that usernames have a maximum of 20 characters
         self.username_domain_admin = "dshdomainadmin"
@@ -84,7 +79,7 @@ class SHMDomainControllersComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMDomainControllersProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:DomainControllersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -121,11 +116,7 @@ class SHMDomainControllersComponent(ComponentResource):
         )
         # Register the primary domain controller for automated DSC
         dsc_configuration_name = "PrimaryDomainController"
-        dsc_reader = FileReader(
-            resources_path
-            / "desired_state_configuration"
-            / f"{dsc_configuration_name}.ps1"
-        )
+        dsc_reader = FileReader(resources_path / "desired_state_configuration" / f"{dsc_configuration_name}.ps1")
         primary_domain_controller_dsc_node = AutomationDscNode(
             f"{self._name}_primary_domain_controller_dsc_node",
             AutomationDscNodeProps(
@@ -161,9 +152,7 @@ class SHMDomainControllersComponent(ComponentResource):
             ),
         )
         # Extract the domain SID
-        domain_sid_script = FileReader(
-            resources_path / "active_directory" / "get_ad_sid.ps1"
-        )
+        domain_sid_script = FileReader(resources_path / "active_directory" / "get_ad_sid.ps1")
         domain_sid = RemoteScript(
             f"{self._name}_get_ad_sid",
             RemoteScriptProps(

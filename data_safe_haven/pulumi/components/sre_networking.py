@@ -9,7 +9,7 @@ from pulumi_azure_native import network, resources
 # Local imports
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
-from ..common.enums import NetworkingPriorities
+from data_safe_haven.pulumi.common.enums import NetworkingPriorities
 
 
 class SRENetworkingProps:
@@ -31,30 +31,14 @@ class SRENetworkingProps:
         self.vnet_iprange = Output.from_input(sre_index).apply(
             lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
         )
-        self.subnet_application_gateway_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(256)
-        )
-        self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(128)
-        )
-        self.subnet_guacamole_database_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(128)
-        )
-        self.subnet_research_desktops_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(256)
-        )
-        self.subnet_private_data_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(16)
-        )
-        self.subnet_software_repositories_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
-        )
-        self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
-        )
-        self.subnet_user_services_databases_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
-        )
+        self.subnet_application_gateway_iprange = self.vnet_iprange.apply(lambda r: r.next_subnet(256))
+        self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(lambda r: r.next_subnet(128))
+        self.subnet_guacamole_database_iprange = self.vnet_iprange.apply(lambda r: r.next_subnet(128))
+        self.subnet_research_desktops_iprange = self.vnet_iprange.apply(lambda r: r.next_subnet(256))
+        self.subnet_private_data_iprange = self.vnet_iprange.apply(lambda r: r.next_subnet(16))
+        self.subnet_software_repositories_iprange = self.vnet_iprange.apply(lambda r: r.next_subnet(8))
+        self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(lambda r: r.next_subnet(8))
+        self.subnet_user_services_databases_iprange = self.vnet_iprange.apply(lambda r: r.next_subnet(8))
         # Other variables
         self.location = location
         self.public_ip_range_users = "Internet"
@@ -76,7 +60,7 @@ class SRENetworkingComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SRENetworkingProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -90,30 +74,14 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Set address prefixes from ranges
-        subnet_application_gateway_prefix = (
-            props.subnet_application_gateway_iprange.apply(lambda r: str(r))
-        )
-        subnet_guacamole_containers_prefix = (
-            props.subnet_guacamole_containers_iprange.apply(lambda r: str(r))
-        )
-        subnet_guacamole_database_prefix = (
-            props.subnet_guacamole_database_iprange.apply(lambda r: str(r))
-        )
-        subnet_private_data_prefix = props.subnet_private_data_iprange.apply(
-            lambda r: str(r)
-        )
-        subnet_research_desktops_prefix = props.subnet_research_desktops_iprange.apply(
-            lambda r: str(r)
-        )
-        subnet_software_repositories_prefix = (
-            props.subnet_software_repositories_iprange.apply(lambda r: str(r))
-        )
-        subnet_user_services_containers_prefix = (
-            props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
-        )
-        subnet_user_services_databases_prefix = (
-            props.subnet_user_services_databases_iprange.apply(lambda r: str(r))
-        )
+        subnet_application_gateway_prefix = props.subnet_application_gateway_iprange.apply(lambda r: str(r))
+        subnet_guacamole_containers_prefix = props.subnet_guacamole_containers_iprange.apply(lambda r: str(r))
+        subnet_guacamole_database_prefix = props.subnet_guacamole_database_iprange.apply(lambda r: str(r))
+        subnet_private_data_prefix = props.subnet_private_data_iprange.apply(lambda r: str(r))
+        subnet_research_desktops_prefix = props.subnet_research_desktops_iprange.apply(lambda r: str(r))
+        subnet_software_repositories_prefix = props.subnet_software_repositories_iprange.apply(lambda r: str(r))
+        subnet_user_services_containers_prefix = props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
+        subnet_user_services_databases_prefix = props.subnet_user_services_databases_iprange.apply(lambda r: str(r))
 
         # Define NSGs
         nsg_application_gateway = network.NetworkSecurityGroup(
@@ -323,9 +291,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SubnetArgs(
                     address_prefix=subnet_application_gateway_prefix,
                     name=subnet_application_gateway_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_application_gateway.id
-                    ),
+                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_application_gateway.id),
                 ),
                 # Guacamole containers
                 network.SubnetArgs(
@@ -338,26 +304,20 @@ class SRENetworkingComponent(ComponentResource):
                         ),
                     ],
                     name=subnet_guacamole_containers_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_guacamole_containers.id
-                    ),
+                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_guacamole_containers.id),
                 ),
                 # Guacamole database
                 network.SubnetArgs(
                     address_prefix=subnet_guacamole_database_prefix,
                     name=subnet_guacamole_database_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_guacamole_database.id
-                    ),
+                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_guacamole_database.id),
                     private_endpoint_network_policies="Disabled",
                 ),
                 # Private data
                 network.SubnetArgs(
                     address_prefix=subnet_private_data_prefix,
                     name=subnet_private_data_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_private_data.id
-                    ),
+                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_private_data.id),
                     service_endpoints=[
                         network.ServiceEndpointPropertiesFormatArgs(
                             locations=[props.location],
@@ -369,9 +329,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SubnetArgs(
                     address_prefix=subnet_research_desktops_prefix,
                     name=subnet_research_desktops_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_research_desktops.id
-                    ),
+                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_research_desktops.id),
                 ),
                 # Software repositories
                 network.SubnetArgs(
@@ -384,9 +342,7 @@ class SRENetworkingComponent(ComponentResource):
                         ),
                     ],
                     name=subnet_software_repositories_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_software_repositories.id
-                    ),
+                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_software_repositories.id),
                 ),
                 # User services containers
                 network.SubnetArgs(
@@ -399,25 +355,19 @@ class SRENetworkingComponent(ComponentResource):
                         ),
                     ],
                     name=subnet_user_services_containers_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_user_services_containers.id
-                    ),
+                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_user_services_containers.id),
                 ),
                 # User services databases
                 network.SubnetArgs(
                     address_prefix=subnet_user_services_databases_prefix,
                     name=subnet_user_services_databases_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_user_services_databases.id
-                    ),
+                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_user_services_databases.id),
                 ),
             ],
             virtual_network_name=f"{stack_name}-vnet",
             virtual_network_peerings=[],
             opts=ResourceOptions.merge(
-                ResourceOptions(
-                    ignore_changes=["virtual_network_peerings"]
-                ),  # allow peering to SHM virtual network
+                ResourceOptions(ignore_changes=["virtual_network_peerings"]),  # allow peering to SHM virtual network
                 child_opts,
             ),
         )
@@ -432,7 +382,7 @@ class SRENetworkingComponent(ComponentResource):
                 virtual_network_name=kwargs["virtual_network_name"],
             )
         )
-        peering_sre_to_shm = network.VirtualNetworkPeering(
+        network.VirtualNetworkPeering(
             f"{self._name}_sre_to_shm_peering",
             remote_virtual_network=network.SubResourceArgs(id=shm_virtual_network.id),
             resource_group_name=resource_group.name,
@@ -440,7 +390,7 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_peering_name=f"peer_sre_{sre_name}_to_shm",
             opts=child_opts,
         )
-        peering_shm_to_sre = network.VirtualNetworkPeering(
+        network.VirtualNetworkPeering(
             f"{self._name}_shm_to_sre_peering",
             allow_gateway_transit=True,
             remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
@@ -452,16 +402,14 @@ class SRENetworkingComponent(ComponentResource):
 
         # Link to SHM private DNS zones
         for private_link_domain in ordered_private_dns_zones():
-            virtual_network_link = network.VirtualNetworkLink(
+            network.VirtualNetworkLink(
                 f"{self._name}_private_zone_{private_link_domain}_vnet_link",
                 location="Global",
                 private_zone_name=f"privatelink.{private_link_domain}",
                 registration_enabled=False,
                 resource_group_name=props.shm_networking_resource_group_name,
                 virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
-                virtual_network_link_name=Output.concat(
-                    "link-to-", sre_virtual_network.name
-                ),
+                virtual_network_link_name=Output.concat("link-to-", sre_virtual_network.name),
                 opts=child_opts,
             )
 
@@ -476,9 +424,7 @@ class SRENetworkingComponent(ComponentResource):
             )
         )
         sre_subdomain = alphanumeric(sre_name).lower()
-        sre_fqdn = Output.from_input(props.shm_fqdn).apply(
-            lambda parent: f"{sre_subdomain}.{parent}"
-        )
+        sre_fqdn = Output.from_input(props.shm_fqdn).apply(lambda parent: f"{sre_subdomain}.{parent}")
         sre_dns_zone = network.Zone(
             f"{self._name}_dns_zone",
             location="Global",
@@ -499,7 +445,7 @@ class SRENetworkingComponent(ComponentResource):
             zone_name=shm_dns_zone.name,
             opts=child_opts,
         )
-        sre_caa_record = network.RecordSet(
+        network.RecordSet(
             f"{self._name}_caa_record",
             caa_records=[
                 network.CaaRecordArgs(
@@ -524,16 +470,14 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        virtual_network_link = network.VirtualNetworkLink(
+        network.VirtualNetworkLink(
             f"{self._name}_private_zone_vnet_link",
             location="Global",
             private_zone_name=sre_private_dns_zone.name,
             registration_enabled=False,
             resource_group_name=resource_group.name,
             virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
-            virtual_network_link_name=Output.concat(
-                "link-to-", sre_virtual_network.name
-            ),
+            virtual_network_link_name=Output.concat("link-to-", sre_virtual_network.name),
             opts=child_opts,
         )
 

@@ -39,13 +39,13 @@ class SREMonitoringComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SREMonitoringProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Create Linux VM system update schedule: daily at 03:<index>
-        schedule_linux_updates = automation.SoftwareUpdateConfigurationByName(
+        automation.SoftwareUpdateConfigurationByName(
             f"{self._name}_schedule_linux_updates",
             automation_account_name=props.automation_account_name,
             resource_group_name=props.resource_group_name,
@@ -54,9 +54,7 @@ class SREMonitoringComponent(ComponentResource):
                 frequency="Day",
                 interval=1,
                 is_enabled=True,
-                start_time=Output.all(
-                    timezone=props.timezone, minute=props.sre_index
-                ).apply(
+                start_time=Output.all(timezone=props.timezone, minute=props.sre_index).apply(
                     lambda kwargs: time_as_string(
                         hour=3,
                         minute=int(kwargs["minute"]),

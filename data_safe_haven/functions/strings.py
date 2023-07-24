@@ -3,14 +3,13 @@ import base64
 import hashlib
 import secrets
 import string
-from typing import List, Sequence
+from collections.abc import Sequence
+from typing import List
 
 
 def alphanumeric(input_string: str) -> str:
     """Strip any characters that are not letters or numbers from a string."""
-    return "".join(
-        filter(lambda x: x in (string.ascii_letters + string.digits), input_string)
-    )
+    return "".join(filter(lambda x: x in (string.ascii_letters + string.digits), input_string))
 
 
 def b64decode(input_string: str) -> str:
@@ -47,12 +46,7 @@ def random_letters(length: int) -> str:
 
 def replace_separators(input_string: str, separator: str = "") -> str:
     """Return a string using underscores as a separator"""
-    return (
-        input_string.replace(" ", separator)
-        .replace("_", separator)
-        .replace("-", separator)
-        .replace(".", separator)
-    )
+    return input_string.replace(" ", separator).replace("_", separator).replace("-", separator).replace(".", separator)
 
 
 def sha256hash(input_string: str) -> str:
@@ -60,7 +54,7 @@ def sha256hash(input_string: str) -> str:
     return hashlib.sha256(str.encode(input_string, encoding="utf-8")).hexdigest()
 
 
-def truncate_tokens(tokens: Sequence[str], max_length: int) -> List[str]:
+def truncate_tokens(tokens: Sequence[str], max_length: int) -> list[str]:
     output_tokens = list(tokens)
     token_lengths = [len(t) for t in output_tokens]
     while sum(token_lengths) > max_length:

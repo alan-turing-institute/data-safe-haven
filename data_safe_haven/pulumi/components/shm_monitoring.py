@@ -36,9 +36,7 @@ class SHMMonitoringProps:
         self.dns_resource_group_name = dns_resource_group_name
         self.private_dns_zone_base_id = private_dns_zone_base_id
         self.location = location
-        self.subnet_monitoring_id = Output.from_input(subnet_monitoring).apply(
-            get_id_from_subnet
-        )
+        self.subnet_monitoring_id = Output.from_input(subnet_monitoring).apply(get_id_from_subnet)
         self.timezone = timezone
 
 
@@ -51,7 +49,7 @@ class SHMMonitoringComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMMonitoringProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -80,7 +78,7 @@ class SHMMonitoringComponent(ComponentResource):
 
         # List of modules as 'name: (version, SHA256 hash)'
         # Note that we exclude ComputerManagementDsc which is already present (https://docs.microsoft.com/en-us/azure/automation/shared-resources/modules#default-modules)
-        modules: Dict[str, Tuple[str, str]] = {
+        modules: dict[str, tuple[str, str]] = {
             "ActiveDirectoryDsc": (
                 "6.2.0",
                 "60b7cc2c578248f23c5b871b093db268a1c1bd89f5ccafc45d9a65c3f0621dca",
@@ -133,14 +131,12 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Add a private DNS record for each automation custom DNS config
-        automation_account_private_dns_zone_group = network.PrivateDnsZoneGroup(
+        network.PrivateDnsZoneGroup(
             f"{self._name}_automation_account_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
                     name=replace_separators(f"{stack_name}-aa-to-{dns_zone_name}", "-"),
-                    private_dns_zone_id=Output.concat(
-                        props.private_dns_zone_base_id, dns_zone_name
-                    ),
+                    private_dns_zone_id=Output.concat(props.private_dns_zone_base_id, dns_zone_name),
                 )
                 for dns_zone_name in ordered_private_dns_zones("Azure Automation")
             ],
@@ -190,7 +186,7 @@ class SHMMonitoringComponent(ComponentResource):
             subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
             opts=child_opts,
         )
-        log_analytics_ampls_connection = insights.PrivateLinkScopedResource(
+        insights.PrivateLinkScopedResource(
             f"{self._name}_log_analytics_ampls_connection",
             linked_resource_id=log_analytics.id,
             name=f"{stack_name}-cnxn-ampls-log-to-log",
@@ -200,16 +196,12 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Add a private DNS record for each log analytics workspace custom DNS config
-        log_analytics_private_dns_zone_group = network.PrivateDnsZoneGroup(
+        network.PrivateDnsZoneGroup(
             f"{self._name}_log_analytics_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
-                    name=replace_separators(
-                        f"{stack_name}-log-to-{dns_zone_name}", "-"
-                    ),
-                    private_dns_zone_id=Output.concat(
-                        props.private_dns_zone_base_id, dns_zone_name
-                    ),
+                    name=replace_separators(f"{stack_name}-log-to-{dns_zone_name}", "-"),
+                    private_dns_zone_id=Output.concat(props.private_dns_zone_base_id, dns_zone_name),
                 )
                 for dns_zone_name in ordered_private_dns_zones("Azure Monitor")
             ],
@@ -219,7 +211,7 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Link automation account to log analytics workspace
-        automation_log_analytics_link = operationalinsights.LinkedService(
+        operationalinsights.LinkedService(
             f"{self._name}_automation_log_analytics_link",
             linked_service_name="Automation",
             resource_group_name=resource_group.name,
@@ -256,11 +248,9 @@ class SHMMonitoringComponent(ComponentResource):
 
         # Get the current subscription_resource_id for use in scheduling.
         # This is safe as schedules only apply to VMs that are registered with the log analytics workspace
-        subscription_resource_id = resource_group.id.apply(
-            lambda id_: id_.split("/resourceGroups/")[0]
-        )
+        subscription_resource_id = resource_group.id.apply(lambda id_: id_.split("/resourceGroups/")[0])
         # Create Windows VM virus definitions update schedule: daily at 01:01
-        schedule_windows_definitions = automation.SoftwareUpdateConfigurationByName(
+        automation.SoftwareUpdateConfigurationByName(
             f"{self._name}_schedule_windows_definitions",
             automation_account_name=automation_account.name,
             resource_group_name=resource_group.name,
@@ -296,7 +286,7 @@ class SHMMonitoringComponent(ComponentResource):
             ),
         )
         # Create Windows VM system update schedule: daily at 02:02
-        schedule_windows_updates = automation.SoftwareUpdateConfigurationByName(
+        automation.SoftwareUpdateConfigurationByName(
             f"{self._name}_schedule_windows_updates",
             automation_account_name=automation_account.name,
             resource_group_name=resource_group.name,
@@ -349,7 +339,7 @@ class SHMMonitoringComponent(ComponentResource):
             ),
         )
         # Create Linux VM system update schedule: daily at 02:02
-        schedule_linux_updates = automation.SoftwareUpdateConfigurationByName(
+        automation.SoftwareUpdateConfigurationByName(
             f"{self._name}_schedule_linux_updates",
             automation_account_name=automation_account.name,
             resource_group_name=resource_group.name,
@@ -401,27 +391,15 @@ class SHMMonitoringComponent(ComponentResource):
 
         # Register outputs
         self.automation_account = automation_account
-        self.automation_account_jrds_url = (
-            automation_account.automation_hybrid_service_url
-        )
-        self.automation_account_agentsvc_url = (
-            automation_account.automation_hybrid_service_url.apply(
-                lambda url: url.replace("jrds", "agentsvc").replace(
-                    "/automationAccounts/", "/accounts/"
-                )
-                if url
-                else ""
-            )
+        self.automation_account_jrds_url = automation_account.automation_hybrid_service_url
+        self.automation_account_agentsvc_url = automation_account.automation_hybrid_service_url.apply(
+            lambda url: url.replace("jrds", "agentsvc").replace("/automationAccounts/", "/accounts/") if url else ""
         )
         self.automation_account_modules = list(modules.keys())
-        self.automation_account_primary_key = Output.secret(
-            automation_keys.keys[0].value
-        )
+        self.automation_account_primary_key = Output.secret(automation_keys.keys[0].value)
         self.log_analytics_workspace_id = log_analytics.customer_id
         self.log_analytics_workspace_key = Output.secret(
-            log_analytics_keys.primary_shared_key
-            if log_analytics_keys.primary_shared_key
-            else "UNKNOWN"
+            log_analytics_keys.primary_shared_key if log_analytics_keys.primary_shared_key else "UNKNOWN"
         )
         self.resource_group_name = resource_group.name
 

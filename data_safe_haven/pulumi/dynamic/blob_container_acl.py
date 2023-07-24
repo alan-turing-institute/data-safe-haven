@@ -9,7 +9,7 @@ from pulumi.dynamic import CreateResult, DiffResult, Resource
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
 from data_safe_haven.external import AzureApi
-from .dsh_resource_provider import DshResourceProvider
+from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
 
 
 class BlobContainerAclProps:
@@ -51,7 +51,7 @@ class BlobContainerAclProps:
 
 
 class BlobContainerAclProvider(DshResourceProvider):
-    def create(self, props: Dict[str, Any]) -> CreateResult:
+    def create(self, props: dict[str, Any]) -> CreateResult:
         """Set ACLs for a given blob container."""
         outs = dict(**props)
         try:
@@ -63,15 +63,16 @@ class BlobContainerAclProvider(DshResourceProvider):
                 storage_account_name=props["storage_account_name"],
             )
         except Exception as exc:
+            msg = f"Failed to set ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc!s}"
             raise DataSafeHavenPulumiException(
-                f"Failed to set ACLs on storage account [green]{props['storage_account_name']}[/].\n{str(exc)}"
+                msg
             ) from exc
         return CreateResult(
             f"BlobContainerAcl-{props['container_name']}",
             outs=outs,
         )
 
-    def delete(self, id_: str, props: Dict[str, Any]) -> None:
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Restore default ACLs"""
         try:
             azure_api = AzureApi(props["subscription_name"])
@@ -82,16 +83,16 @@ class BlobContainerAclProvider(DshResourceProvider):
                 storage_account_name=props["storage_account_name"],
             )
         except Exception as exc:
+            msg = f"Failed to delete custom ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc!s}"
             raise DataSafeHavenPulumiException(
-                f"Failed to delete custom ACLs on storage account [green]{props['storage_account_name']}[/].\n{str(exc)}"
+                msg
             ) from exc
-        return
 
     def diff(
         self,
         id_: str,
-        old_props: Dict[str, Any],
-        new_props: Dict[str, Any],
+        old_props: dict[str, Any],
+        new_props: dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
         return self.partial_diff(old_props, new_props)
@@ -104,6 +105,6 @@ class BlobContainerAcl(Resource):
         self,
         name: str,
         props: BlobContainerAclProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__(BlobContainerAclProvider(), name, vars(props), opts)

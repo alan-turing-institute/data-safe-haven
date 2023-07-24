@@ -28,6 +28,5 @@ class UsersListCommand:
             users = UserHandler(config, graph_api)
             users.list()
         except DataSafeHavenException as exc:
-            raise DataSafeHavenException(
-                f"Could not list users for Data Safe Haven '{shm_name}'.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not list users for Data Safe Haven '{shm_name}'.\n{exc!s}"
+            raise DataSafeHavenException(msg) from exc

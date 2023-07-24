@@ -31,16 +31,12 @@ class SREApplicationGatewayProps:
     ):
         self.key_vault_certificate_id = key_vault_certificate_id
         self.resource_group_id = Output.from_input(resource_group).apply(get_id_from_rg)
-        self.resource_group_name = Output.from_input(resource_group).apply(
-            get_name_from_rg
-        )
+        self.resource_group_name = Output.from_input(resource_group).apply(get_name_from_rg)
         self.sre_fqdn = sre_fqdn
-        self.subnet_application_gateway_id = Output.from_input(
-            subnet_application_gateway
-        ).apply(get_id_from_subnet)
-        self.subnet_guacamole_containers_ip_addresses = Output.from_input(
-            subnet_guacamole_containers
-        ).apply(get_available_ips_from_subnet)
+        self.subnet_application_gateway_id = Output.from_input(subnet_application_gateway).apply(get_id_from_subnet)
+        self.subnet_guacamole_containers_ip_addresses = Output.from_input(subnet_guacamole_containers).apply(
+            get_available_ips_from_subnet
+        )
         # Unwrap key vault identity so that it has the required type
         self.user_assigned_identities = Output.from_input(key_vault_identity).apply(
             lambda identity: identity.id.apply(lambda id: {str(id): {}})
@@ -56,7 +52,7 @@ class SREApplicationGatewayComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SREApplicationGatewayProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -67,18 +63,14 @@ class SREApplicationGatewayComponent(ComponentResource):
             public_ip_address_name=f"{stack_name}-public-ip",
             public_ip_allocation_method=network.IpAllocationMethod.STATIC,
             resource_group_name=props.resource_group_name,
-            sku=network.PublicIPAddressSkuArgs(
-                name=network.PublicIPAddressSkuName.STANDARD
-            ),
+            sku=network.PublicIPAddressSkuArgs(name=network.PublicIPAddressSkuName.STANDARD),
             opts=child_opts,
         )
 
         # Link the public IP address to the SRE domain
         network.RecordSet(
             f"{self._name}_a_record",
-            a_records=public_ip.ip_address.apply(
-                lambda ip: [network.ARecordArgs(ipv4_address=ip)] if ip else []
-            ),
+            a_records=public_ip.ip_address.apply(lambda ip: [network.ARecordArgs(ipv4_address=ip)] if ip else []),
             record_type="A",
             relative_record_set_name="@",
             resource_group_name=props.resource_group_name,
@@ -89,7 +81,7 @@ class SREApplicationGatewayComponent(ComponentResource):
 
         # Define application gateway
         application_gateway_name = f"{stack_name}-ag-entrypoint"
-        application_gateway = network.ApplicationGateway(
+        network.ApplicationGateway(
             f"{self._name}_application_gateway",
             application_gateway_name=application_gateway_name,
             backend_address_pools=[
@@ -97,9 +89,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                 network.ApplicationGatewayBackendAddressPoolArgs(
                     backend_addresses=props.subnet_guacamole_containers_ip_addresses.apply(
                         lambda ip_addresses: [
-                            network.ApplicationGatewayBackendAddressArgs(
-                                ip_address=ip_address
-                            )
+                            network.ApplicationGatewayBackendAddressArgs(ip_address=ip_address)
                             for ip_address in ip_addresses
                         ]
                     ),
@@ -134,9 +124,7 @@ class SREApplicationGatewayComponent(ComponentResource):
             gateway_ip_configurations=[
                 network.ApplicationGatewayIPConfigurationArgs(
                     name="appGatewayIP",
-                    subnet=network.SubResourceArgs(
-                        id=props.subnet_application_gateway_id
-                    ),
+                    subnet=network.SubResourceArgs(id=props.subnet_application_gateway_id),
                 )
             ],
             http_listeners=[

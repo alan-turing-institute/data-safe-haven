@@ -18,10 +18,10 @@ class InitialiseCommand:
 
     def __call__(
         self,
-        admin_group: Optional[str] = None,
-        location: Optional[str] = None,
-        name: Optional[str] = None,
-        subscription: Optional[str] = None,
+        admin_group: str | None = None,
+        location: str | None = None,
+        name: str | None = None,
+        subscription: str | None = None,
     ) -> None:
         """Typer command line entrypoint"""
         try:
@@ -42,6 +42,5 @@ class InitialiseCommand:
             backend.config.upload()
 
         except DataSafeHavenException as exc:
-            raise DataSafeHavenException(
-                f"Could not initialise Data Safe Haven.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not initialise Data Safe Haven.\n{exc!s}"
+            raise DataSafeHavenException(msg) from exc

@@ -1,6 +1,7 @@
 """Pulumi dynamic component for compiled desired state configuration."""
 # Standard library imports
-from typing import Any, Dict, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any, Dict, Optional
 
 # Third party imports
 from pulumi import Input, ResourceOptions
@@ -8,7 +9,7 @@ from pulumi.dynamic import CreateResult, DiffResult, Resource
 
 # Local imports
 from data_safe_haven.external import AzureApi
-from .dsh_resource_provider import DshResourceProvider
+from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
 
 
 class CompiledDscProps:
@@ -20,7 +21,7 @@ class CompiledDscProps:
         configuration_name: Input[str],
         content_hash: Input[str],
         location: Input[str],
-        parameters: Input[Dict[str, Any]],
+        parameters: Input[dict[str, Any]],
         resource_group_name: Input[str],
         required_modules: Input[Sequence[str]],
         subscription_name: Input[str],
@@ -36,7 +37,7 @@ class CompiledDscProps:
 
 
 class CompiledDscProvider(DshResourceProvider):
-    def create(self, props: Dict[str, Any]) -> CreateResult:
+    def create(self, props: dict[str, Any]) -> CreateResult:
         """Create compiled desired state file."""
         azure_api = AzureApi(props["subscription_name"])
         # Compile desired state
@@ -53,15 +54,15 @@ class CompiledDscProvider(DshResourceProvider):
             outs=dict(**props),
         )
 
-    def delete(self, id_: str, props: Dict[str, Any]) -> None:
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
         """The Python SDK does not support configuration deletion"""
         return
 
     def diff(
         self,
         id_: str,
-        old_props: Dict[str, Any],
-        new_props: Dict[str, Any],
+        old_props: dict[str, Any],
+        new_props: dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
         return self.partial_diff(old_props, new_props, [])
@@ -74,6 +75,6 @@ class CompiledDsc(Resource):
         self,
         name: str,
         props: CompiledDscProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__(CompiledDscProvider(), name, {**vars(props)}, opts)

@@ -1,6 +1,7 @@
 """Pulumi component for SHM state"""
 # Standard library imports
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
@@ -25,21 +26,11 @@ class SHMDataProps:
         self.admin_group_id = admin_group_id
         self.admin_ip_addresses = admin_ip_addresses
         self.location = location
-        self.password_domain_admin = self.get_secret(
-            pulumi_opts, "password-domain-admin"
-        )
-        self.password_domain_azure_ad_connect = self.get_secret(
-            pulumi_opts, "password-domain-azure-ad-connect"
-        )
-        self.password_domain_computer_manager = self.get_secret(
-            pulumi_opts, "password-domain-computer-manager"
-        )
-        self.password_domain_searcher = self.get_secret(
-            pulumi_opts, "password-domain-ldap-searcher"
-        )
-        self.password_update_server_linux_admin = self.get_secret(
-            pulumi_opts, "password-update-server-linux-admin"
-        )
+        self.password_domain_admin = self.get_secret(pulumi_opts, "password-domain-admin")
+        self.password_domain_azure_ad_connect = self.get_secret(pulumi_opts, "password-domain-azure-ad-connect")
+        self.password_domain_computer_manager = self.get_secret(pulumi_opts, "password-domain-computer-manager")
+        self.password_domain_searcher = self.get_secret(pulumi_opts, "password-domain-ldap-searcher")
+        self.password_update_server_linux_admin = self.get_secret(pulumi_opts, "password-update-server-linux-admin")
         self.tenant_id = tenant_id
 
     def get_secret(self, pulumi_opts: Config, secret_name: str) -> Output[str]:
@@ -55,7 +46,7 @@ class SHMDataComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMDataProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -138,7 +129,7 @@ class SHMDataComponent(ComponentResource):
         )
 
         # Deploy key vault secrets
-        password_domain_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_domain_admin",
             properties=keyvault.SecretPropertiesArgs(value=props.password_domain_admin),
             resource_group_name=resource_group.name,
@@ -146,41 +137,33 @@ class SHMDataComponent(ComponentResource):
             vault_name=key_vault.name,
             opts=child_opts,
         )
-        password_domain_azure_ad_connect = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_domain_azure_ad_connect",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_domain_azure_ad_connect
-            ),
+            properties=keyvault.SecretPropertiesArgs(value=props.password_domain_azure_ad_connect),
             resource_group_name=resource_group.name,
             secret_name="password-domain-azure-ad-connect",
             vault_name=key_vault.name,
             opts=child_opts,
         )
-        password_domain_computer_manager = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_domain_computer_manager",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_domain_computer_manager
-            ),
+            properties=keyvault.SecretPropertiesArgs(value=props.password_domain_computer_manager),
             resource_group_name=resource_group.name,
             secret_name="password-domain-computer-manager",
             vault_name=key_vault.name,
             opts=child_opts,
         )
-        password_domain_searcher = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_domain_searcher",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_domain_searcher
-            ),
+            properties=keyvault.SecretPropertiesArgs(value=props.password_domain_searcher),
             resource_group_name=resource_group.name,
             secret_name="password-domain-ldap-searcher",
             vault_name=key_vault.name,
             opts=child_opts,
         )
-        password_update_server_linux_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_update_server_linux_admin",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_update_server_linux_admin
-            ),
+            properties=keyvault.SecretPropertiesArgs(value=props.password_update_server_linux_admin),
             resource_group_name=resource_group.name,
             secret_name="password-update-server-linux-admin",
             vault_name=key_vault.name,
@@ -192,19 +175,13 @@ class SHMDataComponent(ComponentResource):
             f"{self._name}_storage_account_persistent_data",
             access_tier=storage.AccessTier.COOL,
             # Note that account names have a maximum of 24 characters
-            account_name=alphanumeric(
-                f"{''.join(truncate_tokens(stack_name.split('-'), 20))}data"
-            )[:24],
+            account_name=alphanumeric(f"{''.join(truncate_tokens(stack_name.split('-'), 20))}data")[:24],
             enable_https_traffic_only=True,
             encryption=storage.EncryptionArgs(
                 key_source=storage.KeySource.MICROSOFT_STORAGE,
                 services=storage.EncryptionServicesArgs(
-                    blob=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
-                    file=storage.EncryptionServiceArgs(
-                        enabled=True, key_type=storage.KeyType.ACCOUNT
-                    ),
+                    blob=storage.EncryptionServiceArgs(enabled=True, key_type=storage.KeyType.ACCOUNT),
+                    file=storage.EncryptionServiceArgs(enabled=True, key_type=storage.KeyType.ACCOUNT),
                 ),
             ),
             kind=storage.Kind.STORAGE_V2,
@@ -228,7 +205,7 @@ class SHMDataComponent(ComponentResource):
             opts=child_opts,
         )
         # Deploy staging container for holding any data that does not have an SRE
-        storage_container_staging = storage.BlobContainer(
+        storage.BlobContainer(
             f"{self._name}_st_data_staging",
             account_name=storage_account_persistent_data.name,
             container_name=replace_separators(f"{stack_name}-staging", "-")[:63],
@@ -244,8 +221,6 @@ class SHMDataComponent(ComponentResource):
         self.password_domain_azure_ad_connect = props.password_domain_azure_ad_connect
         self.password_domain_computer_manager = props.password_domain_computer_manager
         self.password_domain_searcher = props.password_domain_searcher
-        self.password_update_server_linux_admin = (
-            props.password_update_server_linux_admin
-        )
+        self.password_update_server_linux_admin = props.password_update_server_linux_admin
         self.resource_group_name = Output.from_input(resource_group.name)
         self.vault = key_vault

@@ -31,7 +31,7 @@ class SHMBastionComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMBastionProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:BastionComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -42,9 +42,7 @@ class SHMBastionComponent(ComponentResource):
             public_ip_address_name=f"{stack_name}-pip-bastion",
             public_ip_allocation_method=network.IPAllocationMethod.STATIC,
             resource_group_name=props.resource_group_name,
-            sku=network.PublicIPAddressSkuArgs(
-                name=network.PublicIPAddressSkuName.STANDARD
-            ),
+            sku=network.PublicIPAddressSkuArgs(name=network.PublicIPAddressSkuName.STANDARD),
             opts=child_opts,
         )
 

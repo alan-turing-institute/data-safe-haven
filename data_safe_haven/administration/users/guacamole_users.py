@@ -1,12 +1,14 @@
 # Standard library imports
 import pathlib
-from typing import Any, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any, Optional
+
+from data_safe_haven.administration.users.research_user import ResearchUser
 
 # Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.external import AzurePostgreSQLDatabase
 from data_safe_haven.pulumi import PulumiSREStack
-from .research_user import ResearchUser
 
 
 class GuacamoleUsers:
@@ -20,12 +22,9 @@ class GuacamoleUsers:
             sre_stack.output("remote_desktop")["resource_group_name"],
             config.subscription_name,
         )
-        self.users_: Optional[Sequence[ResearchUser]] = None
+        self.users_: Sequence[ResearchUser] | None = None
         self.postgres_script_path: pathlib.Path = (
-            pathlib.Path(__file__).parent.parent.parent
-            / "resources"
-            / "remote_desktop"
-            / "postgresql"
+            pathlib.Path(__file__).parent.parent.parent / "resources" / "remote_desktop" / "postgresql"
         )
         self.sre_name = sre_name
         self.group_name = f"Data Safe Haven Users SRE {sre_name}"

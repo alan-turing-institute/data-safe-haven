@@ -13,7 +13,7 @@ from rich.table import Table
 from rich.text import Text
 
 # Local imports
-from .types import PathType
+from data_safe_haven.utility.types import PathType
 
 
 class LoggingHandlerPlainFile(logging.FileHandler):
@@ -21,9 +21,7 @@ class LoggingHandlerPlainFile(logging.FileHandler):
     Logging handler that cleans messages before sending them to a log file.
     """
 
-    def __init__(
-        self, fmt: str, datefmt: str, filename: str, *args: Any, **kwargs: Any
-    ):
+    def __init__(self, fmt: str, datefmt: str, filename: str, *args: Any, **kwargs: Any):
         """Constructor"""
         super().__init__(filename=filename, *args, **kwargs)
         self.setFormatter(logging.Formatter(self.strip_formatting(fmt), datefmt))
@@ -99,32 +97,22 @@ class Logger:
     rich_format = r"[log.time]%(asctime)s[/] [%(levelname)8s] %(message)s"
     _instance: Optional["Logger"] = None
 
-    def __new__(
-        cls, verbosity: Optional[int] = None, log_file: Optional[PathType] = None
-    ) -> "Logger":
-        desired_log_level = max(
-            logging.INFO - 10 * (verbosity if verbosity else 0), logging.DEBUG
-        )
+    def __new__(cls, verbosity: int | None = None, log_file: PathType | None = None) -> "Logger":
+        desired_log_level = max(logging.INFO - 10 * (verbosity if verbosity else 0), logging.DEBUG)
         if cls._instance:
             # If we've already instantiated a logger check that the verbosity and log file are set correctly
             if verbosity:
                 cls._instance.logger.setLevel(desired_log_level)
             if log_file:
-                cls._instance.logger.addHandler(
-                    LoggingHandlerPlainFile(
-                        cls.rich_format, cls.date_fmt, str(log_file)
-                    )
-                )
+                cls._instance.logger.addHandler(LoggingHandlerPlainFile(cls.rich_format, cls.date_fmt, str(log_file)))
         else:
-            cls._instance = super(Logger, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             # Initialise console handler
             console_handler = LoggingHandlerRichConsole(cls.rich_format, cls.date_fmt)
-            handlers: List[logging.Handler] = [console_handler]
+            handlers: list[logging.Handler] = [console_handler]
             # Initialise file handler
             if log_file:
-                file_handler = LoggingHandlerPlainFile(
-                    cls.rich_format, cls.date_fmt, str(log_file)
-                )
+                file_handler = LoggingHandlerPlainFile(cls.rich_format, cls.date_fmt, str(log_file))
                 handlers += [file_handler]
             # Set basic logging config
             cls.logger = logging.getLogger("data_safe_haven")
@@ -185,7 +173,7 @@ class Logger:
         formatted = self.format_msg(message, logging.INFO)
         return Confirm.ask(formatted, default=default_to_yes)
 
-    def ask(self, message: str, default: Optional[str] = None) -> str:
+    def ask(self, message: str, default: str | None = None) -> str:
         formatted = self.format_msg(message, logging.INFO)
         if default:
             return Prompt.ask(formatted, default=default)
@@ -194,8 +182,8 @@ class Logger:
     def choose(
         self,
         message: str,
-        choices: Optional[List[str]] = None,
-        default: Optional[str] = None,
+        choices: list[str] | None = None,
+        default: str | None = None,
     ) -> str:
         formatted = self.format_msg(message, logging.INFO)
         if default:
@@ -220,9 +208,7 @@ class Logger:
             return self.info(message.strip())
 
     # Create a table
-    def tabulate(
-        self, header: Optional[List[str]] = None, rows: Optional[List[List[str]]] = None
-    ) -> List[str]:
+    def tabulate(self, header: list[str] | None = None, rows: list[list[str]] | None = None) -> list[str]:
         table = Table()
         if header:
             for item in header:

@@ -25,21 +25,17 @@ class SHMFirewallProps:
         subnet_update_servers: Input[network.GetSubnetResult],
     ):
         self.domain_controller_private_ip = domain_controller_private_ip
-        self.dns_zone_name = Output.from_input(dns_zone).apply(
-            lambda zone: zone.name  # type: ignore
-        )
+        self.dns_zone_name = Output.from_input(dns_zone).apply(lambda zone: zone.name)  # type: ignore
         self.location = location
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name
-        self.subnet_firewall_id = Output.from_input(subnet_firewall).apply(
-            get_id_from_subnet
+        self.subnet_firewall_id = Output.from_input(subnet_firewall).apply(get_id_from_subnet)
+        self.subnet_identity_servers_iprange = Output.from_input(subnet_identity_servers).apply(
+            lambda s: str(s.address_prefix) if s.address_prefix else ""
         )
-        self.subnet_identity_servers_iprange = Output.from_input(
-            subnet_identity_servers
-        ).apply(lambda s: str(s.address_prefix) if s.address_prefix else "")
-        self.subnet_update_servers_iprange = Output.from_input(
-            subnet_update_servers
-        ).apply(lambda s: str(s.address_prefix) if s.address_prefix else "")
+        self.subnet_update_servers_iprange = Output.from_input(subnet_update_servers).apply(
+            lambda s: str(s.address_prefix) if s.address_prefix else ""
+        )
 
 
 class SHMFirewallComponent(ComponentResource):
@@ -51,13 +47,15 @@ class SHMFirewallComponent(ComponentResource):
         stack_name: str,
         shm_name: str,
         props: SHMFirewallProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:FirewallComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Important IP addresses
-        external_dns_resolver = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
+        external_dns_resolver = (
+            "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
+        )
         ntp_ip_addresses = [
             "216.239.35.0",
             "216.239.35.4",
@@ -78,9 +76,7 @@ class SHMFirewallComponent(ComponentResource):
             public_ip_address_name=f"{stack_name}-pip-firewall",
             public_ip_allocation_method=network.IPAllocationMethod.STATIC,
             resource_group_name=props.resource_group_name,
-            sku=network.PublicIPAddressSkuArgs(
-                name=network.PublicIPAddressSkuName.STANDARD
-            ),
+            sku=network.PublicIPAddressSkuArgs(name=network.PublicIPAddressSkuName.STANDARD),
             opts=child_opts,
         )
 
@@ -1127,11 +1123,9 @@ class SHMFirewallComponent(ComponentResource):
 
         # Route all connected traffic through the firewall
         private_ip_address = firewall.ip_configurations.apply(
-            lambda cfgs: ""
-            if not cfgs
-            else next(filter(lambda _: _, [cfg.private_ip_address for cfg in cfgs]))
+            lambda cfgs: "" if not cfgs else next(filter(lambda _: _, [cfg.private_ip_address for cfg in cfgs]))
         )
-        route = network.Route(
+        network.Route(
             f"{self._name}_via_firewall",
             address_prefix="0.0.0.0/0",
             next_hop_ip_address=private_ip_address,
@@ -1143,11 +1137,9 @@ class SHMFirewallComponent(ComponentResource):
         )
 
         # Add an A record for the domain controller
-        a_record = network.RecordSet(
+        network.RecordSet(
             f"{self._name}_a_record",
-            a_records=public_ip.ip_address.apply(
-                lambda ip: [network.ARecordArgs(ipv4_address=ip)] if ip else []
-            ),
+            a_records=public_ip.ip_address.apply(lambda ip: [network.ARecordArgs(ipv4_address=ip)] if ip else []),
             record_type="A",
             relative_record_set_name="ad",
             resource_group_name=props.resource_group_name,

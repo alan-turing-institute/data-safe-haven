@@ -32,13 +32,11 @@ class TeardownSRECommand:
                 if stack.work_dir.exists():
                     stack.teardown()
                 else:
-                    raise DataSafeHavenInputException(
-                        f"SRE {sre_name} not found - check the name is spelt correctly."
-                    )
+                    msg = f"SRE {sre_name} not found - check the name is spelt correctly."
+                    raise DataSafeHavenInputException(msg)
             except Exception as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to teardown Pulumi infrastructure.\n{str(exc)}"
-                ) from exc
+                msg = f"Unable to teardown Pulumi infrastructure.\n{exc!s}"
+                raise DataSafeHavenInputException(msg) from exc
 
             # Remove information from config file
             config.remove_stack(stack.stack_name)
@@ -47,6 +45,7 @@ class TeardownSRECommand:
             # Upload config to blob storage
             config.upload()
         except DataSafeHavenException as exc:
+            msg = f"Could not teardown Data Safe Haven '{environment_name}'.\n{exc!s}"
             raise DataSafeHavenException(
-                f"Could not teardown Data Safe Haven '{environment_name}'.\n{str(exc)}"
+                msg
             ) from exc

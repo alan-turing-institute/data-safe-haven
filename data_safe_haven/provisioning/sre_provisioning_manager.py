@@ -18,7 +18,7 @@ class SREProvisioningManager:
 
     def __init__(
         self,
-        available_vm_skus: Dict[str, Dict[str, Any]],
+        available_vm_skus: dict[str, dict[str, Any]],
         shm_stack: PulumiSHMStack,
         sre_name: str,
         sre_stack: PulumiSREStack,
@@ -33,27 +33,17 @@ class SREProvisioningManager:
 
         # Construct remote desktop parameters
         self.remote_desktop_params = sre_stack.output("remote_desktop")
-        self.remote_desktop_params["connection_db_server_password"] = sre_stack.secret(
-            "password-user-database-admin"
-        )
+        self.remote_desktop_params["connection_db_server_password"] = sre_stack.secret("password-user-database-admin")
         self.remote_desktop_params["timezone"] = timezone
 
         # Construct security group parameters
         self.security_group_params = {
             "dn_base": shm_stack.output("domain_controllers")["ldap_root_dn"],
-            "resource_group_name": shm_stack.output("domain_controllers")[
-                "resource_group_name"
-            ],
+            "resource_group_name": shm_stack.output("domain_controllers")["resource_group_name"],
             "security_group_names": {
-                "admin_security_group_name": sre_stack.output("ldap")[
-                    "admin_security_group_name"
-                ],
-                "privileged_user_security_group_name": sre_stack.output("ldap")[
-                    "privileged_user_security_group_name"
-                ],
-                "user_security_group_name": sre_stack.output("ldap")[
-                    "user_security_group_name"
-                ],
+                "admin_security_group_name": sre_stack.output("ldap")["admin_security_group_name"],
+                "privileged_user_security_group_name": sre_stack.output("ldap")["privileged_user_security_group_name"],
+                "user_security_group_name": sre_stack.output("ldap")["user_security_group_name"],
             },
             "vm_name": shm_stack.output("domain_controllers")["vm_name"],
         }
@@ -94,9 +84,7 @@ class SREProvisioningManager:
             self.remote_desktop_params["resource_group_name"],
             self.subscription_name,
         )
-        guacamole_provisioner.restart(
-            self.remote_desktop_params["container_ip_address"]
-        )
+        guacamole_provisioner.restart(self.remote_desktop_params["container_ip_address"])
 
     def update_remote_desktop_connections(self) -> None:
         """Update connection information on the Guacamole PostgreSQL server"""
@@ -118,23 +106,16 @@ class SREProvisioningManager:
                 }
                 for vm_identifier, vm_details in self.research_desktops.items()
             ],
-            "system_administrator_group_name": self.security_group_params[
-                "security_group_names"
-            ]["admin_security_group_name"],
-            "user_group_name": self.security_group_params["security_group_names"][
-                "user_security_group_name"
+            "system_administrator_group_name": self.security_group_params["security_group_names"][
+                "admin_security_group_name"
             ],
+            "user_group_name": self.security_group_params["security_group_names"]["user_security_group_name"],
         }
         for details in connection_data["connections"]:
             self.logger.info(
                 f"Adding connection [bold]{details['connection_name']}[/] at [green]{details['ip_address']}[/]."
             )
-        postgres_script_path = (
-            pathlib.Path(__file__).parent.parent
-            / "resources"
-            / "remote_desktop"
-            / "postgresql"
-        )
+        postgres_script_path = pathlib.Path(__file__).parent.parent / "resources" / "remote_desktop" / "postgresql"
         postgres_provisioner.execute_scripts(
             [
                 postgres_script_path / "init_db.mustache.sql",

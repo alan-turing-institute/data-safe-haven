@@ -18,10 +18,8 @@ class TeardownBackendCommand:
                 backend = Backend()
                 backend.teardown()
             except Exception as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to teardown Pulumi backend.\n{str(exc)}"
-                ) from exc
+                msg = f"Unable to teardown Pulumi backend.\n{exc!s}"
+                raise DataSafeHavenInputException(msg) from exc
         except DataSafeHavenException as exc:
-            raise DataSafeHavenException(
-                f"Could not teardown Data Safe Haven backend.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not teardown Data Safe Haven backend.\n{exc!s}"
+            raise DataSafeHavenException(msg) from exc

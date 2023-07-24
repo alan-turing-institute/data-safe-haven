@@ -1,10 +1,10 @@
-from .api.azure_api import AzureApi
-from .api.azure_cli import AzureCli
-from .api.graph_api import GraphApi
-from .interface.azure_container_instance import AzureContainerInstance
-from .interface.azure_fileshare import AzureFileShare
-from .interface.azure_ipv4_range import AzureIPv4Range
-from .interface.azure_postgresql_database import AzurePostgreSQLDatabase
+from data_safe_haven.external.api.azure_api import AzureApi
+from data_safe_haven.external.api.azure_cli import AzureCli
+from data_safe_haven.external.api.graph_api import GraphApi
+from data_safe_haven.external.interface.azure_container_instance import AzureContainerInstance
+from data_safe_haven.external.interface.azure_fileshare import AzureFileShare
+from data_safe_haven.external.interface.azure_ipv4_range import AzureIPv4Range
+from data_safe_haven.external.interface.azure_postgresql_database import AzurePostgreSQLDatabase
 
 __all__ = [
     "AzureApi",

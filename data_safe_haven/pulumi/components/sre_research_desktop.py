@@ -16,7 +16,7 @@ from data_safe_haven.pulumi.common.transformations import (
     get_name_from_subnet,
     get_name_from_vnet,
 )
-from .virtual_machine import LinuxVMProps, VMComponent
+from data_safe_haven.pulumi.components.virtual_machine import LinuxVMProps, VMComponent
 
 
 class SREResearchDesktopProps:
@@ -43,9 +43,7 @@ class SREResearchDesktopProps:
         subnet_research_desktops: Input[network.GetSubnetResult],
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
-        vm_details: List[
-            Tuple[int, str, str]
-        ],  # this must *not* be passed as an Input[T]
+        vm_details: list[tuple[int, str, str]],  # this must *not* be passed as an Input[T]
     ):
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
@@ -64,27 +62,21 @@ class SREResearchDesktopProps:
         self.sre_fqdn = sre_fqdn
         self.storage_account_userdata_name = storage_account_userdata_name
         self.storage_account_securedata_name = storage_account_securedata_name
-        self.virtual_network_name = Output.from_input(virtual_network).apply(
-            get_name_from_vnet
+        self.virtual_network_name = Output.from_input(virtual_network).apply(get_name_from_vnet)
+        self.subnet_research_desktops_name = Output.from_input(subnet_research_desktops).apply(get_name_from_subnet)
+        self.virtual_network_resource_group_name = Output.from_input(virtual_network_resource_group).apply(
+            get_name_from_rg
         )
-        self.subnet_research_desktops_name = Output.from_input(
-            subnet_research_desktops
-        ).apply(get_name_from_subnet)
-        self.virtual_network_resource_group_name = Output.from_input(
-            virtual_network_resource_group
-        ).apply(get_name_from_rg)
         self.vm_ip_addresses = Output.all(subnet_research_desktops, vm_details).apply(
             lambda args: self.get_ip_addresses(subnet=args[0], vm_details=args[1])
         )
         self.vm_details = vm_details
 
-    def get_ip_addresses(self, subnet: Any, vm_details: Any) -> List[str]:
+    def get_ip_addresses(self, subnet: Any, vm_details: Any) -> list[str]:
         if not isinstance(subnet, network.GetSubnetResult):
             DataSafeHavenPulumiException(f"'subnet' has invalid type {type(subnet)}")
         if not isinstance(vm_details, list):
-            DataSafeHavenPulumiException(
-                f"'vm_details' has invalid type {type(vm_details)}"
-            )
+            DataSafeHavenPulumiException(f"'vm_details' has invalid type {type(vm_details)}")
         return get_available_ips_from_subnet(subnet)[: len(vm_details)]
 
 
@@ -97,7 +89,7 @@ class SREResearchDesktopComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SREResearchDesktopProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:ResearchDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -183,14 +175,8 @@ class SREResearchDesktopComponent(ComponentResource):
         storage_account_userdata_name: str,
         storage_account_securedata_name: str,
     ) -> str:
-        resources_path = (
-            pathlib.Path(__file__).parent.parent.parent
-            / "resources"
-            / "secure_research_desktop"
-        )
-        with open(
-            resources_path / "srd.cloud_init.mustache.yaml", "r", encoding="utf-8"
-        ) as f_cloudinit:
+        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources" / "secure_research_desktop"
+        with open(resources_path / "srd.cloud_init.mustache.yaml", encoding="utf-8") as f_cloudinit:
             mustache_values = {
                 "domain_sid": domain_sid,
                 "ldap_bind_dn": ldap_bind_dn,

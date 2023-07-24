@@ -4,19 +4,16 @@ import pulumi
 
 # Local imports
 from data_safe_haven.config import Config
-from .components.shm_bastion import SHMBastionComponent, SHMBastionProps
-from .components.shm_data import SHMDataComponent, SHMDataProps
-from .components.shm_domain_controllers import (
+from data_safe_haven.pulumi.components.shm_bastion import SHMBastionComponent, SHMBastionProps
+from data_safe_haven.pulumi.components.shm_data import SHMDataComponent, SHMDataProps
+from data_safe_haven.pulumi.components.shm_domain_controllers import (
     SHMDomainControllersComponent,
     SHMDomainControllersProps,
 )
-from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
-from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
-from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
-from .components.shm_update_servers import (
-    SHMUpdateServersComponent,
-    SHMUpdateServersProps,
-)
+from data_safe_haven.pulumi.components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
+from data_safe_haven.pulumi.components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
+from data_safe_haven.pulumi.components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
+from data_safe_haven.pulumi.components.shm_update_servers import SHMUpdateServersComponent, SHMUpdateServersProps
 
 
 class DeclarativeSHM:
@@ -40,14 +37,12 @@ class DeclarativeSHM:
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 fqdn=self.cfg.shm.fqdn,
                 location=self.cfg.azure.location,
-                record_domain_verification=self.pulumi_opts.require(
-                    "verification-azuread-custom-domain"
-                ),
+                record_domain_verification=self.pulumi_opts.require("verification-azuread-custom-domain"),
             ),
         )
 
         # Deploy firewall and routing
-        firewall = SHMFirewallComponent(
+        SHMFirewallComponent(
             "shm_firewall",
             self.stack_name,
             self.shm_name,
@@ -64,7 +59,7 @@ class DeclarativeSHM:
         )
 
         # Deploy firewall and routing
-        bastion = SHMBastionComponent(
+        SHMBastionComponent(
             "shm_bastion",
             self.stack_name,
             self.shm_name,

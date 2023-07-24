@@ -5,14 +5,15 @@ from typing import Annotated, Optional
 # Third party imports
 import typer
 
+from data_safe_haven.commands.initialise_command import InitialiseCommand
+
 # Local imports
 from data_safe_haven.functions import validate_aad_guid
-from .initialise_command import InitialiseCommand
 
 
 def initialise_command(
     admin_group: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--admin-group",
             "-a",
@@ -21,7 +22,7 @@ def initialise_command(
         ),
     ] = None,
     location: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--location",
             "-l",
@@ -29,7 +30,7 @@ def initialise_command(
         ),
     ] = None,
     name: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--name",
             "-n",
@@ -37,7 +38,7 @@ def initialise_command(
         ),
     ] = None,
     subscription: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--subscription",
             "-s",

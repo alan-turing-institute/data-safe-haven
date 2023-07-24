@@ -22,7 +22,7 @@ class UsersRegisterCommand:
 
     def __call__(
         self,
-        usernames: List[str],
+        usernames: list[str],
         sre: str,
     ) -> None:
         shm_name = "UNKNOWN"
@@ -37,10 +37,9 @@ class UsersRegisterCommand:
 
             # Check that SRE option has been provided
             if not sre_name:
-                raise DataSafeHavenException("SRE name must be specified.")
-            self.logger.info(
-                f"Preparing to register {len(usernames)} users with SRE '{sre_name}'"
-            )
+                msg = "SRE name must be specified."
+                raise DataSafeHavenException(msg)
+            self.logger.info(f"Preparing to register {len(usernames)} users with SRE '{sre_name}'")
 
             # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
             graph_api = GraphApi(
@@ -61,6 +60,7 @@ class UsersRegisterCommand:
                     )
             users.register(sre_name, usernames_to_register)
         except DataSafeHavenException as exc:
+            msg = f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc!s}"
             raise DataSafeHavenException(
-                f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{str(exc)}"
+                msg
             ) from exc

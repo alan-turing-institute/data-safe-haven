@@ -31,6 +31,5 @@ class AzureCli:
                 )
                 subprocess.run(["az", "login"], capture_output=True)
         except FileNotFoundError as exc:
-            raise DataSafeHavenAzureException(
-                f"Please ensure that the Azure CLI is installed.\n{str(exc)}"
-            )
+            msg = f"Please ensure that the Azure CLI is installed.\n{exc!s}"
+            raise DataSafeHavenAzureException(msg)

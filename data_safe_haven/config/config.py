@@ -13,6 +13,7 @@ from yaml.parser import ParserError
 
 # Local imports
 from data_safe_haven import __version__
+from data_safe_haven.config.backend_settings import BackendSettings
 from data_safe_haven.exceptions import DataSafeHavenAzureException
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
@@ -28,7 +29,6 @@ from data_safe_haven.functions import (
     validate_timezone,
 )
 from data_safe_haven.utility import SoftwarePackageCategory
-from .backend_settings import BackendSettings
 
 
 @dataclass
@@ -43,29 +43,25 @@ class ConfigSectionAzure:
         try:
             validate_aad_guid(self.admin_group_id)
         except Exception as exc:
-            raise ValueError(
-                f"Invalid value for 'admin_group_id' ({self.admin_group_id}).\n{str(exc)}"
-            )
+            msg = f"Invalid value for 'admin_group_id' ({self.admin_group_id}).\n{exc!s}"
+            raise ValueError(msg)
         try:
             validate_azure_location(self.location)
         except Exception as exc:
-            raise ValueError(
-                f"Invalid value for 'location' ({self.location}).\n{str(exc)}"
-            )
+            msg = f"Invalid value for 'location' ({self.location}).\n{exc!s}"
+            raise ValueError(msg)
         try:
             validate_aad_guid(self.subscription_id)
         except Exception as exc:
-            raise ValueError(
-                f"Invalid value for 'subscription_id' ({self.subscription_id}).\n{str(exc)}"
-            )
+            msg = f"Invalid value for 'subscription_id' ({self.subscription_id}).\n{exc!s}"
+            raise ValueError(msg)
         try:
             validate_aad_guid(self.tenant_id)
         except Exception as exc:
-            raise ValueError(
-                f"Invalid value for 'tenant_id' ({self.tenant_id}).\n{str(exc)}"
-            )
+            msg = f"Invalid value for 'tenant_id' ({self.tenant_id}).\n{exc!s}"
+            raise ValueError(msg)
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         self.validate()
         return as_dict(chili.encode(self))
 
@@ -81,27 +77,22 @@ class ConfigSectionBackend:
     def validate(self) -> None:
         """Validate input parameters"""
         if not self.key_vault_name:
-            raise ValueError(
-                f"Invalid value for 'key_vault_name' ({self.key_vault_name})."
-            )
+            msg = f"Invalid value for 'key_vault_name' ({self.key_vault_name})."
+            raise ValueError(msg)
         if not self.managed_identity_name:
-            raise ValueError(
-                f"Invalid value for 'managed_identity_name' ({self.managed_identity_name})."
-            )
+            msg = f"Invalid value for 'managed_identity_name' ({self.managed_identity_name})."
+            raise ValueError(msg)
         if not self.resource_group_name:
-            raise ValueError(
-                f"Invalid value for 'resource_group_name' ({self.resource_group_name})."
-            )
+            msg = f"Invalid value for 'resource_group_name' ({self.resource_group_name})."
+            raise ValueError(msg)
         if not self.storage_account_name:
-            raise ValueError(
-                f"Invalid value for 'storage_account_name' ({self.storage_account_name})."
-            )
+            msg = f"Invalid value for 'storage_account_name' ({self.storage_account_name})."
+            raise ValueError(msg)
         if not self.storage_container_name:
-            raise ValueError(
-                f"Invalid value for 'storage_container_name' ({self.storage_container_name})."
-            )
+            msg = f"Invalid value for 'storage_container_name' ({self.storage_container_name})."
+            raise ValueError(msg)
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         self.validate()
         return as_dict(chili.encode(self))
 
@@ -110,17 +101,16 @@ class ConfigSectionBackend:
 class ConfigSectionPulumi:
     encryption_key_id: str = ""
     encryption_key_name: str = "pulumi-encryption-key"
-    stacks: Dict[str, str] = field(default_factory=dict)
+    stacks: dict[str, str] = field(default_factory=dict)
     storage_container_name: str = "pulumi"
 
     def validate(self) -> None:
         """Validate input parameters"""
         if not isinstance(self.encryption_key_id, str) or not self.encryption_key_id:
-            raise ValueError(
-                f"Invalid value for 'encryption_key_id' ({self.encryption_key_id})."
-            )
+            msg = f"Invalid value for 'encryption_key_id' ({self.encryption_key_id})."
+            raise ValueError(msg)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         self.validate()
         return as_dict(chili.encode(self))
 
@@ -129,7 +119,7 @@ class ConfigSectionPulumi:
 class ConfigSectionSHM:
     aad_tenant_id: str = ""
     admin_email_address: str = ""
-    admin_ip_addresses: List[str] = field(default_factory=list)
+    admin_ip_addresses: list[str] = field(default_factory=list)
     fqdn: str = ""
     name: str = ""
     timezone: str = ""
@@ -139,34 +129,32 @@ class ConfigSectionSHM:
         try:
             validate_aad_guid(self.aad_tenant_id)
         except Exception as exc:
-            raise ValueError(
-                f"Invalid value for 'aad_tenant_id' ({self.aad_tenant_id}).\n{str(exc)}"
-            )
+            msg = f"Invalid value for 'aad_tenant_id' ({self.aad_tenant_id}).\n{exc!s}"
+            raise ValueError(msg)
         try:
             validate_email_address(self.admin_email_address)
         except Exception as exc:
-            raise ValueError(
-                f"Invalid value for 'admin_email_address' ({self.admin_email_address}).\n{str(exc)}"
-            )
+            msg = f"Invalid value for 'admin_email_address' ({self.admin_email_address}).\n{exc!s}"
+            raise ValueError(msg)
         try:
             for ip in self.admin_ip_addresses:
                 validate_ip_address(ip)
         except Exception as exc:
-            raise ValueError(
-                f"Invalid value for 'admin_ip_addresses' ({self.admin_ip_addresses}).\n{str(exc)}"
-            )
+            msg = f"Invalid value for 'admin_ip_addresses' ({self.admin_ip_addresses}).\n{exc!s}"
+            raise ValueError(msg)
         if not isinstance(self.fqdn, str) or not self.fqdn:
-            raise ValueError(f"Invalid value for 'fqdn' ({self.fqdn}).")
+            msg = f"Invalid value for 'fqdn' ({self.fqdn})."
+            raise ValueError(msg)
         if not isinstance(self.name, str) or not self.name:
-            raise ValueError(f"Invalid value for 'name' ({self.name}).")
+            msg = f"Invalid value for 'name' ({self.name})."
+            raise ValueError(msg)
         try:
             validate_timezone(self.timezone)
         except Exception as exc:
-            raise ValueError(
-                f"Invalid value for 'timezone' ({self.timezone}).\n{str(exc)}"
-            )
+            msg = f"Invalid value for 'timezone' ({self.timezone}).\n{exc!s}"
+            raise ValueError(msg)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         self.validate()
         return as_dict(chili.encode(self))
 
@@ -181,13 +169,13 @@ class ConfigSectionSRE:
         def validate(self) -> None:
             """Validate input parameters"""
             if not isinstance(self.allow_copy, bool):
-                raise ValueError(f"Invalid value for 'allow_copy' ({self.allow_copy}).")
+                msg = f"Invalid value for 'allow_copy' ({self.allow_copy})."
+                raise ValueError(msg)
             if not isinstance(self.allow_paste, bool):
-                raise ValueError(
-                    f"Invalid value for 'allow_paste' ({self.allow_paste})."
-                )
+                msg = f"Invalid value for 'allow_paste' ({self.allow_paste})."
+                raise ValueError(msg)
 
-        def to_dict(self) -> Dict[str, bool]:
+        def to_dict(self) -> dict[str, bool]:
             self.validate()
             return as_dict(chili.encode(self))
 
@@ -200,28 +188,23 @@ class ConfigSectionSRE:
             try:
                 validate_azure_vm_sku(self.sku)
             except Exception as exc:
-                raise ValueError(f"Invalid value for 'sku' ({self.sku}).\n{str(exc)}")
+                msg = f"Invalid value for 'sku' ({self.sku}).\n{exc!s}"
+                raise ValueError(msg)
 
-        def to_dict(self) -> Dict[str, str]:
+        def to_dict(self) -> dict[str, str]:
             self.validate()
             return as_dict(chili.encode(self))
 
-    data_provider_ip_addresses: List[str] = field(default_factory=list)
+    data_provider_ip_addresses: list[str] = field(default_factory=list)
     index: int = 0
-    remote_desktop: ConfigSectionRemoteDesktopOpts = field(
-        default_factory=ConfigSectionRemoteDesktopOpts
-    )
+    remote_desktop: ConfigSectionRemoteDesktopOpts = field(default_factory=ConfigSectionRemoteDesktopOpts)
     # NB. we cannot use defaultdict here until https://github.com/python/cpython/pull/32056 is included in the Python version we are using
-    research_desktops: Dict[str, ConfigSectionResearchDesktopOpts] = field(
-        default_factory=dict
-    )
-    research_user_ip_addresses: List[str] = field(default_factory=list)
+    research_desktops: dict[str, ConfigSectionResearchDesktopOpts] = field(default_factory=dict)
+    research_user_ip_addresses: list[str] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
     def add_research_desktop(self, name: str):
-        self.research_desktops[
-            name
-        ] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts()
+        self.research_desktops[name] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts()
 
     def validate(self) -> None:
         """Validate input parameters"""
@@ -229,19 +212,21 @@ class ConfigSectionSRE:
             for ip in self.data_provider_ip_addresses:
                 validate_ip_address(ip)
         except Exception as exc:
+            msg = f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{exc!s}"
             raise ValueError(
-                f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{str(exc)}"
+                msg
             )
         self.remote_desktop.validate()
         try:
             for ip in self.research_user_ip_addresses:
                 validate_ip_address(ip)
         except Exception as exc:
+            msg = f"Invalid value for 'research_user_ip_addresses' ({self.research_user_ip_addresses}).\n{exc!s}"
             raise ValueError(
-                f"Invalid value for 'research_user_ip_addresses' ({self.research_user_ip_addresses}).\n{str(exc)}"
+                msg
             )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         self.validate()
         return as_dict(chili.encode(self))
 
@@ -256,9 +241,10 @@ class ConfigSectionTags:
     def validate(self) -> None:
         """Validate input parameters"""
         if not self.deployment:
-            raise ValueError(f"Invalid value for 'deployment' ({self.deployment}).")
+            msg = f"Invalid value for 'deployment' ({self.deployment})."
+            raise ValueError(msg)
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         self.validate()
         return as_dict(chili.encode(self))
 
@@ -266,12 +252,12 @@ class ConfigSectionTags:
 class Config:
     def __init__(self):
         # Initialise config sections
-        self.azure_: Optional[ConfigSectionAzure] = None
-        self.backend_: Optional[ConfigSectionBackend] = None
-        self.pulumi_: Optional[ConfigSectionPulumi] = None
-        self.shm_: Optional[ConfigSectionSHM] = None
-        self.tags_: Optional[ConfigSectionTags] = None
-        self.sres: Dict[str, ConfigSectionSRE] = defaultdict(ConfigSectionSRE)
+        self.azure_: ConfigSectionAzure | None = None
+        self.backend_: ConfigSectionBackend | None = None
+        self.pulumi_: ConfigSectionPulumi | None = None
+        self.shm_: ConfigSectionSHM | None = None
+        self.tags_: ConfigSectionTags | None = None
+        self.sres: dict[str, ConfigSectionSRE] = defaultdict(ConfigSectionSRE)
         # Read backend settings
         settings = BackendSettings()
         self.name = settings.name
@@ -283,9 +269,7 @@ class Config:
         self.shm_name_ = alphanumeric(self.name).lower()
         self.filename = f"config-{self.shm_name_}.yaml"
         self.backend_resource_group_name = f"shm-{self.shm_name_}-rg-backend"
-        self.backend_storage_account_name = (
-            f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
-        )
+        self.backend_storage_account_name = f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
         self.work_directory = settings.config_directory / self.shm_name_
         self.azure_api = AzureApi(subscription_name=self.subscription_name)
         # Attempt to load YAML dictionary from blob storage
@@ -304,9 +288,7 @@ class Config:
             if "azure" in yaml_input:
                 self.azure_ = chili.decode(yaml_input["azure"], ConfigSectionAzure)
             if "backend" in yaml_input:
-                self.backend_ = chili.decode(
-                    yaml_input["backend"], ConfigSectionBackend
-                )
+                self.backend_ = chili.decode(yaml_input["backend"], ConfigSectionBackend)
             if "pulumi" in yaml_input:
                 self.pulumi_ = chili.decode(yaml_input["pulumi"], ConfigSectionPulumi)
             if "shm" in yaml_input:
@@ -370,7 +352,7 @@ class Config:
 
     def read_stack(self, name: str, path: pathlib.Path):
         """Add a Pulumi stack file to config"""
-        with open(path, "r", encoding="utf-8") as f_stack:
+        with open(path, encoding="utf-8") as f_stack:
             b64string = f_stack.read()
         self.pulumi.stacks[name] = b64encode(b64string)
 

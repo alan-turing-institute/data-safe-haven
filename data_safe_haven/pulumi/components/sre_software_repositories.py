@@ -13,8 +13,8 @@ from data_safe_haven.pulumi.common.transformations import (
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
+from data_safe_haven.pulumi.dynamic.file_share_file import FileShareFile, FileShareFileProps
 from data_safe_haven.utility import FileReader
-from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 
 
 class SRESoftwareRepositoriesProps:
@@ -38,9 +38,7 @@ class SRESoftwareRepositoriesProps:
         self.networking_resource_group_name = networking_resource_group_name
         self.nexus_admin_password = Output.secret(nexus_admin_password)
         try:
-            self.nexus_packages = {"any": "all", "pre-approved": "selected"}[
-                software_packages
-            ]
+            self.nexus_packages = {"any": "all", "pre-approved": "selected"}[software_packages]
         except KeyError:
             self.nexus_packages = None
         self.sre_fqdn = sre_fqdn
@@ -48,9 +46,7 @@ class SRESoftwareRepositoriesProps:
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_id = Output.from_input(subnet).apply(get_id_from_subnet)
-        self.subnet_ip_addresses = Output.from_input(subnet).apply(
-            get_available_ips_from_subnet
-        )
+        self.subnet_ip_addresses = Output.from_input(subnet).apply(get_available_ips_from_subnet)
         self.virtual_network = virtual_network
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
@@ -64,7 +60,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SRESoftwareRepositoriesProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:SRESoftwareRepositoriesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -108,10 +104,8 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
 
         # Upload Caddyfile
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
-        caddyfile_reader = FileReader(
-            resources_path / "software_repositories" / "caddy" / "Caddyfile"
-        )
-        caddyfile = FileShareFile(
+        caddyfile_reader = FileReader(resources_path / "software_repositories" / "caddy" / "Caddyfile")
+        FileShareFile(
             f"{self._name}_file_share_caddyfile",
             FileShareFileProps(
                 destination_path=caddyfile_reader.name,
@@ -124,10 +118,8 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         )
 
         # Upload Nexus allowlists
-        cran_reader = FileReader(
-            resources_path / "software_repositories" / "allowlists" / "cran.allowlist"
-        )
-        cran_allowlist = FileShareFile(
+        cran_reader = FileReader(resources_path / "software_repositories" / "allowlists" / "cran.allowlist")
+        FileShareFile(
             f"{self._name}_file_share_cran_allowlist",
             FileShareFileProps(
                 destination_path=cran_reader.name,
@@ -138,10 +130,8 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             ),
             opts=child_opts,
         )
-        pypi_reader = FileReader(
-            resources_path / "software_repositories" / "allowlists" / "pypi.allowlist"
-        )
-        pypi_allowlist = FileShareFile(
+        pypi_reader = FileReader(resources_path / "software_repositories" / "allowlists" / "pypi.allowlist")
+        FileShareFile(
             f"{self._name}_file_share_pypi_allowlist",
             FileShareFileProps(
                 destination_path=pypi_reader.name,
@@ -315,20 +305,16 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     ),
                 ],
                 opts=ResourceOptions.merge(
-                    ResourceOptions(
-                        delete_before_replace=True, replace_on_changes=["containers"]
-                    ),
+                    ResourceOptions(delete_before_replace=True, replace_on_changes=["containers"]),
                     child_opts,
                 ),
             )
             # Register the container group in the SRE private DNS zone
-            nexus_private_record_set = network.PrivateRecordSet(
+            network.PrivateRecordSet(
                 f"{self._name}_nexus_private_record_set",
                 a_records=[
                     network.ARecordArgs(
-                        ipv4_address=get_ip_address_from_container_group(
-                            container_group
-                        ),
+                        ipv4_address=get_ip_address_from_container_group(container_group),
                     )
                 ],
                 private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
@@ -339,11 +325,9 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 opts=child_opts,
             )
             # Redirect the public DNS to private DNS
-            nexus_public_record_set = network.RecordSet(
+            network.RecordSet(
                 f"{self._name}_nexus_public_record_set",
-                cname_record=network.CnameRecordArgs(
-                    cname=Output.concat("nexus.privatelink.", props.sre_fqdn)
-                ),
+                cname_record=network.CnameRecordArgs(cname=Output.concat("nexus.privatelink.", props.sre_fqdn)),
                 record_type="CNAME",
                 relative_record_set_name="nexus",
                 resource_group_name=props.networking_resource_group_name,

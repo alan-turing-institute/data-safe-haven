@@ -5,6 +5,9 @@ from typing import Annotated, List, Optional
 # Third party imports
 import typer
 
+from data_safe_haven.commands.deploy_shm_command import DeploySHMCommand
+from data_safe_haven.commands.deploy_sre_command import DeploySRECommand
+
 # Local imports
 from data_safe_haven.functions import (
     validate_aad_guid,
@@ -14,8 +17,6 @@ from data_safe_haven.functions import (
     validate_timezone,
 )
 from data_safe_haven.utility import SoftwarePackageCategory
-from .deploy_shm_command import DeploySHMCommand
-from .deploy_sre_command import DeploySRECommand
 
 deploy_command_group = typer.Typer()
 
@@ -23,7 +24,7 @@ deploy_command_group = typer.Typer()
 @deploy_command_group.command()
 def shm(
     aad_tenant_id: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--aad-tenant-id",
             "-a",
@@ -32,7 +33,7 @@ def shm(
         ),
     ] = None,
     admin_email_address: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--email",
             "-e",
@@ -41,7 +42,7 @@ def shm(
         ),
     ] = None,
     admin_ip_addresses: Annotated[
-        Optional[List[str]],
+        list[str] | None,
         typer.Option(
             "--ip-address",
             "-i",
@@ -50,7 +51,7 @@ def shm(
         ),
     ] = None,
     fqdn: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--fqdn",
             "-f",
@@ -58,7 +59,7 @@ def shm(
         ),
     ] = None,
     timezone: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--timezone",
             "-t",
@@ -81,7 +82,7 @@ def shm(
 def sre(
     name: Annotated[str, typer.Argument(help="Name of SRE to deploy")],
     allow_copy: Annotated[
-        Optional[bool],
+        bool | None,
         typer.Option(
             "--allow-copy",
             "-c",
@@ -89,7 +90,7 @@ def sre(
         ),
     ] = None,
     allow_paste: Annotated[
-        Optional[bool],
+        bool | None,
         typer.Option(
             "--allow-paste",
             "-p",
@@ -97,7 +98,7 @@ def sre(
         ),
     ] = None,
     data_provider_ip_addresses: Annotated[
-        Optional[List[str]],
+        list[str] | None,
         typer.Option(
             "--data-provider-ip-address",
             "-d",
@@ -106,7 +107,7 @@ def sre(
         ),
     ] = None,
     research_desktops: Annotated[
-        Optional[List[str]],
+        list[str] | None,
         typer.Option(
             "--research-desktop",
             "-r",
@@ -115,7 +116,7 @@ def sre(
         ),
     ] = None,
     software_packages: Annotated[
-        Optional[SoftwarePackageCategory],
+        SoftwarePackageCategory | None,
         typer.Option(
             "--software-packages",
             "-s",
@@ -123,7 +124,7 @@ def sre(
         ),
     ] = None,
     user_ip_addresses: Annotated[
-        Optional[List[str]],
+        list[str] | None,
         typer.Option(
             "--user-ip-address",
             "-u",

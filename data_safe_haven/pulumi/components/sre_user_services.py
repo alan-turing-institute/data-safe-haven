@@ -7,8 +7,8 @@ from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.pulumi.common.transformations import get_id_from_subnet
-from .sre_gitea_server import SREGiteaServerComponent, SREGiteaServerProps
-from .sre_hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
+from data_safe_haven.pulumi.components.sre_gitea_server import SREGiteaServerComponent, SREGiteaServerProps
+from data_safe_haven.pulumi.components.sre_hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
 
 
 class SREUserServicesProps:
@@ -53,12 +53,8 @@ class SREUserServicesProps:
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
-        self.subnet_containers_id = Output.from_input(subnet_containers).apply(
-            get_id_from_subnet
-        )
-        self.subnet_databases_id = Output.from_input(subnet_databases).apply(
-            get_id_from_subnet
-        )
+        self.subnet_containers_id = Output.from_input(subnet_containers).apply(get_id_from_subnet)
+        self.subnet_databases_id = Output.from_input(subnet_databases).apply(get_id_from_subnet)
         self.virtual_network = virtual_network
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
@@ -72,7 +68,7 @@ class SREUserServicesComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SREUserServicesProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:UserServicesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -115,7 +111,7 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Deploy the Gitea server
-        gitea_server = SREGiteaServerComponent(
+        SREGiteaServerComponent(
             "sre_gitea_server",
             stack_name,
             sre_name,
@@ -144,7 +140,7 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Deploy the HedgeDoc server
-        hedgedoc_server = SREHedgeDocServerComponent(
+        SREHedgeDocServerComponent(
             "sre_hedgedoc_server",
             stack_name,
             sre_name,

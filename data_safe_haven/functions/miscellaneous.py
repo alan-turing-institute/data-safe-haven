@@ -6,17 +6,14 @@ from typing import Any, Dict, List, Optional
 import pytz
 
 
-def as_dict(object: Any) -> Dict[str, Any]:
-    if (
-        not isinstance(object, dict)
-        and hasattr(object, "keys")
-        and all(isinstance(x, str) for x in object.keys())
-    ):
-        raise TypeError(f"{object} {type(object)} is not a valid Dict[str, Any]")
+def as_dict(object: Any) -> dict[str, Any]:
+    if not isinstance(object, dict) and hasattr(object, "keys") and all(isinstance(x, str) for x in object.keys()):
+        msg = f"{object} {type(object)} is not a valid Dict[str, Any]"
+        raise TypeError(msg)
     return object
 
 
-def ordered_private_dns_zones(resource_type: Optional[str] = None) -> List[str]:
+def ordered_private_dns_zones(resource_type: str | None = None) -> list[str]:
     """
     Return required DNS zones for a given resource type.
     See https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns for details.
@@ -35,7 +32,7 @@ def ordered_private_dns_zones(resource_type: Optional[str] = None) -> List[str]:
     }
     if resource_type and (resource_type in dns_zones):
         return dns_zones[resource_type]
-    return sorted(set(zone for zones in dns_zones.values() for zone in zones))
+    return sorted({zone for zones in dns_zones.values() for zone in zones})
 
 
 def time_as_string(hour: int, minute: int, timezone: str) -> str:

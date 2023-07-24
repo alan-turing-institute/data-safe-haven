@@ -14,9 +14,7 @@ class SHMProvisioningManager:
     ):
         super().__init__()
         self.subscription_name = subscription_name
-        domain_controllers_resource_group_name = stack.output("domain_controllers")[
-            "resource_group_name"
-        ]
+        domain_controllers_resource_group_name = stack.output("domain_controllers")["resource_group_name"]
         domain_controllers_vm_name = stack.output("domain_controllers")["vm_name"]
 
         # Construct DC restart parameters

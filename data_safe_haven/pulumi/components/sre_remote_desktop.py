@@ -19,9 +19,9 @@ from data_safe_haven.pulumi.common.transformations import (
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
+from data_safe_haven.pulumi.dynamic.azuread_application import AzureADApplication, AzureADApplicationProps
+from data_safe_haven.pulumi.dynamic.file_share_file import FileShareFile, FileShareFileProps
 from data_safe_haven.utility import FileReader
-from ..dynamic.azuread_application import AzureADApplication, AzureADApplicationProps
-from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 
 
 class SRERemoteDesktopProps:
@@ -50,16 +50,14 @@ class SRERemoteDesktopProps:
         subnet_guacamole_database: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
-        database_username: Optional[Input[str]] = "postgresadmin",
+        database_username: Input[str] | None = "postgresadmin",
     ):
         self.aad_application_name = aad_application_name
         self.aad_application_url = Output.concat("https://", aad_application_fqdn)
         self.aad_auth_token = aad_auth_token
         self.aad_tenant_id = aad_tenant_id
         self.database_password = database_password
-        self.database_username = (
-            database_username if database_username else "postgresadmin"
-        )
+        self.database_username = database_username if database_username else "postgresadmin"
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.ldap_bind_dn = ldap_bind_dn
@@ -72,27 +70,15 @@ class SRERemoteDesktopProps:
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
-        self.subnet_guacamole_containers_id = Output.from_input(
-            subnet_guacamole_containers
-        ).apply(get_id_from_subnet)
-        self.subnet_guacamole_containers_ip_addresses = Output.from_input(
-            subnet_guacamole_containers
-        ).apply(
-            lambda s: [
-                str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
-            ]
+        self.subnet_guacamole_containers_id = Output.from_input(subnet_guacamole_containers).apply(get_id_from_subnet)
+        self.subnet_guacamole_containers_ip_addresses = Output.from_input(subnet_guacamole_containers).apply(
+            lambda s: [str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()]
             if s.address_prefix
             else []
         )
-        self.subnet_guacamole_database_id = Output.from_input(
-            subnet_guacamole_database
-        ).apply(get_id_from_subnet)
-        self.subnet_guacamole_database_ip_addresses = Output.from_input(
-            subnet_guacamole_database
-        ).apply(
-            lambda s: [
-                str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
-            ]
+        self.subnet_guacamole_database_id = Output.from_input(subnet_guacamole_database).apply(get_id_from_subnet)
+        self.subnet_guacamole_database_ip_addresses = Output.from_input(subnet_guacamole_database).apply(
+            lambda s: [str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()]
             if s.address_prefix
             else []
         )
@@ -109,7 +95,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         stack_name: str,
         sre_name: str,
         props: SRERemoteDesktopProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -147,7 +133,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         # Upload Caddyfile
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
         reader = FileReader(resources_path / "remote_desktop" / "caddy" / "Caddyfile")
-        caddyfile = FileShareFile(
+        FileShareFile(
             f"{self._name}_file_share_caddyfile",
             FileShareFileProps(
                 destination_path=reader.name,
@@ -189,7 +175,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             ),
             opts=child_opts,
         )
-        connection_db_private_endpoint = network.PrivateEndpoint(
+        network.PrivateEndpoint(
             f"{self._name}_connection_db_private_endpoint",
             custom_dns_configs=[
                 network.CustomDnsConfigPropertiesFormatArgs(
@@ -286,12 +272,8 @@ class SRERemoteDesktopComponent(ComponentResource):
                     image="guacamole/guacamole:1.5.2",
                     name="guacamole"[:63],
                     environment_variables=[
-                        containerinstance.EnvironmentVariableArgs(
-                            name="GUACD_HOSTNAME", value="localhost"
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="LOGBACK_LEVEL", value="debug"
-                        ),
+                        containerinstance.EnvironmentVariableArgs(name="GUACD_HOSTNAME", value="localhost"),
+                        containerinstance.EnvironmentVariableArgs(name="LOGBACK_LEVEL", value="debug"),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_AUTHORIZATION_ENDPOINT",
                             value=f"https://login.microsoftonline.com/{props.aad_tenant_id}/oauth2/v2.0/authorize",
@@ -315,9 +297,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="OPENID_USERNAME_CLAIM_TYPE",
                             value="preferred_username",  # this is 'username@domain'
                         ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_DATABASE", value=connection_db_name
-                        ),
+                        containerinstance.EnvironmentVariableArgs(name="POSTGRES_DATABASE", value=connection_db_name),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_HOSTNAME",
                             value=props.subnet_guacamole_database_ip_addresses[0],
@@ -326,9 +306,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="POSTGRES_PASSWORD",
                             secure_value=props.database_password,
                         ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRESQL_SSL_MODE", value="require"
-                        ),
+                        containerinstance.EnvironmentVariableArgs(name="POSTGRESQL_SSL_MODE", value="require"),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_USER",
                             value=f"{props.database_username}@{connection_db_server_name}",
@@ -345,9 +323,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     image="guacamole/guacd:1.5.2",
                     name="guacd"[:63],
                     environment_variables=[
-                        containerinstance.EnvironmentVariableArgs(
-                            name="GUACD_LOG_LEVEL", value="debug"
-                        ),
+                        containerinstance.EnvironmentVariableArgs(name="GUACD_LOG_LEVEL", value="debug"),
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
                         requests=containerinstance.ResourceRequestsArgs(
@@ -450,9 +426,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ),
             ],
             opts=ResourceOptions.merge(
-                ResourceOptions(
-                    delete_before_replace=True, replace_on_changes=["containers"]
-                ),
+                ResourceOptions(delete_before_replace=True, replace_on_changes=["containers"]),
                 child_opts,
             ),
         )
@@ -465,9 +439,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             "connection_db_name": connection_db.name,
             "connection_db_server_name": connection_db_server_name,
             "container_group_name": container_group.name,
-            "container_ip_address": get_ip_address_from_container_group(
-                container_group
-            ),
+            "container_ip_address": get_ip_address_from_container_group(container_group),
             "disable_copy": props.disable_copy,
             "disable_paste": props.disable_paste,
             "resource_group_name": resource_group.name,

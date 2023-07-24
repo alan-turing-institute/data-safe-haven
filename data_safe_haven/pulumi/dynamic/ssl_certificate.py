@@ -19,7 +19,7 @@ from simple_acme_dns import ACMEClient
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenSSLException
 from data_safe_haven.external import AzureApi
-from .dsh_resource_provider import DshResourceProvider
+from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
 
 
 class SSLCertificateProps:
@@ -44,18 +44,16 @@ class SSLCertificateProps:
 
 class SSLCertificateProvider(DshResourceProvider):
     @staticmethod
-    def refresh(props: Dict[str, Any]) -> Dict[str, Any]:
+    def refresh(props: dict[str, Any]) -> dict[str, Any]:
         outs = dict(**props)
         with suppress(Exception):
             azure_api = AzureApi(outs["subscription_name"])
-            certificate = azure_api.get_keyvault_certificate(
-                outs["certificate_secret_name"], outs["key_vault_name"]
-            )
+            certificate = azure_api.get_keyvault_certificate(outs["certificate_secret_name"], outs["key_vault_name"])
             if certificate.secret_id:
                 outs["secret_id"] = certificate.secret_id
         return outs
 
-    def create(self, props: Dict[str, Any]) -> CreateResult:
+    def create(self, props: dict[str, Any]) -> CreateResult:
         """Create new SSL certificate."""
         outs = dict(**props)
         try:
@@ -81,33 +79,25 @@ class SSLCertificateProvider(DshResourceProvider):
                     zone_name=props["domain_name"],
                 )
             # Wait for DNS propagation to complete
-            if not client.check_dns_propagation(
-                authoritative=False, round_robin=True, verbose=False
-            ):
-                raise DataSafeHavenSSLException("DNS propagation failed")
+            if not client.check_dns_propagation(authoritative=False, round_robin=True, verbose=False):
+                msg = "DNS propagation failed"
+                raise DataSafeHavenSSLException(msg)
             # Request a signed certificate
             try:
                 certificate_bytes = client.request_certificate()
             except ValidationError as exc:
                 raise DataSafeHavenSSLException(
-                    "ACME validation error:\n"
-                    + "\n".join([str(auth_error) for auth_error in exc.failed_authzrs])
+                    "ACME validation error:\n" + "\n".join([str(auth_error) for auth_error in exc.failed_authzrs])
                 ) from exc
             # Although KeyVault will accept a PEM certificate (where we simply
             # prepend the private key) we need a PFX certificate for
             # compatibility with ApplicationGateway
             private_key = load_pem_private_key(private_key_bytes, None)
             if not isinstance(private_key, RSAPrivateKey):
-                raise TypeError(
-                    f"Private key is of type {type(private_key)} not RSAPrivateKey."
-                )
-            all_certs = [
-                load_pem_x509_certificate(data)
-                for data in certificate_bytes.split(b"\n\n")
-            ]
-            certificate = [
-                cert for cert in all_certs if props["domain_name"] in str(cert.subject)
-            ][0]
+                msg = f"Private key is of type {type(private_key)} not RSAPrivateKey."
+                raise TypeError(msg)
+            all_certs = [load_pem_x509_certificate(data) for data in certificate_bytes.split(b"\n\n")]
+            certificate = [cert for cert in all_certs if props["domain_name"] in str(cert.subject)][0]
             ca_certs = [cert for cert in all_certs if cert != certificate]
             pkcs12._ALLOWED_PKCS12_TYPES
             pfx_bytes = pkcs12.serialize_key_and_certificates(
@@ -125,15 +115,16 @@ class SSLCertificateProvider(DshResourceProvider):
             )
             outs["secret_id"] = kvcert.secret_id
         except Exception as exc:
+            msg = f"Failed to create SSL certificate [green]{props['certificate_secret_name']}[/] for [green]{props['domain_name']}[/].\n{exc!s}"
             raise DataSafeHavenSSLException(
-                f"Failed to create SSL certificate [green]{props['certificate_secret_name']}[/] for [green]{props['domain_name']}[/].\n{str(exc)}"
+                msg
             ) from exc
         return CreateResult(
             f"SSLCertificate-{props['certificate_secret_name']}",
             outs=outs,
         )
 
-    def delete(self, id_: str, props: Dict[str, Any]) -> None:
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Delete an SSL certificate."""
         try:
             # Remove the DNS record
@@ -149,15 +140,16 @@ class SSLCertificateProvider(DshResourceProvider):
                 key_vault_name=props["key_vault_name"],
             )
         except Exception as exc:
+            msg = f"Failed to delete SSL certificate [green]{props['certificate_secret_name']}[/] for [green]{props['domain_name']}[/].\n{exc!s}"
             raise DataSafeHavenSSLException(
-                f"Failed to delete SSL certificate [green]{props['certificate_secret_name']}[/] for [green]{props['domain_name']}[/].\n{str(exc)}"
+                msg
             ) from exc
 
     def diff(
         self,
         id_: str,
-        old_props: Dict[str, Any],
-        new_props: Dict[str, Any],
+        old_props: dict[str, Any],
+        new_props: dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
         return self.partial_diff(old_props, new_props, [])
@@ -171,7 +163,7 @@ class SSLCertificate(Resource):
         self,
         name: str,
         props: SSLCertificateProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__(
             SSLCertificateProvider(),
