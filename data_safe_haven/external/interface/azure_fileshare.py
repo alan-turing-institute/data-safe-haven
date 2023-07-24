@@ -1,7 +1,6 @@
 """Helper class for Azure fileshares"""
 # Standard library imports
 from contextlib import suppress
-from typing import Optional
 
 # Third party imports
 from azure.core.exceptions import ResourceNotFoundError
@@ -46,9 +45,7 @@ class AzureFileShare:
             ]
             if not storage_account_keys:
                 msg = f"Could not load key values for storage account {self.storage_account_name}."
-                raise DataSafeHavenAzureException(
-                    msg
-                )
+                raise DataSafeHavenAzureException(msg)
             self.storage_account_key_ = storage_account_keys[0]
         return self.storage_account_key_
 
@@ -66,9 +63,7 @@ class AzureFileShare:
             file_client.upload_file(file_contents.encode("utf-8"))
         except Exception as exc:
             msg = f"Failed to upload data to [green]{target}[/] in [green]{self.share_name}[/]."
-            raise DataSafeHavenAzureException(
-                msg
-            ) from exc
+            raise DataSafeHavenAzureException(msg) from exc
 
     def delete(self, destination_path: str) -> None:
         """Delete a file from the target storage account"""
@@ -85,9 +80,7 @@ class AzureFileShare:
                 file_client.delete_file()
         except Exception as exc:
             msg = f"Failed to delete file [green]{target}[/] in [green]{self.share_name}[/]."
-            raise DataSafeHavenAzureException(
-                msg
-            ) from exc
+            raise DataSafeHavenAzureException(msg) from exc
 
     @staticmethod
     def file_exists(file_client: ShareFileClient) -> bool:

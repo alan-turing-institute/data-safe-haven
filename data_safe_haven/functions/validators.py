@@ -1,7 +1,6 @@
 # Standard library imports
 import ipaddress
 import re
-from typing import Optional
 
 # Third-party imports
 import pytz

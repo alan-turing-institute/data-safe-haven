@@ -1,6 +1,6 @@
 """Command-line application for deploying a Data Safe Haven component, delegating the details to a subcommand"""
 # Standard library imports
-from typing import Annotated, List, Optional
+from typing import Annotated
 
 # Third party imports
 import typer

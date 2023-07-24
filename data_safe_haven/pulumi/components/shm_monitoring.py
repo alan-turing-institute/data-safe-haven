@@ -1,6 +1,5 @@
 """Pulumi component for SHM monitoring"""
 # Standard library import
-from typing import Dict, Optional, Tuple
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions

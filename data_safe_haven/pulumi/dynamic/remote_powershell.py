@@ -1,6 +1,6 @@
 """Pulumi dynamic component for running remote scripts on an Azure VM."""
 # Standard library imports
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third party imports
 from pulumi import Input, Output, ResourceOptions

@@ -2,7 +2,6 @@
 # Standard library imports
 import contextlib
 import time
-from typing import List, Optional
 
 # Third party imports
 import websocket
@@ -45,9 +44,7 @@ class AzureContainerInstance:
         if ip_address and isinstance(ip_address.ip, str):
             return ip_address.ip
         msg = f"Could not determine IP address for container group {self.container_group_name}."
-        raise DataSafeHavenAzureException(
-            msg
-        )
+        raise DataSafeHavenAzureException(msg)
 
     def restart(self, target_ip_address: str | None = None) -> None:
         """Restart the container group"""
@@ -82,9 +79,7 @@ class AzureContainerInstance:
             )
         except Exception as exc:
             msg = f"Could not restart container group {self.container_group_name}.\n{exc!s}"
-            raise DataSafeHavenAzureException(
-                msg
-            ) from exc
+            raise DataSafeHavenAzureException(msg) from exc
 
     def run_executable(self, container_name: str, executable_path: str) -> list[str]:
         """

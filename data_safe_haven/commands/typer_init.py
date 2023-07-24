@@ -1,6 +1,6 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Standard library imports
-from typing import Annotated, Optional
+from typing import Annotated
 
 # Third party imports
 import typer

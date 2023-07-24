@@ -1,6 +1,5 @@
 """Standalone utility class for anything that needs to authenticate against Azure"""
 # Standard library imports
-from typing import Optional
 
 # Third party imports
 from azure.core.exceptions import ClientAuthenticationError

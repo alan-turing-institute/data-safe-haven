@@ -6,7 +6,7 @@ import subprocess
 import time
 from contextlib import suppress
 from importlib import metadata
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 # Third party imports
 from pulumi import automation
@@ -78,9 +78,7 @@ class PulumiStack:
                 )
             except automation.errors.CommandError as exc:
                 msg = f"Could not load Pulumi stack {self.stack_name}.\n{exc!s}"
-                raise DataSafeHavenPulumiException(
-                    msg
-                ) from exc
+                raise DataSafeHavenPulumiException(msg) from exc
         return self.stack_
 
     def add_option(self, name: str, value: str, replace: bool = False) -> None:

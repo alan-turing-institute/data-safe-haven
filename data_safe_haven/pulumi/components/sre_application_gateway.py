@@ -1,6 +1,6 @@
 """Pulumi component for SRE application gateway"""
 # Standard library imports
-from typing import Any, Optional
+from typing import Any
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions

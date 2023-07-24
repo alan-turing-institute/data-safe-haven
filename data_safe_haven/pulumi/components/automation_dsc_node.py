@@ -3,7 +3,6 @@
 import pathlib
 import time
 from collections.abc import Sequence
-from typing import Dict, Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions

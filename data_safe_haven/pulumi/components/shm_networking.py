@@ -1,7 +1,6 @@
 """Pulumi component for SHM networking"""
 # Standard library imports
 from collections.abc import Sequence
-from typing import List, Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions

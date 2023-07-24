@@ -1,7 +1,7 @@
 """Pulumi dynamic component for AzureAD applications."""
 # Standard library imports
 from contextlib import suppress
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third party imports
 from pulumi import Input, Output, ResourceOptions
@@ -60,9 +60,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             outs["application_id"] = json_response["appId"]
         except Exception as exc:
             msg = f"Failed to create application [green]{props['application_name']}[/] in AzureAD.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
         return CreateResult(
             f"AzureADApplication-{props['application_name']}",
             outs=outs,
@@ -77,9 +75,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             graph_api.delete_application(props["application_name"])
         except Exception as exc:
             msg = f"Failed to delete application [green]{props['application_name']}[/] from AzureAD.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def diff(
         self,

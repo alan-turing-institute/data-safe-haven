@@ -1,7 +1,7 @@
 """Pulumi dynamic component for compiled desired state configuration."""
 # Standard library imports
 from collections.abc import Sequence
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third party imports
 from pulumi import Input, ResourceOptions

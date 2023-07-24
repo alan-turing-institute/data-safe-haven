@@ -2,7 +2,6 @@
 import csv
 import pathlib
 from collections.abc import Sequence
-from typing import Dict, List
 
 from data_safe_haven.administration.users.active_directory_users import ActiveDirectoryUsers
 from data_safe_haven.administration.users.azure_ad_users import AzureADUsers
@@ -64,9 +63,7 @@ class UserHandler:
             self.active_directory_users.add(users)
         except Exception as exc:
             msg = f"Could not add users from '{users_csv_path}'.\n{exc!s}"
-            raise DataSafeHavenUserHandlingException(
-                msg
-            ) from exc
+            raise DataSafeHavenUserHandlingException(msg) from exc
 
     def get_usernames(self) -> dict[str, list[str]]:
         """Load usernames from all sources"""
@@ -125,9 +122,7 @@ class UserHandler:
             self.active_directory_users.register(sre_name, user_names)
         except Exception as exc:
             msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{exc!s}"
-            raise DataSafeHavenUserHandlingException(
-                msg
-            ) from exc
+            raise DataSafeHavenUserHandlingException(msg) from exc
 
     def remove(self, user_names: Sequence[str]) -> None:
         """Remove AzureAD and Guacamole users
@@ -190,9 +185,7 @@ class UserHandler:
             self.active_directory_users.set(active_directory_desired_users)
         except Exception as exc:
             msg = f"Could not set users from '{users_csv_path}'.\n{exc!s}"
-            raise DataSafeHavenUserHandlingException(
-                msg
-            ) from exc
+            raise DataSafeHavenUserHandlingException(msg) from exc
 
     def unregister(self, sre_name: str, user_names: Sequence[str]) -> None:
         """Unregister usernames with SRE
@@ -205,6 +198,4 @@ class UserHandler:
             self.active_directory_users.unregister(sre_name, user_names)
         except Exception as exc:
             msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{exc!s}"
-            raise DataSafeHavenUserHandlingException(
-                msg
-            ) from exc
+            raise DataSafeHavenUserHandlingException(msg) from exc

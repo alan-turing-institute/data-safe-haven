@@ -46,6 +46,4 @@ class TeardownSRECommand:
             config.upload()
         except DataSafeHavenException as exc:
             msg = f"Could not teardown Data Safe Haven '{environment_name}'.\n{exc!s}"
-            raise DataSafeHavenException(
-                msg
-            ) from exc
+            raise DataSafeHavenException(msg) from exc

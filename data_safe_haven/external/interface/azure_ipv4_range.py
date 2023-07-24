@@ -2,7 +2,6 @@
 import ipaddress
 import math
 from contextlib import suppress
-from typing import List
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenIPRangeException
@@ -24,9 +23,7 @@ class AzureIPv4Range(ipaddress.IPv4Network):
         )
         if len(networks) != 1:
             msg = f"{ip_address_first}-{ip_address_last} cannot be expressed as a single network range."
-            raise DataSafeHavenIPRangeException(
-                msg
-            )
+            raise DataSafeHavenIPRangeException(msg)
         super().__init__(networks[0])
         self._subnets: list["AzureIPv4Range"] = []
 

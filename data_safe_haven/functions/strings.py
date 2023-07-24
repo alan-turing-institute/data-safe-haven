@@ -4,7 +4,6 @@ import hashlib
 import secrets
 import string
 from collections.abc import Sequence
-from typing import List
 
 
 def alphanumeric(input_string: str) -> str:

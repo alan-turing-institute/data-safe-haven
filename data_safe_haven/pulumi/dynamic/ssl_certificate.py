@@ -1,7 +1,7 @@
 """Pulumi dynamic component for SSL certificates uploaded to an Azure KeyVault."""
 # Standard library imports
 from contextlib import suppress
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third party imports
 from acme.errors import ValidationError
@@ -116,9 +116,7 @@ class SSLCertificateProvider(DshResourceProvider):
             outs["secret_id"] = kvcert.secret_id
         except Exception as exc:
             msg = f"Failed to create SSL certificate [green]{props['certificate_secret_name']}[/] for [green]{props['domain_name']}[/].\n{exc!s}"
-            raise DataSafeHavenSSLException(
-                msg
-            ) from exc
+            raise DataSafeHavenSSLException(msg) from exc
         return CreateResult(
             f"SSLCertificate-{props['certificate_secret_name']}",
             outs=outs,
@@ -141,9 +139,7 @@ class SSLCertificateProvider(DshResourceProvider):
             )
         except Exception as exc:
             msg = f"Failed to delete SSL certificate [green]{props['certificate_secret_name']}[/] for [green]{props['domain_name']}[/].\n{exc!s}"
-            raise DataSafeHavenSSLException(
-                msg
-            ) from exc
+            raise DataSafeHavenSSLException(msg) from exc
 
     def diff(
         self,

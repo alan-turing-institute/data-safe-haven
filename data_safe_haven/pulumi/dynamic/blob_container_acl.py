@@ -1,6 +1,6 @@
 """Pulumi dynamic component for setting ACLs on an Azure blob container."""
 # Standard library imports
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third party imports
 from pulumi import Input, Output, ResourceOptions
@@ -64,9 +64,7 @@ class BlobContainerAclProvider(DshResourceProvider):
             )
         except Exception as exc:
             msg = f"Failed to set ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc!s}"
-            raise DataSafeHavenPulumiException(
-                msg
-            ) from exc
+            raise DataSafeHavenPulumiException(msg) from exc
         return CreateResult(
             f"BlobContainerAcl-{props['container_name']}",
             outs=outs,
@@ -84,9 +82,7 @@ class BlobContainerAclProvider(DshResourceProvider):
             )
         except Exception as exc:
             msg = f"Failed to delete custom ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc!s}"
-            raise DataSafeHavenPulumiException(
-                msg
-            ) from exc
+            raise DataSafeHavenPulumiException(msg) from exc
 
     def diff(
         self,

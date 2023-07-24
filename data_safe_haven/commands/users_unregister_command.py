@@ -1,6 +1,5 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Standard library imports
-from typing import List
 
 # Local imports
 from data_safe_haven.administration.users import UserHandler
@@ -61,6 +60,4 @@ class UsersUnregisterCommand:
             users.unregister(sre_name, usernames_to_unregister)
         except DataSafeHavenException as exc:
             msg = f"Could not unregister users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc!s}"
-            raise DataSafeHavenException(
-                msg
-            ) from exc
+            raise DataSafeHavenException(msg) from exc

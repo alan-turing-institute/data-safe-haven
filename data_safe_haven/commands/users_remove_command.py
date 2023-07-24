@@ -1,6 +1,5 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Standard library imports
-from typing import List
 
 # Local imports
 from data_safe_haven.administration.users import UserHandler

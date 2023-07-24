@@ -1,7 +1,7 @@
 # Standard library imports
 import pathlib
 from collections.abc import Sequence
-from typing import Any, Optional
+from typing import Any
 
 from data_safe_haven.administration.users.research_user import ResearchUser
 

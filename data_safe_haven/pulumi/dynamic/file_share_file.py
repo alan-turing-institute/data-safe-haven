@@ -1,7 +1,7 @@
 """Pulumi dynamic component for files uploaded to an Azure FileShare."""
 # Standard library imports
 from contextlib import suppress
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third party imports
 from azure.core.exceptions import ResourceNotFoundError
@@ -96,9 +96,7 @@ class FileShareFileProvider(DshResourceProvider):
         except Exception as exc:
             file_name = file_client.file_name if file_client else ""
             msg = f"Failed to upload data to [green]{file_name}[/] in [green]{props['share_name']}[/].\n{exc!s}"
-            raise DataSafeHavenAzureException(
-                msg
-            ) from exc
+            raise DataSafeHavenAzureException(msg) from exc
         return CreateResult(
             f"filesharefile-{props['destination_path'].replace('/', '-')}",
             outs=outs,
@@ -119,9 +117,7 @@ class FileShareFileProvider(DshResourceProvider):
         except Exception as exc:
             file_name = file_client.file_name if file_client else ""
             msg = f"Failed to delete file [green]{file_name}[/] in [green]{props['share_name']}[/].\n{exc!s}"
-            raise DataSafeHavenAzureException(
-                msg
-            ) from exc
+            raise DataSafeHavenAzureException(msg) from exc
 
     def diff(
         self,

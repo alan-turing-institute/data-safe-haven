@@ -1,5 +1,5 @@
 # Standard library imports
-from typing import Any, Optional
+from typing import Any
 
 
 class ResearchUser:

@@ -2,7 +2,7 @@
 # Standard library imports
 import io
 import logging
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 # Third party imports
 from rich.console import Console

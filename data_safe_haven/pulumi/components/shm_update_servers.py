@@ -1,7 +1,6 @@
 """Pulumi component for SHM monitoring"""
 # Standard library import
 import pathlib
-from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions

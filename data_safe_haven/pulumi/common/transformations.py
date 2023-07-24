@@ -1,6 +1,5 @@
 """Common transformations needed when manipulating Pulumi resources"""
 # Standard library imports
-from typing import List
 
 # Third party imports
 from pulumi import Output

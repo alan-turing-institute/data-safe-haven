@@ -1,6 +1,6 @@
 # Standard library imports
 import pathlib
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 # Third party imports
 import chevron

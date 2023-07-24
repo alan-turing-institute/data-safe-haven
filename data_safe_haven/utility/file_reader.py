@@ -1,7 +1,7 @@
 """Read local files, handling template expansion if needed"""
 # Standard library imports
 import pathlib
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third party imports
 import chevron

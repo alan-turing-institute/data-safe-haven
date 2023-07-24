@@ -118,10 +118,6 @@ ignore = [
   # Ignore complexity
   "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
 ]
-unfixable = [
-  # Don't touch unused imports
-  "F401",
-]
 
 [tool.ruff.isort]
 known-first-party = ["data_safe_haven"]

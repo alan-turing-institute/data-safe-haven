@@ -1,7 +1,7 @@
 """Command-line application for performing administrative tasks for a Data Safe Haven deployment, delegating the details to a subcommand"""
 # Standard library imports
 import pathlib
-from typing import Annotated, List
+from typing import Annotated
 
 # Third party imports
 import typer

@@ -1,6 +1,6 @@
 """Pulumi component for virtual machines"""
 # Standard library imports
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions

@@ -1,7 +1,6 @@
 """Load global and local settings from dotfiles"""
 # Standard library imports
 import pathlib
-from typing import Optional
 
 # Third party imports
 import appdirs
@@ -70,37 +69,31 @@ class BackendSettings:
     @property
     def admin_group_id(self) -> str:
         if not self._admin_group_id:
-            msg = "Azure administrator group not provided: use '[bright_cyan]--admin-group[/]' / '[green]-a[/]' to do so."
-            raise DataSafeHavenParameterException(
-                msg
+            msg = (
+                "Azure administrator group not provided: use '[bright_cyan]--admin-group[/]' / '[green]-a[/]' to do so."
             )
+            raise DataSafeHavenParameterException(msg)
         return self._admin_group_id
 
     @property
     def location(self) -> str:
         if not self._location:
             msg = "Azure location not provided: use '[bright_cyan]--location[/]' / '[green]-l[/]' to do so."
-            raise DataSafeHavenParameterException(
-                msg
-            )
+            raise DataSafeHavenParameterException(msg)
         return self._location
 
     @property
     def name(self) -> str:
         if not self._name:
             msg = "Data Safe Haven deployment name not provided: use '[bright_cyan]--deployment-name[/]' / '[green]-d[/]' to do so."
-            raise DataSafeHavenParameterException(
-                msg
-            )
+            raise DataSafeHavenParameterException(msg)
         return self._name
 
     @property
     def subscription_name(self) -> str:
         if not self._subscription_name:
             msg = "Azure subscription not provided: use '[bright_cyan]--subscription[/]' / '[green]-s[/]' to do so."
-            raise DataSafeHavenParameterException(
-                msg
-            )
+            raise DataSafeHavenParameterException(msg)
         return self._subscription_name
 
     def read(self) -> None:
@@ -121,9 +114,7 @@ class BackendSettings:
                         self._subscription_name = subscription_name
         except ParserError as exc:
             msg = f"Could not load settings from {self.config_file_path}.\n{exc!s}"
-            raise DataSafeHavenConfigException(
-                msg
-            ) from exc
+            raise DataSafeHavenConfigException(msg) from exc
 
     def write(self) -> None:
         """Write settings to YAML file"""

@@ -2,7 +2,6 @@
 # Standard library import
 import pathlib
 from collections.abc import Sequence
-from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions

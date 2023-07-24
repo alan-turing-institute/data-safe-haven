@@ -1,7 +1,7 @@
 """Pulumi base dynamic component."""
 # Standard library imports
 from collections.abc import Sequence
-from typing import Any, Dict
+from typing import Any
 
 # Third party imports
 from pulumi.dynamic import (

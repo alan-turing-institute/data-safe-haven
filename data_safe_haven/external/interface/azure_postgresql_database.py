@@ -4,7 +4,7 @@ import pathlib
 import time
 from collections.abc import Sequence
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Third party imports
 import psycopg2

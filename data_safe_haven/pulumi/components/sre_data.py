@@ -1,7 +1,6 @@
 """Pulumi component for SRE state"""
 # Standard library imports
 from collections.abc import Sequence
-from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions

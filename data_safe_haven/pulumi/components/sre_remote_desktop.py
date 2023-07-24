@@ -1,7 +1,6 @@
 """Pulumi component for SRE remote desktop"""
 # Standard library imports
 import pathlib
-from typing import Optional
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions

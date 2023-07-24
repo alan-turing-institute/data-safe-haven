@@ -6,7 +6,7 @@ import time
 from collections.abc import Sequence
 from contextlib import suppress
 from io import UnsupportedOperation
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Third party imports
 import requests
@@ -109,15 +109,11 @@ class GraphApi:
             ]
             if not txt_records:
                 msg = f"Could not retrieve verification DNS records for {domain_name}."
-                raise DataSafeHavenMicrosoftGraphException(
-                    msg
-                )
+                raise DataSafeHavenMicrosoftGraphException(msg)
             return txt_records[0]
         except Exception as exc:
             msg = f"Could not register domain '{domain_name}'.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def add_user_to_group(
         self,
@@ -148,9 +144,7 @@ class GraphApi:
                 self.logger.info(f"Added user [green]'{username}'[/] to group [green]'{group_name}'[/].")
         except (DataSafeHavenMicrosoftGraphException, IndexError) as exc:
             msg = f"Could not add user '{username}' to group '{group_name}'.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def create_application(
         self,
@@ -238,9 +232,7 @@ class GraphApi:
             return json_response
         except Exception as exc:
             msg = f"Could not create application '{application_name}'.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def create_application_secret(self, application_secret_name: str, application_name: str) -> str:
         """Add a secret to an existing AzureAD application
@@ -261,9 +253,7 @@ class GraphApi:
                 cred["displayName"] == application_secret_name for cred in application_json["passwordCredentials"]
             ):
                 msg = f"Secret '{application_secret_name}' already exists in application '{application_name}'."
-                raise DataSafeHavenInputException(
-                    msg
-                )
+                raise DataSafeHavenInputException(msg)
             # Create the application secret if it does not exist
             self.logger.debug(
                 f"Creating application secret '[green]{application_secret_name}[/]'...",
@@ -286,9 +276,7 @@ class GraphApi:
             return str(json_response["secretText"])
         except Exception as exc:
             msg = f"Could not create application secret '{application_secret_name}'.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def create_group(self, group_name: str, group_id: str) -> None:
         """Create an AzureAD group if it does not already exist
@@ -333,9 +321,7 @@ class GraphApi:
             )
         except Exception as exc:
             msg = f"Could not create AzureAD group '{group_name}'.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def create_token_administrator(self) -> str:
         """Create an access token for a global administrator
@@ -361,9 +347,7 @@ class GraphApi:
                 flow = app.initiate_device_flow(scopes=self.default_scopes)
                 if "user_code" not in flow:
                     msg = f"Could not initiate device login for scopes {self.default_scopes}."
-                    raise DataSafeHavenMicrosoftGraphException(
-                        msg
-                    )
+                    raise DataSafeHavenMicrosoftGraphException(msg)
                 self.logger.info("Administrator approval is needed in order to interact with Azure Active Directory.")
                 self.logger.info(
                     f"Please sign-in with [bold]global administrator[/] credentials for Azure Active Directory [green]{self.tenant_id}[/]."
@@ -496,9 +480,7 @@ class GraphApi:
                 )
         except Exception as exc:
             msg = f"Could not delete application '{application_name}'.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def get_application_by_name(self, application_name: str) -> dict[str, Any] | None:
         try:
@@ -668,9 +650,7 @@ class GraphApi:
             return [dict(obj) for obj in (delegated + application)]
         except Exception as exc:
             msg = f"Could not load list of application permissions.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def read_domains(self) -> Sequence[dict[str, Any]]:
         """Get details of AzureAD domains
@@ -715,9 +695,7 @@ class GraphApi:
             return [dict(obj) for obj in self.http_get(f"{self.base_endpoint}/servicePrincipals").json()["value"]]
         except Exception as exc:
             msg = f"Could not load list of service principals.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def read_users(self, attributes: Sequence[str] | None = None) -> Sequence[dict[str, Any]]:
         """Get details of AzureAD users
@@ -787,9 +765,7 @@ class GraphApi:
             )
         except Exception as exc:
             msg = f"Could not remove user '{username}' from group '{group_name}'.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(
-                msg
-            ) from exc
+            raise DataSafeHavenMicrosoftGraphException(msg) from exc
 
     def verify_custom_domain(self, domain_name: str, expected_nameservers: Sequence[str]) -> None:
         """Verify AzureAD custom domain

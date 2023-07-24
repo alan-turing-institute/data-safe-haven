@@ -1,6 +1,5 @@
 """Azure backend for a Data Safe Haven deployment"""
 # Standard library imports
-from typing import Optional
 
 # Local imports
 from data_safe_haven.config import Config
@@ -45,9 +44,7 @@ class Backend:
             )
             if not resource_group.name:
                 msg = f"Resource group '{self.config.backend.resource_group_name}' was not created."
-                raise DataSafeHavenAzureException(
-                    msg
-                )
+                raise DataSafeHavenAzureException(msg)
             identity = self.azure_api.ensure_managed_identity(
                 identity_name=self.config.backend.managed_identity_name,
                 location=resource_group.location,
@@ -61,9 +58,7 @@ class Backend:
             )
             if not storage_account.name:
                 msg = f"Storage account '{self.config.backend.storage_account_name}' was not created."
-                raise DataSafeHavenAzureException(
-                    msg
-                )
+                raise DataSafeHavenAzureException(msg)
             _ = self.azure_api.ensure_storage_blob_container(
                 container_name=self.config.backend.storage_container_name,
                 resource_group_name=resource_group.name,

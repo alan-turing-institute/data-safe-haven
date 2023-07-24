@@ -1,6 +1,5 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
 # Standard library imports
-from typing import Optional
 
 # Local imports
 from data_safe_haven.backend import Backend

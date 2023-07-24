@@ -4,7 +4,7 @@ import pathlib
 from collections import defaultdict
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Third party imports
 import chili
@@ -213,18 +213,14 @@ class ConfigSectionSRE:
                 validate_ip_address(ip)
         except Exception as exc:
             msg = f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{exc!s}"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
         self.remote_desktop.validate()
         try:
             for ip in self.research_user_ip_addresses:
                 validate_ip_address(ip)
         except Exception as exc:
             msg = f"Invalid value for 'research_user_ip_addresses' ({self.research_user_ip_addresses}).\n{exc!s}"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
 
     def to_dict(self) -> dict[str, Any]:
         self.validate()
