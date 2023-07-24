@@ -102,7 +102,7 @@ class FileShareFileProvider(DshResourceProvider):
             outs=outs,
         )
 
-    def delete(self, id_: str, props: dict[str, Any]) -> None:
+    def delete(self, props: dict[str, Any]) -> None:
         """Delete a file from the target storage account"""
         file_client: ShareFileClient | None = None
         try:
@@ -121,7 +121,6 @@ class FileShareFileProvider(DshResourceProvider):
 
     def diff(
         self,
-        id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
