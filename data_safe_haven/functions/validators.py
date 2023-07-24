@@ -33,7 +33,7 @@ def validate_azure_vm_sku(azure_vm_sku: Optional[str]) -> Optional[str]:
     if azure_vm_sku is not None:
         if not re.match(r"^(Standard|Basic)_\w+$", azure_vm_sku):
             raise typer.BadParameter(
-                "Expected valid Azure VM Sku, for example 'Standard_D2s_v4'"
+                "Expected valid Azure VM SKU, for example 'Standard_D2s_v4'"
             )
     return azure_vm_sku
 
