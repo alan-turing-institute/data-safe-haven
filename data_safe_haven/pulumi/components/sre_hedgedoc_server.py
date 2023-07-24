@@ -258,7 +258,10 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LDAP_SEARCHFILTER",
-                            value=f"(&(objectClass=user)(memberOf=CN={props.ldap_user_security_group_name},OU=Data Safe Haven Security Groups,{props.ldap_root_dn})(sAMAccountName={{{{username}}}}))",
+                            value=(
+                                f"(&(objectClass=user)(memberOf=CN={props.ldap_user_security_group_name},"
+                                f"OU=Data Safe Haven Security Groups,{props.ldap_root_dn})"
+                                f"(sAMAccountName={{{{username}}}}))"),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LDAP_URL",
