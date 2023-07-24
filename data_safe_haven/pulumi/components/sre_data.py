@@ -300,7 +300,7 @@ class SREDataComponent(ComponentResource):
                             i_p_address_or_range=str(ip_address),
                         )
                         for ip_range in sorted(ip_ranges)
-                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all()
+                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all_ips()
                     ]
                 ),
                 virtual_network_rules=[

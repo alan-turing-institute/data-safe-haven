@@ -32,13 +32,13 @@ class AzureIPv4Range(ipaddress.IPv4Network):
         network = ipaddress.IPv4Network(ip_cidr)
         return cls(network[0], network[-1])
 
-    def all(self) -> list[ipaddress.IPv4Address]:
+    def all_ips(self) -> list[ipaddress.IPv4Address]:
         """All IP addresses in the range"""
         return list(self.hosts())
 
     def available(self) -> list[ipaddress.IPv4Address]:
         """Azure reserves x.x.x.1 for the default gateway and (x.x.x.2, x.x.x.3) to map Azure DNS IPs."""
-        return list(self.all())[3:]
+        return list(self.all_ips())[3:]
 
     def next_subnet(self, number_of_addresses: int) -> "AzureIPv4Range":
         """Find the next unused subnet of a given size"""
