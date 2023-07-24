@@ -261,7 +261,8 @@ class SREHedgeDocServerComponent(ComponentResource):
                             value=(
                                 f"(&(objectClass=user)(memberOf=CN={props.ldap_user_security_group_name},"
                                 f"OU=Data Safe Haven Security Groups,{props.ldap_root_dn})"
-                                f"(sAMAccountName={{{{username}}}}))"),
+                                f"(sAMAccountName={{{{username}}}}))"
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LDAP_URL",

@@ -294,8 +294,8 @@ class PulumiStack:
             try:
                 process.check_returncode()
             except subprocess.CalledProcessError as exc:
-                    msg = f"No Pulumi user found {process.stderr}."
-                    raise DataSafeHavenPulumiError(msg) from exc
+                msg = f"No Pulumi user found {process.stderr}."
+                raise DataSafeHavenPulumiError(msg) from exc
             return process.stdout.readline().strip()
         except Exception as exc:
             msg = f"Pulumi user check failed.\n{exc!s}."
