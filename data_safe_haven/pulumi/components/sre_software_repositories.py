@@ -57,7 +57,6 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SRESoftwareRepositoriesProps,
         opts: ResourceOptions | None = None,
     ):
