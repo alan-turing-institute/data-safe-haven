@@ -50,7 +50,6 @@ class SREApplicationGatewayComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SREApplicationGatewayProps,
         opts: ResourceOptions | None = None,
     ):

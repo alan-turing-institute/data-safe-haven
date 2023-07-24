@@ -46,7 +46,6 @@ class SHMMonitoringComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMMonitoringProps,
         opts: ResourceOptions | None = None,
     ):

@@ -48,7 +48,6 @@ class SHMUpdateServersComponent(ComponentResource):
     def __init__(
         self,
         name: str,
-        stack_name: str,
         shm_name: str,
         props: SHMUpdateServersProps,
         opts: ResourceOptions | None = None,

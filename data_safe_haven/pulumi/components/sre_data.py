@@ -82,7 +82,6 @@ class SREDataComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SREDataProps,
         opts: ResourceOptions | None = None,
     ):

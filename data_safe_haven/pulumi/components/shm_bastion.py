@@ -28,7 +28,6 @@ class SHMBastionComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMBastionProps,
         opts: ResourceOptions | None = None,
     ):

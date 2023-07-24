@@ -43,7 +43,6 @@ class SHMDataComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMDataProps,
         opts: ResourceOptions | None = None,
     ):

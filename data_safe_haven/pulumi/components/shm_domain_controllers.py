@@ -76,7 +76,6 @@ class SHMDomainControllersComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMDomainControllersProps,
         opts: ResourceOptions | None = None,
     ):

@@ -44,7 +44,6 @@ class SHMFirewallComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMFirewallProps,
         opts: ResourceOptions | None = None,
     ):
