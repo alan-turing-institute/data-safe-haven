@@ -54,13 +54,12 @@ class CompiledDscProvider(DshResourceProvider):
             outs=dict(**props),
         )
 
-    def delete(self, id_: str, props: dict[str, Any]) -> None:
+    def delete(self) -> None:
         """The Python SDK does not support configuration deletion"""
         return
 
     def diff(
         self,
-        id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
