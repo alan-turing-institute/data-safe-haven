@@ -1,4 +1,5 @@
 """Data Safe Haven"""
-import pkg_resources
 
-__version__ = pkg_resources.get_distribution("data-safe-haven").version
+from .version import __version__, __version_info__
+
+__all__ = ["__version__", "__version_info__"]

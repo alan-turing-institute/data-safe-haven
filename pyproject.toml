@@ -51,7 +51,7 @@ dependencies = [
 dsh = "data_safe_haven.cli:main"
 
 [tool.hatch.version]
-path = "data_safe_haven/__about__.py"
+path = "data_safe_haven/version.py"
 
 [tool.hatch.envs.lint]
 detached = true
