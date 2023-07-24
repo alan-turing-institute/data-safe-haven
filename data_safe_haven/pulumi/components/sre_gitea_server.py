@@ -267,7 +267,8 @@ class SREGiteaServerComponent(ComponentResource):
                         containerinstance.EnvironmentVariableArgs(name="GITEA__database__SSL_MODE", value="require"),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__log__LEVEL",
-                            value="Debug",  # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
+                            # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
+                            value="Debug",
                         ),
                         containerinstance.EnvironmentVariableArgs(name="GITEA__security__INSTALL_LOCK", value="true"),
                     ],
