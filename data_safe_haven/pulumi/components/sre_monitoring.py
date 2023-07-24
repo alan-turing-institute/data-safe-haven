@@ -36,7 +36,6 @@ class SREMonitoringComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SREMonitoringProps,
         opts: ResourceOptions | None = None,
     ):
