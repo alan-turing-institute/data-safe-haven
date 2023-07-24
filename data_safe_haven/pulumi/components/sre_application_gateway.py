@@ -39,7 +39,7 @@ class SREApplicationGatewayProps:
         )
         # Unwrap key vault identity so that it has the required type
         self.user_assigned_identities = Output.from_input(key_vault_identity).apply(
-            lambda identity: identity.id.apply(lambda id: {str(id): {}})
+            lambda identity: identity.id.apply(lambda id_: {str(id_): {}})
         )
 
 
@@ -262,7 +262,9 @@ class SREApplicationGatewayComponent(ComponentResource):
                     ),
                     name="sslProfile",
                     ssl_policy=network.ApplicationGatewaySslPolicyArgs(
-                        # We take the ones recommended by SSL Labs (https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices) excluding any that are unsupported
+                        # We take the ones recommended by SSL Labs
+                        # (https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices)
+                        # excluding any that are unsupported
                         cipher_suites=[
                             "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
                             "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
