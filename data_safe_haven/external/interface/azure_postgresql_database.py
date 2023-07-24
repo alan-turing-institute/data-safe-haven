@@ -55,7 +55,7 @@ class AzurePostgreSQLDatabase:
         self.logger = Logger()
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
-        self.rule_suffix = datetime.now().strftime(r"%Y%m%d-%H%M%S")
+        self.rule_suffix = datetime.now(tz=datetime.timezone.utc).strftime(r"%Y%m%d-%H%M%S")
 
     @staticmethod
     def wait(poller: LROPoller[Any]) -> None:
@@ -127,9 +127,9 @@ class AzurePostgreSQLDatabase:
 
             # Apply the Guacamole initialisation script
             for filepath in filepaths:
-                filepath = pathlib.Path(filepath)
-                self.logger.info(f"Running SQL script: [green]{filepath.name}[/].")
-                commands = self.load_sql(filepath, mustache_values)
+                _filepath = pathlib.Path(filepath)
+                self.logger.info(f"Running SQL script: [green]{_filepath.name}[/].")
+                commands = self.load_sql(_filepath, mustache_values)
                 cursor.execute(commands)
                 if "SELECT" in cursor.statusmessage:
                     outputs += [[str(msg) for msg in msg_tuple] for msg_tuple in cursor]
