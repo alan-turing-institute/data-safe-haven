@@ -24,6 +24,7 @@ packages:
     gym:
     html5lib:
     ipykernel:
+    lightgbm:
     lxml:
     matplotlib:
     nltk:
@@ -41,6 +42,7 @@ packages:
         "all": [">=1.3.0,<1.4.0"]  # avoid known installation issue https://github.com/python-poetry/poetry/issues/7611
     prophet:
     pydot:
+    pygrib:
     pylint:
     pymc:
     pyodbc:
@@ -61,6 +63,7 @@ packages:
     statsmodels:
         "all": [">0.10.0"]  # increase solver flexibility
     sympy:
+    tables:
     tensorflow:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     thinc:
