@@ -4,7 +4,7 @@ import math
 from contextlib import suppress
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenIPRangeException
+from data_safe_haven.exceptions import DataSafeHavenIPRangeError
 
 
 class AzureIPv4Range(ipaddress.IPv4Network):
@@ -23,7 +23,7 @@ class AzureIPv4Range(ipaddress.IPv4Network):
         )
         if len(networks) != 1:
             msg = f"{ip_address_first}-{ip_address_last} cannot be expressed as a single network range."
-            raise DataSafeHavenIPRangeException(msg)
+            raise DataSafeHavenIPRangeError(msg)
         super().__init__(networks[0])
         self._subnets: list["AzureIPv4Range"] = []
 
@@ -44,11 +44,11 @@ class AzureIPv4Range(ipaddress.IPv4Network):
         """Find the next unused subnet of a given size"""
         if not math.log2(number_of_addresses).is_integer():
             msg = f"Number of address '{number_of_addresses}' must be a power of 2"
-            raise DataSafeHavenIPRangeException(msg)
+            raise DataSafeHavenIPRangeError(msg)
         ip_address_first = self[0]
         while True:
             ip_address_last = ip_address_first + int(number_of_addresses - 1)
-            with suppress(DataSafeHavenIPRangeException):
+            with suppress(DataSafeHavenIPRangeError):
                 candidate = AzureIPv4Range(ip_address_first, ip_address_last)
                 if not any(subnet.overlaps(candidate) for subnet in self._subnets):
                     self._subnets.append(candidate)

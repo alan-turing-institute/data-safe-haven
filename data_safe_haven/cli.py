@@ -14,7 +14,7 @@ from data_safe_haven.commands import (
     initialise_command,
     teardown_command_group,
 )
-from data_safe_haven.exceptions import DataSafeHavenException
+from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.utility import Logger
 
 
@@ -81,7 +81,7 @@ def main() -> None:
     # Start the application
     try:
         application()
-    except DataSafeHavenException as exc:
+    except DataSafeHavenError as exc:
         logger = Logger()
         for line in str(exc).split("\n"):
             logger.error(line)

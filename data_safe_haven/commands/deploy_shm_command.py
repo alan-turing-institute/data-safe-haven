@@ -7,8 +7,8 @@ import pytz
 # Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
-    DataSafeHavenConfigException,
-    DataSafeHavenException,
+    DataSafeHavenConfigError,
+    DataSafeHavenError,
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
@@ -88,9 +88,9 @@ class DeploySHMCommand:
                 stack=stack,
             )
             manager.run()
-        except DataSafeHavenException as exc:
+        except DataSafeHavenError as exc:
             msg = f"Could not deploy Data Safe Haven Management environment.\n{exc!s}"
-            raise DataSafeHavenException(msg) from exc
+            raise DataSafeHavenError(msg) from exc
 
     def update_config(
         self,
@@ -109,7 +109,7 @@ class DeploySHMCommand:
             config.shm.aad_tenant_id = aad_tenant_id
         if not config.shm.aad_tenant_id:
             msg = "No AzureAD tenant ID was found. Use [bright_cyan]'--aad-tenant-id / -a'[/] to set one."
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)
 
         # Update admin email address
         if admin_email_address is not None:
@@ -119,7 +119,7 @@ class DeploySHMCommand:
             config.shm.admin_email_address = admin_email_address
         if not config.shm.admin_email_address:
             msg = "No admin email address was found. Use [bright_cyan]'--email / -e'[/] to set one."
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)
 
         # Update admin IP addresses
         if admin_ip_addresses:
@@ -129,7 +129,7 @@ class DeploySHMCommand:
             config.shm.admin_ip_addresses = admin_ip_addresses
         if len(config.shm.admin_ip_addresses) == 0:
             msg = "No admin IP addresses were found. Use [bright_cyan]'--ip-address / -i'[/] to set one."
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)
 
         # Update FQDN
         if fqdn is not None:
@@ -139,7 +139,7 @@ class DeploySHMCommand:
             config.shm.fqdn = fqdn
         if not config.shm.fqdn:
             msg = "No fully-qualified domain name was found. Use [bright_cyan]'--fqdn / -f'[/] to set one."
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)
 
         # Update timezone if it passes validation
         if timezone is not None:
@@ -152,4 +152,4 @@ class DeploySHMCommand:
                 config.shm.timezone = timezone
         if not config.shm.timezone:
             msg = "No timezone was found. Use [bright_cyan]'--timezone / -t'[/] to set one."
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)

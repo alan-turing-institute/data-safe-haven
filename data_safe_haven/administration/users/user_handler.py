@@ -10,7 +10,7 @@ from data_safe_haven.administration.users.research_user import ResearchUser
 
 # Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.exceptions import DataSafeHavenUserHandlingException
+from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import Logger
 
@@ -30,7 +30,7 @@ class UserHandler:
         """Add AzureAD and Guacamole users
 
         Raises:
-            DataSafeHavenUserHandlingException if the users could not be added
+            DataSafeHavenUserHandlingError if the users could not be added
         """
         try:
             # Construct user list
@@ -63,7 +63,7 @@ class UserHandler:
             self.active_directory_users.add(users)
         except Exception as exc:
             msg = f"Could not add users from '{users_csv_path}'.\n{exc!s}"
-            raise DataSafeHavenUserHandlingException(msg) from exc
+            raise DataSafeHavenUserHandlingError(msg) from exc
 
     def get_usernames(self) -> dict[str, list[str]]:
         """Load usernames from all sources"""
@@ -90,7 +90,7 @@ class UserHandler:
         """List Active Directory, AzureAD and Guacamole users
 
         Raises:
-            DataSafeHavenUserHandlingException if the users could not be listed
+            DataSafeHavenUserHandlingError if the users could not be listed
         """
         try:
             # Load usernames
@@ -109,26 +109,26 @@ class UserHandler:
                 self.logger.info(line)
         except Exception as exc:
             msg = f"Could not list users.\n{exc!s}"
-            raise DataSafeHavenUserHandlingException(msg) from exc
+            raise DataSafeHavenUserHandlingError(msg) from exc
 
     def register(self, sre_name: str, user_names: Sequence[str]) -> None:
         """Register usernames with SRE
 
         Raises:
-            DataSafeHavenUserHandlingException if the users could not be registered in the SRE
+            DataSafeHavenUserHandlingError if the users could not be registered in the SRE
         """
         try:
             # Add users to the SRE security group
             self.active_directory_users.register(sre_name, user_names)
         except Exception as exc:
             msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{exc!s}"
-            raise DataSafeHavenUserHandlingException(msg) from exc
+            raise DataSafeHavenUserHandlingError(msg) from exc
 
     def remove(self, user_names: Sequence[str]) -> None:
         """Remove AzureAD and Guacamole users
 
         Raises:
-            DataSafeHavenUserHandlingException if the users could not be removed
+            DataSafeHavenUserHandlingError if the users could not be removed
         """
         try:
             # Construct user lists
@@ -140,13 +140,13 @@ class UserHandler:
             self.active_directory_users.remove(active_directory_users_to_remove)
         except Exception as exc:
             msg = f"Could not remove users: {user_names}.\n{exc!s}"
-            raise DataSafeHavenUserHandlingException(msg) from exc
+            raise DataSafeHavenUserHandlingError(msg) from exc
 
     def set(self, users_csv_path: str) -> None:
         """Set AzureAD and Guacamole users
 
         Raises:
-            DataSafeHavenUserHandlingException if the users could not be set to the desired list
+            DataSafeHavenUserHandlingError if the users could not be set to the desired list
         """
         try:
             # Construct user list
@@ -185,17 +185,17 @@ class UserHandler:
             self.active_directory_users.set(active_directory_desired_users)
         except Exception as exc:
             msg = f"Could not set users from '{users_csv_path}'.\n{exc!s}"
-            raise DataSafeHavenUserHandlingException(msg) from exc
+            raise DataSafeHavenUserHandlingError(msg) from exc
 
     def unregister(self, sre_name: str, user_names: Sequence[str]) -> None:
         """Unregister usernames with SRE
 
         Raises:
-            DataSafeHavenUserHandlingException if the users could not be registered in the SRE
+            DataSafeHavenUserHandlingError if the users could not be registered in the SRE
         """
         try:
             # Remove users from the SRE security group
             self.active_directory_users.unregister(sre_name, user_names)
         except Exception as exc:
             msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{exc!s}"
-            raise DataSafeHavenUserHandlingException(msg) from exc
+            raise DataSafeHavenUserHandlingError(msg) from exc

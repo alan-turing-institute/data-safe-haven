@@ -7,7 +7,7 @@ from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenPulumiException
+from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
 
@@ -65,7 +65,7 @@ class BlobContainerAclProvider(DshResourceProvider):
             )
         except Exception as exc:
             msg = f"Failed to set ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc!s}"
-            raise DataSafeHavenPulumiException(msg) from exc
+            raise DataSafeHavenPulumiError(msg) from exc
         return CreateResult(
             f"BlobContainerAcl-{props['container_name']}",
             outs=outs,
@@ -83,7 +83,7 @@ class BlobContainerAclProvider(DshResourceProvider):
             )
         except Exception as exc:
             msg = f"Failed to delete custom ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc!s}"
-            raise DataSafeHavenPulumiException(msg) from exc
+            raise DataSafeHavenPulumiError(msg) from exc
 
     def diff(
         self,

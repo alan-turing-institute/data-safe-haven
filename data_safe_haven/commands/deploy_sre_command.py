@@ -5,8 +5,8 @@ from typing import Any
 # Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
-    DataSafeHavenConfigException,
-    DataSafeHavenException,
+    DataSafeHavenConfigError,
+    DataSafeHavenError,
 )
 from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.functions import alphanumeric, password
@@ -171,9 +171,9 @@ class DeploySRECommand:
             )
             manager.run()
 
-        except DataSafeHavenException as exc:
+        except DataSafeHavenError as exc:
             msg = f"Could not deploy Secure Research Environment {sre_name}.\n{exc!s}"
-            raise DataSafeHavenException(msg) from exc
+            raise DataSafeHavenError(msg) from exc
 
     def update_config(
         self,
@@ -206,7 +206,7 @@ class DeploySRECommand:
             config.sres[sre_name].remote_desktop.allow_copy = allow_copy
         if config.sres[sre_name].remote_desktop.allow_copy is None:
             msg = "No text copying rule was found. Use [bright_cyan]'--allow-copy / -c'[/] to set one."
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)
 
         # Set whether pasting text into the SRE is allowed
         if allow_paste is not None:
@@ -223,7 +223,7 @@ class DeploySRECommand:
             config.sres[sre_name].remote_desktop.allow_paste = allow_paste
         if config.sres[sre_name].remote_desktop.allow_paste is None:
             msg = "No text pasting rule was found. Use [bright_cyan]'--allow-paste / -p'[/] to set one."
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)
 
         # Set data provider IP addresses
         if data_provider_ip_addresses:
@@ -241,7 +241,7 @@ class DeploySRECommand:
                 "No data provider IP addresses were found."
                 " Use [bright_cyan]'--data-provider-ip-address / -d'[/] to set one."
             )
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)
 
         # Set research desktops
         if research_desktops:
@@ -264,7 +264,7 @@ class DeploySRECommand:
                 config.sres[sre_name].research_desktops[vm_name].sku = vm_sku
         if len(config.sres[sre_name].research_desktops) == 0:
             msg = "No research desktops were found. Use [bright_cyan]'--research-desktop / -r'[/] to add one."
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)
 
         # Select which software packages can be installed by users
         if software_packages is not None:
@@ -281,7 +281,7 @@ class DeploySRECommand:
             config.sres[sre_name].software_packages = software_packages
         if not config.sres[sre_name].software_packages:
             msg = "No software package rule was found. Use [bright_cyan]'--software-packages / -s'[/] to set one."
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)
 
         # Set user IP addresses
         if user_ip_addresses:
@@ -295,7 +295,7 @@ class DeploySRECommand:
             config.sres[sre_name].research_user_ip_addresses = user_ip_addresses
         if len(config.sres[sre_name].research_user_ip_addresses) == 0:
             msg = "No user IP addresses were found. Use [bright_cyan]'--user-ip-address / -u'[/] to set one."
-            raise DataSafeHavenConfigException(msg)
+            raise DataSafeHavenConfigError(msg)
 
     def available_vm_skus(self, config: Config) -> dict[str, dict[str, Any]]:
         """Load available VM SKUs for this region"""

@@ -9,8 +9,8 @@ from yaml.parser import ParserError
 
 # Local imports
 from data_safe_haven.exceptions import (
-    DataSafeHavenConfigException,
-    DataSafeHavenParameterException,
+    DataSafeHavenConfigError,
+    DataSafeHavenParameterError,
 )
 from data_safe_haven.utility import Logger
 
@@ -72,14 +72,14 @@ class BackendSettings:
             msg = (
                 "Azure administrator group not provided: use '[bright_cyan]--admin-group[/]' / '[green]-a[/]' to do so."
             )
-            raise DataSafeHavenParameterException(msg)
+            raise DataSafeHavenParameterError(msg)
         return self._admin_group_id
 
     @property
     def location(self) -> str:
         if not self._location:
             msg = "Azure location not provided: use '[bright_cyan]--location[/]' / '[green]-l[/]' to do so."
-            raise DataSafeHavenParameterException(msg)
+            raise DataSafeHavenParameterError(msg)
         return self._location
 
     @property
@@ -89,14 +89,14 @@ class BackendSettings:
                 "Data Safe Haven deployment name not provided:"
                 " use '[bright_cyan]--deployment-name[/]' / '[green]-d[/]' to do so."
             )
-            raise DataSafeHavenParameterException(msg)
+            raise DataSafeHavenParameterError(msg)
         return self._name
 
     @property
     def subscription_name(self) -> str:
         if not self._subscription_name:
             msg = "Azure subscription not provided: use '[bright_cyan]--subscription[/]' / '[green]-s[/]' to do so."
-            raise DataSafeHavenParameterException(msg)
+            raise DataSafeHavenParameterError(msg)
         return self._subscription_name
 
     def read(self) -> None:
@@ -117,7 +117,7 @@ class BackendSettings:
                         self._subscription_name = subscription_name
         except ParserError as exc:
             msg = f"Could not load settings from {self.config_file_path}.\n{exc!s}"
-            raise DataSafeHavenConfigException(msg) from exc
+            raise DataSafeHavenConfigError(msg) from exc
 
     def write(self) -> None:
         """Write settings to YAML file"""

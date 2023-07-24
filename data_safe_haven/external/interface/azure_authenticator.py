@@ -8,8 +8,8 @@ from azure.mgmt.resource import SubscriptionClient
 
 # Local imports
 from data_safe_haven.exceptions import (
-    DataSafeHavenAzureException,
-    DataSafeHavenInputException,
+    DataSafeHavenAzureError,
+    DataSafeHavenInputError,
 )
 
 
@@ -38,7 +38,7 @@ class AzureAuthenticator:
             self.login()
         if not self.subscription_id_:
             msg = "Failed to load subscription ID."
-            raise DataSafeHavenAzureException(msg)
+            raise DataSafeHavenAzureError(msg)
         return self.subscription_id_
 
     @property
@@ -47,7 +47,7 @@ class AzureAuthenticator:
             self.login()
         if not self.tenant_id_:
             msg = "Failed to load tenant ID."
-            raise DataSafeHavenAzureException(msg)
+            raise DataSafeHavenAzureError(msg)
         return self.tenant_id_
 
     def login(self) -> None:
@@ -64,7 +64,7 @@ class AzureAuthenticator:
                     break
         except ClientAuthenticationError as exc:
             msg = f"Failed to authenticate with Azure.\n{exc!s}"
-            raise DataSafeHavenAzureException(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
         if not (self.subscription_id and self.tenant_id):
             msg = f"Could not find subscription '{self.subscription_name}'"
-            raise DataSafeHavenInputException(msg)
+            raise DataSafeHavenInputError(msg)

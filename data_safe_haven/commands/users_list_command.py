@@ -3,7 +3,7 @@
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
-    DataSafeHavenException,
+    DataSafeHavenError,
 )
 from data_safe_haven.external import GraphApi
 
@@ -28,6 +28,6 @@ class UsersListCommand:
             # List users from all sources
             users = UserHandler(config, graph_api)
             users.list()
-        except DataSafeHavenException as exc:
+        except DataSafeHavenError as exc:
             msg = f"Could not list users for Data Safe Haven '{shm_name}'.\n{exc!s}"
-            raise DataSafeHavenException(msg) from exc
+            raise DataSafeHavenError(msg) from exc

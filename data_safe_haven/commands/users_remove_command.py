@@ -5,7 +5,7 @@
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
-    DataSafeHavenException,
+    DataSafeHavenError,
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import Logger
@@ -39,6 +39,6 @@ class UsersRemoveCommand:
             if usernames:
                 users = UserHandler(config, graph_api)
                 users.remove(usernames)
-        except DataSafeHavenException as exc:
+        except DataSafeHavenError as exc:
             for line in f"Could not remove users from Data Safe Haven '{shm_name}'.\n{exc!s}".split("\n"):
                 self.logger.error(line)

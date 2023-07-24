@@ -14,7 +14,7 @@ from pulumi.dynamic import (
 )
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenNotImplementedException
+from data_safe_haven.exceptions import DataSafeHavenNotImplementedError
 
 
 class DshResourceProvider(ResourceProvider):
@@ -51,16 +51,16 @@ class DshResourceProvider(ResourceProvider):
     def create(self) -> CreateResult:
         """Create compiled desired state file."""
         msg = "DshResourceProvider::create() must be implemented"
-        raise DataSafeHavenNotImplementedException(msg)
+        raise DataSafeHavenNotImplementedError(msg)
 
     def delete(self) -> None:
         """Delete the resource."""
         msg = "DshResourceProvider::delete() must be implemented"
-        raise DataSafeHavenNotImplementedException(msg)
+        raise DataSafeHavenNotImplementedError(msg)
 
     def diff(self) -> DiffResult:
         msg = "DshResourceProvider::diff() must be implemented"
-        raise DataSafeHavenNotImplementedException(msg)
+        raise DataSafeHavenNotImplementedError(msg)
 
     def read(self, id_: str, props: dict[str, Any]) -> ReadResult:
         """Read data for a resource not managed by Pulumi."""

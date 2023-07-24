@@ -13,7 +13,7 @@ from azure.mgmt.containerinstance.models import (
 )
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenAzureException
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.utility import Logger
 
@@ -44,7 +44,7 @@ class AzureContainerInstance:
         if ip_address and isinstance(ip_address.ip, str):
             return ip_address.ip
         msg = f"Could not determine IP address for container group {self.container_group_name}."
-        raise DataSafeHavenAzureException(msg)
+        raise DataSafeHavenAzureError(msg)
 
     def restart(self, target_ip_address: str | None = None) -> None:
         """Restart the container group"""
@@ -81,7 +81,7 @@ class AzureContainerInstance:
             )
         except Exception as exc:
             msg = f"Could not restart container group {self.container_group_name}.\n{exc!s}"
-            raise DataSafeHavenAzureException(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
 
     def run_executable(self, container_name: str, executable_path: str) -> list[str]:
         """

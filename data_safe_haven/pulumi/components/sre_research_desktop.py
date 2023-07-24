@@ -8,7 +8,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenPulumiException
+from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.functions import b64encode, replace_separators
 from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
@@ -74,9 +74,9 @@ class SREResearchDesktopProps:
 
     def get_ip_addresses(self, subnet: Any, vm_details: Any) -> list[str]:
         if not isinstance(subnet, network.GetSubnetResult):
-            DataSafeHavenPulumiException(f"'subnet' has invalid type {type(subnet)}")
+            DataSafeHavenPulumiError(f"'subnet' has invalid type {type(subnet)}")
         if not isinstance(vm_details, list):
-            DataSafeHavenPulumiException(f"'vm_details' has invalid type {type(vm_details)}")
+            DataSafeHavenPulumiError(f"'vm_details' has invalid type {type(vm_details)}")
         return get_available_ips_from_subnet(subnet)[: len(vm_details)]
 
 

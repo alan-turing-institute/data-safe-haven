@@ -4,7 +4,7 @@
 # Local imports
 from data_safe_haven.backend import Backend
 from data_safe_haven.config import BackendSettings
-from data_safe_haven.exceptions import DataSafeHavenException
+from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.utility import Logger
 
 
@@ -40,6 +40,6 @@ class InitialiseCommand:
             # Load the generated configuration file and upload it to blob storage
             backend.config.upload()
 
-        except DataSafeHavenException as exc:
+        except DataSafeHavenError as exc:
             msg = f"Could not initialise Data Safe Haven.\n{exc!s}"
-            raise DataSafeHavenException(msg) from exc
+            raise DataSafeHavenError(msg) from exc

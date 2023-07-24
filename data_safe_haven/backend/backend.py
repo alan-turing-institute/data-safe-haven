@@ -3,7 +3,7 @@
 
 # Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.exceptions import DataSafeHavenAzureException
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 
 
@@ -32,7 +32,7 @@ class Backend:
         """Create all desired resources
 
         Raises:
-            DataSafeHavenAzureException if any resources cannot be created
+            DataSafeHavenAzureError if any resources cannot be created
         """
         try:
             self.config.azure.subscription_id = self.azure_api.subscription_id
@@ -44,7 +44,7 @@ class Backend:
             )
             if not resource_group.name:
                 msg = f"Resource group '{self.config.backend.resource_group_name}' was not created."
-                raise DataSafeHavenAzureException(msg)
+                raise DataSafeHavenAzureError(msg)
             identity = self.azure_api.ensure_managed_identity(
                 identity_name=self.config.backend.managed_identity_name,
                 location=resource_group.location,
@@ -58,7 +58,7 @@ class Backend:
             )
             if not storage_account.name:
                 msg = f"Storage account '{self.config.backend.storage_account_name}' was not created."
-                raise DataSafeHavenAzureException(msg)
+                raise DataSafeHavenAzureError(msg)
             _ = self.azure_api.ensure_storage_blob_container(
                 container_name=self.config.backend.storage_container_name,
                 resource_group_name=resource_group.name,
@@ -79,7 +79,7 @@ class Backend:
             )
             if not keyvault.name:
                 msg = f"Keyvault '{self.config.backend.key_vault_name}' was not created."
-                raise DataSafeHavenAzureException(msg)
+                raise DataSafeHavenAzureError(msg)
             pulumi_encryption_key = self.azure_api.ensure_keyvault_key(
                 key_name=self.config.pulumi.encryption_key_name,
                 key_vault_name=keyvault.name,
@@ -87,16 +87,16 @@ class Backend:
             self.config.pulumi.encryption_key_id = pulumi_encryption_key.id.split("/")[-1]
         except Exception as exc:
             msg = f"Failed to create backend resources.\n{exc!s}"
-            raise DataSafeHavenAzureException(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
 
     def teardown(self) -> None:
         """Destroy all created resources
 
         Raises:
-            DataSafeHavenAzureException if any resources cannot be destroyed
+            DataSafeHavenAzureError if any resources cannot be destroyed
         """
         try:
             self.azure_api.remove_resource_group(self.config.backend.resource_group_name)
         except Exception as exc:
             msg = f"Failed to destroy backend resources.\n{exc!s}"
-            raise DataSafeHavenAzureException(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc

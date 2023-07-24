@@ -14,7 +14,7 @@ from yaml.parser import ParserError
 # Local imports
 from data_safe_haven import __version__
 from data_safe_haven.config.backend_settings import BackendSettings
-from data_safe_haven.exceptions import DataSafeHavenAzureException
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
     alphanumeric,
@@ -272,7 +272,7 @@ class Config:
         self.azure_api = AzureApi(subscription_name=self.subscription_name)
         # Attempt to load YAML dictionary from blob storage
         yaml_input = {}
-        with suppress(DataSafeHavenAzureException, ParserError):
+        with suppress(DataSafeHavenAzureError, ParserError):
             yaml_input = yaml.safe_load(
                 self.azure_api.download_blob(
                     self.filename,

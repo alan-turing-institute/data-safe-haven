@@ -85,8 +85,8 @@ class AzureADUsers:
         #                 f"Removed '{user.preferred_username}' from group '{self.researchers_group_name}'"
         #             )
         #         else:
-        #             raise DataSafeHavenMicrosoftGraphException
-        #     except DataSafeHavenMicrosoftGraphException:
+        #             raise DataSafeHavenMicrosoftGraphError
+        #     except DataSafeHavenMicrosoftGraphError:
         #         self.logger.error(
         #             f"Unable to remove '{user.preferred_username}' from group '{self.researchers_group_name}'"
         #         )

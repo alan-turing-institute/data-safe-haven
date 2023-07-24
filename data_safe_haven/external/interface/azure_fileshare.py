@@ -8,7 +8,7 @@ from azure.mgmt.storage import StorageManagementClient
 from azure.storage.fileshare import ShareDirectoryClient, ShareFileClient
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenAzureException
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 
 
@@ -45,7 +45,7 @@ class AzureFileShare:
             ]
             if not storage_account_keys:
                 msg = f"Could not load key values for storage account {self.storage_account_name}."
-                raise DataSafeHavenAzureException(msg)
+                raise DataSafeHavenAzureError(msg)
             self.storage_account_key_ = storage_account_keys[0]
         return self.storage_account_key_
 
@@ -63,7 +63,7 @@ class AzureFileShare:
             file_client.upload_file(file_contents.encode("utf-8"))
         except Exception as exc:
             msg = f"Failed to upload data to [green]{target}[/] in [green]{self.share_name}[/]."
-            raise DataSafeHavenAzureException(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
 
     def delete(self, destination_path: str) -> None:
         """Delete a file from the target storage account"""
@@ -80,7 +80,7 @@ class AzureFileShare:
                 file_client.delete_file()
         except Exception as exc:
             msg = f"Failed to delete file [green]{target}[/] in [green]{self.share_name}[/]."
-            raise DataSafeHavenAzureException(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
 
     @staticmethod
     def file_exists(file_client: ShareFileClient) -> bool:

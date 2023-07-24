@@ -19,8 +19,8 @@ from azure.mgmt.rdbms.postgresql.models import (
 
 # Local imports
 from data_safe_haven.exceptions import (
-    DataSafeHavenAzureException,
-    DataSafeHavenInputException,
+    DataSafeHavenAzureError,
+    DataSafeHavenInputError,
 )
 from data_safe_haven.external import AzureApi
 from data_safe_haven.utility import FileReader, Logger, PathType
@@ -96,7 +96,7 @@ class AzurePostgreSQLDatabase:
                     time.sleep(10)
                 else:
                     msg = f"Could not connect to database.\n{exc!s}"
-                    raise DataSafeHavenAzureException(msg) from exc
+                    raise DataSafeHavenAzureError(msg) from exc
         return connection
 
     def load_sql(self, filepath: PathType, mustache_values: dict[str, str] | None = None) -> str:
@@ -139,7 +139,7 @@ class AzurePostgreSQLDatabase:
             self.logger.info(f"Finished running {len(filepaths)} SQL scripts.")
         except (Exception, psycopg2.Error) as exc:
             msg = f"Error while connecting to PostgreSQL.\n{exc!s}"
-            raise DataSafeHavenAzureException(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
         finally:
             # Close the connection if it is open
             if connection:
@@ -194,7 +194,7 @@ class AzurePostgreSQLDatabase:
             )
         else:
             msg = f"Database access action {action} was not recognised."
-            raise DataSafeHavenInputException(msg)
+            raise DataSafeHavenInputError(msg)
         self.db_server_ = None  # Force refresh of self.db_server
         self.logger.info(
             f"Public network access to [green]{self.server_name}[/]"

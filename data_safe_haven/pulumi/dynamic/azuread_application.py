@@ -8,7 +8,7 @@ from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource, UpdateResult
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphException
+from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
 
@@ -60,7 +60,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             outs["application_id"] = json_response["appId"]
         except Exception as exc:
             msg = f"Failed to create application [green]{props['application_name']}[/] in AzureAD.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(msg) from exc
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
         return CreateResult(
             f"AzureADApplication-{props['application_name']}",
             outs=outs,
@@ -75,7 +75,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             graph_api.delete_application(props["application_name"])
         except Exception as exc:
             msg = f"Failed to delete application [green]{props['application_name']}[/] from AzureAD.\n{exc!s}"
-            raise DataSafeHavenMicrosoftGraphException(msg) from exc
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def diff(
         self,

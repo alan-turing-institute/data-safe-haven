@@ -10,7 +10,7 @@ from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenAzureException
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
 
 
@@ -96,7 +96,7 @@ class FileShareFileProvider(DshResourceProvider):
         except Exception as exc:
             file_name = file_client.file_name if file_client else ""
             msg = f"Failed to upload data to [green]{file_name}[/] in [green]{props['share_name']}[/].\n{exc!s}"
-            raise DataSafeHavenAzureException(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
         return CreateResult(
             f"filesharefile-{props['destination_path'].replace('/', '-')}",
             outs=outs,
@@ -117,7 +117,7 @@ class FileShareFileProvider(DshResourceProvider):
         except Exception as exc:
             file_name = file_client.file_name if file_client else ""
             msg = f"Failed to delete file [green]{file_name}[/] in [green]{props['share_name']}[/].\n{exc!s}"
-            raise DataSafeHavenAzureException(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
 
     def diff(
         self,

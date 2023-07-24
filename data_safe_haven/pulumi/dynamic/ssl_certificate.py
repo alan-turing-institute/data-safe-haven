@@ -17,7 +17,7 @@ from pulumi.dynamic import CreateResult, DiffResult, Resource
 from simple_acme_dns import ACMEClient
 
 # Local imports
-from data_safe_haven.exceptions import DataSafeHavenSSLException
+from data_safe_haven.exceptions import DataSafeHavenSSLError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
 
@@ -81,12 +81,12 @@ class SSLCertificateProvider(DshResourceProvider):
             # Wait for DNS propagation to complete
             if not client.check_dns_propagation(authoritative=False, round_robin=True, verbose=False):
                 msg = "DNS propagation failed"
-                raise DataSafeHavenSSLException(msg)
+                raise DataSafeHavenSSLError(msg)
             # Request a signed certificate
             try:
                 certificate_bytes = client.request_certificate()
             except ValidationError as exc:
-                raise DataSafeHavenSSLException(
+                raise DataSafeHavenSSLError(
                     "ACME validation error:\n" + "\n".join([str(auth_error) for auth_error in exc.failed_authzrs])
                 ) from exc
             # Although KeyVault will accept a PEM certificate (where we simply
@@ -118,7 +118,7 @@ class SSLCertificateProvider(DshResourceProvider):
                 f"Failed to create SSL certificate [green]{props['certificate_secret_name']}[/]"
                 f" for [green]{props['domain_name']}[/].\n{exc!s}"
             )
-            raise DataSafeHavenSSLException(msg) from exc
+            raise DataSafeHavenSSLError(msg) from exc
         return CreateResult(
             f"SSLCertificate-{props['certificate_secret_name']}",
             outs=outs,
@@ -144,7 +144,7 @@ class SSLCertificateProvider(DshResourceProvider):
                 f"Failed to delete SSL certificate [green]{props['certificate_secret_name']}[/]"
                 f"for [green]{props['domain_name']}[/].\n{exc!s}"
             )
-            raise DataSafeHavenSSLException(msg) from exc
+            raise DataSafeHavenSSLError(msg) from exc
 
     def diff(
         self,
