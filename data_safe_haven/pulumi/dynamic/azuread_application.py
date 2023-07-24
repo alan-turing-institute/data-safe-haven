@@ -66,7 +66,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             outs=outs,
         )
 
-    def delete(self, id_: str, props: dict[str, Any]) -> None:
+    def delete(self, props: dict[str, Any]) -> None:
         """Delete an AzureAD application."""
         try:
             graph_api = GraphApi(
@@ -79,7 +79,6 @@ class AzureADApplicationProvider(DshResourceProvider):
 
     def diff(
         self,
-        id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
