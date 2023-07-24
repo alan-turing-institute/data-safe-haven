@@ -2,7 +2,7 @@
 # Standard library imports
 import io
 import logging
-from typing import Any, Optional
+from typing import Any, ClassVar, Optional
 
 # Third party imports
 from rich.console import Console
@@ -23,7 +23,7 @@ class LoggingHandlerPlainFile(logging.FileHandler):
 
     def __init__(self, fmt: str, datefmt: str, filename: str, *args: Any, **kwargs: Any):
         """Constructor"""
-        super().__init__(filename=filename, *args, **kwargs)
+        super().__init__(*args, **kwargs, filename=filename)
         self.setFormatter(logging.Formatter(self.strip_formatting(fmt), datefmt))
 
     @staticmethod
@@ -65,7 +65,7 @@ class LogLevelHighlighter(RegexHighlighter):
     """
 
     base_style = "logging.level."
-    highlights = [
+    highlights: ClassVar[list[str]] = [
         r"(?P<critical>\[CRITICAL\])",
         r"(?P<debug>\[   DEBUG\])",
         r"(?P<error>\[   ERROR\])",
@@ -79,7 +79,7 @@ class RichStringAdaptor:
     A wrapper to convert Rich objects into strings.
     """
 
-    def __init__(self, coloured=False):
+    def __init__(self, *, coloured: bool):
         self.string_io = io.StringIO()
         self.console = Console(file=self.string_io, force_terminal=coloured)
 
@@ -131,7 +131,7 @@ class Logger:
         """Format a message using rich handler"""
         for handler in self.logger.handlers:
             if isinstance(handler, RichHandler):
-                fn, lno, func, sinfo = self.logger.findCaller(False, 1)
+                fn, lno, func, sinfo = self.logger.findCaller(stack_info=False, stack_level=1)
                 return handler.format(
                     self.logger.makeRecord(
                         name=self.logger.name,
@@ -169,7 +169,7 @@ class Logger:
         return self.logger.debug(message)
 
     # Loggable wrappers for confirm/ask/choice
-    def confirm(self, message: str, default_to_yes: bool = True) -> bool:
+    def confirm(self, message: str, *, default_to_yes: bool) -> bool:
         formatted = self.format_msg(message, logging.INFO)
         return Confirm.ask(formatted, default=default_to_yes)
 
@@ -216,5 +216,5 @@ class Logger:
         if rows:
             for row in rows:
                 table.add_row(*row)
-        adaptor = RichStringAdaptor()
+        adaptor = RichStringAdaptor(coloured=False)
         return [line.strip() for line in adaptor.to_string(table).split("\n")]
