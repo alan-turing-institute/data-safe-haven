@@ -17,6 +17,7 @@ class BlobContainerAclProps:
 
     def __init__(
         self,
+        *,
         acl_user: Input[str],
         acl_group: Input[str],
         acl_other: Input[str],
@@ -70,7 +71,7 @@ class BlobContainerAclProvider(DshResourceProvider):
             outs=outs,
         )
 
-    def delete(self, id_: str, props: dict[str, Any]) -> None:
+    def delete(self, props: dict[str, Any]) -> None:
         """Restore default ACLs"""
         try:
             azure_api = AzureApi(props["subscription_name"])
@@ -86,7 +87,6 @@ class BlobContainerAclProvider(DshResourceProvider):
 
     def diff(
         self,
-        id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
