@@ -22,7 +22,7 @@ class RemoteScriptProps:
         subscription_name: Input[str],
         vm_name: Input[str],
         vm_resource_group_name: Input[str],
-        force_refresh: Input[bool] | None = False,
+        force_refresh: Input[bool] | None,
     ):
         self.force_refresh = force_refresh
         self.script_contents = script_contents
@@ -50,13 +50,8 @@ class RemoteScriptProvider(DshResourceProvider):
             outs=outs,
         )
 
-    def delete(self, id_: str, props: dict[str, Any]) -> None:
-        """The Python SDK does not support configuration deletion"""
-        return
-
     def diff(
         self,
-        id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
