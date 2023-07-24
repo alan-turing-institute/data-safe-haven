@@ -355,7 +355,9 @@ class SREDataComponent(ComponentResource):
                 acl_user="rwx",
                 acl_group="rwx",
                 acl_other="rwx",
-                apply_default_permissions=False,  # due to an Azure bug this also gives ownership of the fileshare to user 65533 (preventing use inside the SRE)
+                # due to an Azure bug this also gives ownership of the
+                # fileshare to user 65533 (preventing use inside the SRE)
+                apply_default_permissions=False,
                 container_name=storage_container_egress.name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account_securedata.name,
@@ -369,7 +371,9 @@ class SREDataComponent(ComponentResource):
                 acl_user="rwx",
                 acl_group="r-x",
                 acl_other="r-x",
-                apply_default_permissions=True,  # ensure that the above permissions are also set on any newly created files (eg. with Azure Storage Explorer)
+                # ensure that the above permissions are also set on any newly
+                # created files (eg. with Azure Storage Explorer)
+                apply_default_permissions=True,
                 container_name=storage_container_ingress.name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account_securedata.name,
@@ -451,7 +455,8 @@ class SREDataComponent(ComponentResource):
             account_name=storage_account_userdata.name,
             enabled_protocols=storage.EnabledProtocols.NFS,
             resource_group_name=resource_group.name,
-            root_squash=storage.RootSquashType.NO_ROOT_SQUASH,  # Squashing prevents root from creating user home directories
+            # Squashing prevents root from creating user home directories
+            root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
             share_name="home",
             share_quota=1024,
             opts=ResourceOptions(parent=storage_account_userdata),
