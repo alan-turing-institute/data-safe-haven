@@ -24,6 +24,7 @@ packages:
     gym:
     html5lib:
     ipykernel:
+    keras:
     lightgbm:
     lxml:
     matplotlib:
@@ -49,11 +50,13 @@ packages:
     pyodbc:
     pyproj:
     pyshp:
+    pystan:
     pytest:
     PyYAML:
     regex:
     requests:
     safety:  # also used by installation scripts
+    scikit-image:
     scikit-learn:
     scipy:
     seaborn:
@@ -68,6 +71,9 @@ packages:
     tensorflow:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     thinc:
+    torch:
+    torchvision:
+    tsfresh:
     wordcloud:
         "3.11": ["uninstallable"]  # does not yet support 3.11
     xgboost:
