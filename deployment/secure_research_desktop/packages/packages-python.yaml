@@ -57,6 +57,7 @@ packages:
     requests:
     safety:  # also used by installation scripts
     scikit-image:
+        "all": [">0.10.0"]  # increase solver flexibility
     scikit-learn:
     scipy:
     seaborn:
