@@ -49,9 +49,9 @@ def validate_ip_address(
         if ip_address:
             return str(ipaddress.ip_network(ip_address))
         return None
-    except Exception:
+    except Exception as exc:
         msg = "Expected valid IPv4 address, for example '1.1.1.1'"
-        raise typer.BadParameter(msg)
+        raise typer.BadParameter(msg) from exc
 
 
 def validate_timezone(timezone: str | None) -> str | None:
