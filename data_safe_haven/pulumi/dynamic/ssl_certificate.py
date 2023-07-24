@@ -99,7 +99,6 @@ class SSLCertificateProvider(DshResourceProvider):
             all_certs = [load_pem_x509_certificate(data) for data in certificate_bytes.split(b"\n\n")]
             certificate = [cert for cert in all_certs if props["domain_name"] in str(cert.subject)][0]
             ca_certs = [cert for cert in all_certs if cert != certificate]
-            pkcs12._ALLOWED_PKCS12_TYPES
             pfx_bytes = pkcs12.serialize_key_and_certificates(
                 props["certificate_secret_name"].encode("utf-8"),
                 private_key,
@@ -115,14 +114,17 @@ class SSLCertificateProvider(DshResourceProvider):
             )
             outs["secret_id"] = kvcert.secret_id
         except Exception as exc:
-            msg = f"Failed to create SSL certificate [green]{props['certificate_secret_name']}[/] for [green]{props['domain_name']}[/].\n{exc!s}"
+            msg = (
+                f"Failed to create SSL certificate [green]{props['certificate_secret_name']}[/]"
+                f" for [green]{props['domain_name']}[/].\n{exc!s}"
+            )
             raise DataSafeHavenSSLException(msg) from exc
         return CreateResult(
             f"SSLCertificate-{props['certificate_secret_name']}",
             outs=outs,
         )
 
-    def delete(self, id_: str, props: dict[str, Any]) -> None:
+    def delete(self, props: dict[str, Any]) -> None:
         """Delete an SSL certificate."""
         try:
             # Remove the DNS record
@@ -138,12 +140,14 @@ class SSLCertificateProvider(DshResourceProvider):
                 key_vault_name=props["key_vault_name"],
             )
         except Exception as exc:
-            msg = f"Failed to delete SSL certificate [green]{props['certificate_secret_name']}[/] for [green]{props['domain_name']}[/].\n{exc!s}"
+            msg = (
+                f"Failed to delete SSL certificate [green]{props['certificate_secret_name']}[/]"
+                f"for [green]{props['domain_name']}[/].\n{exc!s}"
+            )
             raise DataSafeHavenSSLException(msg) from exc
 
     def diff(
         self,
-        id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
