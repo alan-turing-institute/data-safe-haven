@@ -6,7 +6,7 @@ import time
 from collections.abc import Sequence
 from contextlib import suppress
 from io import UnsupportedOperation
-from typing import Any
+from typing import Any, ClassVar
 
 # Third party imports
 import requests
@@ -46,8 +46,8 @@ class GraphApi:
     """Interface to the Microsoft Graph REST API"""
 
     linux_schema = "extj8xolrvw_linux"  # this is the "Extension with Properties for Linux User and Groups" extension
-    role_template_ids = {"Global Administrator": "62e90394-69f5-4237-9190-012177145e10"}
-    uuid_application = {
+    role_template_ids: ClassVar[dict[str, str]] = {"Global Administrator": "62e90394-69f5-4237-9190-012177145e10"}
+    uuid_application: ClassVar[dict[str, str]] = {
         "Directory.Read.All": "7ab1d382-f21e-4acd-a863-ba3e13f7da61",
         "Domain.Read.All": "dbb9058a-0e50-45d7-ae91-66909b5d4664",
         "Group.Read.All": "5b567255-7703-4780-807c-7be8301ae99b",
@@ -56,7 +56,7 @@ class GraphApi:
         "User.ReadWrite.All": "741f803b-c850-494e-b5df-cde7c675a1ca",
         "UserAuthenticationMethod.ReadWrite.All": "50483e42-d915-4231-9639-7fdb7fd190e5",
     }
-    uuid_delegated = {
+    uuid_delegated: ClassVar[dict[str, str]] = {
         "GroupMember.Read.All": "bc024368-1153-4739-b217-4326f2e966d0",
         "User.Read.All": "a154be20-db9c-4678-8ab7-66f6cc099a59",
     }
@@ -806,7 +806,7 @@ class GraphApi:
                 )
                 self.logger.confirm(
                     f"Have you delegated {domain_name} to the Azure nameservers above?",
-                    True,
+                    default_to_yes=True,
                 )
             # Send verification request if needed
             if not any((d["id"] == domain_name and d["isVerified"]) for d in domains):
