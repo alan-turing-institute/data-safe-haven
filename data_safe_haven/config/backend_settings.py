@@ -22,9 +22,9 @@ class BackendSettings:
     azure:
       admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
       location: uksouth
-      subscription_name: Data Safe Haven Development
+      subscription_name: Data Safe Haven (Acme)
     current:
-      name: Turing Development
+      name: Acme Deployment
     """
 
     def __init__(
