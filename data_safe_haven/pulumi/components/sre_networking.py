@@ -226,7 +226,10 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow LDAP client requests over TCP (see https://devopstales.github.io/linux/pfsense-ad-join/ for details).",
+                    description=(
+                        "Allow LDAP client requests over TCP"
+                        " (see https://devopstales.github.io/linux/pfsense-ad-join/ for details)."
+                    ),
                     destination_address_prefix=props.shm_subnet_identity_servers_prefix,
                     destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
