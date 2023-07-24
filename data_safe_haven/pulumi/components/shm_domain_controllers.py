@@ -92,7 +92,8 @@ class SHMDomainControllersComponent(ComponentResource):
         )
 
         # Create the DC
-        # We use the domain admin credentials here as the VM admin is promoted to domain admin when setting up the domain
+        # We use the domain admin credentials here as the VM admin is promoted
+        # to domain admin when setting up the domain
         primary_domain_controller = VMComponent(
             f"{self._name}_primary_domain_controller",
             WindowsVMProps(

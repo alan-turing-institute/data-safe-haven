@@ -442,7 +442,8 @@ class AzureApi(AzureAuthenticator):
             )
             resource_groups = [rg for rg in resource_client.resource_groups.list() if rg.name == resource_group_name]
             self.logger.info(
-                f"Ensured that resource group [green]{resource_groups[0].name}[/] exists in [green]{resource_groups[0].location}[/].",
+                f"Ensured that resource group [green]{resource_groups[0].name}[/] exists"
+                f" in [green]{resource_groups[0].location}[/].",
             )
             return resource_groups[0]
         except Exception as exc:
@@ -600,15 +601,23 @@ class AzureApi(AzureAuthenticator):
                 storage_account_name,
             )
             if not isinstance(storage_keys, StorageAccountListKeysResult):
-                msg = f"Could not connect to storage account '{storage_account_name}' in resource group '{resource_group_name}'."
+                msg = (
+                    f"Could not connect to storage account '{storage_account_name}'"
+                    f" in resource group '{resource_group_name}'.")
                 raise DataSafeHavenAzureException(msg)
             keys = storage_keys.keys
             if not keys or len(keys) == 0:
-                msg = f"No keys were retrieved for storage account '{storage_account_name}' in resource group '{resource_group_name}'."
+                msg = (
+                    f"No keys were retrieved for storage account '{storage_account_name}'"
+                    f" in resource group '{resource_group_name}'."
+                      )
                 raise DataSafeHavenAzureException(msg)
             return keys
         except Exception as exc:
-            msg = f"Keys could not be loaded for storage account '{storage_account_name}' in resource group '{resource_group_name}'.\n{exc!s}"
+            msg = (
+                f"Keys could not be loaded for storage account '{storage_account_name}'"
+                f" in resource group '{resource_group_name}'.\n{exc!s}"
+            )
             raise DataSafeHavenAzureException(msg) from exc
 
     def get_vm_sku_details(self, sku: str) -> tuple[str, str, str]:
@@ -843,7 +852,8 @@ class AzureApi(AzureAuthenticator):
     def restart_virtual_machine(self, resource_group_name: str, vm_name: str) -> None:
         try:
             self.logger.debug(
-                f"Attempting to restart virtual machine '[green]{vm_name}[/]' in resource group '[green]{resource_group_name}[/]'...",
+                f"Attempting to restart virtual machine '[green]{vm_name}[/]'"
+                f" in resource group '[green]{resource_group_name}[/]'...",
             )
             # Connect to Azure clients
             compute_client = ComputeManagementClient(self.credential, self.subscription_id)
@@ -925,7 +935,8 @@ class AzureApi(AzureAuthenticator):
                     raise HttpResponseError(msg)
             except HttpResponseError:
                 self.logger.warning(
-                    f"Blob container '[green]{container_name}[/]' could not be found in storage account '[green]{storage_account_name}[/]'."
+                    f"Blob container '[green]{container_name}[/]' could not be found"
+                    f" in storage account '[green]{storage_account_name}[/]'."
                 )
                 return
 

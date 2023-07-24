@@ -197,5 +197,6 @@ class AzurePostgreSQLDatabase:
             raise DataSafeHavenInputException(msg)
         self.db_server_ = None  # Force refresh of self.db_server
         self.logger.info(
-            f"Public network access to [green]{self.server_name}[/] is [green]{self.db_server.public_network_access}[/]."
+            f"Public network access to [green]{self.server_name}[/]"
+            f" is [green]{self.db_server.public_network_access}[/]."
         )

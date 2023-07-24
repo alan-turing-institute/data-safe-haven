@@ -56,7 +56,8 @@ class AzureContainerInstance:
 
             # Restart container group
             self.logger.debug(
-                f"Restarting container group [green]{self.container_group_name}[/] with IP address [green]{target_ip_address}[/]...",
+                f"Restarting container group [green]{self.container_group_name}[/]"
+                f" with IP address [green]{target_ip_address}[/]...",
             )
             while True:
                 if (
@@ -75,7 +76,8 @@ class AzureContainerInstance:
                 if self.current_ip_address == target_ip_address:
                     break
             self.logger.info(
-                f"Restarted container group [green]{self.container_group_name}[/] with IP address [green]{self.current_ip_address}[/].",
+                f"Restarted container group [green]{self.container_group_name}[/]"
+                f" with IP address [green]{self.current_ip_address}[/].",
             )
         except Exception as exc:
             msg = f"Could not restart container group {self.container_group_name}.\n{exc!s}"

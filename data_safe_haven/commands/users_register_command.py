@@ -40,7 +40,8 @@ class UsersRegisterCommand:
                 raise DataSafeHavenException(msg)
             self.logger.info(f"Preparing to register {len(usernames)} users with SRE '{sre_name}'")
 
-            # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
+            # Load GraphAPI as this may require user-interaction that is not
+            # possible as part of a Pulumi declarative command
             graph_api = GraphApi(
                 tenant_id=config.shm.aad_tenant_id,
                 default_scopes=["Group.Read.All"],
@@ -55,7 +56,8 @@ class UsersRegisterCommand:
                     usernames_to_register.append(username)
                 else:
                     self.logger.error(
-                        f"Username '{username}' does not belong to this Data Safe Haven deployment. Please use 'dsh users add' to create it."
+                        f"Username '{username}' does not belong to this Data Safe Haven deployment."
+                        " Please use 'dsh users add' to create it."
                     )
             users.register(sre_name, usernames_to_register)
         except DataSafeHavenException as exc:

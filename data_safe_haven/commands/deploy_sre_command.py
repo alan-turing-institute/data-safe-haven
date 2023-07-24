@@ -52,7 +52,8 @@ class DeploySRECommand:
                 user_ip_addresses=user_ip_addresses,
             )
 
-            # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
+            # Load GraphAPI as this may require user-interaction that is not
+            # possible as part of a Pulumi declarative command
             graph_api = GraphApi(
                 tenant_id=config.shm.aad_tenant_id,
                 default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
@@ -199,7 +200,8 @@ class DeploySRECommand:
                     f"Overwriting existing text copying rule {config.sres[sre_name].remote_desktop.allow_copy}"
                 )
             self.logger.info(
-                f"Setting [bold]text copying out of SRE {sre_name}[/] to [green]{'allowed' if allow_copy else 'forbidden'}[/]."
+                f"Setting [bold]text copying out of SRE {sre_name}[/]"
+                f" to [green]{'allowed' if allow_copy else 'forbidden'}[/]."
             )
             config.sres[sre_name].remote_desktop.allow_copy = allow_copy
         if config.sres[sre_name].remote_desktop.allow_copy is None:
@@ -215,7 +217,8 @@ class DeploySRECommand:
                     f"Overwriting existing text pasting rule {config.sres[sre_name].remote_desktop.allow_paste}"
                 )
             self.logger.info(
-                f"Setting [bold]text pasting into SRE {sre_name}[/] to [green]{'allowed' if allow_paste else 'forbidden'}[/]."
+                f"Setting [bold]text pasting into SRE {sre_name}[/]"
+                f" to [green]{'allowed' if allow_paste else 'forbidden'}[/]."
             )
             config.sres[sre_name].remote_desktop.allow_paste = allow_paste
         if config.sres[sre_name].remote_desktop.allow_paste is None:
@@ -228,12 +231,16 @@ class DeploySRECommand:
                 config.sres[sre_name].data_provider_ip_addresses != data_provider_ip_addresses
             ):
                 self.logger.debug(
-                    f"Overwriting existing data provider IP addresses {config.sres[sre_name].data_provider_ip_addresses}"
+                    "Overwriting existing data provider IP addresses"
+                    f" {config.sres[sre_name].data_provider_ip_addresses}"
                 )
             self.logger.info(f"Setting [bold]data provider IP addresses[/] to [green]{data_provider_ip_addresses}[/].")
             config.sres[sre_name].data_provider_ip_addresses = data_provider_ip_addresses
         if len(config.sres[sre_name].data_provider_ip_addresses) == 0:
-            msg = "No data provider IP addresses were found. Use [bright_cyan]'--data-provider-ip-address / -d'[/] to set one."
+            msg = (
+                "No data provider IP addresses were found."
+                " Use [bright_cyan]'--data-provider-ip-address / -d'[/] to set one."
+            )
             raise DataSafeHavenConfigException(msg)
 
         # Set research desktops
@@ -268,7 +275,8 @@ class DeploySRECommand:
                     f"Overwriting existing software package rule {config.sres[sre_name].software_packages}"
                 )
             self.logger.info(
-                f"Setting [bold]allowed software packages in SRE {sre_name}[/] to [green]{'allowed' if software_packages else 'forbidden'}[/]."
+                f"Setting [bold]allowed software packages in SRE {sre_name}[/]"
+                f" to [green]{'allowed' if software_packages else 'forbidden'}[/]."
             )
             config.sres[sre_name].software_packages = software_packages
         if not config.sres[sre_name].software_packages:

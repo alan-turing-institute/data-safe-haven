@@ -36,7 +36,10 @@ class GuacamoleUsers:
                 [self.postgres_script_path / "list_users.mustache.sql"],
                 mustache_values={"group_name": self.group_name},
             )
-            # The output is of the form [["sam_account_name1", "email_address1"], ["sam_account_name2", "email_address2"]]
+            # The output is of the form [
+            #   ["sam_account_name1", "email_address1"],
+            #   ["sam_account_name2", "email_address2"]
+            # ]
             self.users_ = [
                 ResearchUser(
                     sam_account_name=user_details[0].split("@")[0],

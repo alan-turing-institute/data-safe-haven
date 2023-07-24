@@ -40,7 +40,8 @@ class UsersUnregisterCommand:
                 raise DataSafeHavenException(msg)
             self.logger.info(f"Preparing to unregister {len(usernames)} users with SRE '{sre_name}'")
 
-            # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
+            # Load GraphAPI as this may require user-interaction that is not
+            # possible as part of a Pulumi declarative command
             graph_api = GraphApi(
                 tenant_id=config.shm.aad_tenant_id,
                 default_scopes=["Group.Read.All"],
@@ -55,7 +56,8 @@ class UsersUnregisterCommand:
                     usernames_to_unregister.append(username)
                 else:
                     self.logger.error(
-                        f"Username '{username}' does not belong to this Data Safe Haven deployment. Please use 'dsh users add' to create it."
+                        f"Username '{username}' does not belong to this Data Safe Haven deployment."
+                        " Please use 'dsh users add' to create it."
                     )
             users.unregister(sre_name, usernames_to_unregister)
         except DataSafeHavenException as exc:

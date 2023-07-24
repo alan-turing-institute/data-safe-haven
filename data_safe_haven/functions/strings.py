@@ -25,7 +25,10 @@ def hex_string(length: int) -> str:
 
 
 def password(length: int) -> str:
-    """Generate a string of 'length' random alphanumeric characters. Require at least one lower-case, one upper-case and one digit."""
+    """
+    Generate a string of 'length' random alphanumeric characters.
+    Require at least one lower-case, one upper-case and one digit.
+    """
     alphabet = string.ascii_letters + string.digits
     while True:
         password_ = "".join(secrets.choice(alphabet) for _ in range(length))

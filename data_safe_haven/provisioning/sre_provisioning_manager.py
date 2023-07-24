@@ -98,7 +98,10 @@ class SREProvisioningManager:
         connection_data = {
             "connections": [
                 {
-                    "connection_name": f"{vm_identifier} [{vm_details['cpus']} CPU(s), {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM]",
+                    "connection_name": (
+                        f"{vm_identifier} [{vm_details['cpus']} CPU(s),"
+                        f" {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM]"
+                    ),
                     "disable_copy": self.remote_desktop_params["disable_copy"],
                     "disable_paste": self.remote_desktop_params["disable_paste"],
                     "ip_address": vm_details["ip_address"],

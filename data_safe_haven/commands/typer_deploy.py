@@ -28,7 +28,10 @@ def shm(
         typer.Option(
             "--aad-tenant-id",
             "-a",
-            help="The tenant ID for the AzureAD where users will be created, for example '10de18e7-b238-6f1e-a4ad-772708929203'.",
+            help=(
+                "The tenant ID for the AzureAD where users will be created,"
+                " for example '10de18e7-b238-6f1e-a4ad-772708929203'."
+            ),
             callback=validate_aad_guid,
         ),
     ] = None,
@@ -46,7 +49,10 @@ def shm(
         typer.Option(
             "--ip-address",
             "-i",
-            help="An IP address or range used by your system deployers and administrators. [*may be specified several times*]",
+            help=(
+                "An IP address or range used by your system deployers and administrators."
+                " [*may be specified several times*]"
+            ),
             callback=lambda ips: [validate_ip_address(ip) for ip in ips],
         ),
     ] = None,
@@ -111,7 +117,10 @@ def sre(
         typer.Option(
             "--research-desktop",
             "-r",
-            help="A virtual machine SKU to make available to your users as a research desktop. [*may be specified several times*]",
+            help=(
+                "A virtual machine SKU to make available to your users as a research desktop."
+                " [*may be specified several times*]"
+            ),
             callback=lambda ips: [validate_azure_vm_sku(ip) for ip in ips],
         ),
     ] = None,

@@ -1,4 +1,4 @@
-"""Command-line application for performing administrative tasks for a Data Safe Haven deployment, delegating the details to a subcommand"""
+"""Command-line application for performing administrative tasks"""
 # Standard library imports
 import pathlib
 from typing import Annotated

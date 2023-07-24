@@ -198,7 +198,9 @@ class ConfigSectionSRE:
     data_provider_ip_addresses: list[str] = field(default_factory=list)
     index: int = 0
     remote_desktop: ConfigSectionRemoteDesktopOpts = field(default_factory=ConfigSectionRemoteDesktopOpts)
-    # NB. we cannot use defaultdict here until https://github.com/python/cpython/pull/32056 is included in the Python version we are using
+    # NB. we cannot use defaultdict here until
+    # https://github.com/python/cpython/pull/32056 is included in the Python
+    # version we are using
     research_desktops: dict[str, ConfigSectionResearchDesktopOpts] = field(default_factory=dict)
     research_user_ip_addresses: list[str] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE

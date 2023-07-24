@@ -215,13 +215,18 @@ class GraphApi:
                 application_sp = self.get_service_principal_by_name(application_name)
                 if not (application_sp and self.read_application_permissions(application_sp["id"])):
                     self.logger.info(
-                        f"Application [green]{application_name}[/] has requested permissions that need administrator approval."
+                        f"Application [green]{application_name}[/] has requested permissions"
+                        " that need administrator approval."
                     )
                     self.logger.info(
-                        "Please sign-in with [bold]global administrator[/] credentials for the Azure Active Directory where your users are stored."
+                        "Please sign-in with [bold]global administrator[/] credentials for the"
+                        " Azure Active Directory where your users are stored."
                     )
                     self.logger.info(
-                        f"To sign in, use a web browser to open the page [green]https://login.microsoftonline.com/{self.tenant_id}/adminconsent?client_id={application_id}&redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient[/] and follow the instructions."
+                        "To sign in, use a web browser to open the page"
+                        f" [green]https://login.microsoftonline.com/{self.tenant_id}/adminconsent?client_id="
+                        f"{application_id}&redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient[/]"
+                        " and follow the instructions."
                     )
                     while True:
                         if application_sp := self.get_service_principal_by_name(application_name):
@@ -350,10 +355,12 @@ class GraphApi:
                     raise DataSafeHavenMicrosoftGraphException(msg)
                 self.logger.info("Administrator approval is needed in order to interact with Azure Active Directory.")
                 self.logger.info(
-                    f"Please sign-in with [bold]global administrator[/] credentials for Azure Active Directory [green]{self.tenant_id}[/]."
+                    "Please sign-in with [bold]global administrator[/] credentials for"
+                    f" Azure Active Directory [green]{self.tenant_id}[/]."
                 )
                 self.logger.info(
-                    "Note that the sign-in screen will prompt you to sign-in to [blue]Microsoft Graph Command Line Tools[/] - this is expected."
+                    "Note that the sign-in screen will prompt you to sign-in to"
+                    " [blue]Microsoft Graph Command Line Tools[/] - this is expected."
                 )
                 self.logger.info(flow["message"])
                 # Block until a response is received
@@ -734,7 +741,8 @@ class GraphApi:
                 endpoint += f"?$select={','.join(attributes)}"
             users = self.http_get(endpoint).json()["value"]
             administrators = self.http_get(
-                f"{self.base_endpoint}/directoryRoles/roleTemplateId={self.role_template_ids['Global Administrator']}/members"
+                f"{self.base_endpoint}/directoryRoles/roleTemplateId="
+                f"{self.role_template_ids['Global Administrator']}/members"
             ).json()["value"]
             for user in users:
                 user["isGlobalAdmin"] = any(user["id"] == admin["id"] for admin in administrators)
@@ -789,10 +797,12 @@ class GraphApi:
                         break
                 # Prompt user to set domain delegation manually
                 self.logger.info(
-                    f"To proceed you will need to delegate [green]{domain_name}[/] to Azure (https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain)"
+                    f"To proceed you will need to delegate [green]{domain_name}[/] to Azure"
+                    " (https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain)"
                 )
                 self.logger.info(
-                    f"You will need to delegate to the following nameservers: {', '.join([f'[green]{n}[/]' for n in expected_nameservers])}"
+                    "You will need to delegate to the following nameservers:"
+                    f" {', '.join([f'[green]{n}[/]' for n in expected_nameservers])}"
                 )
                 self.logger.confirm(
                     f"Have you delegated {domain_name} to the Azure nameservers above?",
