@@ -142,7 +142,7 @@ class SSLCertificateProvider(DshResourceProvider):
         except Exception as exc:
             msg = (
                 f"Failed to delete SSL certificate [green]{props['certificate_secret_name']}[/]"
-                f"for [green]{props['domain_name']}[/].\n{exc!s}"
+                f" for [green]{props['domain_name']}[/].\n{exc!s}"
             )
             raise DataSafeHavenSSLError(msg) from exc
 
