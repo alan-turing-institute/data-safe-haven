@@ -28,11 +28,11 @@ class DshResourceProvider(ResourceProvider):
         # List any values that were not present in old_props or have been changed
         # Exclude any from excluded_props which should not trigger a diff
         altered_props = [
-            property
-            for property in [key for key in new_props.keys() if key not in excluded_props]
-            if (property not in old_props) or (old_props[property] != new_props[property])
+            property_
+            for property_ in [key for key in new_props.keys() if key not in excluded_props]
+            if (property_ not in old_props) or (old_props[property_] != new_props[property_])
         ]
-        stable_props = [property for property in old_props.keys() if property not in altered_props]
+        stable_props = [property_ for property_ in old_props.keys() if property_ not in altered_props]
         return DiffResult(
             changes=(altered_props != []),  # changes are needed
             replaces=altered_props,  # properties that cannot be updated in-place
@@ -44,26 +44,21 @@ class DshResourceProvider(ResourceProvider):
     def refresh(props: dict[str, Any]) -> dict[str, Any]:
         return dict(**props)
 
-    def check(self, old_props: dict[str, Any], new_props: dict[str, Any]) -> CheckResult:
+    def check(self, new_props: dict[str, Any]) -> CheckResult:
         """Validate that the new properties are valid"""
         return CheckResult(self.refresh(new_props), [])
 
-    def create(self, props: dict[str, Any]) -> CreateResult:
+    def create(self) -> CreateResult:
         """Create compiled desired state file."""
         msg = "DshResourceProvider::create() must be implemented"
         raise DataSafeHavenNotImplementedException(msg)
 
-    def delete(self, id_: str, props: dict[str, Any]) -> None:
+    def delete(self) -> None:
         """Delete the resource."""
         msg = "DshResourceProvider::delete() must be implemented"
         raise DataSafeHavenNotImplementedException(msg)
 
-    def diff(
-        self,
-        id_: str,
-        old_props: dict[str, Any],
-        new_props: dict[str, Any],
-    ) -> DiffResult:
+    def diff(self) -> DiffResult:
         msg = "DshResourceProvider::diff() must be implemented"
         raise DataSafeHavenNotImplementedException(msg)
 
