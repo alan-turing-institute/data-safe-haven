@@ -44,22 +44,22 @@ class ConfigSectionAzure:
             validate_aad_guid(self.admin_group_id)
         except Exception as exc:
             msg = f"Invalid value for 'admin_group_id' ({self.admin_group_id}).\n{exc!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from exc
         try:
             validate_azure_location(self.location)
         except Exception as exc:
             msg = f"Invalid value for 'location' ({self.location}).\n{exc!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from exc
         try:
             validate_aad_guid(self.subscription_id)
         except Exception as exc:
             msg = f"Invalid value for 'subscription_id' ({self.subscription_id}).\n{exc!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from exc
         try:
             validate_aad_guid(self.tenant_id)
         except Exception as exc:
             msg = f"Invalid value for 'tenant_id' ({self.tenant_id}).\n{exc!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from exc
 
     def to_dict(self) -> dict[str, str]:
         self.validate()
@@ -130,18 +130,18 @@ class ConfigSectionSHM:
             validate_aad_guid(self.aad_tenant_id)
         except Exception as exc:
             msg = f"Invalid value for 'aad_tenant_id' ({self.aad_tenant_id}).\n{exc!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from exc
         try:
             validate_email_address(self.admin_email_address)
         except Exception as exc:
             msg = f"Invalid value for 'admin_email_address' ({self.admin_email_address}).\n{exc!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from exc
         try:
             for ip in self.admin_ip_addresses:
                 validate_ip_address(ip)
         except Exception as exc:
             msg = f"Invalid value for 'admin_ip_addresses' ({self.admin_ip_addresses}).\n{exc!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from exc
         if not isinstance(self.fqdn, str) or not self.fqdn:
             msg = f"Invalid value for 'fqdn' ({self.fqdn})."
             raise ValueError(msg)
@@ -152,7 +152,7 @@ class ConfigSectionSHM:
             validate_timezone(self.timezone)
         except Exception as exc:
             msg = f"Invalid value for 'timezone' ({self.timezone}).\n{exc!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from exc
 
     def to_dict(self) -> dict[str, Any]:
         self.validate()
@@ -189,7 +189,7 @@ class ConfigSectionSRE:
                 validate_azure_vm_sku(self.sku)
             except Exception as exc:
                 msg = f"Invalid value for 'sku' ({self.sku}).\n{exc!s}"
-                raise ValueError(msg)
+                raise ValueError(msg) from exc
 
         def to_dict(self) -> dict[str, str]:
             self.validate()
@@ -215,14 +215,14 @@ class ConfigSectionSRE:
                 validate_ip_address(ip)
         except Exception as exc:
             msg = f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{exc!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from exc
         self.remote_desktop.validate()
         try:
             for ip in self.research_user_ip_addresses:
                 validate_ip_address(ip)
         except Exception as exc:
             msg = f"Invalid value for 'research_user_ip_addresses' ({self.research_user_ip_addresses}).\n{exc!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from exc
 
     def to_dict(self) -> dict[str, Any]:
         self.validate()
