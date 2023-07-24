@@ -79,7 +79,7 @@ class ActiveDirectoryUsers:
         users = []
         for line in output.split("\n"):
             tokens = line.split(";")
-            if len(tokens) >= 6:
+            if len(tokens) >= 6:  # noqa: PLR2004
                 users.append(
                     ResearchUser(
                         email_address=tokens[4],
