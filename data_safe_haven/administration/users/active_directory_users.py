@@ -66,7 +66,7 @@ class ActiveDirectoryUsers:
         for line in output.split("\n"):
             self.logger.parse(line)
 
-    def list(self, sre_name: str | None = None) -> Sequence[ResearchUser]:
+    def list(self, sre_name: str | None = None) -> Sequence[ResearchUser]:  # noqa: A003
         """List users in a local Active Directory"""
         list_users_script = FileReader(self.resources_path / "active_directory" / "list_users.ps1")
         script_params = {"SREName": sre_name} if sre_name else {}
@@ -117,7 +117,7 @@ class ActiveDirectoryUsers:
         for line in output.split("\n"):
             self.logger.parse(line)
 
-    def set(self, users: Sequence[ResearchUser]) -> None:
+    def set(self, users: Sequence[ResearchUser]) -> None:  # noqa: A003
         """Set local Active Directory users to specified list"""
         users_to_remove = [user for user in self.list() if user not in users]
         self.remove(users_to_remove)

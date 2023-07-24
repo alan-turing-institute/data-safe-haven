@@ -50,7 +50,7 @@ class AzureADUsers:
         #     # Also add the user to the research users group
         #     self.graph_api.add_user_to_group(user.username, self.researchers_group_name)
 
-    def list(self) -> Sequence[ResearchUser]:
+    def list(self) -> Sequence[ResearchUser]:  # noqa: A003
         user_list = self.graph_api.read_users()
         return [
             ResearchUser(
@@ -92,7 +92,7 @@ class AzureADUsers:
         #         )
         pass
 
-    def set(self, users: Sequence[ResearchUser]) -> None:
+    def set(self, users: Sequence[ResearchUser]) -> None:  # noqa: A003
         """Set Guacamole users to specified list"""
         users_to_remove = [user for user in self.list() if user not in users]
         self.remove(users_to_remove)

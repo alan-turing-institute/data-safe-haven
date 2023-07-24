@@ -29,7 +29,7 @@ class GuacamoleUsers:
         self.sre_name = sre_name
         self.group_name = f"Data Safe Haven Users SRE {sre_name}"
 
-    def list(self) -> Sequence[ResearchUser]:
+    def list(self) -> Sequence[ResearchUser]:  # noqa: A003
         """List all Guacamole users"""
         if self.users_ is None:  # Allow for the possibility of an empty list of users
             postgres_output = self.postgres_provisioner.execute_scripts(

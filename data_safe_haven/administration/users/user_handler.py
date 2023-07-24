@@ -86,7 +86,7 @@ class UserHandler:
         """Load usernames from Guacamole"""
         return [user.username for user in self.sre_guacamole_users[sre_name].list()]
 
-    def list(self) -> None:
+    def list(self) -> None:  # noqa: A003
         """List Active Directory, AzureAD and Guacamole users
 
         Raises:
@@ -142,7 +142,7 @@ class UserHandler:
             msg = f"Could not remove users: {user_names}.\n{exc!s}"
             raise DataSafeHavenUserHandlingError(msg) from exc
 
-    def set(self, users_csv_path: str) -> None:
+    def set(self, users_csv_path: str) -> None:  # noqa: A003
         """Set AzureAD and Guacamole users
 
         Raises:
