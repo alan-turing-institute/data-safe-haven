@@ -41,6 +41,7 @@ packages:
     poetry:  # also used by installation scripts
         "all": [">=1.3.0,<1.4.0"]  # avoid known installation issue https://github.com/python-poetry/poetry/issues/7611
     prophet:
+    psycopg2:
     pydot:
     pygrib:
     pylint:
