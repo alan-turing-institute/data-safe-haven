@@ -219,7 +219,7 @@ class VMComponent(ComponentResource):
                     lambda key: {"workspaceKey": key}
                 ),
                 resource_group_name=props.resource_group_name,
-                settings=Output.from_input(props.log_analytics_workspace_id).apply(lambda id: {"workspaceId": id}),
+                settings=Output.from_input(props.log_analytics_workspace_id).apply(lambda wid: {"workspaceId": wid}),
                 type=props.log_analytics_extension_name,
                 type_handler_version=props.log_analytics_extension_version,
                 vm_extension_name=props.log_analytics_extension_name,
