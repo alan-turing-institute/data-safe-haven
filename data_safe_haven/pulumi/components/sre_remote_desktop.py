@@ -92,7 +92,6 @@ class SRERemoteDesktopComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SRERemoteDesktopProps,
         opts: ResourceOptions | None = None,
     ):
