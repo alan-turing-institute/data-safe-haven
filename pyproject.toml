@@ -85,31 +85,32 @@ skip-string-normalization = true
 [tool.ruff]
 line-length = 120
 select = [
-  "A",
-  "ARG",
-  "B",
-  "C",
-  "DTZ",
-  "E",
-  "EM",
-  "F",
-  "FBT",
-  "I",
-  "ICN",
-  "ISC",
-  "N",
-  "PLC",
-  "PLE",
-  "PLR",
-  "PLW",
-  "Q",
-  "RUF",
-  "S",
-  "T",
-  "TID",
-  "UP",
-  "W",
-  "YTT",
+  # See https://beta.ruff.rs/docs/rules/
+  "A",   # flake8-builtins
+  "ARG", # flake8-unused-arguments
+  "B",   # flake8-bugbear
+  "C",   # complexity, mcabe and flake8-comprehensions
+  "DTZ", # flake8-datetimez
+  "E",   # pycodestyle errors
+  "EM",  # flake8-errmsg
+  "F",   # pyflakes
+  "FBT", # flake8-boolean-trap
+  "I",   # isort
+  "ICN", # flake8-import-conventions
+  "ISC", # flake8-implicit-str-concat
+  "N",   # pep8-naming
+  "PLC", # pylint convention
+  "PLE", # pylint error
+  "PLR", # pylint refactor
+  "PLW", # pylint warning
+  "Q",   # flake8-quotes
+  "RUF", # ruff rules
+  "S",   # flake8-bandits
+  "T",   # flake8-debugger and flake8-print
+  "TID", # flake8-tidy-imports
+  "UP",  # pyupgrade
+  "W",   # pycodestyle warnings
+  "YTT", # flake8-2020
 ]
 ignore = [
   # Allow boolean positional values in function calls, like `dict.get(... True)`
