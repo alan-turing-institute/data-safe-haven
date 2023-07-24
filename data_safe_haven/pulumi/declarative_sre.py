@@ -1,7 +1,4 @@
 """Pulumi declarative program"""
-# Standard library imports
-import pathlib
-
 # Third party imports
 import pulumi
 
@@ -37,9 +34,6 @@ class DeclarativeSRE:
         self.shm_name = shm_name
         self.sre_name = sre_name
         self.stack_name = f"shm-{shm_name}-sre-{sre_name}"
-
-    def work_dir(self, base_path: pathlib.Path) -> pathlib.Path:
-        return base_path / f"shm-{self.shm_name}" / f"sre-{self.sre_name}"
 
     def run(self) -> None:
         # Load pulumi configuration options
@@ -85,7 +79,7 @@ class DeclarativeSRE:
                     "shm-networking-subnet_update_servers_prefix",
                 ),
                 shm_zone_name=self.cfg.shm.fqdn,
-                sre_index=self.cfg.sre[self.sre_name].index,
+                sre_index=self.cfg.sres[self.sre_name].index,
                 shm_virtual_network_name=self.pulumi_opts.require(
                     "shm-networking-virtual_network_name"
                 ),
@@ -108,7 +102,7 @@ class DeclarativeSRE:
                 resource_group_name=self.pulumi_opts.require(
                     "shm-monitoring-resource_group_name"
                 ),
-                sre_index=self.cfg.sre[self.sre_name].index,
+                sre_index=self.cfg.sres[self.sre_name].index,
                 timezone=self.cfg.shm.timezone,
             ),
         )
@@ -122,7 +116,7 @@ class DeclarativeSRE:
                 admin_email_address=self.cfg.shm.admin_email_address,
                 admin_group_id=self.cfg.azure.admin_group_id,
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
-                data_provider_ip_addresses=self.cfg.sre[
+                data_provider_ip_addresses=self.cfg.sres[
                     self.sre_name
                 ].data_provider_ip_addresses,
                 dns_record=networking.shm_ns_record,
@@ -131,7 +125,7 @@ class DeclarativeSRE:
                 pulumi_opts=self.pulumi_opts,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_private_data=networking.subnet_private_data,
-                subscription_id=self.cfg.subscription_id,
+                subscription_id=self.cfg.azure.subscription_id,
                 subscription_name=self.cfg.subscription_name,
                 tenant_id=self.cfg.azure.tenant_id,
             ),
@@ -162,8 +156,8 @@ class DeclarativeSRE:
                 aad_application_fqdn=networking.sre_fqdn,
                 aad_auth_token=self.pulumi_opts.require("token-azuread-graphapi"),
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
-                allow_copy=self.cfg.sre[self.sre_name].remote_desktop.allow_copy,
-                allow_paste=self.cfg.sre[self.sre_name].remote_desktop.allow_paste,
+                allow_copy=self.cfg.sres[self.sre_name].remote_desktop.allow_copy,
+                allow_paste=self.cfg.sres[self.sre_name].remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
                 ldap_bind_dn=ldap_bind_dn,
                 ldap_group_search_base=ldap_group_search_base,
@@ -216,9 +210,9 @@ class DeclarativeSRE:
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
                 vm_details=[
-                    (idx, str(name), str(details["sku"]))
+                    (idx, name, details.sku)
                     for idx, (name, details) in enumerate(
-                        self.cfg.sre[self.sre_name].research_desktops.items()
+                        self.cfg.sres[self.sre_name].research_desktops.items()
                     )
                 ],
             ),
@@ -234,7 +228,7 @@ class DeclarativeSRE:
                 networking_resource_group_name=networking.resource_group.name,
                 nexus_admin_password=data.password_nexus_admin,
                 sre_fqdn=networking.sre_fqdn,
-                software_packages=self.cfg.sre[self.sre_name].software_packages,
+                software_packages=self.cfg.sres[self.sre_name].software_packages,
                 storage_account_key=data.storage_account_state_key,
                 storage_account_name=data.storage_account_state_name,
                 storage_account_resource_group_name=data.resource_group_name,

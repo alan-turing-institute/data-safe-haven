@@ -7,7 +7,7 @@ from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, resources, storage
 
 # Local imports
-from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, replace_separators, truncate_tokens
 
 

@@ -1,6 +1,6 @@
 """Pulumi component for SHM monitoring"""
 # Standard library import
-from typing import Optional
+from typing import Dict, Optional, Tuple
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -80,7 +80,7 @@ class SHMMonitoringComponent(ComponentResource):
 
         # List of modules as 'name: (version, SHA256 hash)'
         # Note that we exclude ComputerManagementDsc which is already present (https://docs.microsoft.com/en-us/azure/automation/shared-resources/modules#default-modules)
-        modules = {
+        modules: Dict[str, Tuple[str, str]] = {
             "ActiveDirectoryDsc": (
                 "6.2.0",
                 "60b7cc2c578248f23c5b871b093db268a1c1bd89f5ccafc45d9a65c3f0621dca",

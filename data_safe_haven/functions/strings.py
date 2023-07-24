@@ -13,6 +13,10 @@ def alphanumeric(input_string: str) -> str:
     )
 
 
+def b64decode(input_string: str) -> str:
+    return base64.b64decode(input_string.encode("utf-8")).decode()
+
+
 def b64encode(input_string: str) -> str:
     return base64.b64encode(input_string.encode("utf-8")).decode()
 

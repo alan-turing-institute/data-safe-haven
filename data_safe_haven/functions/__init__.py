@@ -1,6 +1,7 @@
-from .miscellaneous import ordered_private_dns_zones, time_as_string
+from .miscellaneous import as_dict, ordered_private_dns_zones, time_as_string
 from .strings import (
     alphanumeric,
+    b64decode,
     b64encode,
     hex_string,
     password,
@@ -11,6 +12,7 @@ from .strings import (
 )
 from .validators import (
     validate_aad_guid,
+    validate_azure_location,
     validate_azure_vm_sku,
     validate_email_address,
     validate_ip_address,
@@ -19,6 +21,8 @@ from .validators import (
 
 __all__ = [
     "alphanumeric",
+    "as_dict",
+    "b64decode",
     "b64encode",
     "hex_string",
     "ordered_private_dns_zones",
@@ -29,6 +33,7 @@ __all__ = [
     "time_as_string",
     "truncate_tokens",
     "validate_aad_guid",
+    "validate_azure_location",
     "validate_azure_vm_sku",
     "validate_email_address",
     "validate_ip_address",

@@ -2,7 +2,7 @@
 # Standard library imports
 import time
 from contextlib import suppress
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 # Third party imports
 from azure.core.exceptions import (
@@ -37,7 +37,7 @@ from azure.mgmt.keyvault.models import (
 )
 from azure.mgmt.msi import ManagedServiceIdentityClient
 from azure.mgmt.msi.models import Identity
-from azure.mgmt.resource import ResourceManagementClient
+from azure.mgmt.resource import ResourceManagementClient, SubscriptionClient
 from azure.mgmt.resource.resources.models import ResourceGroup
 from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.storage.models import (
@@ -47,7 +47,10 @@ from azure.mgmt.storage.models import (
     Sku as StorageAccountSku,
     StorageAccount,
     StorageAccountCreateParameters,
+    StorageAccountKey,
+    StorageAccountListKeysResult,
 )
+from azure.storage.blob import BlobServiceClient
 from azure.storage.filedatalake import DataLakeServiceClient
 
 # Local imports
@@ -55,18 +58,15 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInternalException,
 )
-from data_safe_haven.mixins import AzureMixin
 from data_safe_haven.utility import Logger
+from ..interface.azure_authenticator import AzureAuthenticator
 
 
-class AzureApi(AzureMixin):
+class AzureApi(AzureAuthenticator):
     """Interface to the Azure REST API"""
 
-    def __init__(self, subscription_name: str, *args: Any, **kwargs: Any):
-        kwargs[
-            "subscription_name"
-        ] = subscription_name  # workaround for erroneous 'multiple values for keyword' mypy warning
-        super().__init__(*args, **kwargs)
+    def __init__(self, subscription_name: str):
+        super().__init__(subscription_name)
         self.logger = Logger()
 
     def compile_desired_state(
@@ -136,6 +136,43 @@ class AzureApi(AzureMixin):
                     raise DataSafeHavenAzureException(
                         f"Could not compile DSC '{configuration_name}'\n{result.exception}."
                     )
+
+    def download_blob(
+        self,
+        blob_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        storage_container_name: str,
+    ) -> str:
+        """Download a blob file from Azure storage
+
+        Returns:
+            str: The contents of the blob
+
+        Raises:
+            DataSafeHavenAzureException if the blob could not be downloaded
+        """
+        try:
+            # Connect to Azure client
+            storage_account_keys = self.get_storage_account_keys(
+                resource_group_name, storage_account_name
+            )
+            blob_service_client = BlobServiceClient.from_connection_string(
+                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={str(storage_account_keys[0].value)};EndpointSuffix=core.windows.net"
+            )
+            if not isinstance(blob_service_client, BlobServiceClient):
+                raise DataSafeHavenAzureException(
+                    f"Could not connect to storage account '{storage_account_name}'."
+                )
+            # Download the requested file
+            blob_client = blob_service_client.get_blob_client(
+                container=storage_container_name, blob=blob_name
+            )
+            return blob_client.download_blob(encoding="utf-8").readall()
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'\n{str(exc)}."
+            ) from exc
 
     def ensure_dns_txt_record(
         self,
@@ -580,6 +617,60 @@ class AzureApi(AzureMixin):
                 f"Failed to retrieve secret {secret_name}."
             ) from exc
 
+    def get_locations(self) -> List[str]:
+        """Retrieve list of Azure locations
+
+        Returns:
+            List[str]: Names of Azure locations
+        """
+        try:
+            subscription_client = SubscriptionClient(self.credential)
+            return [
+                location.name
+                for location in subscription_client.subscriptions.list_locations(
+                    subscription_id=self.subscription_id
+                )
+            ]
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Azure locations could not be loaded.\n{str(exc)}"
+            ) from exc
+
+    def get_storage_account_keys(
+        self, resource_group_name: str, storage_account_name: str
+    ) -> List[StorageAccountKey]:
+        """Retrieve the storage account keys for an existing storage account
+
+        Returns:
+            List[StorageAccountKey]: The keys for this storage account
+
+        Raises:
+            DataSafeHavenAzureException if the keys could not be loaded
+        """
+        # Connect to Azure client
+        try:
+            storage_client = StorageManagementClient(
+                self.credential, self.subscription_id
+            )
+            storage_keys = storage_client.storage_accounts.list_keys(
+                resource_group_name,
+                storage_account_name,
+            )
+            if not isinstance(storage_keys, StorageAccountListKeysResult):
+                raise DataSafeHavenAzureException(
+                    f"Could not connect to storage account '{storage_account_name}' in resource group '{resource_group_name}'."
+                )
+            keys = storage_keys.keys
+            if not keys or len(keys) == 0:
+                raise DataSafeHavenAzureException(
+                    f"No keys were retrieved for storage account '{storage_account_name}' in resource group '{resource_group_name}'."
+                )
+            return keys
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Keys could not be loaded for storage account '{storage_account_name}' in resource group '{resource_group_name}'.\n{str(exc)}"
+            ) from exc
+
     def get_vm_sku_details(self, sku: str) -> Tuple[str, str, str]:
         # Connect to Azure client
         cpus, gpus, ram = None, None, None
@@ -966,4 +1057,45 @@ class AzureApi(AzureMixin):
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to set secret '{secret_name}'.\n{str(exc)}"
+            ) from exc
+
+    def upload_blob(
+        self,
+        blob_data: bytes | str,
+        blob_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        storage_container_name: str,
+    ) -> None:
+        """Upload a file to Azure blob storage
+
+        Returns:
+            None
+
+        Raises:
+            DataSafeHavenAzureException if the blob could not be uploaded
+        """
+        try:
+            # Connect to Azure client
+            storage_account_keys = self.get_storage_account_keys(
+                resource_group_name, storage_account_name
+            )
+            blob_service_client = BlobServiceClient.from_connection_string(
+                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={str(storage_account_keys[0].value)};EndpointSuffix=core.windows.net"
+            )
+            if not isinstance(blob_service_client, BlobServiceClient):
+                raise DataSafeHavenAzureException(
+                    f"Could not connect to storage account '{storage_account_name}'."
+                )
+            # Upload the created file
+            blob_client = blob_service_client.get_blob_client(
+                container=storage_container_name, blob=blob_name
+            )
+            blob_client.upload_blob(blob_data, overwrite=True)
+            self.logger.info(
+                f"Uploaded file [green]{blob_name}[/] to blob storage.",
+            )
+        except Exception as exc:
+            raise DataSafeHavenAzureException(
+                f"Blob file '{blob_name}' could not be uploaded to '{storage_account_name}'\n{str(exc)}."
             ) from exc

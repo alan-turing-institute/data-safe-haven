@@ -1,27 +1,20 @@
 """Azure backend for a Data Safe Haven deployment"""
 # Standard library imports
-from typing import Any, Optional
+from typing import Optional
 
 # Local imports
-from data_safe_haven.config import Config, DotFileSettings
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenAzureException
-from data_safe_haven.external.api import AzureApi
+from data_safe_haven.external import AzureApi
 
 
 class Backend:
     """Azure backend for a Data Safe Haven deployment"""
 
-    def __init__(self, settings: DotFileSettings, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
         self.azure_api_: Optional[AzureApi] = None
-        self.config: Config = Config(
-            name=settings.name,
-            subscription_name=settings.subscription_name,
-        )
-        # Add Azure metadata from the input settings
-        self.config.azure.location = settings.location
-        self.config.azure.admin_group_id = settings.admin_group_id
-        self.tags = {"component": "backend"} | self.config.tags
+        self.config = Config()
+        self.tags = {"component": "backend"} | self.config.tags.to_dict()
 
     @property
     def azure_api(self) -> AzureApi:
@@ -92,12 +85,12 @@ class Backend:
                     f"Keyvault '{self.config.backend.key_vault_name}' was not created."
                 )
             pulumi_encryption_key = self.azure_api.ensure_keyvault_key(
-                key_name=self.config.backend.pulumi_encryption_key_name,
+                key_name=self.config.pulumi.encryption_key_name,
                 key_vault_name=keyvault.name,
             )
-            self.config.backend.pulumi_secrets_provider = (
-                pulumi_encryption_key.id.replace("https:", "azurekeyvault:")
-            )
+            self.config.pulumi.encryption_key_id = pulumi_encryption_key.id.split("/")[
+                -1
+            ]
         except Exception as exc:
             raise DataSafeHavenAzureException(
                 f"Failed to create backend resources.\n{str(exc)}"

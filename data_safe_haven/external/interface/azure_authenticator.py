@@ -1,6 +1,6 @@
-"""Mixin class for anything Azure-aware"""
+"""Standalone utility class for anything that needs to authenticate against Azure"""
 # Standard library imports
-from typing import Any, Optional
+from typing import Optional
 
 # Third party imports
 from azure.core.exceptions import ClientAuthenticationError
@@ -14,15 +14,14 @@ from data_safe_haven.exceptions import (
 )
 
 
-class AzureMixin:
-    """Mixin class for anything Azure-aware"""
+class AzureAuthenticator:
+    """Standalone utility class for anything that needs to authenticate against Azure"""
 
-    def __init__(self, subscription_name: str, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, subscription_name: str) -> None:
         self.subscription_name: str = subscription_name
         self.credential_: Optional[DefaultAzureCredential] = None
         self.subscription_id_: Optional[str] = None
         self.tenant_id_: Optional[str] = None
-        super().__init__(*args, **kwargs)
 
     @property
     def credential(self) -> DefaultAzureCredential:

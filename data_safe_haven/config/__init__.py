@@ -1,7 +1,7 @@
 from .config import Config
-from .dotfilesettings import DotFileSettings
+from .backend_settings import BackendSettings
 
 __all__ = [
+    "BackendSettings",
     "Config",
-    "DotFileSettings",
 ]

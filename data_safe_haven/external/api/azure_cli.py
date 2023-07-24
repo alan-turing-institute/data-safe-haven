@@ -18,6 +18,7 @@ class AzureCli:
     def login(self) -> None:
         """Force log in via the Azure CLI"""
         try:
+            self.logger.debug("Attempting to login using Azure CLI.")
             while True:
                 process = subprocess.run(["az", "account", "show"], capture_output=True)
                 if process.returncode == 0:

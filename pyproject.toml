@@ -6,6 +6,7 @@ authors = ["Data Safe Haven development team <safehavendevs@turing.ac.uk>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+appdirs = "^1.4.4"
 azure-core = "^1.26.0"
 azure-identity = "^1.12.0"
 azure-keyvault-certificates = "^4.6.0"
@@ -25,9 +26,9 @@ azure-storage-blob = "^12.14.0"
 azure-storage-file-datalake = "^12.10.0"
 azure-storage-file-share = "^12.10.0"
 chevron = "^0.14.0"
+chili = "^2.1.0"
 cryptography = "^3.4.0"
 dnspython = "^2.3.0"
-dotmap = "^1.3.0"
 msal = "^1.21.0"
 psycopg2 = "^2.9.0"
 pulumi = "^3.67.0"

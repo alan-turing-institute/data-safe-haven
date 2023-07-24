@@ -4,15 +4,15 @@ from typing import Any, Optional, Sequence
 
 # Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.external.interface import AzurePostgreSQLDatabase
-from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.external import AzurePostgreSQLDatabase
+from data_safe_haven.pulumi import PulumiSREStack
 from .research_user import ResearchUser
 
 
 class GuacamoleUsers:
     def __init__(self, config: Config, sre_name: str, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        sre_stack = PulumiStack(config, "SRE", sre_name=sre_name)
+        sre_stack = PulumiSREStack(config, sre_name)
         self.postgres_provisioner = AzurePostgreSQLDatabase(
             sre_stack.output("remote_desktop")["connection_db_name"],
             sre_stack.secret("password-user-database-admin"),

@@ -31,10 +31,9 @@ def initialise_command(
     name: Annotated[
         Optional[str],
         typer.Option(
-            "--deployment-name",
-            "-d",
+            "--name",
+            "-n",
             help="The name to give this Data Safe Haven deployment.",
-            callback=validate_aad_guid,
         ),
     ] = None,
     subscription: Annotated[

@@ -1,12 +1,12 @@
 """Command-line application for tearing down a Secure Research Environment"""
 # Local imports
-from data_safe_haven.config import Config, DotFileSettings
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.pulumi import PulumiSREStack
 
 
 class TeardownSRECommand:
@@ -20,21 +20,15 @@ class TeardownSRECommand:
         environment_name = "UNKNOWN"
         try:
             # Use a JSON-safe SRE name
-            sre_name = alphanumeric(name)
+            sre_name = alphanumeric(name).lower()
 
-            # Use dotfile settings to load the job configuration
-            try:
-                settings = DotFileSettings()
-            except DataSafeHavenException as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
-                ) from exc
-            config = Config(settings.name, settings.subscription_name)
+            # Load config file
+            config = Config()
             environment_name = config.name
 
             # Remove infrastructure deployed with Pulumi
             try:
-                stack = PulumiStack(config, "SRE", sre_name=sre_name)
+                stack = PulumiSREStack(config, sre_name)
                 if stack.work_dir.exists():
                     stack.teardown()
                 else:
@@ -47,10 +41,8 @@ class TeardownSRECommand:
                 ) from exc
 
             # Remove information from config file
-            if stack.stack_name in config.pulumi.stacks.keys():
-                del config.pulumi.stacks[stack.stack_name]
-            if sre_name in config.sre.keys():
-                del config.sre[sre_name]
+            config.remove_stack(stack.stack_name)
+            config.remove_sre(sre_name)
 
             # Upload config to blob storage
             config.upload()

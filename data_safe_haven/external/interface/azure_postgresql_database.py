@@ -21,11 +21,11 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.mixins import AzureMixin
+from data_safe_haven.external import AzureApi
 from data_safe_haven.utility import FileReader, Logger, PathType
 
 
-class AzurePostgreSQLDatabase(AzureMixin):
+class AzurePostgreSQLDatabase:
     """Interface for Azure PostgreSQL databases."""
 
     current_ip: str
@@ -45,7 +45,7 @@ class AzurePostgreSQLDatabase(AzureMixin):
         resource_group_name: str,
         subscription_name: str,
     ) -> None:
-        super().__init__(subscription_name=subscription_name)
+        self.azure_api = AzureApi(subscription_name)
         self.current_ip = requests.get(
             "https://api.ipify.org", timeout=300
         ).content.decode("utf8")
@@ -69,7 +69,7 @@ class AzurePostgreSQLDatabase(AzureMixin):
         """Get the database client."""
         if not self.db_client_:
             self.db_client_ = PostgreSQLManagementClient(
-                self.credential, self.subscription_id
+                self.azure_api.credential, self.azure_api.subscription_id
             )
         return self.db_client_
 

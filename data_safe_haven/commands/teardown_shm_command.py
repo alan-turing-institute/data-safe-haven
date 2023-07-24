@@ -1,11 +1,11 @@
 """Command-line application for tearing down a Data Safe Haven"""
 # Local imports
-from data_safe_haven.config import Config, DotFileSettings
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
     DataSafeHavenInputException,
 )
-from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.pulumi import PulumiSHMStack
 
 
 class TeardownSHMCommand:
@@ -14,18 +14,12 @@ class TeardownSHMCommand:
     def __call__(self) -> None:
         """Typer command line entrypoint"""
         try:
-            # Use dotfile settings to load the job configuration
-            try:
-                settings = DotFileSettings()
-            except DataSafeHavenInputException as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
-                ) from exc
-            config = Config(settings.name, settings.subscription_name)
+            # Load config file
+            config = Config()
 
             # Remove infrastructure deployed with Pulumi
             try:
-                stack = PulumiStack(config, "SHM")
+                stack = PulumiSHMStack(config)
                 stack.teardown()
             except Exception as exc:
                 raise DataSafeHavenInputException(
@@ -35,8 +29,6 @@ class TeardownSHMCommand:
             # Remove information from config file
             if stack.stack_name in config.pulumi.stacks.keys():
                 del config.pulumi.stacks[stack.stack_name]
-            if config.shm.keys():
-                del config._map.shm
 
             # Upload config to blob storage
             config.upload()

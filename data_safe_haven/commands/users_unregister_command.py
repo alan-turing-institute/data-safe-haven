@@ -4,12 +4,11 @@ from typing import List
 
 # Local imports
 from data_safe_haven.administration.users import UserHandler
-from data_safe_haven.config import Config, DotFileSettings
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenException,
-    DataSafeHavenInputException,
 )
-from data_safe_haven.external.api import GraphApi
+from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.utility import Logger
 
@@ -30,16 +29,10 @@ class UsersUnregisterCommand:
         sre_name = "UNKNOWN"
         try:
             # Use a JSON-safe SRE name
-            sre_name = alphanumeric(sre)
+            sre_name = alphanumeric(sre).lower()
 
-            # Use dotfile settings to load the job configuration
-            try:
-                settings = DotFileSettings()
-            except DataSafeHavenException as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
-                ) from exc
-            config = Config(settings.name, settings.subscription_name)
+            # Load config file
+            config = Config()
             shm_name = config.name
 
             # Check that SRE option has been provided

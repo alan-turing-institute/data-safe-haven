@@ -26,6 +26,10 @@ class DataSafeHavenNotImplementedException(DataSafeHavenInternalException):
     pass
 
 
+class DataSafeHavenParameterException(DataSafeHavenException):
+    pass
+
+
 class DataSafeHavenSSLException(DataSafeHavenException):
     pass
 

@@ -8,7 +8,7 @@ from pulumi_azure_native import containerinstance, network, resources
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
-from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.external import AzureIPv4Range
 
 
 def get_available_ips_from_subnet(subnet: network.GetSubnetResult) -> List[str]:

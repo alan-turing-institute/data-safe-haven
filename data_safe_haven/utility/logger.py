@@ -231,4 +231,4 @@ class Logger:
             for row in rows:
                 table.add_row(*row)
         adaptor = RichStringAdaptor()
-        return [l.strip() for l in adaptor.to_string(table).split("\n")]
+        return [line.strip() for line in adaptor.to_string(table).split("\n")]

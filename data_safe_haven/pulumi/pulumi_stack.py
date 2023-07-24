@@ -1,5 +1,6 @@
 """Deploy with Pulumi"""
 # Standard library imports
+import importlib.metadata as metadata
 import pathlib
 import shutil
 import subprocess
@@ -8,13 +9,12 @@ from contextlib import suppress
 from typing import Any, Dict, Optional, Tuple
 
 # Third party imports
-import yaml
 from pulumi import automation
 
 # Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
-from data_safe_haven.external.api import AzureCli
+from data_safe_haven.external import AzureApi, AzureCli
 from data_safe_haven.utility import Logger
 from .declarative_shm import DeclarativeSHM
 from .declarative_sre import DeclarativeSRE
@@ -23,35 +23,21 @@ from .declarative_sre import DeclarativeSRE
 class PulumiStack:
     """Interact with infrastructure using Pulumi"""
 
-    options: Dict[str, Tuple[str, bool, bool]]
-    program: DeclarativeSHM | DeclarativeSRE
-
     def __init__(
         self,
         config: Config,
-        deployment_type: str,
-        *args: Optional[Any],
-        sre_name: Optional[str] = None,
-        **kwargs: Optional[Any],
-    ):
-        super().__init__(*args, **kwargs)
+        program: DeclarativeSHM | DeclarativeSRE,
+        # sre_name: Optional[str] = None,
+    ) -> None:
         self.cfg: Config = config
         self.env_: Optional[Dict[str, Any]] = None
         self.logger = Logger()
         self.stack_: Optional[automation.Stack] = None
-        self.options = {}
-        if deployment_type == "SHM":
-            self.program = DeclarativeSHM(config, config.shm.name)
-        elif deployment_type == "SRE":
-            if not sre_name:
-                raise DataSafeHavenPulumiException("No sre_name was provided.")
-            self.program = DeclarativeSRE(config, config.shm.name, sre_name)
-        else:
-            raise DataSafeHavenPulumiException(
-                f"Deployment type '{deployment_type}' was not recognised."
-            )
+        self.options: Dict[str, Tuple[str, bool, bool]] = {}
+        self.program = program
         self.stack_name = self.program.stack_name
-        self.work_dir = self.program.work_dir(pathlib.Path.cwd() / "pulumi")
+        self.work_dir = config.work_directory / "pulumi"
+        self.work_dir.mkdir(parents=True, exist_ok=True)
         self.login()  # Log in to the Pulumi backend
 
     @property
@@ -62,13 +48,14 @@ class PulumiStack:
     @property
     def env(self) -> Dict[str, Any]:
         if not self.env_:
-            backend_storage_account_key = self.cfg.storage_account_key(
+            azure_api = AzureApi(self.cfg.subscription_name)
+            backend_storage_account_keys = azure_api.get_storage_account_keys(
                 self.cfg.backend.resource_group_name,
                 self.cfg.backend.storage_account_name,
             )
             self.env_ = {
                 "AZURE_STORAGE_ACCOUNT": self.cfg.backend.storage_account_name,
-                "AZURE_STORAGE_KEY": backend_storage_account_key,
+                "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
             }
         return self.env_
@@ -84,7 +71,7 @@ class PulumiStack:
                     stack_name=self.stack_name,
                     program=self.program.run,
                     opts=automation.LocalWorkspaceOptions(
-                        secrets_provider=self.cfg.backend.pulumi_secrets_provider,
+                        secrets_provider=f"azurekeyvault://{self.cfg.backend.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi.encryption_key_id}",
                         work_dir=str(self.work_dir),
                         env_vars=self.env,
                     ),
@@ -105,12 +92,17 @@ class PulumiStack:
 
     def apply_config_options(self) -> None:
         """Set Pulumi config options"""
-        for name, (value, is_secret, replace) in self.options.items():
-            if replace:
-                self.set_config(name, value, is_secret)
-            else:
-                self.ensure_config(name, value, is_secret)
-        self.options = {}
+        try:
+            for name, (value, is_secret, replace) in self.options.items():
+                if replace:
+                    self.set_config(name, value, is_secret)
+                else:
+                    self.ensure_config(name, value, is_secret)
+            self.options = {}
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Applying Pulumi configuration options failed.\n{str(exc)}."
+            ) from exc
 
     def copy_option(self, name: str, other_stack: "PulumiStack") -> None:
         """Copy a public configuration option from another Pulumi stack"""
@@ -180,7 +172,7 @@ class PulumiStack:
     def initialise_workdir(self) -> None:
         """Create project directory if it does not exist and update local stack."""
         try:
-            self.logger.info(f"Ensuring that [green]{self.work_dir}[/] exists...")
+            self.logger.debug(f"Ensuring that [green]{self.work_dir}[/] exists...")
             if not self.work_dir.exists():
                 self.work_dir.mkdir(parents=True)
             self.logger.info(f"Ensured that [green]{self.work_dir}[/] exists.")
@@ -189,11 +181,7 @@ class PulumiStack:
                 self.logger.info(
                     f"Loading stack [green]{self.stack_name}[/] information from config"
                 )
-                stack_yaml = yaml.dump(
-                    self.cfg.pulumi.stacks[self.stack_name].toDict(), indent=2
-                )
-                with open(self.local_stack_path, "w", encoding="utf-8") as f_stack:
-                    f_stack.writelines(stack_yaml)
+                self.cfg.write_stack(self.stack_name, self.local_stack_path)
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Initialising Pulumi working directory failed.\n{str(exc)}."
@@ -201,24 +189,37 @@ class PulumiStack:
 
     def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
-        self.stack.workspace.install_plugin("azure-native", "1.60.0")
+        try:
+            self.stack.workspace.install_plugin(
+                "azure-native", metadata.version("pulumi-azure-native")
+            )
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Installing Pulumi plugins failed.\n{str(exc)}."
+            ) from exc
 
     def login(self) -> None:
         """Login to Pulumi."""
         try:
-            AzureCli().login()  # this is needed to read the encryption key from the keyvault
-            env_vars = " ".join([f"{k}={v}" for k, v in self.env.items()])
-            command = f"pulumi login azblob://{self.cfg.pulumi.storage_container_name}?storage_account={self.cfg.backend.storage_account_name}"
-            with subprocess.Popen(
-                f"{env_vars} {command}",
-                shell=True,
-                cwd=self.work_dir,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                encoding="UTF-8",
-            ) as process:
-                if process.stdout:
-                    self.logger.info(process.stdout.readline().strip())
+            try:
+                username = self.whoami()
+                self.logger.info(f"Logged into Pulumi as [green]{username}[/]")
+            except DataSafeHavenPulumiException:
+                AzureCli().login()  # this is needed to read the encryption key from the keyvault
+                env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
+                command = (
+                    f"pulumi login 'azblob://{self.cfg.pulumi.storage_container_name}'"
+                )
+                with subprocess.Popen(
+                    f"{env_vars} {command}",
+                    shell=True,
+                    cwd=self.work_dir,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    encoding="UTF-8",
+                ) as process:
+                    if process.stdout:
+                        self.logger.info(process.stdout.readline().strip())
         except Exception as exc:
             raise DataSafeHavenPulumiException(
                 f"Logging into Pulumi failed.\n{str(exc)}."
@@ -300,3 +301,51 @@ class PulumiStack:
             raise DataSafeHavenPulumiException(
                 f"Pulumi update failed.\n{str(exc)}"
             ) from exc
+
+    def whoami(self) -> str:
+        """Check current Pulumi user."""
+        try:
+            AzureCli().login()  # this is needed to read the encryption key from the keyvault
+            env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
+            command = "pulumi whoami"
+            self.work_dir.mkdir(parents=True, exist_ok=True)
+            with subprocess.Popen(
+                f"{env_vars} {command}",
+                shell=True,
+                cwd=self.work_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                encoding="UTF-8",
+            ) as process:
+                if not process.stdout:
+                    raise DataSafeHavenPulumiException(
+                        f"No Pulumi user found {process.stderr}."
+                    )
+                return process.stdout.readline().strip()
+        except Exception as exc:
+            raise DataSafeHavenPulumiException(
+                f"Pulumi user check failed.\n{str(exc)}."
+            ) from exc
+
+
+class PulumiSHMStack(PulumiStack):
+    """Interact with an SHM using Pulumi"""
+
+    def __init__(
+        self,
+        config: Config,
+    ) -> None:
+        """Constructor"""
+        super().__init__(config, DeclarativeSHM(config, config.shm.name))
+
+
+class PulumiSREStack(PulumiStack):
+    """Interact with an SRE using Pulumi"""
+
+    def __init__(
+        self,
+        config: Config,
+        sre_name: str,
+    ) -> None:
+        """Constructor"""
+        super().__init__(config, DeclarativeSRE(config, config.shm.name, sre_name))

@@ -25,6 +25,17 @@ docs = ["Sphinx (>=1.0)", "sphinx-rtd-theme"]
 test = ["pytest", "pytest-xdist", "typing-extensions"]
 
 [[package]]
+name = "appdirs"
+version = "1.4.4"
+description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
+optional = false
+python-versions = "*"
+files = [
+    {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
+    {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
+]
+
+[[package]]
 name = "arpeggio"
 version = "2.0.0"
 description = "Packrat parser interpreter"
@@ -608,6 +619,21 @@ files = [
 ]
 
 [[package]]
+name = "chili"
+version = "2.1.0"
+description = "Chili is serialisation library. It can serialise/deserialise almost any object."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "chili-2.1.0-py3-none-any.whl", hash = "sha256:5cecbb8735583c293d06b78673b52ddbd8da864f888e13bf3c494457192913a3"},
+    {file = "chili-2.1.0.tar.gz", hash = "sha256:0f20a7668b3dbda3f6797c91dcc4aef3c7e844a5e14364a144650142279bc61d"},
+]
+
+[package.dependencies]
+gaffe = "0.2.0"
+typing-extensions = ">=4.2,<5.0"
+
+[[package]]
 name = "click"
 version = "8.1.4"
 description = "Composable command line interface toolkit"
@@ -717,17 +743,6 @@ trio = ["trio (>=0.14,<0.23)"]
 wmi = ["wmi (>=1.5.1,<2.0.0)"]
 
 [[package]]
-name = "dotmap"
-version = "1.3.30"
-description = "ordered, dynamically-expandable dot-access dictionary"
-optional = false
-python-versions = "*"
-files = [
-    {file = "dotmap-1.3.30-py3-none-any.whl", hash = "sha256:bd9fa15286ea2ad899a4d1dc2445ed85a1ae884a42effb87c89a6ecce71243c6"},
-    {file = "dotmap-1.3.30.tar.gz", hash = "sha256:5821a7933f075fb47563417c0e92e0b7c031158b4c9a6a7e56163479b658b368"},
-]
-
-[[package]]
 name = "exceptiongroup"
 version = "1.1.2"
 description = "Backport of PEP 654 (exception groups)"
@@ -740,6 +755,17 @@ files = [
 
 [package.extras]
 test = ["pytest (>=6)"]
+
+[[package]]
+name = "gaffe"
+version = "0.2.0"
+description = "Simple structured exceptions for python."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "gaffe-0.2.0-py3-none-any.whl", hash = "sha256:579adebf44310ef2a55a6363152ce217f13afe918374f37bc5c749d98a49d70b"},
+    {file = "gaffe-0.2.0.tar.gz", hash = "sha256:1948b01116d17e381c40415c7dcd6799c4894bdb80ff7f36beaad50fc698f3d0"},
+]
 
 [[package]]
 name = "grpcio"
@@ -1659,4 +1685,4 @@ test = ["websockets"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "dd997f1923582444a96888b771c8fc3b022cd4aec479450ec28eee8de6cabef7"
+content-hash = "5074464851c4d0fa91e6d5cbc9e185dffce313d98991448756f02eff4e6a068b"

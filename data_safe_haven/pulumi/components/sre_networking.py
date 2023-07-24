@@ -7,7 +7,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 # Local imports
-from data_safe_haven.external.interface import AzureIPv4Range
+from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
 from ..common.enums import NetworkingPriorities
 
@@ -25,7 +25,7 @@ class SRENetworkingProps:
         shm_subnet_update_servers_prefix: Input[str],
         shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
-        sre_index: Input[str],
+        sre_index: Input[int],
     ):
         # Virtual network and subnet IP ranges
         self.vnet_iprange = Output.from_input(sre_index).apply(
@@ -475,7 +475,7 @@ class SRENetworkingComponent(ComponentResource):
                 zone_name=kwargs["zone_name"],
             )
         )
-        sre_subdomain = alphanumeric(sre_name)
+        sre_subdomain = alphanumeric(sre_name).lower()
         sre_fqdn = Output.from_input(props.shm_fqdn).apply(
             lambda parent: f"{sre_subdomain}.{parent}"
         )

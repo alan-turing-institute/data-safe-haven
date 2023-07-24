@@ -2,21 +2,16 @@
 # Standard library imports
 from typing import Any, Dict, List, Optional
 
-# Third party imports
-import dotmap
-import yaml
-
 # Local imports
-from data_safe_haven.config import Config, DotFileSettings
+from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigException,
     DataSafeHavenException,
-    DataSafeHavenInputException,
 )
-from data_safe_haven.external.api import AzureApi, GraphApi
+from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.functions import alphanumeric, password
 from data_safe_haven.provisioning import SREProvisioningManager
-from data_safe_haven.pulumi import PulumiStack
+from data_safe_haven.pulumi import PulumiSHMStack, PulumiSREStack
 from data_safe_haven.utility import Logger, SoftwarePackageCategory
 
 
@@ -42,16 +37,10 @@ class DeploySRECommand:
         sre_name = "UNKNOWN"
         try:
             # Use a JSON-safe SRE name
-            sre_name = alphanumeric(name)
+            sre_name = alphanumeric(name).lower()
 
-            # Use dotfile settings to load the job configuration
-            try:
-                settings = DotFileSettings()
-            except DataSafeHavenException as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to load project settings. Please run this command from inside the project directory.\n{str(exc)}"
-                ) from exc
-            config = Config(settings.name, settings.subscription_name)
+            # Load config file
+            config = Config()
             self.update_config(
                 sre_name,
                 config,
@@ -70,8 +59,8 @@ class DeploySRECommand:
             )
 
             # Initialise Pulumi stack
-            shm_stack = PulumiStack(config, "SHM")
-            stack = PulumiStack(config, "SRE", sre_name=sre_name)
+            shm_stack = PulumiSHMStack(config)
+            stack = PulumiSREStack(config, sre_name)
             # Set Azure options
             stack.add_option("azure-native:location", config.azure.location)
             stack.add_option(
@@ -167,9 +156,7 @@ class DeploySRECommand:
             stack.deploy()
 
             # Add Pulumi infrastructure information to the config file
-            with open(stack.local_stack_path, "r", encoding="utf-8") as f_stack:
-                stack_yaml = yaml.safe_load(f_stack)
-            config.pulumi.stacks[stack.stack_name] = stack_yaml
+            config.read_stack(stack.stack_name, stack.local_stack_path)
 
             # Upload config to blob storage
             config.upload()
@@ -198,73 +185,75 @@ class DeploySRECommand:
         allow_paste: Optional[bool] = None,
         data_provider_ip_addresses: Optional[List[str]] = None,
         research_desktops: Optional[List[str]] = None,
-        software_packages: Optional[str] = None,
+        software_packages: Optional[SoftwarePackageCategory] = None,
         user_ip_addresses: Optional[List[str]] = None,
     ) -> None:
         # Create a config entry for this SRE if it does not exist
-        if sre_name not in config.sre.keys():
-            highest_index = max([0] + [sre.index for sre in config.sre.values()])
-            config.sre[sre_name].index = highest_index + 1
+        if sre_name not in config.sres.keys():
+            highest_index = max([0] + [sre.index for sre in config.sres.values()])
+            config.sres[sre_name].index = highest_index + 1
 
         # Set whether copying text out of the SRE is allowed
         if allow_copy is not None:
-            if config.sre[sre_name].remote_desktop.allow_copy and (
-                config.sre[sre_name].remote_desktop.allow_copy != allow_copy
+            if config.sres[sre_name].remote_desktop.allow_copy and (
+                config.sres[sre_name].remote_desktop.allow_copy != allow_copy
             ):
                 self.logger.debug(
-                    f"Overwriting existing text copying rule {config.sre[sre_name].remote_desktop.allow_copy}"
+                    f"Overwriting existing text copying rule {config.sres[sre_name].remote_desktop.allow_copy}"
                 )
             self.logger.info(
                 f"Setting [bold]text copying out of SRE {sre_name}[/] to [green]{'allowed' if allow_copy else 'forbidden'}[/]."
             )
-            config.sre[sre_name].remote_desktop.allow_copy = allow_copy
-        if isinstance(config.sre[sre_name].remote_desktop.allow_copy, dotmap.DotMap):
+            config.sres[sre_name].remote_desktop.allow_copy = allow_copy
+        if config.sres[sre_name].remote_desktop.allow_copy is None:
             raise DataSafeHavenConfigException(
                 "No text copying rule was found. Use [bright_cyan]'--allow-copy / -c'[/] to set one."
             )
 
         # Set whether pasting text into the SRE is allowed
         if allow_paste is not None:
-            if config.sre[sre_name].remote_desktop.allow_paste and (
-                config.sre[sre_name].remote_desktop.allow_paste != allow_paste
+            if config.sres[sre_name].remote_desktop.allow_paste and (
+                config.sres[sre_name].remote_desktop.allow_paste != allow_paste
             ):
                 self.logger.debug(
-                    f"Overwriting existing text pasting rule {config.sre[sre_name].remote_desktop.allow_paste}"
+                    f"Overwriting existing text pasting rule {config.sres[sre_name].remote_desktop.allow_paste}"
                 )
             self.logger.info(
                 f"Setting [bold]text pasting into SRE {sre_name}[/] to [green]{'allowed' if allow_paste else 'forbidden'}[/]."
             )
-            config.sre[sre_name].remote_desktop.allow_paste = allow_paste
-        if isinstance(config.sre[sre_name].remote_desktop.allow_paste, dotmap.DotMap):
+            config.sres[sre_name].remote_desktop.allow_paste = allow_paste
+        if config.sres[sre_name].remote_desktop.allow_paste is None:
             raise DataSafeHavenConfigException(
                 "No text pasting rule was found. Use [bright_cyan]'--allow-paste / -p'[/] to set one."
             )
 
         # Set data provider IP addresses
         if data_provider_ip_addresses:
-            if config.sre[sre_name].data_provider_ip_addresses and (
-                config.sre[sre_name].data_provider_ip_addresses
+            if config.sres[sre_name].data_provider_ip_addresses and (
+                config.sres[sre_name].data_provider_ip_addresses
                 != data_provider_ip_addresses
             ):
                 self.logger.debug(
-                    f"Overwriting existing data provider IP addresses {config.sre[sre_name].data_provider_ip_addresses}"
+                    f"Overwriting existing data provider IP addresses {config.sres[sre_name].data_provider_ip_addresses}"
                 )
             self.logger.info(
                 f"Setting [bold]data provider IP addresses[/] to [green]{data_provider_ip_addresses}[/]."
             )
-            config.sre[sre_name].data_provider_ip_addresses = data_provider_ip_addresses
-        if len(config.sre[sre_name].data_provider_ip_addresses) == 0:
+            config.sres[
+                sre_name
+            ].data_provider_ip_addresses = data_provider_ip_addresses
+        if len(config.sres[sre_name].data_provider_ip_addresses) == 0:
             raise DataSafeHavenConfigException(
                 "No data provider IP addresses were found. Use [bright_cyan]'--data-provider-ip-address / -d'[/] to set one."
             )
 
         # Set research desktops
         if research_desktops:
-            if config.sre[sre_name].research_desktops and (
-                config.sre[sre_name].research_desktops != research_desktops
+            if config.sres[sre_name].research_desktops and (
+                config.sres[sre_name].research_desktops != research_desktops
             ):
                 self.logger.debug(
-                    f"Overwriting existing research desktops {config.sre[sre_name].research_desktops}"
+                    f"Overwriting existing research desktops {config.sres[sre_name].research_desktops}"
                 )
             self.logger.info(
                 f"Setting [bold]research desktops[/] to [green]{research_desktops}[/]."
@@ -272,7 +261,6 @@ class DeploySRECommand:
             # Construct VM details
             idx_cpu, idx_gpu = 0, 0
             available_vm_skus = self.available_vm_skus(config)
-            config.sre[sre_name].research_desktops = {}
             for vm_sku in research_desktops:
                 if int(available_vm_skus[vm_sku]["GPUs"]) > 0:
                     vm_name = f"srd-gpu-{idx_gpu:02d}"
@@ -280,46 +268,45 @@ class DeploySRECommand:
                 else:
                     vm_name = f"srd-cpu-{idx_cpu:02d}"
                     idx_cpu += 1
-                config.sre[sre_name].research_desktops[vm_name] = {
-                    "sku": vm_sku,
-                }
-        if len(config.sre[sre_name].research_desktops) == 0:
+                config.sres[sre_name].add_research_desktop(vm_name)
+                config.sres[sre_name].research_desktops[vm_name].sku = vm_sku
+        if len(config.sres[sre_name].research_desktops) == 0:
             raise DataSafeHavenConfigException(
                 "No research desktops were found. Use [bright_cyan]'--research-desktop / -r'[/] to add one."
             )
 
         # Select which software packages can be installed by users
         if software_packages is not None:
-            if config.sre[sre_name].software_packages and (
-                config.sre[sre_name].software_packages != software_packages
+            if config.sres[sre_name].software_packages and (
+                config.sres[sre_name].software_packages != software_packages
             ):
                 self.logger.debug(
-                    f"Overwriting existing software package rule {config.sre[sre_name].software_packages}"
+                    f"Overwriting existing software package rule {config.sres[sre_name].software_packages}"
                 )
             self.logger.info(
                 f"Setting [bold]allowed software packages in SRE {sre_name}[/] to [green]{'allowed' if software_packages else 'forbidden'}[/]."
             )
-            config.sre[sre_name].software_packages = software_packages
-        if isinstance(config.sre[sre_name].software_packages, dotmap.DotMap):
+            config.sres[sre_name].software_packages = software_packages
+        if not config.sres[sre_name].software_packages:
             raise DataSafeHavenConfigException(
                 "No software package rule was found. Use [bright_cyan]'--software-packages / -s'[/] to set one."
             )
 
-        # Set data provider IP addresses
+        # Set user IP addresses
         if user_ip_addresses:
-            if config.sre[sre_name].research_user_ip_addresses and (
-                config.sre[sre_name].research_user_ip_addresses != user_ip_addresses
+            if config.sres[sre_name].research_user_ip_addresses and (
+                config.sres[sre_name].research_user_ip_addresses != user_ip_addresses
             ):
                 self.logger.debug(
-                    f"Overwriting existing data provider IP addresses {config.sre[sre_name].research_user_ip_addresses}"
+                    f"Overwriting existing user IP addresses {config.sres[sre_name].research_user_ip_addresses}"
                 )
             self.logger.info(
-                f"Setting [bold]data provider IP addresses[/] to [green]{user_ip_addresses}[/]."
+                f"Setting [bold]user IP addresses[/] to [green]{user_ip_addresses}[/]."
             )
-            config.sre[sre_name].research_user_ip_addresses = user_ip_addresses
-        if len(config.sre[sre_name].research_user_ip_addresses) == 0:
+            config.sres[sre_name].research_user_ip_addresses = user_ip_addresses
+        if len(config.sres[sre_name].research_user_ip_addresses) == 0:
             raise DataSafeHavenConfigException(
-                "No data provider IP addresses were found. Use [bright_cyan]'--data-provider-ip-address / -d'[/] to set one."
+                "No user IP addresses were found. Use [bright_cyan]'--user-ip-address / -u'[/] to set one."
             )
 
     def available_vm_skus(self, config: Config) -> Dict[str, Dict[str, Any]]:

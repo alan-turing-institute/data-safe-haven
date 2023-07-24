@@ -18,7 +18,7 @@ from simple_acme_dns import ACMEClient
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenSSLException
-from data_safe_haven.external.api import AzureApi
+from data_safe_haven.external import AzureApi
 from .dsh_resource_provider import DshResourceProvider
 
 
