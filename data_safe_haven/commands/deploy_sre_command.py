@@ -62,92 +62,92 @@ class DeploySRECommand:
             shm_stack = PulumiSHMStack(config)
             stack = PulumiSREStack(config, sre_name)
             # Set Azure options
-            stack.add_option("azure-native:location", config.azure.location)
-            stack.add_option("azure-native:subscriptionId", config.azure.subscription_id)
-            stack.add_option("azure-native:tenantId", config.azure.tenant_id)
+            stack.add_option("azure-native:location", config.azure.location, replace=False)
+            stack.add_option("azure-native:subscriptionId", config.azure.subscription_id, replace=False)
+            stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
             # Load SHM stack outputs
             stack.add_option(
                 "shm-domain_controllers-domain_sid",
                 shm_stack.output("domain_controllers")["domain_sid"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-domain_controllers-ldap_root_dn",
                 shm_stack.output("domain_controllers")["ldap_root_dn"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-domain_controllers-ldap_server_ip",
                 shm_stack.output("domain_controllers")["ldap_server_ip"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-domain_controllers-netbios_name",
                 shm_stack.output("domain_controllers")["netbios_name"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-monitoring-automation_account_name",
                 shm_stack.output("monitoring")["automation_account_name"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-monitoring-log_analytics_workspace_id",
                 shm_stack.output("monitoring")["log_analytics_workspace_id"],
-                True,
+                replace=True,
             )
             stack.add_secret(
                 "shm-monitoring-log_analytics_workspace_key",
                 shm_stack.output("monitoring")["log_analytics_workspace_key"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-monitoring-resource_group_name",
                 shm_stack.output("monitoring")["resource_group_name"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-networking-private_dns_zone_base_id",
                 shm_stack.output("networking")["private_dns_zone_base_id"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-networking-resource_group_name",
                 shm_stack.output("networking")["resource_group_name"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-networking-subnet_identity_servers_prefix",
                 shm_stack.output("networking")["subnet_identity_servers_prefix"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-networking-subnet_subnet_monitoring_prefix",
                 shm_stack.output("networking")["subnet_monitoring_prefix"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-networking-subnet_update_servers_prefix",
                 shm_stack.output("networking")["subnet_update_servers_prefix"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-networking-virtual_network_name",
                 shm_stack.output("networking")["virtual_network_name"],
-                True,
+                replace=True,
             )
             stack.add_option(
                 "shm-update_servers-ip_address_linux",
                 shm_stack.output("update_servers")["ip_address_linux"],
-                True,
+                replace=True,
             )
             # Add necessary secrets
             stack.copy_secret("password-domain-ldap-searcher", shm_stack)
-            stack.add_secret("password-gitea-database-admin", password(20))
-            stack.add_secret("password-hedgedoc-database-admin", password(20))
-            stack.add_secret("password-nexus-admin", password(20))
-            stack.add_secret("password-user-database-admin", password(20))
-            stack.add_secret("password-secure-research-desktop-admin", password(20))
+            stack.add_secret("password-gitea-database-admin", password(20), replace=False)
+            stack.add_secret("password-hedgedoc-database-admin", password(20), replace=False)
+            stack.add_secret("password-nexus-admin", password(20), replace=False)
+            stack.add_secret("password-user-database-admin", password(20), replace=False)
+            stack.add_secret("password-secure-research-desktop-admin", password(20), replace=False)
             stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
 
             # Deploy Azure infrastructure with Pulumi

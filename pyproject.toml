@@ -115,6 +115,10 @@ select = [
 ignore = [
   # Ignore checks for possible passwords
   "S105", "S106", "S107",
+  # Ignore not using absolute path in subprocess call
+  "S607",
+  # Allow subprocess without shell (less vulnerable than with shell)
+  "S603",
   # Ignore complexity
   "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
 ]

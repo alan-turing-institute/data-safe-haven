@@ -59,16 +59,16 @@ class DeploySHMCommand:
             # Initialise Pulumi stack
             stack = PulumiSHMStack(config)
             # Set Azure options
-            stack.add_option("azure-native:location", config.azure.location)
-            stack.add_option("azure-native:subscriptionId", config.azure.subscription_id)
-            stack.add_option("azure-native:tenantId", config.azure.tenant_id)
+            stack.add_option("azure-native:location", config.azure.location, replace=False)
+            stack.add_option("azure-native:subscriptionId", config.azure.subscription_id, replace=False)
+            stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
             # Add necessary secrets
-            stack.add_secret("password-domain-admin", password(20))
-            stack.add_secret("password-domain-azure-ad-connect", password(20))
-            stack.add_secret("password-domain-computer-manager", password(20))
-            stack.add_secret("password-domain-ldap-searcher", password(20))
-            stack.add_secret("password-update-server-linux-admin", password(20))
-            stack.add_secret("verification-azuread-custom-domain", verification_record)
+            stack.add_secret("password-domain-admin", password(20), replace=False)
+            stack.add_secret("password-domain-azure-ad-connect", password(20), replace=False)
+            stack.add_secret("password-domain-computer-manager", password(20), replace=False)
+            stack.add_secret("password-domain-ldap-searcher", password(20), replace=False)
+            stack.add_secret("password-update-server-linux-admin", password(20), replace=False)
+            stack.add_secret("verification-azuread-custom-domain", verification_record, replace=False)
 
             # Deploy Azure infrastructure with Pulumi
             stack.deploy()

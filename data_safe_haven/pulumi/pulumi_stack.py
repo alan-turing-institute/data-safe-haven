@@ -81,11 +81,11 @@ class PulumiStack:
                 raise DataSafeHavenPulumiException(msg) from exc
         return self.stack_
 
-    def add_option(self, name: str, value: str, replace: bool = False) -> None:
+    def add_option(self, name: str, value: str, *, replace: bool) -> None:
         """Add a public configuration option"""
         self.options[name] = (value, False, replace)
 
-    def add_secret(self, name: str, value: str, replace: bool = False) -> None:
+    def add_secret(self, name: str, value: str, *, replace: bool) -> None:
         """Add a secret configuration option if it does not exist"""
         self.options[name] = (value, True, replace)
 
@@ -150,7 +150,7 @@ class PulumiStack:
             msg = "Pulumi destroy failed."
             raise DataSafeHavenPulumiException(msg) from exc
 
-    def ensure_config(self, name: str, value: str, secret: bool = False) -> None:
+    def ensure_config(self, name: str, value: str, *, secret: bool) -> None:
         """Ensure that config values have been set, setting them if they do not exist"""
         try:
             self.stack.get_config(name)
@@ -198,17 +198,15 @@ class PulumiStack:
             except DataSafeHavenPulumiException:
                 AzureCli().login()  # this is needed to read the encryption key from the keyvault
                 env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
-                command = f"pulumi login 'azblob://{self.cfg.pulumi.storage_container_name}'"
-                with subprocess.Popen(
-                    f"{env_vars} {command}",
-                    shell=True,
+                process = subprocess.run(
+                    ["pulumi", "login", f"'azblob://{self.cfg.pulumi.storage_container_name}'"],
+                    env=env_vars,
                     cwd=self.work_dir,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
+                    capture_output=True,
                     encoding="UTF-8",
-                ) as process:
-                    if process.stdout:
-                        self.logger.info(process.stdout.readline().strip())
+                )
+                process.check_returncode()
+                self.logger.info(process.stdout.readline().strip())
         except Exception as exc:
             msg = f"Logging into Pulumi failed.\n{exc!s}."
             raise DataSafeHavenPulumiException(msg) from exc
@@ -255,7 +253,7 @@ class PulumiStack:
             msg = f"Secret '{name}' was not found."
             raise DataSafeHavenPulumiException(msg) from exc
 
-    def set_config(self, name: str, value: str, secret: bool = False) -> None:
+    def set_config(self, name: str, value: str, *, secret: bool) -> None:
         """Set config values, overwriting any existing value."""
         self.stack.set_config(name, automation.ConfigValue(value=value, secret=secret))
 
@@ -285,20 +283,20 @@ class PulumiStack:
         try:
             AzureCli().login()  # this is needed to read the encryption key from the keyvault
             env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
-            command = "pulumi whoami"
             self.work_dir.mkdir(parents=True, exist_ok=True)
-            with subprocess.Popen(
-                f"{env_vars} {command}",
-                shell=True,
+            process = subprocess.run(
+                ["pulumi", "whoami"],
+                env=env_vars,
                 cwd=self.work_dir,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 encoding="UTF-8",
-            ) as process:
-                if not process.stdout:
+            )
+            try:
+                process.check_returncode()
+            except subprocess.CalledProcessError as exc:
                     msg = f"No Pulumi user found {process.stderr}."
-                    raise DataSafeHavenPulumiException(msg)
-                return process.stdout.readline().strip()
+                    raise DataSafeHavenPulumiException(msg) from exc
+            return process.stdout.readline().strip()
         except Exception as exc:
             msg = f"Pulumi user check failed.\n{exc!s}."
             raise DataSafeHavenPulumiException(msg) from exc
