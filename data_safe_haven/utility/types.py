@@ -1,6 +1,6 @@
 # Standard library imports
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
-PathType = Union[str, Path]
+PathType = str | Path
 YamlType = dict[str, dict[str, Any]]
