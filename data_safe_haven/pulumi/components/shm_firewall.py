@@ -47,9 +47,8 @@ class SHMFirewallComponent(ComponentResource):
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Important IP addresses
-        external_dns_resolver = (
-            "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
-        )
+        # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
+        external_dns_resolver = "168.63.129.16"
         ntp_ip_addresses = [
             "216.239.35.0",
             "216.239.35.4",
