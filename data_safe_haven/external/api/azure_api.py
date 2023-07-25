@@ -65,7 +65,6 @@ from data_safe_haven.external.interface.azure_authenticator import AzureAuthenti
 from data_safe_haven.utility import Logger
 
 
-
 class AzureApi(AzureAuthenticator):
     """Interface to the Azure REST API"""
 
