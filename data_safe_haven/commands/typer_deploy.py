@@ -1,5 +1,5 @@
 """Command-line application for deploying a Data Safe Haven component, delegating the details to a subcommand"""
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
 
@@ -21,7 +21,7 @@ deploy_command_group = typer.Typer()
 @deploy_command_group.command()
 def shm(
     aad_tenant_id: Annotated[
-        str | None,
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--aad-tenant-id",
             "-a",
@@ -33,7 +33,7 @@ def shm(
         ),
     ] = None,
     admin_email_address: Annotated[
-        str | None,
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--email",
             "-e",
@@ -42,7 +42,7 @@ def shm(
         ),
     ] = None,
     admin_ip_addresses: Annotated[
-        list[str] | None,
+        Optional[list[str]],  # noqa: UP007
         typer.Option(
             "--ip-address",
             "-i",
@@ -54,7 +54,7 @@ def shm(
         ),
     ] = None,
     fqdn: Annotated[
-        str | None,
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--fqdn",
             "-f",
@@ -62,7 +62,7 @@ def shm(
         ),
     ] = None,
     timezone: Annotated[
-        str | None,
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--timezone",
             "-t",
@@ -85,7 +85,7 @@ def shm(
 def sre(
     name: Annotated[str, typer.Argument(help="Name of SRE to deploy")],
     allow_copy: Annotated[
-        bool | None,
+        Optional[bool],  # noqa: UP007
         typer.Option(
             "--allow-copy",
             "-c",
@@ -93,7 +93,7 @@ def sre(
         ),
     ] = None,
     allow_paste: Annotated[
-        bool | None,
+        Optional[bool],  # noqa: UP007
         typer.Option(
             "--allow-paste",
             "-p",
@@ -101,7 +101,7 @@ def sre(
         ),
     ] = None,
     data_provider_ip_addresses: Annotated[
-        list[str] | None,
+        Optional[list[str]],  # noqa: UP007
         typer.Option(
             "--data-provider-ip-address",
             "-d",
@@ -110,7 +110,7 @@ def sre(
         ),
     ] = None,
     research_desktops: Annotated[
-        list[str] | None,
+        Optional[list[str]],  # noqa: UP007
         typer.Option(
             "--research-desktop",
             "-r",
@@ -122,7 +122,7 @@ def sre(
         ),
     ] = None,
     software_packages: Annotated[
-        SoftwarePackageCategory | None,
+        Optional[SoftwarePackageCategory],  # noqa: UP007
         typer.Option(
             "--software-packages",
             "-s",
@@ -130,7 +130,7 @@ def sre(
         ),
     ] = None,
     user_ip_addresses: Annotated[
-        list[str] | None,
+        Optional[list[str]],  # noqa: UP007
         typer.Option(
             "--user-ip-address",
             "-u",
