@@ -206,7 +206,10 @@ class PulumiStack:
                     encoding="UTF-8",
                 )
                 process.check_returncode()
-                self.logger.info(process.stdout.readline().strip())
+                self.logger.info(process.stdout)
+        except subprocess.CalledProcessError as exc:
+            msg = f"Logging into Pulumi failed.\n{process.stderr}."
+            raise DataSafeHavenPulumiError(msg) from exc
         except Exception as exc:
             msg = f"Logging into Pulumi failed.\n{exc!s}."
             raise DataSafeHavenPulumiError(msg) from exc
@@ -294,9 +297,9 @@ class PulumiStack:
             try:
                 process.check_returncode()
             except subprocess.CalledProcessError as exc:
-                msg = f"No Pulumi user found {process.stderr}."
+                msg = f"No Pulumi user found.\n{process.stderr}."
                 raise DataSafeHavenPulumiError(msg) from exc
-            return process.stdout.readline().strip()
+            return process.stdout.strip()
         except Exception as exc:
             msg = f"Pulumi user check failed.\n{exc!s}."
             raise DataSafeHavenPulumiError(msg) from exc
