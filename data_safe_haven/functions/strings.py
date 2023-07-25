@@ -1,4 +1,3 @@
-# Standard library imports
 import base64
 import hashlib
 import secrets

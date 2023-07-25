@@ -1,12 +1,9 @@
 """Command line entrypoint for Data Safe Haven application"""
-# Standard library imports
 import pathlib
 from typing import Annotated
 
-# Third party imports
 import typer
 
-# Local imports
 from data_safe_haven import __version__
 from data_safe_haven.commands import (
     admin_command_group,

@@ -1,9 +1,7 @@
 """Provisioning manager for a deployed SRE."""
-# Standard library imports
 import pathlib
 from typing import Any
 
-# Local imports
 from data_safe_haven.external import (
     AzureApi,
     AzureContainerInstance,

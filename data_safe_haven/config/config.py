@@ -1,19 +1,15 @@
 """Configuration file backed by blob storage"""
-# Standard library imports
 import pathlib
 from collections import defaultdict
 from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import Any
 
-# Third party imports
 import chili
 import yaml
 from yaml.parser import ParserError
 
-# Local imports
 from data_safe_haven import __version__
-from data_safe_haven.config.backend_settings import BackendSettings
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
@@ -29,6 +25,8 @@ from data_safe_haven.functions import (
     validate_timezone,
 )
 from data_safe_haven.utility import SoftwarePackageCategory
+
+from .backend_settings import BackendSettings
 
 
 @dataclass

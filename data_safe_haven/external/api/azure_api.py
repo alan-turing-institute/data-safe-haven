@@ -1,11 +1,9 @@
 """Interface to the Azure Python SDK"""
-# Standard library imports
 import time
 from collections.abc import Sequence
 from contextlib import suppress
 from typing import Any
 
-# Third party imports
 from azure.core.exceptions import (
     HttpResponseError,
     ResourceExistsError,
@@ -59,13 +57,13 @@ from azure.mgmt.storage.models import (
 from azure.storage.blob import BlobServiceClient
 from azure.storage.filedatalake import DataLakeServiceClient
 
-# Local imports
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenInternalError,
 )
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
 from data_safe_haven.utility import Logger
+
 
 
 class AzureApi(AzureAuthenticator):

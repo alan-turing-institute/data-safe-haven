@@ -1,5 +1,4 @@
 """Deploy with Pulumi"""
-# Standard library imports
 import pathlib
 import shutil
 import subprocess
@@ -8,16 +7,15 @@ from contextlib import suppress
 from importlib import metadata
 from typing import Any
 
-# Third party imports
 from pulumi import automation
 
-# Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCli
-from data_safe_haven.pulumi.declarative_shm import DeclarativeSHM
-from data_safe_haven.pulumi.declarative_sre import DeclarativeSRE
 from data_safe_haven.utility import Logger
+
+from .declarative_shm import DeclarativeSHM
+from .declarative_sre import DeclarativeSRE
 
 
 class PulumiStack:

@@ -1,11 +1,7 @@
 """Pulumi component for SHM monitoring"""
-# Standard library import
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation
 
-# Local imports
 from data_safe_haven.functions import time_as_string
 
 

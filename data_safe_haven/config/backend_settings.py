@@ -1,13 +1,10 @@
 """Load global and local settings from dotfiles"""
-# Standard library imports
 import pathlib
 
-# Third party imports
 import appdirs
 import yaml
 from yaml.parser import ParserError
 
-# Local imports
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,

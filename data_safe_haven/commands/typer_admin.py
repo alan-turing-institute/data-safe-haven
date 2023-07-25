@@ -1,17 +1,14 @@
 """Command-line application for performing administrative tasks"""
-# Standard library imports
 import pathlib
 from typing import Annotated
 
-# Third party imports
 import typer
 
-# Local imports
-from data_safe_haven.commands.users_add_command import UsersAddCommand
-from data_safe_haven.commands.users_list_command import UsersListCommand
-from data_safe_haven.commands.users_register_command import UsersRegisterCommand
-from data_safe_haven.commands.users_remove_command import UsersRemoveCommand
-from data_safe_haven.commands.users_unregister_command import UsersUnregisterCommand
+from .users_add_command import UsersAddCommand
+from .users_list_command import UsersListCommand
+from .users_register_command import UsersRegisterCommand
+from .users_remove_command import UsersRemoveCommand
+from .users_unregister_command import UsersUnregisterCommand
 
 admin_command_group = typer.Typer()
 

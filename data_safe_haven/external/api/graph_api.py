@@ -1,5 +1,4 @@
 """Interface to the Microsoft Graph API"""
-# Standard library imports
 import datetime
 import pathlib
 import time
@@ -8,7 +7,6 @@ from contextlib import suppress
 from io import UnsupportedOperation
 from typing import Any, ClassVar
 
-# Third party imports
 import requests
 from dns import resolver
 from msal import (
@@ -17,7 +15,6 @@ from msal import (
     SerializableTokenCache,
 )
 
-# Local imports
 from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
     DataSafeHavenInternalError,

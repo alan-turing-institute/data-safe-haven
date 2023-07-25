@@ -1,11 +1,7 @@
 """Pulumi component for SHM traffic routing"""
-# Standard library import
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
-# Local imports
 from data_safe_haven.pulumi.common.transformations import get_id_from_subnet
 
 

@@ -1,14 +1,12 @@
 """Interact with users in an Azure Active Directory"""
-# Standard library imports
 from collections.abc import Sequence
 from typing import Any
 
-from data_safe_haven.administration.users.research_user import ResearchUser
-
-# Local imports
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
 from data_safe_haven.utility import Logger
+
+from .research_user import ResearchUser
 
 
 class AzureADUsers:

@@ -1,5 +1,5 @@
-from data_safe_haven.functions.miscellaneous import as_dict, ordered_private_dns_zones, time_as_string
-from data_safe_haven.functions.strings import (
+from .miscellaneous import as_dict, ordered_private_dns_zones, time_as_string
+from .strings import (
     alphanumeric,
     b64decode,
     b64encode,
@@ -10,7 +10,7 @@ from data_safe_haven.functions.strings import (
     sha256hash,
     truncate_tokens,
 )
-from data_safe_haven.functions.validators import (
+from .validators import (
     validate_aad_guid,
     validate_azure_location,
     validate_azure_vm_sku,

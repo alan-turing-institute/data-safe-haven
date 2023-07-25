@@ -1,14 +1,12 @@
-# Standard library imports
 import pathlib
 from collections.abc import Sequence
 from typing import Any
 
-from data_safe_haven.administration.users.research_user import ResearchUser
-
-# Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.external import AzurePostgreSQLDatabase
 from data_safe_haven.pulumi import PulumiSREStack
+
+from .research_user import ResearchUser
 
 
 class GuacamoleUsers:

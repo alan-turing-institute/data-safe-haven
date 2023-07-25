@@ -1,16 +1,14 @@
 """Pulumi dynamic component for AzureAD applications."""
-# Standard library imports
 from contextlib import suppress
 from typing import Any
 
-# Third party imports
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource, UpdateResult
 
-# Local imports
 from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
+
+from .dsh_resource_provider import DshResourceProvider
 
 
 class AzureADApplicationProps:

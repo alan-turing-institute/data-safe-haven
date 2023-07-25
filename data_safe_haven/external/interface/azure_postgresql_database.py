@@ -1,12 +1,10 @@
 """Backend for a Data Safe Haven environment"""
-# Standard library imports
 import pathlib
 import time
 from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 
-# Third party imports
 import psycopg2
 import requests
 from azure.core.polling import LROPoller
@@ -17,7 +15,6 @@ from azure.mgmt.rdbms.postgresql.models import (
     ServerUpdateParameters,
 )
 
-# Local imports
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenInputError,

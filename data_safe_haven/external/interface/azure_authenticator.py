@@ -1,12 +1,8 @@
 """Standalone utility class for anything that needs to authenticate against Azure"""
-# Standard library imports
-
-# Third party imports
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.resource import SubscriptionClient
 
-# Local imports
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenInputError,

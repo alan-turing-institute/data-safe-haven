@@ -1,5 +1,4 @@
 """Command-line application for tearing down a Data Safe Haven"""
-# Local imports
 from data_safe_haven.backend import Backend
 from data_safe_haven.exceptions import (
     DataSafeHavenError,

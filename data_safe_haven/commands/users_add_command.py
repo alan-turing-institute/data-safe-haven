@@ -1,8 +1,6 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
-# Standard library imports
 import pathlib
 
-# Local imports
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (

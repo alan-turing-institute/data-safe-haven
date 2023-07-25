@@ -1,14 +1,8 @@
 """Command-line application for deploying a Data Safe Haven component, delegating the details to a subcommand"""
-# Standard library imports
 from typing import Annotated
 
-# Third party imports
 import typer
 
-from data_safe_haven.commands.deploy_shm_command import DeploySHMCommand
-from data_safe_haven.commands.deploy_sre_command import DeploySRECommand
-
-# Local imports
 from data_safe_haven.functions import (
     validate_aad_guid,
     validate_azure_vm_sku,
@@ -17,6 +11,9 @@ from data_safe_haven.functions import (
     validate_timezone,
 )
 from data_safe_haven.utility import SoftwarePackageCategory
+
+from .deploy_shm_command import DeploySHMCommand
+from .deploy_sre_command import DeploySRECommand
 
 deploy_command_group = typer.Typer()
 

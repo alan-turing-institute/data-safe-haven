@@ -1,10 +1,8 @@
 """Standalone logging class implemented as a singleton"""
-# Standard library imports
 import io
 import logging
 from typing import Any, ClassVar, Optional
 
-# Third party imports
 from rich.console import Console
 from rich.highlighter import RegexHighlighter
 from rich.logging import RichHandler
@@ -12,8 +10,7 @@ from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.text import Text
 
-# Local imports
-from data_safe_haven.utility.types import PathType
+from .types import PathType
 
 
 class LoggingHandlerPlainFile(logging.FileHandler):

@@ -1,9 +1,7 @@
-# Standard library imports
 import ipaddress
 import math
 from contextlib import suppress
 
-# Local imports
 from data_safe_haven.exceptions import DataSafeHavenIPRangeError
 
 

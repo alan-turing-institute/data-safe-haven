@@ -1,8 +1,6 @@
 """Pulumi component for SRE remote desktop"""
-# Standard library imports
 import pathlib
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     containerinstance,
@@ -12,7 +10,6 @@ from pulumi_azure_native import (
     storage,
 )
 
-# Local imports
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.pulumi.common.transformations import (
     get_id_from_subnet,

@@ -1,7 +1,5 @@
-# Standard library imports
 import pathlib
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
@@ -10,8 +8,6 @@ from data_safe_haven.pulumi.common.transformations import (
     get_ip_addresses_from_private_endpoint,
 )
 from data_safe_haven.pulumi.dynamic.file_share_file import FileShareFile, FileShareFileProps
-
-# Local imports
 from data_safe_haven.utility import FileReader
 
 

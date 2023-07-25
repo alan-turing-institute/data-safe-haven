@@ -1,11 +1,7 @@
 """Pulumi component for SRE networking"""
-# Standard library import
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-# Local imports
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
 from data_safe_haven.pulumi.common.enums import NetworkingPriorities

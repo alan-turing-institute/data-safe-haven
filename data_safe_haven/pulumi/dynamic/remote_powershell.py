@@ -1,14 +1,12 @@
 """Pulumi dynamic component for running remote scripts on an Azure VM."""
-# Standard library imports
 from typing import Any
 
-# Third party imports
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 
-# Local imports
 from data_safe_haven.external import AzureApi
-from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
+
+from .dsh_resource_provider import DshResourceProvider
 
 
 class RemoteScriptProps:

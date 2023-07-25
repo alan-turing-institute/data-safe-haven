@@ -1,9 +1,7 @@
 """Interface to the Azure CLI"""
-# Standard library imports
 import subprocess
 from typing import Any
 
-# Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.utility import Logger
 

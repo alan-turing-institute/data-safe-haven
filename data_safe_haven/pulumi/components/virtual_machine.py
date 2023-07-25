@@ -1,12 +1,9 @@
 """Pulumi component for virtual machines"""
-# Standard library imports
 from typing import Any
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import compute, network
 
-# Local imports
 from data_safe_haven.functions import replace_separators
 
 

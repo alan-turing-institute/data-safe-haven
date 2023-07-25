@@ -1,13 +1,10 @@
-# Standard library imports
 import pathlib
 from typing import Any
 
-# Third party imports
 import chevron
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-# Local imports
 from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.functions import b64encode, replace_separators
 from data_safe_haven.pulumi.common.transformations import (
@@ -16,7 +13,8 @@ from data_safe_haven.pulumi.common.transformations import (
     get_name_from_subnet,
     get_name_from_vnet,
 )
-from data_safe_haven.pulumi.components.virtual_machine import LinuxVMProps, VMComponent
+
+from .components.virtual_machine import LinuxVMProps, VMComponent
 
 
 class SREResearchDesktopProps:

@@ -1,13 +1,10 @@
 """Helper class for Azure fileshares"""
-# Standard library imports
 from contextlib import suppress
 
-# Third party imports
 from azure.core.exceptions import ResourceNotFoundError
 from azure.mgmt.storage import StorageManagementClient
 from azure.storage.fileshare import ShareDirectoryClient, ShareFileClient
 
-# Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 

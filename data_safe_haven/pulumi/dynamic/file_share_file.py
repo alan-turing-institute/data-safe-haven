@@ -1,17 +1,15 @@
 """Pulumi dynamic component for files uploaded to an Azure FileShare."""
-# Standard library imports
 from contextlib import suppress
 from typing import Any
 
-# Third party imports
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.fileshare import ShareDirectoryClient, ShareFileClient
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 
-# Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
+
+from .dsh_resource_provider import DshResourceProvider
 
 
 class FileShareFileProps:

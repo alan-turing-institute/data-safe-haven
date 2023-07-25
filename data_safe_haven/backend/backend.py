@@ -1,7 +1,5 @@
 """Azure backend for a Data Safe Haven deployment"""
-# Standard library imports
 
-# Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi

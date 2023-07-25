@@ -1,5 +1,4 @@
 """Provisioning manager for a deployed SHM."""
-# Local imports
 from data_safe_haven.external import AzureApi
 from data_safe_haven.pulumi import PulumiSHMStack
 

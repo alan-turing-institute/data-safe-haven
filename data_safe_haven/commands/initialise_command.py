@@ -1,7 +1,4 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
-# Standard library imports
-
-# Local imports
 from data_safe_haven.backend import Backend
 from data_safe_haven.config import BackendSettings
 from data_safe_haven.exceptions import DataSafeHavenError

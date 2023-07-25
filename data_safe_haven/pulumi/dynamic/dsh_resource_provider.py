@@ -1,9 +1,7 @@
 """Pulumi base dynamic component."""
-# Standard library imports
 from collections.abc import Sequence
 from typing import Any
 
-# Third party imports
 from pulumi.dynamic import (
     CheckResult,
     CreateResult,
@@ -13,7 +11,6 @@ from pulumi.dynamic import (
     UpdateResult,
 )
 
-# Local imports
 from data_safe_haven.exceptions import DataSafeHavenNotImplementedError
 
 

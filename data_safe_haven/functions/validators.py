@@ -1,8 +1,6 @@
-# Standard library imports
 import ipaddress
 import re
 
-# Third-party imports
 import pytz
 import typer
 

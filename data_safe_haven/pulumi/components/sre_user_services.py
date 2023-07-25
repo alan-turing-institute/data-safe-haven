@@ -1,13 +1,10 @@
-# Standard library imports
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-# Local imports
 from data_safe_haven.pulumi.common.transformations import get_id_from_subnet
-from data_safe_haven.pulumi.components.sre_gitea_server import SREGiteaServerComponent, SREGiteaServerProps
-from data_safe_haven.pulumi.components.sre_hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
+
+from .sre_gitea_server import SREGiteaServerComponent, SREGiteaServerProps
+from .sre_hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
 
 
 class SREUserServicesProps:

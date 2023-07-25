@@ -1,16 +1,12 @@
 """Register a VM as an Azure Automation DSC node"""
-# Standard library imports
 import pathlib
 import time
 from collections.abc import Sequence
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, compute
 
 from data_safe_haven.pulumi.dynamic.compiled_dsc import CompiledDsc, CompiledDscProps
-
-# Local imports
 from data_safe_haven.utility import FileReader
 
 

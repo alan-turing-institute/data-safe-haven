@@ -1,8 +1,6 @@
 """Command-line application for deploying a Secure Research Environment from project files"""
-# Standard library imports
 from typing import Any
 
-# Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,

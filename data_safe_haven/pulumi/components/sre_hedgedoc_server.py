@@ -1,11 +1,8 @@
-# Standard library imports
 import pathlib
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
-# Local imports
 from data_safe_haven.functions import b64encode
 from data_safe_haven.pulumi.common.transformations import (
     get_ip_address_from_container_group,

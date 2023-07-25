@@ -1,9 +1,7 @@
 """Pulumi dynamic component for SSL certificates uploaded to an Azure KeyVault."""
-# Standard library imports
 from contextlib import suppress
 from typing import Any
 
-# Third party imports
 from acme.errors import ValidationError
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from cryptography.hazmat.primitives.serialization import (
@@ -16,10 +14,10 @@ from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 from simple_acme_dns import ACMEClient
 
-# Local imports
 from data_safe_haven.exceptions import DataSafeHavenSSLError
 from data_safe_haven.external import AzureApi
-from data_safe_haven.pulumi.dynamic.dsh_resource_provider import DshResourceProvider
+
+from .dsh_resource_provider import DshResourceProvider
 
 
 class SSLCertificateProps:

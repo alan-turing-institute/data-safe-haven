@@ -1,17 +1,15 @@
 """Interact with users in an Azure Active Directory"""
-# Standard library imports
 import pathlib
 from collections.abc import Sequence
 from typing import Any
 
-from data_safe_haven.administration.users.research_user import ResearchUser
-
-# Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import b64encode
 from data_safe_haven.pulumi import PulumiSHMStack
 from data_safe_haven.utility import FileReader, Logger
+
+from .research_user import ResearchUser
 
 
 class ActiveDirectoryUsers:

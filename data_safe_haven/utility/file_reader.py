@@ -1,14 +1,12 @@
 """Read local files, handling template expansion if needed"""
-# Standard library imports
 import pathlib
 from typing import Any
 
-# Third party imports
 import chevron
 
-# Local imports
 from data_safe_haven.functions import sha256hash
-from data_safe_haven.utility.types import PathType
+
+from .types import PathType
 
 
 class FileReader:

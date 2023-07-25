@@ -1,7 +1,4 @@
 """Pulumi component for SHM monitoring"""
-# Standard library import
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     automation,
@@ -12,7 +9,6 @@ from pulumi_azure_native import (
     resources,
 )
 
-# Local imports
 from data_safe_haven.functions import (
     ordered_private_dns_zones,
     replace_separators,

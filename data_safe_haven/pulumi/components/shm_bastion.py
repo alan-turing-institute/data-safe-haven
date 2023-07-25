@@ -1,7 +1,4 @@
 """Pulumi component for SHM monitoring"""
-# Standard library import
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 

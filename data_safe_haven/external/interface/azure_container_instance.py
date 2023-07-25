@@ -1,9 +1,7 @@
 """Backend for a Data Safe Haven environment"""
-# Standard library imports
 import contextlib
 import time
 
-# Third party imports
 import websocket
 from azure.core.polling import LROPoller
 from azure.mgmt.containerinstance import ContainerInstanceManagementClient
@@ -12,7 +10,6 @@ from azure.mgmt.containerinstance.models import (
     ContainerExecRequestTerminalSize,
 )
 
-# Local imports
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.utility import Logger

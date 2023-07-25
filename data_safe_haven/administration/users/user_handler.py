@@ -1,18 +1,16 @@
-# Standard library imports
 import csv
 import pathlib
 from collections.abc import Sequence
 
-from data_safe_haven.administration.users.active_directory_users import ActiveDirectoryUsers
-from data_safe_haven.administration.users.azure_ad_users import AzureADUsers
-from data_safe_haven.administration.users.guacamole_users import GuacamoleUsers
-from data_safe_haven.administration.users.research_user import ResearchUser
-
-# Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import Logger
+
+from .active_directory_users import ActiveDirectoryUsers
+from .azure_ad_users import AzureADUsers
+from .guacamole_users import GuacamoleUsers
+from .research_user import ResearchUser
 
 
 class UserHandler:

@@ -127,7 +127,7 @@ ignore = [
 known-first-party = ["data_safe_haven"]
 
 [tool.ruff.flake8-tidy-imports]
-ban-relative-imports = "all"
+ban-relative-imports = "parents"
 
 [tool.mypy]
 strict = true

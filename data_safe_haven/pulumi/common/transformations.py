@@ -1,11 +1,7 @@
 """Common transformations needed when manipulating Pulumi resources"""
-# Standard library imports
-
-# Third party imports
 from pulumi import Output
 from pulumi_azure_native import containerinstance, network, resources
 
-# Local imports
 from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.external import AzureIPv4Range
 

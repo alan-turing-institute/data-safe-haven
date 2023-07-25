@@ -1,23 +1,22 @@
 """Pulumi declarative program"""
-# Third party imports
 import pulumi
 
-# Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.pulumi.components.sre_application_gateway import (
+
+from .components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
-from data_safe_haven.pulumi.components.sre_data import SREDataComponent, SREDataProps
-from data_safe_haven.pulumi.components.sre_monitoring import SREMonitoringComponent, SREMonitoringProps
-from data_safe_haven.pulumi.components.sre_networking import SRENetworkingComponent, SRENetworkingProps
-from data_safe_haven.pulumi.components.sre_remote_desktop import SRERemoteDesktopComponent, SRERemoteDesktopProps
-from data_safe_haven.pulumi.components.sre_research_desktop import SREResearchDesktopComponent, SREResearchDesktopProps
-from data_safe_haven.pulumi.components.sre_software_repositories import (
+from .components.sre_data import SREDataComponent, SREDataProps
+from .components.sre_monitoring import SREMonitoringComponent, SREMonitoringProps
+from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
+from .components.sre_remote_desktop import SRERemoteDesktopComponent, SRERemoteDesktopProps
+from .components.sre_research_desktop import SREResearchDesktopComponent, SREResearchDesktopProps
+from .components.sre_software_repositories import (
     SRESoftwareRepositoriesComponent,
     SRESoftwareRepositoriesProps,
 )
-from data_safe_haven.pulumi.components.sre_user_services import SREUserServicesComponent, SREUserServicesProps
+from .components.sre_user_services import SREUserServicesComponent, SREUserServicesProps
 
 
 class DeclarativeSRE:

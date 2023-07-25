@@ -1,12 +1,9 @@
 """Pulumi component for SRE application gateway"""
-# Standard library imports
 from typing import Any
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import managedidentity, network, resources
 
-# Local imports
 from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_id_from_rg,

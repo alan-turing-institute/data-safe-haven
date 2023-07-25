@@ -1,19 +1,18 @@
 """Deploy Data Safe Haven Management environment with Pulumi"""
-# Third party imports
 import pulumi
 
-# Local imports
 from data_safe_haven.config import Config
-from data_safe_haven.pulumi.components.shm_bastion import SHMBastionComponent, SHMBastionProps
-from data_safe_haven.pulumi.components.shm_data import SHMDataComponent, SHMDataProps
-from data_safe_haven.pulumi.components.shm_domain_controllers import (
+
+from .components.shm_bastion import SHMBastionComponent, SHMBastionProps
+from .components.shm_data import SHMDataComponent, SHMDataProps
+from .components.shm_domain_controllers import (
     SHMDomainControllersComponent,
     SHMDomainControllersProps,
 )
-from data_safe_haven.pulumi.components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
-from data_safe_haven.pulumi.components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
-from data_safe_haven.pulumi.components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
-from data_safe_haven.pulumi.components.shm_update_servers import SHMUpdateServersComponent, SHMUpdateServersProps
+from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
+from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
+from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
+from .components.shm_update_servers import SHMUpdateServersComponent, SHMUpdateServersProps
 
 
 class DeclarativeSHM:
