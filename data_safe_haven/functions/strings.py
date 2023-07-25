@@ -56,6 +56,12 @@ def sha256hash(input_string: str) -> str:
 
 
 def truncate_tokens(tokens: Sequence[str], max_length: int) -> list[str]:
+    """
+    Recursively remove the final character from the longest strings in the input.
+    Terminate when the total length of all strings is no greater than max_length.
+    For example:
+        truncate_tokens(["the", "quick", "fox"], 6) -> ["th", "qu", "fo"]
+    """
     output_tokens = list(tokens)
     token_lengths = [len(t) for t in output_tokens]
     while sum(token_lengths) > max_length:
