@@ -55,10 +55,13 @@ class RemoteScriptProvider(DshResourceProvider):
 
     def diff(
         self,
+        id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         if new_props["force_refresh"]:
             return DiffResult(
                 changes=True,
