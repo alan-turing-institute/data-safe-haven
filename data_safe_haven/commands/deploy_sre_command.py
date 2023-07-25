@@ -172,7 +172,7 @@ class DeploySRECommand:
             manager.run()
 
         except DataSafeHavenError as exc:
-            msg = f"Could not deploy Secure Research Environment {sre_name}.\n{exc!s}"
+            msg = f"Could not deploy Secure Research Environment {sre_name}.\n{exc}"
             raise DataSafeHavenError(msg) from exc
 
     def update_config(

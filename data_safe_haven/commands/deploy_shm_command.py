@@ -89,7 +89,7 @@ class DeploySHMCommand:
             )
             manager.run()
         except DataSafeHavenError as exc:
-            msg = f"Could not deploy Data Safe Haven Management environment.\n{exc!s}"
+            msg = f"Could not deploy Data Safe Haven Management environment.\n{exc}"
             raise DataSafeHavenError(msg) from exc
 
     def update_config(

@@ -95,7 +95,7 @@ class FileShareFileProvider(DshResourceProvider):
             outs["file_name"] = file_client.file_name
         except Exception as exc:
             file_name = file_client.file_name if file_client else ""
-            msg = f"Failed to upload data to [green]{file_name}[/] in [green]{props['share_name']}[/].\n{exc!s}"
+            msg = f"Failed to upload data to [green]{file_name}[/] in [green]{props['share_name']}[/].\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
         return CreateResult(
             f"filesharefile-{props['destination_path'].replace('/', '-')}",
@@ -116,7 +116,7 @@ class FileShareFileProvider(DshResourceProvider):
                 file_client.delete_file()
         except Exception as exc:
             file_name = file_client.file_name if file_client else ""
-            msg = f"Failed to delete file [green]{file_name}[/] in [green]{props['share_name']}[/].\n{exc!s}"
+            msg = f"Failed to delete file [green]{file_name}[/] in [green]{props['share_name']}[/].\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def diff(

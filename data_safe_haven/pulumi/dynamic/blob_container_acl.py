@@ -64,7 +64,7 @@ class BlobContainerAclProvider(DshResourceProvider):
                 storage_account_name=props["storage_account_name"],
             )
         except Exception as exc:
-            msg = f"Failed to set ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc!s}"
+            msg = f"Failed to set ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
         return CreateResult(
             f"BlobContainerAcl-{props['container_name']}",
@@ -82,7 +82,7 @@ class BlobContainerAclProvider(DshResourceProvider):
                 storage_account_name=props["storage_account_name"],
             )
         except Exception as exc:
-            msg = f"Failed to delete custom ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc!s}"
+            msg = f"Failed to delete custom ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
     def diff(

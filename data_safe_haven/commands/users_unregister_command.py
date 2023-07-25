@@ -61,5 +61,5 @@ class UsersUnregisterCommand:
                     )
             users.unregister(sre_name, usernames_to_unregister)
         except DataSafeHavenError as exc:
-            msg = f"Could not unregister users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc!s}"
+            msg = f"Could not unregister users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc}"
             raise DataSafeHavenError(msg) from exc

@@ -61,5 +61,5 @@ class UsersRegisterCommand:
                     )
             users.register(sre_name, usernames_to_register)
         except DataSafeHavenError as exc:
-            msg = f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc!s}"
+            msg = f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc}"
             raise DataSafeHavenError(msg) from exc

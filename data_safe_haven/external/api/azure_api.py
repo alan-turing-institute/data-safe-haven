@@ -150,7 +150,7 @@ class AzureApi(AzureAuthenticator):
             # Connect to Azure client
             storage_account_keys = self.get_storage_account_keys(resource_group_name, storage_account_name)
             blob_service_client = BlobServiceClient.from_connection_string(
-                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value!s};EndpointSuffix=core.windows.net"
+                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
             )
             if not isinstance(blob_service_client, BlobServiceClient):
                 msg = f"Could not connect to storage account '{storage_account_name}'."
@@ -159,7 +159,7 @@ class AzureApi(AzureAuthenticator):
             blob_client = blob_service_client.get_blob_client(container=storage_container_name, blob=blob_name)
             return blob_client.download_blob(encoding="utf-8").readall()
         except Exception as exc:
-            msg = f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'\n{exc!s}."
+            msg = f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'\n{exc}."
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_dns_txt_record(
@@ -197,7 +197,7 @@ class AzureApi(AzureAuthenticator):
             )
             return record_set
         except Exception as exc:
-            msg = f"Failed to create DNS record {record_name} in zone {zone_name}.\n{exc!s}"
+            msg = f"Failed to create DNS record {record_name} in zone {zone_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_keyvault(
@@ -268,7 +268,7 @@ class AzureApi(AzureAuthenticator):
             )
             return key_vaults[0]
         except Exception as exc:
-            msg = f"Failed to create key vault {key_vault_name}.\n{exc!s}"
+            msg = f"Failed to create key vault {key_vault_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_keyvault_key(
@@ -303,7 +303,7 @@ class AzureApi(AzureAuthenticator):
             )
             return key
         except Exception as exc:
-            msg = f"Failed to create key {key_name}.\n{exc!s}"
+            msg = f"Failed to create key {key_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_keyvault_secret(self, key_vault_name: str, secret_name: str, secret_value: str) -> KeyVaultSecret:
@@ -334,7 +334,7 @@ class AzureApi(AzureAuthenticator):
             )
             return secret
         except Exception as exc:
-            msg = f"Failed to create secret {secret_name}.\n{exc!s}"
+            msg = f"Failed to create secret {secret_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_keyvault_self_signed_certificate(
@@ -414,7 +414,7 @@ class AzureApi(AzureAuthenticator):
             )
             return managed_identity  # type: ignore
         except Exception as exc:
-            msg = f"Failed to create managed identity {identity_name}.\n{exc!s}"
+            msg = f"Failed to create managed identity {identity_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_resource_group(
@@ -447,7 +447,7 @@ class AzureApi(AzureAuthenticator):
             )
             return resource_groups[0]
         except Exception as exc:
-            msg = f"Failed to create resource group {resource_group_name}.\n{exc!s}"
+            msg = f"Failed to create resource group {resource_group_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_storage_account(
@@ -487,7 +487,7 @@ class AzureApi(AzureAuthenticator):
             )
             return storage_account
         except Exception as exc:
-            msg = f"Failed to create storage account {storage_account_name}.\n{exc!s}"
+            msg = f"Failed to create storage account {storage_account_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_storage_blob_container(
@@ -581,7 +581,7 @@ class AzureApi(AzureAuthenticator):
                 for location in subscription_client.subscriptions.list_locations(subscription_id=self.subscription_id)
             ]
         except Exception as exc:
-            msg = f"Azure locations could not be loaded.\n{exc!s}"
+            msg = f"Azure locations could not be loaded.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def get_storage_account_keys(self, resource_group_name: str, storage_account_name: str) -> list[StorageAccountKey]:
@@ -617,7 +617,7 @@ class AzureApi(AzureAuthenticator):
         except Exception as exc:
             msg = (
                 f"Keys could not be loaded for storage account '{storage_account_name}'"
-                f" in resource group '{resource_group_name}'.\n{exc!s}"
+                f" in resource group '{resource_group_name}'.\n{exc}"
             )
             raise DataSafeHavenAzureError(msg) from exc
 
@@ -702,7 +702,7 @@ class AzureApi(AzureAuthenticator):
                             skus[resource_sku.name][capability.name] = capability.value
             return skus
         except Exception as exc:
-            msg = f"Failed to load available VM sizes for Azure location {location}.\n{exc!s}"
+            msg = f"Failed to load available VM sizes for Azure location {location}.\n{exc}"
             raise DataSafeHavenAzureError(
                 msg,
             ) from exc
@@ -774,7 +774,7 @@ class AzureApi(AzureAuthenticator):
                 f"Ensured that DNS record [green]{record_name}[/] is removed from zone [green]{zone_name}[/].",
             )
         except Exception as exc:
-            msg = f"Failed to remove DNS record [green]{record_name}[/] from zone [green]{zone_name}[/].\n{exc!s}"
+            msg = f"Failed to remove DNS record [green]{record_name}[/] from zone [green]{zone_name}[/].\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def remove_keyvault_certificate(
@@ -847,7 +847,7 @@ class AzureApi(AzureAuthenticator):
                 f"Ensured that resource group [green]{resource_group_name}[/] does not exist.",
             )
         except Exception as exc:
-            msg = f"Failed to remove resource group {resource_group_name}.\n{exc!s}"
+            msg = f"Failed to remove resource group {resource_group_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def restart_virtual_machine(self, resource_group_name: str, vm_name: str) -> None:
@@ -864,7 +864,7 @@ class AzureApi(AzureAuthenticator):
                 f"Restarted virtual machine '[green]{vm_name}[/]' in resource group '[green]{resource_group_name}[/]'.",
             )
         except Exception as exc:
-            msg = f"Failed to restart virtual machine '{vm_name}' in resource group '{resource_group_name}'.\n{exc!s}"
+            msg = f"Failed to restart virtual machine '{vm_name}' in resource group '{resource_group_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def run_remote_script(
@@ -909,7 +909,7 @@ class AzureApi(AzureAuthenticator):
             # Return stdout/stderr from the command
             return str(result.value[0].message)
         except Exception as exc:
-            msg = f"Failed to run command on '{vm_name}'.\n{exc!s}"
+            msg = f"Failed to run command on '{vm_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def set_blob_container_acl(
@@ -950,7 +950,7 @@ class AzureApi(AzureAuthenticator):
             # Set the desired ACL
             directory_client.set_access_control_recursive(acl=desired_acl)
         except Exception as exc:
-            msg = f"Failed to set ACL '{desired_acl}' on container '{container_name}'.\n{exc!s}"
+            msg = f"Failed to set ACL '{desired_acl}' on container '{container_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def set_keyvault_secret(self, key_vault_name: str, secret_name: str, secret_value: str) -> KeyVaultSecret:
@@ -974,7 +974,7 @@ class AzureApi(AzureAuthenticator):
                 secret_client.set_secret(secret_name, secret_value)
             return secret_client.get_secret(secret_name)
         except Exception as exc:
-            msg = f"Failed to set secret '{secret_name}'.\n{exc!s}"
+            msg = f"Failed to set secret '{secret_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def upload_blob(
@@ -997,7 +997,7 @@ class AzureApi(AzureAuthenticator):
             # Connect to Azure client
             storage_account_keys = self.get_storage_account_keys(resource_group_name, storage_account_name)
             blob_service_client = BlobServiceClient.from_connection_string(
-                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value!s};EndpointSuffix=core.windows.net"
+                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
             )
             if not isinstance(blob_service_client, BlobServiceClient):
                 msg = f"Could not connect to storage account '{storage_account_name}'."
@@ -1009,5 +1009,5 @@ class AzureApi(AzureAuthenticator):
                 f"Uploaded file [green]{blob_name}[/] to blob storage.",
             )
         except Exception as exc:
-            msg = f"Blob file '{blob_name}' could not be uploaded to '{storage_account_name}'\n{exc!s}."
+            msg = f"Blob file '{blob_name}' could not be uploaded to '{storage_account_name}'\n{exc}."
             raise DataSafeHavenAzureError(msg) from exc

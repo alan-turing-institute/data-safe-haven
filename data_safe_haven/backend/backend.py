@@ -86,7 +86,7 @@ class Backend:
             )
             self.config.pulumi.encryption_key_id = pulumi_encryption_key.id.split("/")[-1]
         except Exception as exc:
-            msg = f"Failed to create backend resources.\n{exc!s}"
+            msg = f"Failed to create backend resources.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def teardown(self) -> None:
@@ -98,5 +98,5 @@ class Backend:
         try:
             self.azure_api.remove_resource_group(self.config.backend.resource_group_name)
         except Exception as exc:
-            msg = f"Failed to destroy backend resources.\n{exc!s}"
+            msg = f"Failed to destroy backend resources.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc

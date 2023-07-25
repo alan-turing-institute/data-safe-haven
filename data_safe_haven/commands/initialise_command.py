@@ -41,5 +41,5 @@ class InitialiseCommand:
             backend.config.upload()
 
         except DataSafeHavenError as exc:
-            msg = f"Could not initialise Data Safe Haven.\n{exc!s}"
+            msg = f"Could not initialise Data Safe Haven.\n{exc}"
             raise DataSafeHavenError(msg) from exc

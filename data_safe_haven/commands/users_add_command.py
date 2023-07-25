@@ -33,5 +33,5 @@ class UsersAddCommand:
             users = UserHandler(config, graph_api)
             users.add(csv_path)
         except DataSafeHavenError as exc:
-            msg = f"Could not add users to Data Safe Haven '{shm_name}'.\n{exc!s}"
+            msg = f"Could not add users to Data Safe Haven '{shm_name}'.\n{exc}"
             raise DataSafeHavenError(msg) from exc

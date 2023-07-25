@@ -63,7 +63,7 @@ class AzureAuthenticator:
                     self.tenant_id_ = subscription.tenant_id
                     break
         except ClientAuthenticationError as exc:
-            msg = f"Failed to authenticate with Azure.\n{exc!s}"
+            msg = f"Failed to authenticate with Azure.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
         if not (self.subscription_id and self.tenant_id):
             msg = f"Could not find subscription '{self.subscription_name}'"

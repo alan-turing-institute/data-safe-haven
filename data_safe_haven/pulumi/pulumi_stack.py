@@ -77,7 +77,7 @@ class PulumiStack:
                     ),
                 )
             except automation.errors.CommandError as exc:
-                msg = f"Could not load Pulumi stack {self.stack_name}.\n{exc!s}"
+                msg = f"Could not load Pulumi stack {self.stack_name}.\n{exc}"
                 raise DataSafeHavenPulumiError(msg) from exc
         return self.stack_
 
@@ -99,7 +99,7 @@ class PulumiStack:
                     self.ensure_config(name, value, is_secret)
             self.options = {}
         except Exception as exc:
-            msg = f"Applying Pulumi configuration options failed.\n{exc!s}."
+            msg = f"Applying Pulumi configuration options failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def copy_option(self, name: str, other_stack: "PulumiStack") -> None:
@@ -120,7 +120,7 @@ class PulumiStack:
             self.preview()
             self.update()
         except Exception as exc:
-            msg = f"Pulumi deployment failed.\n{exc!s}"
+            msg = f"Pulumi deployment failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
     def destroy(self) -> None:
@@ -178,7 +178,7 @@ class PulumiStack:
                 self.logger.info(f"Loading stack [green]{self.stack_name}[/] information from config")
                 self.cfg.write_stack(self.stack_name, self.local_stack_path)
         except Exception as exc:
-            msg = f"Initialising Pulumi working directory failed.\n{exc!s}."
+            msg = f"Initialising Pulumi working directory failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def install_plugins(self) -> None:
@@ -186,7 +186,7 @@ class PulumiStack:
         try:
             self.stack.workspace.install_plugin("azure-native", metadata.version("pulumi-azure-native"))
         except Exception as exc:
-            msg = f"Installing Pulumi plugins failed.\n{exc!s}."
+            msg = f"Installing Pulumi plugins failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def login(self) -> None:
@@ -211,7 +211,7 @@ class PulumiStack:
             msg = f"Logging into Pulumi failed.\n{process.stderr}."
             raise DataSafeHavenPulumiError(msg) from exc
         except Exception as exc:
-            msg = f"Logging into Pulumi failed.\n{exc!s}."
+            msg = f"Logging into Pulumi failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def output(self, name: str) -> Any:
@@ -224,7 +224,7 @@ class PulumiStack:
                 self.logger.info(f"Previewing changes for stack [green]{self.stack.name}[/].")
                 self.stack.preview(color="always", diff=True, on_output=self.logger.info)
         except Exception as exc:
-            msg = f"Pulumi preview failed.\n{exc!s}."
+            msg = f"Pulumi preview failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def refresh(self) -> None:
@@ -234,7 +234,7 @@ class PulumiStack:
             # Note that we disable parallelisation which can cause deadlock
             self.stack.refresh(color="always", parallel=1)
         except automation.errors.CommandError as exc:
-            msg = f"Pulumi refresh failed.\n{exc!s}"
+            msg = f"Pulumi refresh failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
     def remove_workdir(self) -> None:
@@ -245,7 +245,7 @@ class PulumiStack:
                 shutil.rmtree(self.work_dir)
             self.logger.info(f"Removed [green]{self.work_dir}[/].")
         except Exception as exc:
-            msg = f"Removing Pulumi working directory failed.\n{exc!s}."
+            msg = f"Removing Pulumi working directory failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def secret(self, name: str) -> str:
@@ -269,7 +269,7 @@ class PulumiStack:
             self.destroy()
             self.remove_workdir()
         except Exception as exc:
-            msg = f"Tearing down Pulumi infrastructure failed.\n{exc!s}."
+            msg = f"Tearing down Pulumi infrastructure failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def update(self) -> None:
@@ -278,7 +278,7 @@ class PulumiStack:
             result = self.stack.up(color="always", on_output=self.logger.info)
             self.evaluate(result.summary.result)
         except automation.errors.CommandError as exc:
-            msg = f"Pulumi update failed.\n{exc!s}"
+            msg = f"Pulumi update failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
     def whoami(self) -> str:
@@ -301,7 +301,7 @@ class PulumiStack:
                 raise DataSafeHavenPulumiError(msg) from exc
             return process.stdout.strip()
         except Exception as exc:
-            msg = f"Pulumi user check failed.\n{exc!s}."
+            msg = f"Pulumi user check failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
 

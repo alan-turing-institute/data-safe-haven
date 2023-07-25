@@ -116,7 +116,7 @@ class BackendSettings:
                     if subscription_name := settings.get("azure", {}).get("subscription_name", None):
                         self._subscription_name = subscription_name
         except ParserError as exc:
-            msg = f"Could not load settings from {self.config_file_path}.\n{exc!s}"
+            msg = f"Could not load settings from {self.config_file_path}.\n{exc}"
             raise DataSafeHavenConfigError(msg) from exc
 
     def write(self) -> None:

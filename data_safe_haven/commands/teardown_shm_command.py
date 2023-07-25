@@ -22,7 +22,7 @@ class TeardownSHMCommand:
                 stack = PulumiSHMStack(config)
                 stack.teardown()
             except Exception as exc:
-                msg = f"Unable to teardown Pulumi infrastructure.\n{exc!s}"
+                msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
                 raise DataSafeHavenInputError(msg) from exc
 
             # Remove information from config file
@@ -32,5 +32,5 @@ class TeardownSHMCommand:
             # Upload config to blob storage
             config.upload()
         except DataSafeHavenError as exc:
-            msg = f"Could not teardown Safe Haven Management component.\n{exc!s}"
+            msg = f"Could not teardown Safe Haven Management component.\n{exc}"
             raise DataSafeHavenError(msg) from exc

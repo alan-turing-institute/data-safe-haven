@@ -95,7 +95,7 @@ class AzurePostgreSQLDatabase:
                     n_retries -= 1
                     time.sleep(10)
                 else:
-                    msg = f"Could not connect to database.\n{exc!s}"
+                    msg = f"Could not connect to database.\n{exc}"
                     raise DataSafeHavenAzureError(msg) from exc
         return connection
 
@@ -138,7 +138,7 @@ class AzurePostgreSQLDatabase:
             connection.commit()
             self.logger.info(f"Finished running {len(filepaths)} SQL scripts.")
         except (Exception, psycopg2.Error) as exc:
-            msg = f"Error while connecting to PostgreSQL.\n{exc!s}"
+            msg = f"Error while connecting to PostgreSQL.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
         finally:
             # Close the connection if it is open

@@ -35,7 +35,7 @@ class TeardownSRECommand:
                     msg = f"SRE {sre_name} not found - check the name is spelt correctly."
                     raise DataSafeHavenInputError(msg)
             except Exception as exc:
-                msg = f"Unable to teardown Pulumi infrastructure.\n{exc!s}"
+                msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
                 raise DataSafeHavenInputError(msg) from exc
 
             # Remove information from config file
@@ -45,5 +45,5 @@ class TeardownSRECommand:
             # Upload config to blob storage
             config.upload()
         except DataSafeHavenError as exc:
-            msg = f"Could not teardown Data Safe Haven '{environment_name}'.\n{exc!s}"
+            msg = f"Could not teardown Data Safe Haven '{environment_name}'.\n{exc}"
             raise DataSafeHavenError(msg) from exc
