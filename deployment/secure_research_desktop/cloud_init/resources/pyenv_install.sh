@@ -9,7 +9,6 @@ if [ $# -ne 1 ]; then
 fi
 PYTHON_VERSION=$1
 PYENV_ROOT="$(pyenv root)"
-PYPROJECT_TOML="/opt/build/python-${PYTHON_VERSION}-pyproject.toml"
 MONITORING_LOG="/opt/monitoring/python-${PYTHON_VERSION}-package-versions.log"
 REQUIREMENTS_TXT="/opt/build/python-${PYTHON_VERSION}-requirements.txt"
 REQUESTED_PACKAGE_LIST="/opt/build/packages/packages-python-${PYTHON_VERSION}.list"
