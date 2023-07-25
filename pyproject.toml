@@ -124,6 +124,7 @@ ignore = [
 
 [tool.ruff.isort]
 known-first-party = ["data_safe_haven"]
+combine-as-imports = true
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "parents"

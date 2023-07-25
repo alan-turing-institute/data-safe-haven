@@ -30,11 +30,11 @@ from azure.mgmt.keyvault import KeyVaultManagementClient
 from azure.mgmt.keyvault.models import (
     AccessPolicyEntry,
     Permissions,
+    Sku as KeyVaultSku,
     Vault,
     VaultCreateOrUpdateParameters,
     VaultProperties,
 )
-from azure.mgmt.keyvault.models import Sku as KeyVaultSku
 from azure.mgmt.msi import ManagedServiceIdentityClient
 from azure.mgmt.msi.models import Identity
 from azure.mgmt.resource import ResourceManagementClient, SubscriptionClient
@@ -42,17 +42,13 @@ from azure.mgmt.resource.resources.models import ResourceGroup
 from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.storage.models import (
     BlobContainer,
+    Kind as StorageAccountKind,
     PublicAccess,
+    Sku as StorageAccountSku,
     StorageAccount,
     StorageAccountCreateParameters,
     StorageAccountKey,
     StorageAccountListKeysResult,
-)
-from azure.mgmt.storage.models import (
-    Kind as StorageAccountKind,
-)
-from azure.mgmt.storage.models import (
-    Sku as StorageAccountSku,
 )
 from azure.storage.blob import BlobServiceClient
 from azure.storage.filedatalake import DataLakeServiceClient
