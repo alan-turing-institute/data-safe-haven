@@ -203,6 +203,7 @@ class PulumiStack:
                     capture_output=True,
                     encoding="UTF-8",
                 )
+                # Ensure the process succeeded, raises CalledProcessError if it returned a non-zero exit code
                 process.check_returncode()
                 self.logger.info(process.stdout)
         except subprocess.CalledProcessError as exc:
@@ -293,6 +294,7 @@ class PulumiStack:
                 encoding="UTF-8",
             )
             try:
+                # Ensure the process succeeded, raises CalledProcessError if it returned a non-zero exit code
                 process.check_returncode()
             except subprocess.CalledProcessError as exc:
                 msg = f"No Pulumi user found.\n{process.stderr}."
