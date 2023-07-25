@@ -64,8 +64,10 @@ class AzureADApplicationProvider(DshResourceProvider):
             outs=outs,
         )
 
-    def delete(self, props: dict[str, Any]) -> None:
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Delete an AzureAD application."""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         try:
             graph_api = GraphApi(
                 auth_token=props["auth_token"],
@@ -77,10 +79,13 @@ class AzureADApplicationProvider(DshResourceProvider):
 
     def diff(
         self,
+        id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         # Exclude "auth_token" which should not trigger a diff
         return self.partial_diff(old_props, new_props, ["auth_token"])
 

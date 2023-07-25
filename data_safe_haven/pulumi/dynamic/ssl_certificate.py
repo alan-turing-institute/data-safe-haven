@@ -122,8 +122,10 @@ class SSLCertificateProvider(DshResourceProvider):
             outs=outs,
         )
 
-    def delete(self, props: dict[str, Any]) -> None:
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Delete an SSL certificate."""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         try:
             # Remove the DNS record
             azure_api = AzureApi(props["subscription_name"])
@@ -146,10 +148,13 @@ class SSLCertificateProvider(DshResourceProvider):
 
     def diff(
         self,
+        id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         return self.partial_diff(old_props, new_props, [])
 
 

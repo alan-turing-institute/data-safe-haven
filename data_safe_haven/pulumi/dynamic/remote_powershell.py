@@ -48,6 +48,11 @@ class RemoteScriptProvider(DshResourceProvider):
             outs=outs,
         )
 
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
+        """The Python SDK does not support configuration deletion"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id((id_, props))
+
     def diff(
         self,
         old_props: dict[str, Any],

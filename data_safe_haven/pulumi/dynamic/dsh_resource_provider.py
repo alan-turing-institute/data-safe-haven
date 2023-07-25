@@ -41,21 +41,34 @@ class DshResourceProvider(ResourceProvider):
     def refresh(props: dict[str, Any]) -> dict[str, Any]:
         return dict(**props)
 
-    def check(self, new_props: dict[str, Any]) -> CheckResult:
+    def check(self, old_props: dict[str, Any], new_props: dict[str, Any]) -> CheckResult:
         """Validate that the new properties are valid"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(old_props)
         return CheckResult(self.refresh(new_props), [])
 
-    def create(self) -> CreateResult:
+    def create(self, props: dict[str, Any]) -> CreateResult:
         """Create compiled desired state file."""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(props)
         msg = "DshResourceProvider::create() must be implemented"
         raise DataSafeHavenNotImplementedError(msg)
 
-    def delete(self) -> None:
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Delete the resource."""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id((id_, props))
         msg = "DshResourceProvider::delete() must be implemented"
         raise DataSafeHavenNotImplementedError(msg)
 
-    def diff(self) -> DiffResult:
+    def diff(
+        self,
+        id_: str,
+        old_props: dict[str, Any],
+        new_props: dict[str, Any],
+    ) -> DiffResult:
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id((id_, old_props, new_props))
         msg = "DshResourceProvider::diff() must be implemented"
         raise DataSafeHavenNotImplementedError(msg)
 

@@ -100,8 +100,10 @@ class FileShareFileProvider(DshResourceProvider):
             outs=outs,
         )
 
-    def delete(self, props: dict[str, Any]) -> None:
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Delete a file from the target storage account"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         file_client: ShareFileClient | None = None
         try:
             file_client = self.get_file_client(
@@ -119,10 +121,13 @@ class FileShareFileProvider(DshResourceProvider):
 
     def diff(
         self,
+        id_: str,
         old_props: dict[str, Any],
         new_props: dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         # Exclude "storage_account_key" which should not trigger a diff
         return self.partial_diff(old_props, new_props, ["storage_account_key"])
 
