@@ -488,21 +488,21 @@ class GraphApi:
 
     def get_application_by_name(self, application_name: str) -> dict[str, Any] | None:
         try:
-            return [
+            return next(
                 application
                 for application in self.read_applications()
                 if application["displayName"] == application_name
-            ][0]
+            )
         except (DataSafeHavenMicrosoftGraphError, IndexError):
             return None
 
     def get_service_principal_by_name(self, service_principal_name: str) -> dict[str, Any] | None:
         try:
-            return [
+            return next(
                 service_principal
                 for service_principal in self.read_service_principals()
                 if service_principal["displayName"] == service_principal_name
-            ][0]
+            )
         except (DataSafeHavenMicrosoftGraphError, IndexError):
             return None
 
@@ -517,13 +517,13 @@ class GraphApi:
 
     def get_id_from_groupname(self, group_name: str) -> str | None:
         try:
-            return str([group for group in self.read_groups() if group["displayName"] == group_name][0]["id"])
+            return str(next(group for group in self.read_groups() if group["displayName"] == group_name)["id"])
         except (DataSafeHavenMicrosoftGraphError, IndexError):
             return None
 
     def get_id_from_username(self, username: str) -> str | None:
         try:
-            return str([user for user in self.read_users() if user["mailNickname"] == username][0]["id"])
+            return str(next(user for user in self.read_users() if user["mailNickname"] == username)["id"])
         except (DataSafeHavenMicrosoftGraphError, IndexError):
             return None
 

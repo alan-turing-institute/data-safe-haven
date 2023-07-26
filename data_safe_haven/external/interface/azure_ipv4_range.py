@@ -23,7 +23,7 @@ class AzureIPv4Range(ipaddress.IPv4Network):
             msg = f"{ip_address_first}-{ip_address_last} cannot be expressed as a single network range."
             raise DataSafeHavenIPRangeError(msg)
         super().__init__(networks[0])
-        self._subnets: list["AzureIPv4Range"] = []
+        self._subnets: list[AzureIPv4Range] = []
 
     @classmethod
     def from_cidr(cls, ip_cidr: str) -> "AzureIPv4Range":

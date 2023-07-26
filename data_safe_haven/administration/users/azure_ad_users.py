@@ -25,7 +25,7 @@ class AzureADUsers:
     def add(self, new_users: Sequence[ResearchUser]) -> None:
         """Add list of users to AzureAD"""
         # Get the default domain
-        default_domain = [domain["id"] for domain in self.graph_api.read_domains() if domain["isDefault"]][0]
+        default_domain = next(domain["id"] for domain in self.graph_api.read_domains() if domain["isDefault"])
         for user in new_users:
             request_json = {
                 "accountEnabled": user.account_enabled,

@@ -95,7 +95,7 @@ class SSLCertificateProvider(DshResourceProvider):
                 msg = f"Private key is of type {type(private_key)} not RSAPrivateKey."
                 raise TypeError(msg)
             all_certs = [load_pem_x509_certificate(data) for data in certificate_bytes.split(b"\n\n")]
-            certificate = [cert for cert in all_certs if props["domain_name"] in str(cert.subject)][0]
+            certificate = next(cert for cert in all_certs if props["domain_name"] in str(cert.subject))
             ca_certs = [cert for cert in all_certs if cert != certificate]
             pfx_bytes = pkcs12.serialize_key_and_certificates(
                 props["certificate_secret_name"].encode("utf-8"),
