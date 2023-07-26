@@ -48,7 +48,7 @@ class SHMUpdateServersComponent(ComponentResource):
     def __init__(
         self,
         name: str,
-        shm_name: str,
+        stack_name: str,
         props: SHMUpdateServersProps,
         opts: ResourceOptions | None = None,
     ):
@@ -57,7 +57,7 @@ class SHMUpdateServersComponent(ComponentResource):
 
         # Load cloud-init file
         b64cloudinit = self.read_cloudinit()
-        vm_name = f"shm-{shm_name}-vm-linux-updates"
+        vm_name = f"{stack_name}-vm-linux-updates"
         VMComponent(
             vm_name,
             LinuxVMProps(
