@@ -8,11 +8,11 @@ def as_dict(container: Any) -> dict[str, Any]:
     if (
         not isinstance(container, dict)
         and hasattr(container, "keys")
-        and all(isinstance(x, str) for x in object.keys())
+        and all(isinstance(x, str) for x in container.keys())
     ):
-        msg = f"{object} {type(object)} is not a valid Dict[str, Any]"
+        msg = f"{container} {type(container)} is not a valid dict[str, Any]"
         raise TypeError(msg)
-    return object
+    return container
 
 
 def ordered_private_dns_zones(resource_type: str | None = None) -> list[str]:
