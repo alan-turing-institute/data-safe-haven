@@ -90,7 +90,6 @@ class DeclarativeSRE:
         SREMonitoringComponent(
             "sre_monitoring",
             self.stack_name,
-            self.shm_name,
             SREMonitoringProps(
                 automation_account_name=self.pulumi_opts.require(
                     "shm-monitoring-automation_account_name"
@@ -111,7 +110,6 @@ class DeclarativeSRE:
         data = SREDataComponent(
             "sre_data",
             self.stack_name,
-            self.sre_name,
             SREDataProps(
                 admin_email_address=self.cfg.shm.admin_email_address,
                 admin_group_id=self.cfg.azure.admin_group_id,
@@ -135,7 +133,6 @@ class DeclarativeSRE:
         SREApplicationGatewayComponent(
             "sre_application_gateway",
             self.stack_name,
-            self.sre_name,
             SREApplicationGatewayProps(
                 key_vault_certificate_id=data.certificate_secret_id,
                 key_vault_identity=data.managed_identity,
@@ -150,7 +147,6 @@ class DeclarativeSRE:
         remote_desktop = SRERemoteDesktopComponent(
             "sre_remote_desktop",
             self.stack_name,
-            self.sre_name,
             SRERemoteDesktopProps(
                 aad_application_name=f"sre-{self.sre_name}-azuread-guacamole",
                 aad_application_fqdn=networking.sre_fqdn,
@@ -222,7 +218,6 @@ class DeclarativeSRE:
         SRESoftwareRepositoriesComponent(
             "shm_update_servers",
             self.stack_name,
-            self.shm_name,
             SRESoftwareRepositoriesProps(
                 location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,
