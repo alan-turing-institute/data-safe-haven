@@ -20,10 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
@@ -55,7 +55,7 @@ jobs:
       - name: Create pull request
         if: ${{ ! env.ACT }}
         id: pull-request
-        uses: peter-evans/create-pull-request@dcd5fd746d53dd8de555c0f10bca6c35628be47a  # This commit corresponds to tag 3.12.0
+        uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38  # This commit corresponds to tag 5.0.2
         with:
           commit-message: Update SRD package versions
           committer: GitHub Actions <noreply@github.com>
