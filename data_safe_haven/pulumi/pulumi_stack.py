@@ -1,4 +1,5 @@
 """Deploy with Pulumi"""
+import os
 import pathlib
 import shutil
 import subprocess
@@ -92,9 +93,9 @@ class PulumiStack:
         try:
             for name, (value, is_secret, replace) in self.options.items():
                 if replace:
-                    self.set_config(name, value, is_secret)
+                    self.set_config(name, value, secret=is_secret)
                 else:
-                    self.ensure_config(name, value, is_secret)
+                    self.ensure_config(name, value, secret=is_secret)
             self.options = {}
         except Exception as exc:
             msg = f"Applying Pulumi configuration options failed.\n{exc}."
@@ -155,7 +156,7 @@ class PulumiStack:
         try:
             self.stack.get_config(name)
         except automation.errors.CommandError:
-            self.set_config(name, value, secret)
+            self.set_config(name, value, secret=secret)
 
     def evaluate(self, result: str) -> None:
         """Evaluate a Pulumi operation."""
@@ -196,29 +197,32 @@ class PulumiStack:
     def login(self) -> None:
         """Login to Pulumi."""
         try:
-            try:
+            # Check whether we're already logged in
+            with suppress(DataSafeHavenPulumiError):
                 username = self.whoami()
                 self.logger.info(f"Logged into Pulumi as [green]{username}[/]")
-            except DataSafeHavenPulumiError:
-                AzureCli().login()  # this is needed to read the encryption key from the keyvault
-                env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
+                return
+            # Otherwise log in to Pulumi
+            try:
+                # Ensure we are authenticated with the Azure CLI
+                # Without this, we cannot read the encryption key from the keyvault
+                AzureCli().login()
                 process = subprocess.run(
                     [
                         "pulumi",
                         "login",
                         f"'azblob://{self.cfg.pulumi.storage_container_name}'",
                     ],
-                    env=env_vars,
-                    cwd=self.work_dir,
-                    capture_output=True,
+                    env={**os.environ, **self.env},
                     encoding="UTF-8",
+                    capture_output=True,
+                    check=True,
+                    cwd=self.work_dir,
                 )
-                # Ensure the process succeeded, raises CalledProcessError if it returned a non-zero exit code
-                process.check_returncode()
                 self.logger.info(process.stdout)
-        except subprocess.CalledProcessError as exc:
-            msg = f"Logging into Pulumi failed.\n{process.stderr}."
-            raise DataSafeHavenPulumiError(msg) from exc
+            except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+                msg = f"Logging into Pulumi failed.\n{exc}."
+                raise DataSafeHavenPulumiError(msg) from exc
         except Exception as exc:
             msg = f"Logging into Pulumi failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
@@ -298,22 +302,20 @@ class PulumiStack:
         """Check current Pulumi user."""
         try:
             AzureCli().login()  # this is needed to read the encryption key from the keyvault
-            env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
             self.work_dir.mkdir(parents=True, exist_ok=True)
-            process = subprocess.run(
-                ["pulumi", "whoami"],
-                env=env_vars,
-                cwd=self.work_dir,
-                capture_output=True,
-                encoding="UTF-8",
-            )
             try:
-                # Ensure the process succeeded, raises CalledProcessError if it returned a non-zero exit code
-                process.check_returncode()
-            except subprocess.CalledProcessError as exc:
-                msg = f"No Pulumi user found.\n{process.stderr}."
+                process = subprocess.run(
+                    ["pulumi", "whoami"],
+                    capture_output=True,
+                    check=True,
+                    cwd=self.work_dir,
+                    encoding="UTF-8",
+                    env={**os.environ, **self.env},
+                )
+                return process.stdout.strip()
+            except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+                msg = f"No Pulumi user found.\n{exc}."
                 raise DataSafeHavenPulumiError(msg) from exc
-            return process.stdout.strip()
         except Exception as exc:
             msg = f"Pulumi user check failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc

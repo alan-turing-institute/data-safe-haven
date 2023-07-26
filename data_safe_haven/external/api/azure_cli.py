@@ -28,6 +28,6 @@ class AzureCli:
                     "If no web browser is available, please run `az login --use-device-code` in a command line window."
                 )
                 subprocess.run(["az", "login"], capture_output=True)
-        except FileNotFoundError as exc:
+        except (FileNotFoundError, subprocess.CalledProcessError) as exc:
             msg = f"Please ensure that the Azure CLI is installed.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
