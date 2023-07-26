@@ -363,8 +363,8 @@ class Config:
     def read_stack(self, name: str, path: pathlib.Path):
         """Add a Pulumi stack file to config"""
         with open(path, encoding="utf-8") as f_stack:
-            b64string = f_stack.read()
-        self.pulumi.stacks[name] = b64encode(b64string)
+            pulumi_cfg = f_stack.read()
+        self.pulumi.stacks[name] = b64encode(pulumi_cfg)
 
     def remove_sre(self, name: str) -> None:
         """Remove SRE config section by name"""
@@ -378,9 +378,9 @@ class Config:
 
     def write_stack(self, name: str, path: pathlib.Path):
         """Write a Pulumi stack file from config"""
-        b64string = b64decode(self.pulumi.stacks[name])
+        pulumi_cfg = b64decode(self.pulumi.stacks[name])
         with open(path, "w", encoding="utf-8") as f_stack:
-            f_stack.write(b64string)
+            f_stack.write(pulumi_cfg)
 
     def upload(self):
         """Upload config to Azure storage"""
