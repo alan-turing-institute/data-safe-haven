@@ -34,7 +34,9 @@ class BackendSettings:
         self.logger = Logger()
 
         # Load previous backend settings (if any)
-        self.config_directory = pathlib.Path(appdirs.user_config_dir("data_safe_haven")).resolve()
+        self.config_directory = pathlib.Path(
+            appdirs.user_config_dir("data_safe_haven")
+        ).resolve()
         self.config_file_path = self.config_directory / "config.yaml"
         self.read()
 
@@ -48,7 +50,9 @@ class BackendSettings:
     ) -> None:
         """Overwrite defaults with provided parameters"""
         if admin_group_id:
-            self.logger.debug(f"Updating '[green]{admin_group_id}[/]' to '{admin_group_id}'.")
+            self.logger.debug(
+                f"Updating '[green]{admin_group_id}[/]' to '{admin_group_id}'."
+            )
             self._admin_group_id = admin_group_id
         if location:
             self.logger.debug(f"Updating '[green]{location}[/]' to '{location}'.")
@@ -57,7 +61,9 @@ class BackendSettings:
             self.logger.debug(f"Updating '[green]{name}[/]' to '{name}'.")
             self._name = name
         if subscription_name:
-            self.logger.debug(f"Updating '[green]{subscription_name}[/]' to '{subscription_name}'.")
+            self.logger.debug(
+                f"Updating '[green]{subscription_name}[/]' to '{subscription_name}'."
+            )
             self._subscription_name = subscription_name
 
         # Write backend settings to disk (this will trigger errors for uninitialised parameters)
@@ -66,9 +72,7 @@ class BackendSettings:
     @property
     def admin_group_id(self) -> str:
         if not self._admin_group_id:
-            msg = (
-                "Azure administrator group not provided: use '[bright_cyan]--admin-group[/]' / '[green]-a[/]' to do so."
-            )
+            msg = "Azure administrator group not provided: use '[bright_cyan]--admin-group[/]' / '[green]-a[/]' to do so."
             raise DataSafeHavenParameterError(msg)
         return self._admin_group_id
 
@@ -103,14 +107,20 @@ class BackendSettings:
                 with open(self.config_file_path, encoding="utf-8") as f_yaml:
                     settings = yaml.safe_load(f_yaml)
                 if isinstance(settings, dict):
-                    self.logger.info(f"Reading project settings from '[green]{self.config_file_path}[/]'.")
-                    if admin_group_id := settings.get("azure", {}).get("admin_group_id", None):
+                    self.logger.info(
+                        f"Reading project settings from '[green]{self.config_file_path}[/]'."
+                    )
+                    if admin_group_id := settings.get("azure", {}).get(
+                        "admin_group_id", None
+                    ):
                         self._admin_group_id = admin_group_id
                     if location := settings.get("azure", {}).get("location", None):
                         self._location = location
                     if name := settings.get("current", {}).get("name", None):
                         self._name = name
-                    if subscription_name := settings.get("azure", {}).get("subscription_name", None):
+                    if subscription_name := settings.get("azure", {}).get(
+                        "subscription_name", None
+                    ):
                         self._subscription_name = subscription_name
         except ParserError as exc:
             msg = f"Could not load settings from {self.config_file_path}.\n{exc}"
@@ -132,4 +142,6 @@ class BackendSettings:
         self.config_file_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.config_file_path, "w", encoding="utf-8") as f_yaml:
             yaml.dump(settings, f_yaml, indent=2)
-        self.logger.info(f"Saved project settings to '[green]{self.config_file_path}[/]'.")
+        self.logger.info(
+            f"Saved project settings to '[green]{self.config_file_path}[/]'."
+        )

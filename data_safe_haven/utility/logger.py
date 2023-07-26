@@ -18,7 +18,9 @@ class LoggingHandlerPlainFile(logging.FileHandler):
     Logging handler that cleans messages before sending them to a log file.
     """
 
-    def __init__(self, fmt: str, datefmt: str, filename: str, *args: Any, **kwargs: Any):
+    def __init__(
+        self, fmt: str, datefmt: str, filename: str, *args: Any, **kwargs: Any
+    ):
         """Constructor"""
         super().__init__(*args, **kwargs, filename=filename)
         self.setFormatter(logging.Formatter(self.strip_formatting(fmt), datefmt))
@@ -94,14 +96,22 @@ class Logger:
     rich_format = r"[log.time]%(asctime)s[/] [%(levelname)8s] %(message)s"
     _instance: Optional["Logger"] = None
 
-    def __new__(cls, verbosity: int | None = None, log_file: PathType | None = None) -> "Logger":
-        desired_log_level = max(logging.INFO - 10 * (verbosity if verbosity else 0), logging.DEBUG)
+    def __new__(
+        cls, verbosity: int | None = None, log_file: PathType | None = None
+    ) -> "Logger":
+        desired_log_level = max(
+            logging.INFO - 10 * (verbosity if verbosity else 0), logging.DEBUG
+        )
         if cls._instance:
             # If we've already instantiated a logger check that the verbosity and log file are set correctly
             if verbosity:
                 cls._instance.logger.setLevel(desired_log_level)
             if log_file:
-                cls._instance.logger.addHandler(LoggingHandlerPlainFile(cls.rich_format, cls.date_fmt, str(log_file)))
+                cls._instance.logger.addHandler(
+                    LoggingHandlerPlainFile(
+                        cls.rich_format, cls.date_fmt, str(log_file)
+                    )
+                )
         else:
             cls._instance = super().__new__(cls)
             # Initialise console handler
@@ -109,7 +119,9 @@ class Logger:
             handlers: list[logging.Handler] = [console_handler]
             # Initialise file handler
             if log_file:
-                file_handler = LoggingHandlerPlainFile(cls.rich_format, cls.date_fmt, str(log_file))
+                file_handler = LoggingHandlerPlainFile(
+                    cls.rich_format, cls.date_fmt, str(log_file)
+                )
                 handlers += [file_handler]
             # Set basic logging config
             cls.logger = logging.getLogger("data_safe_haven")
@@ -128,7 +140,9 @@ class Logger:
         """Format a message using rich handler"""
         for handler in self.logger.handlers:
             if isinstance(handler, RichHandler):
-                fn, lno, func, sinfo = self.logger.findCaller(stack_info=False, stack_level=1)
+                fn, lno, func, sinfo = self.logger.findCaller(
+                    stack_info=False, stack_level=1
+                )
                 return handler.format(
                     self.logger.makeRecord(
                         name=self.logger.name,
@@ -205,7 +219,9 @@ class Logger:
             return self.info(message.strip())
 
     # Create a table
-    def tabulate(self, header: list[str] | None = None, rows: list[list[str]] | None = None) -> list[str]:
+    def tabulate(
+        self, header: list[str] | None = None, rows: list[list[str]] | None = None
+    ) -> list[str]:
         table = Table()
         if header:
             for item in header:

@@ -31,7 +31,9 @@ class AzureADApplicationProvider(DshResourceProvider):
         outs = dict(**props)
         with suppress(Exception):
             graph_api = GraphApi(auth_token=outs["auth_token"])
-            if json_response := graph_api.get_application_by_name(outs["application_name"]):
+            if json_response := graph_api.get_application_by_name(
+                outs["application_name"]
+            ):
                 outs["object_id"] = json_response["id"]
                 outs["application_id"] = json_response["appId"]
         return outs

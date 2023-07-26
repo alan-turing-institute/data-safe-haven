@@ -31,7 +31,9 @@ class SHMMonitoringProps:
         self.dns_resource_group_name = dns_resource_group_name
         self.private_dns_zone_base_id = private_dns_zone_base_id
         self.location = location
-        self.subnet_monitoring_id = Output.from_input(subnet_monitoring).apply(get_id_from_subnet)
+        self.subnet_monitoring_id = Output.from_input(subnet_monitoring).apply(
+            get_id_from_subnet
+        )
         self.timezone = timezone
 
 
@@ -130,7 +132,9 @@ class SHMMonitoringComponent(ComponentResource):
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
                     name=replace_separators(f"{stack_name}-aa-to-{dns_zone_name}", "-"),
-                    private_dns_zone_id=Output.concat(props.private_dns_zone_base_id, dns_zone_name),
+                    private_dns_zone_id=Output.concat(
+                        props.private_dns_zone_base_id, dns_zone_name
+                    ),
                 )
                 for dns_zone_name in ordered_private_dns_zones("Azure Automation")
             ],
@@ -194,8 +198,12 @@ class SHMMonitoringComponent(ComponentResource):
             f"{self._name}_log_analytics_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
-                    name=replace_separators(f"{stack_name}-log-to-{dns_zone_name}", "-"),
-                    private_dns_zone_id=Output.concat(props.private_dns_zone_base_id, dns_zone_name),
+                    name=replace_separators(
+                        f"{stack_name}-log-to-{dns_zone_name}", "-"
+                    ),
+                    private_dns_zone_id=Output.concat(
+                        props.private_dns_zone_base_id, dns_zone_name
+                    ),
                 )
                 for dns_zone_name in ordered_private_dns_zones("Azure Monitor")
             ],
@@ -242,7 +250,9 @@ class SHMMonitoringComponent(ComponentResource):
 
         # Get the current subscription_resource_id for use in scheduling.
         # This is safe as schedules only apply to VMs that are registered with the log analytics workspace
-        subscription_resource_id = resource_group.id.apply(lambda id_: id_.split("/resourceGroups/")[0])
+        subscription_resource_id = resource_group.id.apply(
+            lambda id_: id_.split("/resourceGroups/")[0]
+        )
         # Create Windows VM virus definitions update schedule: daily at 01:01
         automation.SoftwareUpdateConfigurationByName(
             f"{self._name}_schedule_windows_definitions",
@@ -385,15 +395,27 @@ class SHMMonitoringComponent(ComponentResource):
 
         # Register outputs
         self.automation_account = automation_account
-        self.automation_account_jrds_url = automation_account.automation_hybrid_service_url
-        self.automation_account_agentsvc_url = automation_account.automation_hybrid_service_url.apply(
-            lambda url: url.replace("jrds", "agentsvc").replace("/automationAccounts/", "/accounts/") if url else ""
+        self.automation_account_jrds_url = (
+            automation_account.automation_hybrid_service_url
+        )
+        self.automation_account_agentsvc_url = (
+            automation_account.automation_hybrid_service_url.apply(
+                lambda url: url.replace("jrds", "agentsvc").replace(
+                    "/automationAccounts/", "/accounts/"
+                )
+                if url
+                else ""
+            )
         )
         self.automation_account_modules = list(modules.keys())
-        self.automation_account_primary_key = Output.secret(automation_keys.keys[0].value)
+        self.automation_account_primary_key = Output.secret(
+            automation_keys.keys[0].value
+        )
         self.log_analytics_workspace_id = log_analytics.customer_id
         self.log_analytics_workspace_key = Output.secret(
-            log_analytics_keys.primary_shared_key if log_analytics_keys.primary_shared_key else "UNKNOWN"
+            log_analytics_keys.primary_shared_key
+            if log_analytics_keys.primary_shared_key
+            else "UNKNOWN"
         )
         self.resource_group_name = resource_group.name
 

@@ -29,7 +29,9 @@ class SHMUpdateServersProps:
     ) -> None:
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
-        available_ip_addresses = Output.from_input(subnet).apply(get_available_ips_from_subnet)
+        available_ip_addresses = Output.from_input(subnet).apply(
+            get_available_ips_from_subnet
+        )
         self.ip_address_linux = available_ip_addresses.apply(lambda ips: ips[0])
         self.location = location
         self.log_analytics_workspace_id = log_analytics_workspace_id
@@ -82,7 +84,9 @@ class SHMUpdateServersComponent(ComponentResource):
     def read_cloudinit(
         self,
     ) -> str:
-        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources" / "update_servers"
+        resources_path = (
+            pathlib.Path(__file__).parent.parent.parent / "resources" / "update_servers"
+        )
         with open(
             resources_path / "update_server_linux.cloud_init.yaml",
             encoding="utf-8",

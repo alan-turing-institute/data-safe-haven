@@ -48,7 +48,9 @@ class SREMonitoringComponent(ComponentResource):
                 frequency="Day",
                 interval=1,
                 is_enabled=True,
-                start_time=Output.all(timezone=props.timezone, minute=props.sre_index).apply(
+                start_time=Output.all(
+                    timezone=props.timezone, minute=props.sre_index
+                ).apply(
                     lambda kwargs: time_as_string(
                         hour=3,
                         minute=int(kwargs["minute"]),

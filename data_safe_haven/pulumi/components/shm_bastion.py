@@ -37,7 +37,9 @@ class SHMBastionComponent(ComponentResource):
             public_ip_address_name=f"{stack_name}-pip-bastion",
             public_ip_allocation_method=network.IPAllocationMethod.STATIC,
             resource_group_name=props.resource_group_name,
-            sku=network.PublicIPAddressSkuArgs(name=network.PublicIPAddressSkuName.STANDARD),
+            sku=network.PublicIPAddressSkuArgs(
+                name=network.PublicIPAddressSkuName.STANDARD
+            ),
             opts=child_opts,
         )
 

@@ -30,7 +30,9 @@ def list_users() -> None:
     UsersListCommand()()
 
 
-@admin_command_group.command(help="Register existing users with a deployed Secure Research Environment.")
+@admin_command_group.command(
+    help="Register existing users with a deployed Secure Research Environment."
+)
 def register_users(
     usernames: Annotated[
         list[str],
@@ -50,7 +52,9 @@ def register_users(
     UsersRegisterCommand()(usernames, sre)
 
 
-@admin_command_group.command(help="Remove existing users from a deployed Data Safe Haven.")
+@admin_command_group.command(
+    help="Remove existing users from a deployed Data Safe Haven."
+)
 def remove_users(
     usernames: Annotated[
         list[str],

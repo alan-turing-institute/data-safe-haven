@@ -7,7 +7,10 @@ from data_safe_haven.pulumi.common.transformations import (
     get_ip_address_from_container_group,
     get_ip_addresses_from_private_endpoint,
 )
-from data_safe_haven.pulumi.dynamic.file_share_file import FileShareFile, FileShareFileProps
+from data_safe_haven.pulumi.dynamic.file_share_file import (
+    FileShareFile,
+    FileShareFileProps,
+)
 from data_safe_haven.utility import FileReader
 
 
@@ -39,7 +42,9 @@ class SREGiteaServerProps:
     ):
         self.database_password = database_password
         self.database_subnet_id = database_subnet_id
-        self.database_username = database_username if database_username else "postgresadmin"
+        self.database_username = (
+            database_username if database_username else "postgresadmin"
+        )
         self.ldap_bind_dn = ldap_bind_dn
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
@@ -93,7 +98,9 @@ class SREGiteaServerComponent(ComponentResource):
         )
 
         # Set resources path
-        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources" / "gitea"
+        resources_path = (
+            pathlib.Path(__file__).parent.parent.parent / "resources" / "gitea"
+        )
 
         # Upload caddy file
         caddy_caddyfile_reader = FileReader(resources_path / "caddy" / "Caddyfile")
@@ -110,7 +117,9 @@ class SREGiteaServerComponent(ComponentResource):
         )
 
         # Upload Gitea configuration script
-        gitea_configure_sh_reader = FileReader(resources_path / "gitea" / "configure.mustache.sh")
+        gitea_configure_sh_reader = FileReader(
+            resources_path / "gitea" / "configure.mustache.sh"
+        )
         gitea_configure_sh = Output.all(
             admin_email="dshadmin@example.com",
             admin_username="dshadmin",
@@ -120,7 +129,11 @@ class SREGiteaServerComponent(ComponentResource):
             ldap_user_security_group_name=props.ldap_user_security_group_name,
             ldap_server_ip=props.ldap_server_ip,
             ldap_user_search_base=props.ldap_user_search_base,
-        ).apply(lambda mustache_values: gitea_configure_sh_reader.file_contents(mustache_values))
+        ).apply(
+            lambda mustache_values: gitea_configure_sh_reader.file_contents(
+                mustache_values
+            )
+        )
         file_share_gitea_gitea_configure_sh = FileShareFile(
             f"{self._name}_file_share_gitea_gitea_configure_sh",
             FileShareFileProps(
@@ -133,7 +146,9 @@ class SREGiteaServerComponent(ComponentResource):
             opts=child_opts,
         )
         # Upload Gitea entrypoint script
-        gitea_entrypoint_sh_reader = FileReader(resources_path / "gitea" / "entrypoint.sh")
+        gitea_entrypoint_sh_reader = FileReader(
+            resources_path / "gitea" / "entrypoint.sh"
+        )
         file_share_gitea_gitea_entrypoint_sh = FileShareFile(
             f"{self._name}_file_share_gitea_gitea_entrypoint_sh",
             FileShareFileProps(
@@ -242,9 +257,15 @@ class SREGiteaServerComponent(ComponentResource):
                     name="gitea"[:63],
                     command=["/app/custom/entrypoint.sh"],
                     environment_variables=[
-                        containerinstance.EnvironmentVariableArgs(name="APP_NAME", value="Data Safe Haven Git server"),
-                        containerinstance.EnvironmentVariableArgs(name="RUN_MODE", value="dev"),
-                        containerinstance.EnvironmentVariableArgs(name="GITEA__database__DB_TYPE", value="postgres"),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="APP_NAME", value="Data Safe Haven Git server"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="RUN_MODE", value="dev"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__database__DB_TYPE", value="postgres"
+                        ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__database__HOST",
                             value=gitea_db_private_ip_address,
@@ -254,19 +275,25 @@ class SREGiteaServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__database__USER",
-                            value=Output.concat(props.database_username, "@", gitea_db_server_name),
+                            value=Output.concat(
+                                props.database_username, "@", gitea_db_server_name
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__database__PASSWD",
                             secure_value=props.database_password,
                         ),
-                        containerinstance.EnvironmentVariableArgs(name="GITEA__database__SSL_MODE", value="require"),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__database__SSL_MODE", value="require"
+                        ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__log__LEVEL",
                             # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
                             value="Debug",
                         ),
-                        containerinstance.EnvironmentVariableArgs(name="GITEA__security__INSTALL_LOCK", value="true"),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="GITEA__security__INSTALL_LOCK", value="true"
+                        ),
                     ],
                     ports=[
                         containerinstance.ContainerPortArgs(
@@ -354,7 +381,9 @@ class SREGiteaServerComponent(ComponentResource):
         # Redirect the public DNS to private DNS
         network.RecordSet(
             f"{self._name}_gitea_public_record_set",
-            cname_record=network.CnameRecordArgs(cname=Output.concat("gitea.privatelink.", props.sre_fqdn)),
+            cname_record=network.CnameRecordArgs(
+                cname=Output.concat("gitea.privatelink.", props.sre_fqdn)
+            ),
             record_type="CNAME",
             relative_record_set_name="gitea",
             resource_group_name=props.networking_resource_group_name,

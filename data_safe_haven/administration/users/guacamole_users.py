@@ -22,7 +22,10 @@ class GuacamoleUsers:
         )
         self.users_: Sequence[ResearchUser] | None = None
         self.postgres_script_path: pathlib.Path = (
-            pathlib.Path(__file__).parent.parent.parent / "resources" / "remote_desktop" / "postgresql"
+            pathlib.Path(__file__).parent.parent.parent
+            / "resources"
+            / "remote_desktop"
+            / "postgresql"
         )
         self.sre_name = sre_name
         self.group_name = f"Data Safe Haven Users SRE {sre_name}"

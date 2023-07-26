@@ -128,7 +128,9 @@ class PulumiStack:
             # See https://github.com/MicrosoftDocs/azure-docs/issues/20737 for details
             while True:
                 try:
-                    result = self.stack.destroy(color="always", on_output=self.logger.info, parallel=1)
+                    result = self.stack.destroy(
+                        color="always", on_output=self.logger.info, parallel=1
+                    )
                     self.evaluate(result.summary.result)
                     break
                 except automation.errors.CommandError as exc:
@@ -173,7 +175,9 @@ class PulumiStack:
             self.logger.info(f"Ensured that [green]{self.work_dir}[/] exists.")
             # If stack information is saved in the config file then apply it here
             if self.stack_name in self.cfg.pulumi.stacks.keys():
-                self.logger.info(f"Loading stack [green]{self.stack_name}[/] information from config")
+                self.logger.info(
+                    f"Loading stack [green]{self.stack_name}[/] information from config"
+                )
                 self.cfg.write_stack(self.stack_name, self.local_stack_path)
         except Exception as exc:
             msg = f"Initialising Pulumi working directory failed.\n{exc}."
@@ -182,7 +186,9 @@ class PulumiStack:
     def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
         try:
-            self.stack.workspace.install_plugin("azure-native", metadata.version("pulumi-azure-native"))
+            self.stack.workspace.install_plugin(
+                "azure-native", metadata.version("pulumi-azure-native")
+            )
         except Exception as exc:
             msg = f"Installing Pulumi plugins failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
@@ -197,7 +203,11 @@ class PulumiStack:
                 AzureCli().login()  # this is needed to read the encryption key from the keyvault
                 env_vars = " ".join([f"{k}='{v}'" for k, v in self.env.items()])
                 process = subprocess.run(
-                    ["pulumi", "login", f"'azblob://{self.cfg.pulumi.storage_container_name}'"],
+                    [
+                        "pulumi",
+                        "login",
+                        f"'azblob://{self.cfg.pulumi.storage_container_name}'",
+                    ],
                     env=env_vars,
                     cwd=self.work_dir,
                     capture_output=True,
@@ -220,8 +230,12 @@ class PulumiStack:
         """Preview the Pulumi stack."""
         try:
             with suppress(automation.errors.CommandError):
-                self.logger.info(f"Previewing changes for stack [green]{self.stack.name}[/].")
-                self.stack.preview(color="always", diff=True, on_output=self.logger.info)
+                self.logger.info(
+                    f"Previewing changes for stack [green]{self.stack.name}[/]."
+                )
+                self.stack.preview(
+                    color="always", diff=True, on_output=self.logger.info
+                )
         except Exception as exc:
             msg = f"Pulumi preview failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc

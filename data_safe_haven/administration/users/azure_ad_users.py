@@ -25,7 +25,11 @@ class AzureADUsers:
     def add(self, new_users: Sequence[ResearchUser]) -> None:
         """Add list of users to AzureAD"""
         # Get the default domain
-        default_domain = next(domain["id"] for domain in self.graph_api.read_domains() if domain["isDefault"])
+        default_domain = next(
+            domain["id"]
+            for domain in self.graph_api.read_domains()
+            if domain["isDefault"]
+        )
         for user in new_users:
             request_json = {
                 "accountEnabled": user.account_enabled,
@@ -37,8 +41,12 @@ class AzureADUsers:
                 "userPrincipalName": f"{user.username}@{default_domain}",
             }
             if user.email_address and user.phone_number:
-                self.graph_api.create_user(request_json, user.email_address, user.phone_number)
-            self.logger.info(f"Ensured user '{user.preferred_username}' exists in AzureAD")
+                self.graph_api.create_user(
+                    request_json, user.email_address, user.phone_number
+                )
+            self.logger.info(
+                f"Ensured user '{user.preferred_username}' exists in AzureAD"
+            )
         # Decorate all users with the Linux schema
         self.set_user_attributes()
         # # Ensure that all users belong to an associated group the same name and UID
@@ -55,7 +63,11 @@ class AzureADUsers:
                 account_enabled=user_details["accountEnabled"],
                 email_address=user_details["mail"],
                 given_name=user_details["givenName"],
-                phone_number=(user_details["businessPhones"][0] if len(user_details["businessPhones"]) else None),
+                phone_number=(
+                    user_details["businessPhones"][0]
+                    if len(user_details["businessPhones"])
+                    else None
+                ),
                 sam_account_name=(
                     user_details["onPremisesSamAccountName"]
                     if user_details["onPremisesSamAccountName"]
@@ -65,7 +77,10 @@ class AzureADUsers:
                 user_principal_name=user_details["userPrincipalName"],
             )
             for user_details in user_list
-            if (user_details["onPremisesSamAccountName"] or user_details["isGlobalAdmin"])
+            if (
+                user_details["onPremisesSamAccountName"]
+                or user_details["isGlobalAdmin"]
+            )
         ]
 
     def remove(self, users: Sequence[ResearchUser]) -> None:

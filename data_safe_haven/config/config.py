@@ -51,7 +51,9 @@ class ConfigSectionAzure:
         try:
             validate_aad_guid(self.subscription_id)
         except Exception as exc:
-            msg = f"Invalid value for 'subscription_id' ({self.subscription_id}).\n{exc}"
+            msg = (
+                f"Invalid value for 'subscription_id' ({self.subscription_id}).\n{exc}"
+            )
             raise ValueError(msg) from exc
         try:
             validate_aad_guid(self.tenant_id)
@@ -81,7 +83,9 @@ class ConfigSectionBackend:
             msg = f"Invalid value for 'managed_identity_name' ({self.managed_identity_name})."
             raise ValueError(msg)
         if not self.resource_group_name:
-            msg = f"Invalid value for 'resource_group_name' ({self.resource_group_name})."
+            msg = (
+                f"Invalid value for 'resource_group_name' ({self.resource_group_name})."
+            )
             raise ValueError(msg)
         if not self.storage_account_name:
             msg = f"Invalid value for 'storage_account_name' ({self.storage_account_name})."
@@ -195,16 +199,22 @@ class ConfigSectionSRE:
 
     data_provider_ip_addresses: list[str] = field(default_factory=list)
     index: int = 0
-    remote_desktop: ConfigSectionRemoteDesktopOpts = field(default_factory=ConfigSectionRemoteDesktopOpts)
+    remote_desktop: ConfigSectionRemoteDesktopOpts = field(
+        default_factory=ConfigSectionRemoteDesktopOpts
+    )
     # NB. we cannot use defaultdict here until
     # https://github.com/python/cpython/pull/32056 is included in the Python
     # version we are using
-    research_desktops: dict[str, ConfigSectionResearchDesktopOpts] = field(default_factory=dict)
+    research_desktops: dict[str, ConfigSectionResearchDesktopOpts] = field(
+        default_factory=dict
+    )
     research_user_ip_addresses: list[str] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
     def add_research_desktop(self, name: str):
-        self.research_desktops[name] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts()
+        self.research_desktops[
+            name
+        ] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts()
 
     def validate(self) -> None:
         """Validate input parameters"""
@@ -265,7 +275,9 @@ class Config:
         self.shm_name_ = alphanumeric(self.name).lower()
         self.filename = f"config-{self.shm_name_}.yaml"
         self.backend_resource_group_name = f"shm-{self.shm_name_}-rg-backend"
-        self.backend_storage_account_name = f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
+        self.backend_storage_account_name = (
+            f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
+        )
         self.work_directory = settings.config_directory / self.shm_name_
         self.azure_api = AzureApi(subscription_name=self.subscription_name)
         # Attempt to load YAML dictionary from blob storage
@@ -284,7 +296,9 @@ class Config:
             if "azure" in yaml_input:
                 self.azure_ = chili.decode(yaml_input["azure"], ConfigSectionAzure)
             if "backend" in yaml_input:
-                self.backend_ = chili.decode(yaml_input["backend"], ConfigSectionBackend)
+                self.backend_ = chili.decode(
+                    yaml_input["backend"], ConfigSectionBackend
+                )
             if "pulumi" in yaml_input:
                 self.pulumi_ = chili.decode(yaml_input["pulumi"], ConfigSectionPulumi)
             if "shm" in yaml_input:

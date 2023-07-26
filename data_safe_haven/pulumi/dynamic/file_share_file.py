@@ -142,4 +142,6 @@ class FileShareFile(Resource):
         props: FileShareFileProps,
         opts: ResourceOptions | None = None,
     ):
-        super().__init__(FileShareFileProvider(), name, {"file_name": None, **vars(props)}, opts)
+        super().__init__(
+            FileShareFileProvider(), name, {"file_name": None, **vars(props)}, opts
+        )

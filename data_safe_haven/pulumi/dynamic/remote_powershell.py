@@ -82,4 +82,6 @@ class RemoteScript(Resource):
         props: RemoteScriptProps,
         opts: ResourceOptions | None = None,
     ):
-        super().__init__(RemoteScriptProvider(), name, {"script_output": None, **vars(props)}, opts)
+        super().__init__(
+            RemoteScriptProvider(), name, {"script_output": None, **vars(props)}, opts
+        )

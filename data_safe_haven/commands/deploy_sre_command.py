@@ -61,9 +61,17 @@ class DeploySRECommand:
             shm_stack = PulumiSHMStack(config)
             stack = PulumiSREStack(config, sre_name)
             # Set Azure options
-            stack.add_option("azure-native:location", config.azure.location, replace=False)
-            stack.add_option("azure-native:subscriptionId", config.azure.subscription_id, replace=False)
-            stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
+            stack.add_option(
+                "azure-native:location", config.azure.location, replace=False
+            )
+            stack.add_option(
+                "azure-native:subscriptionId",
+                config.azure.subscription_id,
+                replace=False,
+            )
+            stack.add_option(
+                "azure-native:tenantId", config.azure.tenant_id, replace=False
+            )
             # Load SHM stack outputs
             stack.add_option(
                 "shm-domain_controllers-domain_sid",
@@ -142,11 +150,19 @@ class DeploySRECommand:
             )
             # Add necessary secrets
             stack.copy_secret("password-domain-ldap-searcher", shm_stack)
-            stack.add_secret("password-gitea-database-admin", password(20), replace=False)
-            stack.add_secret("password-hedgedoc-database-admin", password(20), replace=False)
+            stack.add_secret(
+                "password-gitea-database-admin", password(20), replace=False
+            )
+            stack.add_secret(
+                "password-hedgedoc-database-admin", password(20), replace=False
+            )
             stack.add_secret("password-nexus-admin", password(20), replace=False)
-            stack.add_secret("password-user-database-admin", password(20), replace=False)
-            stack.add_secret("password-secure-research-desktop-admin", password(20), replace=False)
+            stack.add_secret(
+                "password-user-database-admin", password(20), replace=False
+            )
+            stack.add_secret(
+                "password-secure-research-desktop-admin", password(20), replace=False
+            )
             stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
 
             # Deploy Azure infrastructure with Pulumi
@@ -226,14 +242,19 @@ class DeploySRECommand:
         # Set data provider IP addresses
         if data_provider_ip_addresses:
             if config.sres[sre_name].data_provider_ip_addresses and (
-                config.sres[sre_name].data_provider_ip_addresses != data_provider_ip_addresses
+                config.sres[sre_name].data_provider_ip_addresses
+                != data_provider_ip_addresses
             ):
                 self.logger.debug(
                     "Overwriting existing data provider IP addresses"
                     f" {config.sres[sre_name].data_provider_ip_addresses}"
                 )
-            self.logger.info(f"Setting [bold]data provider IP addresses[/] to [green]{data_provider_ip_addresses}[/].")
-            config.sres[sre_name].data_provider_ip_addresses = data_provider_ip_addresses
+            self.logger.info(
+                f"Setting [bold]data provider IP addresses[/] to [green]{data_provider_ip_addresses}[/]."
+            )
+            config.sres[
+                sre_name
+            ].data_provider_ip_addresses = data_provider_ip_addresses
         if len(config.sres[sre_name].data_provider_ip_addresses) == 0:
             msg = (
                 "No data provider IP addresses were found."
@@ -246,8 +267,12 @@ class DeploySRECommand:
             if config.sres[sre_name].research_desktops and (
                 config.sres[sre_name].research_desktops != research_desktops
             ):
-                self.logger.debug(f"Overwriting existing research desktops {config.sres[sre_name].research_desktops}")
-            self.logger.info(f"Setting [bold]research desktops[/] to [green]{research_desktops}[/].")
+                self.logger.debug(
+                    f"Overwriting existing research desktops {config.sres[sre_name].research_desktops}"
+                )
+            self.logger.info(
+                f"Setting [bold]research desktops[/] to [green]{research_desktops}[/]."
+            )
             # Construct VM details
             idx_cpu, idx_gpu = 0, 0
             available_vm_skus = self.available_vm_skus(config)
@@ -289,7 +314,9 @@ class DeploySRECommand:
                 self.logger.debug(
                     f"Overwriting existing user IP addresses {config.sres[sre_name].research_user_ip_addresses}"
                 )
-            self.logger.info(f"Setting [bold]user IP addresses[/] to [green]{user_ip_addresses}[/].")
+            self.logger.info(
+                f"Setting [bold]user IP addresses[/] to [green]{user_ip_addresses}[/]."
+            )
             config.sres[sre_name].research_user_ip_addresses = user_ip_addresses
         if len(config.sres[sre_name].research_user_ip_addresses) == 0:
             msg = "No user IP addresses were found. Use [bright_cyan]'--user-ip-address / -u'[/] to set one."
@@ -299,5 +326,7 @@ class DeploySRECommand:
         """Load available VM SKUs for this region"""
         if not self._available_vm_skus:
             azure_api = AzureApi(config.subscription_name)
-            self._available_vm_skus = azure_api.list_available_vm_skus(config.azure.location)
+            self._available_vm_skus = azure_api.list_available_vm_skus(
+                config.azure.location
+            )
         return self._available_vm_skus

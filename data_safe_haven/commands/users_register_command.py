@@ -33,7 +33,9 @@ class UsersRegisterCommand:
             if not sre_name:
                 msg = "SRE name must be specified."
                 raise DataSafeHavenError(msg)
-            self.logger.info(f"Preparing to register {len(usernames)} users with SRE '{sre_name}'")
+            self.logger.info(
+                f"Preparing to register {len(usernames)} users with SRE '{sre_name}'"
+            )
 
             # Load GraphAPI as this may require user-interaction that is not
             # possible as part of a Pulumi declarative command

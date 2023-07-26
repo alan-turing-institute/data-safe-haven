@@ -31,7 +31,9 @@ class TeardownSRECommand:
                 if stack.work_dir.exists():
                     stack.teardown()
                 else:
-                    msg = f"SRE {sre_name} not found - check the name is spelt correctly."
+                    msg = (
+                        f"SRE {sre_name} not found - check the name is spelt correctly."
+                    )
                     raise DataSafeHavenInputError(msg)
             except Exception as exc:
                 msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"

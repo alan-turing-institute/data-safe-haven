@@ -22,7 +22,10 @@ class UserHandler:
         self.active_directory_users = ActiveDirectoryUsers(config)
         self.azure_ad_users = AzureADUsers(graph_api)
         self.logger = Logger()
-        self.sre_guacamole_users = {sre_name: GuacamoleUsers(config, sre_name) for sre_name in config.sres.keys()}
+        self.sre_guacamole_users = {
+            sre_name: GuacamoleUsers(config, sre_name)
+            for sre_name in config.sres.keys()
+        }
 
     def add(self, users_csv_path: pathlib.Path) -> None:
         """Add AzureAD and Guacamole users
@@ -41,7 +44,9 @@ class UserHandler:
                     "Email",
                     "CountryCode",
                 ]:
-                    if (not reader.fieldnames) or (required_field not in reader.fieldnames):
+                    if (not reader.fieldnames) or (
+                        required_field not in reader.fieldnames
+                    ):
                         msg = f"Missing required CSV field '{required_field}'."
                         raise ValueError(msg)
                 users = [
@@ -99,7 +104,9 @@ class UserHandler:
             for username in sorted(set(sum(usernames.values(), []))):
                 user_memberships = [username]
                 for category in user_headers[1:]:
-                    user_memberships.append("x" if username in usernames[category] else "")
+                    user_memberships.append(
+                        "x" if username in usernames[category] else ""
+                    )
                 user_data.append(user_memberships)
 
             # Write user information as a table
@@ -131,7 +138,9 @@ class UserHandler:
         try:
             # Construct user lists
             active_directory_users_to_remove = [
-                user for user in self.active_directory_users.list() if user.username in user_names
+                user
+                for user in self.active_directory_users.list()
+                if user.username in user_names
             ]
 
             # Commit changes
@@ -151,7 +160,9 @@ class UserHandler:
             with open(users_csv_path, encoding="utf-8") as f_csv:
                 reader = csv.DictReader(f_csv)
                 for required_field in ["GivenName", "Surname", "Phone", "Email"]:
-                    if (not reader.fieldnames) or (required_field not in reader.fieldnames):
+                    if (not reader.fieldnames) or (
+                        required_field not in reader.fieldnames
+                    ):
                         msg = f"Missing required CSV field '{required_field}'."
                         raise ValueError(msg)
                 desired_users = [
@@ -176,7 +187,9 @@ class UserHandler:
 
             # Construct list of new users
             active_directory_desired_users = [
-                user for user in desired_users if user not in active_directory_desired_users
+                user
+                for user in desired_users
+                if user not in active_directory_desired_users
             ]
 
             # Commit changes

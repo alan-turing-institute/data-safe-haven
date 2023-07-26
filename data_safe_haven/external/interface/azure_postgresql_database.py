@@ -44,7 +44,9 @@ class AzurePostgreSQLDatabase:
         subscription_name: str,
     ) -> None:
         self.azure_api = AzureApi(subscription_name)
-        self.current_ip = requests.get("https://api.ipify.org", timeout=300).content.decode("utf8")
+        self.current_ip = requests.get(
+            "https://api.ipify.org", timeout=300
+        ).content.decode("utf8")
         self.db_client_ = None
         self.db_name = database_name
         self.db_server_ = None
@@ -52,7 +54,9 @@ class AzurePostgreSQLDatabase:
         self.logger = Logger()
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
-        self.rule_suffix = datetime.now(tz=datetime.timezone.utc).strftime(r"%Y%m%d-%H%M%S")
+        self.rule_suffix = datetime.now(tz=datetime.timezone.utc).strftime(
+            r"%Y%m%d-%H%M%S"
+        )
 
     @staticmethod
     def wait(poller: LROPoller[Any]) -> None:
@@ -64,14 +68,18 @@ class AzurePostgreSQLDatabase:
     def db_client(self) -> PostgreSQLManagementClient:
         """Get the database client."""
         if not self.db_client_:
-            self.db_client_ = PostgreSQLManagementClient(self.azure_api.credential, self.azure_api.subscription_id)
+            self.db_client_ = PostgreSQLManagementClient(
+                self.azure_api.credential, self.azure_api.subscription_id
+            )
         return self.db_client_
 
     @property
     def db_server(self) -> Server:
         """Get the database server."""
         if not self.db_server_:
-            self.db_server_ = self.db_client.servers.get(self.resource_group_name, self.server_name)
+            self.db_server_ = self.db_client.servers.get(
+                self.resource_group_name, self.server_name
+            )
         return self.db_server_
 
     def db_connection(self, n_retries: int = 0) -> psycopg2.extensions.connection:
@@ -96,11 +104,16 @@ class AzurePostgreSQLDatabase:
                     raise DataSafeHavenAzureError(msg) from exc
         return connection
 
-    def load_sql(self, filepath: PathType, mustache_values: dict[str, str] | None = None) -> str:
+    def load_sql(
+        self, filepath: PathType, mustache_values: dict[str, str] | None = None
+    ) -> str:
         """Load filepath into a single SQL string."""
         reader = FileReader(filepath)
         # Strip any comment lines
-        sql_lines = [line.split("--")[0] for line in reader.file_contents(mustache_values).split("\n")]
+        sql_lines = [
+            line.split("--")[0]
+            for line in reader.file_contents(mustache_values).split("\n")
+        ]
         # Join into a single SQL string
         return " ".join([line for line in sql_lines if line])
 
@@ -167,7 +180,9 @@ class AzurePostgreSQLDatabase:
                     self.resource_group_name,
                     self.server_name,
                     rule_name,
-                    FirewallRule(start_ip_address=self.current_ip, end_ip_address=self.current_ip),
+                    FirewallRule(
+                        start_ip_address=self.current_ip, end_ip_address=self.current_ip
+                    ),
                 )
             )
             self.db_connection(n_retries=5)
@@ -178,7 +193,11 @@ class AzurePostgreSQLDatabase:
             self.logger.debug(
                 f"Removing temporary firewall rule for [green]{self.current_ip}[/]...",
             )
-            self.wait(self.db_client.firewall_rules.begin_delete(self.resource_group_name, self.server_name, rule_name))
+            self.wait(
+                self.db_client.firewall_rules.begin_delete(
+                    self.resource_group_name, self.server_name, rule_name
+                )
+            )
             self.wait(
                 self.db_client.servers.begin_update(
                     self.resource_group_name,

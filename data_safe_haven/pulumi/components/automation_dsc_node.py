@@ -32,7 +32,9 @@ class AutomationDscNodeProps:
         self.automation_account_name = automation_account_name
         self.automation_account_registration_key = automation_account_registration_key
         self.automation_account_registration_url = automation_account_registration_url
-        self.automation_account_resource_group_name = automation_account_resource_group_name
+        self.automation_account_resource_group_name = (
+            automation_account_resource_group_name
+        )
         self.configuration_name = configuration_name
         self.dsc_description = dsc_description
         self.dsc_file = dsc_file
@@ -72,10 +74,14 @@ class AutomationDscNode(ComponentResource):
                     value=Output.from_input(props.dsc_file).apply(lambda f: f.sha256()),
                 ),
                 type="embeddedContent",
-                value=Output.from_input(props.dsc_file).apply(lambda f: f.file_contents()),
+                value=Output.from_input(props.dsc_file).apply(
+                    lambda f: f.file_contents()
+                ),
             ),
             opts=ResourceOptions.merge(
-                ResourceOptions(delete_before_replace=True, replace_on_changes=["source.hash"]),
+                ResourceOptions(
+                    delete_before_replace=True, replace_on_changes=["source.hash"]
+                ),
                 child_opts,
             ),
         )
@@ -84,7 +90,9 @@ class AutomationDscNode(ComponentResource):
             CompiledDscProps(
                 automation_account_name=props.automation_account_name,
                 configuration_name=dsc.name,
-                content_hash=Output.from_input(props.dsc_file).apply(lambda f: f.sha256()),
+                content_hash=Output.from_input(props.dsc_file).apply(
+                    lambda f: f.sha256()
+                ),
                 location=props.location,
                 parameters=props.dsc_parameters,
                 resource_group_name=props.automation_account_resource_group_name,

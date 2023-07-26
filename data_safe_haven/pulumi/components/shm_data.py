@@ -22,11 +22,21 @@ class SHMDataProps:
         self.admin_group_id = admin_group_id
         self.admin_ip_addresses = admin_ip_addresses
         self.location = location
-        self.password_domain_admin = self.get_secret(pulumi_opts, "password-domain-admin")
-        self.password_domain_azure_ad_connect = self.get_secret(pulumi_opts, "password-domain-azure-ad-connect")
-        self.password_domain_computer_manager = self.get_secret(pulumi_opts, "password-domain-computer-manager")
-        self.password_domain_searcher = self.get_secret(pulumi_opts, "password-domain-ldap-searcher")
-        self.password_update_server_linux_admin = self.get_secret(pulumi_opts, "password-update-server-linux-admin")
+        self.password_domain_admin = self.get_secret(
+            pulumi_opts, "password-domain-admin"
+        )
+        self.password_domain_azure_ad_connect = self.get_secret(
+            pulumi_opts, "password-domain-azure-ad-connect"
+        )
+        self.password_domain_computer_manager = self.get_secret(
+            pulumi_opts, "password-domain-computer-manager"
+        )
+        self.password_domain_searcher = self.get_secret(
+            pulumi_opts, "password-domain-ldap-searcher"
+        )
+        self.password_update_server_linux_admin = self.get_secret(
+            pulumi_opts, "password-update-server-linux-admin"
+        )
         self.tenant_id = tenant_id
 
     def get_secret(self, pulumi_opts: Config, secret_name: str) -> Output[str]:
@@ -134,7 +144,9 @@ class SHMDataComponent(ComponentResource):
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_azure_ad_connect",
-            properties=keyvault.SecretPropertiesArgs(value=props.password_domain_azure_ad_connect),
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_domain_azure_ad_connect
+            ),
             resource_group_name=resource_group.name,
             secret_name="password-domain-azure-ad-connect",
             vault_name=key_vault.name,
@@ -142,7 +154,9 @@ class SHMDataComponent(ComponentResource):
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_computer_manager",
-            properties=keyvault.SecretPropertiesArgs(value=props.password_domain_computer_manager),
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_domain_computer_manager
+            ),
             resource_group_name=resource_group.name,
             secret_name="password-domain-computer-manager",
             vault_name=key_vault.name,
@@ -150,7 +164,9 @@ class SHMDataComponent(ComponentResource):
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_searcher",
-            properties=keyvault.SecretPropertiesArgs(value=props.password_domain_searcher),
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_domain_searcher
+            ),
             resource_group_name=resource_group.name,
             secret_name="password-domain-ldap-searcher",
             vault_name=key_vault.name,
@@ -158,7 +174,9 @@ class SHMDataComponent(ComponentResource):
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_update_server_linux_admin",
-            properties=keyvault.SecretPropertiesArgs(value=props.password_update_server_linux_admin),
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_update_server_linux_admin
+            ),
             resource_group_name=resource_group.name,
             secret_name="password-update-server-linux-admin",
             vault_name=key_vault.name,
@@ -170,13 +188,19 @@ class SHMDataComponent(ComponentResource):
             f"{self._name}_storage_account_persistent_data",
             access_tier=storage.AccessTier.COOL,
             # Note that account names have a maximum of 24 characters
-            account_name=alphanumeric(f"{''.join(truncate_tokens(stack_name.split('-'), 20))}data")[:24],
+            account_name=alphanumeric(
+                f"{''.join(truncate_tokens(stack_name.split('-'), 20))}data"
+            )[:24],
             enable_https_traffic_only=True,
             encryption=storage.EncryptionArgs(
                 key_source=storage.KeySource.MICROSOFT_STORAGE,
                 services=storage.EncryptionServicesArgs(
-                    blob=storage.EncryptionServiceArgs(enabled=True, key_type=storage.KeyType.ACCOUNT),
-                    file=storage.EncryptionServiceArgs(enabled=True, key_type=storage.KeyType.ACCOUNT),
+                    blob=storage.EncryptionServiceArgs(
+                        enabled=True, key_type=storage.KeyType.ACCOUNT
+                    ),
+                    file=storage.EncryptionServiceArgs(
+                        enabled=True, key_type=storage.KeyType.ACCOUNT
+                    ),
                 ),
             ),
             kind=storage.Kind.STORAGE_V2,
@@ -216,6 +240,8 @@ class SHMDataComponent(ComponentResource):
         self.password_domain_azure_ad_connect = props.password_domain_azure_ad_connect
         self.password_domain_computer_manager = props.password_domain_computer_manager
         self.password_domain_searcher = props.password_domain_searcher
-        self.password_update_server_linux_admin = props.password_update_server_linux_admin
+        self.password_update_server_linux_admin = (
+            props.password_update_server_linux_admin
+        )
         self.resource_group_name = Output.from_input(resource_group.name)
         self.vault = key_vault

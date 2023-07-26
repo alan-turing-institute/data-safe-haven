@@ -90,9 +90,14 @@ class AzureApi(AzureAuthenticator):
                 resource_group_name, automation_account_name
             )
             available_module_names = [
-                module.name for module in available_modules if module.provisioning_state == "Succeeded"
+                module.name
+                for module in available_modules
+                if module.provisioning_state == "Succeeded"
             ]
-            if all(module_name in available_module_names for module_name in required_modules):
+            if all(
+                module_name in available_module_names
+                for module_name in required_modules
+            ):
                 break
             time.sleep(10)
         # Begin creation
@@ -105,7 +110,9 @@ class AzureApi(AzureAuthenticator):
                 parameters=DscCompilationJobCreateParameters(
                     name=compilation_job_name,
                     location=location,
-                    configuration=DscConfigurationAssociationProperty(name=configuration_name),
+                    configuration=DscConfigurationAssociationProperty(
+                        name=configuration_name
+                    ),
                     parameters=parameters,
                 ),
             )
@@ -118,9 +125,13 @@ class AzureApi(AzureAuthenticator):
             )
             time.sleep(10)
             with suppress(AttributeError):
-                if (result.provisioning_state == "Succeeded") and (result.status == "Completed"):
+                if (result.provisioning_state == "Succeeded") and (
+                    result.status == "Completed"
+                ):
                     break
-                if (result.provisioning_state == "Suspended") and (result.status == "Suspended"):
+                if (result.provisioning_state == "Suspended") and (
+                    result.status == "Suspended"
+                ):
                     msg = f"Could not compile DSC '{configuration_name}'\n{result.exception}."
                     raise DataSafeHavenAzureError(msg)
 
@@ -141,7 +152,9 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure client
-            storage_account_keys = self.get_storage_account_keys(resource_group_name, storage_account_name)
+            storage_account_keys = self.get_storage_account_keys(
+                resource_group_name, storage_account_name
+            )
             blob_service_client = BlobServiceClient.from_connection_string(
                 f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
             )
@@ -149,7 +162,9 @@ class AzureApi(AzureAuthenticator):
                 msg = f"Could not connect to storage account '{storage_account_name}'."
                 raise DataSafeHavenAzureError(msg)
             # Download the requested file
-            blob_client = blob_service_client.get_blob_client(container=storage_container_name, blob=blob_name)
+            blob_client = blob_service_client.get_blob_client(
+                container=storage_container_name, blob=blob_name
+            )
             return blob_client.download_blob(encoding="utf-8").readall()
         except Exception as exc:
             msg = f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'\n{exc}."
@@ -179,7 +194,9 @@ class AzureApi(AzureAuthenticator):
                 f"Ensuring that DNS record {record_name} exists in zone {zone_name}...",
             )
             record_set = dns_client.record_sets.create_or_update(
-                parameters=RecordSet(ttl=30, txt_records=[TxtRecord(value=[record_value])]),
+                parameters=RecordSet(
+                    ttl=30, txt_records=[TxtRecord(value=[record_value])]
+                ),
                 record_type="TXT",
                 relative_record_set_name=record_name,
                 resource_group_name=resource_group_name,
@@ -190,7 +207,9 @@ class AzureApi(AzureAuthenticator):
             )
             return record_set
         except Exception as exc:
-            msg = f"Failed to create DNS record {record_name} in zone {zone_name}.\n{exc}"
+            msg = (
+                f"Failed to create DNS record {record_name} in zone {zone_name}.\n{exc}"
+            )
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_keyvault(
@@ -216,7 +235,9 @@ class AzureApi(AzureAuthenticator):
             tenant_id = tenant_id if tenant_id else self.tenant_id
 
             # Connect to Azure clients
-            key_vault_client = KeyVaultManagementClient(self.credential, self.subscription_id)
+            key_vault_client = KeyVaultManagementClient(
+                self.credential, self.subscription_id
+            )
             # Ensure that key vault exists
             key_vault_client.vaults.begin_create_or_update(
                 resource_group_name,
@@ -255,7 +276,9 @@ class AzureApi(AzureAuthenticator):
                     ),
                 ),
             )
-            key_vaults = [kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name]
+            key_vaults = [
+                kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name
+            ]
             self.logger.info(
                 f"Ensured that key vault [green]{key_vaults[0].name}[/] exists.",
             )
@@ -279,7 +302,9 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure clients
-            key_client = KeyClient(f"https://{key_vault_name}.vault.azure.net", self.credential)
+            key_client = KeyClient(
+                f"https://{key_vault_name}.vault.azure.net", self.credential
+            )
 
             # Ensure that key exists
             self.logger.debug(
@@ -299,7 +324,9 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to create key {key_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
-    def ensure_keyvault_secret(self, key_vault_name: str, secret_name: str, secret_value: str) -> KeyVaultSecret:
+    def ensure_keyvault_secret(
+        self, key_vault_name: str, secret_name: str, secret_value: str
+    ) -> KeyVaultSecret:
         """Ensure that a secret exists in the KeyVault
 
         Returns:
@@ -314,7 +341,9 @@ class AzureApi(AzureAuthenticator):
         )
         try:
             # Connect to Azure clients
-            secret_client = SecretClient(f"https://{key_vault_name}.vault.azure.net", self.credential)
+            secret_client = SecretClient(
+                f"https://{key_vault_name}.vault.azure.net", self.credential
+            )
             try:
                 secret = secret_client.get_secret(secret_name)
             except DataSafeHavenAzureError:
@@ -365,7 +394,9 @@ class AzureApi(AzureAuthenticator):
                 enhanced_key_usage=["1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2"],
                 validity_in_months=12,
             )
-            poller: LROPoller[KeyVaultCertificate] = certificate_client.begin_create_certificate(
+            poller: LROPoller[
+                KeyVaultCertificate
+            ] = certificate_client.begin_create_certificate(
                 certificate_name=certificate_name, policy=policy
             )
             certificate = poller.result()
@@ -395,7 +426,9 @@ class AzureApi(AzureAuthenticator):
             self.logger.debug(
                 f"Ensuring that managed identity [green]{identity_name}[/] exists...",
             )
-            msi_client = ManagedServiceIdentityClient(self.credential, self.subscription_id)
+            msi_client = ManagedServiceIdentityClient(
+                self.credential, self.subscription_id
+            )
             # mypy erroneously thinks that create_or_update returns Any rather than Identity
             managed_identity = msi_client.user_assigned_identities.create_or_update(
                 resource_group_name,
@@ -423,7 +456,9 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure clients
-            resource_client = ResourceManagementClient(self.credential, self.subscription_id)
+            resource_client = ResourceManagementClient(
+                self.credential, self.subscription_id
+            )
 
             # Ensure that resource group exists
             self.logger.debug(
@@ -433,7 +468,11 @@ class AzureApi(AzureAuthenticator):
                 resource_group_name,
                 ResourceGroup(location=location, tags=tags),
             )
-            resource_groups = [rg for rg in resource_client.resource_groups.list() if rg.name == resource_group_name]
+            resource_groups = [
+                rg
+                for rg in resource_client.resource_groups.list()
+                if rg.name == resource_group_name
+            ]
             self.logger.info(
                 f"Ensured that resource group [green]{resource_groups[0].name}[/] exists"
                 f" in [green]{resource_groups[0].location}[/].",
@@ -460,7 +499,9 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure clients
-            storage_client = StorageManagementClient(self.credential, self.subscription_id)
+            storage_client = StorageManagementClient(
+                self.credential, self.subscription_id
+            )
             self.logger.debug(
                 f"Ensuring that storage account [green]{storage_account_name}[/] exists...",
             )
@@ -518,7 +559,9 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to create storage container [green]{container_name}."
             raise DataSafeHavenAzureError(msg) from exc
 
-    def get_keyvault_certificate(self, certificate_name: str, key_vault_name: str) -> KeyVaultCertificate:
+    def get_keyvault_certificate(
+        self, certificate_name: str, key_vault_name: str
+    ) -> KeyVaultCertificate:
         """Read a certificate from the KeyVault
 
         Returns:
@@ -549,7 +592,9 @@ class AzureApi(AzureAuthenticator):
             DataSafeHavenAzureError if the secret could not be read
         """
         # Connect to Azure clients
-        secret_client = SecretClient(f"https://{key_vault_name}.vault.azure.net", self.credential)
+        secret_client = SecretClient(
+            f"https://{key_vault_name}.vault.azure.net", self.credential
+        )
         # Ensure that secret exists
         try:
             secret = secret_client.get_secret(secret_name)
@@ -571,13 +616,17 @@ class AzureApi(AzureAuthenticator):
             subscription_client = SubscriptionClient(self.credential)
             return [
                 location.name
-                for location in subscription_client.subscriptions.list_locations(subscription_id=self.subscription_id)
+                for location in subscription_client.subscriptions.list_locations(
+                    subscription_id=self.subscription_id
+                )
             ]
         except Exception as exc:
             msg = f"Azure locations could not be loaded.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
-    def get_storage_account_keys(self, resource_group_name: str, storage_account_name: str) -> list[StorageAccountKey]:
+    def get_storage_account_keys(
+        self, resource_group_name: str, storage_account_name: str
+    ) -> list[StorageAccountKey]:
         """Retrieve the storage account keys for an existing storage account
 
         Returns:
@@ -588,7 +637,9 @@ class AzureApi(AzureAuthenticator):
         """
         # Connect to Azure client
         try:
-            storage_client = StorageManagementClient(self.credential, self.subscription_id)
+            storage_client = StorageManagementClient(
+                self.credential, self.subscription_id
+            )
             storage_keys = storage_client.storage_accounts.list_keys(
                 resource_group_name,
                 storage_account_name,
@@ -680,7 +731,9 @@ class AzureApi(AzureAuthenticator):
     def list_available_vm_skus(self, location: str) -> dict[str, dict[str, Any]]:
         try:
             # Connect to Azure client
-            compute_client = ComputeManagementClient(self.credential, self.subscription_id)
+            compute_client = ComputeManagementClient(
+                self.credential, self.subscription_id
+            )
             # Construct SKU information
             skus = {}
             for resource_sku in compute_client.resource_skus.list():
@@ -689,7 +742,9 @@ class AzureApi(AzureAuthenticator):
                     and (location in resource_sku.locations)
                     and (resource_sku.resource_type == "virtualMachines")
                 ):
-                    skus[resource_sku.name] = {"GPUs": 0}  # default to 0 GPUs, overriding if appropriate
+                    skus[resource_sku.name] = {
+                        "GPUs": 0
+                    }  # default to 0 GPUs, overriding if appropriate
                     if resource_sku.capabilities:
                         for capability in resource_sku.capabilities:
                             skus[resource_sku.name][capability.name] = capability.value
@@ -821,7 +876,9 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure clients
-            resource_client = ResourceManagementClient(self.credential, self.subscription_id)
+            resource_client = ResourceManagementClient(
+                self.credential, self.subscription_id
+            )
 
             # Ensure that resource group exists
             self.logger.debug(
@@ -832,7 +889,11 @@ class AzureApi(AzureAuthenticator):
             )
             while not poller.done():
                 poller.wait(10)
-            resource_groups = [rg for rg in resource_client.resource_groups.list() if rg.name == resource_group_name]
+            resource_groups = [
+                rg
+                for rg in resource_client.resource_groups.list()
+                if rg.name == resource_group_name
+            ]
             if resource_groups:
                 msg = f"There are still {len(resource_groups)} resource group(s) remaining."
                 raise DataSafeHavenInternalError(msg)
@@ -850,9 +911,15 @@ class AzureApi(AzureAuthenticator):
                 f" in resource group '[green]{resource_group_name}[/]'...",
             )
             # Connect to Azure clients
-            compute_client = ComputeManagementClient(self.credential, self.subscription_id)
-            poller = compute_client.virtual_machines.begin_restart(resource_group_name, vm_name)
-            _ = poller.result()  # returns 'None' on success or raises an exception on failure
+            compute_client = ComputeManagementClient(
+                self.credential, self.subscription_id
+            )
+            poller = compute_client.virtual_machines.begin_restart(
+                resource_group_name, vm_name
+            )
+            _ = (
+                poller.result()
+            )  # returns 'None' on success or raises an exception on failure
             self.logger.info(
                 f"Restarted virtual machine '[green]{vm_name}[/]' in resource group '[green]{resource_group_name}[/]'.",
             )
@@ -877,21 +944,27 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure clients
-            compute_client = ComputeManagementClient(self.credential, self.subscription_id)
+            compute_client = ComputeManagementClient(
+                self.credential, self.subscription_id
+            )
             vm = compute_client.virtual_machines.get(resource_group_name, vm_name)
             if not vm.os_profile:
                 msg = f"No OSProfile available for VM {vm_name}"
                 raise ValueError(msg)
             command_id = (
                 "RunPowerShellScript"
-                if (vm.os_profile.windows_configuration and not vm.os_profile.linux_configuration)
+                if (
+                    vm.os_profile.windows_configuration
+                    and not vm.os_profile.linux_configuration
+                )
                 else "RunShellScript"
             )
             run_command_parameters = RunCommandInput(
                 command_id=command_id,
                 script=list(script.split("\n")),
                 parameters=[
-                    RunCommandInputParameter(name=name, value=value) for name, value in script_parameters.items()
+                    RunCommandInputParameter(name=name, value=value)
+                    for name, value in script_parameters.items()
                 ],
             )
             # Run the command and wait until finished
@@ -919,7 +992,9 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Ensure that storage container exists in the storage account
-            storage_client = StorageManagementClient(self.credential, self.subscription_id)
+            storage_client = StorageManagementClient(
+                self.credential, self.subscription_id
+            )
             try:
                 container = storage_client.blob_containers.get(
                     resource_group_name, storage_account_name, container_name
@@ -938,7 +1013,9 @@ class AzureApi(AzureAuthenticator):
             service_client = DataLakeServiceClient(
                 f"https://{storage_account_name}.dfs.core.windows.net", self.credential
             )
-            file_system_client = service_client.get_file_system_client(file_system=container_name)
+            file_system_client = service_client.get_file_system_client(
+                file_system=container_name
+            )
             directory_client = file_system_client._get_root_directory_client()
             # Set the desired ACL
             directory_client.set_access_control_recursive(acl=desired_acl)
@@ -946,7 +1023,9 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to set ACL '{desired_acl}' on container '{container_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
-    def set_keyvault_secret(self, key_vault_name: str, secret_name: str, secret_value: str) -> KeyVaultSecret:
+    def set_keyvault_secret(
+        self, key_vault_name: str, secret_name: str, secret_value: str
+    ) -> KeyVaultSecret:
         """Ensure that a KeyVault secret has the desired value
 
         Returns:
@@ -957,7 +1036,9 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure clients
-            secret_client = SecretClient(f"https://{key_vault_name}.vault.azure.net", self.credential)
+            secret_client = SecretClient(
+                f"https://{key_vault_name}.vault.azure.net", self.credential
+            )
             # Set the secret to the desired value
             try:
                 existing_value = secret_client.get_secret(secret_name).value
@@ -988,7 +1069,9 @@ class AzureApi(AzureAuthenticator):
         """
         try:
             # Connect to Azure client
-            storage_account_keys = self.get_storage_account_keys(resource_group_name, storage_account_name)
+            storage_account_keys = self.get_storage_account_keys(
+                resource_group_name, storage_account_name
+            )
             blob_service_client = BlobServiceClient.from_connection_string(
                 f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
             )
@@ -996,7 +1079,9 @@ class AzureApi(AzureAuthenticator):
                 msg = f"Could not connect to storage account '{storage_account_name}'."
                 raise DataSafeHavenAzureError(msg)
             # Upload the created file
-            blob_client = blob_service_client.get_blob_client(container=storage_container_name, blob=blob_name)
+            blob_client = blob_service_client.get_blob_client(
+                container=storage_container_name, blob=blob_name
+            )
             blob_client.upload_blob(blob_data, overwrite=True)
             self.logger.info(
                 f"Uploaded file [green]{blob_name}[/] to blob storage.",

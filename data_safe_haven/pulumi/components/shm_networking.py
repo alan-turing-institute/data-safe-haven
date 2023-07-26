@@ -274,7 +274,9 @@ class SHMNetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound LDAP to domain controllers.",
-                    destination_address_prefix=str(props.subnet_identity_servers_iprange),
+                    destination_address_prefix=str(
+                        props.subnet_identity_servers_iprange
+                    ),
                     destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowLDAPClientUDPInbound",
@@ -286,7 +288,9 @@ class SHMNetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound LDAP to domain controllers.",
-                    destination_address_prefix=str(props.subnet_identity_servers_iprange),
+                    destination_address_prefix=str(
+                        props.subnet_identity_servers_iprange
+                    ),
                     destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowLDAPClientTCPInbound",
@@ -298,7 +302,9 @@ class SHMNetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound RDP connections from admins using AzureBastion.",
-                    destination_address_prefix=str(props.subnet_identity_servers_iprange),
+                    destination_address_prefix=str(
+                        props.subnet_identity_servers_iprange
+                    ),
                     destination_port_ranges=["3389"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowBastionAdminsInbound",
@@ -319,7 +325,9 @@ class SHMNetworkingComponent(ComponentResource):
             route_table_name=f"{stack_name}-route",
             routes=[],
             opts=ResourceOptions.merge(
-                ResourceOptions(ignore_changes=["routes"]),  # allow routes to be created outside this definition
+                ResourceOptions(
+                    ignore_changes=["routes"]
+                ),  # allow routes to be created outside this definition
                 child_opts,
             ),
         )
@@ -348,28 +356,36 @@ class SHMNetworkingComponent(ComponentResource):
                 network.SubnetArgs(
                     address_prefix=str(props.subnet_bastion_iprange),
                     name=subnet_bastion_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_bastion.id),
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_bastion.id
+                    ),
                     route_table=None,  # the bastion subnet must NOT be attached to the route table
                 ),
                 # Monitoring subnet
                 network.SubnetArgs(
                     address_prefix=str(props.subnet_monitoring_iprange),
                     name=subnet_monitoring_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_monitoring.id),
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_monitoring.id
+                    ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # Update servers subnet
                 network.SubnetArgs(
                     address_prefix=str(props.subnet_update_servers_iprange),
                     name=subnet_update_servers_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_update_servers.id),
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_update_servers.id
+                    ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # Identity servers subnet
                 network.SubnetArgs(
                     address_prefix=str(props.subnet_identity_servers_iprange),
                     name=subnet_identity_servers_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg_identity_servers.id),
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_identity_servers.id
+                    ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
             ],
@@ -414,7 +430,9 @@ class SHMNetworkingComponent(ComponentResource):
             relative_record_set_name="@",
             resource_group_name=resource_group.name,
             ttl=3600,
-            txt_records=[network.TxtRecordArgs(value=[props.record_domain_verification])],
+            txt_records=[
+                network.TxtRecordArgs(value=[props.record_domain_verification])
+            ],
             zone_name=dns_zone.name,
             opts=child_opts,
         )
@@ -436,16 +454,22 @@ class SHMNetworkingComponent(ComponentResource):
                 registration_enabled=False,
                 resource_group_name=resource_group.name,
                 virtual_network=network.SubResourceArgs(id=virtual_network.id),
-                virtual_network_link_name=Output.concat("link-to-", virtual_network.name),
+                virtual_network_link_name=Output.concat(
+                    "link-to-", virtual_network.name
+                ),
                 opts=child_opts,
             )
             private_zone_ids.append(
-                private_zone.id.apply(lambda zone_id: "".join(zone_id.partition("privatelink.")[:-1]))
+                private_zone.id.apply(
+                    lambda zone_id: "".join(zone_id.partition("privatelink.")[:-1])
+                )
             )
 
         # Register outputs
         self.dns_zone = dns_zone
-        self.domain_controller_private_ip = str(props.subnet_identity_servers_iprange.available()[0])
+        self.domain_controller_private_ip = str(
+            props.subnet_identity_servers_iprange.available()[0]
+        )
         self.private_dns_zone_base_id = private_zone_ids[0]
         self.resource_group_name = Output.from_input(resource_group.name)
         self.route_table = route_table

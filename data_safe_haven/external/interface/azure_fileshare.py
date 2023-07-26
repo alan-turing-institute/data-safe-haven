@@ -29,7 +29,9 @@ class AzureFileShare:
     @property
     def storage_client(self) -> StorageManagementClient:
         if not self.storage_client_:
-            self.storage_client_ = StorageManagementClient(self.azure_api.credential, self.azure_api.subscription_id)
+            self.storage_client_ = StorageManagementClient(
+                self.azure_api.credential, self.azure_api.subscription_id
+            )
         return self.storage_client_
 
     @property
@@ -37,7 +39,9 @@ class AzureFileShare:
         if not self.storage_account_key_:
             storage_account_keys = [
                 k.value
-                for k in self.azure_api.get_storage_account_keys(self.resource_group_name, self.storage_account_name)
+                for k in self.azure_api.get_storage_account_keys(
+                    self.resource_group_name, self.storage_account_name
+                )
                 if isinstance(k.value, str)
             ]
             if not storage_account_keys:

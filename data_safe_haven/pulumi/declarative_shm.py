@@ -12,7 +12,10 @@ from .components.shm_domain_controllers import (
 from .components.shm_firewall import SHMFirewallComponent, SHMFirewallProps
 from .components.shm_monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .components.shm_networking import SHMNetworkingComponent, SHMNetworkingProps
-from .components.shm_update_servers import SHMUpdateServersComponent, SHMUpdateServersProps
+from .components.shm_update_servers import (
+    SHMUpdateServersComponent,
+    SHMUpdateServersProps,
+)
 
 
 class DeclarativeSHM:
@@ -36,7 +39,9 @@ class DeclarativeSHM:
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 fqdn=self.cfg.shm.fqdn,
                 location=self.cfg.azure.location,
-                record_domain_verification=self.pulumi_opts.require("verification-azuread-custom-domain"),
+                record_domain_verification=self.pulumi_opts.require(
+                    "verification-azuread-custom-domain"
+                ),
             ),
         )
 

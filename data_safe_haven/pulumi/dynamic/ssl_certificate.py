@@ -46,7 +46,9 @@ class SSLCertificateProvider(DshResourceProvider):
         outs = dict(**props)
         with suppress(Exception):
             azure_api = AzureApi(outs["subscription_name"])
-            certificate = azure_api.get_keyvault_certificate(outs["certificate_secret_name"], outs["key_vault_name"])
+            certificate = azure_api.get_keyvault_certificate(
+                outs["certificate_secret_name"], outs["key_vault_name"]
+            )
             if certificate.secret_id:
                 outs["secret_id"] = certificate.secret_id
         return outs
@@ -77,7 +79,9 @@ class SSLCertificateProvider(DshResourceProvider):
                     zone_name=props["domain_name"],
                 )
             # Wait for DNS propagation to complete
-            if not client.check_dns_propagation(authoritative=False, round_robin=True, verbose=False):
+            if not client.check_dns_propagation(
+                authoritative=False, round_robin=True, verbose=False
+            ):
                 msg = "DNS propagation failed"
                 raise DataSafeHavenSSLError(msg)
             # Request a signed certificate
@@ -85,7 +89,8 @@ class SSLCertificateProvider(DshResourceProvider):
                 certificate_bytes = client.request_certificate()
             except ValidationError as exc:
                 raise DataSafeHavenSSLError(
-                    "ACME validation error:\n" + "\n".join([str(auth_error) for auth_error in exc.failed_authzrs])
+                    "ACME validation error:\n"
+                    + "\n".join([str(auth_error) for auth_error in exc.failed_authzrs])
                 ) from exc
             # Although KeyVault will accept a PEM certificate (where we simply
             # prepend the private key) we need a PFX certificate for
@@ -94,8 +99,13 @@ class SSLCertificateProvider(DshResourceProvider):
             if not isinstance(private_key, RSAPrivateKey):
                 msg = f"Private key is of type {type(private_key)} not RSAPrivateKey."
                 raise TypeError(msg)
-            all_certs = [load_pem_x509_certificate(data) for data in certificate_bytes.split(b"\n\n")]
-            certificate = next(cert for cert in all_certs if props["domain_name"] in str(cert.subject))
+            all_certs = [
+                load_pem_x509_certificate(data)
+                for data in certificate_bytes.split(b"\n\n")
+            ]
+            certificate = next(
+                cert for cert in all_certs if props["domain_name"] in str(cert.subject)
+            )
             ca_certs = [cert for cert in all_certs if cert != certificate]
             pfx_bytes = pkcs12.serialize_key_and_certificates(
                 props["certificate_secret_name"].encode("utf-8"),

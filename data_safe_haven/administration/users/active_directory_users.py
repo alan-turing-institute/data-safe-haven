@@ -25,13 +25,19 @@ class ActiveDirectoryUsers:
         shm_stack = PulumiSHMStack(config)
         self.azure_api = AzureApi(config.subscription_name)
         self.logger = Logger()
-        self.resource_group_name = shm_stack.output("domain_controllers")["resource_group_name"]
-        self.resources_path = (pathlib.Path(__file__).parent.parent.parent / "resources").resolve()
+        self.resource_group_name = shm_stack.output("domain_controllers")[
+            "resource_group_name"
+        ]
+        self.resources_path = (
+            pathlib.Path(__file__).parent.parent.parent / "resources"
+        ).resolve()
         self.vm_name = shm_stack.output("domain_controllers")["vm_name"]
 
     def add(self, new_users: Sequence[ResearchUser]) -> None:
         """Add list of users to local Active Directory"""
-        add_users_script = FileReader(self.resources_path / "active_directory" / "add_users.ps1")
+        add_users_script = FileReader(
+            self.resources_path / "active_directory" / "add_users.ps1"
+        )
         csv_contents = ["SamAccountName;GivenName;Surname;Mobile;Email;Country"]
         for user in new_users:
             if (
@@ -66,7 +72,9 @@ class ActiveDirectoryUsers:
 
     def list(self, sre_name: str | None = None) -> Sequence[ResearchUser]:  # noqa: A003
         """List users in a local Active Directory"""
-        list_users_script = FileReader(self.resources_path / "active_directory" / "list_users.ps1")
+        list_users_script = FileReader(
+            self.resources_path / "active_directory" / "list_users.ps1"
+        )
         script_params = {"SREName": sre_name} if sre_name else {}
         output = self.azure_api.run_remote_script(
             self.resource_group_name,
@@ -92,7 +100,9 @@ class ActiveDirectoryUsers:
 
     def register(self, sre_name: str, usernames: Sequence[str]) -> None:
         """Add usernames to SRE security group"""
-        register_users_script = FileReader(self.resources_path / "active_directory" / "add_users_to_group.ps1")
+        register_users_script = FileReader(
+            self.resources_path / "active_directory" / "add_users_to_group.ps1"
+        )
         output = self.azure_api.run_remote_script(
             self.resource_group_name,
             register_users_script.file_contents(),
@@ -104,7 +114,9 @@ class ActiveDirectoryUsers:
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
         """Remove list of users from local Active Directory"""
-        remove_users_script = FileReader(self.resources_path / "active_directory" / "remove_users.ps1")
+        remove_users_script = FileReader(
+            self.resources_path / "active_directory" / "remove_users.ps1"
+        )
         usernames_b64 = b64encode("\n".join(user.username for user in users))
         output = self.azure_api.run_remote_script(
             self.resource_group_name,
@@ -124,7 +136,9 @@ class ActiveDirectoryUsers:
 
     def unregister(self, sre_name: str, usernames: Sequence[str]) -> None:
         """Remove usernames from SRE security group"""
-        register_users_script = FileReader(self.resources_path / "active_directory" / "remove_users_from_group.ps1")
+        register_users_script = FileReader(
+            self.resources_path / "active_directory" / "remove_users_from_group.ps1"
+        )
         output = self.azure_api.run_remote_script(
             self.resource_group_name,
             register_users_script.file_contents(),

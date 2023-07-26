@@ -79,10 +79,8 @@ all = [
 
 [tool.black]
 target-version = ["py310", "py311"]
-line-length = 120
 
 [tool.ruff]
-line-length = 120
 select = [
   # See https://beta.ruff.rs/docs/rules/
   "A",   # flake8-builtins
@@ -112,6 +110,8 @@ select = [
   "YTT", # flake8-2020
 ]
 ignore = [
+  # Ignore line length
+  "E501",
   # Ignore checks for possible passwords
   "S105", "S106", "S107",
   # Ignore not using absolute path in subprocess call

@@ -18,7 +18,9 @@ from data_safe_haven.utility import Logger
 def callback(
     output: Annotated[
         Optional[pathlib.Path],  # noqa: UP007
-        typer.Option("--output", "-o", resolve_path=True, help="Path to an output log file"),
+        typer.Option(
+            "--output", "-o", resolve_path=True, help="Path to an output log file"
+        ),
     ] = None,
     verbosity: Annotated[
         Optional[int],  # noqa: UP007
@@ -32,7 +34,9 @@ def callback(
     ] = None,
     version: Annotated[
         Optional[bool],  # noqa: UP007
-        typer.Option("--version", "-V", help="Display the version of this application."),
+        typer.Option(
+            "--version", "-V", help="Display the version of this application."
+        ),
     ] = None,
 ) -> None:
     """Arguments to the main executable"""
@@ -73,7 +77,9 @@ def main() -> None:
     )
 
     # Register direct subcommands
-    application.command(name="init", help="Initialise a Data Safe Haven deployment.")(initialise_command)
+    application.command(name="init", help="Initialise a Data Safe Haven deployment.")(
+        initialise_command
+    )
 
     # Start the application
     try:

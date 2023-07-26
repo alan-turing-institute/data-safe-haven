@@ -49,8 +49,12 @@ class SREUserServicesProps:
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
-        self.subnet_containers_id = Output.from_input(subnet_containers).apply(get_id_from_subnet)
-        self.subnet_databases_id = Output.from_input(subnet_databases).apply(get_id_from_subnet)
+        self.subnet_containers_id = Output.from_input(subnet_containers).apply(
+            get_id_from_subnet
+        )
+        self.subnet_databases_id = Output.from_input(subnet_databases).apply(
+            get_id_from_subnet
+        )
         self.virtual_network = virtual_network
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
 

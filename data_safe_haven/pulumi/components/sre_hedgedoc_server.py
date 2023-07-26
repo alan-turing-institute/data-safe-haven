@@ -8,7 +8,10 @@ from data_safe_haven.pulumi.common.transformations import (
     get_ip_address_from_container_group,
     get_ip_addresses_from_private_endpoint,
 )
-from data_safe_haven.pulumi.dynamic.file_share_file import FileShareFile, FileShareFileProps
+from data_safe_haven.pulumi.dynamic.file_share_file import (
+    FileShareFile,
+    FileShareFileProps,
+)
 from data_safe_haven.utility import FileReader
 
 
@@ -41,7 +44,9 @@ class SREHedgeDocServerProps:
     ):
         self.database_subnet_id = database_subnet_id
         self.database_password = database_password
-        self.database_username = database_username if database_username else "postgresadmin"
+        self.database_username = (
+            database_username if database_username else "postgresadmin"
+        )
         self.domain_netbios_name = domain_netbios_name
         self.ldap_bind_dn = ldap_bind_dn
         self.ldap_root_dn = ldap_root_dn
@@ -51,7 +56,13 @@ class SREHedgeDocServerProps:
         self.ldap_user_security_group_cn = Output.all(
             group_name=ldap_user_security_group_name, root_dn=ldap_root_dn
         ).apply(
-            lambda kwargs: ",".join((kwargs["group_name"], "OU=Data Safe Haven Security Groups", kwargs["root_dn"]))
+            lambda kwargs: ",".join(
+                (
+                    kwargs["group_name"],
+                    "OU=Data Safe Haven Security Groups",
+                    kwargs["root_dn"],
+                )
+            )
         )
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
@@ -91,7 +102,9 @@ class SREHedgeDocServerComponent(ComponentResource):
         )
 
         # Set resources path
-        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources" / "hedgedoc"
+        resources_path = (
+            pathlib.Path(__file__).parent.parent.parent / "resources" / "hedgedoc"
+        )
 
         # Upload caddy file
         caddy_caddyfile_reader = FileReader(resources_path / "caddy" / "Caddyfile")
@@ -108,7 +121,9 @@ class SREHedgeDocServerComponent(ComponentResource):
         )
 
         # Load HedgeDoc configuration file for later use
-        hedgedoc_config_json_reader = FileReader(resources_path / "hedgedoc" / "config.json")
+        hedgedoc_config_json_reader = FileReader(
+            resources_path / "hedgedoc" / "config.json"
+        )
 
         # Define a PostgreSQL server and default database
         hedgedoc_db_server_name = f"{stack_name}-db-hedgedoc"
@@ -231,7 +246,9 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_USERNAME",
-                            value=Output.concat(props.database_username, "@", hedgedoc_db_server_name),
+                            value=Output.concat(
+                                props.database_username, "@", hedgedoc_db_server_name
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DOMAIN",
@@ -323,7 +340,11 @@ class SREHedgeDocServerComponent(ComponentResource):
                 ),
                 containerinstance.VolumeArgs(
                     name="hedgedoc-files-config-json",
-                    secret={"config.json": b64encode(hedgedoc_config_json_reader.file_contents())},
+                    secret={
+                        "config.json": b64encode(
+                            hedgedoc_config_json_reader.file_contents()
+                        )
+                    },
                 ),
             ],
             opts=ResourceOptions.merge(
@@ -355,7 +376,9 @@ class SREHedgeDocServerComponent(ComponentResource):
         # Redirect the public DNS to private DNS
         network.RecordSet(
             f"{self._name}_hedgedoc_public_record_set",
-            cname_record=network.CnameRecordArgs(cname=Output.concat("hedgedoc.privatelink.", props.sre_fqdn)),
+            cname_record=network.CnameRecordArgs(
+                cname=Output.concat("hedgedoc.privatelink.", props.sre_fqdn)
+            ),
             record_type="CNAME",
             relative_record_set_name="hedgedoc",
             resource_group_name=props.networking_resource_group_name,

@@ -45,7 +45,9 @@ class VMProps:
         self.virtual_network_name = virtual_network_name
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
         self.vm_name = vm_name
-        self.vm_name_underscored = Output.from_input(vm_name).apply(lambda n: n.replace("-", "_"))
+        self.vm_name_underscored = Output.from_input(vm_name).apply(
+            lambda n: n.replace("-", "_")
+        )
         self.vm_size = vm_size
 
     @property
@@ -142,10 +144,14 @@ class VMComponent(ComponentResource):
                 public_ip_address_name=f"{props.vm_name}-public-ip",
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,
-                sku=network.PublicIPAddressSkuArgs(name=network.PublicIPAddressSkuName.STANDARD),
+                sku=network.PublicIPAddressSkuArgs(
+                    name=network.PublicIPAddressSkuName.STANDARD
+                ),
                 opts=child_opts,
             )
-            network_interface_ip_params["public_ip_address"] = network.PublicIPAddressArgs(id=public_ip.id)
+            network_interface_ip_params[
+                "public_ip_address"
+            ] = network.PublicIPAddressArgs(id=public_ip.id)
 
         # Define network card
         network_interface = network.NetworkInterface(
@@ -153,7 +159,9 @@ class VMComponent(ComponentResource):
             enable_accelerated_networking=True,
             ip_configurations=[
                 network.NetworkInterfaceIPConfigurationArgs(
-                    name=props.vm_name_underscored.apply(lambda n: f"ipconfig{n}".replace("_", "")),
+                    name=props.vm_name_underscored.apply(
+                        lambda n: f"ipconfig{n}".replace("_", "")
+                    ),
                     private_ip_address=props.ip_address_private,
                     private_ip_allocation_method=network.IPAllocationMethod.STATIC,
                     subnet=network.SubnetArgs(id=subnet.id),
@@ -199,7 +207,9 @@ class VMComponent(ComponentResource):
             ),
             vm_name=props.vm_name,
             opts=ResourceOptions.merge(
-                ResourceOptions(delete_before_replace=True, replace_on_changes=["os_profile"]),
+                ResourceOptions(
+                    delete_before_replace=True, replace_on_changes=["os_profile"]
+                ),
                 child_opts,
             ),
         )
@@ -212,11 +222,13 @@ class VMComponent(ComponentResource):
                 enable_automatic_upgrade=False,
                 location=props.location,
                 publisher="Microsoft.EnterpriseCloud.Monitoring",
-                protected_settings=Output.from_input(props.log_analytics_workspace_key).apply(
-                    lambda key: {"workspaceKey": key}
-                ),
+                protected_settings=Output.from_input(
+                    props.log_analytics_workspace_key
+                ).apply(lambda key: {"workspaceKey": key}),
                 resource_group_name=props.resource_group_name,
-                settings=Output.from_input(props.log_analytics_workspace_id).apply(lambda wid: {"workspaceId": wid}),
+                settings=Output.from_input(props.log_analytics_workspace_id).apply(
+                    lambda wid: {"workspaceId": wid}
+                ),
                 type=props.log_analytics_extension_name,
                 type_handler_version=props.log_analytics_extension_version,
                 vm_extension_name=props.log_analytics_extension_name,
@@ -225,7 +237,11 @@ class VMComponent(ComponentResource):
             )
 
         # Register outputs
-        self.ip_address_private: Output[str] = Output.from_input(props.ip_address_private)
-        self.resource_group_name: Output[str] = Output.from_input(props.resource_group_name)
+        self.ip_address_private: Output[str] = Output.from_input(
+            props.ip_address_private
+        )
+        self.resource_group_name: Output[str] = Output.from_input(
+            props.resource_group_name
+        )
         self.vm_name: Output[str] = virtual_machine.name
         self.vm_size: Output[str] = Output.from_input(props.vm_size)

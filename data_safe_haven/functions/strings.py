@@ -7,7 +7,9 @@ from collections.abc import Sequence
 
 def alphanumeric(input_string: str) -> str:
     """Strip any characters that are not letters or numbers from a string."""
-    return "".join(filter(lambda x: x in (string.ascii_letters + string.digits), input_string))
+    return "".join(
+        filter(lambda x: x in (string.ascii_letters + string.digits), input_string)
+    )
 
 
 def b64decode(input_string: str) -> str:
@@ -47,7 +49,12 @@ def random_letters(length: int) -> str:
 
 def replace_separators(input_string: str, separator: str = "") -> str:
     """Return a string using underscores as a separator"""
-    return input_string.replace(" ", separator).replace("_", separator).replace("-", separator).replace(".", separator)
+    return (
+        input_string.replace(" ", separator)
+        .replace("_", separator)
+        .replace("-", separator)
+        .replace(".", separator)
+    )
 
 
 def sha256hash(input_string: str) -> str:

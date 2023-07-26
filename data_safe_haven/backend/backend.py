@@ -76,13 +76,17 @@ class Backend:
                 tags=self.tags,
             )
             if not keyvault.name:
-                msg = f"Keyvault '{self.config.backend.key_vault_name}' was not created."
+                msg = (
+                    f"Keyvault '{self.config.backend.key_vault_name}' was not created."
+                )
                 raise DataSafeHavenAzureError(msg)
             pulumi_encryption_key = self.azure_api.ensure_keyvault_key(
                 key_name=self.config.pulumi.encryption_key_name,
                 key_vault_name=keyvault.name,
             )
-            self.config.pulumi.encryption_key_id = pulumi_encryption_key.id.split("/")[-1]
+            self.config.pulumi.encryption_key_id = pulumi_encryption_key.id.split("/")[
+                -1
+            ]
         except Exception as exc:
             msg = f"Failed to create backend resources.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
@@ -94,7 +98,9 @@ class Backend:
             DataSafeHavenAzureError if any resources cannot be destroyed
         """
         try:
-            self.azure_api.remove_resource_group(self.config.backend.resource_group_name)
+            self.azure_api.remove_resource_group(
+                self.config.backend.resource_group_name
+            )
         except Exception as exc:
             msg = f"Failed to destroy backend resources.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc

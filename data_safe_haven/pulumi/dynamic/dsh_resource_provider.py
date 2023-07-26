@@ -26,10 +26,17 @@ class DshResourceProvider(ResourceProvider):
         # Exclude any from excluded_props which should not trigger a diff
         altered_props = [
             property_
-            for property_ in [key for key in new_props.keys() if key not in excluded_props]
-            if (property_ not in old_props) or (old_props[property_] != new_props[property_])
+            for property_ in [
+                key for key in new_props.keys() if key not in excluded_props
+            ]
+            if (property_ not in old_props)
+            or (old_props[property_] != new_props[property_])
         ]
-        stable_props = [property_ for property_ in old_props.keys() if property_ not in altered_props]
+        stable_props = [
+            property_
+            for property_ in old_props.keys()
+            if property_ not in altered_props
+        ]
         return DiffResult(
             changes=(altered_props != []),  # changes are needed
             replaces=altered_props,  # properties that cannot be updated in-place
@@ -41,7 +48,9 @@ class DshResourceProvider(ResourceProvider):
     def refresh(props: dict[str, Any]) -> dict[str, Any]:
         return dict(**props)
 
-    def check(self, old_props: dict[str, Any], new_props: dict[str, Any]) -> CheckResult:
+    def check(
+        self, old_props: dict[str, Any], new_props: dict[str, Any]
+    ) -> CheckResult:
         """Validate that the new properties are valid"""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(old_props)

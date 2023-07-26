@@ -35,5 +35,9 @@ class UsersRemoveCommand:
                 users = UserHandler(config, graph_api)
                 users.remove(usernames)
         except DataSafeHavenError as exc:
-            for line in f"Could not remove users from Data Safe Haven '{shm_name}'.\n{exc}".split("\n"):
+            for (
+                line
+            ) in f"Could not remove users from Data Safe Haven '{shm_name}'.\n{exc}".split(
+                "\n"
+            ):
                 self.logger.error(line)
