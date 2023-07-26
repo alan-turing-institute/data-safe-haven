@@ -1,8 +1,8 @@
 """Backend for a Data Safe Haven environment"""
+import datetime
 import pathlib
 import time
 from collections.abc import Sequence
-from datetime import datetime
 from typing import Any
 
 import psycopg2
@@ -54,7 +54,7 @@ class AzurePostgreSQLDatabase:
         self.logger = Logger()
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
-        self.rule_suffix = datetime.now(tz=datetime.timezone.utc).strftime(
+        self.rule_suffix = datetime.datetime.now(tz=datetime.timezone.utc).strftime(
             r"%Y%m%d-%H%M%S"
         )
 
