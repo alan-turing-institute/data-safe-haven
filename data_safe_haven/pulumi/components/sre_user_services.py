@@ -114,7 +114,6 @@ class SREUserServicesComponent(ComponentResource):
         SREGiteaServerComponent(
             "sre_gitea_server",
             stack_name,
-            sre_name,
             SREGiteaServerProps(
                 database_subnet_id=props.subnet_databases_id,
                 database_password=props.gitea_database_password,
@@ -143,7 +142,6 @@ class SREUserServicesComponent(ComponentResource):
         SREHedgeDocServerComponent(
             "sre_hedgedoc_server",
             stack_name,
-            sre_name,
             SREHedgeDocServerProps(
                 database_subnet_id=props.subnet_databases_id,
                 database_password=props.hedgedoc_database_password,
