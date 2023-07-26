@@ -21,6 +21,7 @@ class SRENetworkingProps:
         shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
         sre_index: Input[int],
+        sre_name: Input[str],
     ):
         # Virtual network and subnet IP ranges
         self.vnet_iprange = Output.from_input(sre_index).apply(
@@ -60,6 +61,7 @@ class SRENetworkingProps:
         self.shm_subnet_update_servers_prefix = shm_subnet_update_servers_prefix
         self.shm_virtual_network_name = shm_virtual_network_name
         self.shm_zone_name = shm_zone_name
+        self.sre_name = sre_name
 
 
 class SRENetworkingComponent(ComponentResource):
@@ -69,7 +71,6 @@ class SRENetworkingComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SRENetworkingProps,
         opts: ResourceOptions | None = None,
     ):
@@ -435,7 +436,9 @@ class SRENetworkingComponent(ComponentResource):
             remote_virtual_network=network.SubResourceArgs(id=shm_virtual_network.id),
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
-            virtual_network_peering_name=f"peer_sre_{sre_name}_to_shm",
+            virtual_network_peering_name=Output.concat(
+                "peer_sre_", props.sre_name, "_to_shm"
+            ),
             opts=child_opts,
         )
         network.VirtualNetworkPeering(
@@ -444,7 +447,9 @@ class SRENetworkingComponent(ComponentResource):
             remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=shm_virtual_network.name,
-            virtual_network_peering_name=f"peer_shm_to_sre_{sre_name}",
+            virtual_network_peering_name=Output.concat(
+                "peer_shm_to_sre_", props.sre_name
+            ),
             opts=child_opts,
         )
 
@@ -473,10 +478,10 @@ class SRENetworkingComponent(ComponentResource):
                 zone_name=kwargs["zone_name"],
             )
         )
-        sre_subdomain = alphanumeric(sre_name).lower()
-        sre_fqdn = Output.from_input(props.shm_fqdn).apply(
-            lambda parent: f"{sre_subdomain}.{parent}"
+        sre_subdomain = Output.from_input(props.sre_name).apply(
+            lambda name: alphanumeric(name).lower()
         )
+        sre_fqdn = Output.concat(sre_subdomain, ".", props.shm_fqdn)
         sre_dns_zone = network.Zone(
             f"{self._name}_dns_zone",
             location="Global",

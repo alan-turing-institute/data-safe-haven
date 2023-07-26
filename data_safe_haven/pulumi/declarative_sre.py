@@ -62,7 +62,6 @@ class DeclarativeSRE:
         networking = SRENetworkingComponent(
             "sre_networking",
             self.stack_name,
-            self.sre_name,
             SRENetworkingProps(
                 location=self.cfg.azure.location,
                 shm_fqdn=self.cfg.shm.fqdn,
@@ -78,11 +77,12 @@ class DeclarativeSRE:
                 shm_subnet_update_servers_prefix=self.pulumi_opts.require(
                     "shm-networking-subnet_update_servers_prefix",
                 ),
-                shm_zone_name=self.cfg.shm.fqdn,
-                sre_index=self.cfg.sres[self.sre_name].index,
                 shm_virtual_network_name=self.pulumi_opts.require(
                     "shm-networking-virtual_network_name"
                 ),
+                shm_zone_name=self.cfg.shm.fqdn,
+                sre_index=self.cfg.sres[self.sre_name].index,
+                sre_name=self.sre_name,
             ),
         )
 
