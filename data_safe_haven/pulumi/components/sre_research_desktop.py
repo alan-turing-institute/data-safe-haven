@@ -14,7 +14,7 @@ from data_safe_haven.pulumi.common.transformations import (
     get_name_from_vnet,
 )
 
-from .components.virtual_machine import LinuxVMProps, VMComponent
+from .virtual_machine import LinuxVMProps, VMComponent
 
 
 class SREResearchDesktopProps:
