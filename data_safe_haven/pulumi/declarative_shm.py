@@ -34,7 +34,6 @@ class DeclarativeSHM:
         networking = SHMNetworkingComponent(
             "shm_networking",
             self.stack_name,
-            self.shm_name,
             SHMNetworkingProps(
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 fqdn=self.cfg.shm.fqdn,
@@ -49,7 +48,6 @@ class DeclarativeSHM:
         SHMFirewallComponent(
             "shm_firewall",
             self.stack_name,
-            self.shm_name,
             SHMFirewallProps(
                 domain_controller_private_ip=networking.domain_controller_private_ip,
                 dns_zone=networking.dns_zone,
@@ -66,7 +64,6 @@ class DeclarativeSHM:
         SHMBastionComponent(
             "shm_bastion",
             self.stack_name,
-            self.shm_name,
             SHMBastionProps(
                 location=self.cfg.azure.location,
                 resource_group_name=networking.resource_group_name,
@@ -78,7 +75,6 @@ class DeclarativeSHM:
         data = SHMDataComponent(
             "shm_data",
             self.stack_name,
-            self.shm_name,
             SHMDataProps(
                 admin_group_id=self.cfg.azure.admin_group_id,
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
@@ -92,7 +88,6 @@ class DeclarativeSHM:
         monitoring = SHMMonitoringComponent(
             "shm_monitoring",
             self.stack_name,
-            self.shm_name,
             SHMMonitoringProps(
                 dns_resource_group_name=networking.resource_group_name,
                 location=self.cfg.azure.location,
@@ -106,7 +101,6 @@ class DeclarativeSHM:
         update_servers = SHMUpdateServersComponent(
             "shm_update_servers",
             self.stack_name,
-            self.shm_name,
             SHMUpdateServersProps(
                 admin_password=data.password_update_server_linux_admin,
                 location=self.cfg.azure.location,
@@ -123,7 +117,6 @@ class DeclarativeSHM:
         domain_controllers = SHMDomainControllersComponent(
             "shm_domain_controllers",
             self.stack_name,
-            self.shm_name,
             SHMDomainControllersProps(
                 automation_account_modules=monitoring.automation_account_modules,
                 automation_account_name=monitoring.automation_account.name,
