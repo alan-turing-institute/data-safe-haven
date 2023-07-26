@@ -1,5 +1,5 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
 
@@ -10,7 +10,7 @@ from .initialise_command import InitialiseCommand
 
 def initialise_command(
     admin_group: Annotated[
-        str | None,
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--admin-group",
             "-a",
@@ -19,7 +19,7 @@ def initialise_command(
         ),
     ] = None,
     location: Annotated[
-        str | None,
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--location",
             "-l",
@@ -27,7 +27,7 @@ def initialise_command(
         ),
     ] = None,
     name: Annotated[
-        str | None,
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--name",
             "-n",
@@ -35,7 +35,7 @@ def initialise_command(
         ),
     ] = None,
     subscription: Annotated[
-        str | None,
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--subscription",
             "-s",

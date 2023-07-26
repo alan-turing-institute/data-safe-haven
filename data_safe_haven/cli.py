@@ -1,6 +1,6 @@
 """Command line entrypoint for Data Safe Haven application"""
 import pathlib
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
 
@@ -17,11 +17,11 @@ from data_safe_haven.utility import Logger
 
 def callback(
     output: Annotated[
-        pathlib.Path | None,
+        Optional[pathlib.Path],  # noqa: UP007
         typer.Option("--output", "-o", resolve_path=True, help="Path to an output log file"),
     ] = None,
     verbosity: Annotated[
-        int | None,
+        Optional[int],  # noqa: UP007
         typer.Option(
             "--verbosity",
             "-v",
@@ -31,7 +31,7 @@ def callback(
         ),
     ] = None,
     version: Annotated[
-        bool | None,
+        Optional[bool],  # noqa: UP007
         typer.Option("--version", "-V", help="Display the version of this application."),
     ] = None,
 ) -> None:
