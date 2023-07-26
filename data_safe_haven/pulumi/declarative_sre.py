@@ -32,7 +32,8 @@ class DeclarativeSRE:
         self.cfg = config
         self.shm_name = shm_name
         self.sre_name = sre_name
-        self.stack_name = f"shm-{shm_name}-sre-{sre_name}"
+        self.short_name = f"sre-{sre_name}"
+        self.stack_name = f"shm-{shm_name}-{self.short_name}"
 
     def run(self) -> None:
         # Load pulumi configuration options

@@ -24,7 +24,8 @@ class DeclarativeSHM:
     def __init__(self, config: Config, shm_name: str) -> None:
         self.cfg = config
         self.shm_name = shm_name
-        self.stack_name = f"shm-{shm_name}"
+        self.short_name = f"shm-{shm_name}"
+        self.stack_name = self.short_name
 
     def run(self) -> None:
         # Load pulumi configuration options

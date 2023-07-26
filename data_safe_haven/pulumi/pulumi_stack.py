@@ -35,7 +35,7 @@ class PulumiStack:
         self.options: dict[str, tuple[str, bool, bool]] = {}
         self.program = program
         self.stack_name = self.program.stack_name
-        self.work_dir = config.work_directory / "pulumi"
+        self.work_dir = config.work_directory / "pulumi" / self.program.short_name
         self.work_dir.mkdir(parents=True, exist_ok=True)
         self.login()  # Log in to the Pulumi backend
 
@@ -177,7 +177,7 @@ class PulumiStack:
             # If stack information is saved in the config file then apply it here
             if self.stack_name in self.cfg.pulumi.stacks.keys():
                 self.logger.info(
-                    f"Loading stack [green]{self.stack_name}[/] information from config"
+                    f"Updating stack [green]{self.stack_name}[/] information from config"
                 )
                 self.cfg.write_stack(self.stack_name, self.local_stack_path)
         except Exception as exc:
