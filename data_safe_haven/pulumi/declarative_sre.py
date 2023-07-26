@@ -176,7 +176,6 @@ class DeclarativeSRE:
         research_desktops = SREResearchDesktopComponent(
             "sre_secure_research_desktop",
             self.stack_name,
-            self.sre_name,
             SREResearchDesktopProps(
                 admin_password=data.password_secure_research_desktop_admin,
                 domain_sid=self.pulumi_opts.require(
@@ -200,6 +199,7 @@ class DeclarativeSRE:
                     "shm-monitoring-log_analytics_workspace_key"
                 ),
                 sre_fqdn=networking.sre_fqdn,
+                sre_name=self.sre_name,
                 storage_account_userdata_name=data.storage_account_userdata_name,
                 storage_account_securedata_name=data.storage_account_securedata_name,
                 subnet_research_desktops=networking.subnet_research_desktops,
@@ -237,7 +237,6 @@ class DeclarativeSRE:
         SREUserServicesComponent(
             "sre_user_services",
             self.stack_name,
-            self.sre_name,
             SREUserServicesProps(
                 domain_netbios_name=self.pulumi_opts.require(
                     "shm-domain_controllers-netbios_name"

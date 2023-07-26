@@ -36,6 +36,7 @@ class SREResearchDesktopProps:
         log_analytics_workspace_id: Input[str],
         log_analytics_workspace_key: Input[str],
         sre_fqdn: Input[str],
+        sre_name: Input[str],
         storage_account_userdata_name: Input[str],
         storage_account_securedata_name: Input[str],
         subnet_research_desktops: Input[network.GetSubnetResult],
@@ -60,6 +61,7 @@ class SREResearchDesktopProps:
         self.log_analytics_workspace_id = log_analytics_workspace_id
         self.log_analytics_workspace_key = log_analytics_workspace_key
         self.sre_fqdn = sre_fqdn
+        self.sre_name = sre_name
         self.storage_account_userdata_name = storage_account_userdata_name
         self.storage_account_securedata_name = storage_account_securedata_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
@@ -93,7 +95,6 @@ class SREResearchDesktopComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SREResearchDesktopProps,
         opts: ResourceOptions | None = None,
     ):
@@ -140,7 +141,9 @@ class SREResearchDesktopComponent(ComponentResource):
                     subnet_name=props.subnet_research_desktops_name,
                     virtual_network_name=props.virtual_network_name,
                     virtual_network_resource_group_name=props.virtual_network_resource_group_name,
-                    vm_name=replace_separators(f"sre-{sre_name}-vm-{vm_name}", "-"),
+                    vm_name=Output.concat(
+                        "sre-", props.sre_name, "-vm-", vm_name
+                    ).apply(lambda s: replace_separators(s, "-")),
                     vm_size=vm_size,
                 ),
                 opts=child_opts,

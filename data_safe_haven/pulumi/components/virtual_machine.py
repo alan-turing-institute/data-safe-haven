@@ -46,7 +46,7 @@ class VMProps:
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
         self.vm_name = vm_name
         self.vm_name_underscored = Output.from_input(vm_name).apply(
-            lambda n: n.replace("-", "_")
+            lambda n: replace_separators(n, "_")
         )
         self.vm_size = vm_size
 
@@ -81,7 +81,7 @@ class WindowsVMProps(VMProps):
             windows_configuration=compute.WindowsConfigurationArgs(
                 enable_automatic_updates=True,
                 patch_settings=compute.PatchSettingsArgs(
-                    patch_mode=compute.LinuxVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
+                    patch_mode=compute.WindowsVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
                 ),
                 provision_vm_agent=True,
             ),
@@ -141,7 +141,7 @@ class VMComponent(ComponentResource):
         if props.ip_address_public:
             public_ip = network.PublicIPAddress(
                 f"{self._name}_public_ip",
-                public_ip_address_name=f"{props.vm_name}-public-ip",
+                public_ip_address_name=Output.concat(props.vm_name, "-public-ip"),
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,
                 sku=network.PublicIPAddressSkuArgs(
@@ -160,7 +160,7 @@ class VMComponent(ComponentResource):
             ip_configurations=[
                 network.NetworkInterfaceIPConfigurationArgs(
                     name=props.vm_name_underscored.apply(
-                        lambda n: f"ipconfig{n}".replace("_", "")
+                        lambda n: replace_separators(f"ipconfig{n}", "")
                     ),
                     private_ip_address=props.ip_address_private,
                     private_ip_allocation_method=network.IPAllocationMethod.STATIC,
@@ -168,7 +168,7 @@ class VMComponent(ComponentResource):
                     **network_interface_ip_params,
                 )
             ],
-            network_interface_name=f"{props.vm_name}-nic",
+            network_interface_name=Output.concat(props.vm_name, "-nic"),
             resource_group_name=props.resource_group_name,
             opts=child_opts,
         )
@@ -202,7 +202,7 @@ class VMComponent(ComponentResource):
                     managed_disk=compute.ManagedDiskParametersArgs(
                         storage_account_type=compute.StorageAccountTypes.PREMIUM_LRS,
                     ),
-                    name=f"{props.vm_name}-osdisk",
+                    name=Output.concat(props.vm_name, "-osdisk"),
                 ),
             ),
             vm_name=props.vm_name,
