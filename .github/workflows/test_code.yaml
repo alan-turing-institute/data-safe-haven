@@ -31,7 +31,8 @@ jobs:
       - name: Install requirements
         shell: bash
         run: npm install -g markdown-link-check
-      - name: Test Markdown for dead links
-        shell: bash
-        run: find . -name "*.md" | xargs -n 1 markdown-link-check -p -c .markdownlinkcheck.json
-        continue-on-error: true
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v1.7.0
+        with:
+          args: --config='./.lychee.toml' --no-progress --offline '**/*.md' --exclude-path './docs'
+          fail: true  # fail on broken links

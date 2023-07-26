@@ -1,4 +1,4 @@
-hash: e1447ed4a2acc244ca678e29a416a614c38ea99df281578a0bc85ec52f98795a
-version: 1.43.0
+hash: f413c7e1315516dc37c2a7d0c31cece0663556266dcb3a81aa9c402620a5c236
+version: 1.44.1
 debfile: azuredatastudio-linux-|VERSION|.deb
-remote: https://sqlopsbuilds.azureedge.net/stable/b790d700898b1095d83e62f0de14678a58222520/|DEBFILE|
+remote: https://sqlopsbuilds.azureedge.net/stable/8f53a316fa00a98264f1ab119641cd540b5af25c/|DEBFILE|

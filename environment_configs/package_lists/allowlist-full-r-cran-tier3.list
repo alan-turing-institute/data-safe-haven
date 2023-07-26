@@ -213,6 +213,7 @@ httpuv
 httr
 httr2
 hunspell
+ICS
 ids
 igraph
 infer
@@ -295,6 +296,7 @@ mgcv
 mime
 miniUI
 minqa
+mitools
 mlapi
 mlbench
 MLmetrics
@@ -335,6 +337,7 @@ patchwork
 pbdMPI
 pbdZMQ
 pbkrtest
+pcaPP
 permute
 phosphoricons
 pillar
@@ -440,12 +443,14 @@ RMySQL
 RNetCDF
 rngtools
 robustbase
+robustX
 ROCR
 roxygen2
 rpart
 RPostgres
 RPostgreSQL
 rprojroot
+rrcov
 rsample
 rsconnect
 rsparse
@@ -503,6 +508,7 @@ stopwords
 stringi
 stringr
 styler
+survey
 survival
 svglite
 svgPanZoom

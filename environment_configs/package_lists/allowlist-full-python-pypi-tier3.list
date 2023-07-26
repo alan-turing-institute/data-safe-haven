@@ -1,5 +1,4 @@
 absl-py
-aenum
 aero-calc
 aesara
 affine
@@ -14,6 +13,7 @@ alabaster
 altair
 annotated-types
 annoy
+ansi2html
 ansimarkup
 anyio
 apispec
@@ -123,6 +123,7 @@ cssselect2
 cycler
 cymem
 Cython
+dacite
 dash
 dash-core-components
 dash-html-components
@@ -211,17 +212,22 @@ graphlib-backport
 graphviz
 grpcio
 gym
+h11
+h2
 h5netcdf
 h5py
 HeapDict
 hijri-converter
 holidays
 hotelling
+hpack
 html5lib
 htmlmin
+httpcore
 httplib2
 httpstan
 huggingface-hub
+hyperframe
 hyperlink
 hyperopt
 idna
@@ -537,6 +543,7 @@ ruamel.yaml
 s3fs
 s3transfer
 sacremoses
+safetensors
 safety
 scandir
 scikit-image
