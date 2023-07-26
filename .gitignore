@@ -42,5 +42,5 @@ expanded.yaml
 # mypy cache
 .mypy_cache
 
-# Pulumi secrets files
-pulumi/Pulumi.*.yaml
+# ruff cache
+.ruff_cache
