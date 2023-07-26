@@ -32,11 +32,13 @@ function Test-PackageExistence {
         if ($Repository -eq "pypi") {
             # The best PyPI results come from the package JSON files
             $response = Invoke-RestMethod -Uri "https://pypi.org/${Repository}/${Package}/json" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+            if ($response -is [String]) { $response = $response | ConvertFrom-Json -AsHashtable }
             $versions = $response.releases | Get-Member -MemberType NoteProperty | ForEach-Object { $_.Name }
             $name = $response.info.name
         } elseif ($Repository -eq "cran") {
             # Use the RStudio package manager for CRAN packages
             $response = Invoke-RestMethod -Uri "https://packagemanager.rstudio.com/__api__/repos/${RepositoryId}/packages?name=${Package}&case_insensitive=true" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+            if ($response -is [String]) { $response = $response | ConvertFrom-Json -AsHashtable }
             $name = $response.name
             $response = Invoke-RestMethod -Uri "https://packagemanager.rstudio.com/__api__/repos/${RepositoryId}/packages/${name}" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
             $versions = @($response.version) + ($response.archived | ForEach-Object { $_.version })
@@ -44,6 +46,7 @@ function Test-PackageExistence {
             # For other repositories we use libraries.io
             # As we are rate-limited to 60 requests per minute this request can fail. If it does, we retry every few seconds for 1 minute
             $response = Invoke-RestMethod -Uri "https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey}" -MaximumRetryCount 16 -RetryIntervalSec 4 -ErrorAction Stop
+            if ($response -is [String]) { $response = $response | ConvertFrom-Json -AsHashtable }
             $versions = $response.versions | ForEach-Object { $_.number }
             $name = $response.Name
         }
