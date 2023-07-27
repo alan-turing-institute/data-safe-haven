@@ -18,7 +18,7 @@ from .deploy_sre_command import DeploySRECommand
 deploy_command_group = typer.Typer()
 
 
-@deploy_command_group.command()
+@deploy_command_group.command()  # type: ignore [misc]
 def shm(
     aad_tenant_id: Annotated[
         Optional[str],  # noqa: UP007
@@ -81,7 +81,7 @@ def shm(
     )
 
 
-@deploy_command_group.command()
+@deploy_command_group.command()  # type: ignore [misc]
 def sre(
     name: Annotated[str, typer.Argument(help="Name of SRE to deploy")],
     allow_copy: Annotated[
