@@ -3,9 +3,9 @@ from typing import Annotated
 
 import typer
 
-from .teardown_backend_command import TeardownBackendCommand
-from .teardown_shm_command import TeardownSHMCommand
-from .teardown_sre_command import TeardownSRECommand
+from .teardown_backend import TeardownBackendCommand
+from .teardown_shm import TeardownSHMCommand
+from .teardown_sre import TeardownSRECommand
 
 teardown_command_group = typer.Typer()
 

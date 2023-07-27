@@ -12,8 +12,8 @@ from data_safe_haven.functions import (
 )
 from data_safe_haven.utility import SoftwarePackageCategory
 
-from .deploy_shm_command import DeploySHMCommand
-from .deploy_sre_command import DeploySRECommand
+from .deploy_shm import DeploySHMCommand
+from .deploy_sre import DeploySRECommand
 
 deploy_command_group = typer.Typer()
 

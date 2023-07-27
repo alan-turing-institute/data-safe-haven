@@ -4,11 +4,11 @@ from typing import Annotated
 
 import typer
 
-from .users_add_command import UsersAddCommand
-from .users_list_command import UsersListCommand
-from .users_register_command import UsersRegisterCommand
-from .users_remove_command import UsersRemoveCommand
-from .users_unregister_command import UsersUnregisterCommand
+from .admin_add_users import UsersAddCommand
+from .admin_list_users import UsersListCommand
+from .admin_register_users import UsersRegisterCommand
+from .admin_remove_users import UsersRemoveCommand
+from .admin_unregister_users import UsersUnregisterCommand
 
 admin_command_group = typer.Typer()
 
