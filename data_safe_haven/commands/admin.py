@@ -4,11 +4,11 @@ from typing import Annotated
 
 import typer
 
-from .admin_add_users import UsersAddCommand
-from .admin_list_users import UsersListCommand
-from .admin_register_users import UsersRegisterCommand
-from .admin_remove_users import UsersRemoveCommand
-from .admin_unregister_users import UsersUnregisterCommand
+from .admin_add_users import admin_add_users
+from .admin_list_users import admin_list_users
+from .admin_register_users import admin_register_users
+from .admin_remove_users import admin_remove_users
+from .admin_unregister_users import admin_unregister_users
 
 admin_command_group = typer.Typer()
 
@@ -22,12 +22,12 @@ def add_users(
         ),
     ],
 ) -> None:
-    UsersAddCommand()(csv)
+    admin_add_users(csv)
 
 
 @admin_command_group.command(help="List users from a deployed Data Safe Haven.")
 def list_users() -> None:
-    UsersListCommand()()
+    admin_list_users()
 
 
 @admin_command_group.command(
@@ -49,7 +49,7 @@ def register_users(
         ),
     ],
 ) -> None:
-    UsersRegisterCommand()(usernames, sre)
+    admin_register_users(usernames, sre)
 
 
 @admin_command_group.command(
@@ -65,7 +65,7 @@ def remove_users(
         ),
     ],
 ) -> None:
-    UsersRemoveCommand()(usernames)
+    admin_remove_users(usernames)
 
 
 @admin_command_group.command(help="Unregister existing users from a deployed SRE.")
@@ -85,4 +85,4 @@ def unregister_users(
         ),
     ],
 ) -> None:
-    UsersUnregisterCommand()(usernames, sre)
+    admin_unregister_users(usernames, sre)
