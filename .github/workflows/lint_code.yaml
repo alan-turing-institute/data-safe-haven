@@ -60,7 +60,7 @@ jobs:
       - name: Install hatch
         run: pip install hatch
       - name: Lint Python
-        run: hatch run lint:style
+        run: hatch run lint:all
 
   lint_shell:
     runs-on: ubuntu-latest
