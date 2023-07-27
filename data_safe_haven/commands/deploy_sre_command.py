@@ -190,7 +190,7 @@ class DeploySRECommand:
 
     def update_config(
         self,
-        sre_name,
+        sre_name: str,
         config: Config,
         allow_copy: bool | None = None,
         allow_paste: bool | None = None,

@@ -211,7 +211,7 @@ class ConfigSectionSRE:
     research_user_ip_addresses: list[str] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
-    def add_research_desktop(self, name: str):
+    def add_research_desktop(self, name: str) -> None:
         self.research_desktops[
             name
         ] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts()
@@ -360,7 +360,7 @@ class Config:
             contents["tags"] = self.tags.to_dict()
         return str(yaml.dump(contents, indent=2))
 
-    def read_stack(self, name: str, path: pathlib.Path):
+    def read_stack(self, name: str, path: pathlib.Path) -> None:
         """Add a Pulumi stack file to config"""
         with open(path, encoding="utf-8") as f_stack:
             pulumi_cfg = f_stack.read()
