@@ -1,5 +1,6 @@
 """Pulumi component for SRE monitoring"""
 import pathlib
+from contextlib import suppress
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources, storage
@@ -36,12 +37,11 @@ class SRESoftwareRepositoriesProps:
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.nexus_admin_password = Output.secret(nexus_admin_password)
-        try:
+        self.nexus_packages: str | None = None
+        with suppress(KeyError):
             self.nexus_packages = {"any": "all", "pre-approved": "selected"}[
                 software_packages
             ]
-        except KeyError:
-            self.nexus_packages = None
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name

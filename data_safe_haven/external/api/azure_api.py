@@ -165,7 +165,7 @@ class AzureApi(AzureAuthenticator):
             blob_client = blob_service_client.get_blob_client(
                 container=storage_container_name, blob=blob_name
             )
-            return blob_client.download_blob(encoding="utf-8").readall()
+            return str(blob_client.download_blob(encoding="utf-8").readall())
         except Exception as exc:
             msg = f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'\n{exc}."
             raise DataSafeHavenAzureError(msg) from exc
@@ -438,7 +438,7 @@ class AzureApi(AzureAuthenticator):
             self.logger.info(
                 f"Ensured that managed identity [green]{identity_name}[/] exists.",
             )
-            return managed_identity  # type: ignore
+            return managed_identity
         except Exception as exc:
             msg = f"Failed to create managed identity {identity_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
@@ -599,7 +599,7 @@ class AzureApi(AzureAuthenticator):
         try:
             secret = secret_client.get_secret(secret_name)
             if secret.value:
-                return secret.value
+                return str(secret.value)
             msg = f"Secret {secret_name} has no value."
             raise DataSafeHavenAzureError(msg)
         except Exception as exc:
@@ -651,7 +651,7 @@ class AzureApi(AzureAuthenticator):
                 )
                 raise DataSafeHavenAzureError(msg)
             keys = storage_keys.keys
-            if not keys or len(keys) == 0:
+            if not keys or not isinstance(keys, list) or len(keys) == 0:
                 msg = (
                     f"No keys were retrieved for storage account '{storage_account_name}'"
                     f" in resource group '{resource_group_name}'."

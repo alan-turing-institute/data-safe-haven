@@ -16,7 +16,7 @@ from data_safe_haven.utility import LoggingSingleton, SoftwarePackageCategory
 class DeploySRECommand:
     """Deploy a Secure Research Environment component"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor"""
         self._available_vm_skus: dict[str, dict[str, Any]] = {}
         self.logger = LoggingSingleton()
@@ -190,7 +190,7 @@ class DeploySRECommand:
 
     def update_config(
         self,
-        sre_name,
+        sre_name: str,
         config: Config,
         allow_copy: bool | None = None,
         allow_paste: bool | None = None,
@@ -264,7 +264,8 @@ class DeploySRECommand:
         # Set research desktops
         if research_desktops:
             if config.sres[sre_name].research_desktops and (
-                config.sres[sre_name].research_desktops != research_desktops
+                sorted(research_desktops)
+                != sorted(config.sres[sre_name].research_desktops.keys())
             ):
                 self.logger.debug(
                     f"Overwriting existing research desktops {config.sres[sre_name].research_desktops}"

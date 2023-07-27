@@ -23,7 +23,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.utility import LoggingSingleton
 
 
-class LocalTokenCache(SerializableTokenCache):  # type: ignore
+class LocalTokenCache(SerializableTokenCache):
     def __init__(self, token_cache_filename: pathlib.Path) -> None:
         super().__init__()
         self.token_cache_filename = token_cache_filename

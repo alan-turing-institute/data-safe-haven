@@ -10,7 +10,7 @@ from data_safe_haven.utility import LoggingSingleton
 class UsersRegisterCommand:
     """Register existing users with a deployed SRE"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor"""
         self.logger = LoggingSingleton()
 

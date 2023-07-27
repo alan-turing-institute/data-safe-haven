@@ -59,10 +59,17 @@ dependencies = [
   "black>=23.1.0",
   "mypy>=1.0.0",
   "ruff>=0.0.243",
+  "types-appdirs>=1.4.3.5",
+  "types-chevron>=0.14.2.5",
+  "types-psycopg2>=2.9.21.11",
+  "types-pytz>=2023.3.0.0",
+  "types-PyYAML>=6.0.12.11",
+  "types-requests>=2.31.0.2",
 ]
 
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --strict --install-types --non-interactive --namespace-packages --explicit-package-bases {args:data_safe_haven}"
+typing = "mypy {args:data_safe_haven}"
+
 style = [
   "ruff {args:data_safe_haven}",
   "black --check --diff {args:data_safe_haven}",
@@ -121,28 +128,35 @@ ignore = [
 ]
 
 [tool.ruff.isort]
-known-first-party = ["data_safe_haven"]
 combine-as-imports = true
+known-first-party = ["data_safe_haven"]
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "parents"
 
 [tool.mypy]
-strict = true
-files = "data_safe_haven"
-mypy_path = "typings"
+disallow_subclassing_any = false  # allow subclassing of types from third-party libraries
+files = "data_safe_haven"         # run mypy over this directory
+mypy_path = "typings"             # use this directory for stubs
+strict = true                     # enable all optional error checking flags
 
 [[tool.mypy.overrides]]
 module = [
-    "azure.mgmt.automation.*",
-    "azure.mgmt.containerinstance.*",
-    "azure.mgmt.dns.*",
-    "azure.mgmt.keyvault.*",
-    "azure.mgmt.rdbms.postgresql.*",
-    "azure.mgmt.resource.*",
-    "azure.mgmt.storage.*",
+    "acme.*",
+    "azure.core.*",
+    "azure.identity.*",
+    "azure.keyvault.*",
+    "azure.mgmt.*",
+    "azure.storage.*",
+    "chili.*",
+    "cryptography.*",
+    "dns.*",
     "msal.*",
+    "pulumi.*",
+    "pulumi_azure_native.*",
+    "rich.*",
     "simple_acme_dns.*",
+    "typer.*",
     "websocket.*",
 ]
 ignore_missing_imports = true

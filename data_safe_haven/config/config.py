@@ -211,7 +211,7 @@ class ConfigSectionSRE:
     research_user_ip_addresses: list[str] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
-    def add_research_desktop(self, name: str):
+    def add_research_desktop(self, name: str) -> None:
         self.research_desktops[
             name
         ] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts()
@@ -256,7 +256,7 @@ class ConfigSectionTags:
 
 
 class Config:
-    def __init__(self):
+    def __init__(self) -> None:
         # Initialise config sections
         self.azure_: ConfigSectionAzure | None = None
         self.backend_: ConfigSectionBackend | None = None
@@ -345,7 +345,7 @@ class Config:
 
     def __str__(self) -> str:
         """String representation of the Config object"""
-        contents = {}
+        contents: dict[str, Any] = {}
         if self.azure_:
             contents["azure"] = self.azure.to_dict()
         if self.backend_:
@@ -360,7 +360,7 @@ class Config:
             contents["tags"] = self.tags.to_dict()
         return str(yaml.dump(contents, indent=2))
 
-    def read_stack(self, name: str, path: pathlib.Path):
+    def read_stack(self, name: str, path: pathlib.Path) -> None:
         """Add a Pulumi stack file to config"""
         with open(path, encoding="utf-8") as f_stack:
             pulumi_cfg = f_stack.read()
@@ -376,13 +376,13 @@ class Config:
         if name in self.pulumi.stacks.keys():
             del self.pulumi.stacks[name]
 
-    def write_stack(self, name: str, path: pathlib.Path):
+    def write_stack(self, name: str, path: pathlib.Path) -> None:
         """Write a Pulumi stack file from config"""
         pulumi_cfg = b64decode(self.pulumi.stacks[name])
         with open(path, "w", encoding="utf-8") as f_stack:
             f_stack.write(pulumi_cfg)
 
-    def upload(self):
+    def upload(self) -> None:
         """Upload config to Azure storage"""
         self.azure_api.upload_blob(
             str(self),
