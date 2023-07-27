@@ -438,7 +438,7 @@ class AzureApi(AzureAuthenticator):
             self.logger.info(
                 f"Ensured that managed identity [green]{identity_name}[/] exists.",
             )
-            return managed_identity  # type: ignore
+            return managed_identity
         except Exception as exc:
             msg = f"Failed to create managed identity {identity_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
