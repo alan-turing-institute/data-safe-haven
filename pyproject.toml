@@ -135,11 +135,10 @@ known-first-party = ["data_safe_haven"]
 ban-relative-imports = "parents"
 
 [tool.mypy]
-explicit_package_bases = true
-files = "data_safe_haven"
-mypy_path = "typings"
-namespace_packages = true
-strict = true
+disallow_subclassing_any = false  # allow subclassing of types from third-party libraries
+files = "data_safe_haven"         # run mypy over this directory
+mypy_path = "typings"             # use this directory for stubs
+strict = true                     # enable all optional error checking flags
 
 [[tool.mypy.overrides]]
 module = [
