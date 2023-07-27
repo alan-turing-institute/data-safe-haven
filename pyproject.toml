@@ -138,19 +138,26 @@ ban-relative-imports = "parents"
 explicit_package_bases = true
 files = "data_safe_haven"
 mypy_path = "typings"
+namespace_packages = true
 strict = true
 
 [[tool.mypy.overrides]]
 module = [
-    "azure.mgmt.automation.*",
-    "azure.mgmt.containerinstance.*",
-    "azure.mgmt.dns.*",
-    "azure.mgmt.keyvault.*",
-    "azure.mgmt.rdbms.postgresql.*",
-    "azure.mgmt.resource.*",
-    "azure.mgmt.storage.*",
+    "acme.*",
+    "azure.core.*",
+    "azure.identity.*",
+    "azure.keyvault.*",
+    "azure.mgmt.*",
+    "azure.storage.*",
+    "chili.*",
+    "cryptography.*",
+    "dns.*",
     "msal.*",
+    "pulumi.*",
+    "pulumi_azure_native.*",
+    "rich.*",
     "simple_acme_dns.*",
+    "typer.*",
     "websocket.*",
 ]
 ignore_missing_imports = true
