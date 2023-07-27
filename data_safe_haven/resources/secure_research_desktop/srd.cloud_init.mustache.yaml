@@ -66,20 +66,20 @@ mounts:
 # Install necessary apt packages
 packages:
   # System requirements
-  - libnss-ldapd # LDAP login
-  - libpam-ldapd # LDAP login
-  - ldap-utils   # LDAP login
-  - nfs-common   # Mounting shared volumes
-  - xfce4        # XFCE desktop
-  - xrdp         # remote desktop client
+  - libnss-ldapd  # LDAP login
+  - libpam-ldapd  # LDAP login
+  - ldap-utils    # LDAP login
+  - nfs-common    # Mounting shared volumes
+  - xfce4         # XFCE desktop
+  - xrdp          # remote desktop client
   # Programming
-  - python-is-python3 # Python language
-  - python3           # Python language
-  - python3-pip       # Python language
-  - python3-venv      # Python language
-  - r-base            # R language
+  - python-is-python3  # Python language
+  - python3            # Python language
+  - python3-pip        # Python language
+  - python3-venv       # Python language
+  - r-base             # R language
   # Tools
-  - firefox           # web browser
+  - firefox            # web browser
 package_update: true
 package_upgrade: true
 

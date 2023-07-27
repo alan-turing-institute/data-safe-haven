@@ -1,22 +1,19 @@
 """Pulumi component for virtual machines"""
-# Standard library imports
-from typing import Any, Dict, Optional
+from typing import Any
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import compute, network
 
-# Local imports
 from data_safe_haven.functions import replace_separators
 
 
 class VMProps:
     """Properties for WindowsVMComponent"""
 
-    image_reference_args: Optional[compute.ImageReferenceArgs]
+    image_reference_args: compute.ImageReferenceArgs | None
     log_analytics_extension_name: str
     log_analytics_extension_version: str
-    os_profile_args: Optional[compute.OSProfileArgs]
+    os_profile_args: compute.OSProfileArgs | None
 
     def __init__(
         self,
@@ -29,10 +26,10 @@ class VMProps:
         virtual_network_resource_group_name: Input[str],
         vm_name: Input[str],
         vm_size: Input[str],
-        admin_username: Optional[Input[str]] = None,
-        ip_address_public: Optional[Input[bool]] = None,
-        log_analytics_workspace_id: Optional[Input[str]] = None,
-        log_analytics_workspace_key: Optional[Input[str]] = None,
+        admin_username: Input[str] | None = None,
+        ip_address_public: Input[bool] | None = None,
+        log_analytics_workspace_id: Input[str] | None = None,
+        log_analytics_workspace_key: Input[str] | None = None,
     ):
         self.admin_password = admin_password
         self.admin_username = admin_username if admin_username else "dshvmadmin"
@@ -49,7 +46,7 @@ class VMProps:
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
         self.vm_name = vm_name
         self.vm_name_underscored = Output.from_input(vm_name).apply(
-            lambda n: n.replace("-", "_")
+            lambda n: replace_separators(n, "_")
         )
         self.vm_size = vm_size
 
@@ -84,7 +81,7 @@ class WindowsVMProps(VMProps):
             windows_configuration=compute.WindowsConfigurationArgs(
                 enable_automatic_updates=True,
                 patch_settings=compute.PatchSettingsArgs(
-                    patch_mode=compute.LinuxVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
+                    patch_mode=compute.WindowsVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
                 ),
                 provision_vm_agent=True,
             ),
@@ -128,9 +125,7 @@ class LinuxVMProps(VMProps):
 class VMComponent(ComponentResource):
     """Deploy SHM secrets with Pulumi"""
 
-    def __init__(
-        self, name: str, props: VMProps, opts: Optional[ResourceOptions] = None
-    ):
+    def __init__(self, name: str, props: VMProps, opts: ResourceOptions | None = None):
         super().__init__("dsh:common:VMComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
@@ -142,11 +137,11 @@ class VMComponent(ComponentResource):
         )
 
         # Define public IP address if relevant
-        network_interface_ip_params: Dict[str, Any] = {}
+        network_interface_ip_params: dict[str, Any] = {}
         if props.ip_address_public:
             public_ip = network.PublicIPAddress(
                 f"{self._name}_public_ip",
-                public_ip_address_name=f"{props.vm_name}-public-ip",
+                public_ip_address_name=Output.concat(props.vm_name, "-public-ip"),
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,
                 sku=network.PublicIPAddressSkuArgs(
@@ -165,7 +160,7 @@ class VMComponent(ComponentResource):
             ip_configurations=[
                 network.NetworkInterfaceIPConfigurationArgs(
                     name=props.vm_name_underscored.apply(
-                        lambda n: f"ipconfig{n}".replace("_", "")
+                        lambda n: replace_separators(f"ipconfig{n}", "")
                     ),
                     private_ip_address=props.ip_address_private,
                     private_ip_allocation_method=network.IPAllocationMethod.STATIC,
@@ -173,7 +168,7 @@ class VMComponent(ComponentResource):
                     **network_interface_ip_params,
                 )
             ],
-            network_interface_name=f"{props.vm_name}-nic",
+            network_interface_name=Output.concat(props.vm_name, "-nic"),
             resource_group_name=props.resource_group_name,
             opts=child_opts,
         )
@@ -207,7 +202,7 @@ class VMComponent(ComponentResource):
                     managed_disk=compute.ManagedDiskParametersArgs(
                         storage_account_type=compute.StorageAccountTypes.PREMIUM_LRS,
                     ),
-                    name=f"{props.vm_name}-osdisk",
+                    name=Output.concat(props.vm_name, "-osdisk"),
                 ),
             ),
             vm_name=props.vm_name,
@@ -221,7 +216,7 @@ class VMComponent(ComponentResource):
 
         # Register with Log Analytics workspace
         if props.log_analytics_workspace_key and props.log_analytics_workspace_id:
-            log_analytics_extension = compute.VirtualMachineExtension(
+            compute.VirtualMachineExtension(
                 replace_separators(f"{self._name}_log_analytics_extension", "_"),
                 auto_upgrade_minor_version=True,
                 enable_automatic_upgrade=False,
@@ -232,7 +227,7 @@ class VMComponent(ComponentResource):
                 ).apply(lambda key: {"workspaceKey": key}),
                 resource_group_name=props.resource_group_name,
                 settings=Output.from_input(props.log_analytics_workspace_id).apply(
-                    lambda id: {"workspaceId": id}
+                    lambda wid: {"workspaceId": wid}
                 ),
                 type=props.log_analytics_extension_name,
                 type_handler_version=props.log_analytics_extension_version,

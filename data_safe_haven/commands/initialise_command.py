@@ -1,11 +1,7 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
-# Standard library imports
-from typing import Optional
-
-# Local imports
 from data_safe_haven.backend import Backend
 from data_safe_haven.config import BackendSettings
-from data_safe_haven.exceptions import DataSafeHavenException
+from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.utility import Logger
 
 
@@ -18,10 +14,10 @@ class InitialiseCommand:
 
     def __call__(
         self,
-        admin_group: Optional[str] = None,
-        location: Optional[str] = None,
-        name: Optional[str] = None,
-        subscription: Optional[str] = None,
+        admin_group: str | None = None,
+        location: str | None = None,
+        name: str | None = None,
+        subscription: str | None = None,
     ) -> None:
         """Typer command line entrypoint"""
         try:
@@ -41,7 +37,6 @@ class InitialiseCommand:
             # Load the generated configuration file and upload it to blob storage
             backend.config.upload()
 
-        except DataSafeHavenException as exc:
-            raise DataSafeHavenException(
-                f"Could not initialise Data Safe Haven.\n{str(exc)}"
-            ) from exc
+        except DataSafeHavenError as exc:
+            msg = f"Could not initialise Data Safe Haven.\n{exc}"
+            raise DataSafeHavenError(msg) from exc

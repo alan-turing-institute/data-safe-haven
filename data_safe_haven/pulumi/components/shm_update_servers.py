@@ -1,18 +1,15 @@
 """Pulumi component for SHM monitoring"""
-# Standard library import
 import pathlib
-from typing import Optional
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
-# Local imports
 from data_safe_haven.functions import b64encode
 from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_name_from_subnet,
 )
+
 from .virtual_machine import LinuxVMProps, VMComponent
 
 
@@ -52,16 +49,15 @@ class SHMUpdateServersComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMUpdateServersProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:UpdateServersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Load cloud-init file
         b64cloudinit = self.read_cloudinit()
-        vm_name = f"shm-{shm_name}-vm-linux-updates"
+        vm_name = f"{stack_name}-vm-linux-updates"
         VMComponent(
             vm_name,
             LinuxVMProps(
@@ -93,7 +89,6 @@ class SHMUpdateServersComponent(ComponentResource):
         )
         with open(
             resources_path / "update_server_linux.cloud_init.yaml",
-            "r",
             encoding="utf-8",
         ) as f_cloudinit:
             cloudinit = f_cloudinit.read()

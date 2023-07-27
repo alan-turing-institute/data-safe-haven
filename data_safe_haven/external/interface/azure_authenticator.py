@@ -1,16 +1,11 @@
 """Standalone utility class for anything that needs to authenticate against Azure"""
-# Standard library imports
-from typing import Optional
-
-# Third party imports
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.resource import SubscriptionClient
 
-# Local imports
 from data_safe_haven.exceptions import (
-    DataSafeHavenAzureException,
-    DataSafeHavenInputException,
+    DataSafeHavenAzureError,
+    DataSafeHavenInputError,
 )
 
 
@@ -19,9 +14,9 @@ class AzureAuthenticator:
 
     def __init__(self, subscription_name: str) -> None:
         self.subscription_name: str = subscription_name
-        self.credential_: Optional[DefaultAzureCredential] = None
-        self.subscription_id_: Optional[str] = None
-        self.tenant_id_: Optional[str] = None
+        self.credential_: DefaultAzureCredential | None = None
+        self.subscription_id_: str | None = None
+        self.tenant_id_: str | None = None
 
     @property
     def credential(self) -> DefaultAzureCredential:
@@ -38,7 +33,8 @@ class AzureAuthenticator:
         if not self.subscription_id_:
             self.login()
         if not self.subscription_id_:
-            raise DataSafeHavenAzureException("Failed to load subscription ID.")
+            msg = "Failed to load subscription ID."
+            raise DataSafeHavenAzureError(msg)
         return self.subscription_id_
 
     @property
@@ -46,7 +42,8 @@ class AzureAuthenticator:
         if not self.tenant_id_:
             self.login()
         if not self.tenant_id_:
-            raise DataSafeHavenAzureException("Failed to load tenant ID.")
+            msg = "Failed to load tenant ID."
+            raise DataSafeHavenAzureError(msg)
         return self.tenant_id_
 
     def login(self) -> None:
@@ -56,16 +53,14 @@ class AzureAuthenticator:
 
         # Check that the Azure credentials are valid
         try:
-            for subscription in [s for s in subscription_client.subscriptions.list()]:
+            for subscription in list(subscription_client.subscriptions.list()):
                 if subscription.display_name == self.subscription_name:
                     self.subscription_id_ = subscription.subscription_id
                     self.tenant_id_ = subscription.tenant_id
                     break
         except ClientAuthenticationError as exc:
-            raise DataSafeHavenAzureException(
-                f"Failed to authenticate with Azure.\n{str(exc)}"
-            ) from exc
+            msg = f"Failed to authenticate with Azure.\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc
         if not (self.subscription_id and self.tenant_id):
-            raise DataSafeHavenInputException(
-                f"Could not find subscription '{self.subscription_name}'"
-            )
+            msg = f"Could not find subscription '{self.subscription_name}'"
+            raise DataSafeHavenInputError(msg)

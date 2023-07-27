@@ -1,15 +1,10 @@
 """Command-line application for deploying a Data Safe Haven from project files"""
-# Standard library imports
-from typing import List, Optional
-
-# Third party imports
 import pytz
 
-# Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
-    DataSafeHavenConfigException,
-    DataSafeHavenException,
+    DataSafeHavenConfigError,
+    DataSafeHavenError,
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
@@ -27,11 +22,11 @@ class DeploySHMCommand:
 
     def __call__(
         self,
-        aad_tenant_id: Optional[str] = None,
-        admin_email_address: Optional[str] = None,
-        admin_ip_addresses: Optional[List[str]] = None,
-        fqdn: Optional[str] = None,
-        timezone: Optional[str] = None,
+        aad_tenant_id: str | None = None,
+        admin_email_address: str | None = None,
+        admin_ip_addresses: list[str] | None = None,
+        fqdn: str | None = None,
+        timezone: str | None = None,
     ) -> None:
         """Typer command line entrypoint"""
         try:
@@ -60,18 +55,34 @@ class DeploySHMCommand:
             # Initialise Pulumi stack
             stack = PulumiSHMStack(config)
             # Set Azure options
-            stack.add_option("azure-native:location", config.azure.location)
             stack.add_option(
-                "azure-native:subscriptionId", config.azure.subscription_id
+                "azure-native:location", config.azure.location, replace=False
             )
-            stack.add_option("azure-native:tenantId", config.azure.tenant_id)
+            stack.add_option(
+                "azure-native:subscriptionId",
+                config.azure.subscription_id,
+                replace=False,
+            )
+            stack.add_option(
+                "azure-native:tenantId", config.azure.tenant_id, replace=False
+            )
             # Add necessary secrets
-            stack.add_secret("password-domain-admin", password(20))
-            stack.add_secret("password-domain-azure-ad-connect", password(20))
-            stack.add_secret("password-domain-computer-manager", password(20))
-            stack.add_secret("password-domain-ldap-searcher", password(20))
-            stack.add_secret("password-update-server-linux-admin", password(20))
-            stack.add_secret("verification-azuread-custom-domain", verification_record)
+            stack.add_secret("password-domain-admin", password(20), replace=False)
+            stack.add_secret(
+                "password-domain-azure-ad-connect", password(20), replace=False
+            )
+            stack.add_secret(
+                "password-domain-computer-manager", password(20), replace=False
+            )
+            stack.add_secret(
+                "password-domain-ldap-searcher", password(20), replace=False
+            )
+            stack.add_secret(
+                "password-update-server-linux-admin", password(20), replace=False
+            )
+            stack.add_secret(
+                "verification-azuread-custom-domain", verification_record, replace=False
+            )
 
             # Deploy Azure infrastructure with Pulumi
             stack.deploy()
@@ -93,19 +104,18 @@ class DeploySHMCommand:
                 stack=stack,
             )
             manager.run()
-        except DataSafeHavenException as exc:
-            raise DataSafeHavenException(
-                f"Could not deploy Data Safe Haven Management environment.\n{str(exc)}"
-            ) from exc
+        except DataSafeHavenError as exc:
+            msg = f"Could not deploy Data Safe Haven Management environment.\n{exc}"
+            raise DataSafeHavenError(msg) from exc
 
     def update_config(
         self,
         config: Config,
-        aad_tenant_id: Optional[str] = None,
-        admin_email_address: Optional[str] = None,
-        admin_ip_addresses: Optional[List[str]] = None,
-        fqdn: Optional[str] = None,
-        timezone: Optional[str] = None,
+        aad_tenant_id: str | None = None,
+        admin_email_address: str | None = None,
+        admin_ip_addresses: list[str] | None = None,
+        fqdn: str | None = None,
+        timezone: str | None = None,
     ) -> None:
         # Update AzureAD tenant ID
         if aad_tenant_id is not None:
@@ -118,9 +128,8 @@ class DeploySHMCommand:
             )
             config.shm.aad_tenant_id = aad_tenant_id
         if not config.shm.aad_tenant_id:
-            raise DataSafeHavenConfigException(
-                "No AzureAD tenant ID was found. Use [bright_cyan]'--aad-tenant-id / -a'[/] to set one."
-            )
+            msg = "No AzureAD tenant ID was found. Use [bright_cyan]'--aad-tenant-id / -a'[/] to set one."
+            raise DataSafeHavenConfigError(msg)
 
         # Update admin email address
         if admin_email_address is not None:
@@ -135,9 +144,8 @@ class DeploySHMCommand:
             )
             config.shm.admin_email_address = admin_email_address
         if not config.shm.admin_email_address:
-            raise DataSafeHavenConfigException(
-                "No admin email address was found. Use [bright_cyan]'--email / -e'[/] to set one."
-            )
+            msg = "No admin email address was found. Use [bright_cyan]'--email / -e'[/] to set one."
+            raise DataSafeHavenConfigError(msg)
 
         # Update admin IP addresses
         if admin_ip_addresses:
@@ -152,9 +160,8 @@ class DeploySHMCommand:
             )
             config.shm.admin_ip_addresses = admin_ip_addresses
         if len(config.shm.admin_ip_addresses) == 0:
-            raise DataSafeHavenConfigException(
-                "No admin IP addresses were found. Use [bright_cyan]'--ip-address / -i'[/] to set one."
-            )
+            msg = "No admin IP addresses were found. Use [bright_cyan]'--ip-address / -i'[/] to set one."
+            raise DataSafeHavenConfigError(msg)
 
         # Update FQDN
         if fqdn is not None:
@@ -167,9 +174,8 @@ class DeploySHMCommand:
             )
             config.shm.fqdn = fqdn
         if not config.shm.fqdn:
-            raise DataSafeHavenConfigException(
-                "No fully-qualified domain name was found. Use [bright_cyan]'--fqdn / -f'[/] to set one."
-            )
+            msg = "No fully-qualified domain name was found. Use [bright_cyan]'--fqdn / -f'[/] to set one."
+            raise DataSafeHavenConfigError(msg)
 
         # Update timezone if it passes validation
         if timezone is not None:
@@ -185,6 +191,5 @@ class DeploySHMCommand:
                 self.logger.info(f"Setting [bold]timezone[/] to [green]{timezone}[/].")
                 config.shm.timezone = timezone
         if not config.shm.timezone:
-            raise DataSafeHavenConfigException(
-                "No timezone was found. Use [bright_cyan]'--timezone / -t'[/] to set one."
-            )
+            msg = "No timezone was found. Use [bright_cyan]'--timezone / -t'[/] to set one."
+            raise DataSafeHavenConfigError(msg)

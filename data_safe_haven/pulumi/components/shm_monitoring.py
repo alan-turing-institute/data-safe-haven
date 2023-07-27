@@ -1,8 +1,4 @@
 """Pulumi component for SHM monitoring"""
-# Standard library import
-from typing import Dict, Optional, Tuple
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     automation,
@@ -13,7 +9,6 @@ from pulumi_azure_native import (
     resources,
 )
 
-# Local imports
 from data_safe_haven.functions import (
     ordered_private_dns_zones,
     replace_separators,
@@ -49,9 +44,8 @@ class SHMMonitoringComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMMonitoringProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -80,7 +74,7 @@ class SHMMonitoringComponent(ComponentResource):
 
         # List of modules as 'name: (version, SHA256 hash)'
         # Note that we exclude ComputerManagementDsc which is already present (https://docs.microsoft.com/en-us/azure/automation/shared-resources/modules#default-modules)
-        modules: Dict[str, Tuple[str, str]] = {
+        modules: dict[str, tuple[str, str]] = {
             "ActiveDirectoryDsc": (
                 "6.2.0",
                 "60b7cc2c578248f23c5b871b093db268a1c1bd89f5ccafc45d9a65c3f0621dca",
@@ -133,7 +127,7 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Add a private DNS record for each automation custom DNS config
-        automation_account_private_dns_zone_group = network.PrivateDnsZoneGroup(
+        network.PrivateDnsZoneGroup(
             f"{self._name}_automation_account_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
@@ -190,7 +184,7 @@ class SHMMonitoringComponent(ComponentResource):
             subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
             opts=child_opts,
         )
-        log_analytics_ampls_connection = insights.PrivateLinkScopedResource(
+        insights.PrivateLinkScopedResource(
             f"{self._name}_log_analytics_ampls_connection",
             linked_resource_id=log_analytics.id,
             name=f"{stack_name}-cnxn-ampls-log-to-log",
@@ -200,7 +194,7 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Add a private DNS record for each log analytics workspace custom DNS config
-        log_analytics_private_dns_zone_group = network.PrivateDnsZoneGroup(
+        network.PrivateDnsZoneGroup(
             f"{self._name}_log_analytics_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
@@ -219,7 +213,7 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Link automation account to log analytics workspace
-        automation_log_analytics_link = operationalinsights.LinkedService(
+        operationalinsights.LinkedService(
             f"{self._name}_automation_log_analytics_link",
             linked_service_name="Automation",
             resource_group_name=resource_group.name,
@@ -260,7 +254,7 @@ class SHMMonitoringComponent(ComponentResource):
             lambda id_: id_.split("/resourceGroups/")[0]
         )
         # Create Windows VM virus definitions update schedule: daily at 01:01
-        schedule_windows_definitions = automation.SoftwareUpdateConfigurationByName(
+        automation.SoftwareUpdateConfigurationByName(
             f"{self._name}_schedule_windows_definitions",
             automation_account_name=automation_account.name,
             resource_group_name=resource_group.name,
@@ -296,7 +290,7 @@ class SHMMonitoringComponent(ComponentResource):
             ),
         )
         # Create Windows VM system update schedule: daily at 02:02
-        schedule_windows_updates = automation.SoftwareUpdateConfigurationByName(
+        automation.SoftwareUpdateConfigurationByName(
             f"{self._name}_schedule_windows_updates",
             automation_account_name=automation_account.name,
             resource_group_name=resource_group.name,
@@ -349,7 +343,7 @@ class SHMMonitoringComponent(ComponentResource):
             ),
         )
         # Create Linux VM system update schedule: daily at 02:02
-        schedule_linux_updates = automation.SoftwareUpdateConfigurationByName(
+        automation.SoftwareUpdateConfigurationByName(
             f"{self._name}_schedule_linux_updates",
             automation_account_name=automation_account.name,
             resource_group_name=resource_group.name,

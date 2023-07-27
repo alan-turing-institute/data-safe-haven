@@ -1,12 +1,9 @@
 """Pulumi component for SRE application gateway"""
-# Standard library imports
-from typing import Any, Optional
+from typing import Any
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import managedidentity, network, resources
 
-# Local imports
 from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_id_from_rg,
@@ -43,7 +40,7 @@ class SREApplicationGatewayProps:
         ).apply(get_available_ips_from_subnet)
         # Unwrap key vault identity so that it has the required type
         self.user_assigned_identities = Output.from_input(key_vault_identity).apply(
-            lambda identity: identity.id.apply(lambda id: {str(id): {}})
+            lambda identity: identity.id.apply(lambda id_: {str(id_): {}})
         )
 
 
@@ -54,9 +51,8 @@ class SREApplicationGatewayComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SREApplicationGatewayProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -89,7 +85,7 @@ class SREApplicationGatewayComponent(ComponentResource):
 
         # Define application gateway
         application_gateway_name = f"{stack_name}-ag-entrypoint"
-        application_gateway = network.ApplicationGateway(
+        network.ApplicationGateway(
             f"{self._name}_application_gateway",
             application_gateway_name=application_gateway_name,
             backend_address_pools=[
@@ -275,7 +271,9 @@ class SREApplicationGatewayComponent(ComponentResource):
                     ),
                     name="sslProfile",
                     ssl_policy=network.ApplicationGatewaySslPolicyArgs(
-                        # We take the ones recommended by SSL Labs (https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices) excluding any that are unsupported
+                        # We take the ones recommended by SSL Labs
+                        # (https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices)
+                        # excluding any that are unsupported
                         cipher_suites=[
                             "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
                             "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",

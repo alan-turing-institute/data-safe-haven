@@ -1,12 +1,10 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
-# Standard library imports
 import pathlib
 
-# Local imports
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
-    DataSafeHavenException,
+    DataSafeHavenError,
 )
 from data_safe_haven.external import GraphApi
 
@@ -22,7 +20,8 @@ class UsersAddCommand:
             config = Config()
             shm_name = config.name
 
-            # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
+            # Load GraphAPI as this may require user-interaction that is not
+            # possible as part of a Pulumi declarative command
             graph_api = GraphApi(
                 tenant_id=config.shm.aad_tenant_id,
                 default_scopes=["Group.Read.All"],
@@ -31,7 +30,6 @@ class UsersAddCommand:
             # Add users to SHM
             users = UserHandler(config, graph_api)
             users.add(csv_path)
-        except DataSafeHavenException as exc:
-            raise DataSafeHavenException(
-                f"Could not add users to Data Safe Haven '{shm_name}'.\n{str(exc)}"
-            ) from exc
+        except DataSafeHavenError as exc:
+            msg = f"Could not add users to Data Safe Haven '{shm_name}'.\n{exc}"
+            raise DataSafeHavenError(msg) from exc

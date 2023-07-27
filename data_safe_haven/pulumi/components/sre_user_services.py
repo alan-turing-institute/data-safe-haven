@@ -1,12 +1,8 @@
-# Standard library imports
-from typing import Optional
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-# Local imports
 from data_safe_haven.pulumi.common.transformations import get_id_from_subnet
+
 from .sre_gitea_server import SREGiteaServerComponent, SREGiteaServerProps
 from .sre_hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
 
@@ -70,9 +66,8 @@ class SREUserServicesComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SREUserServicesProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:UserServicesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -115,10 +110,9 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Deploy the Gitea server
-        gitea_server = SREGiteaServerComponent(
+        SREGiteaServerComponent(
             "sre_gitea_server",
             stack_name,
-            sre_name,
             SREGiteaServerProps(
                 database_subnet_id=props.subnet_databases_id,
                 database_password=props.gitea_database_password,
@@ -144,10 +138,9 @@ class SREUserServicesComponent(ComponentResource):
         )
 
         # Deploy the HedgeDoc server
-        hedgedoc_server = SREHedgeDocServerComponent(
+        SREHedgeDocServerComponent(
             "sre_hedgedoc_server",
             stack_name,
-            sre_name,
             SREHedgeDocServerProps(
                 database_subnet_id=props.subnet_databases_id,
                 database_password=props.hedgedoc_database_password,

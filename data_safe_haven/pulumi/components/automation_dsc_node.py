@@ -1,16 +1,13 @@
 """Register a VM as an Azure Automation DSC node"""
-# Standard library imports
 import pathlib
 import time
-from typing import Dict, Optional, Sequence
+from collections.abc import Sequence
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, compute
 
-# Local imports
+from data_safe_haven.pulumi.dynamic.compiled_dsc import CompiledDsc, CompiledDscProps
 from data_safe_haven.utility import FileReader
-from ..dynamic.compiled_dsc import CompiledDsc, CompiledDscProps
 
 
 class AutomationDscNodeProps:
@@ -25,7 +22,7 @@ class AutomationDscNodeProps:
         configuration_name: Input[str],
         dsc_description: Input[str],
         dsc_file: Input[FileReader],
-        dsc_parameters: Input[Dict[str, str]],
+        dsc_parameters: Input[dict[str, str]],
         dsc_required_modules: Input[Sequence[str]],
         location: Input[str],
         subscription_name: Input[str],
@@ -56,11 +53,11 @@ class AutomationDscNode(ComponentResource):
         self,
         name: str,
         props: AutomationDscNodeProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:common:AutomationDscNode", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
-        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
+        pathlib.Path(__file__).parent.parent.parent / "resources"
 
         # Upload the primary domain controller DSC
         dsc = automation.DscConfiguration(
@@ -104,7 +101,7 @@ class AutomationDscNode(ComponentResource):
             ),
             opts=ResourceOptions.merge(ResourceOptions(depends_on=[dsc]), child_opts),
         )
-        dsc_extension = compute.VirtualMachineExtension(
+        compute.VirtualMachineExtension(
             f"{self._name}_dsc_extension",
             auto_upgrade_minor_version=True,
             location=props.location,

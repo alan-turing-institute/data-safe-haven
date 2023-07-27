@@ -1,18 +1,16 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
-# Standard library imports
 from typing import Annotated, Optional
 
-# Third party imports
 import typer
 
-# Local imports
 from data_safe_haven.functions import validate_aad_guid
+
 from .initialise_command import InitialiseCommand
 
 
 def initialise_command(
     admin_group: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--admin-group",
             "-a",
@@ -21,7 +19,7 @@ def initialise_command(
         ),
     ] = None,
     location: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--location",
             "-l",
@@ -29,7 +27,7 @@ def initialise_command(
         ),
     ] = None,
     name: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--name",
             "-n",
@@ -37,7 +35,7 @@ def initialise_command(
         ),
     ] = None,
     subscription: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--subscription",
             "-s",

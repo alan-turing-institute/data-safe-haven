@@ -1,14 +1,12 @@
 """Pulumi dynamic component for setting ACLs on an Azure blob container."""
-# Standard library imports
-from typing import Any, Dict, Optional
+from typing import Any
 
-# Third party imports
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 
-# Local imports
-from data_safe_haven.exceptions import DataSafeHavenPulumiException
+from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi
+
 from .dsh_resource_provider import DshResourceProvider
 
 
@@ -17,6 +15,7 @@ class BlobContainerAclProps:
 
     def __init__(
         self,
+        *,
         acl_user: Input[str],
         acl_group: Input[str],
         acl_other: Input[str],
@@ -51,7 +50,7 @@ class BlobContainerAclProps:
 
 
 class BlobContainerAclProvider(DshResourceProvider):
-    def create(self, props: Dict[str, Any]) -> CreateResult:
+    def create(self, props: dict[str, Any]) -> CreateResult:
         """Set ACLs for a given blob container."""
         outs = dict(**props)
         try:
@@ -63,16 +62,17 @@ class BlobContainerAclProvider(DshResourceProvider):
                 storage_account_name=props["storage_account_name"],
             )
         except Exception as exc:
-            raise DataSafeHavenPulumiException(
-                f"Failed to set ACLs on storage account [green]{props['storage_account_name']}[/].\n{str(exc)}"
-            ) from exc
+            msg = f"Failed to set ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc}"
+            raise DataSafeHavenPulumiError(msg) from exc
         return CreateResult(
             f"BlobContainerAcl-{props['container_name']}",
             outs=outs,
         )
 
-    def delete(self, id_: str, props: Dict[str, Any]) -> None:
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Restore default ACLs"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         try:
             azure_api = AzureApi(props["subscription_name"])
             azure_api.set_blob_container_acl(
@@ -82,18 +82,18 @@ class BlobContainerAclProvider(DshResourceProvider):
                 storage_account_name=props["storage_account_name"],
             )
         except Exception as exc:
-            raise DataSafeHavenPulumiException(
-                f"Failed to delete custom ACLs on storage account [green]{props['storage_account_name']}[/].\n{str(exc)}"
-            ) from exc
-        return
+            msg = f"Failed to delete custom ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc}"
+            raise DataSafeHavenPulumiError(msg) from exc
 
     def diff(
         self,
         id_: str,
-        old_props: Dict[str, Any],
-        new_props: Dict[str, Any],
+        old_props: dict[str, Any],
+        new_props: dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         return self.partial_diff(old_props, new_props)
 
 
@@ -104,6 +104,6 @@ class BlobContainerAcl(Resource):
         self,
         name: str,
         props: BlobContainerAclProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__(BlobContainerAclProvider(), name, vars(props), opts)

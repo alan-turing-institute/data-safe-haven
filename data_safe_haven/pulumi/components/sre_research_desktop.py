@@ -1,14 +1,11 @@
-# Standard library imports
 import pathlib
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
-# Third party imports
 import chevron
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-# Local imports
-from data_safe_haven.exceptions import DataSafeHavenPulumiException
+from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.functions import b64encode, replace_separators
 from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
@@ -16,6 +13,7 @@ from data_safe_haven.pulumi.common.transformations import (
     get_name_from_subnet,
     get_name_from_vnet,
 )
+
 from .virtual_machine import LinuxVMProps, VMComponent
 
 
@@ -38,13 +36,14 @@ class SREResearchDesktopProps:
         log_analytics_workspace_id: Input[str],
         log_analytics_workspace_key: Input[str],
         sre_fqdn: Input[str],
+        sre_name: Input[str],
         storage_account_userdata_name: Input[str],
         storage_account_securedata_name: Input[str],
         subnet_research_desktops: Input[network.GetSubnetResult],
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
-        vm_details: List[
-            Tuple[int, str, str]
+        vm_details: list[
+            tuple[int, str, str]
         ],  # this must *not* be passed as an Input[T]
     ):
         self.admin_password = Output.secret(admin_password)
@@ -62,6 +61,7 @@ class SREResearchDesktopProps:
         self.log_analytics_workspace_id = log_analytics_workspace_id
         self.log_analytics_workspace_key = log_analytics_workspace_key
         self.sre_fqdn = sre_fqdn
+        self.sre_name = sre_name
         self.storage_account_userdata_name = storage_account_userdata_name
         self.storage_account_securedata_name = storage_account_securedata_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
@@ -78,11 +78,11 @@ class SREResearchDesktopProps:
         )
         self.vm_details = vm_details
 
-    def get_ip_addresses(self, subnet: Any, vm_details: Any) -> List[str]:
+    def get_ip_addresses(self, subnet: Any, vm_details: Any) -> list[str]:
         if not isinstance(subnet, network.GetSubnetResult):
-            DataSafeHavenPulumiException(f"'subnet' has invalid type {type(subnet)}")
+            DataSafeHavenPulumiError(f"'subnet' has invalid type {type(subnet)}")
         if not isinstance(vm_details, list):
-            DataSafeHavenPulumiException(
+            DataSafeHavenPulumiError(
                 f"'vm_details' has invalid type {type(vm_details)}"
             )
         return get_available_ips_from_subnet(subnet)[: len(vm_details)]
@@ -95,9 +95,8 @@ class SREResearchDesktopComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SREResearchDesktopProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:ResearchDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -142,7 +141,9 @@ class SREResearchDesktopComponent(ComponentResource):
                     subnet_name=props.subnet_research_desktops_name,
                     virtual_network_name=props.virtual_network_name,
                     virtual_network_resource_group_name=props.virtual_network_resource_group_name,
-                    vm_name=replace_separators(f"sre-{sre_name}-vm-{vm_name}", "-"),
+                    vm_name=Output.concat(
+                        "sre-", props.sre_name, "-vm-", vm_name
+                    ).apply(lambda s: replace_separators(s, "-")),
                     vm_size=vm_size,
                 ),
                 opts=child_opts,
@@ -189,7 +190,7 @@ class SREResearchDesktopComponent(ComponentResource):
             / "secure_research_desktop"
         )
         with open(
-            resources_path / "srd.cloud_init.mustache.yaml", "r", encoding="utf-8"
+            resources_path / "srd.cloud_init.mustache.yaml", encoding="utf-8"
         ) as f_cloudinit:
             mustache_values = {
                 "domain_sid": domain_sid,

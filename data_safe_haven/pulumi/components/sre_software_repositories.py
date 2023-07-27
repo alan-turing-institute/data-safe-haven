@@ -1,20 +1,19 @@
 """Pulumi component for SRE monitoring"""
-# Standard library import
 import pathlib
-from typing import Optional
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources, storage
 
-# Local imports
 from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
+from data_safe_haven.pulumi.dynamic.file_share_file import (
+    FileShareFile,
+    FileShareFileProps,
+)
 from data_safe_haven.utility import FileReader
-from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 
 
 class SRESoftwareRepositoriesProps:
@@ -62,9 +61,8 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SRESoftwareRepositoriesProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:SRESoftwareRepositoriesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -111,7 +109,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         caddyfile_reader = FileReader(
             resources_path / "software_repositories" / "caddy" / "Caddyfile"
         )
-        caddyfile = FileShareFile(
+        FileShareFile(
             f"{self._name}_file_share_caddyfile",
             FileShareFileProps(
                 destination_path=caddyfile_reader.name,
@@ -127,7 +125,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         cran_reader = FileReader(
             resources_path / "software_repositories" / "allowlists" / "cran.allowlist"
         )
-        cran_allowlist = FileShareFile(
+        FileShareFile(
             f"{self._name}_file_share_cran_allowlist",
             FileShareFileProps(
                 destination_path=cran_reader.name,
@@ -141,7 +139,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         pypi_reader = FileReader(
             resources_path / "software_repositories" / "allowlists" / "pypi.allowlist"
         )
-        pypi_allowlist = FileShareFile(
+        FileShareFile(
             f"{self._name}_file_share_pypi_allowlist",
             FileShareFileProps(
                 destination_path=pypi_reader.name,
@@ -322,7 +320,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 ),
             )
             # Register the container group in the SRE private DNS zone
-            nexus_private_record_set = network.PrivateRecordSet(
+            network.PrivateRecordSet(
                 f"{self._name}_nexus_private_record_set",
                 a_records=[
                     network.ARecordArgs(
@@ -339,7 +337,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 opts=child_opts,
             )
             # Redirect the public DNS to private DNS
-            nexus_public_record_set = network.RecordSet(
+            network.RecordSet(
                 f"{self._name}_nexus_public_record_set",
                 cname_record=network.CnameRecordArgs(
                     cname=Output.concat("nexus.privatelink.", props.sre_fqdn)

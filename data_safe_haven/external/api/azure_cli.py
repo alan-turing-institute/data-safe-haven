@@ -1,10 +1,8 @@
 """Interface to the Azure CLI"""
-# Standard library imports
 import subprocess
 from typing import Any
 
-# Local imports
-from data_safe_haven.exceptions import DataSafeHavenAzureException
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.utility import Logger
 
 
@@ -30,7 +28,6 @@ class AzureCli:
                     "If no web browser is available, please run `az login --use-device-code` in a command line window."
                 )
                 subprocess.run(["az", "login"], capture_output=True)
-        except FileNotFoundError as exc:
-            raise DataSafeHavenAzureException(
-                f"Please ensure that the Azure CLI is installed.\n{str(exc)}"
-            )
+        except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+            msg = f"Please ensure that the Azure CLI is installed.\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc

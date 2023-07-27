@@ -1,9 +1,6 @@
 """Pulumi component for SRE remote desktop"""
-# Standard library imports
 import pathlib
-from typing import Optional
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     containerinstance,
@@ -13,15 +10,20 @@ from pulumi_azure_native import (
     storage,
 )
 
-# Local imports
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.pulumi.common.transformations import (
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
+from data_safe_haven.pulumi.dynamic.azuread_application import (
+    AzureADApplication,
+    AzureADApplicationProps,
+)
+from data_safe_haven.pulumi.dynamic.file_share_file import (
+    FileShareFile,
+    FileShareFileProps,
+)
 from data_safe_haven.utility import FileReader
-from ..dynamic.azuread_application import AzureADApplication, AzureADApplicationProps
-from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
 
 
 class SRERemoteDesktopProps:
@@ -50,7 +52,7 @@ class SRERemoteDesktopProps:
         subnet_guacamole_database: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
-        database_username: Optional[Input[str]] = "postgresadmin",
+        database_username: Input[str] | None = "postgresadmin",
     ):
         self.aad_application_name = aad_application_name
         self.aad_application_url = Output.concat("https://", aad_application_fqdn)
@@ -107,9 +109,8 @@ class SRERemoteDesktopComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SRERemoteDesktopProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -147,7 +148,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         # Upload Caddyfile
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
         reader = FileReader(resources_path / "remote_desktop" / "caddy" / "Caddyfile")
-        caddyfile = FileShareFile(
+        FileShareFile(
             f"{self._name}_file_share_caddyfile",
             FileShareFileProps(
                 destination_path=reader.name,
@@ -189,7 +190,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             ),
             opts=child_opts,
         )
-        connection_db_private_endpoint = network.PrivateEndpoint(
+        network.PrivateEndpoint(
             f"{self._name}_connection_db_private_endpoint",
             custom_dns_configs=[
                 network.CustomDnsConfigPropertiesFormatArgs(

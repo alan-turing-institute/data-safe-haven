@@ -1,50 +1,50 @@
-class DataSafeHavenException(Exception):
+class DataSafeHavenError(Exception):
     pass
 
 
-class DataSafeHavenCloudException(DataSafeHavenException):
+class DataSafeHavenCloudError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenConfigException(DataSafeHavenException):
+class DataSafeHavenConfigError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenInputException(DataSafeHavenException):
+class DataSafeHavenInputError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenInternalException(DataSafeHavenException):
+class DataSafeHavenInternalError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenIPRangeException(DataSafeHavenException):
+class DataSafeHavenIPRangeError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenNotImplementedException(DataSafeHavenInternalException):
+class DataSafeHavenNotImplementedError(DataSafeHavenInternalError):
     pass
 
 
-class DataSafeHavenParameterException(DataSafeHavenException):
+class DataSafeHavenParameterError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenSSLException(DataSafeHavenException):
+class DataSafeHavenSSLError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenAzureException(DataSafeHavenCloudException):
+class DataSafeHavenAzureError(DataSafeHavenCloudError):
     pass
 
 
-class DataSafeHavenUserHandlingException(DataSafeHavenInternalException):
+class DataSafeHavenUserHandlingError(DataSafeHavenInternalError):
     pass
 
 
-class DataSafeHavenMicrosoftGraphException(DataSafeHavenAzureException):
+class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
     pass
 
 
-class DataSafeHavenPulumiException(DataSafeHavenCloudException):
+class DataSafeHavenPulumiError(DataSafeHavenCloudError):
     pass

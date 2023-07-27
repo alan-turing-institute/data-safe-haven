@@ -1,15 +1,13 @@
 """Pulumi dynamic component for AzureAD applications."""
-# Standard library imports
 from contextlib import suppress
-from typing import Any, Dict, Optional
+from typing import Any
 
-# Third party imports
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource, UpdateResult
 
-# Local imports
-from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphException
+from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphError
 from data_safe_haven.external import GraphApi
+
 from .dsh_resource_provider import DshResourceProvider
 
 
@@ -29,7 +27,7 @@ class AzureADApplicationProps:
 
 class AzureADApplicationProvider(DshResourceProvider):
     @staticmethod
-    def refresh(props: Dict[str, Any]) -> Dict[str, Any]:
+    def refresh(props: dict[str, Any]) -> dict[str, Any]:
         outs = dict(**props)
         with suppress(Exception):
             graph_api = GraphApi(auth_token=outs["auth_token"])
@@ -40,7 +38,7 @@ class AzureADApplicationProvider(DshResourceProvider):
                 outs["application_id"] = json_response["appId"]
         return outs
 
-    def create(self, props: Dict[str, Any]) -> CreateResult:
+    def create(self, props: dict[str, Any]) -> CreateResult:
         """Create new AzureAD application."""
         outs = dict(**props)
         try:
@@ -61,41 +59,43 @@ class AzureADApplicationProvider(DshResourceProvider):
             outs["object_id"] = json_response["id"]
             outs["application_id"] = json_response["appId"]
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Failed to create application [green]{props['application_name']}[/] in AzureAD.\n{str(exc)}"
-            ) from exc
+            msg = f"Failed to create application [green]{props['application_name']}[/] in AzureAD.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
         return CreateResult(
             f"AzureADApplication-{props['application_name']}",
             outs=outs,
         )
 
-    def delete(self, id_: str, props: Dict[str, Any]) -> None:
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Delete an AzureAD application."""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         try:
             graph_api = GraphApi(
                 auth_token=props["auth_token"],
             )
             graph_api.delete_application(props["application_name"])
         except Exception as exc:
-            raise DataSafeHavenMicrosoftGraphException(
-                f"Failed to delete application [green]{props['application_name']}[/] from AzureAD.\n{str(exc)}"
-            ) from exc
+            msg = f"Failed to delete application [green]{props['application_name']}[/] from AzureAD.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def diff(
         self,
         id_: str,
-        old_props: Dict[str, Any],
-        new_props: Dict[str, Any],
+        old_props: dict[str, Any],
+        new_props: dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         # Exclude "auth_token" which should not trigger a diff
         return self.partial_diff(old_props, new_props, ["auth_token"])
 
     def update(
         self,
         id_: str,
-        old_props: Dict[str, Any],
-        new_props: Dict[str, Any],
+        old_props: dict[str, Any],
+        new_props: dict[str, Any],
     ) -> UpdateResult:
         """Updating is deleting followed by creating."""
         # Note that we need to use the auth token from new_props
@@ -115,7 +115,7 @@ class AzureADApplication(Resource):
         self,
         name: str,
         props: AzureADApplicationProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__(
             AzureADApplicationProvider(),

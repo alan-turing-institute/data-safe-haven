@@ -1,10 +1,8 @@
 """Standalone logging class implemented as a singleton"""
-# Standard library imports
 import io
 import logging
-from typing import Any, List, Optional
+from typing import Any, ClassVar, Optional
 
-# Third party imports
 from rich.console import Console
 from rich.highlighter import RegexHighlighter
 from rich.logging import RichHandler
@@ -12,7 +10,6 @@ from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.text import Text
 
-# Local imports
 from .types import PathType
 
 
@@ -25,7 +22,7 @@ class LoggingHandlerPlainFile(logging.FileHandler):
         self, fmt: str, datefmt: str, filename: str, *args: Any, **kwargs: Any
     ):
         """Constructor"""
-        super().__init__(filename=filename, *args, **kwargs)
+        super().__init__(*args, **kwargs, filename=filename)
         self.setFormatter(logging.Formatter(self.strip_formatting(fmt), datefmt))
 
     @staticmethod
@@ -67,7 +64,7 @@ class LogLevelHighlighter(RegexHighlighter):
     """
 
     base_style = "logging.level."
-    highlights = [
+    highlights: ClassVar[list[str]] = [
         r"(?P<critical>\[CRITICAL\])",
         r"(?P<debug>\[   DEBUG\])",
         r"(?P<error>\[   ERROR\])",
@@ -81,7 +78,7 @@ class RichStringAdaptor:
     A wrapper to convert Rich objects into strings.
     """
 
-    def __init__(self, coloured=False):
+    def __init__(self, *, coloured: bool):
         self.string_io = io.StringIO()
         self.console = Console(file=self.string_io, force_terminal=coloured)
 
@@ -100,7 +97,7 @@ class Logger:
     _instance: Optional["Logger"] = None
 
     def __new__(
-        cls, verbosity: Optional[int] = None, log_file: Optional[PathType] = None
+        cls, verbosity: int | None = None, log_file: PathType | None = None
     ) -> "Logger":
         desired_log_level = max(
             logging.INFO - 10 * (verbosity if verbosity else 0), logging.DEBUG
@@ -116,10 +113,10 @@ class Logger:
                     )
                 )
         else:
-            cls._instance = super(Logger, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             # Initialise console handler
             console_handler = LoggingHandlerRichConsole(cls.rich_format, cls.date_fmt)
-            handlers: List[logging.Handler] = [console_handler]
+            handlers: list[logging.Handler] = [console_handler]
             # Initialise file handler
             if log_file:
                 file_handler = LoggingHandlerPlainFile(
@@ -143,7 +140,9 @@ class Logger:
         """Format a message using rich handler"""
         for handler in self.logger.handlers:
             if isinstance(handler, RichHandler):
-                fn, lno, func, sinfo = self.logger.findCaller(False, 1)
+                fn, lno, func, sinfo = self.logger.findCaller(
+                    stack_info=False, stack_level=1
+                )
                 return handler.format(
                     self.logger.makeRecord(
                         name=self.logger.name,
@@ -181,11 +180,11 @@ class Logger:
         return self.logger.debug(message)
 
     # Loggable wrappers for confirm/ask/choice
-    def confirm(self, message: str, default_to_yes: bool = True) -> bool:
+    def confirm(self, message: str, *, default_to_yes: bool) -> bool:
         formatted = self.format_msg(message, logging.INFO)
         return Confirm.ask(formatted, default=default_to_yes)
 
-    def ask(self, message: str, default: Optional[str] = None) -> str:
+    def ask(self, message: str, default: str | None = None) -> str:
         formatted = self.format_msg(message, logging.INFO)
         if default:
             return Prompt.ask(formatted, default=default)
@@ -194,8 +193,8 @@ class Logger:
     def choose(
         self,
         message: str,
-        choices: Optional[List[str]] = None,
-        default: Optional[str] = None,
+        choices: list[str] | None = None,
+        default: str | None = None,
     ) -> str:
         formatted = self.format_msg(message, logging.INFO)
         if default:
@@ -221,8 +220,8 @@ class Logger:
 
     # Create a table
     def tabulate(
-        self, header: Optional[List[str]] = None, rows: Optional[List[List[str]]] = None
-    ) -> List[str]:
+        self, header: list[str] | None = None, rows: list[list[str]] | None = None
+    ) -> list[str]:
         table = Table()
         if header:
             for item in header:
@@ -230,5 +229,5 @@ class Logger:
         if rows:
             for row in rows:
                 table.add_row(*row)
-        adaptor = RichStringAdaptor()
+        adaptor = RichStringAdaptor(coloured=False)
         return [line.strip() for line in adaptor.to_string(table).split("\n")]

@@ -1,16 +1,13 @@
 """Pulumi dynamic component for files uploaded to an Azure FileShare."""
-# Standard library imports
 from contextlib import suppress
-from typing import Any, Dict, Optional
+from typing import Any
 
-# Third party imports
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.fileshare import ShareDirectoryClient, ShareFileClient
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 
-# Local imports
-from data_safe_haven.exceptions import DataSafeHavenAzureException
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 
 from .dsh_resource_provider import DshResourceProvider
 
@@ -69,7 +66,7 @@ class FileShareFileProvider(DshResourceProvider):
         )
 
     @staticmethod
-    def refresh(props: Dict[str, Any]) -> Dict[str, Any]:
+    def refresh(props: dict[str, Any]) -> dict[str, Any]:
         with suppress(Exception):
             file_client = FileShareFileProvider.get_file_client(
                 props["storage_account_name"],
@@ -81,10 +78,10 @@ class FileShareFileProvider(DshResourceProvider):
                 props["file_name"] = ""
         return dict(**props)
 
-    def create(self, props: Dict[str, Any]) -> CreateResult:
+    def create(self, props: dict[str, Any]) -> CreateResult:
         """Create file in target storage account with specified contents."""
         outs = dict(**props)
-        file_client: Optional[ShareFileClient] = None
+        file_client: ShareFileClient | None = None
         try:
             file_client = self.get_file_client(
                 props["storage_account_name"],
@@ -96,17 +93,18 @@ class FileShareFileProvider(DshResourceProvider):
             outs["file_name"] = file_client.file_name
         except Exception as exc:
             file_name = file_client.file_name if file_client else ""
-            raise DataSafeHavenAzureException(
-                f"Failed to upload data to [green]{file_name}[/] in [green]{props['share_name']}[/].\n{str(exc)}"
-            ) from exc
+            msg = f"Failed to upload data to [green]{file_name}[/] in [green]{props['share_name']}[/].\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc
         return CreateResult(
             f"filesharefile-{props['destination_path'].replace('/', '-')}",
             outs=outs,
         )
 
-    def delete(self, id_: str, props: Dict[str, Any]) -> None:
+    def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Delete a file from the target storage account"""
-        file_client: Optional[ShareFileClient] = None
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
+        file_client: ShareFileClient | None = None
         try:
             file_client = self.get_file_client(
                 props["storage_account_name"],
@@ -118,17 +116,18 @@ class FileShareFileProvider(DshResourceProvider):
                 file_client.delete_file()
         except Exception as exc:
             file_name = file_client.file_name if file_client else ""
-            raise DataSafeHavenAzureException(
-                f"Failed to delete file [green]{file_name}[/] in [green]{props['share_name']}[/].\n{str(exc)}"
-            ) from exc
+            msg = f"Failed to delete file [green]{file_name}[/] in [green]{props['share_name']}[/].\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc
 
     def diff(
         self,
         id_: str,
-        old_props: Dict[str, Any],
-        new_props: Dict[str, Any],
+        old_props: dict[str, Any],
+        new_props: dict[str, Any],
     ) -> DiffResult:
         """Calculate diff between old and new state"""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id(id_)
         # Exclude "storage_account_key" which should not trigger a diff
         return self.partial_diff(old_props, new_props, ["storage_account_key"])
 
@@ -141,7 +140,7 @@ class FileShareFile(Resource):
         self,
         name: str,
         props: FileShareFileProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__(
             FileShareFileProvider(), name, {"file_name": None, **vars(props)}, opts

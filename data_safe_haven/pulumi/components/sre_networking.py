@@ -1,15 +1,10 @@
 """Pulumi component for SRE networking"""
-# Standard library import
-from typing import Optional
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-# Local imports
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
-from ..common.enums import NetworkingPriorities
+from data_safe_haven.pulumi.common.enums import NetworkingPriorities
 
 
 class SRENetworkingProps:
@@ -26,6 +21,7 @@ class SRENetworkingProps:
         shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
         sre_index: Input[int],
+        sre_name: Input[str],
     ):
         # Virtual network and subnet IP ranges
         self.vnet_iprange = Output.from_input(sre_index).apply(
@@ -65,6 +61,7 @@ class SRENetworkingProps:
         self.shm_subnet_update_servers_prefix = shm_subnet_update_servers_prefix
         self.shm_virtual_network_name = shm_virtual_network_name
         self.shm_zone_name = shm_zone_name
+        self.sre_name = sre_name
 
 
 class SRENetworkingComponent(ComponentResource):
@@ -74,9 +71,8 @@ class SRENetworkingComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SRENetworkingProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -259,7 +255,10 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow LDAP client requests over TCP (see https://devopstales.github.io/linux/pfsense-ad-join/ for details).",
+                    description=(
+                        "Allow LDAP client requests over TCP. "
+                        "See https://devopstales.github.io/linux/pfsense-ad-join/ for details."
+                    ),
                     destination_address_prefix=props.shm_subnet_identity_servers_prefix,
                     destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
@@ -432,27 +431,31 @@ class SRENetworkingComponent(ComponentResource):
                 virtual_network_name=kwargs["virtual_network_name"],
             )
         )
-        peering_sre_to_shm = network.VirtualNetworkPeering(
+        network.VirtualNetworkPeering(
             f"{self._name}_sre_to_shm_peering",
             remote_virtual_network=network.SubResourceArgs(id=shm_virtual_network.id),
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
-            virtual_network_peering_name=f"peer_sre_{sre_name}_to_shm",
+            virtual_network_peering_name=Output.concat(
+                "peer_sre_", props.sre_name, "_to_shm"
+            ),
             opts=child_opts,
         )
-        peering_shm_to_sre = network.VirtualNetworkPeering(
+        network.VirtualNetworkPeering(
             f"{self._name}_shm_to_sre_peering",
             allow_gateway_transit=True,
             remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=shm_virtual_network.name,
-            virtual_network_peering_name=f"peer_shm_to_sre_{sre_name}",
+            virtual_network_peering_name=Output.concat(
+                "peer_shm_to_sre_", props.sre_name
+            ),
             opts=child_opts,
         )
 
         # Link to SHM private DNS zones
         for private_link_domain in ordered_private_dns_zones():
-            virtual_network_link = network.VirtualNetworkLink(
+            network.VirtualNetworkLink(
                 f"{self._name}_private_zone_{private_link_domain}_vnet_link",
                 location="Global",
                 private_zone_name=f"privatelink.{private_link_domain}",
@@ -475,10 +478,10 @@ class SRENetworkingComponent(ComponentResource):
                 zone_name=kwargs["zone_name"],
             )
         )
-        sre_subdomain = alphanumeric(sre_name).lower()
-        sre_fqdn = Output.from_input(props.shm_fqdn).apply(
-            lambda parent: f"{sre_subdomain}.{parent}"
+        sre_subdomain = Output.from_input(props.sre_name).apply(
+            lambda name: alphanumeric(name).lower()
         )
+        sre_fqdn = Output.concat(sre_subdomain, ".", props.shm_fqdn)
         sre_dns_zone = network.Zone(
             f"{self._name}_dns_zone",
             location="Global",
@@ -499,7 +502,7 @@ class SRENetworkingComponent(ComponentResource):
             zone_name=shm_dns_zone.name,
             opts=child_opts,
         )
-        sre_caa_record = network.RecordSet(
+        network.RecordSet(
             f"{self._name}_caa_record",
             caa_records=[
                 network.CaaRecordArgs(
@@ -524,7 +527,7 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        virtual_network_link = network.VirtualNetworkLink(
+        network.VirtualNetworkLink(
             f"{self._name}_private_zone_vnet_link",
             location="Global",
             private_zone_name=sre_private_dns_zone.name,

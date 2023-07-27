@@ -1,10 +1,7 @@
 """Backend for a Data Safe Haven environment"""
-# Standard library imports
 import contextlib
 import time
-from typing import List, Optional
 
-# Third party imports
 import websocket
 from azure.core.polling import LROPoller
 from azure.mgmt.containerinstance import ContainerInstanceManagementClient
@@ -13,8 +10,7 @@ from azure.mgmt.containerinstance.models import (
     ContainerExecRequestTerminalSize,
 )
 
-# Local imports
-from data_safe_haven.exceptions import DataSafeHavenAzureException
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.utility import Logger
 
@@ -48,11 +44,10 @@ class AzureContainerInstance:
         ).ip_address
         if ip_address and isinstance(ip_address.ip, str):
             return ip_address.ip
-        raise DataSafeHavenAzureException(
-            f"Could not determine IP address for container group {self.container_group_name}."
-        )
+        msg = f"Could not determine IP address for container group {self.container_group_name}."
+        raise DataSafeHavenAzureError(msg)
 
-    def restart(self, target_ip_address: Optional[str] = None) -> None:
+    def restart(self, target_ip_address: str | None = None) -> None:
         """Restart the container group"""
         # Connect to Azure clients
         try:
@@ -64,7 +59,8 @@ class AzureContainerInstance:
 
             # Restart container group
             self.logger.debug(
-                f"Restarting container group [green]{self.container_group_name}[/] with IP address [green]{target_ip_address}[/]...",
+                f"Restarting container group [green]{self.container_group_name}[/]"
+                f" with IP address [green]{target_ip_address}[/]...",
             )
             while True:
                 if (
@@ -87,14 +83,16 @@ class AzureContainerInstance:
                 if self.current_ip_address == target_ip_address:
                     break
             self.logger.info(
-                f"Restarted container group [green]{self.container_group_name}[/] with IP address [green]{self.current_ip_address}[/].",
+                f"Restarted container group [green]{self.container_group_name}[/]"
+                f" with IP address [green]{self.current_ip_address}[/].",
             )
         except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Could not restart container group {self.container_group_name}.\n{str(exc)}"
-            ) from exc
+            msg = (
+                f"Could not restart container group {self.container_group_name}.\n{exc}"
+            )
+            raise DataSafeHavenAzureError(msg) from exc
 
-    def run_executable(self, container_name: str, executable_path: str) -> List[str]:
+    def run_executable(self, container_name: str, executable_path: str) -> list[str]:
         """
         Run a script or command on one of the containers.
 

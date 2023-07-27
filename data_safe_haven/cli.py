@@ -1,12 +1,9 @@
 """Command line entrypoint for Data Safe Haven application"""
-# Standard library imports
 import pathlib
 from typing import Annotated, Optional
 
-# Third party imports
 import typer
 
-# Local imports
 from data_safe_haven import __version__
 from data_safe_haven.commands import (
     admin_command_group,
@@ -14,19 +11,19 @@ from data_safe_haven.commands import (
     initialise_command,
     teardown_command_group,
 )
-from data_safe_haven.exceptions import DataSafeHavenException
+from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.utility import Logger
 
 
 def callback(
     output: Annotated[
-        Optional[pathlib.Path],
+        Optional[pathlib.Path],  # noqa: UP007
         typer.Option(
             "--output", "-o", resolve_path=True, help="Path to an output log file"
         ),
     ] = None,
     verbosity: Annotated[
-        Optional[int],
+        Optional[int],  # noqa: UP007
         typer.Option(
             "--verbosity",
             "-v",
@@ -36,7 +33,7 @@ def callback(
         ),
     ] = None,
     version: Annotated[
-        Optional[bool],
+        Optional[bool],  # noqa: UP007
         typer.Option(
             "--version", "-V", help="Display the version of this application."
         ),
@@ -45,7 +42,7 @@ def callback(
     """Arguments to the main executable"""
     Logger(verbosity, output)  # initialise logging singleton
     if version:
-        print(f"Data Safe Haven {__version__}")
+        print(f"Data Safe Haven {__version__}")  # noqa: T201
         raise typer.Exit()
 
 
@@ -87,7 +84,7 @@ def main() -> None:
     # Start the application
     try:
         application()
-    except DataSafeHavenException as exc:
+    except DataSafeHavenError as exc:
         logger = Logger()
         for line in str(exc).split("\n"):
             logger.error(line)

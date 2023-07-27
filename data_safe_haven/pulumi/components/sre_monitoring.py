@@ -1,12 +1,7 @@
 """Pulumi component for SHM monitoring"""
-# Standard library import
-from typing import Optional
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation
 
-# Local imports
 from data_safe_haven.functions import time_as_string
 
 
@@ -37,15 +32,14 @@ class SREMonitoringComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SREMonitoringProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Create Linux VM system update schedule: daily at 03:<index>
-        schedule_linux_updates = automation.SoftwareUpdateConfigurationByName(
+        automation.SoftwareUpdateConfigurationByName(
             f"{self._name}_schedule_linux_updates",
             automation_account_name=props.automation_account_name,
             resource_group_name=props.resource_group_name,

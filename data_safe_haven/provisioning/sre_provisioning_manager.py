@@ -1,9 +1,7 @@
 """Provisioning manager for a deployed SRE."""
-# Standard library imports
 import pathlib
-from typing import Any, Dict
+from typing import Any
 
-# Local imports
 from data_safe_haven.external import (
     AzureApi,
     AzureContainerInstance,
@@ -18,7 +16,7 @@ class SREProvisioningManager:
 
     def __init__(
         self,
-        available_vm_skus: Dict[str, Dict[str, Any]],
+        available_vm_skus: dict[str, dict[str, Any]],
         shm_stack: PulumiSHMStack,
         sre_name: str,
         sre_stack: PulumiSREStack,
@@ -110,7 +108,10 @@ class SREProvisioningManager:
         connection_data = {
             "connections": [
                 {
-                    "connection_name": f"{vm_identifier} [{vm_details['cpus']} CPU(s), {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM]",
+                    "connection_name": (
+                        f"{vm_identifier} [{vm_details['cpus']} CPU(s),"
+                        f" {vm_details['gpus']} GPU(s), {vm_details['ram']} GB RAM]"
+                    ),
                     "disable_copy": self.remote_desktop_params["disable_copy"],
                     "disable_paste": self.remote_desktop_params["disable_paste"],
                     "ip_address": vm_details["ip_address"],

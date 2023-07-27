@@ -1,13 +1,7 @@
 """Command-line application for initialising a Data Safe Haven deployment"""
-# Standard library imports
-from typing import List
-
-# Local imports
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config
-from data_safe_haven.exceptions import (
-    DataSafeHavenException,
-)
+from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.utility import Logger
@@ -22,7 +16,7 @@ class UsersRegisterCommand:
 
     def __call__(
         self,
-        usernames: List[str],
+        usernames: list[str],
         sre: str,
     ) -> None:
         shm_name = "UNKNOWN"
@@ -37,12 +31,14 @@ class UsersRegisterCommand:
 
             # Check that SRE option has been provided
             if not sre_name:
-                raise DataSafeHavenException("SRE name must be specified.")
+                msg = "SRE name must be specified."
+                raise DataSafeHavenError(msg)
             self.logger.info(
                 f"Preparing to register {len(usernames)} users with SRE '{sre_name}'"
             )
 
-            # Load GraphAPI as this may require user-interaction that is not possible as part of a Pulumi declarative command
+            # Load GraphAPI as this may require user-interaction that is not
+            # possible as part of a Pulumi declarative command
             graph_api = GraphApi(
                 tenant_id=config.shm.aad_tenant_id,
                 default_scopes=["Group.Read.All"],
@@ -57,10 +53,10 @@ class UsersRegisterCommand:
                     usernames_to_register.append(username)
                 else:
                     self.logger.error(
-                        f"Username '{username}' does not belong to this Data Safe Haven deployment. Please use 'dsh users add' to create it."
+                        f"Username '{username}' does not belong to this Data Safe Haven deployment."
+                        " Please use 'dsh users add' to create it."
                     )
             users.register(sre_name, usernames_to_register)
-        except DataSafeHavenException as exc:
-            raise DataSafeHavenException(
-                f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{str(exc)}"
-            ) from exc
+        except DataSafeHavenError as exc:
+            msg = f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc}"
+            raise DataSafeHavenError(msg) from exc

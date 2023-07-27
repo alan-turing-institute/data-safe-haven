@@ -1,15 +1,11 @@
 """Helper class for Azure fileshares"""
-# Standard library imports
 from contextlib import suppress
-from typing import Optional
 
-# Third party imports
 from azure.core.exceptions import ResourceNotFoundError
 from azure.mgmt.storage import StorageManagementClient
 from azure.storage.fileshare import ShareDirectoryClient, ShareFileClient
 
-# Local imports
-from data_safe_haven.exceptions import DataSafeHavenAzureException
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 
 
@@ -24,8 +20,8 @@ class AzureFileShare:
         share_name: str,
     ):
         self.azure_api = AzureApi(subscription_name)
-        self.storage_client_: Optional[StorageManagementClient] = None
-        self.storage_account_key_: Optional[str] = None
+        self.storage_client_: StorageManagementClient | None = None
+        self.storage_account_key_: str | None = None
         self.storage_account_name: str = storage_account_name
         self.resource_group_name: str = storage_account_resource_group_name
         self.share_name: str = share_name
@@ -49,9 +45,8 @@ class AzureFileShare:
                 if isinstance(k.value, str)
             ]
             if not storage_account_keys:
-                raise DataSafeHavenAzureException(
-                    f"Could not load key values for storage account {self.storage_account_name}."
-                )
+                msg = f"Could not load key values for storage account {self.storage_account_name}."
+                raise DataSafeHavenAzureError(msg)
             self.storage_account_key_ = storage_account_keys[0]
         return self.storage_account_key_
 
@@ -68,9 +63,8 @@ class AzureFileShare:
             )
             file_client.upload_file(file_contents.encode("utf-8"))
         except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Failed to upload data to [green]{target}[/] in [green]{self.share_name}[/]."
-            ) from exc
+            msg = f"Failed to upload data to [green]{target}[/] in [green]{self.share_name}[/]."
+            raise DataSafeHavenAzureError(msg) from exc
 
     def delete(self, destination_path: str) -> None:
         """Delete a file from the target storage account"""
@@ -86,9 +80,8 @@ class AzureFileShare:
             if self.file_exists(file_client):
                 file_client.delete_file()
         except Exception as exc:
-            raise DataSafeHavenAzureException(
-                f"Failed to delete file [green]{target}[/] in [green]{self.share_name}[/]."
-            ) from exc
+            msg = f"Failed to delete file [green]{target}[/] in [green]{self.share_name}[/]."
+            raise DataSafeHavenAzureError(msg) from exc
 
     @staticmethod
     def file_exists(file_client: ShareFileClient) -> bool:
@@ -100,7 +93,7 @@ class AzureFileShare:
     def file_client(
         self,
         file_name: str,
-        directory: Optional[str] = None,
+        directory: str | None = None,
     ) -> ShareFileClient:
         if directory:
             directory_client = ShareDirectoryClient(

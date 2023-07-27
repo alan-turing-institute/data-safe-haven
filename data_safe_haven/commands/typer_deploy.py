@@ -1,11 +1,8 @@
 """Command-line application for deploying a Data Safe Haven component, delegating the details to a subcommand"""
-# Standard library imports
-from typing import Annotated, List, Optional
+from typing import Annotated, Optional
 
-# Third party imports
 import typer
 
-# Local imports
 from data_safe_haven.functions import (
     validate_aad_guid,
     validate_azure_vm_sku,
@@ -14,6 +11,7 @@ from data_safe_haven.functions import (
     validate_timezone,
 )
 from data_safe_haven.utility import SoftwarePackageCategory
+
 from .deploy_shm_command import DeploySHMCommand
 from .deploy_sre_command import DeploySRECommand
 
@@ -23,16 +21,19 @@ deploy_command_group = typer.Typer()
 @deploy_command_group.command()
 def shm(
     aad_tenant_id: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--aad-tenant-id",
             "-a",
-            help="The tenant ID for the AzureAD where users will be created, for example '10de18e7-b238-6f1e-a4ad-772708929203'.",
+            help=(
+                "The tenant ID for the AzureAD where users will be created,"
+                " for example '10de18e7-b238-6f1e-a4ad-772708929203'."
+            ),
             callback=validate_aad_guid,
         ),
     ] = None,
     admin_email_address: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--email",
             "-e",
@@ -41,16 +42,19 @@ def shm(
         ),
     ] = None,
     admin_ip_addresses: Annotated[
-        Optional[List[str]],
+        Optional[list[str]],  # noqa: UP007
         typer.Option(
             "--ip-address",
             "-i",
-            help="An IP address or range used by your system deployers and administrators. [*may be specified several times*]",
+            help=(
+                "An IP address or range used by your system deployers and administrators."
+                " [*may be specified several times*]"
+            ),
             callback=lambda ips: [validate_ip_address(ip) for ip in ips],
         ),
     ] = None,
     fqdn: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--fqdn",
             "-f",
@@ -58,7 +62,7 @@ def shm(
         ),
     ] = None,
     timezone: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             "--timezone",
             "-t",
@@ -81,7 +85,7 @@ def shm(
 def sre(
     name: Annotated[str, typer.Argument(help="Name of SRE to deploy")],
     allow_copy: Annotated[
-        Optional[bool],
+        Optional[bool],  # noqa: UP007
         typer.Option(
             "--allow-copy",
             "-c",
@@ -89,7 +93,7 @@ def sre(
         ),
     ] = None,
     allow_paste: Annotated[
-        Optional[bool],
+        Optional[bool],  # noqa: UP007
         typer.Option(
             "--allow-paste",
             "-p",
@@ -97,7 +101,7 @@ def sre(
         ),
     ] = None,
     data_provider_ip_addresses: Annotated[
-        Optional[List[str]],
+        Optional[list[str]],  # noqa: UP007
         typer.Option(
             "--data-provider-ip-address",
             "-d",
@@ -106,16 +110,19 @@ def sre(
         ),
     ] = None,
     research_desktops: Annotated[
-        Optional[List[str]],
+        Optional[list[str]],  # noqa: UP007
         typer.Option(
             "--research-desktop",
             "-r",
-            help="A virtual machine SKU to make available to your users as a research desktop. [*may be specified several times*]",
+            help=(
+                "A virtual machine SKU to make available to your users as a research desktop."
+                " [*may be specified several times*]"
+            ),
             callback=lambda ips: [validate_azure_vm_sku(ip) for ip in ips],
         ),
     ] = None,
     software_packages: Annotated[
-        Optional[SoftwarePackageCategory],
+        Optional[SoftwarePackageCategory],  # noqa: UP007
         typer.Option(
             "--software-packages",
             "-s",
@@ -123,7 +130,7 @@ def sre(
         ),
     ] = None,
     user_ip_addresses: Annotated[
-        Optional[List[str]],
+        Optional[list[str]],  # noqa: UP007
         typer.Option(
             "--user-ip-address",
             "-u",

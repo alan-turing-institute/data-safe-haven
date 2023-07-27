@@ -1,8 +1,4 @@
 """Pulumi component for SHM monitoring"""
-# Standard library import
-from typing import Optional
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
@@ -29,9 +25,8 @@ class SHMBastionComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMBastionProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:BastionComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)

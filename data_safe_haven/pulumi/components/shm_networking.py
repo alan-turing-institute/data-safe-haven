@@ -1,15 +1,12 @@
 """Pulumi component for SHM networking"""
-# Standard library imports
-from typing import List, Optional, Sequence
+from collections.abc import Sequence
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-# Local imports
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import ordered_private_dns_zones
-from ..common.enums import NetworkingPriorities
+from data_safe_haven.pulumi.common.enums import NetworkingPriorities
 
 
 class SHMNetworkingProps:
@@ -46,9 +43,8 @@ class SHMNetworkingComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMNetworkingProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -412,7 +408,7 @@ class SHMNetworkingComponent(ComponentResource):
             zone_type=network.ZoneType.PUBLIC,
             opts=child_opts,
         )
-        caa_record = network.RecordSet(
+        network.RecordSet(
             f"{self._name}_caa_record",
             caa_records=[
                 network.CaaRecordArgs(
@@ -428,7 +424,7 @@ class SHMNetworkingComponent(ComponentResource):
             zone_name=dns_zone.name,
             opts=child_opts,
         )
-        domain_verification_record = network.RecordSet(
+        network.RecordSet(
             f"{self._name}_domain_verification_record",
             record_type="TXT",
             relative_record_set_name="@",
@@ -442,7 +438,7 @@ class SHMNetworkingComponent(ComponentResource):
         )
 
         # Set up private link domains
-        private_zone_ids: List[Output[str]] = []
+        private_zone_ids: list[Output[str]] = []
         for private_link_domain in ordered_private_dns_zones():
             private_zone = network.PrivateZone(
                 f"{self._name}_private_zone_{private_link_domain}",
@@ -451,7 +447,7 @@ class SHMNetworkingComponent(ComponentResource):
                 resource_group_name=resource_group.name,
                 opts=child_opts,
             )
-            virtual_network_link = network.VirtualNetworkLink(
+            network.VirtualNetworkLink(
                 f"{self._name}_private_zone_{private_link_domain}_vnet_link",
                 location="Global",
                 private_zone_name=private_zone.name,

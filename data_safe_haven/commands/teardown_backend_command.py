@@ -1,9 +1,8 @@
 """Command-line application for tearing down a Data Safe Haven"""
-# Local imports
 from data_safe_haven.backend import Backend
 from data_safe_haven.exceptions import (
-    DataSafeHavenException,
-    DataSafeHavenInputException,
+    DataSafeHavenError,
+    DataSafeHavenInputError,
 )
 
 
@@ -18,10 +17,8 @@ class TeardownBackendCommand:
                 backend = Backend()
                 backend.teardown()
             except Exception as exc:
-                raise DataSafeHavenInputException(
-                    f"Unable to teardown Pulumi backend.\n{str(exc)}"
-                ) from exc
-        except DataSafeHavenException as exc:
-            raise DataSafeHavenException(
-                f"Could not teardown Data Safe Haven backend.\n{str(exc)}"
-            ) from exc
+                msg = f"Unable to teardown Pulumi backend.\n{exc}"
+                raise DataSafeHavenInputError(msg) from exc
+        except DataSafeHavenError as exc:
+            msg = f"Could not teardown Data Safe Haven backend.\n{exc}"
+            raise DataSafeHavenError(msg) from exc

@@ -1,14 +1,14 @@
 """Interact with users in an Azure Active Directory"""
-# Standard library imports
 import pathlib
-from typing import Any, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
-# Local imports
 from data_safe_haven.config import Config
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import b64encode
 from data_safe_haven.pulumi import PulumiSHMStack
 from data_safe_haven.utility import FileReader, Logger
+
 from .research_user import ResearchUser
 
 
@@ -70,7 +70,7 @@ class ActiveDirectoryUsers:
         for line in output.split("\n"):
             self.logger.parse(line)
 
-    def list(self, sre_name: Optional[str] = None) -> Sequence[ResearchUser]:
+    def list(self, sre_name: str | None = None) -> Sequence[ResearchUser]:  # noqa: A003
         """List users in a local Active Directory"""
         list_users_script = FileReader(
             self.resources_path / "active_directory" / "list_users.ps1"
@@ -85,7 +85,7 @@ class ActiveDirectoryUsers:
         users = []
         for line in output.split("\n"):
             tokens = line.split(";")
-            if len(tokens) >= 6:
+            if len(tokens) >= 6:  # noqa: PLR2004
                 users.append(
                     ResearchUser(
                         email_address=tokens[4],
@@ -127,7 +127,7 @@ class ActiveDirectoryUsers:
         for line in output.split("\n"):
             self.logger.parse(line)
 
-    def set(self, users: Sequence[ResearchUser]) -> None:
+    def set(self, users: Sequence[ResearchUser]) -> None:  # noqa: A003
         """Set local Active Directory users to specified list"""
         users_to_remove = [user for user in self.list() if user not in users]
         self.remove(users_to_remove)

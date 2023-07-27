@@ -1,22 +1,21 @@
-# Standard library imports
 import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-# Third-party imports
 import pytz
 
 
-def as_dict(object: Any) -> Dict[str, Any]:
+def as_dict(container: Any) -> dict[str, Any]:
     if (
-        not isinstance(object, dict)
-        and hasattr(object, "keys")
-        and all(isinstance(x, str) for x in object.keys())
+        not isinstance(container, dict)
+        and hasattr(container, "keys")
+        and all(isinstance(x, str) for x in container.keys())
     ):
-        raise TypeError(f"{object} {type(object)} is not a valid Dict[str, Any]")
-    return object
+        msg = f"{container} {type(container)} is not a valid dict[str, Any]"
+        raise TypeError(msg)
+    return container
 
 
-def ordered_private_dns_zones(resource_type: Optional[str] = None) -> List[str]:
+def ordered_private_dns_zones(resource_type: str | None = None) -> list[str]:
     """
     Return required DNS zones for a given resource type.
     See https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns for details.
@@ -35,12 +34,12 @@ def ordered_private_dns_zones(resource_type: Optional[str] = None) -> List[str]:
     }
     if resource_type and (resource_type in dns_zones):
         return dns_zones[resource_type]
-    return sorted(set(zone for zones in dns_zones.values() for zone in zones))
+    return sorted({zone for zones in dns_zones.values() for zone in zones})
 
 
 def time_as_string(hour: int, minute: int, timezone: str) -> str:
     """Get the next occurence of a repeating daily time as a string"""
-    dt = datetime.datetime.now().replace(
+    dt = datetime.datetime.now(datetime.timezone.utc).replace(
         hour=hour,
         minute=minute,
         second=0,

@@ -1,18 +1,17 @@
-# Standard library imports
 import pathlib
-from typing import Optional
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
-# Local imports
-from data_safe_haven.utility import FileReader
-from ..common.transformations import (
+from data_safe_haven.pulumi.common.transformations import (
     get_ip_address_from_container_group,
     get_ip_addresses_from_private_endpoint,
 )
-from ..dynamic.file_share_file import FileShareFile, FileShareFileProps
+from data_safe_haven.pulumi.dynamic.file_share_file import (
+    FileShareFile,
+    FileShareFileProps,
+)
+from data_safe_haven.utility import FileReader
 
 
 class SREGiteaServerProps:
@@ -39,7 +38,7 @@ class SREGiteaServerProps:
         user_services_resource_group_name: Input[str],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
-        database_username: Optional[Input[str]] = None,
+        database_username: Input[str] | None = None,
     ):
         self.database_password = database_password
         self.database_subnet_id = database_subnet_id
@@ -72,9 +71,8 @@ class SREGiteaServerComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SREGiteaServerProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:GiteaServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -194,7 +192,7 @@ class SREGiteaServerComponent(ComponentResource):
             opts=child_opts,
         )
         gitea_db_database_name = "gitea"
-        gitea_db = dbforpostgresql.Database(
+        dbforpostgresql.Database(
             f"{self._name}_gitea_db",
             charset="UTF8",
             database_name=gitea_db_database_name,
@@ -290,7 +288,8 @@ class SREGiteaServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__log__LEVEL",
-                            value="Debug",  # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
+                            # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
+                            value="Debug",
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__security__INSTALL_LOCK", value="true"
@@ -365,7 +364,7 @@ class SREGiteaServerComponent(ComponentResource):
             ),
         )
         # Register the container group in the SRE private DNS zone
-        gitea_private_record_set = network.PrivateRecordSet(
+        network.PrivateRecordSet(
             f"{self._name}_gitea_private_record_set",
             a_records=[
                 network.ARecordArgs(
@@ -380,7 +379,7 @@ class SREGiteaServerComponent(ComponentResource):
             opts=child_opts,
         )
         # Redirect the public DNS to private DNS
-        gitea_public_record_set = network.RecordSet(
+        network.RecordSet(
             f"{self._name}_gitea_public_record_set",
             cname_record=network.CnameRecordArgs(
                 cname=Output.concat("gitea.privatelink.", props.sre_fqdn)

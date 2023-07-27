@@ -1,9 +1,8 @@
 """Deploy Data Safe Haven Management environment with Pulumi"""
-# Third party imports
 import pulumi
 
-# Local imports
 from data_safe_haven.config import Config
+
 from .components.shm_bastion import SHMBastionComponent, SHMBastionProps
 from .components.shm_data import SHMDataComponent, SHMDataProps
 from .components.shm_domain_controllers import (
@@ -25,7 +24,8 @@ class DeclarativeSHM:
     def __init__(self, config: Config, shm_name: str) -> None:
         self.cfg = config
         self.shm_name = shm_name
-        self.stack_name = f"shm-{shm_name}"
+        self.short_name = f"shm-{shm_name}"
+        self.stack_name = self.short_name
 
     def run(self) -> None:
         # Load pulumi configuration options
@@ -35,7 +35,6 @@ class DeclarativeSHM:
         networking = SHMNetworkingComponent(
             "shm_networking",
             self.stack_name,
-            self.shm_name,
             SHMNetworkingProps(
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 fqdn=self.cfg.shm.fqdn,
@@ -47,10 +46,9 @@ class DeclarativeSHM:
         )
 
         # Deploy firewall and routing
-        firewall = SHMFirewallComponent(
+        SHMFirewallComponent(
             "shm_firewall",
             self.stack_name,
-            self.shm_name,
             SHMFirewallProps(
                 domain_controller_private_ip=networking.domain_controller_private_ip,
                 dns_zone=networking.dns_zone,
@@ -64,10 +62,9 @@ class DeclarativeSHM:
         )
 
         # Deploy firewall and routing
-        bastion = SHMBastionComponent(
+        SHMBastionComponent(
             "shm_bastion",
             self.stack_name,
-            self.shm_name,
             SHMBastionProps(
                 location=self.cfg.azure.location,
                 resource_group_name=networking.resource_group_name,
@@ -79,7 +76,6 @@ class DeclarativeSHM:
         data = SHMDataComponent(
             "shm_data",
             self.stack_name,
-            self.shm_name,
             SHMDataProps(
                 admin_group_id=self.cfg.azure.admin_group_id,
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
@@ -93,7 +89,6 @@ class DeclarativeSHM:
         monitoring = SHMMonitoringComponent(
             "shm_monitoring",
             self.stack_name,
-            self.shm_name,
             SHMMonitoringProps(
                 dns_resource_group_name=networking.resource_group_name,
                 location=self.cfg.azure.location,
@@ -107,7 +102,6 @@ class DeclarativeSHM:
         update_servers = SHMUpdateServersComponent(
             "shm_update_servers",
             self.stack_name,
-            self.shm_name,
             SHMUpdateServersProps(
                 admin_password=data.password_update_server_linux_admin,
                 location=self.cfg.azure.location,
@@ -124,7 +118,6 @@ class DeclarativeSHM:
         domain_controllers = SHMDomainControllersComponent(
             "shm_domain_controllers",
             self.stack_name,
-            self.shm_name,
             SHMDomainControllersProps(
                 automation_account_modules=monitoring.automation_account_modules,
                 automation_account_name=monitoring.automation_account.name,

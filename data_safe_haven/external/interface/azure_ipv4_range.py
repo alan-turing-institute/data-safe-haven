@@ -1,11 +1,8 @@
-# Standard library imports
 import ipaddress
 import math
 from contextlib import suppress
-from typing import List
 
-# Local imports
-from data_safe_haven.exceptions import DataSafeHavenIPRangeException
+from data_safe_haven.exceptions import DataSafeHavenIPRangeError
 
 
 class AzureIPv4Range(ipaddress.IPv4Network):
@@ -23,35 +20,33 @@ class AzureIPv4Range(ipaddress.IPv4Network):
             )
         )
         if len(networks) != 1:
-            raise DataSafeHavenIPRangeException(
-                f"{ip_address_first}-{ip_address_last} cannot be expressed as a single network range."
-            )
+            msg = f"{ip_address_first}-{ip_address_last} cannot be expressed as a single network range."
+            raise DataSafeHavenIPRangeError(msg)
         super().__init__(networks[0])
-        self._subnets: List["AzureIPv4Range"] = []
+        self._subnets: list[AzureIPv4Range] = []
 
     @classmethod
     def from_cidr(cls, ip_cidr: str) -> "AzureIPv4Range":
         network = ipaddress.IPv4Network(ip_cidr)
         return cls(network[0], network[-1])
 
-    def all(self) -> List[ipaddress.IPv4Address]:
+    def all_ips(self) -> list[ipaddress.IPv4Address]:
         """All IP addresses in the range"""
         return list(self.hosts())
 
-    def available(self) -> List[ipaddress.IPv4Address]:
+    def available(self) -> list[ipaddress.IPv4Address]:
         """Azure reserves x.x.x.1 for the default gateway and (x.x.x.2, x.x.x.3) to map Azure DNS IPs."""
-        return list(self.all())[3:]
+        return list(self.all_ips())[3:]
 
     def next_subnet(self, number_of_addresses: int) -> "AzureIPv4Range":
         """Find the next unused subnet of a given size"""
         if not math.log2(number_of_addresses).is_integer():
-            raise DataSafeHavenIPRangeException(
-                f"Number of address '{number_of_addresses}' must be a power of 2"
-            )
+            msg = f"Number of address '{number_of_addresses}' must be a power of 2"
+            raise DataSafeHavenIPRangeError(msg)
         ip_address_first = self[0]
         while True:
             ip_address_last = ip_address_first + int(number_of_addresses - 1)
-            with suppress(DataSafeHavenIPRangeException):
+            with suppress(DataSafeHavenIPRangeError):
                 candidate = AzureIPv4Range(ip_address_first, ip_address_last)
                 if not any(subnet.overlaps(candidate) for subnet in self._subnets):
                     self._subnets.append(candidate)

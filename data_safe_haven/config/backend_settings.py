@@ -1,17 +1,13 @@
 """Load global and local settings from dotfiles"""
-# Standard library imports
 import pathlib
-from typing import Optional
 
-# Third party imports
 import appdirs
 import yaml
 from yaml.parser import ParserError
 
-# Local imports
 from data_safe_haven.exceptions import (
-    DataSafeHavenParameterException,
-    DataSafeHavenConfigException,
+    DataSafeHavenConfigError,
+    DataSafeHavenParameterError,
 )
 from data_safe_haven.utility import Logger
 
@@ -31,10 +27,10 @@ class BackendSettings:
         self,
     ) -> None:
         # Define instance variables
-        self._admin_group_id: Optional[str] = None
-        self._location: Optional[str] = None
-        self._name: Optional[str] = None
-        self._subscription_name: Optional[str] = None
+        self._admin_group_id: str | None = None
+        self._location: str | None = None
+        self._name: str | None = None
+        self._subscription_name: str | None = None
         self.logger = Logger()
 
         # Load previous backend settings (if any)
@@ -47,10 +43,10 @@ class BackendSettings:
     def update(
         self,
         *,
-        admin_group_id: Optional[str] = None,
-        location: Optional[str] = None,
-        name: Optional[str] = None,
-        subscription_name: Optional[str] = None,
+        admin_group_id: str | None = None,
+        location: str | None = None,
+        name: str | None = None,
+        subscription_name: str | None = None,
     ) -> None:
         """Overwrite defaults with provided parameters"""
         if admin_group_id:
@@ -76,40 +72,39 @@ class BackendSettings:
     @property
     def admin_group_id(self) -> str:
         if not self._admin_group_id:
-            raise DataSafeHavenParameterException(
-                "Azure administrator group not provided: use '[bright_cyan]--admin-group[/]' / '[green]-a[/]' to do so."
-            )
+            msg = "Azure administrator group not provided: use '[bright_cyan]--admin-group[/]' / '[green]-a[/]' to do so."
+            raise DataSafeHavenParameterError(msg)
         return self._admin_group_id
 
     @property
     def location(self) -> str:
         if not self._location:
-            raise DataSafeHavenParameterException(
-                "Azure location not provided: use '[bright_cyan]--location[/]' / '[green]-l[/]' to do so."
-            )
+            msg = "Azure location not provided: use '[bright_cyan]--location[/]' / '[green]-l[/]' to do so."
+            raise DataSafeHavenParameterError(msg)
         return self._location
 
     @property
     def name(self) -> str:
         if not self._name:
-            raise DataSafeHavenParameterException(
-                "Data Safe Haven deployment name not provided: use '[bright_cyan]--deployment-name[/]' / '[green]-d[/]' to do so."
+            msg = (
+                "Data Safe Haven deployment name not provided:"
+                " use '[bright_cyan]--deployment-name[/]' / '[green]-d[/]' to do so."
             )
+            raise DataSafeHavenParameterError(msg)
         return self._name
 
     @property
     def subscription_name(self) -> str:
         if not self._subscription_name:
-            raise DataSafeHavenParameterException(
-                "Azure subscription not provided: use '[bright_cyan]--subscription[/]' / '[green]-s[/]' to do so."
-            )
+            msg = "Azure subscription not provided: use '[bright_cyan]--subscription[/]' / '[green]-s[/]' to do so."
+            raise DataSafeHavenParameterError(msg)
         return self._subscription_name
 
     def read(self) -> None:
         """Read settings from YAML file"""
         try:
             if self.config_file_path.exists():
-                with open(self.config_file_path, "r", encoding="utf-8") as f_yaml:
+                with open(self.config_file_path, encoding="utf-8") as f_yaml:
                     settings = yaml.safe_load(f_yaml)
                 if isinstance(settings, dict):
                     self.logger.info(
@@ -128,9 +123,8 @@ class BackendSettings:
                     ):
                         self._subscription_name = subscription_name
         except ParserError as exc:
-            raise DataSafeHavenConfigException(
-                f"Could not load settings from {self.config_file_path}.\n{str(exc)}"
-            ) from exc
+            msg = f"Could not load settings from {self.config_file_path}.\n{exc}"
+            raise DataSafeHavenConfigError(msg) from exc
 
     def write(self) -> None:
         """Write settings to YAML file"""

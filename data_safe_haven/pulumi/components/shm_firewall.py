@@ -1,12 +1,7 @@
 """Pulumi component for SHM traffic routing"""
-# Standard library import
-from typing import Optional
-
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
-# Local imports
 from data_safe_haven.pulumi.common.transformations import get_id_from_subnet
 
 
@@ -25,9 +20,7 @@ class SHMFirewallProps:
         subnet_update_servers: Input[network.GetSubnetResult],
     ):
         self.domain_controller_private_ip = domain_controller_private_ip
-        self.dns_zone_name = Output.from_input(dns_zone).apply(
-            lambda zone: zone.name  # type: ignore
-        )
+        self.dns_zone_name = Output.from_input(dns_zone).apply(lambda zone: zone.name)  # type: ignore
         self.location = location
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name
@@ -49,15 +42,15 @@ class SHMFirewallComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMFirewallProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:FirewallComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Important IP addresses
-        external_dns_resolver = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
+        # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
+        external_dns_resolver = "168.63.129.16"
         ntp_ip_addresses = [
             "216.239.35.0",
             "216.239.35.4",
@@ -1131,7 +1124,7 @@ class SHMFirewallComponent(ComponentResource):
             if not cfgs
             else next(filter(lambda _: _, [cfg.private_ip_address for cfg in cfgs]))
         )
-        route = network.Route(
+        network.Route(
             f"{self._name}_via_firewall",
             address_prefix="0.0.0.0/0",
             next_hop_ip_address=private_ip_address,
@@ -1143,7 +1136,7 @@ class SHMFirewallComponent(ComponentResource):
         )
 
         # Add an A record for the domain controller
-        a_record = network.RecordSet(
+        network.RecordSet(
             f"{self._name}_a_record",
             a_records=public_ip.ip_address.apply(
                 lambda ip: [network.ARecordArgs(ipv4_address=ip)] if ip else []

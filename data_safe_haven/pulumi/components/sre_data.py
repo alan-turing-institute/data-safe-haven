@@ -1,8 +1,6 @@
 """Pulumi component for SRE state"""
-# Standard library imports
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
-# Third party imports
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
@@ -13,7 +11,6 @@ from pulumi_azure_native import (
     storage,
 )
 
-# Local imports
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import (
     alphanumeric,
@@ -26,8 +23,14 @@ from data_safe_haven.pulumi.common.transformations import (
     get_id_from_subnet,
     get_name_from_rg,
 )
-from ..dynamic.blob_container_acl import BlobContainerAcl, BlobContainerAclProps
-from ..dynamic.ssl_certificate import SSLCertificate, SSLCertificateProps
+from data_safe_haven.pulumi.dynamic.blob_container_acl import (
+    BlobContainerAcl,
+    BlobContainerAclProps,
+)
+from data_safe_haven.pulumi.dynamic.ssl_certificate import (
+    SSLCertificate,
+    SSLCertificateProps,
+)
 
 
 class SREDataProps:
@@ -98,9 +101,8 @@ class SREDataComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        sre_name: str,
         props: SREDataProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:sre:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -229,7 +231,7 @@ class SREDataComponent(ComponentResource):
         )
 
         # Deploy key vault secrets
-        password_secure_research_desktop_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_secure_research_desktop_admin",
             properties=keyvault.SecretPropertiesArgs(
                 value=props.password_secure_research_desktop_admin
@@ -239,7 +241,7 @@ class SREDataComponent(ComponentResource):
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
         )
-        password_gitea_database_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_gitea_database_admin",
             properties=keyvault.SecretPropertiesArgs(
                 value=props.password_gitea_database_admin
@@ -249,7 +251,7 @@ class SREDataComponent(ComponentResource):
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
         )
-        password_hedgedoc_database_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_hedgedoc_database_admin",
             properties=keyvault.SecretPropertiesArgs(
                 value=props.password_hedgedoc_database_admin
@@ -259,7 +261,7 @@ class SREDataComponent(ComponentResource):
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
         )
-        password_nexus_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_nexus_admin",
             properties=keyvault.SecretPropertiesArgs(value=props.password_nexus_admin),
             resource_group_name=resource_group.name,
@@ -267,7 +269,7 @@ class SREDataComponent(ComponentResource):
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
         )
-        password_user_database_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_user_database_admin",
             properties=keyvault.SecretPropertiesArgs(
                 value=props.password_user_database_admin
@@ -331,7 +333,7 @@ class SREDataComponent(ComponentResource):
                             i_p_address_or_range=str(ip_address),
                         )
                         for ip_range in sorted(ip_ranges)
-                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all()
+                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all_ips()
                     ]
                 ),
                 virtual_network_rules=[
@@ -345,7 +347,7 @@ class SREDataComponent(ComponentResource):
             opts=child_opts,
         )
         # Give the "Storage Blob Data Owner" role to the Azure admin group
-        storage_account_securedata_data_owner_role_assignment = authorization.RoleAssignment(
+        authorization.RoleAssignment(
             f"{self._name}_storage_account_securedata_data_owner_role_assignment",
             principal_id=props.admin_group_id,
             principal_type=authorization.PrincipalType.GROUP,
@@ -380,13 +382,16 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions(parent=storage_account_securedata),
         )
         # Set storage container ACLs
-        storage_container_egress_acl = BlobContainerAcl(
+        BlobContainerAcl(
             f"{self._name}_storage_container_egress_acl",
             BlobContainerAclProps(
                 acl_user="rwx",
                 acl_group="rwx",
                 acl_other="rwx",
-                apply_default_permissions=False,  # due to an Azure bug this also gives ownership of the fileshare to user 65533 (preventing use inside the SRE)
+                # due to an Azure bug `apply_default_permissions=True` also
+                # gives ownership of the fileshare to user 65533 (preventing
+                # use inside the SRE)
+                apply_default_permissions=False,
                 container_name=storage_container_egress.name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account_securedata.name,
@@ -394,13 +399,15 @@ class SREDataComponent(ComponentResource):
             ),
             opts=ResourceOptions(parent=storage_container_egress),
         )
-        storage_container_ingress_acl = BlobContainerAcl(
+        BlobContainerAcl(
             f"{self._name}_storage_container_ingress_acl",
             BlobContainerAclProps(
                 acl_user="rwx",
                 acl_group="r-x",
                 acl_other="r-x",
-                apply_default_permissions=True,  # ensure that the above permissions are also set on any newly created files (eg. with Azure Storage Explorer)
+                # ensure that the above permissions are also set on any newly
+                # created files (eg. with Azure Storage Explorer)
+                apply_default_permissions=True,
                 container_name=storage_container_ingress.name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account_securedata.name,
@@ -425,7 +432,7 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions(parent=storage_account_securedata),
         )
         # Add a private DNS record for each securedata data custom DNS config
-        storage_account_securedata_private_dns_zone_group = network.PrivateDnsZoneGroup(
+        network.PrivateDnsZoneGroup(
             f"{self._name}_storage_account_securedata_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
@@ -480,18 +487,19 @@ class SREDataComponent(ComponentResource):
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
         )
-        file_container_home = storage.FileShare(
+        storage.FileShare(
             f"{self._name}_storage_container_home",
             access_tier=storage.ShareAccessTier.PREMIUM,
             account_name=storage_account_userdata.name,
             enabled_protocols=storage.EnabledProtocols.NFS,
             resource_group_name=resource_group.name,
-            root_squash=storage.RootSquashType.NO_ROOT_SQUASH,  # Squashing prevents root from creating user home directories
+            # Squashing prevents root from creating user home directories
+            root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
             share_name="home",
             share_quota=1024,
             opts=ResourceOptions(parent=storage_account_userdata),
         )
-        file_container_shared = storage.FileShare(
+        storage.FileShare(
             f"{self._name}_storage_container_shared",
             access_tier=storage.ShareAccessTier.PREMIUM,
             account_name=storage_account_userdata.name,
@@ -519,7 +527,7 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions(parent=storage_account_userdata),
         )
         # Add a private DNS record for each userdata custom DNS config
-        storage_account_userdata_private_dns_zone_group = network.PrivateDnsZoneGroup(
+        network.PrivateDnsZoneGroup(
             f"{self._name}_storage_account_userdata_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(

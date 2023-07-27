@@ -1,9 +1,8 @@
 """Pulumi declarative program"""
-# Third party imports
 import pulumi
 
-# Local imports
 from data_safe_haven.config import Config
+
 from .components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
@@ -33,7 +32,8 @@ class DeclarativeSRE:
         self.cfg = config
         self.shm_name = shm_name
         self.sre_name = sre_name
-        self.stack_name = f"shm-{shm_name}-sre-{sre_name}"
+        self.short_name = f"sre-{sre_name}"
+        self.stack_name = f"shm-{shm_name}-{self.short_name}"
 
     def run(self) -> None:
         # Load pulumi configuration options
@@ -62,7 +62,6 @@ class DeclarativeSRE:
         networking = SRENetworkingComponent(
             "sre_networking",
             self.stack_name,
-            self.sre_name,
             SRENetworkingProps(
                 location=self.cfg.azure.location,
                 shm_fqdn=self.cfg.shm.fqdn,
@@ -78,19 +77,19 @@ class DeclarativeSRE:
                 shm_subnet_update_servers_prefix=self.pulumi_opts.require(
                     "shm-networking-subnet_update_servers_prefix",
                 ),
-                shm_zone_name=self.cfg.shm.fqdn,
-                sre_index=self.cfg.sres[self.sre_name].index,
                 shm_virtual_network_name=self.pulumi_opts.require(
                     "shm-networking-virtual_network_name"
                 ),
+                shm_zone_name=self.cfg.shm.fqdn,
+                sre_index=self.cfg.sres[self.sre_name].index,
+                sre_name=self.sre_name,
             ),
         )
 
         # Deploy automated monitoring
-        monitoring = SREMonitoringComponent(
+        SREMonitoringComponent(
             "sre_monitoring",
             self.stack_name,
-            self.shm_name,
             SREMonitoringProps(
                 automation_account_name=self.pulumi_opts.require(
                     "shm-monitoring-automation_account_name"
@@ -111,7 +110,6 @@ class DeclarativeSRE:
         data = SREDataComponent(
             "sre_data",
             self.stack_name,
-            self.sre_name,
             SREDataProps(
                 admin_email_address=self.cfg.shm.admin_email_address,
                 admin_group_id=self.cfg.azure.admin_group_id,
@@ -132,10 +130,9 @@ class DeclarativeSRE:
         )
 
         # Deploy frontend application gateway
-        application_gateway = SREApplicationGatewayComponent(
+        SREApplicationGatewayComponent(
             "sre_application_gateway",
             self.stack_name,
-            self.sre_name,
             SREApplicationGatewayProps(
                 key_vault_certificate_id=data.certificate_secret_id,
                 key_vault_identity=data.managed_identity,
@@ -150,7 +147,6 @@ class DeclarativeSRE:
         remote_desktop = SRERemoteDesktopComponent(
             "sre_remote_desktop",
             self.stack_name,
-            self.sre_name,
             SRERemoteDesktopProps(
                 aad_application_name=f"sre-{self.sre_name}-azuread-guacamole",
                 aad_application_fqdn=networking.sre_fqdn,
@@ -180,7 +176,6 @@ class DeclarativeSRE:
         research_desktops = SREResearchDesktopComponent(
             "sre_secure_research_desktop",
             self.stack_name,
-            self.sre_name,
             SREResearchDesktopProps(
                 admin_password=data.password_secure_research_desktop_admin,
                 domain_sid=self.pulumi_opts.require(
@@ -204,6 +199,7 @@ class DeclarativeSRE:
                     "shm-monitoring-log_analytics_workspace_key"
                 ),
                 sre_fqdn=networking.sre_fqdn,
+                sre_name=self.sre_name,
                 storage_account_userdata_name=data.storage_account_userdata_name,
                 storage_account_securedata_name=data.storage_account_securedata_name,
                 subnet_research_desktops=networking.subnet_research_desktops,
@@ -219,10 +215,9 @@ class DeclarativeSRE:
         )
 
         # Deploy software repository servers
-        software_repositories = SRESoftwareRepositoriesComponent(
+        SRESoftwareRepositoriesComponent(
             "shm_update_servers",
             self.stack_name,
-            self.shm_name,
             SRESoftwareRepositoriesProps(
                 location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,
@@ -239,10 +234,9 @@ class DeclarativeSRE:
         )
 
         # Deploy containerised user services
-        user_services = SREUserServicesComponent(
+        SREUserServicesComponent(
             "sre_user_services",
             self.stack_name,
-            self.sre_name,
             SREUserServicesProps(
                 domain_netbios_name=self.pulumi_opts.require(
                     "shm-domain_controllers-netbios_name"

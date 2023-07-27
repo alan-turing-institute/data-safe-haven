@@ -1,16 +1,17 @@
 """Pulumi component for SHM domain controllers"""
-# Standard library import
 import pathlib
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
-# Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-# Local
 from data_safe_haven.pulumi.common.transformations import get_name_from_subnet
+from data_safe_haven.pulumi.dynamic.remote_powershell import (
+    RemoteScript,
+    RemoteScriptProps,
+)
 from data_safe_haven.utility import FileReader
-from ..dynamic.remote_powershell import RemoteScript, RemoteScriptProps
+
 from .automation_dsc_node import AutomationDscNode, AutomationDscNodeProps
 from .virtual_machine import VMComponent, WindowsVMProps
 
@@ -82,9 +83,8 @@ class SHMDomainControllersComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMDomainControllersProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:DomainControllersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -99,7 +99,8 @@ class SHMDomainControllersComponent(ComponentResource):
         )
 
         # Create the DC
-        # We use the domain admin credentials here as the VM admin is promoted to domain admin when setting up the domain
+        # We use the domain admin credentials here as the VM admin is promoted
+        # to domain admin when setting up the domain
         primary_domain_controller = VMComponent(
             f"{self._name}_primary_domain_controller",
             WindowsVMProps(

@@ -1,12 +1,9 @@
 """Pulumi component for SHM state"""
-# Standard library imports
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
-# Third party imports
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, resources, storage
 
-# Local imports
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, replace_separators, truncate_tokens
 
@@ -53,9 +50,8 @@ class SHMDataComponent(ComponentResource):
         self,
         name: str,
         stack_name: str,
-        shm_name: str,
         props: SHMDataProps,
-        opts: Optional[ResourceOptions] = None,
+        opts: ResourceOptions | None = None,
     ):
         super().__init__("dsh:shm:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
@@ -138,7 +134,7 @@ class SHMDataComponent(ComponentResource):
         )
 
         # Deploy key vault secrets
-        password_domain_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_domain_admin",
             properties=keyvault.SecretPropertiesArgs(value=props.password_domain_admin),
             resource_group_name=resource_group.name,
@@ -146,7 +142,7 @@ class SHMDataComponent(ComponentResource):
             vault_name=key_vault.name,
             opts=child_opts,
         )
-        password_domain_azure_ad_connect = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_domain_azure_ad_connect",
             properties=keyvault.SecretPropertiesArgs(
                 value=props.password_domain_azure_ad_connect
@@ -156,7 +152,7 @@ class SHMDataComponent(ComponentResource):
             vault_name=key_vault.name,
             opts=child_opts,
         )
-        password_domain_computer_manager = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_domain_computer_manager",
             properties=keyvault.SecretPropertiesArgs(
                 value=props.password_domain_computer_manager
@@ -166,7 +162,7 @@ class SHMDataComponent(ComponentResource):
             vault_name=key_vault.name,
             opts=child_opts,
         )
-        password_domain_searcher = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_domain_searcher",
             properties=keyvault.SecretPropertiesArgs(
                 value=props.password_domain_searcher
@@ -176,7 +172,7 @@ class SHMDataComponent(ComponentResource):
             vault_name=key_vault.name,
             opts=child_opts,
         )
-        password_update_server_linux_admin = keyvault.Secret(
+        keyvault.Secret(
             f"{self._name}_kvs_password_update_server_linux_admin",
             properties=keyvault.SecretPropertiesArgs(
                 value=props.password_update_server_linux_admin
@@ -219,7 +215,7 @@ class SHMDataComponent(ComponentResource):
                             i_p_address_or_range=str(ip_address),
                         )
                         for ip_range in sorted(ip_ranges)
-                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all()
+                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all_ips()
                     ]
                 ),
             ),
@@ -228,7 +224,7 @@ class SHMDataComponent(ComponentResource):
             opts=child_opts,
         )
         # Deploy staging container for holding any data that does not have an SRE
-        storage_container_staging = storage.BlobContainer(
+        storage.BlobContainer(
             f"{self._name}_st_data_staging",
             account_name=storage_account_persistent_data.name,
             container_name=replace_separators(f"{stack_name}-staging", "-")[:63],

@@ -1,9 +1,8 @@
-# Standard library imports
 import base64
 import hashlib
 import secrets
 import string
-from typing import List, Sequence
+from collections.abc import Sequence
 
 
 def alphanumeric(input_string: str) -> str:
@@ -27,7 +26,10 @@ def hex_string(length: int) -> str:
 
 
 def password(length: int) -> str:
-    """Generate a string of 'length' random alphanumeric characters. Require at least one lower-case, one upper-case and one digit."""
+    """
+    Generate a string of 'length' random alphanumeric characters.
+    Require at least one lower-case, one upper-case and one digit.
+    """
     alphabet = string.ascii_letters + string.digits
     while True:
         password_ = "".join(secrets.choice(alphabet) for _ in range(length))
@@ -60,7 +62,13 @@ def sha256hash(input_string: str) -> str:
     return hashlib.sha256(str.encode(input_string, encoding="utf-8")).hexdigest()
 
 
-def truncate_tokens(tokens: Sequence[str], max_length: int) -> List[str]:
+def truncate_tokens(tokens: Sequence[str], max_length: int) -> list[str]:
+    """
+    Recursively remove the final character from the longest strings in the input.
+    Terminate when the total length of all strings is no greater than max_length.
+    For example:
+        truncate_tokens(["the", "quick", "fox"], 6) -> ["th", "qu", "fo"]
+    """
     output_tokens = list(tokens)
     token_lengths = [len(t) for t in output_tokens]
     while sum(token_lengths) > max_length:

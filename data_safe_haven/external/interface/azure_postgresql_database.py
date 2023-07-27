@@ -1,11 +1,10 @@
 """Backend for a Data Safe Haven environment"""
-# Standard library imports
+import datetime
 import pathlib
 import time
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
-# Third party imports
 import psycopg2
 import requests
 from azure.core.polling import LROPoller
@@ -16,10 +15,9 @@ from azure.mgmt.rdbms.postgresql.models import (
     ServerUpdateParameters,
 )
 
-# Local imports
 from data_safe_haven.exceptions import (
-    DataSafeHavenAzureException,
-    DataSafeHavenInputException,
+    DataSafeHavenAzureError,
+    DataSafeHavenInputError,
 )
 from data_safe_haven.external import AzureApi
 from data_safe_haven.utility import FileReader, Logger, PathType
@@ -29,9 +27,9 @@ class AzurePostgreSQLDatabase:
     """Interface for Azure PostgreSQL databases."""
 
     current_ip: str
-    db_client_: Optional[PostgreSQLManagementClient]
+    db_client_: PostgreSQLManagementClient | None
     db_name: str
-    db_server_: Optional[Server]
+    db_server_: Server | None
     db_server_admin_password: str
     resource_group_name: str
     server_name: str
@@ -56,7 +54,9 @@ class AzurePostgreSQLDatabase:
         self.logger = Logger()
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
-        self.rule_suffix = datetime.now().strftime(r"%Y%m%d-%H%M%S")
+        self.rule_suffix = datetime.datetime.now(tz=datetime.timezone.utc).strftime(
+            r"%Y%m%d-%H%M%S"
+        )
 
     @staticmethod
     def wait(poller: LROPoller[Any]) -> None:
@@ -100,13 +100,12 @@ class AzurePostgreSQLDatabase:
                     n_retries -= 1
                     time.sleep(10)
                 else:
-                    raise DataSafeHavenAzureException(
-                        f"Could not connect to database.\n{str(exc)}"
-                    ) from exc
+                    msg = f"Could not connect to database.\n{exc}"
+                    raise DataSafeHavenAzureError(msg) from exc
         return connection
 
     def load_sql(
-        self, filepath: PathType, mustache_values: Optional[Dict[str, str]] = None
+        self, filepath: PathType, mustache_values: dict[str, str] | None = None
     ) -> str:
         """Load filepath into a single SQL string."""
         reader = FileReader(filepath)
@@ -121,11 +120,11 @@ class AzurePostgreSQLDatabase:
     def execute_scripts(
         self,
         filepaths: Sequence[PathType],
-        mustache_values: Optional[Dict[str, Any]] = None,
-    ) -> List[List[str]]:
+        mustache_values: dict[str, Any] | None = None,
+    ) -> list[list[str]]:
         """Execute scripts on the PostgreSQL server."""
-        outputs: List[List[str]] = []
-        connection: Optional[psycopg2.extensions.connection] = None
+        outputs: list[list[str]] = []
+        connection: psycopg2.extensions.connection | None = None
         cursor = None
 
         try:
@@ -138,9 +137,9 @@ class AzurePostgreSQLDatabase:
 
             # Apply the Guacamole initialisation script
             for filepath in filepaths:
-                filepath = pathlib.Path(filepath)
-                self.logger.info(f"Running SQL script: [green]{filepath.name}[/].")
-                commands = self.load_sql(filepath, mustache_values)
+                _filepath = pathlib.Path(filepath)
+                self.logger.info(f"Running SQL script: [green]{_filepath.name}[/].")
+                commands = self.load_sql(_filepath, mustache_values)
                 cursor.execute(commands)
                 if "SELECT" in cursor.statusmessage:
                     outputs += [[str(msg) for msg in msg_tuple] for msg_tuple in cursor]
@@ -149,9 +148,8 @@ class AzurePostgreSQLDatabase:
             connection.commit()
             self.logger.info(f"Finished running {len(filepaths)} SQL scripts.")
         except (Exception, psycopg2.Error) as exc:
-            raise DataSafeHavenAzureException(
-                f"Error while connecting to PostgreSQL.\n{str(exc)}"
-            ) from exc
+            msg = f"Error while connecting to PostgreSQL.\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc
         finally:
             # Close the connection if it is open
             if connection:
@@ -211,10 +209,10 @@ class AzurePostgreSQLDatabase:
                 f"Removed temporary firewall rule for [green]{self.current_ip}[/].",
             )
         else:
-            raise DataSafeHavenInputException(
-                f"Database access action {action} was not recognised."
-            )
+            msg = f"Database access action {action} was not recognised."
+            raise DataSafeHavenInputError(msg)
         self.db_server_ = None  # Force refresh of self.db_server
         self.logger.info(
-            f"Public network access to [green]{self.server_name}[/] is [green]{self.db_server.public_network_access}[/]."
+            f"Public network access to [green]{self.server_name}[/]"
+            f" is [green]{self.db_server.public_network_access}[/]."
         )

@@ -1,12 +1,9 @@
-"""Command-line application for performing administrative tasks for a Data Safe Haven deployment, delegating the details to a subcommand"""
-# Standard library imports
+"""Command-line application for performing administrative tasks"""
 import pathlib
-from typing import Annotated, List
+from typing import Annotated
 
-# Third party imports
 import typer
 
-# Local imports
 from .users_add_command import UsersAddCommand
 from .users_list_command import UsersListCommand
 from .users_register_command import UsersRegisterCommand
@@ -38,7 +35,7 @@ def list_users() -> None:
 )
 def register_users(
     usernames: Annotated[
-        List[str],
+        list[str],
         typer.Option(
             "--username",
             "-u",
@@ -60,7 +57,7 @@ def register_users(
 )
 def remove_users(
     usernames: Annotated[
-        List[str],
+        list[str],
         typer.Option(
             "--username",
             "-u",
@@ -74,7 +71,7 @@ def remove_users(
 @admin_command_group.command(help="Unregister existing users from a deployed SRE.")
 def unregister_users(
     usernames: Annotated[
-        List[str],
+        list[str],
         typer.Option(
             "--username",
             "-u",

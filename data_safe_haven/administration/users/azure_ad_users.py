@@ -1,11 +1,11 @@
 """Interact with users in an Azure Active Directory"""
-# Standard library imports
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
-# Local imports
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
 from data_safe_haven.utility import Logger
+
 from .research_user import ResearchUser
 
 
@@ -25,11 +25,11 @@ class AzureADUsers:
     def add(self, new_users: Sequence[ResearchUser]) -> None:
         """Add list of users to AzureAD"""
         # Get the default domain
-        default_domain = [
+        default_domain = next(
             domain["id"]
             for domain in self.graph_api.read_domains()
             if domain["isDefault"]
-        ][0]
+        )
         for user in new_users:
             request_json = {
                 "accountEnabled": user.account_enabled,
@@ -56,7 +56,7 @@ class AzureADUsers:
         #     # Also add the user to the research users group
         #     self.graph_api.add_user_to_group(user.username, self.researchers_group_name)
 
-    def list(self) -> Sequence[ResearchUser]:
+    def list(self) -> Sequence[ResearchUser]:  # noqa: A003
         user_list = self.graph_api.read_users()
         return [
             ResearchUser(
@@ -98,14 +98,14 @@ class AzureADUsers:
         #                 f"Removed '{user.preferred_username}' from group '{self.researchers_group_name}'"
         #             )
         #         else:
-        #             raise DataSafeHavenMicrosoftGraphException
-        #     except DataSafeHavenMicrosoftGraphException:
+        #             raise DataSafeHavenMicrosoftGraphError
+        #     except DataSafeHavenMicrosoftGraphError:
         #         self.logger.error(
         #             f"Unable to remove '{user.preferred_username}' from group '{self.researchers_group_name}'"
         #         )
         pass
 
-    def set(self, users: Sequence[ResearchUser]) -> None:
+    def set(self, users: Sequence[ResearchUser]) -> None:  # noqa: A003
         """Set Guacamole users to specified list"""
         users_to_remove = [user for user in self.list() if user not in users]
         self.remove(users_to_remove)
