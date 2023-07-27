@@ -24,7 +24,7 @@ from data_safe_haven.functions import (
     validate_ip_address,
     validate_timezone,
 )
-from data_safe_haven.utility import SoftwarePackageCategory
+from data_safe_haven.utility import LoggingSingleton, SoftwarePackageCategory
 
 from .backend_settings import BackendSettings
 
@@ -168,6 +168,28 @@ class ConfigSectionSRE:
         allow_copy: bool = False
         allow_paste: bool = False
 
+        def update(
+            self, *, allow_copy: bool | None = None, allow_paste: bool | None = None
+        ) -> None:
+            # Set whether copying text out of the SRE is allowed
+            if allow_copy:
+                LoggingSingleton().debug(
+                    f"[bold]Copying text out of the SRE[/] was previously [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
+                )
+                self.allow_copy = allow_copy
+            LoggingSingleton().info(
+                f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
+            )
+            # Set whether pasting text into the SRE is allowed
+            if allow_paste:
+                LoggingSingleton().debug(
+                    f"[bold]Pasting text into the SRE[/] was previously [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
+                )
+                self.allow_paste = allow_paste
+            LoggingSingleton().info(
+                f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
+            )
+
         def validate(self) -> None:
             """Validate input parameters"""
             if not isinstance(self.allow_copy, bool):
@@ -211,10 +233,59 @@ class ConfigSectionSRE:
     research_user_ip_addresses: list[str] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
-    def add_research_desktop(self, name: str) -> None:
-        self.research_desktops[
-            name
-        ] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts()
+    def update(
+        self,
+        *,
+        allow_copy: bool | None = None,
+        allow_paste: bool | None = None,
+        data_provider_ip_addresses: list[str] | None = None,
+        research_desktops: list[str] | None = None,
+        software_packages: SoftwarePackageCategory | None = None,
+        user_ip_addresses: list[str] | None = None,
+    ) -> None:
+        # Set data provider IP addresses
+        if data_provider_ip_addresses:
+            LoggingSingleton().debug(
+                f"[bold]IP addresses used by data providers[/] were previously [green]{self.data_provider_ip_addresses}[/]."
+            )
+            self.data_provider_ip_addresses = data_provider_ip_addresses
+        LoggingSingleton().info(
+            f"[bold]IP addresses used by data providers[/] will be [green]{self.data_provider_ip_addresses}[/]."
+        )
+        # Pass allow_copy and allow_paste to remote desktop
+        self.remote_desktop.update(allow_copy=allow_copy, allow_paste=allow_paste)
+        # Set research desktop SKUs
+        if research_desktops:
+            if sorted(research_desktops) != sorted(self.research_desktops.keys()):
+                LoggingSingleton().debug(
+                    f"[bold]Research desktops[/] were previously [green]{list(self.research_desktops.keys())}[/]."
+                )
+                self.research_desktops.clear()
+                for idx, vm_sku in enumerate(research_desktops):
+                    self.research_desktops[
+                        f"workspace-{idx:02d}"
+                    ] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts(sku=vm_sku)
+        LoggingSingleton().info(
+            f"[bold]Research desktops[/] will be [green]{list(self.research_desktops.keys())}[/]."
+        )
+        # Select which software packages can be installed by users
+        if software_packages:
+            LoggingSingleton().debug(
+                f"[bold]Software packages[/] from [green]{self.software_packages}[/] sources were previously installable."
+            )
+            self.software_packages = software_packages
+        LoggingSingleton().info(
+            f"[bold]Software packages[/] from [green]{self.software_packages}[/] sources will be installable."
+        )
+        # Set user IP addresses
+        if user_ip_addresses:
+            LoggingSingleton().debug(
+                f"[bold]IP addresses used by users[/] were previously [green]{self.research_user_ip_addresses}[/]."
+            )
+            self.research_user_ip_addresses = user_ip_addresses
+        LoggingSingleton().info(
+            f"[bold]IP addresses used by users[/] will be [green]{self.research_user_ip_addresses}[/]."
+        )
 
     def validate(self) -> None:
         """Validate input parameters"""
@@ -225,6 +296,8 @@ class ConfigSectionSRE:
             msg = f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{exc}"
             raise ValueError(msg) from exc
         self.remote_desktop.validate()
+        for research_desktop in self.research_desktops.values():
+            research_desktop.validate()
         try:
             for ip in self.research_user_ip_addresses:
                 validate_ip_address(ip)
@@ -375,6 +448,13 @@ class Config:
         """Remove Pulumi stack section by name"""
         if name in self.pulumi.stacks.keys():
             del self.pulumi.stacks[name]
+
+    def sre(self, name: str) -> ConfigSectionSRE:
+        """Return the config entry for this SRE creating it if it does not exist"""
+        if name not in self.sres.keys():
+            highest_index = max([0] + [sre.index for sre in self.sres.values()])
+            self.sres[name].index = highest_index + 1
+        return self.sres[name]
 
     def write_stack(self, name: str, path: pathlib.Path) -> None:
         """Write a Pulumi stack file from config"""

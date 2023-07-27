@@ -3,10 +3,9 @@ from typing import Any
 
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
-    DataSafeHavenConfigError,
     DataSafeHavenError,
 )
-from data_safe_haven.external import AzureApi, GraphApi
+from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric, password
 from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.pulumi import PulumiSHMStack, PulumiSREStack
@@ -39,9 +38,7 @@ class DeploySRECommand:
 
             # Load config file
             config = Config()
-            self.update_config(
-                sre_name,
-                config,
+            config.sre(sre_name).update(
                 allow_copy=allow_copy,
                 allow_paste=allow_paste,
                 data_provider_ip_addresses=data_provider_ip_addresses,
@@ -176,7 +173,6 @@ class DeploySRECommand:
 
             # Provision SRE with anything that could not be done in Pulumi
             manager = SREProvisioningManager(
-                available_vm_skus=self.available_vm_skus(config),
                 shm_stack=shm_stack,
                 sre_name=sre_name,
                 sre_stack=stack,
@@ -187,146 +183,3 @@ class DeploySRECommand:
         except DataSafeHavenError as exc:
             msg = f"Could not deploy Secure Research Environment {sre_name}.\n{exc}"
             raise DataSafeHavenError(msg) from exc
-
-    def update_config(
-        self,
-        sre_name: str,
-        config: Config,
-        allow_copy: bool | None = None,
-        allow_paste: bool | None = None,
-        data_provider_ip_addresses: list[str] | None = None,
-        research_desktops: list[str] | None = None,
-        software_packages: SoftwarePackageCategory | None = None,
-        user_ip_addresses: list[str] | None = None,
-    ) -> None:
-        # Create a config entry for this SRE if it does not exist
-        if sre_name not in config.sres.keys():
-            highest_index = max([0] + [sre.index for sre in config.sres.values()])
-            config.sres[sre_name].index = highest_index + 1
-
-        # Set whether copying text out of the SRE is allowed
-        if allow_copy is not None:
-            if config.sres[sre_name].remote_desktop.allow_copy and (
-                config.sres[sre_name].remote_desktop.allow_copy != allow_copy
-            ):
-                self.logger.debug(
-                    f"Overwriting existing text copying rule {config.sres[sre_name].remote_desktop.allow_copy}"
-                )
-            self.logger.info(
-                f"Setting [bold]text copying out of SRE {sre_name}[/]"
-                f" to [green]{'allowed' if allow_copy else 'forbidden'}[/]."
-            )
-            config.sres[sre_name].remote_desktop.allow_copy = allow_copy
-        if config.sres[sre_name].remote_desktop.allow_copy is None:
-            msg = "No text copying rule was found. Use [bright_cyan]'--allow-copy / -c'[/] to set one."
-            raise DataSafeHavenConfigError(msg)
-
-        # Set whether pasting text into the SRE is allowed
-        if allow_paste is not None:
-            if config.sres[sre_name].remote_desktop.allow_paste and (
-                config.sres[sre_name].remote_desktop.allow_paste != allow_paste
-            ):
-                self.logger.debug(
-                    f"Overwriting existing text pasting rule {config.sres[sre_name].remote_desktop.allow_paste}"
-                )
-            self.logger.info(
-                f"Setting [bold]text pasting into SRE {sre_name}[/]"
-                f" to [green]{'allowed' if allow_paste else 'forbidden'}[/]."
-            )
-            config.sres[sre_name].remote_desktop.allow_paste = allow_paste
-        if config.sres[sre_name].remote_desktop.allow_paste is None:
-            msg = "No text pasting rule was found. Use [bright_cyan]'--allow-paste / -p'[/] to set one."
-            raise DataSafeHavenConfigError(msg)
-
-        # Set data provider IP addresses
-        if data_provider_ip_addresses:
-            if config.sres[sre_name].data_provider_ip_addresses and (
-                config.sres[sre_name].data_provider_ip_addresses
-                != data_provider_ip_addresses
-            ):
-                self.logger.debug(
-                    "Overwriting existing data provider IP addresses"
-                    f" {config.sres[sre_name].data_provider_ip_addresses}"
-                )
-            self.logger.info(
-                f"Setting [bold]data provider IP addresses[/] to [green]{data_provider_ip_addresses}[/]."
-            )
-            config.sres[
-                sre_name
-            ].data_provider_ip_addresses = data_provider_ip_addresses
-        if len(config.sres[sre_name].data_provider_ip_addresses) == 0:
-            msg = (
-                "No data provider IP addresses were found."
-                " Use [bright_cyan]'--data-provider-ip-address / -d'[/] to set one."
-            )
-            raise DataSafeHavenConfigError(msg)
-
-        # Set research desktops
-        if research_desktops:
-            if config.sres[sre_name].research_desktops and (
-                sorted(research_desktops)
-                != sorted(config.sres[sre_name].research_desktops.keys())
-            ):
-                self.logger.debug(
-                    f"Overwriting existing research desktops {config.sres[sre_name].research_desktops}"
-                )
-            self.logger.info(
-                f"Setting [bold]research desktops[/] to [green]{research_desktops}[/]."
-            )
-            # Construct VM details
-            idx_cpu, idx_gpu = 0, 0
-            available_vm_skus = self.available_vm_skus(config)
-            for vm_sku in research_desktops:
-                if int(available_vm_skus[vm_sku]["GPUs"]) > 0:
-                    vm_name = f"srd-gpu-{idx_gpu:02d}"
-                    idx_gpu += 1
-                else:
-                    vm_name = f"srd-cpu-{idx_cpu:02d}"
-                    idx_cpu += 1
-                config.sres[sre_name].add_research_desktop(vm_name)
-                config.sres[sre_name].research_desktops[vm_name].sku = vm_sku
-        if len(config.sres[sre_name].research_desktops) == 0:
-            msg = "No research desktops were found. Use [bright_cyan]'--research-desktop / -r'[/] to add one."
-            raise DataSafeHavenConfigError(msg)
-
-        # Select which software packages can be installed by users
-        if software_packages is not None:
-            if config.sres[sre_name].software_packages and (
-                config.sres[sre_name].software_packages != software_packages
-            ):
-                self.logger.debug(
-                    f"Overwriting existing software package rule {config.sres[sre_name].software_packages}"
-                )
-            self.logger.info(
-                f"Setting [bold]allowed software packages in SRE {sre_name}[/]"
-                f" to [green]{'allowed' if software_packages else 'forbidden'}[/]."
-            )
-            config.sres[sre_name].software_packages = software_packages
-        if not config.sres[sre_name].software_packages:
-            msg = "No software package rule was found. Use [bright_cyan]'--software-packages / -s'[/] to set one."
-            raise DataSafeHavenConfigError(msg)
-
-        # Set user IP addresses
-        if user_ip_addresses:
-            if config.sres[sre_name].research_user_ip_addresses and (
-                config.sres[sre_name].research_user_ip_addresses != user_ip_addresses
-            ):
-                self.logger.debug(
-                    f"Overwriting existing user IP addresses {config.sres[sre_name].research_user_ip_addresses}"
-                )
-            self.logger.info(
-                f"Setting [bold]user IP addresses[/] to [green]{user_ip_addresses}[/]."
-            )
-            config.sres[sre_name].research_user_ip_addresses = user_ip_addresses
-        if len(config.sres[sre_name].research_user_ip_addresses) == 0:
-            msg = "No user IP addresses were found. Use [bright_cyan]'--user-ip-address / -u'[/] to set one."
-            raise DataSafeHavenConfigError(msg)
-
-    def available_vm_skus(self, config: Config) -> dict[str, dict[str, Any]]:
-        """Load available VM SKUs for this region"""
-        if not self._available_vm_skus:
-            azure_api = AzureApi(config.subscription_name)
-            self._available_vm_skus = azure_api.list_available_vm_skus(
-                config.azure.location
-            )
-        return self._available_vm_skus
