@@ -13,7 +13,7 @@ from .users_unregister_command import UsersUnregisterCommand
 admin_command_group = typer.Typer()
 
 
-@admin_command_group.command(help="Add users to a deployed Data Safe Haven.")  # type: ignore [misc]
+@admin_command_group.command(help="Add users to a deployed Data Safe Haven.")
 def add_users(
     csv: Annotated[
         pathlib.Path,
@@ -25,14 +25,14 @@ def add_users(
     UsersAddCommand()(csv)
 
 
-@admin_command_group.command(help="List users from a deployed Data Safe Haven.")  # type: ignore [misc]
+@admin_command_group.command(help="List users from a deployed Data Safe Haven.")
 def list_users() -> None:
     UsersListCommand()()
 
 
 @admin_command_group.command(
     help="Register existing users with a deployed Secure Research Environment."
-)  # type: ignore [misc]
+)
 def register_users(
     usernames: Annotated[
         list[str],
@@ -54,7 +54,7 @@ def register_users(
 
 @admin_command_group.command(
     help="Remove existing users from a deployed Data Safe Haven."
-)  # type: ignore [misc]
+)
 def remove_users(
     usernames: Annotated[
         list[str],
@@ -68,7 +68,7 @@ def remove_users(
     UsersRemoveCommand()(usernames)
 
 
-@admin_command_group.command(help="Unregister existing users from a deployed SRE.")  # type: ignore [misc]
+@admin_command_group.command(help="Unregister existing users from a deployed SRE.")
 def unregister_users(
     usernames: Annotated[
         list[str],
