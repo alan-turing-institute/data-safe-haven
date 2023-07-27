@@ -59,6 +59,12 @@ dependencies = [
   "black>=23.1.0",
   "mypy>=1.0.0",
   "ruff>=0.0.243",
+  "types-appdirs>=1.4.3.5",
+  "types-chevron>=0.14.2.5",
+  "types-psycopg2>=2.9.21.11",
+  "types-pytz>=2023.3.0.0",
+  "types-PyYAML>=6.0.12.11",
+  "types-requests>=2.31.0.2",
 ]
 
 [tool.hatch.envs.lint.scripts]
