@@ -3,9 +3,10 @@ from typing import Annotated, Optional
 
 import typer
 
+from data_safe_haven.backend import Backend
+from data_safe_haven.config import BackendSettings
+from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.functions import validate_aad_guid
-
-from .initialise_command import InitialiseCommand
 
 
 def initialise_command(
@@ -43,5 +44,24 @@ def initialise_command(
         ),
     ] = None,
 ) -> None:
-    """Initialise a Data Safe Haven deployment"""
-    InitialiseCommand()(admin_group, location, name, subscription)
+    """Typer command line entrypoint"""
+    try:
+        # Load backend settings and update with command line arguments
+        settings = BackendSettings()
+        settings.update(
+            admin_group_id=admin_group,
+            location=location,
+            name=name,
+            subscription_name=subscription,
+        )
+
+        # Ensure that the Pulumi backend exists
+        backend = Backend()
+        backend.create()
+
+        # Load the generated configuration file and upload it to blob storage
+        backend.config.upload()
+
+    except DataSafeHavenError as exc:
+        msg = f"Could not initialise Data Safe Haven.\n{exc}"
+        raise DataSafeHavenError(msg) from exc
