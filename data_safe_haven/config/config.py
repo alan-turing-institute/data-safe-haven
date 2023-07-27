@@ -345,7 +345,7 @@ class Config:
 
     def __str__(self) -> str:
         """String representation of the Config object"""
-        contents = {}
+        contents: dict[str, Any] = {}
         if self.azure_:
             contents["azure"] = self.azure.to_dict()
         if self.backend_:
