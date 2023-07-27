@@ -264,7 +264,8 @@ class DeploySRECommand:
         # Set research desktops
         if research_desktops:
             if config.sres[sre_name].research_desktops and (
-                config.sres[sre_name].research_desktops != research_desktops
+                sorted(research_desktops)
+                != sorted(config.sres[sre_name].research_desktops.keys())
             ):
                 self.logger.debug(
                     f"Overwriting existing research desktops {config.sres[sre_name].research_desktops}"
