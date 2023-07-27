@@ -62,7 +62,8 @@ dependencies = [
 ]
 
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --strict --install-types --non-interactive --namespace-packages --explicit-package-bases {args:data_safe_haven}"
+typing = "mypy {args:data_safe_haven}"
+
 style = [
   "ruff {args:data_safe_haven}",
   "black --check --diff {args:data_safe_haven}",
@@ -121,16 +122,17 @@ ignore = [
 ]
 
 [tool.ruff.isort]
-known-first-party = ["data_safe_haven"]
 combine-as-imports = true
+known-first-party = ["data_safe_haven"]
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "parents"
 
 [tool.mypy]
-strict = true
+explicit_package_bases = true
 files = "data_safe_haven"
 mypy_path = "typings"
+strict = true
 
 [[tool.mypy.overrides]]
 module = [
