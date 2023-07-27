@@ -111,21 +111,29 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
         logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
         logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 
-    def log_file(self, file_path: PathType) -> None:
-        """Set a log file handler"""
-        file_handler = LoggingHandlerPlainFile(
-            self.rich_format, self.date_fmt, str(file_path)
-        )
-        for h in self.handlers:
-            if isinstance(h, LoggingHandlerPlainFile):
-                self.removeHandler(h)
-        self.addHandler(file_handler)
+    def ask(self, message: str, default: str | None = None) -> str:
+        """Ask user a question, formatted as a log message"""
+        formatted = self.format_msg(message, logging.INFO)
+        if default:
+            return Prompt.ask(formatted, default=default)
+        return Prompt.ask(formatted)
 
-    def verbosity(self, verbosity: int) -> None:
-        """Set verbosity"""
-        self.setLevel(
-            max(logging.INFO - 10 * (verbosity if verbosity else 0), logging.NOTSET)
-        )
+    def choose(
+        self,
+        message: str,
+        choices: list[str] | None = None,
+        default: str | None = None,
+    ) -> str:
+        """Ask a user to choose among options, formatted as a log message"""
+        formatted = self.format_msg(message, logging.INFO)
+        if default:
+            return Prompt.ask(formatted, choices=choices, default=default)
+        return Prompt.ask(formatted, choices=choices)
+
+    def confirm(self, message: str, *, default_to_yes: bool) -> bool:
+        """Ask a user to confirm an action, formatted as a log message"""
+        formatted = self.format_msg(message, logging.INFO)
+        return Confirm.ask(formatted, default=default_to_yes)
 
     def format_msg(self, message: str, level: int = logging.INFO) -> str:
         """Format a message using rich handler"""
@@ -147,35 +155,12 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
                 )
         return message
 
-    def style(self, message: str) -> str:
-        """Apply logging style to a string"""
-        markup = self.format_msg(message)
-        return RichStringAdaptor(coloured=True).to_string(markup)
-
-    # Loggable wrappers for confirm/ask/choice
-    def confirm(self, message: str, *, default_to_yes: bool) -> bool:
-        formatted = self.format_msg(message, logging.INFO)
-        return Confirm.ask(formatted, default=default_to_yes)
-
-    def ask(self, message: str, default: str | None = None) -> str:
-        formatted = self.format_msg(message, logging.INFO)
-        if default:
-            return Prompt.ask(formatted, default=default)
-        return Prompt.ask(formatted)
-
-    def choose(
-        self,
-        message: str,
-        choices: list[str] | None = None,
-        default: str | None = None,
-    ) -> str:
-        formatted = self.format_msg(message, logging.INFO)
-        if default:
-            return Prompt.ask(formatted, choices=choices, default=default)
-        return Prompt.ask(formatted, choices=choices)
-
-    # Apply a level to non-leveled messages
     def parse(self, message: str) -> None:
+        """
+        Parse a message that starts with a log-level token.
+
+        This function is designed to handle messages from non-Python code inside this package.
+        """
         tokens = message.split(":")
         level, remainder = tokens[0], ":".join(tokens[1:]).strip()
         if level == "CRITICAL":
@@ -191,10 +176,39 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
         else:
             return self.info(message.strip())
 
-    # Create a table
+    def set_log_file(self, file_path: PathType) -> None:
+        """Set a log file handler"""
+        file_handler = LoggingHandlerPlainFile(
+            self.rich_format, self.date_fmt, str(file_path)
+        )
+        for h in self.handlers:
+            if isinstance(h, LoggingHandlerPlainFile):
+                self.removeHandler(h)
+        self.addHandler(file_handler)
+
+    def set_verbosity(self, verbosity: int) -> None:
+        """Set verbosity"""
+        self.setLevel(
+            max(logging.INFO - 10 * (verbosity if verbosity else 0), logging.NOTSET)
+        )
+
+    def style(self, message: str) -> str:
+        """Apply logging style to a string"""
+        markup = self.format_msg(message)
+        return RichStringAdaptor(coloured=True).to_string(markup)
+
     def tabulate(
         self, header: list[str] | None = None, rows: list[list[str]] | None = None
     ) -> list[str]:
+        """Generate a table from header and rows
+
+        Args:
+            header: The table header
+            rows: The table rows
+
+        Returns:
+            A list of strings representing the table
+        """
         table = Table()
         if header:
             for item in header:
