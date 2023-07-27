@@ -4,7 +4,7 @@ from typing import Any
 
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 from .research_user import ResearchUser
 
@@ -20,7 +20,7 @@ class AzureADUsers:
     ) -> None:
         super().__init__(*args, **kwargs)
         self.graph_api = graph_api
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
 
     def add(self, new_users: Sequence[ResearchUser]) -> None:
         """Add list of users to AzureAD"""

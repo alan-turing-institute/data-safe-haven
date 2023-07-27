@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 from .active_directory_users import ActiveDirectoryUsers
 from .azure_ad_users import AzureADUsers
@@ -21,7 +21,7 @@ class UserHandler:
     ):
         self.active_directory_users = ActiveDirectoryUsers(config)
         self.azure_ad_users = AzureADUsers(graph_api)
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
         self.sre_guacamole_users = {
             sre_name: GuacamoleUsers(config, sre_name)
             for sre_name in config.sres.keys()

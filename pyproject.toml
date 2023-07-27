@@ -110,16 +110,14 @@ select = [
   "YTT", # flake8-2020
 ]
 ignore = [
-  # Ignore line length
-  "E501",
-  # Ignore checks for possible passwords
-  "S105", "S106", "S107",
-  # Ignore not using absolute path in subprocess call
-  "S607",
-  # Allow subprocess without shell (less vulnerable than with shell)
-  "S603",
-  # Ignore complexity
-  "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+  "E501",     # ignore line length
+  "S106",     # ignore check for possible passwords
+  "S603",     # allow subprocess without shell=True
+  "S607",     # allow subprocess without absolute path
+  "C901",     # ignore complex-structure
+  "PLR0912",  # ignore too-many-branches
+  "PLR0913",  # ignore too-many-arguments
+  "PLR0915",  # ignore too-many-statements
 ]
 
 [tool.ruff.isort]

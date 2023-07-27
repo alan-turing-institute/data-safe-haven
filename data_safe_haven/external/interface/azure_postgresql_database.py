@@ -20,7 +20,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
 )
 from data_safe_haven.external import AzureApi
-from data_safe_haven.utility import FileReader, Logger, PathType
+from data_safe_haven.utility import FileReader, LoggingSingleton, PathType
 
 
 class AzurePostgreSQLDatabase:
@@ -51,7 +51,7 @@ class AzurePostgreSQLDatabase:
         self.db_name = database_name
         self.db_server_ = None
         self.db_server_admin_password = database_server_admin_password
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
         self.rule_suffix = datetime.datetime.now(tz=datetime.timezone.utc).strftime(

@@ -58,7 +58,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalError,
 )
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 
 class AzureApi(AzureAuthenticator):
@@ -66,7 +66,7 @@ class AzureApi(AzureAuthenticator):
 
     def __init__(self, subscription_name: str):
         super().__init__(subscription_name)
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
 
     def compile_desired_state(
         self,

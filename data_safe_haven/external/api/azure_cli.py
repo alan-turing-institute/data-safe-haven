@@ -3,7 +3,7 @@ import subprocess
 from typing import Any
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 
 class AzureCli:
@@ -11,7 +11,7 @@ class AzureCli:
 
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
 
     def login(self) -> None:
         """Force log in via the Azure CLI"""

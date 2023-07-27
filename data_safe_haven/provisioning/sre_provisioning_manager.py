@@ -8,7 +8,7 @@ from data_safe_haven.external import (
     AzurePostgreSQLDatabase,
 )
 from data_safe_haven.pulumi import PulumiSHMStack, PulumiSREStack
-from data_safe_haven.utility import FileReader, Logger
+from data_safe_haven.utility import FileReader, LoggingSingleton
 
 
 class SREProvisioningManager:
@@ -24,7 +24,7 @@ class SREProvisioningManager:
         timezone: str,
     ):
         super().__init__()
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
         self.resources_path = pathlib.Path(__file__).parent.parent / "resources"
         self.sre_name = sre_name
         self.subscription_name = subscription_name

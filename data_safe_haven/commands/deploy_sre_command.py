@@ -10,7 +10,7 @@ from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.functions import alphanumeric, password
 from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.pulumi import PulumiSHMStack, PulumiSREStack
-from data_safe_haven.utility import Logger, SoftwarePackageCategory
+from data_safe_haven.utility import LoggingSingleton, SoftwarePackageCategory
 
 
 class DeploySRECommand:
@@ -19,7 +19,7 @@ class DeploySRECommand:
     def __init__(self):
         """Constructor"""
         self._available_vm_skus: dict[str, dict[str, Any]] = {}
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
 
     def __call__(
         self,

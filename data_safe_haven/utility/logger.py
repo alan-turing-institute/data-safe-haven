@@ -10,6 +10,7 @@ from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.text import Text
 
+from .singleton import Singleton
 from .types import PathType
 
 
@@ -79,73 +80,69 @@ class RichStringAdaptor:
     """
 
     def __init__(self, *, coloured: bool):
+        """Constructor"""
         self.string_io = io.StringIO()
         self.console = Console(file=self.string_io, force_terminal=coloured)
 
     def to_string(self, *renderables: Any) -> str:
+        """Convert Rich renderables into a string"""
         self.console.print(*renderables)
         return self.string_io.getvalue()
 
 
-class Logger:
+class LoggingSingleton(logging.Logger, metaclass=Singleton):
     """
-    Logging singleton that can be used for anything needing logging
+    Logging singleton that can be used by anything needing logging
     """
 
     date_fmt = r"%Y-%m-%d %H:%M:%S"
     rich_format = r"[log.time]%(asctime)s[/] [%(levelname)8s] %(message)s"
-    _instance: Optional["Logger"] = None
+    # Due to https://bugs.python.org/issue45857 we must use `Optional`
+    _instance: Optional["LoggingSingleton"] = None
 
-    def __new__(
-        cls, verbosity: int | None = None, log_file: PathType | None = None
-    ) -> "Logger":
-        desired_log_level = max(
-            logging.INFO - 10 * (verbosity if verbosity else 0), logging.DEBUG
-        )
-        if cls._instance:
-            # If we've already instantiated a logger check that the verbosity and log file are set correctly
-            if verbosity:
-                cls._instance.logger.setLevel(desired_log_level)
-            if log_file:
-                cls._instance.logger.addHandler(
-                    LoggingHandlerPlainFile(
-                        cls.rich_format, cls.date_fmt, str(log_file)
-                    )
-                )
-        else:
-            cls._instance = super().__new__(cls)
-            # Initialise console handler
-            console_handler = LoggingHandlerRichConsole(cls.rich_format, cls.date_fmt)
-            handlers: list[logging.Handler] = [console_handler]
-            # Initialise file handler
-            if log_file:
-                file_handler = LoggingHandlerPlainFile(
-                    cls.rich_format, cls.date_fmt, str(log_file)
-                )
-                handlers += [file_handler]
-            # Set basic logging config
-            cls.logger = logging.getLogger("data_safe_haven")
-            cls.logger.handlers = handlers
-            cls.logger.level = desired_log_level
-            # Disable unnecessarily verbose external logging
-            logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
-            logging.getLogger("azure.identity._credentials").setLevel(logging.ERROR)
-            logging.getLogger("azure.identity._internal").setLevel(logging.ERROR)
-            logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
-            logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
-        # Expose the data safe haven logger
-        return cls._instance
+    def __init__(self):
+        super().__init__(name="data_safe_haven", level=logging.INFO)
+        # Initialise console handler
+        self.addHandler(LoggingHandlerRichConsole(self.rich_format, self.date_fmt))
+        # Disable unnecessarily verbose external logging
+        logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
+        logging.getLogger("azure.identity._credentials").setLevel(logging.ERROR)
+        logging.getLogger("azure.identity._internal").setLevel(logging.ERROR)
+        logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
+        logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
+
+    def ask(self, message: str, default: str | None = None) -> str:
+        """Ask user a question, formatted as a log message"""
+        formatted = self.format_msg(message, logging.INFO)
+        if default:
+            return Prompt.ask(formatted, default=default)
+        return Prompt.ask(formatted)
+
+    def choose(
+        self,
+        message: str,
+        choices: list[str] | None = None,
+        default: str | None = None,
+    ) -> str:
+        """Ask a user to choose among options, formatted as a log message"""
+        formatted = self.format_msg(message, logging.INFO)
+        if default:
+            return Prompt.ask(formatted, choices=choices, default=default)
+        return Prompt.ask(formatted, choices=choices)
+
+    def confirm(self, message: str, *, default_to_yes: bool) -> bool:
+        """Ask a user to confirm an action, formatted as a log message"""
+        formatted = self.format_msg(message, logging.INFO)
+        return Confirm.ask(formatted, default=default_to_yes)
 
     def format_msg(self, message: str, level: int = logging.INFO) -> str:
         """Format a message using rich handler"""
-        for handler in self.logger.handlers:
+        for handler in self.handlers:
             if isinstance(handler, RichHandler):
-                fn, lno, func, sinfo = self.logger.findCaller(
-                    stack_info=False, stack_level=1
-                )
+                fn, lno, func, sinfo = self.findCaller(stack_info=False, stacklevel=1)
                 return handler.format(
-                    self.logger.makeRecord(
-                        name=self.logger.name,
+                    self.makeRecord(
+                        name=self.name,
                         level=level,
                         fn=fn,
                         lno=lno,
@@ -158,51 +155,12 @@ class Logger:
                 )
         return message
 
-    def style(self, message: str) -> str:
-        """Apply logging style to a string"""
-        markup = self.format_msg(message)
-        return RichStringAdaptor(coloured=True).to_string(markup)
-
-    # Pass log levels through to the logger
-    def critical(self, message: str) -> None:
-        return self.logger.critical(message)
-
-    def error(self, message: str) -> None:
-        return self.logger.error(message)
-
-    def warning(self, message: str) -> None:
-        return self.logger.warning(message)
-
-    def info(self, message: str) -> None:
-        return self.logger.info(message)
-
-    def debug(self, message: str) -> None:
-        return self.logger.debug(message)
-
-    # Loggable wrappers for confirm/ask/choice
-    def confirm(self, message: str, *, default_to_yes: bool) -> bool:
-        formatted = self.format_msg(message, logging.INFO)
-        return Confirm.ask(formatted, default=default_to_yes)
-
-    def ask(self, message: str, default: str | None = None) -> str:
-        formatted = self.format_msg(message, logging.INFO)
-        if default:
-            return Prompt.ask(formatted, default=default)
-        return Prompt.ask(formatted)
-
-    def choose(
-        self,
-        message: str,
-        choices: list[str] | None = None,
-        default: str | None = None,
-    ) -> str:
-        formatted = self.format_msg(message, logging.INFO)
-        if default:
-            return Prompt.ask(formatted, choices=choices, default=default)
-        return Prompt.ask(formatted, choices=choices)
-
-    # Apply a level to non-leveled messages
     def parse(self, message: str) -> None:
+        """
+        Parse a message that starts with a log-level token.
+
+        This function is designed to handle messages from non-Python code inside this package.
+        """
         tokens = message.split(":")
         level, remainder = tokens[0], ":".join(tokens[1:]).strip()
         if level == "CRITICAL":
@@ -218,10 +176,39 @@ class Logger:
         else:
             return self.info(message.strip())
 
-    # Create a table
+    def set_log_file(self, file_path: PathType) -> None:
+        """Set a log file handler"""
+        file_handler = LoggingHandlerPlainFile(
+            self.rich_format, self.date_fmt, str(file_path)
+        )
+        for h in self.handlers:
+            if isinstance(h, LoggingHandlerPlainFile):
+                self.removeHandler(h)
+        self.addHandler(file_handler)
+
+    def set_verbosity(self, verbosity: int) -> None:
+        """Set verbosity"""
+        self.setLevel(
+            max(logging.INFO - 10 * (verbosity if verbosity else 0), logging.NOTSET)
+        )
+
+    def style(self, message: str) -> str:
+        """Apply logging style to a string"""
+        markup = self.format_msg(message)
+        return RichStringAdaptor(coloured=True).to_string(markup)
+
     def tabulate(
         self, header: list[str] | None = None, rows: list[list[str]] | None = None
     ) -> list[str]:
+        """Generate a table from header and rows
+
+        Args:
+            header: The table header
+            rows: The table rows
+
+        Returns:
+            A list of strings representing the table
+        """
         table = Table()
         if header:
             for item in header:
@@ -229,5 +216,5 @@ class Logger:
         if rows:
             for row in rows:
                 table.add_row(*row)
-        adaptor = RichStringAdaptor(coloured=False)
+        adaptor = RichStringAdaptor(coloured=True)
         return [line.strip() for line in adaptor.to_string(table).split("\n")]

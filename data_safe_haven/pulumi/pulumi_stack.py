@@ -13,7 +13,7 @@ from pulumi import automation
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCli
-from data_safe_haven.utility import Logger
+from data_safe_haven.utility import LoggingSingleton
 
 from .declarative_shm import DeclarativeSHM
 from .declarative_sre import DeclarativeSRE
@@ -30,7 +30,7 @@ class PulumiStack:
     ) -> None:
         self.cfg: Config = config
         self.env_: dict[str, Any] | None = None
-        self.logger = Logger()
+        self.logger = LoggingSingleton()
         self.stack_: automation.Stack | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}
         self.program = program
