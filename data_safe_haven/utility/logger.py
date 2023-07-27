@@ -23,7 +23,8 @@ class LoggingHandlerPlainFile(logging.FileHandler):
         self, fmt: str, datefmt: str, filename: str, *args: Any, **kwargs: Any
     ):
         """Constructor"""
-        super().__init__(*args, **kwargs, filename=filename)
+        kwargs["filename"] = filename
+        super().__init__(*args, **kwargs)
         self.setFormatter(logging.Formatter(self.strip_formatting(fmt), datefmt))
 
     @staticmethod
