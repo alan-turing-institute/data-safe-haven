@@ -115,8 +115,8 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
         """Ask user a question, formatted as a log message"""
         formatted = self.format_msg(message, logging.INFO)
         if default:
-            return Prompt.ask(formatted, default=default)
-        return Prompt.ask(formatted)
+            return str(Prompt.ask(formatted, default=default))
+        return str(Prompt.ask(formatted))
 
     def choose(
         self,
@@ -127,30 +127,32 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
         """Ask a user to choose among options, formatted as a log message"""
         formatted = self.format_msg(message, logging.INFO)
         if default:
-            return Prompt.ask(formatted, choices=choices, default=default)
-        return Prompt.ask(formatted, choices=choices)
+            return str(Prompt.ask(formatted, choices=choices, default=default))
+        return str(Prompt.ask(formatted, choices=choices))
 
     def confirm(self, message: str, *, default_to_yes: bool) -> bool:
         """Ask a user to confirm an action, formatted as a log message"""
         formatted = self.format_msg(message, logging.INFO)
-        return Confirm.ask(formatted, default=default_to_yes)
+        return bool(Confirm.ask(formatted, default=default_to_yes))
 
     def format_msg(self, message: str, level: int = logging.INFO) -> str:
         """Format a message using rich handler"""
         for handler in self.handlers:
             if isinstance(handler, RichHandler):
                 fn, lno, func, sinfo = self.findCaller(stack_info=False, stacklevel=1)
-                return handler.format(
-                    self.makeRecord(
-                        name=self.name,
-                        level=level,
-                        fn=fn,
-                        lno=lno,
-                        msg=message,
-                        args={},
-                        exc_info=None,
-                        func=func,
-                        sinfo=sinfo,
+                return str(
+                    handler.format(
+                        self.makeRecord(
+                            name=self.name,
+                            level=level,
+                            fn=fn,
+                            lno=lno,
+                            msg=message,
+                            args={},
+                            exc_info=None,
+                            func=func,
+                            sinfo=sinfo,
+                        )
                     )
                 )
         return message

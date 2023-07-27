@@ -268,7 +268,7 @@ class PulumiStack:
     def secret(self, name: str) -> str:
         """Read a secret from the Pulumi stack."""
         try:
-            return self.stack.get_config(name).value
+            return str(self.stack.get_config(name).value)
         except automation.errors.CommandError as exc:
             msg = f"Secret '{name}' was not found."
             raise DataSafeHavenPulumiError(msg) from exc

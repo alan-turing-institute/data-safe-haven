@@ -12,7 +12,7 @@ def as_dict(container: Any) -> dict[str, Any]:
     ):
         msg = f"{container} {type(container)} is not a valid dict[str, Any]"
         raise TypeError(msg)
-    return container
+    return {str(k): v for k, v in container.items()}
 
 
 def ordered_private_dns_zones(resource_type: str | None = None) -> list[str]:
