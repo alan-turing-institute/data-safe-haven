@@ -16,7 +16,7 @@ from data_safe_haven.utility import LoggingSingleton
 class DeploySHMCommand:
     """Deploy a Safe Haven Management component"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor"""
         self.logger = LoggingSingleton()
 

@@ -256,7 +256,7 @@ class ConfigSectionTags:
 
 
 class Config:
-    def __init__(self):
+    def __init__(self) -> None:
         # Initialise config sections
         self.azure_: ConfigSectionAzure | None = None
         self.backend_: ConfigSectionBackend | None = None
@@ -376,13 +376,13 @@ class Config:
         if name in self.pulumi.stacks.keys():
             del self.pulumi.stacks[name]
 
-    def write_stack(self, name: str, path: pathlib.Path):
+    def write_stack(self, name: str, path: pathlib.Path) -> None:
         """Write a Pulumi stack file from config"""
         pulumi_cfg = b64decode(self.pulumi.stacks[name])
         with open(path, "w", encoding="utf-8") as f_stack:
             f_stack.write(pulumi_cfg)
 
-    def upload(self):
+    def upload(self) -> None:
         """Upload config to Azure storage"""
         self.azure_api.upload_blob(
             str(self),

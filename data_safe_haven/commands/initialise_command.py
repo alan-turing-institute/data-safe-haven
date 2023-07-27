@@ -8,7 +8,7 @@ from data_safe_haven.utility import LoggingSingleton
 class InitialiseCommand:
     """Initialise a Data Safe Haven deployment"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor"""
         self.logger = LoggingSingleton()
 

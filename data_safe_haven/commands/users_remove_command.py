@@ -9,7 +9,7 @@ from data_safe_haven.utility import LoggingSingleton
 class UsersRemoveCommand:
     """Remove existing users from a deployed Data Safe Haven"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor"""
         self.logger = LoggingSingleton()
 

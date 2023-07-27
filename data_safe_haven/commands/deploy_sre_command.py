@@ -16,7 +16,7 @@ from data_safe_haven.utility import LoggingSingleton, SoftwarePackageCategory
 class DeploySRECommand:
     """Deploy a Secure Research Environment component"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor"""
         self._available_vm_skus: dict[str, dict[str, Any]] = {}
         self.logger = LoggingSingleton()

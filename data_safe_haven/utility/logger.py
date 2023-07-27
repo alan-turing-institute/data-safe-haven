@@ -100,7 +100,7 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
     # Due to https://bugs.python.org/issue45857 we must use `Optional`
     _instance: Optional["LoggingSingleton"] = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(name="data_safe_haven", level=logging.INFO)
         # Initialise console handler
         self.addHandler(LoggingHandlerRichConsole(self.rich_format, self.date_fmt))
