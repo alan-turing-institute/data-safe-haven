@@ -75,7 +75,7 @@ class PulumiStack:
                         env_vars=self.env,
                     ),
                 )
-            except automation.errors.CommandError as exc:
+            except automation.CommandError as exc:
                 msg = f"Could not load Pulumi stack {self.stack_name}.\n{exc}"
                 raise DataSafeHavenPulumiError(msg) from exc
         return self.stack_
@@ -134,7 +134,7 @@ class PulumiStack:
                     )
                     self.evaluate(result.summary.result)
                     break
-                except automation.errors.CommandError as exc:
+                except automation.CommandError as exc:
                     if any(
                         error in str(exc)
                         for error in (
@@ -147,7 +147,7 @@ class PulumiStack:
                         raise
             if self.stack_:
                 self.stack_.workspace.remove_stack(self.stack_name)
-        except automation.errors.CommandError as exc:
+        except automation.CommandError as exc:
             msg = "Pulumi destroy failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -155,7 +155,7 @@ class PulumiStack:
         """Ensure that config values have been set, setting them if they do not exist"""
         try:
             self.stack.get_config(name)
-        except automation.errors.CommandError:
+        except automation.CommandError:
             self.set_config(name, value, secret=secret)
 
     def evaluate(self, result: str) -> None:
@@ -233,7 +233,7 @@ class PulumiStack:
     def preview(self) -> None:
         """Preview the Pulumi stack."""
         try:
-            with suppress(automation.errors.CommandError):
+            with suppress(automation.CommandError):
                 self.logger.info(
                     f"Previewing changes for stack [green]{self.stack.name}[/]."
                 )
@@ -250,7 +250,7 @@ class PulumiStack:
             self.logger.info(f"Refreshing stack [green]{self.stack.name}[/].")
             # Note that we disable parallelisation which can cause deadlock
             self.stack.refresh(color="always", parallel=1)
-        except automation.errors.CommandError as exc:
+        except automation.CommandError as exc:
             msg = f"Pulumi refresh failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -269,7 +269,7 @@ class PulumiStack:
         """Read a secret from the Pulumi stack."""
         try:
             return str(self.stack.get_config(name).value)
-        except automation.errors.CommandError as exc:
+        except automation.CommandError as exc:
             msg = f"Secret '{name}' was not found."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -294,7 +294,7 @@ class PulumiStack:
         try:
             result = self.stack.up(color="always", on_output=self.logger.info)
             self.evaluate(result.summary.result)
-        except automation.errors.CommandError as exc:
+        except automation.CommandError as exc:
             msg = f"Pulumi update failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
