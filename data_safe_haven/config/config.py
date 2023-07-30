@@ -1,17 +1,18 @@
 """Configuration file backed by blob storage"""
 import pathlib
-from abc import ABC, abstractmethod
 from collections import defaultdict
+from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Any
+from functools import partial
+from typing import Any, ClassVar
 
 import chili
 import yaml
 from yaml.parser import ParserError
 
 from data_safe_haven import __version__
-from data_safe_haven.exceptions import DataSafeHavenAzureError
+from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenConfigError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
     alphanumeric,
@@ -23,23 +24,37 @@ from data_safe_haven.functions import (
     validate_azure_vm_sku,
     validate_email_address,
     validate_ip_address,
+    validate_non_empty_string,
+    validate_string_length,
     validate_timezone,
+    validate_type,
 )
 from data_safe_haven.utility import LoggingSingleton, SoftwarePackageCategory
 
 from .backend_settings import BackendSettings
 
 
-class ConfigSection(ABC):
+class Validator:
+    validation_functions: ClassVar[dict[str, Callable[[Any], Any]]] = {}
+
+    def validate(self) -> None:
+        """Validate instance attributes.
+
+        Validation fails if the provided validation function raises an exception.
+        """
+        for attr_name, validator in self.validation_functions.items():
+            try:
+                validator(getattr(self, attr_name))
+            except Exception as exc:
+                msg = f"Invalid value for '{attr_name}' ({getattr(self, attr_name)}).\n{exc}"
+                raise DataSafeHavenConfigError(msg) from exc
+
+
+class ConfigSection(Validator):
     def to_dict(self) -> dict[str, Any]:
         """Dictionary representation of this object."""
         self.validate()
         return as_dict(chili.encode(self))
-
-    @abstractmethod
-    def validate(self) -> None:
-        """Validate instance attributes."""
-        pass
 
 
 @dataclass
@@ -49,30 +64,12 @@ class ConfigSectionAzure(ConfigSection):
     subscription_id: str = ""
     tenant_id: str = ""
 
-    def validate(self) -> None:
-        """Validate instance attributes."""
-        try:
-            validate_aad_guid(self.admin_group_id)
-        except Exception as exc:
-            msg = f"Invalid value for 'admin_group_id' ({self.admin_group_id}).\n{exc}"
-            raise ValueError(msg) from exc
-        try:
-            validate_azure_location(self.location)
-        except Exception as exc:
-            msg = f"Invalid value for 'location' ({self.location}).\n{exc}"
-            raise ValueError(msg) from exc
-        try:
-            validate_aad_guid(self.subscription_id)
-        except Exception as exc:
-            msg = (
-                f"Invalid value for 'subscription_id' ({self.subscription_id}).\n{exc}"
-            )
-            raise ValueError(msg) from exc
-        try:
-            validate_aad_guid(self.tenant_id)
-        except Exception as exc:
-            msg = f"Invalid value for 'tenant_id' ({self.tenant_id}).\n{exc}"
-            raise ValueError(msg) from exc
+    validation_functions = {  # noqa: RUF012
+        "admin_group_id": validate_aad_guid,
+        "location": validate_azure_location,
+        "subscription_id": validate_aad_guid,
+        "tenant_id": validate_aad_guid,
+    }
 
 
 @dataclass
@@ -83,25 +80,21 @@ class ConfigSectionBackend(ConfigSection):
     storage_account_name: str = ""
     storage_container_name: str = ""
 
-    def validate(self) -> None:
-        """Validate instance attributes."""
-        if not self.key_vault_name:
-            msg = f"Invalid value for 'key_vault_name' ({self.key_vault_name})."
-            raise ValueError(msg)
-        if not self.managed_identity_name:
-            msg = f"Invalid value for 'managed_identity_name' ({self.managed_identity_name})."
-            raise ValueError(msg)
-        if not self.resource_group_name:
-            msg = (
-                f"Invalid value for 'resource_group_name' ({self.resource_group_name})."
-            )
-            raise ValueError(msg)
-        if not self.storage_account_name:
-            msg = f"Invalid value for 'storage_account_name' ({self.storage_account_name})."
-            raise ValueError(msg)
-        if not self.storage_container_name:
-            msg = f"Invalid value for 'storage_container_name' ({self.storage_container_name})."
-            raise ValueError(msg)
+    validation_functions = {  # noqa: RUF012
+        "key_vault_name": partial(validate_string_length, min_length=3, max_length=24),
+        "managed_identity_name": partial(
+            validate_string_length, min_length=1, max_length=64
+        ),
+        "resource_group_name": partial(
+            validate_string_length, min_length=1, max_length=64
+        ),
+        "storage_account_name": partial(
+            validate_string_length, min_length=1, max_length=24
+        ),
+        "storage_container_name": partial(
+            validate_string_length, min_length=1, max_length=64
+        ),
+    }
 
 
 @dataclass
@@ -111,11 +104,12 @@ class ConfigSectionPulumi(ConfigSection):
     stacks: dict[str, str] = field(default_factory=dict)
     storage_container_name: str = "pulumi"
 
-    def validate(self) -> None:
-        """Validate instance attributes."""
-        if not isinstance(self.encryption_key_id, str) or not self.encryption_key_id:
-            msg = f"Invalid value for 'encryption_key_id' ({self.encryption_key_id})."
-            raise ValueError(msg)
+    validation_functions = {  # noqa: RUF012
+        "encryption_key_id": validate_non_empty_string,
+        "encryption_key_name": validate_non_empty_string,
+        "stacks": lambda stacks: isinstance(stacks, dict),
+        "storage_container_name": validate_non_empty_string,
+    }
 
 
 @dataclass
@@ -127,100 +121,77 @@ class ConfigSectionSHM(ConfigSection):
     name: str = ""
     timezone: str = ""
 
-    def validate(self) -> None:
-        """Validate instance attributes."""
-        try:
-            validate_aad_guid(self.aad_tenant_id)
-        except Exception as exc:
-            msg = f"Invalid value for 'aad_tenant_id' ({self.aad_tenant_id}).\n{exc}"
-            raise ValueError(msg) from exc
-        try:
-            validate_email_address(self.admin_email_address)
-        except Exception as exc:
-            msg = f"Invalid value for 'admin_email_address' ({self.admin_email_address}).\n{exc}"
-            raise ValueError(msg) from exc
-        try:
-            for ip in self.admin_ip_addresses:
-                validate_ip_address(ip)
-        except Exception as exc:
-            msg = f"Invalid value for 'admin_ip_addresses' ({self.admin_ip_addresses}).\n{exc}"
-            raise ValueError(msg) from exc
-        if not isinstance(self.fqdn, str) or not self.fqdn:
-            msg = f"Invalid value for 'fqdn' ({self.fqdn})."
-            raise ValueError(msg)
-        if not isinstance(self.name, str) or not self.name:
-            msg = f"Invalid value for 'name' ({self.name})."
-            raise ValueError(msg)
-        try:
-            validate_timezone(self.timezone)
-        except Exception as exc:
-            msg = f"Invalid value for 'timezone' ({self.timezone}).\n{exc}"
-            raise ValueError(msg) from exc
+    validation_functions = {  # noqa: RUF012
+        "aad_tenant_id": validate_aad_guid,
+        "admin_email_address": validate_email_address,
+        "admin_ip_addresses": lambda ips: [validate_ip_address(ip) for ip in ips],
+        "fqdn": validate_non_empty_string,
+        "name": validate_non_empty_string,
+        "timezone": validate_timezone,
+    }
 
 
 @dataclass
 class ConfigSectionSRE(ConfigSection):
     @dataclass
-    class ConfigSubsectionRemoteDesktopOpts:
+    class ConfigSubsectionRemoteDesktopOpts(Validator):
         allow_copy: bool = False
         allow_paste: bool = False
+
+        validation_functions = {  # noqa: RUF012
+            "allow_copy": partial(validate_type, type_=bool),
+            "allow_paste": partial(validate_type, type_=bool),
+        }
 
         def update(
             self, *, allow_copy: bool | None = None, allow_paste: bool | None = None
         ) -> None:
             # Set whether copying text out of the SRE is allowed
             if allow_copy:
-                LoggingSingleton().debug(
-                    f"[bold]Copying text out of the SRE[/] was previously [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
-                )
                 self.allow_copy = allow_copy
             LoggingSingleton().info(
                 f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
             )
             # Set whether pasting text into the SRE is allowed
             if allow_paste:
-                LoggingSingleton().debug(
-                    f"[bold]Pasting text into the SRE[/] was previously [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
-                )
                 self.allow_paste = allow_paste
             LoggingSingleton().info(
                 f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
             )
 
-        def validate(self) -> None:
-            """Validate input parameters"""
-            if not isinstance(self.allow_copy, bool):
-                msg = f"Invalid value for 'allow_copy' ({self.allow_copy})."
-                raise ValueError(msg)
-            if not isinstance(self.allow_paste, bool):
-                msg = f"Invalid value for 'allow_paste' ({self.allow_paste})."
-                raise ValueError(msg)
-
     @dataclass
-    class ConfigSubsectionResearchDesktopOpts:
+    class ConfigSubsectionResearchDesktopOpts(Validator):
         sku: str = ""
 
-        def validate(self) -> None:
-            """Validate input parameters"""
-            try:
-                validate_azure_vm_sku(self.sku)
-            except Exception as exc:
-                msg = f"Invalid value for 'sku' ({self.sku}).\n{exc}"
-                raise ValueError(msg) from exc
+        validation_functions = {"sku": validate_azure_vm_sku}  # noqa: RUF012
 
     data_provider_ip_addresses: list[str] = field(default_factory=list)
     index: int = 0
     remote_desktop: ConfigSubsectionRemoteDesktopOpts = field(
         default_factory=ConfigSubsectionRemoteDesktopOpts
     )
-    # NB. we cannot use defaultdict here until
-    # https://github.com/python/cpython/pull/32056 is included in the Python
-    # version we are using
+    # NB. unless https://github.com/python/cpython/pull/32056 is included in the Python
+    # version we are using, we cannot use defaultdict here.
     research_desktops: dict[str, ConfigSubsectionResearchDesktopOpts] = field(
         default_factory=dict
     )
     research_user_ip_addresses: list[str] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
+
+    validation_functions = {  # noqa: RUF012
+        "data_provider_ip_addresses": lambda ips: [
+            validate_ip_address(ip) for ip in ips
+        ],
+        "index": lambda idx: isinstance(idx, int) and idx >= 0,
+        "remote_desktop": lambda dsktop: dsktop.validate(),
+        "research_desktops": lambda dsktops: [
+            dsktop.validate() for dsktop in dsktops.values()
+        ],
+        "research_user_ip_addresses": lambda ips: [
+            validate_ip_address(ip) for ip in ips
+        ],
+        "software_packages": lambda pkg: isinstance(pkg, SoftwarePackageCategory),
+    }
 
     def update(
         self,
@@ -232,13 +203,11 @@ class ConfigSectionSRE(ConfigSection):
         software_packages: SoftwarePackageCategory | None = None,
         user_ip_addresses: list[str] | None = None,
     ) -> None:
+        logger = LoggingSingleton()
         # Set data provider IP addresses
         if data_provider_ip_addresses:
-            LoggingSingleton().debug(
-                f"[bold]IP addresses used by data providers[/] were previously [green]{self.data_provider_ip_addresses}[/]."
-            )
             self.data_provider_ip_addresses = data_provider_ip_addresses
-        LoggingSingleton().info(
+        logger.info(
             f"[bold]IP addresses used by data providers[/] will be [green]{self.data_provider_ip_addresses}[/]."
         )
         # Pass allow_copy and allow_paste to remote desktop
@@ -246,53 +215,26 @@ class ConfigSectionSRE(ConfigSection):
         # Set research desktop SKUs
         if research_desktops:
             if sorted(research_desktops) != sorted(self.research_desktops.keys()):
-                LoggingSingleton().debug(
-                    f"[bold]Research desktops[/] were previously [green]{list(self.research_desktops.keys())}[/]."
-                )
                 self.research_desktops.clear()
                 for idx, vm_sku in enumerate(research_desktops):
                     self.research_desktops[
                         f"workspace-{idx:02d}"
                     ] = ConfigSectionSRE.ConfigSubsectionResearchDesktopOpts(sku=vm_sku)
-        LoggingSingleton().info(
+        logger.info(
             f"[bold]Research desktops[/] will be [green]{list(self.research_desktops.keys())}[/]."
         )
         # Select which software packages can be installed by users
         if software_packages:
-            LoggingSingleton().debug(
-                f"[bold]Software packages[/] from [green]{self.software_packages}[/] sources were previously installable."
-            )
             self.software_packages = software_packages
-        LoggingSingleton().info(
+        logger.info(
             f"[bold]Software packages[/] from [green]{self.software_packages}[/] sources will be installable."
         )
         # Set user IP addresses
         if user_ip_addresses:
-            LoggingSingleton().debug(
-                f"[bold]IP addresses used by users[/] were previously [green]{self.research_user_ip_addresses}[/]."
-            )
             self.research_user_ip_addresses = user_ip_addresses
-        LoggingSingleton().info(
+        logger.info(
             f"[bold]IP addresses used by users[/] will be [green]{self.research_user_ip_addresses}[/]."
         )
-
-    def validate(self) -> None:
-        """Validate instance attributes."""
-        try:
-            for ip in self.data_provider_ip_addresses:
-                validate_ip_address(ip)
-        except Exception as exc:
-            msg = f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{exc}"
-            raise ValueError(msg) from exc
-        self.remote_desktop.validate()
-        for research_desktop in self.research_desktops.values():
-            research_desktop.validate()
-        try:
-            for ip in self.research_user_ip_addresses:
-                validate_ip_address(ip)
-        except Exception as exc:
-            msg = f"Invalid value for 'research_user_ip_addresses' ({self.research_user_ip_addresses}).\n{exc}"
-            raise ValueError(msg) from exc
 
 
 @dataclass
@@ -302,11 +244,12 @@ class ConfigSectionTags(ConfigSection):
     project: str = "Data Safe Haven"
     version: str = __version__
 
-    def validate(self) -> None:
-        """Validate instance attributes."""
-        if not self.deployment:
-            msg = f"Invalid value for 'deployment' ({self.deployment})."
-            raise ValueError(msg)
+    validation_functions = {  # noqa: RUF012
+        "deployment": validate_non_empty_string,
+        "deployed_by": validate_non_empty_string,
+        "project": validate_non_empty_string,
+        "version": validate_non_empty_string,
+    }
 
 
 class Config:
