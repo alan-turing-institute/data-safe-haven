@@ -126,7 +126,7 @@ class SREResearchDesktopComponent(ComponentResource):
         # Deploy a variable number of VMs depending on the input parameters
         vms = [
             VMComponent(
-                replace_separators(f"{self._name}_vm_workspace{vm_idx+1:02d}", "_"),
+                replace_separators(f"{self._name}_vm_workspace_{vm_idx+1:02d}", "_"),
                 LinuxVMProps(
                     admin_password=props.admin_password,
                     admin_username=props.admin_username,
