@@ -3,23 +3,23 @@ from typing import Annotated
 
 import typer
 
-from .teardown_backend import TeardownBackendCommand
-from .teardown_shm import TeardownSHMCommand
-from .teardown_sre import TeardownSRECommand
+from .teardown_backend import teardown_backend
+from .teardown_shm import teardown_shm
+from .teardown_sre import teardown_sre
 
 teardown_command_group = typer.Typer()
 
 
 @teardown_command_group.command(help="Tear down a deployed Data Safe Haven backend.")
 def backend() -> None:
-    TeardownBackendCommand()()
+    teardown_backend()
 
 
 @teardown_command_group.command(
     help="Tear down a deployed a Safe Haven Management component."
 )
 def shm() -> None:
-    TeardownSHMCommand()()
+    teardown_shm()
 
 
 @teardown_command_group.command(
@@ -28,4 +28,4 @@ def shm() -> None:
 def sre(
     name: Annotated[str, typer.Argument(help="Name of SRE to teardown.")],
 ) -> None:
-    TeardownSRECommand()(name)
+    teardown_sre(name)
