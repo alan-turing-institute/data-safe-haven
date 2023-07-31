@@ -24,6 +24,7 @@ from data_safe_haven.functions import (
     validate_azure_vm_sku,
     validate_email_address,
     validate_ip_address,
+    validate_list,
     validate_non_empty_string,
     validate_string_length,
     validate_timezone,
@@ -124,7 +125,7 @@ class ConfigSectionSHM(ConfigSection):
     validation_functions = {  # noqa: RUF012
         "aad_tenant_id": validate_aad_guid,
         "admin_email_address": validate_email_address,
-        "admin_ip_addresses": lambda ips: [validate_ip_address(ip) for ip in ips],
+        "admin_ip_addresses": partial(validate_list, validator=validate_ip_address),
         "fqdn": validate_non_empty_string,
         "name": validate_non_empty_string,
         "timezone": validate_timezone,
@@ -223,17 +224,17 @@ class ConfigSectionSRE(ConfigSection):
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
     validation_functions = {  # noqa: RUF012
-        "data_provider_ip_addresses": lambda ips: [
-            validate_ip_address(ip) for ip in ips
-        ],
+        "data_provider_ip_addresses": partial(
+            validate_list, validator=validate_ip_address
+        ),
         "index": lambda idx: isinstance(idx, int) and idx >= 0,
         "remote_desktop": lambda dsktop: dsktop.validate(),
-        "research_desktop_skus": lambda skus: [
-            validate_azure_vm_sku(sku) for sku in skus
-        ],
-        "research_user_ip_addresses": lambda ips: [
-            validate_ip_address(ip) for ip in ips
-        ],
+        "research_desktop_skus": partial(
+            validate_list, validator=validate_azure_vm_sku
+        ),
+        "research_user_ip_addresses": partial(
+            validate_list, validator=validate_ip_address
+        ),
         "software_packages": lambda pkg: isinstance(pkg, SoftwarePackageCategory),
     }
 

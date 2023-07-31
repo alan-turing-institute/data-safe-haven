@@ -1,5 +1,6 @@
 import ipaddress
 import re
+from collections.abc import Callable
 from typing import Any
 
 import pytz
@@ -51,6 +52,27 @@ def validate_ip_address(
     except Exception as exc:
         msg = "Expected valid IPv4 address, for example '1.1.1.1'."
         raise typer.BadParameter(msg) from exc
+
+
+def validate_list(
+    value: list[Any], validator: Callable[[Any], Any] | None = None
+) -> list[Any]:
+    try:
+        validate_non_empty_list(value)
+        if validator:
+            for element in value:
+                validator(element)
+        return value
+    except Exception as exc:
+        msg = f"Expected valid list.\n{exc}"
+        raise typer.BadParameter(msg) from exc
+
+
+def validate_non_empty_list(value: list[Any]) -> list[Any]:
+    if len(value) == 0:
+        msg = "Expected non-empty list."
+        raise typer.BadParameter(msg)
+    return value
 
 
 def validate_non_empty_string(value: Any) -> str:
