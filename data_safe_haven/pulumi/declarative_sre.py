@@ -14,15 +14,15 @@ from .components.sre_remote_desktop import (
     SRERemoteDesktopComponent,
     SRERemoteDesktopProps,
 )
-from .components.sre_research_desktop import (
-    SREResearchDesktopComponent,
-    SREResearchDesktopProps,
-)
 from .components.sre_software_repositories import (
     SRESoftwareRepositoriesComponent,
     SRESoftwareRepositoriesProps,
 )
 from .components.sre_user_services import SREUserServicesComponent, SREUserServicesProps
+from .components.sre_workspace import (
+    SREWorkspaceComponent,
+    SREWorkspaceProps,
+)
 
 
 class DeclarativeSRE:
@@ -172,12 +172,12 @@ class DeclarativeSRE:
             ),
         )
 
-        # Deploy secure research desktops
-        research_desktops = SREResearchDesktopComponent(
-            "sre_secure_research_desktop",
+        # Deploy workspaces
+        workspaces = SREWorkspaceComponent(
+            "sre_workspaces",
             self.stack_name,
-            SREResearchDesktopProps(
-                admin_password=data.password_secure_research_desktop_admin,
+            SREWorkspaceProps(
+                admin_password=data.password_workspace_admin,
                 domain_sid=self.pulumi_opts.require(
                     "shm-domain_controllers-domain_sid"
                 ),
@@ -202,12 +202,10 @@ class DeclarativeSRE:
                 sre_name=self.sre_name,
                 storage_account_userdata_name=data.storage_account_userdata_name,
                 storage_account_securedata_name=data.storage_account_securedata_name,
-                subnet_research_desktops=networking.subnet_research_desktops,
+                subnet_workspaces=networking.subnet_workspaces,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
-                vm_details=list(
-                    enumerate(self.cfg.sres[self.sre_name].research_desktop_skus)
-                ),
+                vm_details=list(enumerate(self.cfg.sres[self.sre_name].workspace_skus)),
             ),
         )
 
@@ -270,4 +268,4 @@ class DeclarativeSRE:
             },
         )
         pulumi.export("remote_desktop", remote_desktop.exports)
-        pulumi.export("research_desktops", research_desktops.exports)
+        pulumi.export("workspaces", workspaces.exports)

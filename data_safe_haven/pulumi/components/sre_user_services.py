@@ -60,7 +60,7 @@ class SREUserServicesProps:
 
 
 class SREUserServicesComponent(ComponentResource):
-    """Deploy secure research desktops with Pulumi"""
+    """Deploy user services with Pulumi"""
 
     def __init__(
         self,

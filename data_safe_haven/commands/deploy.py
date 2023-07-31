@@ -109,13 +109,13 @@ def sre(
             callback=lambda vms: [validate_ip_address(vm) for vm in vms],
         ),
     ] = None,
-    research_desktop_skus: Annotated[
+    workspace_skus: Annotated[
         Optional[list[str]],  # noqa: UP007
         typer.Option(
-            "--research-desktop-sku",
-            "-r",
+            "--workspace-sku",
+            "-w",
             help=(
-                "A virtual machine SKU to make available to your users as a research desktop."
+                "A virtual machine SKU to make available to your users as a workspace."
                 " [*may be specified several times*]"
             ),
             callback=lambda ips: [validate_azure_vm_sku(ip) for ip in ips],
@@ -145,7 +145,7 @@ def sre(
         allow_copy=allow_copy,
         allow_paste=allow_paste,
         data_provider_ip_addresses=data_provider_ip_addresses,
-        research_desktop_skus=research_desktop_skus,
+        workspace_skus=workspace_skus,
         software_packages=software_packages,
         user_ip_addresses=user_ip_addresses,
     )

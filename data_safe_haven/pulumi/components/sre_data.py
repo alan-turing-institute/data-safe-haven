@@ -66,8 +66,8 @@ class SREDataProps:
         self.networking_resource_group_name = Output.from_input(
             networking_resource_group
         ).apply(get_name_from_rg)
-        self.password_secure_research_desktop_admin = self.get_secret(
-            pulumi_opts, "password-secure-research-desktop-admin"
+        self.password_workspace_admin = self.get_secret(
+            pulumi_opts, "password-workspace-admin"
         )
         self.password_gitea_database_admin = self.get_secret(
             pulumi_opts, "password-gitea-database-admin"
@@ -232,12 +232,12 @@ class SREDataComponent(ComponentResource):
 
         # Deploy key vault secrets
         keyvault.Secret(
-            f"{self._name}_kvs_password_secure_research_desktop_admin",
+            f"{self._name}_kvs_password_workspace_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_secure_research_desktop_admin
+                value=props.password_workspace_admin
             ),
             resource_group_name=resource_group.name,
-            secret_name="password-secure-research-desktop-admin",
+            secret_name="password-workspace-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
         )
@@ -556,9 +556,7 @@ class SREDataComponent(ComponentResource):
         self.certificate_secret_id = certificate.secret_id
         self.managed_identity = identity_key_vault_reader
         self.password_nexus_admin = Output.secret(props.password_nexus_admin)
-        self.password_secure_research_desktop_admin = Output.secret(
-            props.password_secure_research_desktop_admin
-        )
+        self.password_workspace_admin = Output.secret(props.password_workspace_admin)
         self.password_gitea_database_admin = Output.secret(
             props.password_gitea_database_admin
         )
