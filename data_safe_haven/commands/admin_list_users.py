@@ -1,4 +1,4 @@
-"""Command-line application for initialising a Data Safe Haven deployment"""
+"""List users from a deployed Data Safe Haven"""
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenError

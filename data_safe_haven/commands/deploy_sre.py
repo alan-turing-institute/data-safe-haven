@@ -1,5 +1,4 @@
-"""Command-line application for deploying a Secure Research Environment from project files"""
-
+"""Deploy a Secure Research Environment component"""
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenError,

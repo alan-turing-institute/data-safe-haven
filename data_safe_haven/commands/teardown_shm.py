@@ -1,4 +1,4 @@
-"""Command-line application for tearing down a Data Safe Haven"""
+"""Teardown a deployed a Safe Haven Management component"""
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenError,

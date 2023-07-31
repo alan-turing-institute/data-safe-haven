@@ -1,4 +1,4 @@
-"""Command-line application for initialising a Data Safe Haven deployment"""
+"""Register existing users with a deployed SRE"""
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenError

@@ -1,5 +1,4 @@
-"""Command-line application for deploying a Data Safe Haven from project files"""
-
+"""Deploy a Safe Haven Management component"""
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi

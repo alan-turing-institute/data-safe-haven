@@ -1,4 +1,4 @@
-"""Command-line application for tearing down a Data Safe Haven"""
+"""Tear down a deployed Data Safe Haven backend"""
 from data_safe_haven.backend import Backend
 from data_safe_haven.exceptions import (
     DataSafeHavenError,

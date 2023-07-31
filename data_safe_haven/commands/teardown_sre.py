@@ -1,4 +1,4 @@
-"""Command-line application for tearing down a Secure Research Environment"""
+"""Teardown a deployed Secure Research Environment"""
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import (
     DataSafeHavenError,
