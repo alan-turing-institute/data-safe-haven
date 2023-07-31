@@ -130,6 +130,45 @@ class ConfigSectionSHM(ConfigSection):
         "timezone": validate_timezone,
     }
 
+    def update(
+        self,
+        *,
+        aad_tenant_id: str | None = None,
+        admin_email_address: str | None = None,
+        admin_ip_addresses: list[str] | None = None,
+        fqdn: str | None = None,
+        timezone: str | None = None,
+    ) -> None:
+        logger = LoggingSingleton()
+        # Set AzureAD tenant ID
+        if aad_tenant_id:
+            self.aad_tenant_id = aad_tenant_id
+        logger.info(
+            f"[bold]AzureAD tenant ID[/] will be [green]{self.aad_tenant_id}[/]."
+        )
+        # Set admin email address
+        if admin_email_address:
+            self.admin_email_address = admin_email_address
+        logger.info(
+            f"[bold]Admin email address[/] will be [green]{self.admin_email_address}[/]."
+        )
+        # Set admin IP addresses
+        if admin_ip_addresses:
+            self.admin_ip_addresses = admin_ip_addresses
+        logger.info(
+            f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
+        )
+        # Set fully-qualified domain name
+        if fqdn:
+            self.fqdn = fqdn
+        logger.info(
+            f"[bold]Fully-qualified domain name[/] will be [green]{self.fqdn}[/]."
+        )
+        # Set timezone
+        if timezone:
+            self.timezone = timezone
+        logger.info(f"[bold]Timezone[/] will be [green]{self.timezone}[/].")
+
 
 @dataclass
 class ConfigSectionSRE(ConfigSection):
