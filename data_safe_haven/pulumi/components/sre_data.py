@@ -293,9 +293,14 @@ class SREDataComponent(ComponentResource):
             opts=child_opts,
         )
         # Retrieve storage account keys
-        storage_account_state_keys = storage.list_storage_account_keys(
+        storage_account_state_keys = Output.all(
             account_name=storage_account_state.name,
             resource_group_name=resource_group.name,
+        ).apply(
+            lambda kwargs: storage.list_storage_account_keys(
+                account_name=kwargs["account_name"],
+                resource_group_name=kwargs["resource_group_name"],
+            )
         )
 
         # Deploy secure data blob storage account
