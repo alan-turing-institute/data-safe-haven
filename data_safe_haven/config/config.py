@@ -1,16 +1,18 @@
 """Configuration file backed by blob storage"""
 import pathlib
 from collections import defaultdict
+from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Any
+from functools import partial
+from typing import Any, ClassVar
 
 import chili
 import yaml
 from yaml.parser import ParserError
 
 from data_safe_haven import __version__
-from data_safe_haven.exceptions import DataSafeHavenAzureError
+from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenConfigError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
     alphanumeric,
@@ -22,103 +24,97 @@ from data_safe_haven.functions import (
     validate_azure_vm_sku,
     validate_email_address,
     validate_ip_address,
+    validate_list,
+    validate_non_empty_string,
+    validate_string_length,
     validate_timezone,
+    validate_type,
 )
-from data_safe_haven.utility import SoftwarePackageCategory
+from data_safe_haven.utility import LoggingSingleton, SoftwarePackageCategory
 
 from .backend_settings import BackendSettings
 
 
-@dataclass
-class ConfigSectionAzure:
-    admin_group_id: str = ""
-    location: str = ""
-    subscription_id: str = ""
-    tenant_id: str = ""
+class Validator:
+    validation_functions: ClassVar[dict[str, Callable[[Any], Any]]] = {}
 
     def validate(self) -> None:
-        """Validate input parameters"""
-        try:
-            validate_aad_guid(self.admin_group_id)
-        except Exception as exc:
-            msg = f"Invalid value for 'admin_group_id' ({self.admin_group_id}).\n{exc}"
-            raise ValueError(msg) from exc
-        try:
-            validate_azure_location(self.location)
-        except Exception as exc:
-            msg = f"Invalid value for 'location' ({self.location}).\n{exc}"
-            raise ValueError(msg) from exc
-        try:
-            validate_aad_guid(self.subscription_id)
-        except Exception as exc:
-            msg = (
-                f"Invalid value for 'subscription_id' ({self.subscription_id}).\n{exc}"
-            )
-            raise ValueError(msg) from exc
-        try:
-            validate_aad_guid(self.tenant_id)
-        except Exception as exc:
-            msg = f"Invalid value for 'tenant_id' ({self.tenant_id}).\n{exc}"
-            raise ValueError(msg) from exc
+        """Validate instance attributes.
 
-    def to_dict(self) -> dict[str, str]:
+        Validation fails if the provided validation function raises an exception.
+        """
+        for attr_name, validator in self.validation_functions.items():
+            try:
+                validator(getattr(self, attr_name))
+            except Exception as exc:
+                msg = f"Invalid value for '{attr_name}' ({getattr(self, attr_name)}).\n{exc}"
+                raise DataSafeHavenConfigError(msg) from exc
+
+
+class ConfigSection(Validator):
+    def to_dict(self) -> dict[str, Any]:
+        """Dictionary representation of this object."""
         self.validate()
         return as_dict(chili.encode(self))
 
 
 @dataclass
-class ConfigSectionBackend:
+class ConfigSectionAzure(ConfigSection):
+    admin_group_id: str = ""
+    location: str = ""
+    subscription_id: str = ""
+    tenant_id: str = ""
+
+    validation_functions = {  # noqa: RUF012
+        "admin_group_id": validate_aad_guid,
+        "location": validate_azure_location,
+        "subscription_id": validate_aad_guid,
+        "tenant_id": validate_aad_guid,
+    }
+
+
+@dataclass
+class ConfigSectionBackend(ConfigSection):
     key_vault_name: str = ""
     managed_identity_name: str = ""
     resource_group_name: str = ""
     storage_account_name: str = ""
     storage_container_name: str = ""
 
-    def validate(self) -> None:
-        """Validate input parameters"""
-        if not self.key_vault_name:
-            msg = f"Invalid value for 'key_vault_name' ({self.key_vault_name})."
-            raise ValueError(msg)
-        if not self.managed_identity_name:
-            msg = f"Invalid value for 'managed_identity_name' ({self.managed_identity_name})."
-            raise ValueError(msg)
-        if not self.resource_group_name:
-            msg = (
-                f"Invalid value for 'resource_group_name' ({self.resource_group_name})."
-            )
-            raise ValueError(msg)
-        if not self.storage_account_name:
-            msg = f"Invalid value for 'storage_account_name' ({self.storage_account_name})."
-            raise ValueError(msg)
-        if not self.storage_container_name:
-            msg = f"Invalid value for 'storage_container_name' ({self.storage_container_name})."
-            raise ValueError(msg)
-
-    def to_dict(self) -> dict[str, str]:
-        self.validate()
-        return as_dict(chili.encode(self))
+    validation_functions = {  # noqa: RUF012
+        "key_vault_name": partial(validate_string_length, min_length=3, max_length=24),
+        "managed_identity_name": partial(
+            validate_string_length, min_length=1, max_length=64
+        ),
+        "resource_group_name": partial(
+            validate_string_length, min_length=1, max_length=64
+        ),
+        "storage_account_name": partial(
+            validate_string_length, min_length=1, max_length=24
+        ),
+        "storage_container_name": partial(
+            validate_string_length, min_length=1, max_length=64
+        ),
+    }
 
 
 @dataclass
-class ConfigSectionPulumi:
+class ConfigSectionPulumi(ConfigSection):
     encryption_key_id: str = ""
     encryption_key_name: str = "pulumi-encryption-key"
     stacks: dict[str, str] = field(default_factory=dict)
     storage_container_name: str = "pulumi"
 
-    def validate(self) -> None:
-        """Validate input parameters"""
-        if not isinstance(self.encryption_key_id, str) or not self.encryption_key_id:
-            msg = f"Invalid value for 'encryption_key_id' ({self.encryption_key_id})."
-            raise ValueError(msg)
-
-    def to_dict(self) -> dict[str, Any]:
-        self.validate()
-        return as_dict(chili.encode(self))
+    validation_functions = {  # noqa: RUF012
+        "encryption_key_id": validate_non_empty_string,
+        "encryption_key_name": validate_non_empty_string,
+        "stacks": lambda stacks: isinstance(stacks, dict),
+        "storage_container_name": validate_non_empty_string,
+    }
 
 
 @dataclass
-class ConfigSectionSHM:
+class ConfigSectionSHM(ConfigSection):
     aad_tenant_id: str = ""
     admin_email_address: str = ""
     admin_ip_addresses: list[str] = field(default_factory=list)
@@ -126,133 +122,184 @@ class ConfigSectionSHM:
     name: str = ""
     timezone: str = ""
 
-    def validate(self) -> None:
-        """Validate input parameters"""
-        try:
-            validate_aad_guid(self.aad_tenant_id)
-        except Exception as exc:
-            msg = f"Invalid value for 'aad_tenant_id' ({self.aad_tenant_id}).\n{exc}"
-            raise ValueError(msg) from exc
-        try:
-            validate_email_address(self.admin_email_address)
-        except Exception as exc:
-            msg = f"Invalid value for 'admin_email_address' ({self.admin_email_address}).\n{exc}"
-            raise ValueError(msg) from exc
-        try:
-            for ip in self.admin_ip_addresses:
-                validate_ip_address(ip)
-        except Exception as exc:
-            msg = f"Invalid value for 'admin_ip_addresses' ({self.admin_ip_addresses}).\n{exc}"
-            raise ValueError(msg) from exc
-        if not isinstance(self.fqdn, str) or not self.fqdn:
-            msg = f"Invalid value for 'fqdn' ({self.fqdn})."
-            raise ValueError(msg)
-        if not isinstance(self.name, str) or not self.name:
-            msg = f"Invalid value for 'name' ({self.name})."
-            raise ValueError(msg)
-        try:
-            validate_timezone(self.timezone)
-        except Exception as exc:
-            msg = f"Invalid value for 'timezone' ({self.timezone}).\n{exc}"
-            raise ValueError(msg) from exc
+    validation_functions = {  # noqa: RUF012
+        "aad_tenant_id": validate_aad_guid,
+        "admin_email_address": validate_email_address,
+        "admin_ip_addresses": partial(validate_list, validator=validate_ip_address),
+        "fqdn": validate_non_empty_string,
+        "name": validate_non_empty_string,
+        "timezone": validate_timezone,
+    }
 
-    def to_dict(self) -> dict[str, Any]:
-        self.validate()
-        return as_dict(chili.encode(self))
+    def update(
+        self,
+        *,
+        aad_tenant_id: str | None = None,
+        admin_email_address: str | None = None,
+        admin_ip_addresses: list[str] | None = None,
+        fqdn: str | None = None,
+        timezone: str | None = None,
+    ) -> None:
+        """Update SHM settings
+
+        Args:
+            aad_tenant_id: AzureAD tenant containing users
+            admin_email_address: Email address shared by all administrators
+            admin_ip_addresses: List of IP addresses belonging to administrators
+            fqdn: Fully-qualified domain name to use for this SHM
+            timezone: Timezone in pytz format (eg. Europe/London)
+        """
+        logger = LoggingSingleton()
+        # Set AzureAD tenant ID
+        if aad_tenant_id:
+            self.aad_tenant_id = aad_tenant_id
+        logger.info(
+            f"[bold]AzureAD tenant ID[/] will be [green]{self.aad_tenant_id}[/]."
+        )
+        # Set admin email address
+        if admin_email_address:
+            self.admin_email_address = admin_email_address
+        logger.info(
+            f"[bold]Admin email address[/] will be [green]{self.admin_email_address}[/]."
+        )
+        # Set admin IP addresses
+        if admin_ip_addresses:
+            self.admin_ip_addresses = admin_ip_addresses
+        logger.info(
+            f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
+        )
+        # Set fully-qualified domain name
+        if fqdn:
+            self.fqdn = fqdn
+        logger.info(
+            f"[bold]Fully-qualified domain name[/] will be [green]{self.fqdn}[/]."
+        )
+        # Set timezone
+        if timezone:
+            self.timezone = timezone
+        logger.info(f"[bold]Timezone[/] will be [green]{self.timezone}[/].")
 
 
 @dataclass
-class ConfigSectionSRE:
+class ConfigSectionSRE(ConfigSection):
     @dataclass
-    class ConfigSectionRemoteDesktopOpts:
+    class ConfigSubsectionRemoteDesktopOpts(Validator):
         allow_copy: bool = False
         allow_paste: bool = False
 
-        def validate(self) -> None:
-            """Validate input parameters"""
-            if not isinstance(self.allow_copy, bool):
-                msg = f"Invalid value for 'allow_copy' ({self.allow_copy})."
-                raise ValueError(msg)
-            if not isinstance(self.allow_paste, bool):
-                msg = f"Invalid value for 'allow_paste' ({self.allow_paste})."
-                raise ValueError(msg)
+        validation_functions = {  # noqa: RUF012
+            "allow_copy": partial(validate_type, type_=bool),
+            "allow_paste": partial(validate_type, type_=bool),
+        }
 
-        def to_dict(self) -> dict[str, bool]:
-            self.validate()
-            return as_dict(chili.encode(self))
+        def update(
+            self, *, allow_copy: bool | None = None, allow_paste: bool | None = None
+        ) -> None:
+            """Update SRE remote desktop settings
 
-    @dataclass
-    class ConfigSectionResearchDesktopOpts:
-        sku: str = ""
-
-        def validate(self) -> None:
-            """Validate input parameters"""
-            try:
-                validate_azure_vm_sku(self.sku)
-            except Exception as exc:
-                msg = f"Invalid value for 'sku' ({self.sku}).\n{exc}"
-                raise ValueError(msg) from exc
-
-        def to_dict(self) -> dict[str, str]:
-            self.validate()
-            return as_dict(chili.encode(self))
+            Args:
+                allow_copy: Allow/deny copying text out of the SRE
+                allow_paste: Allow/deny pasting text into the SRE
+            """
+            # Set whether copying text out of the SRE is allowed
+            if allow_copy:
+                self.allow_copy = allow_copy
+            LoggingSingleton().info(
+                f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
+            )
+            # Set whether pasting text into the SRE is allowed
+            if allow_paste:
+                self.allow_paste = allow_paste
+            LoggingSingleton().info(
+                f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
+            )
 
     data_provider_ip_addresses: list[str] = field(default_factory=list)
     index: int = 0
-    remote_desktop: ConfigSectionRemoteDesktopOpts = field(
-        default_factory=ConfigSectionRemoteDesktopOpts
+    remote_desktop: ConfigSubsectionRemoteDesktopOpts = field(
+        default_factory=ConfigSubsectionRemoteDesktopOpts
     )
-    # NB. we cannot use defaultdict here until
-    # https://github.com/python/cpython/pull/32056 is included in the Python
-    # version we are using
-    research_desktops: dict[str, ConfigSectionResearchDesktopOpts] = field(
-        default_factory=dict
-    )
+    research_desktop_skus: list[str] = field(default_factory=list)
     research_user_ip_addresses: list[str] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
-    def add_research_desktop(self, name: str) -> None:
-        self.research_desktops[
-            name
-        ] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts()
+    validation_functions = {  # noqa: RUF012
+        "data_provider_ip_addresses": partial(
+            validate_list, validator=validate_ip_address
+        ),
+        "index": lambda idx: isinstance(idx, int) and idx >= 0,
+        "remote_desktop": lambda dsktop: dsktop.validate(),
+        "research_desktop_skus": partial(
+            validate_list, validator=validate_azure_vm_sku
+        ),
+        "research_user_ip_addresses": partial(
+            validate_list, validator=validate_ip_address
+        ),
+        "software_packages": lambda pkg: isinstance(pkg, SoftwarePackageCategory),
+    }
 
-    def validate(self) -> None:
-        """Validate input parameters"""
-        try:
-            for ip in self.data_provider_ip_addresses:
-                validate_ip_address(ip)
-        except Exception as exc:
-            msg = f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{exc}"
-            raise ValueError(msg) from exc
-        self.remote_desktop.validate()
-        try:
-            for ip in self.research_user_ip_addresses:
-                validate_ip_address(ip)
-        except Exception as exc:
-            msg = f"Invalid value for 'research_user_ip_addresses' ({self.research_user_ip_addresses}).\n{exc}"
-            raise ValueError(msg) from exc
+    def update(
+        self,
+        *,
+        allow_copy: bool | None = None,
+        allow_paste: bool | None = None,
+        data_provider_ip_addresses: list[str] | None = None,
+        research_desktop_skus: list[str] | None = None,
+        software_packages: SoftwarePackageCategory | None = None,
+        user_ip_addresses: list[str] | None = None,
+    ) -> None:
+        """Update SRE settings
 
-    def to_dict(self) -> dict[str, Any]:
-        self.validate()
-        return as_dict(chili.encode(self))
+        Args:
+            allow_copy: Allow/deny copying text out of the SRE
+            allow_paste: Allow/deny pasting text into the SRE
+            data_provider_ip_addresses: List of IP addresses belonging to data providers
+            research_desktop_skus: List of VM SKUs for research desktops
+            software_packages: Whether to allow packages from external repositories
+            user_ip_addresses: List of IP addresses belonging to users
+        """
+        logger = LoggingSingleton()
+        # Set data provider IP addresses
+        if data_provider_ip_addresses:
+            self.data_provider_ip_addresses = data_provider_ip_addresses
+        logger.info(
+            f"[bold]IP addresses used by data providers[/] will be [green]{self.data_provider_ip_addresses}[/]."
+        )
+        # Pass allow_copy and allow_paste to remote desktop
+        self.remote_desktop.update(allow_copy=allow_copy, allow_paste=allow_paste)
+        # Set research desktop SKUs
+        if research_desktop_skus:
+            self.research_desktop_skus = research_desktop_skus
+        logger.info(
+            f"[bold]Research desktop SKUs[/] will be [green]{self.research_desktop_skus}[/]."
+        )
+        # Select which software packages can be installed by users
+        if software_packages:
+            self.software_packages = software_packages
+        logger.info(
+            f"[bold]Software packages[/] from [green]{self.software_packages}[/] sources will be installable."
+        )
+        # Set user IP addresses
+        if user_ip_addresses:
+            self.research_user_ip_addresses = user_ip_addresses
+        logger.info(
+            f"[bold]IP addresses used by users[/] will be [green]{self.research_user_ip_addresses}[/]."
+        )
 
 
 @dataclass
-class ConfigSectionTags:
+class ConfigSectionTags(ConfigSection):
     deployment: str = ""
     deployed_by: str = "Python"
     project: str = "Data Safe Haven"
     version: str = __version__
 
-    def validate(self) -> None:
-        """Validate input parameters"""
-        if not self.deployment:
-            msg = f"Invalid value for 'deployment' ({self.deployment})."
-            raise ValueError(msg)
-
-    def to_dict(self) -> dict[str, str]:
-        self.validate()
-        return as_dict(chili.encode(self))
+    validation_functions = {  # noqa: RUF012
+        "deployment": validate_non_empty_string,
+        "deployed_by": validate_non_empty_string,
+        "project": validate_non_empty_string,
+        "version": validate_non_empty_string,
+    }
 
 
 class Config:
@@ -376,11 +423,12 @@ class Config:
         if name in self.pulumi.stacks.keys():
             del self.pulumi.stacks[name]
 
-    def write_stack(self, name: str, path: pathlib.Path) -> None:
-        """Write a Pulumi stack file from config"""
-        pulumi_cfg = b64decode(self.pulumi.stacks[name])
-        with open(path, "w", encoding="utf-8") as f_stack:
-            f_stack.write(pulumi_cfg)
+    def sre(self, name: str) -> ConfigSectionSRE:
+        """Return the config entry for this SRE creating it if it does not exist"""
+        if name not in self.sres.keys():
+            highest_index = max([0] + [sre.index for sre in self.sres.values()])
+            self.sres[name].index = highest_index + 1
+        return self.sres[name]
 
     def upload(self) -> None:
         """Upload config to Azure storage"""
@@ -391,3 +439,9 @@ class Config:
             self.backend_storage_account_name,
             self.backend_storage_container_name,
         )
+
+    def write_stack(self, name: str, path: pathlib.Path) -> None:
+        """Write a Pulumi stack file from config"""
+        pulumi_cfg = b64decode(self.pulumi.stacks[name])
+        with open(path, "w", encoding="utf-8") as f_stack:
+            f_stack.write(pulumi_cfg)

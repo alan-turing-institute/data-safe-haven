@@ -12,8 +12,8 @@ from data_safe_haven.functions import (
 )
 from data_safe_haven.utility import SoftwarePackageCategory
 
-from .deploy_shm_command import DeploySHMCommand
-from .deploy_sre_command import DeploySRECommand
+from .deploy_shm import deploy_shm
+from .deploy_sre import deploy_sre
 
 deploy_command_group = typer.Typer()
 
@@ -72,12 +72,12 @@ def shm(
     ] = None,
 ) -> None:
     """Deploy a Safe Haven Management component"""
-    DeploySHMCommand()(
-        aad_tenant_id,
-        admin_email_address,
-        admin_ip_addresses,
-        fqdn,
-        timezone,
+    deploy_shm(
+        aad_tenant_id=aad_tenant_id,
+        admin_email_address=admin_email_address,
+        admin_ip_addresses=admin_ip_addresses,
+        fqdn=fqdn,
+        timezone=timezone,
     )
 
 
@@ -109,10 +109,10 @@ def sre(
             callback=lambda vms: [validate_ip_address(vm) for vm in vms],
         ),
     ] = None,
-    research_desktops: Annotated[
+    research_desktop_skus: Annotated[
         Optional[list[str]],  # noqa: UP007
         typer.Option(
-            "--research-desktop",
+            "--research-desktop-sku",
             "-r",
             help=(
                 "A virtual machine SKU to make available to your users as a research desktop."
@@ -140,12 +140,12 @@ def sre(
     ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
-    DeploySRECommand()(
+    deploy_sre(
         name,
-        allow_copy,
-        allow_paste,
-        data_provider_ip_addresses,
-        research_desktops,
-        software_packages,
-        user_ip_addresses,
+        allow_copy=allow_copy,
+        allow_paste=allow_paste,
+        data_provider_ip_addresses=data_provider_ip_addresses,
+        research_desktop_skus=research_desktop_skus,
+        software_packages=software_packages,
+        user_ip_addresses=user_ip_addresses,
     )
