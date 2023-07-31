@@ -205,12 +205,9 @@ class DeclarativeSRE:
                 subnet_research_desktops=networking.subnet_research_desktops,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
-                vm_details=[
-                    (idx, name, details.sku)
-                    for idx, (name, details) in enumerate(
-                        self.cfg.sres[self.sre_name].research_desktops.items()
-                    )
-                ],
+                vm_details=list(
+                    enumerate(self.cfg.sres[self.sre_name].research_desktop_skus)
+                ),
             ),
         )
 

@@ -213,22 +213,12 @@ class ConfigSectionSRE(ConfigSection):
                 f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
             )
 
-    @dataclass
-    class ConfigSubsectionResearchDesktopOpts(Validator):
-        sku: str = ""
-
-        validation_functions = {"sku": validate_azure_vm_sku}  # noqa: RUF012
-
     data_provider_ip_addresses: list[str] = field(default_factory=list)
     index: int = 0
     remote_desktop: ConfigSubsectionRemoteDesktopOpts = field(
         default_factory=ConfigSubsectionRemoteDesktopOpts
     )
-    # NB. unless https://github.com/python/cpython/pull/32056 is included in the Python
-    # version we are using, we cannot use defaultdict here.
-    research_desktops: dict[str, ConfigSubsectionResearchDesktopOpts] = field(
-        default_factory=dict
-    )
+    research_desktop_skus: list[str] = field(default_factory=list)
     research_user_ip_addresses: list[str] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
@@ -238,8 +228,8 @@ class ConfigSectionSRE(ConfigSection):
         ],
         "index": lambda idx: isinstance(idx, int) and idx >= 0,
         "remote_desktop": lambda dsktop: dsktop.validate(),
-        "research_desktops": lambda dsktops: [
-            dsktop.validate() for dsktop in dsktops.values()
+        "research_desktop_skus": lambda skus: [
+            validate_azure_vm_sku(sku) for sku in skus
         ],
         "research_user_ip_addresses": lambda ips: [
             validate_ip_address(ip) for ip in ips
@@ -253,7 +243,7 @@ class ConfigSectionSRE(ConfigSection):
         allow_copy: bool | None = None,
         allow_paste: bool | None = None,
         data_provider_ip_addresses: list[str] | None = None,
-        research_desktops: list[str] | None = None,
+        research_desktop_skus: list[str] | None = None,
         software_packages: SoftwarePackageCategory | None = None,
         user_ip_addresses: list[str] | None = None,
     ) -> None:
@@ -263,7 +253,7 @@ class ConfigSectionSRE(ConfigSection):
             allow_copy: Allow/deny copying text out of the SRE
             allow_paste: Allow/deny pasting text into the SRE
             data_provider_ip_addresses: List of IP addresses belonging to data providers
-            research_desktops: List of VM SKUs for research desktops
+            research_desktop_skus: List of VM SKUs for research desktops
             software_packages: Whether to allow packages from external repositories
             user_ip_addresses: List of IP addresses belonging to users
         """
@@ -277,15 +267,10 @@ class ConfigSectionSRE(ConfigSection):
         # Pass allow_copy and allow_paste to remote desktop
         self.remote_desktop.update(allow_copy=allow_copy, allow_paste=allow_paste)
         # Set research desktop SKUs
-        if research_desktops:
-            if sorted(research_desktops) != sorted(self.research_desktops.keys()):
-                self.research_desktops.clear()
-                for idx, vm_sku in enumerate(research_desktops):
-                    self.research_desktops[
-                        f"workspace-{idx:02d}"
-                    ] = ConfigSectionSRE.ConfigSubsectionResearchDesktopOpts(sku=vm_sku)
+        if research_desktop_skus:
+            self.research_desktop_skus = research_desktop_skus
         logger.info(
-            f"[bold]Research desktops[/] will be [green]{list(self.research_desktops.keys())}[/]."
+            f"[bold]Research desktop SKUs[/] will be [green]{self.research_desktop_skus}[/]."
         )
         # Select which software packages can be installed by users
         if software_packages:

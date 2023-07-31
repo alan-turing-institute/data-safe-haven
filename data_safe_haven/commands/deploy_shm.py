@@ -9,6 +9,7 @@ from data_safe_haven.pulumi import PulumiSHMStack
 
 
 def deploy_shm(
+    *,
     aad_tenant_id: str | None = None,
     admin_email_address: str | None = None,
     admin_ip_addresses: list[str] | None = None,

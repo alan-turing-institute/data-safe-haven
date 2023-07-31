@@ -42,9 +42,7 @@ class SREResearchDesktopProps:
         subnet_research_desktops: Input[network.GetSubnetResult],
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
-        vm_details: list[
-            tuple[int, str, str]
-        ],  # this must *not* be passed as an Input[T]
+        vm_details: list[tuple[int, str]],  # this must *not* be passed as an Input[T]
     ):
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
@@ -128,7 +126,7 @@ class SREResearchDesktopComponent(ComponentResource):
         # Deploy a variable number of VMs depending on the input parameters
         vms = [
             VMComponent(
-                replace_separators(f"{self._name}_vm_{vm_name}", "_"),
+                replace_separators(f"{self._name}_vm_workspace{vm_idx+1:02d}", "_"),
                 LinuxVMProps(
                     admin_password=props.admin_password,
                     admin_username=props.admin_username,
@@ -142,13 +140,13 @@ class SREResearchDesktopComponent(ComponentResource):
                     virtual_network_name=props.virtual_network_name,
                     virtual_network_resource_group_name=props.virtual_network_resource_group_name,
                     vm_name=Output.concat(
-                        "sre-", props.sre_name, "-vm-", vm_name
+                        "sre-", props.sre_name, "-vm-workspace-", f"{vm_idx+1:02d}"
                     ).apply(lambda s: replace_separators(s, "-")),
                     vm_size=vm_size,
                 ),
                 opts=child_opts,
             )
-            for vm_idx, vm_name, vm_size in props.vm_details
+            for vm_idx, vm_size in props.vm_details
         ]
 
         # Get details for each deployed VM
