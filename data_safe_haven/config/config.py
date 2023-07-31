@@ -229,9 +229,7 @@ class ConfigSectionSRE(ConfigSection):
         ),
         "index": lambda idx: isinstance(idx, int) and idx >= 0,
         "remote_desktop": lambda dsktop: dsktop.validate(),
-        "workspace_skus": partial(
-            validate_list, validator=validate_azure_vm_sku
-        ),
+        "workspace_skus": partial(validate_list, validator=validate_azure_vm_sku),
         "research_user_ip_addresses": partial(
             validate_list, validator=validate_ip_address
         ),
