@@ -139,6 +139,15 @@ class ConfigSectionSHM(ConfigSection):
         fqdn: str | None = None,
         timezone: str | None = None,
     ) -> None:
+        """Update SHM settings
+
+        Args:
+            aad_tenant_id: AzureAD tenant containing users
+            admin_email_address: Email address shared by all administrators
+            admin_ip_addresses: List of IP addresses belonging to administrators
+            fqdn: Fully-qualified domain name to use for this SHM
+            timezone: Timezone in pytz format (eg. Europe/London)
+        """
         logger = LoggingSingleton()
         # Set AzureAD tenant ID
         if aad_tenant_id:
@@ -185,6 +194,12 @@ class ConfigSectionSRE(ConfigSection):
         def update(
             self, *, allow_copy: bool | None = None, allow_paste: bool | None = None
         ) -> None:
+            """Update SRE remote desktop settings
+
+            Args:
+                allow_copy: Allow/deny copying text out of the SRE
+                allow_paste: Allow/deny pasting text into the SRE
+            """
             # Set whether copying text out of the SRE is allowed
             if allow_copy:
                 self.allow_copy = allow_copy
@@ -242,6 +257,16 @@ class ConfigSectionSRE(ConfigSection):
         software_packages: SoftwarePackageCategory | None = None,
         user_ip_addresses: list[str] | None = None,
     ) -> None:
+        """Update SRE settings
+
+        Args:
+            allow_copy: Allow/deny copying text out of the SRE
+            allow_paste: Allow/deny pasting text into the SRE
+            data_provider_ip_addresses: List of IP addresses belonging to data providers
+            research_desktops: List of VM SKUs for research desktops
+            software_packages: Whether to allow packages from external repositories
+            user_ip_addresses: List of IP addresses belonging to users
+        """
         logger = LoggingSingleton()
         # Set data provider IP addresses
         if data_provider_ip_addresses:
