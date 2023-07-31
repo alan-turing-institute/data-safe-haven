@@ -7,7 +7,7 @@ remote_page = requests.get("https://www.rstudio.com/products/rstudio/download/",
 root = html.fromstring(remote_page.content)
 short_links = [link for link in root.xpath("//a[contains(text(), '.deb')]/@href") if "debian" not in link]
 
-for ubuntu_version in ["bionic", "jammy"]:
+for ubuntu_version in ["focal", "jammy"]:
     short_link = [link for link in short_links if ubuntu_version in link][0]
     remote_content = requests.get(short_link, allow_redirects=True)
     sha256 = hashlib.sha256(remote_content.content).hexdigest()

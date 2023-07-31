@@ -1,4 +1,0 @@
-hash: 2e8030828b93751ebc02fbbd6334d62600e7ab12c46d3f087a5222583e436238
-version: 2023.03.1-446
-debfile: rstudio-|VERSION|-amd64.deb
-remote: https://download1.rstudio.org/electron/bionic/amd64/|DEBFILE|
