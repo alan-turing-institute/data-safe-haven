@@ -12,8 +12,8 @@ from data_safe_haven.functions import (
 )
 from data_safe_haven.utility import SoftwarePackageCategory
 
-from .deploy_shm import DeploySHMCommand
-from .deploy_sre import DeploySRECommand
+from .deploy_shm import deploy_shm
+from .deploy_sre import deploy_sre
 
 deploy_command_group = typer.Typer()
 
@@ -72,7 +72,7 @@ def shm(
     ] = None,
 ) -> None:
     """Deploy a Safe Haven Management component"""
-    DeploySHMCommand()(
+    deploy_shm(
         aad_tenant_id,
         admin_email_address,
         admin_ip_addresses,
@@ -140,7 +140,7 @@ def sre(
     ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
-    DeploySRECommand()(
+    deploy_sre(
         name,
         allow_copy,
         allow_paste,
