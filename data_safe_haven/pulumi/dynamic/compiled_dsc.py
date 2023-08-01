@@ -37,7 +37,7 @@ class CompiledDscProps:
 class CompiledDscProvider(DshResourceProvider):
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Create compiled desired state file."""
-        azure_api = AzureApi(props["subscription_name"])
+        azure_api = AzureApi(props["subscription_name"], disable_logging=True)
         # Compile desired state
         azure_api.compile_desired_state(
             automation_account_name=props["automation_account_name"],

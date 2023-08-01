@@ -54,7 +54,7 @@ class BlobContainerAclProvider(DshResourceProvider):
         """Set ACLs for a given blob container."""
         outs = dict(**props)
         try:
-            azure_api = AzureApi(props["subscription_name"])
+            azure_api = AzureApi(props["subscription_name"], disable_logging=True)
             azure_api.set_blob_container_acl(
                 container_name=props["container_name"],
                 desired_acl=props["desired_acl"],
@@ -74,7 +74,7 @@ class BlobContainerAclProvider(DshResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         try:
-            azure_api = AzureApi(props["subscription_name"])
+            azure_api = AzureApi(props["subscription_name"], disable_logging=True)
             azure_api.set_blob_container_acl(
                 container_name=props["container_name"],
                 desired_acl="user::rwx,group::r-x,other::---",

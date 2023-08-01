@@ -66,15 +66,17 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalError,
 )
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.utility import LoggingSingleton, NonLoggingSingleton
 
 
 class AzureApi(AzureAuthenticator):
     """Interface to the Azure REST API"""
 
-    def __init__(self, subscription_name: str):
+    def __init__(
+        self, subscription_name: str, *, disable_logging: bool = False
+    ) -> None:
         super().__init__(subscription_name)
-        self.logger = LoggingSingleton()
+        self.logger = NonLoggingSingleton() if disable_logging else LoggingSingleton()
 
     def compile_desired_state(
         self,
