@@ -30,7 +30,7 @@ class VMProps:
         ip_address_public: Input[bool] | None = None,
         log_analytics_workspace_id: Input[str] | None = None,
         log_analytics_workspace_key: Input[str] | None = None,
-    ):
+    ) -> None:
         self.admin_password = admin_password
         self.admin_username = admin_username if admin_username else "dshvmadmin"
         self.image_reference_args = None
@@ -66,7 +66,7 @@ class WindowsVMProps(VMProps):
         self,
         *args: Any,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.image_reference_args = compute.ImageReferenceArgs(
             offer="WindowsServer",

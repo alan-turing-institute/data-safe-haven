@@ -51,7 +51,7 @@ class SHMUpdateServersComponent(ComponentResource):
         stack_name: str,
         props: SHMUpdateServersProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:shm:UpdateServersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

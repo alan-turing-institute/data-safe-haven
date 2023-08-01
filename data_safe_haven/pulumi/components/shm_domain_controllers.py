@@ -40,7 +40,7 @@ class SHMDomainControllersProps:
         subscription_name: Input[str],
         virtual_network_name: Input[str],
         virtual_network_resource_group_name: Input[str],
-    ):
+    ) -> None:
         self.automation_account_modules = automation_account_modules
         self.automation_account_name = automation_account_name
         self.automation_account_registration_url = automation_account_registration_url
@@ -85,7 +85,7 @@ class SHMDomainControllersComponent(ComponentResource):
         stack_name: str,
         props: SHMDomainControllersProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:shm:DomainControllersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"

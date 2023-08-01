@@ -23,7 +23,7 @@ class CompiledDscProps:
         resource_group_name: Input[str],
         required_modules: Input[Sequence[str]],
         subscription_name: Input[str],
-    ):
+    ) -> None:
         self.automation_account_name = automation_account_name
         self.configuration_name = configuration_name
         self.content_hash = content_hash

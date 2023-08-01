@@ -19,7 +19,7 @@ class AzureADApplicationProps:
         application_name: Input[str],
         application_url: Input[str],
         auth_token: Input[str],
-    ):
+    ) -> None:
         self.application_name = application_name
         self.application_url = application_url
         self.auth_token = auth_token

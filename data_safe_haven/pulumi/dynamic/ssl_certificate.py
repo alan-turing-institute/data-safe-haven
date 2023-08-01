@@ -31,7 +31,7 @@ class SSLCertificateProps:
         key_vault_name: Input[str],
         networking_resource_group_name: Input[str],
         subscription_name: Input[str],
-    ):
+    ) -> None:
         self.certificate_secret_name = certificate_secret_name
         self.domain_name = domain_name
         self.admin_email_address = admin_email_address

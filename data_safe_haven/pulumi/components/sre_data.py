@@ -51,7 +51,7 @@ class SREDataProps:
         subscription_id: Input[str],
         subscription_name: Input[str],
         tenant_id: Input[str],
-    ):
+    ) -> None:
         self.admin_email_address = admin_email_address
         self.admin_group_id = admin_group_id
         self.approved_ip_addresses = Output.all(
@@ -103,7 +103,7 @@ class SREDataComponent(ComponentResource):
         stack_name: str,
         props: SREDataProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:sre:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

@@ -43,7 +43,7 @@ class SREWorkspaceProps:
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
         vm_details: list[tuple[int, str]],  # this must *not* be passed as an Input[T]
-    ):
+    ) -> None:
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
         self.domain_sid = domain_sid
@@ -95,7 +95,7 @@ class SREWorkspaceComponent(ComponentResource):
         stack_name: str,
         props: SREWorkspaceProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:sre:WorkspaceComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

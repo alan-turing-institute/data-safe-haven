@@ -21,7 +21,7 @@ class RemoteScriptProps:
         vm_name: Input[str],
         vm_resource_group_name: Input[str],
         force_refresh: Input[bool] | None,
-    ):
+    ) -> None:
         self.force_refresh = force_refresh
         self.script_contents = script_contents
         self.script_hash = script_hash

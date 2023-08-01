@@ -41,7 +41,7 @@ class SREHedgeDocServerProps:
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
         database_username: Input[str] | None = None,
-    ):
+    ) -> None:
         self.database_subnet_id = database_subnet_id
         self.database_password = database_password
         self.database_username = (
@@ -86,7 +86,7 @@ class SREHedgeDocServerComponent(ComponentResource):
         stack_name: str,
         props: SREHedgeDocServerProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:sre:HedgeDocServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

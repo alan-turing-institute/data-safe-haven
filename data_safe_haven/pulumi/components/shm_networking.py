@@ -18,7 +18,7 @@ class SHMNetworkingProps:
         fqdn: Input[str],
         location: Input[str],
         record_domain_verification: Input[str],
-    ):
+    ) -> None:
         # Virtual network and subnet IP ranges
         self.vnet_iprange = AzureIPv4Range("10.0.0.0", "10.0.255.255")
         # Firewall subnet must be at least /26 in size (64 addresses)
@@ -45,7 +45,7 @@ class SHMNetworkingComponent(ComponentResource):
         stack_name: str,
         props: SHMNetworkingProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:shm:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

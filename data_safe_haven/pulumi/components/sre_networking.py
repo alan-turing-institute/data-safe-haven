@@ -22,7 +22,7 @@ class SRENetworkingProps:
         shm_zone_name: Input[str],
         sre_index: Input[int],
         sre_name: Input[str],
-    ):
+    ) -> None:
         # Virtual network and subnet IP ranges
         self.vnet_iprange = Output.from_input(sre_index).apply(
             lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
@@ -73,7 +73,7 @@ class SRENetworkingComponent(ComponentResource):
         stack_name: str,
         props: SRENetworkingProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:sre:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

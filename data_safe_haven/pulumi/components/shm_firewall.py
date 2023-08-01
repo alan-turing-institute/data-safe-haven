@@ -18,7 +18,7 @@ class SHMFirewallProps:
         subnet_firewall: Input[network.GetSubnetResult],
         subnet_identity_servers: Input[network.GetSubnetResult],
         subnet_update_servers: Input[network.GetSubnetResult],
-    ):
+    ) -> None:
         self.domain_controller_private_ip = domain_controller_private_ip
         self.dns_zone_name = Output.from_input(dns_zone).apply(lambda zone: zone.name)
         self.location = location
@@ -44,7 +44,7 @@ class SHMFirewallComponent(ComponentResource):
         stack_name: str,
         props: SHMFirewallProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:shm:FirewallComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

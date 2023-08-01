@@ -46,7 +46,7 @@ class SHMMonitoringComponent(ComponentResource):
         stack_name: str,
         props: SHMMonitoringProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:shm:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
