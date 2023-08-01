@@ -9,7 +9,6 @@ if [ $# -ne 1 ]; then
 fi
 PYTHON_VERSION=$1
 PYENV_ROOT="$(pyenv root)"
-PYPROJECT_TOML="/opt/build/python-${PYTHON_VERSION}-pyproject.toml"
 MONITORING_LOG="/opt/monitoring/python-${PYTHON_VERSION}-package-versions.log"
 REQUIREMENTS_TXT="/opt/build/python-${PYTHON_VERSION}-requirements.txt"
 REQUESTED_PACKAGE_LIST="/opt/build/packages/packages-python-${PYTHON_VERSION}.list"
@@ -27,24 +26,19 @@ echo "Installed $(${EXE_PATH}/python --version)"
 # Install and upgrade installation prerequisites
 # ----------------------------------------------
 echo "Installing and upgrading installation prerequisites for Python ${PYTHON_VERSION}..."
-${EXE_PATH}/pip install --upgrade pip poetry
+${EXE_PATH}/pip install --upgrade pip pip-tools setuptools
 
 
-# Solve dependencies and install using poetry
-# -------------------------------------------
-echo "Installing packages with poetry..."
-${EXE_PATH}/poetry config virtualenvs.create false
-${EXE_PATH}/poetry config virtualenvs.in-project true
-rm poetry.lock pyproject.toml 2> /dev/null
-sed -e "s/PYTHON_VERSION/$PYTHON_VERSION/" /opt/build/pyenv/pyproject_template.toml > $PYPROJECT_TOML
-ln -s $PYPROJECT_TOML pyproject.toml
-${EXE_PATH}/poetry add $(tr '\n' ' ' < $REQUIREMENTS_TXT) || exit 3
+# Solve dependencies and write package versions to monitoring log
+# ---------------------------------------------------------------
+echo "Determining package versions with pip-compile..."
+${EXE_PATH}/pip-compile -o "$MONITORING_LOG" "$REQUIREMENTS_TXT"
 
 
-# Write package versions to monitoring log
-# ----------------------------------------
-${EXE_PATH}/poetry show > $MONITORING_LOG
-${EXE_PATH}/poetry show --tree >> $MONITORING_LOG
+# Install pinned packages using pip
+# ---------------------------------
+echo "Installing packages with pip..."
+${EXE_PATH}/pip install -r "$MONITORING_LOG"
 
 
 # Run any post-install commands
