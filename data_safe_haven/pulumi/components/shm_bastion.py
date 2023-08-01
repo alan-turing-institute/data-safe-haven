@@ -15,7 +15,7 @@ class SHMBastionProps:
         # self.automation_account_name = automation_account_name
         self.location = location
         self.resource_group_name = resource_group_name
-        self.subnet_id = Output.from_input(subnet).apply(lambda s: s.id)
+        self.subnet_id = Output.from_input(subnet).apply(lambda s: s.id if s.id else "")
 
 
 class SHMBastionComponent(ComponentResource):

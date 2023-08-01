@@ -2,7 +2,7 @@
 import time
 from collections.abc import Sequence
 from contextlib import suppress
-from typing import Any
+from typing import Any, cast
 
 from azure.core.exceptions import (
     HttpResponseError,
@@ -21,13 +21,19 @@ from azure.mgmt.automation import AutomationClient
 from azure.mgmt.automation.models import (
     DscCompilationJobCreateParameters,
     DscConfigurationAssociationProperty,
+    Module,
 )
-from azure.mgmt.compute import ComputeManagementClient
-from azure.mgmt.compute.models import RunCommandInput, RunCommandInputParameter
-from azure.mgmt.dns import DnsManagementClient
-from azure.mgmt.dns.models import RecordSet, TxtRecord
-from azure.mgmt.keyvault import KeyVaultManagementClient
-from azure.mgmt.keyvault.models import (
+from azure.mgmt.compute.v2021_07_01 import ComputeManagementClient
+from azure.mgmt.compute.v2021_07_01.models import (
+    ResourceSkuCapabilities,
+    RunCommandInput,
+    RunCommandInputParameter,
+    RunCommandResult,
+)
+from azure.mgmt.dns.v2018_05_01 import DnsManagementClient
+from azure.mgmt.dns.v2018_05_01.models import RecordSet, TxtRecord
+from azure.mgmt.keyvault.v2021_06_01_preview import KeyVaultManagementClient
+from azure.mgmt.keyvault.v2021_06_01_preview.models import (
     AccessPolicyEntry,
     Permissions,
     Sku as KeyVaultSku,
@@ -35,12 +41,14 @@ from azure.mgmt.keyvault.models import (
     VaultCreateOrUpdateParameters,
     VaultProperties,
 )
-from azure.mgmt.msi import ManagedServiceIdentityClient
-from azure.mgmt.msi.models import Identity
-from azure.mgmt.resource import ResourceManagementClient, SubscriptionClient
-from azure.mgmt.resource.resources.models import ResourceGroup
-from azure.mgmt.storage import StorageManagementClient
-from azure.mgmt.storage.models import (
+from azure.mgmt.msi.v2022_01_31_preview import ManagedServiceIdentityClient
+from azure.mgmt.msi.v2022_01_31_preview.models import Identity
+from azure.mgmt.resource.resources.v2021_04_01 import ResourceManagementClient
+from azure.mgmt.resource.resources.v2021_04_01.models import ResourceGroup
+from azure.mgmt.resource.subscriptions import SubscriptionClient
+from azure.mgmt.resource.subscriptions.models import Location
+from azure.mgmt.storage.v2021_08_01 import StorageManagementClient
+from azure.mgmt.storage.v2021_08_01.models import (
     BlobContainer,
     Kind as StorageAccountKind,
     PublicAccess,
@@ -86,8 +94,12 @@ class AzureApi(AzureAuthenticator):
         automation_client = AutomationClient(self.credential, self.subscription_id)
         # Wait until all modules are available
         while True:
-            available_modules = automation_client.module.list_by_automation_account(
-                resource_group_name, automation_account_name
+            # Cast to correct spurious type hint in Azure libraries
+            available_modules = cast(
+                list[Module],
+                automation_client.module.list_by_automation_account(
+                    resource_group_name, automation_account_name
+                ),
             )
             available_module_names = [
                 module.name
@@ -224,7 +236,6 @@ class AzureApi(AzureAuthenticator):
     ) -> Vault:
         """Ensure that a KeyVault exists
 
-
         Raises:
             DataSafeHavenAzureError if the existence of the KeyVault could not be verified
         """
@@ -276,8 +287,11 @@ class AzureApi(AzureAuthenticator):
                     ),
                 ),
             )
+            # Cast to correct spurious type hint in Azure libraries
             key_vaults = [
-                kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name
+                kv
+                for kv in cast(list[Vault], key_vault_client.vaults.list())
+                if kv.name == key_vault_name
             ]
             self.logger.info(
                 f"Ensured that key vault [green]{key_vaults[0].name}[/] exists.",
@@ -429,7 +443,6 @@ class AzureApi(AzureAuthenticator):
             msi_client = ManagedServiceIdentityClient(
                 self.credential, self.subscription_id
             )
-            # mypy erroneously thinks that create_or_update returns Any rather than Identity
             managed_identity = msi_client.user_assigned_identities.create_or_update(
                 resource_group_name,
                 identity_name,
@@ -468,9 +481,12 @@ class AzureApi(AzureAuthenticator):
                 resource_group_name,
                 ResourceGroup(location=location, tags=tags),
             )
+            # Cast to correct spurious type hint in Azure libraries
             resource_groups = [
                 rg
-                for rg in resource_client.resource_groups.list()
+                for rg in cast(
+                    list[ResourceGroup], resource_client.resource_groups.list()
+                )
                 if rg.name == resource_group_name
             ]
             self.logger.info(
@@ -615,9 +631,12 @@ class AzureApi(AzureAuthenticator):
         try:
             subscription_client = SubscriptionClient(self.credential)
             return [
-                location.name
-                for location in subscription_client.subscriptions.list_locations(
-                    subscription_id=self.subscription_id
+                str(location.name)
+                for location in cast(
+                    list[Location],
+                    subscription_client.subscriptions.list_locations(
+                        subscription_id=self.subscription_id
+                    ),
                 )
             ]
         except Exception as exc:
@@ -672,7 +691,10 @@ class AzureApi(AzureAuthenticator):
         for resource_sku in compute_client.resource_skus.list():
             if resource_sku.name == sku:
                 if resource_sku.capabilities:
-                    for capability in resource_sku.capabilities:
+                    # Cast to correct spurious type hint in Azure libraries
+                    for capability in cast(
+                        list[ResourceSkuCapabilities], resource_sku.capabilities
+                    ):
                         if capability.name == "vCPUs":
                             cpus = capability.value
                         if capability.name == "GPUs":
@@ -746,7 +768,10 @@ class AzureApi(AzureAuthenticator):
                         "GPUs": 0
                     }  # default to 0 GPUs, overriding if appropriate
                     if resource_sku.capabilities:
-                        for capability in resource_sku.capabilities:
+                        # Cast to correct spurious type hint in Azure libraries
+                        for capability in cast(
+                            list[ResourceSkuCapabilities], resource_sku.capabilities
+                        ):
                             skus[resource_sku.name][capability.name] = capability.value
             return skus
         except Exception as exc:
@@ -889,9 +914,12 @@ class AzureApi(AzureAuthenticator):
             )
             while not poller.done():
                 poller.wait(10)
+            # Cast to correct spurious type hint in Azure libraries
             resource_groups = [
                 rg
-                for rg in resource_client.resource_groups.list()
+                for rg in cast(
+                    list[ResourceGroup], resource_client.resource_groups.list()
+                )
                 if rg.name == resource_group_name
             ]
             if resource_groups:
@@ -971,9 +999,10 @@ class AzureApi(AzureAuthenticator):
             poller = compute_client.virtual_machines.begin_run_command(
                 resource_group_name, vm_name, run_command_parameters
             )
-            result = poller.result()
-            # Return stdout/stderr from the command
-            return str(result.value[0].message)
+            # Cast to correct spurious type hint in Azure libraries
+            result = cast(RunCommandResult, poller.result())
+            # Return any stdout/stderr from the command
+            return str(result.value[0].message) if result.value else ""
         except Exception as exc:
             msg = f"Failed to run command on '{vm_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc

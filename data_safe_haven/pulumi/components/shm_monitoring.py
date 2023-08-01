@@ -68,9 +68,10 @@ class SHMMonitoringComponent(ComponentResource):
             sku=automation.SkuArgs(name=automation.SkuNameEnum.FREE),
             opts=child_opts,
         )
-        automation_keys = automation.list_key_by_automation_account(
-            automation_account.name, resource_group_name=resource_group.name
-        )
+        automation_keys = Output.all(
+            automation_account_name=automation_account.name,
+            resource_group_name=resource_group.name,
+        ).apply(lambda kwargs: automation.list_key_by_automation_account(**kwargs))
 
         # List of modules as 'name: (version, SHA256 hash)'
         # Note that we exclude ComputerManagementDsc which is already present (https://docs.microsoft.com/en-us/azure/automation/shared-resources/modules#default-modules)
@@ -156,10 +157,9 @@ class SHMMonitoringComponent(ComponentResource):
             workspace_name=f"{stack_name}-log",
             opts=child_opts,
         )
-        log_analytics_keys = operationalinsights.get_shared_keys(
-            resource_group_name=resource_group.name,
-            workspace_name=log_analytics.name,
-        )
+        log_analytics_keys = Output.all(
+            resource_group_name=resource_group.name, workspace_name=log_analytics.name
+        ).apply(lambda kwargs: operationalinsights.get_shared_keys(**kwargs))
 
         # Set up a private linkscope and endpoint for the log analytics workspace
         log_analytics_private_link_scope = insights.PrivateLinkScope(
