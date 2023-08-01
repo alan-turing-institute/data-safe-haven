@@ -65,7 +65,7 @@ class SREGiteaServerProps:
 
 
 class SREGiteaServerComponent(ComponentResource):
-    """Deploy secure research desktops with Pulumi"""
+    """Deploy Gitea server with Pulumi"""
 
     def __init__(
         self,

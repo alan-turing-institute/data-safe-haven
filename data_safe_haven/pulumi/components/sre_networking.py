@@ -36,9 +36,6 @@ class SRENetworkingProps:
         self.subnet_guacamole_database_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(128)
         )
-        self.subnet_research_desktops_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(256)
-        )
         self.subnet_private_data_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(16)
         )
@@ -50,6 +47,9 @@ class SRENetworkingProps:
         )
         self.subnet_user_services_databases_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
+        )
+        self.subnet_workspaces_iprange = self.vnet_iprange.apply(
+            lambda r: r.next_subnet(256)
         )
         # Other variables
         self.location = location
@@ -98,9 +98,6 @@ class SRENetworkingComponent(ComponentResource):
         subnet_private_data_prefix = props.subnet_private_data_iprange.apply(
             lambda r: str(r)
         )
-        subnet_research_desktops_prefix = props.subnet_research_desktops_iprange.apply(
-            lambda r: str(r)
-        )
         subnet_software_repositories_prefix = (
             props.subnet_software_repositories_iprange.apply(lambda r: str(r))
         )
@@ -109,6 +106,9 @@ class SRENetworkingComponent(ComponentResource):
         )
         subnet_user_services_databases_prefix = (
             props.subnet_user_services_databases_iprange.apply(lambda r: str(r))
+        )
+        subnet_workspaces_prefix = props.subnet_workspaces_iprange.apply(
+            lambda r: str(r)
         )
 
         # Define NSGs
@@ -174,16 +174,34 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        nsg_research_desktops = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_research_desktops",
-            network_security_group_name=f"{stack_name}-nsg-research-desktops",
+        nsg_software_repositories = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_software_repositories",
+            network_security_group_name=f"{stack_name}-nsg-software-repositories",
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
+        nsg_user_services_containers = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_containers",
+            network_security_group_name=f"{stack_name}-nsg-user-services-containers",
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
+        nsg_user_services_databases = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_databases",
+            network_security_group_name=f"{stack_name}-nsg-user-services-databases",
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
+        nsg_workspaces = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_workspaces",
+            network_security_group_name=f"{stack_name}-nsg-workspaces",
             resource_group_name=resource_group.name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow connections to SRDs from remote desktop gateway.",
-                    destination_address_prefix=subnet_research_desktops_prefix,
+                    destination_address_prefix=subnet_workspaces_prefix,
                     destination_port_ranges=["22", "3389"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowRemoteDesktopGatewayInbound",
@@ -214,7 +232,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowMonitoringToolsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SHM_MONITORING_TOOLS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_research_desktops_prefix,
+                    source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -226,7 +244,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowPrivateDataEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_PRIVATE_DATA,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_research_desktops_prefix,
+                    source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -238,7 +256,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowLinuxUpdatesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SHM_UPDATE_SERVERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_research_desktops_prefix,
+                    source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -250,7 +268,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowLDAPClientUDPOutbound",
                     priority=NetworkingPriorities.INTERNAL_SHM_LDAP_UDP,
                     protocol=network.SecurityRuleProtocol.UDP,
-                    source_address_prefix=subnet_research_desktops_prefix,
+                    source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -265,7 +283,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowLDAPClientTCPOutbound",
                     priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_research_desktops_prefix,
+                    source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -277,28 +295,10 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowUserServicesContainersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_research_desktops_prefix,
+                    source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
             ],
-            opts=child_opts,
-        )
-        nsg_software_repositories = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_software_repositories",
-            network_security_group_name=f"{stack_name}-nsg-software-repositories",
-            resource_group_name=resource_group.name,
-            opts=child_opts,
-        )
-        nsg_user_services_containers = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_user_services_containers",
-            network_security_group_name=f"{stack_name}-nsg-user-services-containers",
-            resource_group_name=resource_group.name,
-            opts=child_opts,
-        )
-        nsg_user_services_databases = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_user_services_databases",
-            network_security_group_name=f"{stack_name}-nsg-user-services-databases",
-            resource_group_name=resource_group.name,
             opts=child_opts,
         )
 
@@ -307,10 +307,10 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_database_name = "GuacamoleDatabaseSubnet"
         subnet_private_data_name = "PrivateDataSubnet"
-        subnet_research_desktops_name = "ResearchDesktopsSubnet"
         subnet_software_repositories_name = "SoftwareRepositoriesSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
         subnet_user_services_databases_name = "UserServicesDatabasesSubnet"
+        subnet_workspaces_name = "WorkspacesSubnet"
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
@@ -364,14 +364,6 @@ class SRENetworkingComponent(ComponentResource):
                         )
                     ],
                 ),
-                # Research desktops
-                network.SubnetArgs(
-                    address_prefix=subnet_research_desktops_prefix,
-                    name=subnet_research_desktops_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_research_desktops.id
-                    ),
-                ),
                 # Software repositories
                 network.SubnetArgs(
                     address_prefix=subnet_software_repositories_prefix,
@@ -408,6 +400,14 @@ class SRENetworkingComponent(ComponentResource):
                     name=subnet_user_services_databases_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_databases.id
+                    ),
+                ),
+                # Workspaces
+                network.SubnetArgs(
+                    address_prefix=subnet_workspaces_prefix,
+                    name=subnet_workspaces_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_workspaces.id
                     ),
                 ),
             ],
@@ -566,11 +566,6 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_research_desktops = network.get_subnet_output(
-            subnet_name=subnet_research_desktops_name,
-            resource_group_name=resource_group.name,
-            virtual_network_name=sre_virtual_network.name,
-        )
         self.subnet_software_repositories = network.get_subnet_output(
             subnet_name=subnet_software_repositories_name,
             resource_group_name=resource_group.name,
@@ -583,6 +578,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_user_services_databases = network.get_subnet_output(
             subnet_name=subnet_user_services_databases_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_workspaces = network.get_subnet_output(
+            subnet_name=subnet_workspaces_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

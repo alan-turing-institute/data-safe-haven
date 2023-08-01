@@ -16,7 +16,7 @@ def deploy_sre(
     allow_copy: bool | None = None,
     allow_paste: bool | None = None,
     data_provider_ip_addresses: list[str] | None = None,
-    research_desktop_skus: list[str] | None = None,
+    workspace_skus: list[str] | None = None,
     software_packages: SoftwarePackageCategory | None = None,
     user_ip_addresses: list[str] | None = None,
 ) -> None:
@@ -32,7 +32,7 @@ def deploy_sre(
             allow_copy=allow_copy,
             allow_paste=allow_paste,
             data_provider_ip_addresses=data_provider_ip_addresses,
-            research_desktop_skus=research_desktop_skus,
+            workspace_skus=workspace_skus,
             software_packages=software_packages,
             user_ip_addresses=user_ip_addresses,
         )
@@ -139,9 +139,7 @@ def deploy_sre(
         )
         stack.add_secret("password-nexus-admin", password(20), replace=False)
         stack.add_secret("password-user-database-admin", password(20), replace=False)
-        stack.add_secret(
-            "password-secure-research-desktop-admin", password(20), replace=False
-        )
+        stack.add_secret("password-workspace-admin", password(20), replace=False)
         stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
 
         # Deploy Azure infrastructure with Pulumi

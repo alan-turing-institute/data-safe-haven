@@ -78,7 +78,7 @@ class SREHedgeDocServerProps:
 
 
 class SREHedgeDocServerComponent(ComponentResource):
-    """Deploy secure research desktops with Pulumi"""
+    """Deploy HedgeDoc server with Pulumi"""
 
     def __init__(
         self,

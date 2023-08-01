@@ -57,11 +57,9 @@ class SREProvisioningManager:
         }
 
         # Construct VM parameters
-        self.research_desktops = {}
-        for idx, vm in enumerate(
-            sre_stack.output("research_desktops")["vm_outputs"], start=1
-        ):
-            self.research_desktops[f"Workspace {idx}"] = {
+        self.workspaces = {}
+        for idx, vm in enumerate(sre_stack.output("workspaces")["vm_outputs"], start=1):
+            self.workspaces[f"Workspace {idx}"] = {
                 "cpus": int(self.available_vm_skus[vm["sku"]]["vCPUs"]),
                 "gpus": int(self.available_vm_skus[vm["sku"]]["GPUs"]),
                 "ip_address": vm["ip_address"],
@@ -129,7 +127,7 @@ class SREProvisioningManager:
                     "ip_address": vm_details["ip_address"],
                     "timezone": self.remote_desktop_params["timezone"],
                 }
-                for vm_identifier, vm_details in self.research_desktops.items()
+                for vm_identifier, vm_details in self.workspaces.items()
             ],
             "system_administrator_group_name": self.security_group_params[
                 "security_group_names"

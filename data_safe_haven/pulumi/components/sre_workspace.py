@@ -17,8 +17,8 @@ from data_safe_haven.pulumi.common.transformations import (
 from .virtual_machine import LinuxVMProps, VMComponent
 
 
-class SREResearchDesktopProps:
-    """Properties for SREResearchDesktopComponent"""
+class SREWorkspaceProps:
+    """Properties for SREWorkspaceComponent"""
 
     def __init__(
         self,
@@ -39,7 +39,7 @@ class SREResearchDesktopProps:
         sre_name: Input[str],
         storage_account_userdata_name: Input[str],
         storage_account_securedata_name: Input[str],
-        subnet_research_desktops: Input[network.GetSubnetResult],
+        subnet_workspaces: Input[network.GetSubnetResult],
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
         vm_details: list[tuple[int, str]],  # this must *not* be passed as an Input[T]
@@ -65,13 +65,13 @@ class SREResearchDesktopProps:
         self.virtual_network_name = Output.from_input(virtual_network).apply(
             get_name_from_vnet
         )
-        self.subnet_research_desktops_name = Output.from_input(
-            subnet_research_desktops
-        ).apply(get_name_from_subnet)
+        self.subnet_workspaces_name = Output.from_input(subnet_workspaces).apply(
+            get_name_from_subnet
+        )
         self.virtual_network_resource_group_name = Output.from_input(
             virtual_network_resource_group
         ).apply(get_name_from_rg)
-        self.vm_ip_addresses = Output.all(subnet_research_desktops, vm_details).apply(
+        self.vm_ip_addresses = Output.all(subnet_workspaces, vm_details).apply(
             lambda args: self.get_ip_addresses(subnet=args[0], vm_details=args[1])
         )
         self.vm_details = vm_details
@@ -86,24 +86,24 @@ class SREResearchDesktopProps:
         return get_available_ips_from_subnet(subnet)[: len(vm_details)]
 
 
-class SREResearchDesktopComponent(ComponentResource):
-    """Deploy secure research desktops with Pulumi"""
+class SREWorkspaceComponent(ComponentResource):
+    """Deploy workspaces with Pulumi"""
 
     def __init__(
         self,
         name: str,
         stack_name: str,
-        props: SREResearchDesktopProps,
+        props: SREWorkspaceProps,
         opts: ResourceOptions | None = None,
     ):
-        super().__init__("dsh:sre:ResearchDesktopComponent", name, {}, opts)
+        super().__init__("dsh:sre:WorkspaceComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"{stack_name}-rg-research-desktops",
+            resource_group_name=f"{stack_name}-rg-workspaces",
             opts=child_opts,
         )
 
@@ -136,7 +136,7 @@ class SREResearchDesktopComponent(ComponentResource):
                     log_analytics_workspace_id=props.log_analytics_workspace_id,
                     log_analytics_workspace_key=props.log_analytics_workspace_key,
                     resource_group_name=resource_group.name,
-                    subnet_name=props.subnet_research_desktops_name,
+                    subnet_name=props.subnet_workspaces_name,
                     virtual_network_name=props.virtual_network_name,
                     virtual_network_resource_group_name=props.virtual_network_resource_group_name,
                     vm_name=Output.concat(
@@ -183,9 +183,7 @@ class SREResearchDesktopComponent(ComponentResource):
         storage_account_securedata_name: str,
     ) -> str:
         resources_path = (
-            pathlib.Path(__file__).parent.parent.parent
-            / "resources"
-            / "secure_research_desktop"
+            pathlib.Path(__file__).parent.parent.parent / "resources" / "workspace"
         )
         with open(
             resources_path / "srd.cloud_init.mustache.yaml", encoding="utf-8"

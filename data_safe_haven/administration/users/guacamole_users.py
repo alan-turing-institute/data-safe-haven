@@ -28,7 +28,7 @@ class GuacamoleUsers:
             / "postgresql"
         )
         self.sre_name = sre_name
-        self.group_name = f"Data Safe Haven Users SRE {sre_name}"
+        self.group_name = f"Data Safe Haven SRE {sre_name} Users"
 
     def list(self) -> Sequence[ResearchUser]:  # noqa: A003
         """List all Guacamole users"""

@@ -155,7 +155,7 @@ class GraphApi:
                 self.logger.info(
                     f"Added user [green]'{username}'[/] to group [green]'{group_name}'[/]."
                 )
-        except (DataSafeHavenMicrosoftGraphError, IndexError) as exc:
+        except DataSafeHavenMicrosoftGraphError as exc:
             msg = f"Could not add user '{username}' to group '{group_name}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
@@ -492,7 +492,7 @@ class GraphApi:
             self.logger.info(
                 f"{final_verb} AzureAD user '[green]{username}[/]'.",
             )
-        except (DataSafeHavenMicrosoftGraphError, IndexError) as exc:
+        except DataSafeHavenMicrosoftGraphError as exc:
             msg = f"Could not create/update user {username}.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
@@ -528,7 +528,7 @@ class GraphApi:
                 for application in self.read_applications()
                 if application["displayName"] == application_name
             )
-        except (DataSafeHavenMicrosoftGraphError, IndexError):
+        except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
 
     def get_service_principal_by_name(
@@ -540,7 +540,7 @@ class GraphApi:
                 for service_principal in self.read_service_principals()
                 if service_principal["displayName"] == service_principal_name
             )
-        except (DataSafeHavenMicrosoftGraphError, IndexError):
+        except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
 
     def get_id_from_application_name(self, application_name: str) -> str | None:
@@ -561,7 +561,7 @@ class GraphApi:
                     if group["displayName"] == group_name
                 )["id"]
             )
-        except (DataSafeHavenMicrosoftGraphError, IndexError):
+        except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
 
     def get_id_from_username(self, username: str) -> str | None:
@@ -573,7 +573,7 @@ class GraphApi:
                     if user["mailNickname"] == username
                 )["id"]
             )
-        except (DataSafeHavenMicrosoftGraphError, IndexError):
+        except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
 
     def http_delete(self, url: str, **kwargs: Any) -> requests.Response:

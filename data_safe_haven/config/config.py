@@ -219,7 +219,7 @@ class ConfigSectionSRE(ConfigSection):
     remote_desktop: ConfigSubsectionRemoteDesktopOpts = field(
         default_factory=ConfigSubsectionRemoteDesktopOpts
     )
-    research_desktop_skus: list[str] = field(default_factory=list)
+    workspace_skus: list[str] = field(default_factory=list)
     research_user_ip_addresses: list[str] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
@@ -229,9 +229,7 @@ class ConfigSectionSRE(ConfigSection):
         ),
         "index": lambda idx: isinstance(idx, int) and idx >= 0,
         "remote_desktop": lambda dsktop: dsktop.validate(),
-        "research_desktop_skus": partial(
-            validate_list, validator=validate_azure_vm_sku
-        ),
+        "workspace_skus": partial(validate_list, validator=validate_azure_vm_sku),
         "research_user_ip_addresses": partial(
             validate_list, validator=validate_ip_address
         ),
@@ -244,7 +242,7 @@ class ConfigSectionSRE(ConfigSection):
         allow_copy: bool | None = None,
         allow_paste: bool | None = None,
         data_provider_ip_addresses: list[str] | None = None,
-        research_desktop_skus: list[str] | None = None,
+        workspace_skus: list[str] | None = None,
         software_packages: SoftwarePackageCategory | None = None,
         user_ip_addresses: list[str] | None = None,
     ) -> None:
@@ -254,7 +252,7 @@ class ConfigSectionSRE(ConfigSection):
             allow_copy: Allow/deny copying text out of the SRE
             allow_paste: Allow/deny pasting text into the SRE
             data_provider_ip_addresses: List of IP addresses belonging to data providers
-            research_desktop_skus: List of VM SKUs for research desktops
+            workspace_skus: List of VM SKUs for workspaces
             software_packages: Whether to allow packages from external repositories
             user_ip_addresses: List of IP addresses belonging to users
         """
@@ -268,11 +266,9 @@ class ConfigSectionSRE(ConfigSection):
         # Pass allow_copy and allow_paste to remote desktop
         self.remote_desktop.update(allow_copy=allow_copy, allow_paste=allow_paste)
         # Set research desktop SKUs
-        if research_desktop_skus:
-            self.research_desktop_skus = research_desktop_skus
-        logger.info(
-            f"[bold]Research desktop SKUs[/] will be [green]{self.research_desktop_skus}[/]."
-        )
+        if workspace_skus:
+            self.workspace_skus = workspace_skus
+        logger.info(f"[bold]Workspace SKUs[/] will be [green]{self.workspace_skus}[/].")
         # Select which software packages can be installed by users
         if software_packages:
             self.software_packages = software_packages
