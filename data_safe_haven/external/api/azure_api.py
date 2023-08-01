@@ -21,9 +21,15 @@ from azure.mgmt.automation import AutomationClient
 from azure.mgmt.automation.models import (
     DscCompilationJobCreateParameters,
     DscConfigurationAssociationProperty,
+    Module,
 )
 from azure.mgmt.compute import ComputeManagementClient
-from azure.mgmt.compute.models import RunCommandInput, RunCommandInputParameter
+from azure.mgmt.compute.models import (
+    ResourceSkuCapabilities,
+    RunCommandInput,
+    RunCommandInputParameter,
+    RunCommandResult,
+)
 from azure.mgmt.dns import DnsManagementClient
 from azure.mgmt.dns.models import RecordSet, TxtRecord
 from azure.mgmt.keyvault import KeyVaultManagementClient
@@ -37,8 +43,10 @@ from azure.mgmt.keyvault.models import (
 )
 from azure.mgmt.msi import ManagedServiceIdentityClient
 from azure.mgmt.msi.models import Identity
-from azure.mgmt.resource import ResourceManagementClient, SubscriptionClient
+from azure.mgmt.resource.resources import ResourceManagementClient
 from azure.mgmt.resource.resources.models import ResourceGroup
+from azure.mgmt.resource.subscriptions import SubscriptionClient
+from azure.mgmt.resource.subscriptions.models import Location
 from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.storage.models import (
     BlobContainer,
