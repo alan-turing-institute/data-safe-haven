@@ -23,17 +23,17 @@ from azure.mgmt.automation.models import (
     DscConfigurationAssociationProperty,
     Module,
 )
-from azure.mgmt.compute import ComputeManagementClient
-from azure.mgmt.compute.models import (
+from azure.mgmt.compute.v2021_07_01 import ComputeManagementClient
+from azure.mgmt.compute.v2021_07_01.models import (
     ResourceSkuCapabilities,
     RunCommandInput,
     RunCommandInputParameter,
     RunCommandResult,
 )
-from azure.mgmt.dns import DnsManagementClient
-from azure.mgmt.dns.models import RecordSet, TxtRecord
-from azure.mgmt.keyvault import KeyVaultManagementClient
-from azure.mgmt.keyvault.models import (
+from azure.mgmt.dns.v2018_05_01 import DnsManagementClient
+from azure.mgmt.dns.v2018_05_01.models import RecordSet, TxtRecord
+from azure.mgmt.keyvault.v2021_06_01_preview import KeyVaultManagementClient
+from azure.mgmt.keyvault.v2021_06_01_preview.models import (
     AccessPolicyEntry,
     Permissions,
     Sku as KeyVaultSku,
@@ -41,14 +41,14 @@ from azure.mgmt.keyvault.models import (
     VaultCreateOrUpdateParameters,
     VaultProperties,
 )
-from azure.mgmt.msi import ManagedServiceIdentityClient
-from azure.mgmt.msi.models import Identity
-from azure.mgmt.resource.resources import ResourceManagementClient
-from azure.mgmt.resource.resources.models import ResourceGroup
+from azure.mgmt.msi.v2022_01_31_preview import ManagedServiceIdentityClient
+from azure.mgmt.msi.v2022_01_31_preview.models import Identity
+from azure.mgmt.resource.resources.v2021_04_01 import ResourceManagementClient
+from azure.mgmt.resource.resources.v2021_04_01.models import ResourceGroup
 from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.resource.subscriptions.models import Location
-from azure.mgmt.storage import StorageManagementClient
-from azure.mgmt.storage.models import (
+from azure.mgmt.storage.v2021_08_01 import StorageManagementClient
+from azure.mgmt.storage.v2021_08_01.models import (
     BlobContainer,
     Kind as StorageAccountKind,
     PublicAccess,
@@ -235,7 +235,6 @@ class AzureApi(AzureAuthenticator):
         tenant_id: str | None = None,
     ) -> Vault:
         """Ensure that a KeyVault exists
-
 
         Raises:
             DataSafeHavenAzureError if the existence of the KeyVault could not be verified
@@ -444,7 +443,6 @@ class AzureApi(AzureAuthenticator):
             msi_client = ManagedServiceIdentityClient(
                 self.credential, self.subscription_id
             )
-            # mypy erroneously thinks that create_or_update returns Any rather than Identity
             managed_identity = msi_client.user_assigned_identities.create_or_update(
                 resource_group_name,
                 identity_name,
