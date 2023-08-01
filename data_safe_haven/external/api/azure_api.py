@@ -2,7 +2,7 @@
 import time
 from collections.abc import Sequence
 from contextlib import suppress
-from typing import Any
+from typing import Any, cast
 
 from azure.core.exceptions import (
     HttpResponseError,
@@ -94,8 +94,12 @@ class AzureApi(AzureAuthenticator):
         automation_client = AutomationClient(self.credential, self.subscription_id)
         # Wait until all modules are available
         while True:
-            available_modules = automation_client.module.list_by_automation_account(
-                resource_group_name, automation_account_name
+            # Cast to correct spurious type hint in Azure libraries
+            available_modules = cast(
+                list[Module],
+                automation_client.module.list_by_automation_account(
+                    resource_group_name, automation_account_name
+                ),
             )
             available_module_names = [
                 module.name
@@ -284,8 +288,11 @@ class AzureApi(AzureAuthenticator):
                     ),
                 ),
             )
+            # Cast to correct spurious type hint in Azure libraries
             key_vaults = [
-                kv for kv in key_vault_client.vaults.list() if kv.name == key_vault_name
+                kv
+                for kv in cast(list[Vault], key_vault_client.vaults.list())
+                if kv.name == key_vault_name
             ]
             self.logger.info(
                 f"Ensured that key vault [green]{key_vaults[0].name}[/] exists.",
@@ -476,9 +483,12 @@ class AzureApi(AzureAuthenticator):
                 resource_group_name,
                 ResourceGroup(location=location, tags=tags),
             )
+            # Cast to correct spurious type hint in Azure libraries
             resource_groups = [
                 rg
-                for rg in resource_client.resource_groups.list()
+                for rg in cast(
+                    list[ResourceGroup], resource_client.resource_groups.list()
+                )
                 if rg.name == resource_group_name
             ]
             self.logger.info(
@@ -623,9 +633,12 @@ class AzureApi(AzureAuthenticator):
         try:
             subscription_client = SubscriptionClient(self.credential)
             return [
-                location.name
-                for location in subscription_client.subscriptions.list_locations(
-                    subscription_id=self.subscription_id
+                str(location.name)
+                for location in cast(
+                    list[Location],
+                    subscription_client.subscriptions.list_locations(
+                        subscription_id=self.subscription_id
+                    ),
                 )
             ]
         except Exception as exc:
@@ -680,7 +693,10 @@ class AzureApi(AzureAuthenticator):
         for resource_sku in compute_client.resource_skus.list():
             if resource_sku.name == sku:
                 if resource_sku.capabilities:
-                    for capability in resource_sku.capabilities:
+                    # Cast to correct spurious type hint in Azure libraries
+                    for capability in cast(
+                        list[ResourceSkuCapabilities], resource_sku.capabilities
+                    ):
                         if capability.name == "vCPUs":
                             cpus = capability.value
                         if capability.name == "GPUs":
@@ -754,7 +770,10 @@ class AzureApi(AzureAuthenticator):
                         "GPUs": 0
                     }  # default to 0 GPUs, overriding if appropriate
                     if resource_sku.capabilities:
-                        for capability in resource_sku.capabilities:
+                        # Cast to correct spurious type hint in Azure libraries
+                        for capability in cast(
+                            list[ResourceSkuCapabilities], resource_sku.capabilities
+                        ):
                             skus[resource_sku.name][capability.name] = capability.value
             return skus
         except Exception as exc:
@@ -897,9 +916,12 @@ class AzureApi(AzureAuthenticator):
             )
             while not poller.done():
                 poller.wait(10)
+            # Cast to correct spurious type hint in Azure libraries
             resource_groups = [
                 rg
-                for rg in resource_client.resource_groups.list()
+                for rg in cast(
+                    list[ResourceGroup], resource_client.resource_groups.list()
+                )
                 if rg.name == resource_group_name
             ]
             if resource_groups:
@@ -979,9 +1001,10 @@ class AzureApi(AzureAuthenticator):
             poller = compute_client.virtual_machines.begin_run_command(
                 resource_group_name, vm_name, run_command_parameters
             )
-            result = poller.result()
-            # Return stdout/stderr from the command
-            return str(result.value[0].message)
+            # Cast to correct spurious type hint in Azure libraries
+            result = cast(RunCommandResult, poller.result())
+            # Return any stdout/stderr from the command
+            return str(result.value[0].message) if result.value else ""
         except Exception as exc:
             msg = f"Failed to run command on '{vm_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc

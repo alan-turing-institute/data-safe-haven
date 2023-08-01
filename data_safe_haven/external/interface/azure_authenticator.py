@@ -1,7 +1,10 @@
 """Standalone utility class for anything that needs to authenticate against Azure"""
+from typing import cast
+
 from azure.core.exceptions import ClientAuthenticationError
 from azure.identity import DefaultAzureCredential
-from azure.mgmt.resource import SubscriptionClient
+from azure.mgmt.resource.subscriptions import SubscriptionClient
+from azure.mgmt.resource.subscriptions.models import Subscription
 
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
@@ -53,7 +56,9 @@ class AzureAuthenticator:
 
         # Check that the Azure credentials are valid
         try:
-            for subscription in list(subscription_client.subscriptions.list()):
+            for subscription in cast(
+                list[Subscription], subscription_client.subscriptions.list()
+            ):
                 if subscription.display_name == self.subscription_name:
                     self.subscription_id_ = subscription.subscription_id
                     self.tenant_id_ = subscription.tenant_id
