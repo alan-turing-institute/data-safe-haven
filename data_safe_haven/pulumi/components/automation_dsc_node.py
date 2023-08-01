@@ -1,5 +1,4 @@
 """Register a VM as an Azure Automation DSC node"""
-import pathlib
 import time
 from collections.abc import Sequence
 
@@ -57,7 +56,6 @@ class AutomationDscNode(ComponentResource):
     ):
         super().__init__("dsh:common:AutomationDscNode", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
-        pathlib.Path(__file__).parent.parent.parent / "resources"
 
         # Upload the primary domain controller DSC
         dsc = automation.DscConfiguration(
