@@ -36,7 +36,7 @@ class SREMonitoringComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:MonitoringComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Create Linux VM system update schedule: daily at 03:<index>
         automation.SoftwareUpdateConfigurationByName(
@@ -85,12 +85,12 @@ class SREMonitoringComponent(ComponentResource):
                 ),
             ),
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     ignore_changes=[
                         "schedule_info",  # options are added after deployment
                         "updateConfiguration.linux.included_package_classifications",  # ordering might change
                     ]
                 ),
-                child_opts,
             ),
         )

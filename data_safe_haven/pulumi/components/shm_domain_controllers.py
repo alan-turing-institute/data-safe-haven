@@ -87,7 +87,7 @@ class SHMDomainControllersComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:shm:DomainControllersComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 
         # Deploy resource group
@@ -157,8 +157,8 @@ class SHMDomainControllersComponent(ComponentResource):
                 vm_resource_group_name=resource_group.name,
             ),
             opts=ResourceOptions.merge(
-                ResourceOptions(depends_on=[primary_domain_controller]),
                 child_opts,
+                ResourceOptions(depends_on=[primary_domain_controller]),
             ),
         )
         # Extract the domain SID
@@ -177,13 +177,13 @@ class SHMDomainControllersComponent(ComponentResource):
                 vm_resource_group_name=resource_group.name,
             ),
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     depends_on=[
                         primary_domain_controller,
                         primary_domain_controller_dsc_node,
                     ]
                 ),
-                child_opts,
             ),
         )
 

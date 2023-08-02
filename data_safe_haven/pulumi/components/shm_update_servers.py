@@ -53,7 +53,7 @@ class SHMUpdateServersComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:shm:UpdateServersComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Load cloud-init file
         b64cloudinit = self.read_cloudinit()

@@ -46,7 +46,7 @@ class SHMFirewallComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:shm:FirewallComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Important IP addresses
         # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16

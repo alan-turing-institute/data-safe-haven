@@ -70,7 +70,7 @@ class SREUserServicesComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:UserServicesComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -99,13 +99,13 @@ class SREUserServicesComponent(ComponentResource):
             network_profile_name=f"{stack_name}-np-user-services",
             resource_group_name=props.virtual_network_resource_group_name,
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     depends_on=[props.virtual_network],
                     ignore_changes=[
                         "container_network_interface_configurations"
                     ],  # allow container groups to be registered to this interface
                 ),
-                child_opts,
             ),
         )
 

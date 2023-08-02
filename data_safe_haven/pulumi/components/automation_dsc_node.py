@@ -55,7 +55,7 @@ class AutomationDscNode(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:common:AutomationDscNode", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Upload the primary domain controller DSC
         dsc = automation.DscConfiguration(
@@ -77,10 +77,10 @@ class AutomationDscNode(ComponentResource):
                 ),
             ),
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     delete_before_replace=True, replace_on_changes=["source.hash"]
                 ),
-                child_opts,
             ),
         )
         dsc_compiled = CompiledDsc(
@@ -97,7 +97,7 @@ class AutomationDscNode(ComponentResource):
                 required_modules=props.dsc_required_modules,
                 subscription_name=props.subscription_name,
             ),
-            opts=ResourceOptions.merge(ResourceOptions(depends_on=[dsc]), child_opts),
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(depends_on=[dsc])),
         )
         compute.VirtualMachineExtension(
             f"{self._name}_dsc_extension",
@@ -130,7 +130,7 @@ class AutomationDscNode(ComponentResource):
             vm_name=props.vm_name,
             vm_extension_name="Microsoft.Powershell.DSC",
             opts=ResourceOptions.merge(
-                ResourceOptions(depends_on=[dsc_compiled]),
                 child_opts,
+                ResourceOptions(depends_on=[dsc_compiled]),
             ),
         )

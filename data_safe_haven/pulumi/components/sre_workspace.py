@@ -97,7 +97,7 @@ class SREWorkspaceComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:WorkspaceComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(

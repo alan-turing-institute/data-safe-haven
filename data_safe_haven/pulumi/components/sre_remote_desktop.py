@@ -113,7 +113,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -157,7 +157,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=file_share)),
         )
 
         # Define a PostgreSQL server
@@ -214,7 +214,9 @@ class SRERemoteDesktopComponent(ComponentResource):
             ],
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_guacamole_containers_support_id),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=connection_db_server)
+            ),
         )
         connection_db_name = "guacamole"
         connection_db = dbforpostgresql.Database(
@@ -223,7 +225,9 @@ class SRERemoteDesktopComponent(ComponentResource):
             database_name=connection_db_name,
             resource_group_name=resource_group.name,
             server_name=connection_db_server.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=connection_db_server)
+            ),
         )
 
         # Define a network profile
@@ -245,13 +249,13 @@ class SRERemoteDesktopComponent(ComponentResource):
             network_profile_name=f"{stack_name}-np-guacamole",
             resource_group_name=props.virtual_network_resource_group_name,
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     depends_on=[props.virtual_network],
                     ignore_changes=[
                         "container_network_interface_configurations"
                     ],  # allow container groups to be registered to this interface
                 ),
-                child_opts,
             ),
         )
 
@@ -457,10 +461,10 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ),
             ],
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     delete_before_replace=True, replace_on_changes=["containers"]
                 ),
-                child_opts,
             ),
         )
 

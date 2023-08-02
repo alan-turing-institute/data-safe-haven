@@ -75,7 +75,7 @@ class SRENetworkingComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:NetworkingComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -422,10 +422,10 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_name=f"{stack_name}-vnet",
             virtual_network_peerings=[],
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     ignore_changes=["virtual_network_peerings"]
                 ),  # allow peering to SHM virtual network
-                child_opts,
             ),
         )
 
@@ -447,7 +447,9 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_peering_name=Output.concat(
                 "peer_sre_", props.sre_name, "_to_shm"
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_virtual_network)
+            ),
         )
         network.VirtualNetworkPeering(
             f"{self._name}_shm_to_sre_peering",
@@ -458,7 +460,9 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_peering_name=Output.concat(
                 "peer_shm_to_sre_", props.sre_name
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_virtual_network)
+            ),
         )
 
         # Link to SHM private DNS zones
@@ -473,7 +477,9 @@ class SRENetworkingComponent(ComponentResource):
                 virtual_network_link_name=Output.concat(
                     "link-to-", sre_virtual_network.name
                 ),
-                opts=child_opts,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=sre_virtual_network)
+                ),
             )
 
         # Define SRE DNS zone
@@ -508,7 +514,9 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=props.shm_networking_resource_group_name,
             ttl=3600,
             zone_name=shm_dns_zone.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_dns_zone)
+            ),
         )
         network.RecordSet(
             f"{self._name}_caa_record",
@@ -524,7 +532,9 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             ttl=30,
             zone_name=sre_dns_zone.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_dns_zone)
+            ),
         )
 
         # Define SRE internal DNS zone

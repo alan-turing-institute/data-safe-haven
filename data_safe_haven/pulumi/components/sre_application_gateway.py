@@ -55,7 +55,7 @@ class SREApplicationGatewayComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Define public IP address
         public_ip = network.PublicIPAddress(

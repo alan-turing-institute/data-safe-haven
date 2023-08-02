@@ -65,7 +65,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:SRESoftwareRepositoriesComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -118,7 +118,9 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=file_share_caddy)
+            ),
         )
 
         # Upload Nexus allowlists
@@ -134,7 +136,9 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=file_share_nexus)
+            ),
         )
         pypi_reader = FileReader(
             resources_path / "software_repositories" / "allowlists" / "pypi.allowlist"
@@ -148,7 +152,9 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=file_share_nexus)
+            ),
         )
 
         # Define a network profile
@@ -170,13 +176,13 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             network_profile_name=f"{stack_name}-np-software-repositories",
             resource_group_name=props.virtual_network_resource_group_name,
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     depends_on=[props.virtual_network],
                     ignore_changes=[
                         "container_network_interface_configurations"
                     ],  # allow container groups to be registered to this interface
                 ),
-                child_opts,
             ),
         )
 
@@ -313,14 +319,14 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     ),
                 ],
                 opts=ResourceOptions.merge(
+                    child_opts,
                     ResourceOptions(
                         delete_before_replace=True, replace_on_changes=["containers"]
                     ),
-                    child_opts,
                 ),
             )
             # Register the container group in the SRE private DNS zone
-            network.PrivateRecordSet(
+            private_dns_record_set = network.PrivateRecordSet(
                 f"{self._name}_nexus_private_record_set",
                 a_records=[
                     network.ARecordArgs(
@@ -334,7 +340,9 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 relative_record_set_name="nexus",
                 resource_group_name=props.networking_resource_group_name,
                 ttl=3600,
-                opts=child_opts,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=container_group)
+                ),
             )
             # Redirect the public DNS to private DNS
             network.RecordSet(
@@ -347,5 +355,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 resource_group_name=props.networking_resource_group_name,
                 ttl=3600,
                 zone_name=props.sre_fqdn,
-                opts=child_opts,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=private_dns_record_set)
+                ),
             )
