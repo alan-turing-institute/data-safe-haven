@@ -1,6 +1,6 @@
 """Pulumi component for SRE state"""
 from pulumi import ComponentResource, Input, ResourceOptions
-from pulumi_azure_native import resources
+from pulumi_azure_native import dataprotection, resources
 
 
 class SREBackupProps:
@@ -27,9 +27,28 @@ class SREBackupComponent(ComponentResource):
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
         # Deploy resource group
-        resources.ResourceGroup(
+        resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
             resource_group_name=f"{stack_name}-rg-backup",
             opts=child_opts,
+        )
+
+        # Deploy backup vault
+        dataprotection.BackupVault(
+            f"{self._name}_backup_vault",
+            identity=dataprotection.DppIdentityDetailsArgs(
+                type="SystemAssigned",
+            ),
+            location=props.location,
+            properties=dataprotection.BackupVaultArgs(
+                storage_settings=[
+                    dataprotection.StorageSettingArgs(
+                        datastore_type=dataprotection.StorageSettingStoreTypes.VAULT_STORE,
+                        type=dataprotection.StorageSettingTypes.LOCALLY_REDUNDANT,
+                    )
+                ],
+            ),
+            resource_group_name=resource_group.name,
+            vault_name=f"{stack_name}-bv-backup",
         )
