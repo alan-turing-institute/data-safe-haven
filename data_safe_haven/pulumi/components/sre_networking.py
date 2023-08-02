@@ -39,14 +39,14 @@ class SRENetworkingProps:
         self.subnet_private_data_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(16)
         )
-        self.subnet_software_repositories_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
-        )
         self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
         )
         self.subnet_user_services_containers_support_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
+        )
+        self.subnet_user_services_software_repositories_iprange = (
+            self.vnet_iprange.apply(lambda r: r.next_subnet(8))
         )
         self.subnet_workspaces_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(256)
@@ -98,14 +98,16 @@ class SRENetworkingComponent(ComponentResource):
         subnet_private_data_prefix = props.subnet_private_data_iprange.apply(
             lambda r: str(r)
         )
-        subnet_software_repositories_prefix = (
-            props.subnet_software_repositories_iprange.apply(lambda r: str(r))
-        )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
         )
         subnet_user_services_containers_support_prefix = (
             props.subnet_user_services_containers_support_iprange.apply(
+                lambda r: str(r)
+            )
+        )
+        subnet_user_services_software_repositories_prefix = (
+            props.subnet_user_services_software_repositories_iprange.apply(
                 lambda r: str(r)
             )
         )
@@ -176,12 +178,6 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        nsg_software_repositories = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_software_repositories",
-            network_security_group_name=f"{stack_name}-nsg-software-repositories",
-            resource_group_name=resource_group.name,
-            opts=child_opts,
-        )
         nsg_user_services_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers",
             network_security_group_name=f"{stack_name}-nsg-user-services-containers",
@@ -191,6 +187,12 @@ class SRENetworkingComponent(ComponentResource):
         nsg_user_services_databases = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_databases",
             network_security_group_name=f"{stack_name}-nsg-user-services-databases",
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
+        nsg_user_services_software_repositories = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_software_repositories",
+            network_security_group_name=f"{stack_name}-nsg-user-services-software-repositories",
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
@@ -309,10 +311,12 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
         subnet_private_data_name = "PrivateDataSubnet"
-        subnet_software_repositories_name = "SoftwareRepositoriesSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
         subnet_user_services_containers_support_name = (
             "UserServicesContainersSupportSubnet"
+        )
+        subnet_user_services_software_repositories_name = (
+            "UserServicesSoftwareRepositoriesSubnet"
         )
         subnet_workspaces_name = "WorkspacesSubnet"
         sre_virtual_network = network.VirtualNetwork(
@@ -345,7 +349,7 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_guacamole_containers.id
                     ),
                 ),
-                # Guacamole database
+                # Guacamole containers support
                 network.SubnetArgs(
                     address_prefix=subnet_guacamole_containers_support_prefix,
                     name=subnet_guacamole_containers_support_name,
@@ -368,21 +372,6 @@ class SRENetworkingComponent(ComponentResource):
                         )
                     ],
                 ),
-                # Software repositories
-                network.SubnetArgs(
-                    address_prefix=subnet_software_repositories_prefix,
-                    delegations=[
-                        network.DelegationArgs(
-                            name="SubnetDelegationContainerGroups",
-                            service_name="Microsoft.ContainerInstance/containerGroups",
-                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
-                        ),
-                    ],
-                    name=subnet_software_repositories_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_software_repositories.id
-                    ),
-                ),
                 # User services containers
                 network.SubnetArgs(
                     address_prefix=subnet_user_services_containers_prefix,
@@ -398,12 +387,27 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_user_services_containers.id
                     ),
                 ),
-                # User services databases
+                # User services containers support
                 network.SubnetArgs(
                     address_prefix=subnet_user_services_containers_support_prefix,
                     name=subnet_user_services_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_databases.id
+                    ),
+                ),
+                # User services software repositories
+                network.SubnetArgs(
+                    address_prefix=subnet_user_services_software_repositories_prefix,
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
+                    name=subnet_user_services_software_repositories_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_user_services_software_repositories.id
                     ),
                 ),
                 # Workspaces
@@ -570,11 +574,6 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_software_repositories = network.get_subnet_output(
-            subnet_name=subnet_software_repositories_name,
-            resource_group_name=resource_group.name,
-            virtual_network_name=sre_virtual_network.name,
-        )
         self.subnet_user_services_containers = network.get_subnet_output(
             subnet_name=subnet_user_services_containers_name,
             resource_group_name=resource_group.name,
@@ -582,6 +581,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_user_services_containers_support = network.get_subnet_output(
             subnet_name=subnet_user_services_containers_support_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_user_services_software_repositories = network.get_subnet_output(
+            subnet_name=subnet_user_services_software_repositories_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

@@ -222,7 +222,7 @@ class DeclarativeSRE:
                 storage_account_key=data.storage_account_state_key,
                 storage_account_name=data.storage_account_state_name,
                 storage_account_resource_group_name=data.resource_group_name,
-                subnet=networking.subnet_software_repositories,
+                subnet=networking.subnet_user_services_software_repositories,
                 virtual_network=networking.virtual_network,
                 virtual_network_resource_group_name=networking.resource_group.name,
             ),
