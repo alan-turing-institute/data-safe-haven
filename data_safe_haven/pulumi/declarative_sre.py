@@ -210,6 +210,8 @@ class DeclarativeSRE:
             "sre_user_services",
             self.stack_name,
             SREUserServicesProps(
+                database_service_admin_password=data.password_database_service_admin,
+                databases=self.cfg.sres[self.sre_name].databases,
                 domain_netbios_name=self.pulumi_opts.require(
                     "shm-domain_controllers-netbios_name"
                 ),

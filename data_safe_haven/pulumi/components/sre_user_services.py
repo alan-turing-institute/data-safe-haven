@@ -2,8 +2,9 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 from data_safe_haven.pulumi.common import get_id_from_subnet
-from data_safe_haven.utility import SoftwarePackageCategory
+from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
 
+from .sre_database_server import SREDatabaseServerComponent, SREDatabaseServerProps
 from .sre_gitea_server import SREGiteaServerComponent, SREGiteaServerProps
 from .sre_hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
 from .sre_software_repositories import (
@@ -17,6 +18,9 @@ class SREUserServicesProps:
 
     def __init__(
         self,
+        database_service_admin_password: Input[str],
+        database_service_admin_username: Input[str],
+        databases: list[DatabaseSystem],  # this must *not* be passed as an Input[T]
         domain_netbios_name: Input[str],
         gitea_database_password: Input[str],
         hedgedoc_database_password: Input[str],
@@ -41,6 +45,13 @@ class SREUserServicesProps:
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
     ) -> None:
+        self.database_service_admin_password = database_service_admin_password
+        self.database_service_admin_username = (
+            database_service_admin_username
+            if database_service_admin_username
+            else "databaseadmin"
+        )
+        self.databases = databases
         self.domain_netbios_name = domain_netbios_name
         self.gitea_database_password = gitea_database_password
         self.hedgedoc_database_password = hedgedoc_database_password
@@ -199,3 +210,17 @@ class SREUserServicesComponent(ComponentResource):
             ),
             opts=child_opts,
         )
+
+        # Deploy whichever database systems are selected
+        for database in props.databases:
+            SREDatabaseServerComponent(
+                f"sre_{database.value}_database_server",
+                stack_name,
+                SREDatabaseServerProps(
+                    database_password=props.database_service_admin_password,
+                    database_system=database,
+                    database_username=props.database_service_admin_username,
+                    resource_group_name=resource_group.name,
+                ),
+                opts=child_opts,
+            )

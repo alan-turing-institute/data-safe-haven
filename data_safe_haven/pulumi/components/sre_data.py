@@ -66,8 +66,8 @@ class SREDataProps:
         self.networking_resource_group_name = Output.from_input(
             networking_resource_group
         ).apply(get_name_from_rg)
-        self.password_workspace_admin = self.get_secret(
-            pulumi_opts, "password-workspace-admin"
+        self.password_database_service_admin = self.get_secret(
+            pulumi_opts, "password-database-service-admin"
         )
         self.password_gitea_database_admin = self.get_secret(
             pulumi_opts, "password-gitea-database-admin"
@@ -78,6 +78,9 @@ class SREDataProps:
         self.password_nexus_admin = self.get_secret(pulumi_opts, "password-nexus-admin")
         self.password_user_database_admin = self.get_secret(
             pulumi_opts, "password-user-database-admin"
+        )
+        self.password_workspace_admin = self.get_secret(
+            pulumi_opts, "password-workspace-admin"
         )
         self.private_dns_zone_base_id = self.get_secret(
             pulumi_opts, "shm-networking-private_dns_zone_base_id"
@@ -233,12 +236,12 @@ class SREDataComponent(ComponentResource):
 
         # Deploy key vault secrets
         keyvault.Secret(
-            f"{self._name}_kvs_password_workspace_admin",
+            f"{self._name}_kvs_password_database_service_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_workspace_admin
+                value=props.password_database_service_admin
             ),
             resource_group_name=resource_group.name,
-            secret_name="password-workspace-admin",
+            secret_name="password-database-service-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
@@ -279,6 +282,16 @@ class SREDataComponent(ComponentResource):
             secret_name="password-user-database-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+        )
+        keyvault.Secret(
+            f"{self._name}_kvs_password_workspace_admin",
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_workspace_admin
+            ),
+            resource_group_name=resource_group.name,
+            secret_name="password-workspace-admin",
+            vault_name=key_vault.name,
+            opts=ResourceOptions(parent=key_vault),
         )
 
         # Deploy state storage account
@@ -584,7 +597,9 @@ class SREDataComponent(ComponentResource):
         self.certificate_secret_id = certificate.secret_id
         self.managed_identity = identity_key_vault_reader
         self.password_nexus_admin = Output.secret(props.password_nexus_admin)
-        self.password_workspace_admin = Output.secret(props.password_workspace_admin)
+        self.password_database_service_admin = Output.secret(
+            props.password_database_service_admin
+        )
         self.password_gitea_database_admin = Output.secret(
             props.password_gitea_database_admin
         )
@@ -594,4 +609,5 @@ class SREDataComponent(ComponentResource):
         self.password_user_database_admin = Output.secret(
             props.password_user_database_admin
         )
+        self.password_workspace_admin = Output.secret(props.password_workspace_admin)
         self.resource_group_name = resource_group.name
