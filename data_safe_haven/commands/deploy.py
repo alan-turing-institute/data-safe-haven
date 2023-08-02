@@ -10,7 +10,7 @@ from data_safe_haven.functions import (
     validate_ip_address,
     validate_timezone,
 )
-from data_safe_haven.utility import SoftwarePackageCategory
+from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
 
 from .deploy_shm import deploy_shm
 from .deploy_sre import deploy_sre
@@ -100,11 +100,19 @@ def sre(
             help="Whether to allow text to be pasted into the SRE.",
         ),
     ] = None,
+    databases: Annotated[
+        Optional[list[DatabaseSystem]],  # noqa: UP007
+        typer.Option(
+            "--database",
+            "-d",
+            help="Make a database of this system available to users of this SRE.",
+        ),
+    ] = None,
     data_provider_ip_addresses: Annotated[
         Optional[list[str]],  # noqa: UP007
         typer.Option(
             "--data-provider-ip-address",
-            "-d",
+            "-i",
             help="An IP address or range used by your data providers. [*may be specified several times*]",
             callback=lambda vms: [validate_ip_address(vm) for vm in vms],
         ),
@@ -144,6 +152,7 @@ def sre(
         name,
         allow_copy=allow_copy,
         allow_paste=allow_paste,
+        databases=databases,
         data_provider_ip_addresses=data_provider_ip_addresses,
         workspace_skus=workspace_skus,
         software_packages=software_packages,

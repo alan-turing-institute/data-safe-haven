@@ -7,7 +7,7 @@ from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric, password
 from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.pulumi import PulumiSHMStack, PulumiSREStack
-from data_safe_haven.utility import SoftwarePackageCategory
+from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
 
 
 def deploy_sre(
@@ -15,6 +15,7 @@ def deploy_sre(
     *,
     allow_copy: bool | None = None,
     allow_paste: bool | None = None,
+    databases: list[DatabaseSystem] | None = None,
     data_provider_ip_addresses: list[str] | None = None,
     workspace_skus: list[str] | None = None,
     software_packages: SoftwarePackageCategory | None = None,
