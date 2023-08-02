@@ -8,6 +8,7 @@ from azure.core.exceptions import (
     HttpResponseError,
     ResourceExistsError,
     ResourceNotFoundError,
+    ServiceRequestError,
 )
 from azure.core.polling import LROPoller
 from azure.keyvault.certificates import (
@@ -843,7 +844,7 @@ class AzureApi(AzureAuthenticator):
                     resource_group_name=resource_group_name,
                     zone_name=zone_name,
                 )
-            except ResourceNotFoundError as exc:
+            except ResourceNotFoundError:
                 self.logger.info(
                     f"DNS record [green]{record_name}[/] does not exist in zone [green]{zone_name}[/].",
                 )
@@ -881,32 +882,46 @@ class AzureApi(AzureAuthenticator):
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
                 credential=self.credential,
             )
-            # Remove certificate if it exists
             self.logger.debug(
                 f"Removing certificate [green]{certificate_name}[/] from Key Vault [green]{key_vault_name}[/]...",
             )
-            # Attempt to delete the certificate, catching the error if it does not exist
-            with suppress(ResourceNotFoundError):
-                # Start by attempting to purge in case the certificate has been manually deleted
-                with suppress(HttpResponseError):
-                    certificate_client.purge_deleted_certificate(certificate_name)
-                # Now delete and keep polling until done
+
+            # Start by attempting to delete
+            # This might fail if the certificate does not exist or was already deleted
+            self.logger.debug(
+                f"Attempting to delete certificate [green]{certificate_name}[/]..."
+            )
+            with suppress(ResourceNotFoundError, ServiceRequestError):
+                # Keep polling until deletion is finished
                 poller = certificate_client.begin_delete_certificate(certificate_name)
                 while not poller.done():
                     poller.wait(10)
-                # Purge the deleted certificate
-                with suppress(HttpResponseError):
-                    certificate_client.purge_deleted_certificate(certificate_name)
+
+            # Now attempt to remove a certificate that has been deleted but not purged
+            self.logger.debug(
+                f"Attempting to purge certificate [green]{certificate_name}[/]..."
+            )
+            with suppress(ResourceNotFoundError, ServiceRequestError):
+                certificate_client.purge_deleted_certificate(certificate_name)
+
+            # Now check whether the certificate still exists
+            self.logger.debug(
+                f"Checking for existence of certificate [green]{certificate_name}[/]..."
+            )
+            with suppress(ResourceNotFoundError, ServiceRequestError):
+                certificate_client.get_certificate(certificate_name)
+                msg = (
+                    f"Certificate [green]{certificate_name}[/] is still in Key Vault "
+                    f"[green]{key_vault_name}[/] despite deletion."
+                )
+                raise DataSafeHavenAzureError(msg)
+
             self.logger.info(
                 f"Removed certificate [green]{certificate_name}[/] from Key Vault [green]{key_vault_name}[/].",
             )
-        except ResourceNotFoundError:
-            pass
         except Exception as exc:
             msg = f"Failed to remove certificate '{certificate_name}' from Key Vault '{key_vault_name}'."
-            raise DataSafeHavenAzureError(
-                msg,
-            ) from exc
+            raise DataSafeHavenAzureError(msg) from exc
 
     def remove_resource_group(self, resource_group_name: str) -> None:
         """Remove a resource group with its contents
