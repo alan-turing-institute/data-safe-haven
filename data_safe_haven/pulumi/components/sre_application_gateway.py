@@ -25,7 +25,7 @@ class SREApplicationGatewayProps:
         sre_fqdn: Input[str],
         subnet_application_gateway: Input[network.GetSubnetResult],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
-    ):
+    ) -> None:
         self.key_vault_certificate_id = key_vault_certificate_id
         self.resource_group_id = Output.from_input(resource_group).apply(get_id_from_rg)
         self.resource_group_name = Output.from_input(resource_group).apply(
@@ -53,7 +53,7 @@ class SREApplicationGatewayComponent(ComponentResource):
         stack_name: str,
         props: SREApplicationGatewayProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

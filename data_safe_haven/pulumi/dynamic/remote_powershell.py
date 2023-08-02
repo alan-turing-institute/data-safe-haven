@@ -21,7 +21,7 @@ class RemoteScriptProps:
         vm_name: Input[str],
         vm_resource_group_name: Input[str],
         force_refresh: Input[bool] | None,
-    ):
+    ) -> None:
         self.force_refresh = force_refresh
         self.script_contents = script_contents
         self.script_hash = script_hash
@@ -35,7 +35,7 @@ class RemoteScriptProvider(DshResourceProvider):
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Create compiled desired state file."""
         outs = dict(**props)
-        azure_api = AzureApi(props["subscription_name"])
+        azure_api = AzureApi(props["subscription_name"], disable_logging=True)
         # Run remote script
         outs["script_output"] = azure_api.run_remote_script(
             props["vm_resource_group_name"],

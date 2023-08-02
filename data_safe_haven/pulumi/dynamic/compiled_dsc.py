@@ -23,7 +23,7 @@ class CompiledDscProps:
         resource_group_name: Input[str],
         required_modules: Input[Sequence[str]],
         subscription_name: Input[str],
-    ):
+    ) -> None:
         self.automation_account_name = automation_account_name
         self.configuration_name = configuration_name
         self.content_hash = content_hash
@@ -37,7 +37,7 @@ class CompiledDscProps:
 class CompiledDscProvider(DshResourceProvider):
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Create compiled desired state file."""
-        azure_api = AzureApi(props["subscription_name"])
+        azure_api = AzureApi(props["subscription_name"], disable_logging=True)
         # Compile desired state
         azure_api.compile_desired_state(
             automation_account_name=props["automation_account_name"],

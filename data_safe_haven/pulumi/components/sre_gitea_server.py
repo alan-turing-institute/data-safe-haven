@@ -39,7 +39,7 @@ class SREGiteaServerProps:
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
         database_username: Input[str] | None = None,
-    ):
+    ) -> None:
         self.database_password = database_password
         self.database_subnet_id = database_subnet_id
         self.database_username = (
@@ -73,7 +73,7 @@ class SREGiteaServerComponent(ComponentResource):
         stack_name: str,
         props: SREGiteaServerProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:sre:GiteaServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

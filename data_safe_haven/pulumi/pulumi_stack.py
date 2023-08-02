@@ -26,7 +26,6 @@ class PulumiStack:
         self,
         config: Config,
         program: DeclarativeSHM | DeclarativeSRE,
-        # sre_name: Optional[str] = None,
     ) -> None:
         self.cfg: Config = config
         self.env_: dict[str, Any] | None = None
@@ -46,6 +45,7 @@ class PulumiStack:
 
     @property
     def env(self) -> dict[str, Any]:
+        """Get necessary Pulumi environment variables"""
         if not self.env_:
             azure_api = AzureApi(self.cfg.subscription_name)
             backend_storage_account_keys = azure_api.get_storage_account_keys(

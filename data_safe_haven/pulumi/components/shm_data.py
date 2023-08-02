@@ -18,7 +18,7 @@ class SHMDataProps:
         location: Input[str],
         pulumi_opts: Config,
         tenant_id: Input[str],
-    ):
+    ) -> None:
         self.admin_group_id = admin_group_id
         self.admin_ip_addresses = admin_ip_addresses
         self.location = location
@@ -52,7 +52,7 @@ class SHMDataComponent(ComponentResource):
         stack_name: str,
         props: SHMDataProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:shm:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

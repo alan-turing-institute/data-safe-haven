@@ -221,3 +221,14 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
                 table.add_row(*row)
         adaptor = RichStringAdaptor(coloured=True)
         return [line.strip() for line in adaptor.to_string(table).split("\n")]
+
+
+class NonLoggingSingleton(logging.Logger, metaclass=Singleton):
+    """
+    Non-logging singleton that can be used by anything needing logs to be consumed
+    """
+
+    def __init__(self) -> None:
+        super().__init__(name="non-logger", level=logging.CRITICAL + 10)
+        while self.handlers:
+            self.removeHandler(self.handlers[0])

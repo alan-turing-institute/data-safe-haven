@@ -63,7 +63,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         stack_name: str,
         props: SRESoftwareRepositoriesProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:sre:SRESoftwareRepositoriesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

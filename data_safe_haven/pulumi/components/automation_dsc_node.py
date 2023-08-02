@@ -27,7 +27,7 @@ class AutomationDscNodeProps:
         subscription_name: Input[str],
         vm_name: Input[str],
         vm_resource_group_name: Input[str],
-    ):
+    ) -> None:
         self.automation_account_name = automation_account_name
         self.automation_account_registration_key = automation_account_registration_key
         self.automation_account_registration_url = automation_account_registration_url
@@ -53,7 +53,7 @@ class AutomationDscNode(ComponentResource):
         name: str,
         props: AutomationDscNodeProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:common:AutomationDscNode", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

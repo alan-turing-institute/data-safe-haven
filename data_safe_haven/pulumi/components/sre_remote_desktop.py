@@ -53,7 +53,7 @@ class SRERemoteDesktopProps:
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
         database_username: Input[str] | None = "postgresadmin",
-    ):
+    ) -> None:
         self.aad_application_name = aad_application_name
         self.aad_application_url = Output.concat("https://", aad_application_fqdn)
         self.aad_auth_token = aad_auth_token
@@ -111,7 +111,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         stack_name: str,
         props: SRERemoteDesktopProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

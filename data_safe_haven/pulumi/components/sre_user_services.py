@@ -32,7 +32,7 @@ class SREUserServicesProps:
         subnet_databases: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
-    ):
+    ) -> None:
         self.domain_netbios_name = domain_netbios_name
         self.gitea_database_password = gitea_database_password
         self.hedgedoc_database_password = hedgedoc_database_password
@@ -68,7 +68,7 @@ class SREUserServicesComponent(ComponentResource):
         stack_name: str,
         props: SREUserServicesProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:sre:UserServicesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 

@@ -31,7 +31,7 @@ class SSLCertificateProps:
         key_vault_name: Input[str],
         networking_resource_group_name: Input[str],
         subscription_name: Input[str],
-    ):
+    ) -> None:
         self.certificate_secret_name = certificate_secret_name
         self.domain_name = domain_name
         self.admin_email_address = admin_email_address
@@ -45,7 +45,7 @@ class SSLCertificateProvider(DshResourceProvider):
     def refresh(props: dict[str, Any]) -> dict[str, Any]:
         outs = dict(**props)
         with suppress(Exception):
-            azure_api = AzureApi(outs["subscription_name"])
+            azure_api = AzureApi(outs["subscription_name"], disable_logging=True)
             certificate = azure_api.get_keyvault_certificate(
                 outs["certificate_secret_name"], outs["key_vault_name"]
             )
@@ -70,7 +70,7 @@ class SSLCertificateProvider(DshResourceProvider):
             private_key_bytes = client.generate_private_key(key_type="rsa2048")
             client.generate_csr()
             # Request DNS verification tokens and add them to the DNS record
-            azure_api = AzureApi(props["subscription_name"])
+            azure_api = AzureApi(props["subscription_name"], disable_logging=True)
             for token in client.request_verification_tokens():
                 azure_api.ensure_dns_txt_record(
                     record_name=token[0].replace(f".{props['domain_name']}", ""),
@@ -138,7 +138,7 @@ class SSLCertificateProvider(DshResourceProvider):
         id(id_)
         try:
             # Remove the DNS record
-            azure_api = AzureApi(props["subscription_name"])
+            azure_api = AzureApi(props["subscription_name"], disable_logging=True)
             azure_api.remove_dns_txt_record(
                 record_name="_acme_challenge",
                 resource_group_name=props["networking_resource_group_name"],

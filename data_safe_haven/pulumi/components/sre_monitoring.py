@@ -34,7 +34,7 @@ class SREMonitoringComponent(ComponentResource):
         stack_name: str,
         props: SREMonitoringProps,
         opts: ResourceOptions | None = None,
-    ):
+    ) -> None:
         super().__init__("dsh:sre:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
 
