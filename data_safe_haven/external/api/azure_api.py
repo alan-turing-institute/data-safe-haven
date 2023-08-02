@@ -31,7 +31,7 @@ from azure.mgmt.compute.v2021_07_01.models import (
     RunCommandResult,
 )
 from azure.mgmt.dns.v2018_05_01 import DnsManagementClient
-from azure.mgmt.dns.v2018_05_01.models import RecordSet, TxtRecord
+from azure.mgmt.dns.v2018_05_01.models import RecordSet, RecordType, TxtRecord
 from azure.mgmt.keyvault.v2021_06_01_preview import KeyVaultManagementClient
 from azure.mgmt.keyvault.v2021_06_01_preview.models import (
     AccessPolicyEntry,
@@ -835,12 +835,25 @@ class AzureApi(AzureAuthenticator):
         try:
             # Connect to Azure clients
             dns_client = DnsManagementClient(self.credential, self.subscription_id)
+            # Check whether resource currently exists
+            try:
+                dns_client.record_sets.get(
+                    record_type=RecordType.TXT,
+                    relative_record_set_name=record_name,
+                    resource_group_name=resource_group_name,
+                    zone_name=zone_name,
+                )
+            except ResourceNotFoundError as exc:
+                self.logger.info(
+                    f"DNS record [green]{record_name}[/] does not exist in zone [green]{zone_name}[/].",
+                )
+                return
             # Ensure that record is removed
             self.logger.debug(
                 f"Ensuring that DNS record [green]{record_name}[/] is removed from zone [green]{zone_name}[/]...",
             )
             dns_client.record_sets.delete(
-                record_type="TXT",
+                record_type=RecordType.TXT,
                 relative_record_set_name=record_name,
                 resource_group_name=resource_group_name,
                 zone_name=zone_name,
