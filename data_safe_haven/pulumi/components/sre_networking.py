@@ -33,7 +33,7 @@ class SRENetworkingProps:
         self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(128)
         )
-        self.subnet_guacamole_database_iprange = self.vnet_iprange.apply(
+        self.subnet_guacamole_containers_support_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(128)
         )
         self.subnet_private_data_iprange = self.vnet_iprange.apply(
@@ -92,8 +92,8 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_containers_prefix = (
             props.subnet_guacamole_containers_iprange.apply(lambda r: str(r))
         )
-        subnet_guacamole_database_prefix = (
-            props.subnet_guacamole_database_iprange.apply(lambda r: str(r))
+        subnet_guacamole_containers_support_prefix = (
+            props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
         )
         subnet_private_data_prefix = props.subnet_private_data_iprange.apply(
             lambda r: str(r)
@@ -305,7 +305,7 @@ class SRENetworkingComponent(ComponentResource):
         # Define the virtual network and its subnets
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
-        subnet_guacamole_database_name = "GuacamoleDatabaseSubnet"
+        subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
         subnet_private_data_name = "PrivateDataSubnet"
         subnet_software_repositories_name = "SoftwareRepositoriesSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
@@ -343,8 +343,8 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Guacamole database
                 network.SubnetArgs(
-                    address_prefix=subnet_guacamole_database_prefix,
-                    name=subnet_guacamole_database_name,
+                    address_prefix=subnet_guacamole_containers_support_prefix,
+                    name=subnet_guacamole_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_guacamole_database.id
                     ),
@@ -556,8 +556,8 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_guacamole_database = network.get_subnet_output(
-            subnet_name=subnet_guacamole_database_name,
+        self.subnet_guacamole_containers_support = network.get_subnet_output(
+            subnet_name=subnet_guacamole_containers_support_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

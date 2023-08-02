@@ -163,7 +163,7 @@ class DeclarativeSRE:
                 ldap_user_security_group_name=ldap_user_security_group_name,
                 location=self.cfg.azure.location,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
-                subnet_guacamole_database=networking.subnet_guacamole_database,
+                subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
                 storage_account_key=data.storage_account_state_key,
                 storage_account_name=data.storage_account_state_name,
                 storage_account_resource_group_name=data.resource_group_name,

@@ -49,7 +49,7 @@ class SRERemoteDesktopProps:
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
-        subnet_guacamole_database: Input[network.GetSubnetResult],
+        subnet_guacamole_containers_support: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
         database_username: Input[str] | None = "postgresadmin",
@@ -86,11 +86,11 @@ class SRERemoteDesktopProps:
             if s.address_prefix
             else []
         )
-        self.subnet_guacamole_database_id = Output.from_input(
-            subnet_guacamole_database
+        self.subnet_guacamole_containers_support_id = Output.from_input(
+            subnet_guacamole_containers_support
         ).apply(get_id_from_subnet)
-        self.subnet_guacamole_database_ip_addresses = Output.from_input(
-            subnet_guacamole_database
+        self.subnet_guacamole_containers_support_ip_addresses = Output.from_input(
+            subnet_guacamole_containers_support
         ).apply(
             lambda s: [
                 str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
@@ -194,7 +194,9 @@ class SRERemoteDesktopComponent(ComponentResource):
             f"{self._name}_connection_db_private_endpoint",
             custom_dns_configs=[
                 network.CustomDnsConfigPropertiesFormatArgs(
-                    ip_addresses=[props.subnet_guacamole_database_ip_addresses[0]],
+                    ip_addresses=[
+                        props.subnet_guacamole_containers_support_ip_addresses[0]
+                    ],
                 )
             ],
             private_endpoint_name=f"{stack_name}-endpoint-guacamole-db",
@@ -211,7 +213,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 )
             ],
             resource_group_name=resource_group.name,
-            subnet=network.SubnetArgs(id=props.subnet_guacamole_database_id),
+            subnet=network.SubnetArgs(id=props.subnet_guacamole_containers_support_id),
             opts=child_opts,
         )
         connection_db_name = "guacamole"
@@ -321,7 +323,9 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_HOSTNAME",
-                            value=props.subnet_guacamole_database_ip_addresses[0],
+                            value=props.subnet_guacamole_containers_support_ip_addresses[
+                                0
+                            ],
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_PASSWORD",
@@ -401,7 +405,9 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_HOST",
-                            value=props.subnet_guacamole_database_ip_addresses[0],
+                            value=props.subnet_guacamole_containers_support_ip_addresses[
+                                0
+                            ],
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_PASSWORD",
