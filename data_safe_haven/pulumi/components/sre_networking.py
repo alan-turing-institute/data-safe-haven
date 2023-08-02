@@ -45,7 +45,7 @@ class SRENetworkingProps:
         self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
         )
-        self.subnet_user_services_databases_iprange = self.vnet_iprange.apply(
+        self.subnet_user_services_containers_support_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
         )
         self.subnet_workspaces_iprange = self.vnet_iprange.apply(
@@ -104,8 +104,10 @@ class SRENetworkingComponent(ComponentResource):
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
         )
-        subnet_user_services_databases_prefix = (
-            props.subnet_user_services_databases_iprange.apply(lambda r: str(r))
+        subnet_user_services_containers_support_prefix = (
+            props.subnet_user_services_containers_support_iprange.apply(
+                lambda r: str(r)
+            )
         )
         subnet_workspaces_prefix = props.subnet_workspaces_iprange.apply(
             lambda r: str(r)
@@ -309,7 +311,9 @@ class SRENetworkingComponent(ComponentResource):
         subnet_private_data_name = "PrivateDataSubnet"
         subnet_software_repositories_name = "SoftwareRepositoriesSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
-        subnet_user_services_databases_name = "UserServicesDatabasesSubnet"
+        subnet_user_services_containers_support_name = (
+            "UserServicesContainersSupportSubnet"
+        )
         subnet_workspaces_name = "WorkspacesSubnet"
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
@@ -396,8 +400,8 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # User services databases
                 network.SubnetArgs(
-                    address_prefix=subnet_user_services_databases_prefix,
-                    name=subnet_user_services_databases_name,
+                    address_prefix=subnet_user_services_containers_support_prefix,
+                    name=subnet_user_services_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_databases.id
                     ),
@@ -576,8 +580,8 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_user_services_databases = network.get_subnet_output(
-            subnet_name=subnet_user_services_databases_name,
+        self.subnet_user_services_containers_support = network.get_subnet_output(
+            subnet_name=subnet_user_services_containers_support_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
