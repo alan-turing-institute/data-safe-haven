@@ -2,7 +2,7 @@
 from contextlib import suppress
 from typing import Any
 
-from azure.core.exceptions import ResourceNotFoundError
+from azure.core.exceptions import ResourceNotFoundError, ServiceRequestError
 from azure.storage.fileshare import ShareDirectoryClient, ShareFileClient
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
@@ -33,7 +33,7 @@ class FileShareFileProps:
 class FileShareFileProvider(DshResourceProvider):
     @staticmethod
     def file_exists(file_client: ShareFileClient) -> bool:
-        with suppress(ResourceNotFoundError):
+        with suppress(ResourceNotFoundError, ServiceRequestError):
             file_client.get_file_properties()
             return True
         return False
