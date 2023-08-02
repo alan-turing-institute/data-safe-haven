@@ -30,7 +30,11 @@ from data_safe_haven.functions import (
     validate_timezone,
     validate_type,
 )
-from data_safe_haven.utility import LoggingSingleton, SoftwarePackageCategory
+from data_safe_haven.utility import (
+    DatabaseSystem,
+    LoggingSingleton,
+    SoftwarePackageCategory,
+)
 
 from .backend_settings import BackendSettings
 
@@ -214,6 +218,7 @@ class ConfigSectionSRE(ConfigSection):
                 f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
             )
 
+    databases: list[DatabaseSystem] = field(default_factory=list)
     data_provider_ip_addresses: list[str] = field(default_factory=list)
     index: int = 0
     remote_desktop: ConfigSubsectionRemoteDesktopOpts = field(
@@ -227,6 +232,7 @@ class ConfigSectionSRE(ConfigSection):
         "data_provider_ip_addresses": partial(
             validate_list, validator=validate_ip_address
         ),
+        "databases": lambda pkg: isinstance(pkg, DatabaseSystem),
         "index": lambda idx: isinstance(idx, int) and idx >= 0,
         "remote_desktop": lambda dsktop: dsktop.validate(),
         "workspace_skus": partial(validate_list, validator=validate_azure_vm_sku),
@@ -242,6 +248,7 @@ class ConfigSectionSRE(ConfigSection):
         allow_copy: bool | None = None,
         allow_paste: bool | None = None,
         data_provider_ip_addresses: list[str] | None = None,
+        databases: list[DatabaseSystem] | None = None,
         workspace_skus: list[str] | None = None,
         software_packages: SoftwarePackageCategory | None = None,
         user_ip_addresses: list[str] | None = None,
@@ -251,6 +258,7 @@ class ConfigSectionSRE(ConfigSection):
         Args:
             allow_copy: Allow/deny copying text out of the SRE
             allow_paste: Allow/deny pasting text into the SRE
+            databases: List of database systems to deploy
             data_provider_ip_addresses: List of IP addresses belonging to data providers
             workspace_skus: List of VM SKUs for workspaces
             software_packages: Whether to allow packages from external repositories
@@ -263,6 +271,14 @@ class ConfigSectionSRE(ConfigSection):
         logger.info(
             f"[bold]IP addresses used by data providers[/] will be [green]{self.data_provider_ip_addresses}[/]."
         )
+        # Set which databases to deploy
+        if databases:
+            self.databases = sorted(set(databases))
+            if len(self.databases) != len(databases):
+                logger.warning("Discarding duplicate values for 'database'.")
+        logger.info(
+            f"[bold]Databases available to users[/] will be [green]{[database.value for database in self.databases]}[/]."
+        )
         # Pass allow_copy and allow_paste to remote desktop
         self.remote_desktop.update(allow_copy=allow_copy, allow_paste=allow_paste)
         # Set research desktop SKUs
@@ -273,7 +289,7 @@ class ConfigSectionSRE(ConfigSection):
         if software_packages:
             self.software_packages = software_packages
         logger.info(
-            f"[bold]Software packages[/] from [green]{self.software_packages}[/] sources will be installable."
+            f"[bold]Software packages[/] from [green]{self.software_packages.value}[/] sources will be installable."
         )
         # Set user IP addresses
         if user_ip_addresses:

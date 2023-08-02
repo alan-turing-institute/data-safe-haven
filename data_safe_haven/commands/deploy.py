@@ -100,14 +100,6 @@ def sre(
             help="Whether to allow text to be pasted into the SRE.",
         ),
     ] = None,
-    databases: Annotated[
-        Optional[list[DatabaseSystem]],  # noqa: UP007
-        typer.Option(
-            "--database",
-            "-d",
-            help="Make a database of this system available to users of this SRE.",
-        ),
-    ] = None,
     data_provider_ip_addresses: Annotated[
         Optional[list[str]],  # noqa: UP007
         typer.Option(
@@ -117,16 +109,12 @@ def sre(
             callback=lambda vms: [validate_ip_address(vm) for vm in vms],
         ),
     ] = None,
-    workspace_skus: Annotated[
-        Optional[list[str]],  # noqa: UP007
+    databases: Annotated[
+        Optional[list[DatabaseSystem]],  # noqa: UP007
         typer.Option(
-            "--workspace-sku",
-            "-w",
-            help=(
-                "A virtual machine SKU to make available to your users as a workspace."
-                " [*may be specified several times*]"
-            ),
-            callback=lambda ips: [validate_azure_vm_sku(ip) for ip in ips],
+            "--database",
+            "-d",
+            help="Make a database of this system available to users of this SRE.",
         ),
     ] = None,
     software_packages: Annotated[
@@ -146,15 +134,27 @@ def sre(
             callback=lambda ips: [validate_ip_address(ip) for ip in ips],
         ),
     ] = None,
+    workspace_skus: Annotated[
+        Optional[list[str]],  # noqa: UP007
+        typer.Option(
+            "--workspace-sku",
+            "-w",
+            help=(
+                "A virtual machine SKU to make available to your users as a workspace."
+                " [*may be specified several times*]"
+            ),
+            callback=lambda ips: [validate_azure_vm_sku(ip) for ip in ips],
+        ),
+    ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
     deploy_sre(
         name,
         allow_copy=allow_copy,
         allow_paste=allow_paste,
-        databases=databases,
         data_provider_ip_addresses=data_provider_ip_addresses,
-        workspace_skus=workspace_skus,
+        databases=databases,
         software_packages=software_packages,
         user_ip_addresses=user_ip_addresses,
+        workspace_skus=workspace_skus,
     )
