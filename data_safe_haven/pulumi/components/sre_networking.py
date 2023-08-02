@@ -31,10 +31,10 @@ class SRENetworkingProps:
             lambda r: r.next_subnet(256)
         )
         self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(128)
+            lambda r: r.next_subnet(8)
         )
         self.subnet_guacamole_containers_support_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(128)
+            lambda r: r.next_subnet(8)
         )
         self.subnet_private_data_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(16)
