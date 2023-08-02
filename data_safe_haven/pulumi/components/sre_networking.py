@@ -166,9 +166,9 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        nsg_guacamole_database = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_guacamole_database",
-            network_security_group_name=f"{stack_name}-nsg-guacamole-database",
+        nsg_guacamole_containers_support = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_guacamole_containers_support",
+            network_security_group_name=f"{stack_name}-nsg-guacamole-containers-support",
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
@@ -184,9 +184,9 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        nsg_user_services_databases = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_user_services_databases",
-            network_security_group_name=f"{stack_name}-nsg-user-services-databases",
+        nsg_user_services_containers_support = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_containers_support",
+            network_security_group_name=f"{stack_name}-nsg-user-services-containers-support",
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
@@ -354,7 +354,7 @@ class SRENetworkingComponent(ComponentResource):
                     address_prefix=subnet_guacamole_containers_support_prefix,
                     name=subnet_guacamole_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_guacamole_database.id
+                        id=nsg_guacamole_containers_support.id
                     ),
                     private_endpoint_network_policies="Disabled",
                 ),
@@ -392,7 +392,7 @@ class SRENetworkingComponent(ComponentResource):
                     address_prefix=subnet_user_services_containers_support_prefix,
                     name=subnet_user_services_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_user_services_databases.id
+                        id=nsg_user_services_containers_support.id
                     ),
                 ),
                 # User services software repositories
