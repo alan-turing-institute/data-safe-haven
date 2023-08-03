@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-from data_safe_haven.pulumi.common.transformations import get_name_from_subnet
+from data_safe_haven.pulumi.common import get_name_from_subnet
 from data_safe_haven.pulumi.dynamic.remote_powershell import (
     RemoteScript,
     RemoteScriptProps,

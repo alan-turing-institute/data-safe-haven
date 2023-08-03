@@ -5,7 +5,7 @@ from contextlib import suppress
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources, storage
 
-from data_safe_haven.pulumi.common.transformations import (
+from data_safe_haven.pulumi.common import (
     get_available_ips_from_subnet,
     get_id_from_subnet,
     get_ip_address_from_container_group,

@@ -3,7 +3,7 @@ import pathlib
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
-from data_safe_haven.pulumi.common.transformations import (
+from data_safe_haven.pulumi.common import (
     get_ip_address_from_container_group,
     get_ip_addresses_from_private_endpoint,
 )

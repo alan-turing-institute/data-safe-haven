@@ -19,7 +19,7 @@ from data_safe_haven.functions import (
     sha256hash,
     truncate_tokens,
 )
-from data_safe_haven.pulumi.common.transformations import (
+from data_safe_haven.pulumi.common import (
     get_id_from_subnet,
     get_name_from_rg,
 )
