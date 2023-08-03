@@ -160,10 +160,10 @@ class SRERemoteDesktopComponent(ComponentResource):
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=file_share)),
         )
 
-        # Define a PostgreSQL server
-        connection_db_server_name = f"{stack_name}-db-postgresql-guacamole"
-        connection_db_server = dbforpostgresql.Server(
-            f"{self._name}_connection_db_server",
+        # Define a PostgreSQL server to hold user and connection details
+        db_server_guacamole_name = f"{stack_name}-db-server-guacamole"
+        db_server_guacamole = dbforpostgresql.Server(
+            f"{self._name}_db_server_guacamole",
             properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
                 administrator_login=props.database_username,
                 administrator_login_password=props.database_password,
@@ -181,7 +181,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
             ),
             resource_group_name=resource_group.name,
-            server_name=connection_db_server_name,
+            server_name=db_server_guacamole_name,
             sku=dbforpostgresql.SkuArgs(
                 capacity=2,
                 family="Gen5",
@@ -191,7 +191,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             opts=child_opts,
         )
         network.PrivateEndpoint(
-            f"{self._name}_connection_db_private_endpoint",
+            f"{self._name}_db_server_guacamole_private_endpoint",
             custom_dns_configs=[
                 network.CustomDnsConfigPropertiesFormatArgs(
                     ip_addresses=[
@@ -199,23 +199,23 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ],
                 )
             ],
-            private_endpoint_name=f"{stack_name}-endpoint-guacamole-db",
+            private_endpoint_name=f"{stack_name}-endpoint-db-server-guacamole",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["postgresqlServer"],
-                    name=f"{stack_name}-privatelink-guacamole-db",
+                    name=f"{stack_name}-privatelink-db-server-guacamole",
                     private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
                         actions_required="None",
                         description="Auto-approved",
                         status="Approved",
                     ),
-                    private_link_service_id=connection_db_server.id,
+                    private_link_service_id=db_server_guacamole.id,
                 )
             ],
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_guacamole_containers_support_id),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=connection_db_server)
+                child_opts, ResourceOptions(parent=db_server_guacamole)
             ),
         )
         connection_db_name = "guacamole"
@@ -224,9 +224,9 @@ class SRERemoteDesktopComponent(ComponentResource):
             charset="UTF8",
             database_name=connection_db_name,
             resource_group_name=resource_group.name,
-            server_name=connection_db_server.name,
+            server_name=db_server_guacamole.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=connection_db_server)
+                child_opts, ResourceOptions(parent=db_server_guacamole)
             ),
         )
 
@@ -340,7 +340,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_USER",
-                            value=f"{props.database_username}@{connection_db_server_name}",
+                            value=f"{props.database_username}@{db_server_guacamole_name}",
                         ),
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
@@ -419,7 +419,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_USERNAME",
-                            value=f"{props.database_username}@{connection_db_server_name}",
+                            value=f"{props.database_username}@{db_server_guacamole_name}",
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="REPEAT_INTERVAL",
@@ -474,7 +474,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         # Register exports
         self.exports = {
             "connection_db_name": connection_db.name,
-            "connection_db_server_name": connection_db_server_name,
+            "connection_db_server_name": db_server_guacamole_name,
             "container_group_name": container_group.name,
             "container_ip_address": get_ip_address_from_container_group(
                 container_group
