@@ -1,6 +1,6 @@
 (role_researcher_user_guide_guacamole)=
 
-# User Guide: Apache Guacamole
+# User Guide
 
 ## {{beginner}} Introduction
 
@@ -139,6 +139,7 @@ In this document Ada Lovelace - our example user - will be participating in the 
 ```
 
 (user_setup_password_mfa)=
+
 ## {{closed_lock_with_key}} Password and MFA
 
 For security reasons, you must reset your password before you log in for the first time.
@@ -264,7 +265,7 @@ This is known as multi-factor authentication (MFA).
   ```
 
   ```{tip}
-  The call might say _press the pound key_ or _press the hash key_ both mean hit the `#` button.
+  The call might say _press the pound key_ or _press the hash key_. Both mean hit the `#` button.
   ```
 
 - After following the instructions you will see the following screen
