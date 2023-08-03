@@ -92,8 +92,9 @@ glob_ignore_case = false
 exclude = [
   'github\.com',  # Requires authentication (403)
   'turing\.ac\.uk',  # DDOS protection
-  'ipaddressguide\.com', # 403
-  'opensource\.org' # 403
+  'ipaddressguide\.com',  # 403
+  'opensource\.org',  # 403
+  'portal\.azure\.com',  # 403
 ]
 
 # Exclude these filesystem paths from getting checked.

@@ -7,6 +7,7 @@ on:  # yamllint disable-line rule:truthy
     branches: [develop]
   schedule:
     - cron: "0 0 */6 * *"  # run every six days in order to keep the cache fresh
+  workflow_dispatch:  # allow this workflow to be manually triggered
 
 # checkout needs 'contents:read'
 # pull request needs 'pull-requests:write' and 'contents:write'
