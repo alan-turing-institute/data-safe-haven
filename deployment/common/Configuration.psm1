@@ -614,7 +614,7 @@ function Get-SreConfig {
 
     # Secure research environment config
     # ----------------------------------
- 
+
     # Setup the basic config
     $config = [ordered]@{
         shm = Get-ShmConfig -shmId $sreConfigBase.shmId
