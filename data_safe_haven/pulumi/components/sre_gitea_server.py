@@ -168,9 +168,9 @@ class SREGiteaServerComponent(ComponentResource):
         )
 
         # Define a PostgreSQL server and default database
-        gitea_db_server_name = f"{stack_name}-db-gitea"
-        gitea_db_server = dbforpostgresql.Server(
-            f"{self._name}_gitea_db_server",
+        db_server_gitea_name = f"{stack_name}-db-server-gitea"
+        db_server_gitea = dbforpostgresql.Server(
+            f"{self._name}_db_server_gitea",
             properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
                 administrator_login=props.database_username,
                 administrator_login_password=props.database_password,
@@ -188,7 +188,7 @@ class SREGiteaServerComponent(ComponentResource):
                 version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
             ),
             resource_group_name=props.user_services_resource_group_name,
-            server_name=gitea_db_server_name,
+            server_name=db_server_gitea_name,
             sku=dbforpostgresql.SkuArgs(
                 capacity=2,
                 family="Gen5",
@@ -197,41 +197,41 @@ class SREGiteaServerComponent(ComponentResource):
             ),
             opts=child_opts,
         )
-        gitea_db_database_name = "gitea"
+        db_gitea_repository_name = "gitea"
         dbforpostgresql.Database(
-            f"{self._name}_gitea_db",
+            f"{self._name}_db_gitea_repository",
             charset="UTF8",
-            database_name=gitea_db_database_name,
+            database_name=db_gitea_repository_name,
             resource_group_name=props.user_services_resource_group_name,
-            server_name=gitea_db_server.name,
+            server_name=db_server_gitea.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=gitea_db_server)
+                child_opts, ResourceOptions(parent=db_server_gitea)
             ),
         )
         # Deploy a private endpoint to the PostgreSQL server
-        gitea_db_private_endpoint = network.PrivateEndpoint(
-            f"{self._name}_gitea_db_private_endpoint",
-            private_endpoint_name=f"{stack_name}-endpoint-gitea-db",
+        db_server_gitea_private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_db_server_gitea_private_endpoint",
+            private_endpoint_name=f"{stack_name}-endpoint-db-server-gitea",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["postgresqlServer"],
-                    name=f"{stack_name}-privatelink-gitea-db",
+                    name=f"{stack_name}-privatelink-db-server-gitea",
                     private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
                         actions_required="None",
                         description="Auto-approved",
                         status="Approved",
                     ),
-                    private_link_service_id=gitea_db_server.id,
+                    private_link_service_id=db_server_gitea.id,
                 )
             ],
             resource_group_name=props.user_services_resource_group_name,
             subnet=network.SubnetArgs(id=props.database_subnet_id),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=gitea_db_server)
+                child_opts, ResourceOptions(parent=db_server_gitea)
             ),
         )
-        gitea_db_private_ip_address = Output.from_input(
-            get_ip_addresses_from_private_endpoint(gitea_db_private_endpoint)
+        db_server_gitea_private_ip_address = Output.from_input(
+            get_ip_addresses_from_private_endpoint(db_server_gitea_private_endpoint)
         ).apply(lambda ips: ips[0])
 
         # Define the container group with guacd, guacamole and caddy
@@ -278,15 +278,15 @@ class SREGiteaServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__database__HOST",
-                            value=gitea_db_private_ip_address,
+                            value=db_server_gitea_private_ip_address,
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="GITEA__database__NAME", value=gitea_db_database_name
+                            name="GITEA__database__NAME", value=db_gitea_repository_name
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__database__USER",
                             value=Output.concat(
-                                props.database_username, "@", gitea_db_server_name
+                                props.database_username, "@", db_server_gitea_name
                             ),
                         ),
                         containerinstance.EnvironmentVariableArgs(

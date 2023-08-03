@@ -128,9 +128,9 @@ class SREHedgeDocServerComponent(ComponentResource):
         )
 
         # Define a PostgreSQL server and default database
-        hedgedoc_db_server_name = f"{stack_name}-db-hedgedoc"
-        hedgedoc_db_server = dbforpostgresql.Server(
-            f"{self._name}_hedgedoc_db_server",
+        db_server_hedgedoc_name = f"{stack_name}-db-server-hedgedoc"
+        db_server_hedgedoc = dbforpostgresql.Server(
+            f"{self._name}_db_server_hedgedoc",
             properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
                 administrator_login=props.database_username,
                 administrator_login_password=props.database_password,
@@ -148,7 +148,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                 version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
             ),
             resource_group_name=props.user_services_resource_group_name,
-            server_name=hedgedoc_db_server_name,
+            server_name=db_server_hedgedoc_name,
             sku=dbforpostgresql.SkuArgs(
                 capacity=2,
                 family="Gen5",
@@ -157,41 +157,41 @@ class SREHedgeDocServerComponent(ComponentResource):
             ),
             opts=child_opts,
         )
-        hedgedoc_db_database_name = "hedgedoc"
+        db_hedgedoc_documents_name = "hedgedoc"
         dbforpostgresql.Database(
-            f"{self._name}_hedgedoc_db",
+            f"{self._name}_db_hedgedoc_documents",
             charset="UTF8",
-            database_name=hedgedoc_db_database_name,
+            database_name=db_hedgedoc_documents_name,
             resource_group_name=props.user_services_resource_group_name,
-            server_name=hedgedoc_db_server.name,
+            server_name=db_server_hedgedoc.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=hedgedoc_db_server)
+                child_opts, ResourceOptions(parent=db_server_hedgedoc)
             ),
         )
         # Deploy a private endpoint to the PostgreSQL server
-        hedgedoc_db_private_endpoint = network.PrivateEndpoint(
-            f"{self._name}_hedgedoc_db_private_endpoint",
-            private_endpoint_name=f"{stack_name}-endpoint-hedgedoc-db",
+        db_server_hedgedoc_private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_db_server_hedgedoc_private_endpoint",
+            private_endpoint_name=f"{stack_name}-endpoint-db-server-hedgedoc",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["postgresqlServer"],
-                    name=f"{stack_name}-privatelink-hedgedoc-db",
+                    name=f"{stack_name}-privatelink-db-server-hedgedoc",
                     private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
                         actions_required="None",
                         description="Auto-approved",
                         status="Approved",
                     ),
-                    private_link_service_id=hedgedoc_db_server.id,
+                    private_link_service_id=db_server_hedgedoc.id,
                 )
             ],
             resource_group_name=props.user_services_resource_group_name,
             subnet=network.SubnetArgs(id=props.database_subnet_id),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=hedgedoc_db_server)
+                child_opts, ResourceOptions(parent=db_server_hedgedoc)
             ),
         )
         hedgedoc_db_private_ip_address = Output.from_input(
-            get_ip_addresses_from_private_endpoint(hedgedoc_db_private_endpoint)
+            get_ip_addresses_from_private_endpoint(db_server_hedgedoc_private_endpoint)
         ).apply(lambda ips: ips[0])
 
         # Define the container group with guacd, guacamole and caddy
@@ -232,7 +232,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_DATABASE",
-                            value=hedgedoc_db_database_name,
+                            value=db_hedgedoc_documents_name,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_DIALECT",
@@ -253,7 +253,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_USERNAME",
                             value=Output.concat(
-                                props.database_username, "@", hedgedoc_db_server_name
+                                props.database_username, "@", db_server_hedgedoc_name
                             ),
                         ),
                         containerinstance.EnvironmentVariableArgs(

@@ -35,7 +35,7 @@ class SREDatabaseServerComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:DatabaseServerComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         if props.database_system == DatabaseSystem.POSTGRESQL:
             # Define a PostgreSQL server
