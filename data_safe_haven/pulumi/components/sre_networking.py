@@ -543,10 +543,12 @@ class SRENetworkingComponent(ComponentResource):
             location="Global",
             private_zone_name=Output.concat("privatelink.", sre_fqdn),
             resource_group_name=resource_group.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_dns_zone)
+            ),
         )
         network.VirtualNetworkLink(
-            f"{self._name}_private_zone_vnet_link",
+            f"{self._name}_private_zone_internal_vnet_link",
             location="Global",
             private_zone_name=sre_private_dns_zone.name,
             registration_enabled=False,
@@ -555,7 +557,9 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_link_name=Output.concat(
                 "link-to-", sre_virtual_network.name
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_virtual_network)
+            ),
         )
 
         # Register outputs

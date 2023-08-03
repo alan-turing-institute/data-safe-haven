@@ -2,9 +2,14 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 from data_safe_haven.pulumi.common import get_id_from_subnet
+from data_safe_haven.utility import SoftwarePackageCategory
 
 from .sre_gitea_server import SREGiteaServerComponent, SREGiteaServerProps
 from .sre_hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
+from .sre_software_repositories import (
+    SRESoftwareRepositoriesComponent,
+    SRESoftwareRepositoriesProps,
+)
 
 
 class SREUserServicesProps:
@@ -23,6 +28,8 @@ class SREUserServicesProps:
         ldap_user_security_group_name: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
+        nexus_admin_password: Input[str],
+        software_packages: SoftwarePackageCategory,
         sre_fqdn: Input[str],
         sre_private_dns_zone_id: Input[str],
         storage_account_key: Input[str],
@@ -30,6 +37,7 @@ class SREUserServicesProps:
         storage_account_resource_group_name: Input[str],
         subnet_containers: Input[network.GetSubnetResult],
         subnet_databases: Input[network.GetSubnetResult],
+        subnet_software_repositories: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
     ) -> None:
@@ -44,6 +52,8 @@ class SREUserServicesProps:
         self.ldap_user_security_group_name = ldap_user_security_group_name
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
+        self.nexus_admin_password = Output.secret(nexus_admin_password)
+        self.software_packages = software_packages
         self.sre_fqdn = sre_fqdn
         self.sre_private_dns_zone_id = sre_private_dns_zone_id
         self.storage_account_key = storage_account_key
@@ -55,6 +65,9 @@ class SREUserServicesProps:
         self.subnet_databases_id = Output.from_input(subnet_databases).apply(
             get_id_from_subnet
         )
+        self.subnet_software_repositories_id = Output.from_input(
+            subnet_software_repositories
+        ).apply(get_id_from_subnet)
         self.virtual_network = virtual_network
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
@@ -160,6 +173,27 @@ class SREUserServicesComponent(ComponentResource):
                 storage_account_name=props.storage_account_name,
                 storage_account_resource_group_name=props.storage_account_resource_group_name,
                 user_services_resource_group_name=resource_group.name,
+                virtual_network=props.virtual_network,
+                virtual_network_resource_group_name=props.virtual_network_resource_group_name,
+            ),
+            opts=child_opts,
+        )
+
+        # Deploy software repository servers
+        SRESoftwareRepositoriesComponent(
+            "sre_software_repositories",
+            stack_name,
+            SRESoftwareRepositoriesProps(
+                location=props.location,
+                networking_resource_group_name=props.networking_resource_group_name,
+                nexus_admin_password=props.nexus_admin_password,
+                resource_group_name=resource_group.name,
+                sre_fqdn=props.sre_fqdn,
+                software_packages=props.software_packages,
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
+                storage_account_resource_group_name=props.storage_account_resource_group_name,
+                subnet_id=props.subnet_software_repositories_id,
                 virtual_network=props.virtual_network,
                 virtual_network_resource_group_name=props.virtual_network_resource_group_name,
             ),

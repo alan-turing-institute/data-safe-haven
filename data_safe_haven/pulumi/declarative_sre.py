@@ -14,10 +14,6 @@ from .components.sre_remote_desktop import (
     SRERemoteDesktopComponent,
     SRERemoteDesktopProps,
 )
-from .components.sre_software_repositories import (
-    SRESoftwareRepositoriesComponent,
-    SRESoftwareRepositoriesProps,
-)
 from .components.sre_user_services import SREUserServicesComponent, SREUserServicesProps
 from .components.sre_workspace import (
     SREWorkspaceComponent,
@@ -209,25 +205,6 @@ class DeclarativeSRE:
             ),
         )
 
-        # Deploy software repository servers
-        SRESoftwareRepositoriesComponent(
-            "shm_update_servers",
-            self.stack_name,
-            SRESoftwareRepositoriesProps(
-                location=self.cfg.azure.location,
-                networking_resource_group_name=networking.resource_group.name,
-                nexus_admin_password=data.password_nexus_admin,
-                sre_fqdn=networking.sre_fqdn,
-                software_packages=self.cfg.sres[self.sre_name].software_packages,
-                storage_account_key=data.storage_account_state_key,
-                storage_account_name=data.storage_account_state_name,
-                storage_account_resource_group_name=data.resource_group_name,
-                subnet=networking.subnet_user_services_software_repositories,
-                virtual_network=networking.virtual_network,
-                virtual_network_resource_group_name=networking.resource_group.name,
-            ),
-        )
-
         # Deploy containerised user services
         SREUserServicesComponent(
             "sre_user_services",
@@ -246,6 +223,8 @@ class DeclarativeSRE:
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,
+                nexus_admin_password=data.password_nexus_admin,
+                software_packages=self.cfg.sres[self.sre_name].software_packages,
                 sre_fqdn=networking.sre_fqdn,
                 sre_private_dns_zone_id=networking.sre_private_dns_zone_id,
                 storage_account_key=data.storage_account_state_key,
@@ -253,6 +232,7 @@ class DeclarativeSRE:
                 storage_account_resource_group_name=data.resource_group_name,
                 subnet_containers=networking.subnet_user_services_containers,
                 subnet_databases=networking.subnet_user_services_containers_support,
+                subnet_software_repositories=networking.subnet_user_services_software_repositories,
                 virtual_network=networking.virtual_network,
                 virtual_network_resource_group_name=networking.resource_group.name,
             ),

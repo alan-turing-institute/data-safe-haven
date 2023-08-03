@@ -1,20 +1,17 @@
 """Pulumi component for SRE monitoring"""
 import pathlib
-from contextlib import suppress
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, network, resources, storage
+from pulumi_azure_native import containerinstance, network, storage
 
 from data_safe_haven.pulumi.common import (
-    get_available_ips_from_subnet,
-    get_id_from_subnet,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.pulumi.dynamic.file_share_file import (
     FileShareFile,
     FileShareFileProps,
 )
-from data_safe_haven.utility import FileReader
+from data_safe_haven.utility import FileReader, SoftwarePackageCategory
 
 
 class SRESoftwareRepositoriesProps:
@@ -25,31 +22,30 @@ class SRESoftwareRepositoriesProps:
         location: Input[str],
         networking_resource_group_name: Input[str],
         nexus_admin_password: Input[str],
-        software_packages: str,
+        resource_group_name: Input[str],
+        software_packages: SoftwarePackageCategory,
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
-        subnet: Input[network.GetSubnetResult],
+        subnet_id: Input[str],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
     ) -> None:
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.nexus_admin_password = Output.secret(nexus_admin_password)
-        self.nexus_packages: str | None = None
-        with suppress(KeyError):
-            self.nexus_packages = {"any": "all", "pre-approved": "selected"}[
-                software_packages
-            ]
+        self.nexus_packages: str | None = {
+            SoftwarePackageCategory.ANY: "all",
+            SoftwarePackageCategory.PRE_APPROVED: "selected",
+            SoftwarePackageCategory.NONE: None,
+        }[software_packages]
+        self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
-        self.subnet_id = Output.from_input(subnet).apply(get_id_from_subnet)
-        self.subnet_ip_addresses = Output.from_input(subnet).apply(
-            get_available_ips_from_subnet
-        )
+        self.subnet_id = subnet_id
         self.virtual_network = virtual_network
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
@@ -66,14 +62,6 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:SRESoftwareRepositoriesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-software-repositories",
-            opts=child_opts,
-        )
 
         # Define configuration file shares
         file_share_caddy = storage.FileShare(
@@ -289,7 +277,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     id=container_network_profile.id,
                 ),
                 os_type=containerinstance.OperatingSystemTypes.LINUX,
-                resource_group_name=resource_group.name,
+                resource_group_name=props.resource_group_name,
                 restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
                 sku=containerinstance.ContainerGroupSku.STANDARD,
                 volumes=[
