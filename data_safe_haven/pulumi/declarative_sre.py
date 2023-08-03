@@ -231,7 +231,7 @@ class DeclarativeSRE:
                 storage_account_name=data.storage_account_state_name,
                 storage_account_resource_group_name=data.resource_group_name,
                 subnet_containers=networking.subnet_user_services_containers,
-                subnet_databases=networking.subnet_user_services_containers_support,
+                subnet_containers_support=networking.subnet_user_services_containers_support,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
                 virtual_network=networking.virtual_network,
                 virtual_network_resource_group_name=networking.resource_group.name,

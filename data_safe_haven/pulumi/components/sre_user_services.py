@@ -36,7 +36,7 @@ class SREUserServicesProps:
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
         subnet_containers: Input[network.GetSubnetResult],
-        subnet_databases: Input[network.GetSubnetResult],
+        subnet_containers_support: Input[network.GetSubnetResult],
         subnet_software_repositories: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
@@ -62,9 +62,9 @@ class SREUserServicesProps:
         self.subnet_containers_id = Output.from_input(subnet_containers).apply(
             get_id_from_subnet
         )
-        self.subnet_databases_id = Output.from_input(subnet_databases).apply(
-            get_id_from_subnet
-        )
+        self.subnet_containers_support_id = Output.from_input(
+            subnet_containers_support
+        ).apply(get_id_from_subnet)
         self.subnet_software_repositories_id = Output.from_input(
             subnet_software_repositories
         ).apply(get_id_from_subnet)
@@ -127,7 +127,7 @@ class SREUserServicesComponent(ComponentResource):
             "sre_gitea_server",
             stack_name,
             SREGiteaServerProps(
-                database_subnet_id=props.subnet_databases_id,
+                database_subnet_id=props.subnet_containers_support_id,
                 database_password=props.gitea_database_password,
                 ldap_bind_dn=props.ldap_bind_dn,
                 ldap_root_dn=props.ldap_root_dn,
@@ -155,7 +155,7 @@ class SREUserServicesComponent(ComponentResource):
             "sre_hedgedoc_server",
             stack_name,
             SREHedgeDocServerProps(
-                database_subnet_id=props.subnet_databases_id,
+                database_subnet_id=props.subnet_containers_support_id,
                 database_password=props.hedgedoc_database_password,
                 domain_netbios_name=props.domain_netbios_name,
                 ldap_bind_dn=props.ldap_bind_dn,
