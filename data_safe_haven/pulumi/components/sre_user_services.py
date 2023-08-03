@@ -40,6 +40,7 @@ class SREUserServicesProps:
         storage_account_resource_group_name: Input[str],
         subnet_containers: Input[network.GetSubnetResult],
         subnet_containers_support: Input[network.GetSubnetResult],
+        subnet_databases: Input[network.GetSubnetResult],
         subnet_software_repositories: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
@@ -70,6 +71,9 @@ class SREUserServicesProps:
         self.subnet_containers_support_id = Output.from_input(
             subnet_containers_support
         ).apply(get_id_from_subnet)
+        self.subnet_databases_id = Output.from_input(subnet_databases).apply(
+            get_id_from_subnet
+        )
         self.subnet_software_repositories_id = Output.from_input(
             subnet_software_repositories
         ).apply(get_id_from_subnet)
@@ -214,6 +218,7 @@ class SREUserServicesComponent(ComponentResource):
                     database_password=props.database_service_admin_password,
                     database_system=database,
                     resource_group_name=resource_group.name,
+                    subnet_id=props.subnet_databases_id,
                 ),
                 opts=child_opts,
             )

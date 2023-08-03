@@ -1,5 +1,5 @@
 from pulumi import ComponentResource, Input, ResourceOptions
-from pulumi_azure_native import dbforpostgresql
+from pulumi_azure_native import dbforpostgresql, network
 
 from data_safe_haven.utility import DatabaseSystem
 
@@ -12,6 +12,7 @@ class SREDatabaseServerProps:
         database_password: Input[str],
         database_system: DatabaseSystem,  # this must *not* be passed as an Input[T]
         resource_group_name: Input[str],
+        subnet_id: Input[str],
         database_username: Input[str] | None = None,
     ) -> None:
         self.database_password = database_password
@@ -20,6 +21,7 @@ class SREDatabaseServerProps:
             database_username if database_username else "databaseadmin"
         )
         self.resource_group_name = resource_group_name
+        self.subnet_id = subnet_id
 
 
 class SREDatabaseServerComponent(ComponentResource):
@@ -37,9 +39,9 @@ class SREDatabaseServerComponent(ComponentResource):
 
         if props.database_system == DatabaseSystem.POSTGRESQL:
             # Define a PostgreSQL server
-            postgresql_db_server_name = f"{stack_name}-db-server-postgresql-service"
-            dbforpostgresql.Server(
-                f"{self._name}_db_server_postgresql_service",
+            db_server_postgresql_name = f"{stack_name}-db-server-postgresql"
+            db_server_postgresql = dbforpostgresql.Server(
+                f"{self._name}_db_server_postgresql",
                 properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
                     administrator_login=props.database_username,
                     administrator_login_password=props.database_password,
@@ -57,7 +59,7 @@ class SREDatabaseServerComponent(ComponentResource):
                     version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
                 ),
                 resource_group_name=props.resource_group_name,
-                server_name=postgresql_db_server_name,
+                server_name=db_server_postgresql_name,
                 sku=dbforpostgresql.SkuArgs(
                     capacity=2,
                     family="Gen5",
@@ -65,4 +67,26 @@ class SREDatabaseServerComponent(ComponentResource):
                     tier=dbforpostgresql.SkuTier.GENERAL_PURPOSE,  # required to use private link
                 ),
                 opts=child_opts,
+            )
+            # Deploy a private endpoint to the PostgreSQL server
+            network.PrivateEndpoint(
+                f"{self._name}_db_server_postgresql_private_endpoint",
+                private_endpoint_name=f"{stack_name}-endpoint-db-server-postgresql",
+                private_link_service_connections=[
+                    network.PrivateLinkServiceConnectionArgs(
+                        group_ids=["postgresqlServer"],
+                        name=f"{stack_name}-privatelink-db-server-postgresql",
+                        private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
+                            actions_required="None",
+                            description="Auto-approved",
+                            status="Approved",
+                        ),
+                        private_link_service_id=db_server_postgresql.id,
+                    )
+                ],
+                resource_group_name=props.resource_group_name,
+                subnet=network.SubnetArgs(id=props.subnet_id),
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=db_server_postgresql)
+                ),
             )
