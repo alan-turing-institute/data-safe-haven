@@ -4,7 +4,7 @@ from pulumi_azure_native import network, resources
 
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
-from data_safe_haven.pulumi.common.enums import NetworkingPriorities
+from data_safe_haven.pulumi.common import NetworkingPriorities
 
 
 class SRENetworkingProps:
@@ -31,22 +31,22 @@ class SRENetworkingProps:
             lambda r: r.next_subnet(256)
         )
         self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(128)
+            lambda r: r.next_subnet(8)
         )
-        self.subnet_guacamole_database_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(128)
+        self.subnet_guacamole_containers_support_iprange = self.vnet_iprange.apply(
+            lambda r: r.next_subnet(8)
         )
         self.subnet_private_data_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(16)
         )
-        self.subnet_software_repositories_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
-        )
         self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
         )
-        self.subnet_user_services_databases_iprange = self.vnet_iprange.apply(
+        self.subnet_user_services_containers_support_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
+        )
+        self.subnet_user_services_software_repositories_iprange = (
+            self.vnet_iprange.apply(lambda r: r.next_subnet(8))
         )
         self.subnet_workspaces_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(256)
@@ -75,7 +75,7 @@ class SRENetworkingComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:NetworkingComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -92,20 +92,24 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_containers_prefix = (
             props.subnet_guacamole_containers_iprange.apply(lambda r: str(r))
         )
-        subnet_guacamole_database_prefix = (
-            props.subnet_guacamole_database_iprange.apply(lambda r: str(r))
+        subnet_guacamole_containers_support_prefix = (
+            props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
         )
         subnet_private_data_prefix = props.subnet_private_data_iprange.apply(
             lambda r: str(r)
         )
-        subnet_software_repositories_prefix = (
-            props.subnet_software_repositories_iprange.apply(lambda r: str(r))
-        )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
         )
-        subnet_user_services_databases_prefix = (
-            props.subnet_user_services_databases_iprange.apply(lambda r: str(r))
+        subnet_user_services_containers_support_prefix = (
+            props.subnet_user_services_containers_support_iprange.apply(
+                lambda r: str(r)
+            )
+        )
+        subnet_user_services_software_repositories_prefix = (
+            props.subnet_user_services_software_repositories_iprange.apply(
+                lambda r: str(r)
+            )
         )
         subnet_workspaces_prefix = props.subnet_workspaces_iprange.apply(
             lambda r: str(r)
@@ -162,9 +166,9 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        nsg_guacamole_database = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_guacamole_database",
-            network_security_group_name=f"{stack_name}-nsg-guacamole-database",
+        nsg_guacamole_containers_support = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_guacamole_containers_support",
+            network_security_group_name=f"{stack_name}-nsg-guacamole-containers-support",
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
@@ -174,21 +178,21 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        nsg_software_repositories = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_software_repositories",
-            network_security_group_name=f"{stack_name}-nsg-software-repositories",
-            resource_group_name=resource_group.name,
-            opts=child_opts,
-        )
         nsg_user_services_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers",
             network_security_group_name=f"{stack_name}-nsg-user-services-containers",
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
-        nsg_user_services_databases = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_user_services_databases",
-            network_security_group_name=f"{stack_name}-nsg-user-services-databases",
+        nsg_user_services_containers_support = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_containers_support",
+            network_security_group_name=f"{stack_name}-nsg-user-services-containers-support",
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
+        nsg_user_services_software_repositories = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_software_repositories",
+            network_security_group_name=f"{stack_name}-nsg-user-services-software-repositories",
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
@@ -305,11 +309,15 @@ class SRENetworkingComponent(ComponentResource):
         # Define the virtual network and its subnets
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
-        subnet_guacamole_database_name = "GuacamoleDatabaseSubnet"
+        subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
         subnet_private_data_name = "PrivateDataSubnet"
-        subnet_software_repositories_name = "SoftwareRepositoriesSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
-        subnet_user_services_databases_name = "UserServicesDatabasesSubnet"
+        subnet_user_services_containers_support_name = (
+            "UserServicesContainersSupportSubnet"
+        )
+        subnet_user_services_software_repositories_name = (
+            "UserServicesSoftwareRepositoriesSubnet"
+        )
         subnet_workspaces_name = "WorkspacesSubnet"
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
@@ -341,12 +349,12 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_guacamole_containers.id
                     ),
                 ),
-                # Guacamole database
+                # Guacamole containers support
                 network.SubnetArgs(
-                    address_prefix=subnet_guacamole_database_prefix,
-                    name=subnet_guacamole_database_name,
+                    address_prefix=subnet_guacamole_containers_support_prefix,
+                    name=subnet_guacamole_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_guacamole_database.id
+                        id=nsg_guacamole_containers_support.id
                     ),
                     private_endpoint_network_policies="Disabled",
                 ),
@@ -364,21 +372,6 @@ class SRENetworkingComponent(ComponentResource):
                         )
                     ],
                 ),
-                # Software repositories
-                network.SubnetArgs(
-                    address_prefix=subnet_software_repositories_prefix,
-                    delegations=[
-                        network.DelegationArgs(
-                            name="SubnetDelegationContainerGroups",
-                            service_name="Microsoft.ContainerInstance/containerGroups",
-                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
-                        ),
-                    ],
-                    name=subnet_software_repositories_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_software_repositories.id
-                    ),
-                ),
                 # User services containers
                 network.SubnetArgs(
                     address_prefix=subnet_user_services_containers_prefix,
@@ -394,12 +387,27 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_user_services_containers.id
                     ),
                 ),
-                # User services databases
+                # User services containers support
                 network.SubnetArgs(
-                    address_prefix=subnet_user_services_databases_prefix,
-                    name=subnet_user_services_databases_name,
+                    address_prefix=subnet_user_services_containers_support_prefix,
+                    name=subnet_user_services_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_user_services_databases.id
+                        id=nsg_user_services_containers_support.id
+                    ),
+                ),
+                # User services software repositories
+                network.SubnetArgs(
+                    address_prefix=subnet_user_services_software_repositories_prefix,
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
+                    name=subnet_user_services_software_repositories_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_user_services_software_repositories.id
                     ),
                 ),
                 # Workspaces
@@ -414,10 +422,10 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_name=f"{stack_name}-vnet",
             virtual_network_peerings=[],
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     ignore_changes=["virtual_network_peerings"]
                 ),  # allow peering to SHM virtual network
-                child_opts,
             ),
         )
 
@@ -439,7 +447,9 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_peering_name=Output.concat(
                 "peer_sre_", props.sre_name, "_to_shm"
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_virtual_network)
+            ),
         )
         network.VirtualNetworkPeering(
             f"{self._name}_shm_to_sre_peering",
@@ -450,7 +460,9 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_peering_name=Output.concat(
                 "peer_shm_to_sre_", props.sre_name
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_virtual_network)
+            ),
         )
 
         # Link to SHM private DNS zones
@@ -465,7 +477,9 @@ class SRENetworkingComponent(ComponentResource):
                 virtual_network_link_name=Output.concat(
                     "link-to-", sre_virtual_network.name
                 ),
-                opts=child_opts,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=sre_virtual_network)
+                ),
             )
 
         # Define SRE DNS zone
@@ -500,7 +514,9 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=props.shm_networking_resource_group_name,
             ttl=3600,
             zone_name=shm_dns_zone.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_dns_zone)
+            ),
         )
         network.RecordSet(
             f"{self._name}_caa_record",
@@ -516,7 +532,9 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             ttl=30,
             zone_name=sre_dns_zone.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_dns_zone)
+            ),
         )
 
         # Define SRE internal DNS zone
@@ -525,10 +543,12 @@ class SRENetworkingComponent(ComponentResource):
             location="Global",
             private_zone_name=Output.concat("privatelink.", sre_fqdn),
             resource_group_name=resource_group.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_dns_zone)
+            ),
         )
         network.VirtualNetworkLink(
-            f"{self._name}_private_zone_vnet_link",
+            f"{self._name}_private_zone_internal_vnet_link",
             location="Global",
             private_zone_name=sre_private_dns_zone.name,
             registration_enabled=False,
@@ -537,7 +557,9 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_link_name=Output.concat(
                 "link-to-", sre_virtual_network.name
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_virtual_network)
+            ),
         )
 
         # Register outputs
@@ -556,8 +578,8 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_guacamole_database = network.get_subnet_output(
-            subnet_name=subnet_guacamole_database_name,
+        self.subnet_guacamole_containers_support = network.get_subnet_output(
+            subnet_name=subnet_guacamole_containers_support_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
@@ -566,18 +588,18 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_software_repositories = network.get_subnet_output(
-            subnet_name=subnet_software_repositories_name,
-            resource_group_name=resource_group.name,
-            virtual_network_name=sre_virtual_network.name,
-        )
         self.subnet_user_services_containers = network.get_subnet_output(
             subnet_name=subnet_user_services_containers_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_user_services_databases = network.get_subnet_output(
-            subnet_name=subnet_user_services_databases_name,
+        self.subnet_user_services_containers_support = network.get_subnet_output(
+            subnet_name=subnet_user_services_containers_support_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_user_services_software_repositories = network.get_subnet_output(
+            subnet_name=subnet_user_services_software_repositories_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

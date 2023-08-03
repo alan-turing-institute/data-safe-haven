@@ -6,7 +6,7 @@ from pulumi_azure_native import network, resources
 
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import ordered_private_dns_zones
-from data_safe_haven.pulumi.common.enums import NetworkingPriorities
+from data_safe_haven.pulumi.common import NetworkingPriorities
 
 
 class SHMNetworkingProps:
@@ -47,7 +47,7 @@ class SHMNetworkingComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:shm:NetworkingComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -325,10 +325,10 @@ class SHMNetworkingComponent(ComponentResource):
             route_table_name=f"{stack_name}-route",
             routes=[],
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     ignore_changes=["routes"]
                 ),  # allow routes to be created outside this definition
-                child_opts,
             ),
         )
 
@@ -392,10 +392,10 @@ class SHMNetworkingComponent(ComponentResource):
             virtual_network_name=f"{stack_name}-vnet",
             virtual_network_peerings=[],
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     ignore_changes=["virtual_network_peerings"]
                 ),  # allow SRE virtual networks to peer to this
-                child_opts,
             ),
         )
 

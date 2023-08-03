@@ -4,7 +4,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
 from data_safe_haven.functions import b64encode
-from data_safe_haven.pulumi.common.transformations import (
+from data_safe_haven.pulumi.common import (
     get_ip_address_from_container_group,
     get_ip_addresses_from_private_endpoint,
 )
@@ -88,7 +88,7 @@ class SREHedgeDocServerComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:HedgeDocServerComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Define configuration file shares
         file_share_hedgedoc_caddy = storage.FileShare(
@@ -117,7 +117,9 @@ class SREHedgeDocServerComponent(ComponentResource):
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=file_share_hedgedoc_caddy)
+            ),
         )
 
         # Load HedgeDoc configuration file for later use
@@ -162,7 +164,9 @@ class SREHedgeDocServerComponent(ComponentResource):
             database_name=hedgedoc_db_database_name,
             resource_group_name=props.user_services_resource_group_name,
             server_name=hedgedoc_db_server.name,
-            opts=ResourceOptions(parent=hedgedoc_db_server),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=hedgedoc_db_server)
+            ),
         )
         # Deploy a private endpoint to the PostgreSQL server
         hedgedoc_db_private_endpoint = network.PrivateEndpoint(
@@ -182,7 +186,9 @@ class SREHedgeDocServerComponent(ComponentResource):
             ],
             resource_group_name=props.user_services_resource_group_name,
             subnet=network.SubnetArgs(id=props.database_subnet_id),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=hedgedoc_db_server)
+            ),
         )
         hedgedoc_db_private_ip_address = Output.from_input(
             get_ip_addresses_from_private_endpoint(hedgedoc_db_private_endpoint)
@@ -348,6 +354,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                 ),
             ],
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     delete_before_replace=True,
                     depends_on=[
@@ -355,11 +362,10 @@ class SREHedgeDocServerComponent(ComponentResource):
                     ],
                     replace_on_changes=["containers"],
                 ),
-                child_opts,
             ),
         )
         # Register the container group in the SRE private DNS zone
-        network.PrivateRecordSet(
+        private_dns_record_set = network.PrivateRecordSet(
             f"{self._name}_hedgedoc_private_record_set",
             a_records=[
                 network.ARecordArgs(
@@ -371,7 +377,9 @@ class SREHedgeDocServerComponent(ComponentResource):
             relative_record_set_name="hedgedoc",
             resource_group_name=props.networking_resource_group_name,
             ttl=3600,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=container_group)
+            ),
         )
         # Redirect the public DNS to private DNS
         network.RecordSet(
@@ -384,5 +392,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             resource_group_name=props.networking_resource_group_name,
             ttl=3600,
             zone_name=props.sre_fqdn,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=private_dns_record_set)
+            ),
         )

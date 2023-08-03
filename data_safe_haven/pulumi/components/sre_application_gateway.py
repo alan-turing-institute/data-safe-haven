@@ -4,7 +4,7 @@ from typing import Any
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import managedidentity, network, resources
 
-from data_safe_haven.pulumi.common.transformations import (
+from data_safe_haven.pulumi.common import (
     get_available_ips_from_subnet,
     get_id_from_rg,
     get_id_from_subnet,
@@ -55,7 +55,7 @@ class SREApplicationGatewayComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Define public IP address
         public_ip = network.PublicIPAddress(

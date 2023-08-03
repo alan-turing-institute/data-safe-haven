@@ -14,7 +14,7 @@ from data_safe_haven.functions import (
     replace_separators,
     time_as_string,
 )
-from data_safe_haven.pulumi.common.transformations import get_id_from_subnet
+from data_safe_haven.pulumi.common import get_id_from_subnet
 
 
 class SHMMonitoringProps:
@@ -48,7 +48,7 @@ class SHMMonitoringComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:shm:MonitoringComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -285,8 +285,8 @@ class SHMMonitoringComponent(ComponentResource):
                 ),
             ),
             opts=ResourceOptions.merge(
-                ResourceOptions(ignore_changes=["schedule_info"]),
                 child_opts,
+                ResourceOptions(ignore_changes=["schedule_info"]),
             ),
         )
         # Create Windows VM system update schedule: daily at 02:02
@@ -333,13 +333,13 @@ class SHMMonitoringComponent(ComponentResource):
                 ),
             ),
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     ignore_changes=[
                         "schedule_info",  # options are added after deployment
                         "updateConfiguration.windows.included_package_classifications",  # ordering might change
                     ]
                 ),
-                child_opts,
             ),
         )
         # Create Linux VM system update schedule: daily at 02:02
@@ -383,13 +383,13 @@ class SHMMonitoringComponent(ComponentResource):
                 ),
             ),
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     ignore_changes=[
                         "schedule_info",  # options are added after deployment
                         "updateConfiguration.linux.included_package_classifications",  # ordering might change
                     ]
                 ),
-                child_opts,
             ),
         )
 

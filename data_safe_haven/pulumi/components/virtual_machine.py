@@ -127,7 +127,7 @@ class VMComponent(ComponentResource):
 
     def __init__(self, name: str, props: VMProps, opts: ResourceOptions | None = None):
         super().__init__("dsh:common:VMComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Retrieve existing resources
         subnet = network.get_subnet_output(
@@ -207,10 +207,10 @@ class VMComponent(ComponentResource):
             ),
             vm_name=props.vm_name,
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     delete_before_replace=True, replace_on_changes=["os_profile"]
                 ),
-                child_opts,
             ),
         )
 
@@ -233,7 +233,9 @@ class VMComponent(ComponentResource):
                 type_handler_version=props.log_analytics_extension_version,
                 vm_extension_name=props.log_analytics_extension_name,
                 vm_name=virtual_machine.name,
-                opts=child_opts,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=virtual_machine)
+                ),
             )
 
         # Register outputs

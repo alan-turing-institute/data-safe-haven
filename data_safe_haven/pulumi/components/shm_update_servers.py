@@ -5,7 +5,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
 from data_safe_haven.functions import b64encode
-from data_safe_haven.pulumi.common.transformations import (
+from data_safe_haven.pulumi.common import (
     get_available_ips_from_subnet,
     get_name_from_subnet,
 )
@@ -53,7 +53,7 @@ class SHMUpdateServersComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:shm:UpdateServersComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Load cloud-init file
         b64cloudinit = self.read_cloudinit()

@@ -11,7 +11,7 @@ from pulumi_azure_native import (
 )
 
 from data_safe_haven.external import AzureIPv4Range
-from data_safe_haven.pulumi.common.transformations import (
+from data_safe_haven.pulumi.common import (
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
@@ -49,7 +49,7 @@ class SRERemoteDesktopProps:
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
-        subnet_guacamole_database: Input[network.GetSubnetResult],
+        subnet_guacamole_containers_support: Input[network.GetSubnetResult],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
         database_username: Input[str] | None = "postgresadmin",
@@ -86,11 +86,11 @@ class SRERemoteDesktopProps:
             if s.address_prefix
             else []
         )
-        self.subnet_guacamole_database_id = Output.from_input(
-            subnet_guacamole_database
+        self.subnet_guacamole_containers_support_id = Output.from_input(
+            subnet_guacamole_containers_support
         ).apply(get_id_from_subnet)
-        self.subnet_guacamole_database_ip_addresses = Output.from_input(
-            subnet_guacamole_database
+        self.subnet_guacamole_containers_support_ip_addresses = Output.from_input(
+            subnet_guacamole_containers_support
         ).apply(
             lambda s: [
                 str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
@@ -113,7 +113,7 @@ class SRERemoteDesktopComponent(ComponentResource):
         opts: ResourceOptions | None = None,
     ) -> None:
         super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -157,7 +157,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=file_share)),
         )
 
         # Define a PostgreSQL server
@@ -194,7 +194,9 @@ class SRERemoteDesktopComponent(ComponentResource):
             f"{self._name}_connection_db_private_endpoint",
             custom_dns_configs=[
                 network.CustomDnsConfigPropertiesFormatArgs(
-                    ip_addresses=[props.subnet_guacamole_database_ip_addresses[0]],
+                    ip_addresses=[
+                        props.subnet_guacamole_containers_support_ip_addresses[0]
+                    ],
                 )
             ],
             private_endpoint_name=f"{stack_name}-endpoint-guacamole-db",
@@ -211,8 +213,10 @@ class SRERemoteDesktopComponent(ComponentResource):
                 )
             ],
             resource_group_name=resource_group.name,
-            subnet=network.SubnetArgs(id=props.subnet_guacamole_database_id),
-            opts=child_opts,
+            subnet=network.SubnetArgs(id=props.subnet_guacamole_containers_support_id),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=connection_db_server)
+            ),
         )
         connection_db_name = "guacamole"
         connection_db = dbforpostgresql.Database(
@@ -221,7 +225,9 @@ class SRERemoteDesktopComponent(ComponentResource):
             database_name=connection_db_name,
             resource_group_name=resource_group.name,
             server_name=connection_db_server.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=connection_db_server)
+            ),
         )
 
         # Define a network profile
@@ -243,13 +249,13 @@ class SRERemoteDesktopComponent(ComponentResource):
             network_profile_name=f"{stack_name}-np-guacamole",
             resource_group_name=props.virtual_network_resource_group_name,
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     depends_on=[props.virtual_network],
                     ignore_changes=[
                         "container_network_interface_configurations"
                     ],  # allow container groups to be registered to this interface
                 ),
-                child_opts,
             ),
         )
 
@@ -321,7 +327,9 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_HOSTNAME",
-                            value=props.subnet_guacamole_database_ip_addresses[0],
+                            value=props.subnet_guacamole_containers_support_ip_addresses[
+                                0
+                            ],
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_PASSWORD",
@@ -401,7 +409,9 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_HOST",
-                            value=props.subnet_guacamole_database_ip_addresses[0],
+                            value=props.subnet_guacamole_containers_support_ip_addresses[
+                                0
+                            ],
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_PASSWORD",
@@ -451,10 +461,10 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ),
             ],
             opts=ResourceOptions.merge(
+                child_opts,
                 ResourceOptions(
                     delete_before_replace=True, replace_on_changes=["containers"]
                 ),
-                child_opts,
             ),
         )
 
