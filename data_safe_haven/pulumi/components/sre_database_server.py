@@ -11,12 +11,14 @@ class SREDatabaseServerProps:
         self,
         database_password: Input[str],
         database_system: DatabaseSystem,  # this must *not* be passed as an Input[T]
-        database_username: Input[str],
         resource_group_name: Input[str],
+        database_username: Input[str] | None = None,
     ) -> None:
         self.database_password = database_password
         self.database_system = database_system
-        self.database_username = database_username
+        self.database_username = (
+            database_username if database_username else "databaseadmin"
+        )
         self.resource_group_name = resource_group_name
 
 

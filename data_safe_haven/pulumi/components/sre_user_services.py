@@ -19,7 +19,6 @@ class SREUserServicesProps:
     def __init__(
         self,
         database_service_admin_password: Input[str],
-        database_service_admin_username: Input[str],
         databases: list[DatabaseSystem],  # this must *not* be passed as an Input[T]
         domain_netbios_name: Input[str],
         gitea_database_password: Input[str],
@@ -46,11 +45,6 @@ class SREUserServicesProps:
         virtual_network_resource_group_name: Input[str],
     ) -> None:
         self.database_service_admin_password = database_service_admin_password
-        self.database_service_admin_username = (
-            database_service_admin_username
-            if database_service_admin_username
-            else "databaseadmin"
-        )
         self.databases = databases
         self.domain_netbios_name = domain_netbios_name
         self.gitea_database_password = gitea_database_password
@@ -219,7 +213,6 @@ class SREUserServicesComponent(ComponentResource):
                 SREDatabaseServerProps(
                     database_password=props.database_service_admin_password,
                     database_system=database,
-                    database_username=props.database_service_admin_username,
                     resource_group_name=resource_group.name,
                 ),
                 opts=child_opts,
