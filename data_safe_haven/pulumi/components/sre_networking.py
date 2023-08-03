@@ -45,6 +45,9 @@ class SRENetworkingProps:
         self.subnet_user_services_containers_support_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
         )
+        self.subnet_user_services_databases_iprange = self.vnet_iprange.apply(
+            lambda r: r.next_subnet(8)
+        )
         self.subnet_user_services_software_repositories_iprange = (
             self.vnet_iprange.apply(lambda r: r.next_subnet(8))
         )
@@ -105,6 +108,9 @@ class SRENetworkingComponent(ComponentResource):
             props.subnet_user_services_containers_support_iprange.apply(
                 lambda r: str(r)
             )
+        )
+        subnet_user_services_databases_prefix = (
+            props.subnet_user_services_databases_iprange.apply(lambda r: str(r))
         )
         subnet_user_services_software_repositories_prefix = (
             props.subnet_user_services_software_repositories_iprange.apply(
@@ -187,6 +193,12 @@ class SRENetworkingComponent(ComponentResource):
         nsg_user_services_containers_support = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers_support",
             network_security_group_name=f"{stack_name}-nsg-user-services-containers-support",
+            resource_group_name=resource_group.name,
+            opts=child_opts,
+        )
+        nsg_user_services_databases = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_databases",
+            network_security_group_name=f"{stack_name}-nsg-user-services-databases",
             resource_group_name=resource_group.name,
             opts=child_opts,
         )
@@ -292,12 +304,24 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to user services.",
+                    description="Allow outbound connections to user services containers.",
                     destination_address_prefix=subnet_user_services_containers_prefix,
                     destination_port_ranges=["22", "80", "443"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowUserServicesContainersOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES,
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to user services databases.",
+                    destination_address_prefix=subnet_user_services_databases_prefix,
+                    destination_port_ranges=["5432"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowUserServicesDatabasesOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_DATABASES,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
@@ -315,6 +339,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_user_services_containers_support_name = (
             "UserServicesContainersSupportSubnet"
         )
+        subnet_user_services_databases_name = "UserServicesDatabasesSubnet"
         subnet_user_services_software_repositories_name = (
             "UserServicesSoftwareRepositoriesSubnet"
         )
@@ -393,6 +418,14 @@ class SRENetworkingComponent(ComponentResource):
                     name=subnet_user_services_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_containers_support.id
+                    ),
+                ),
+                # User services databases
+                network.SubnetArgs(
+                    address_prefix=subnet_user_services_databases_prefix,
+                    name=subnet_user_services_databases_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_user_services_databases.id
                     ),
                 ),
                 # User services software repositories
@@ -595,6 +628,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_user_services_containers_support = network.get_subnet_output(
             subnet_name=subnet_user_services_containers_support_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_user_services_databases = network.get_subnet_output(
+            subnet_name=subnet_user_services_databases_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
