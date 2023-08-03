@@ -15,7 +15,7 @@ This infrastructure comprises:
 - A `Gitlab` server to provide source code management and version control
 - A `CodiMD` server for collaborative writing
 - A `CoCalc` server for collaborative editing of computational notebook
-- `Apache Guacamole` provides a clientless remote desktop gateway to provide secure remote desktop access to the SRE resources. 
+- `Apache Guacamole` provides a clientless remote desktop gateway to provide secure remote desktop access to the SRE resources.
 
 Hosting each secure project environment in its own resource group supports a clean lifecycle management process, making it easy to verifiably delete all project data and resources at the end of a project.
 
