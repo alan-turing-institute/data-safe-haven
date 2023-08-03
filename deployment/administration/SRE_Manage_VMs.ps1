@@ -40,7 +40,7 @@ switch ($Action) {
             }
         }
         # Ensure remote desktop VMs are started
-        Add-LogMessage -Level Info "Ensuring VMs in resource group '$($config.sre.remoteDesktop.rg)' are started..."        
+        Add-LogMessage -Level Info "Ensuring VMs in resource group '$($config.sre.remoteDesktop.rg)' are started..."
         # Start Guacamole VMs
         $remoteDesktopVms | ForEach-Object { Start-VM -VM $_ }
     }
