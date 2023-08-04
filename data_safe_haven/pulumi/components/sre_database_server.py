@@ -1,6 +1,7 @@
-from pulumi import ComponentResource, Input, ResourceOptions
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import dbforpostgresql, network
 
+from data_safe_haven.pulumi.common import get_ip_addresses_from_private_endpoint
 from data_safe_haven.utility import DatabaseSystem
 
 
@@ -11,8 +12,10 @@ class SREDatabaseServerProps:
         self,
         database_password: Input[str],
         database_system: DatabaseSystem,  # this must *not* be passed as an Input[T]
-        resource_group_name: Input[str],
+        networking_resource_group_name: Input[str],
+        sre_fqdn: Input[str],
         subnet_id: Input[str],
+        user_services_resource_group_name: Input[str],
         database_username: Input[str] | None = None,
     ) -> None:
         self.database_password = database_password
@@ -20,8 +23,10 @@ class SREDatabaseServerProps:
         self.database_username = (
             database_username if database_username else "databaseadmin"
         )
-        self.resource_group_name = resource_group_name
+        self.networking_resource_group_name = networking_resource_group_name
+        self.sre_fqdn = sre_fqdn
         self.subnet_id = subnet_id
+        self.user_services_resource_group_name = user_services_resource_group_name
 
 
 class SREDatabaseServerComponent(ComponentResource):
@@ -58,7 +63,7 @@ class SREDatabaseServerComponent(ComponentResource):
                     ),
                     version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
                 ),
-                resource_group_name=props.resource_group_name,
+                resource_group_name=props.user_services_resource_group_name,
                 server_name=db_server_postgresql_name,
                 sku=dbforpostgresql.SkuArgs(
                     capacity=2,
@@ -69,7 +74,7 @@ class SREDatabaseServerComponent(ComponentResource):
                 opts=child_opts,
             )
             # Deploy a private endpoint to the PostgreSQL server
-            network.PrivateEndpoint(
+            db_server_postgresql_private_endpoint = network.PrivateEndpoint(
                 f"{self._name}_db_server_postgresql_private_endpoint",
                 private_endpoint_name=f"{stack_name}-endpoint-db-server-postgresql",
                 private_link_service_connections=[
@@ -84,9 +89,44 @@ class SREDatabaseServerComponent(ComponentResource):
                         private_link_service_id=db_server_postgresql.id,
                     )
                 ],
-                resource_group_name=props.resource_group_name,
+                resource_group_name=props.user_services_resource_group_name,
                 subnet=network.SubnetArgs(id=props.subnet_id),
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=db_server_postgresql)
+                ),
+            )
+            # Register the database in the SRE private DNS zone
+            private_dns_record_set = network.PrivateRecordSet(
+                f"{self._name}_db_server_postgresql_private_record_set",
+                a_records=[
+                    network.ARecordArgs(
+                        ipv4_address=get_ip_addresses_from_private_endpoint(
+                            db_server_postgresql_private_endpoint
+                        ).apply(lambda ips: ips[0]),
+                    )
+                ],
+                private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
+                record_type="A",
+                relative_record_set_name="postgresql",
+                resource_group_name=props.networking_resource_group_name,
+                ttl=3600,
+                opts=ResourceOptions.merge(
+                    child_opts,
+                    ResourceOptions(parent=db_server_postgresql_private_endpoint),
+                ),
+            )
+            # Redirect the public DNS to private DNS
+            network.RecordSet(
+                f"{self._name}_db_server_postgresql_public_record_set",
+                cname_record=network.CnameRecordArgs(
+                    cname=Output.concat("postgresql.privatelink.", props.sre_fqdn)
+                ),
+                record_type="CNAME",
+                relative_record_set_name="postgresql",
+                resource_group_name=props.networking_resource_group_name,
+                ttl=3600,
+                zone_name=props.sre_fqdn,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=private_dns_record_set)
                 ),
             )
