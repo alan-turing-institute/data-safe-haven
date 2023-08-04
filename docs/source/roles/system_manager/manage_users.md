@@ -187,7 +187,7 @@ A sample email might look like the following
 
 ## {{globe_with_meridians}} Changing user network access restrictions
 
-One of the controls used by Tier 2/3 SREs is to restrict access based on network addresses. 
+One of the controls used by Tier 2/3 SREs is to restrict access based on network addresses.
 The network addresses that are allowed to access an SRE can be modified after deployment.
 This is useful if users require access from new, or different, IP addresses.
 For example if their institutional IP address changes, or an additional location is approved.
