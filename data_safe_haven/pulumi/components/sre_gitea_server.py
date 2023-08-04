@@ -230,8 +230,8 @@ class SREGiteaServerComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=db_server_gitea)
             ),
         )
-        db_server_gitea_private_ip_address = Output.from_input(
-            get_ip_addresses_from_private_endpoint(db_server_gitea_private_endpoint)
+        db_server_gitea_private_ip_address = get_ip_addresses_from_private_endpoint(
+            db_server_gitea_private_endpoint
         ).apply(lambda ips: ips[0])
 
         # Define the container group with guacd, guacamole and caddy

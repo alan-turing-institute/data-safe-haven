@@ -190,8 +190,8 @@ class SREHedgeDocServerComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=db_server_hedgedoc)
             ),
         )
-        hedgedoc_db_private_ip_address = Output.from_input(
-            get_ip_addresses_from_private_endpoint(db_server_hedgedoc_private_endpoint)
+        hedgedoc_db_private_ip_address = get_ip_addresses_from_private_endpoint(
+            db_server_hedgedoc_private_endpoint
         ).apply(lambda ips: ips[0])
 
         # Define the container group with guacd, guacamole and caddy

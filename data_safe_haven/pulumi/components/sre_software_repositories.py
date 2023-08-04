@@ -22,13 +22,13 @@ class SRESoftwareRepositoriesProps:
         location: Input[str],
         networking_resource_group_name: Input[str],
         nexus_admin_password: Input[str],
-        resource_group_name: Input[str],
         software_packages: SoftwarePackageCategory,
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
         subnet_id: Input[str],
+        user_services_resource_group_name: Input[str],
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
     ) -> None:
@@ -40,7 +40,7 @@ class SRESoftwareRepositoriesProps:
             SoftwarePackageCategory.PRE_APPROVED: "selected",
             SoftwarePackageCategory.NONE: None,
         }[software_packages]
-        self.resource_group_name = resource_group_name
+        self.user_services_resource_group_name = user_services_resource_group_name
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
@@ -178,7 +178,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         if props.nexus_packages:
             container_group = containerinstance.ContainerGroup(
                 f"{self._name}_container_group",
-                container_group_name=f"{stack_name}-container-software-repositories",
+                container_group_name=f"{stack_name}-container-group-software-repositories",
                 containers=[
                     containerinstance.ContainerArgs(
                         image="caddy:2",
@@ -277,7 +277,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     id=container_network_profile.id,
                 ),
                 os_type=containerinstance.OperatingSystemTypes.LINUX,
-                resource_group_name=props.resource_group_name,
+                resource_group_name=props.user_services_resource_group_name,
                 restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
                 sku=containerinstance.ContainerGroupSku.STANDARD,
                 volumes=[
