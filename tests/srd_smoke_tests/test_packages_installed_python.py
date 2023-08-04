@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 import warnings
+
 import pkg_resources
 
 versions = {
@@ -22,7 +23,10 @@ KNOWN_RESOURCE_ISSUES = [
 ]
 
 # For these packages we check for an executable as they are not importable
-NON_IMPORTABLE_PACKAGES = {"repro-catalogue": "catalogue", "pip-tools": "pip-compile"}
+NON_IMPORTABLE_PACKAGES = {
+    "pip-tools": "pip-compile",
+    "repro-catalogue": "catalogue",
+}
 
 # Some packages are imported using a different name than they `pip install` with
 IMPORTABLE_NAMES = {
