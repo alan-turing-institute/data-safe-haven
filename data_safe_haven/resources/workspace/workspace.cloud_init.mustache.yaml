@@ -63,6 +63,16 @@ mounts:
   - ["{{storage_account_userdata_name}}.file.core.windows.net:/{{storage_account_userdata_name}}/shared", /shared, nfs, "_netdev,sec=sys,nconnect=4"]
   - ["{{storage_account_userdata_name}}.file.core.windows.net:/{{storage_account_userdata_name}}/home", /home, nfs, "_netdev,sec=sys,nconnect=4"]
 
+# Add additional apt repositories
+apt:
+  debconf_selections:
+    msodbcsql17: msodbcsql17 msodbcsql/ACCEPT_EULA boolean true
+  preserve_sources_list: true   # Append to the existing /etc/apt/sources.list
+  sources:
+    microsoft-general.list:
+      source: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main"
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+
 # Install necessary apt packages
 packages:
   # System requirements
@@ -75,11 +85,15 @@ packages:
   # Programming
   - python-is-python3  # Python language
   - python3            # Python language
+  - python3-dev        # Python language
   - python3-pip        # Python language
   - python3-venv       # Python language
   - r-base             # R language
   # Tools
-  - firefox            # web browser
+  - firefox       # web browser
+  - libpq-dev     # interact with PostgreSQL databases
+  - msodbcsql17   # interact with Microsoft SQL databases
+  - unixodbc-dev  # interact with Microsoft SQL databases
 package_update: true
 package_upgrade: true
 
