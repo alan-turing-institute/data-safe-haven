@@ -7,6 +7,8 @@ numpy
 packaging
 pandas
 pillow
+pscopyg2-binary
+pyodbc
 pyparsing
 python-dateutil
 pytz
