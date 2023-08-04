@@ -185,7 +185,7 @@ A sample email might look like the following
 
 (modifying_network)=
 
-## {{globe_with_meridians}} Manually modifying network restrictions
+## {{globe_with_meridians}} Changing user network access restrictions
 
 One of the controls used by Tier 2/3 SREs is to restrict access based on network addresses. 
 The network addresses that are allowed to access an SRE can be modified after deployment.
