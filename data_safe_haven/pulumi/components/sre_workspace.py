@@ -140,7 +140,7 @@ class SREWorkspaceComponent(ComponentResource):
                     virtual_network_name=props.virtual_network_name,
                     virtual_network_resource_group_name=props.virtual_network_resource_group_name,
                     vm_name=Output.concat(
-                        "sre-", props.sre_name, "-vm-workspace-", f"{vm_idx+1:02d}"
+                        stack_name, "-vm-workspace-", f"{vm_idx+1:02d}"
                     ).apply(lambda s: replace_separators(s, "-")),
                     vm_size=vm_size,
                 ),
