@@ -217,8 +217,10 @@ class SREUserServicesComponent(ComponentResource):
                 SREDatabaseServerProps(
                     database_password=props.database_service_admin_password,
                     database_system=database,
-                    resource_group_name=resource_group.name,
+                    networking_resource_group_name=props.networking_resource_group_name,
+                    sre_fqdn=props.sre_fqdn,
                     subnet_id=props.subnet_databases_id,
+                    user_services_resource_group_name=resource_group.name,
                 ),
                 opts=child_opts,
             )
