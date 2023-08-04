@@ -48,3 +48,7 @@ class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
 
 class DataSafeHavenPulumiError(DataSafeHavenCloudError):
     pass
+
+
+class DataSafeHavenActiveDirectoryError(DataSafeHavenCloudError):
+    pass

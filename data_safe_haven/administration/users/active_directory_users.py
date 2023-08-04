@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from data_safe_haven.config import Config
+from data_safe_haven.exceptions import DataSafeHavenActiveDirectoryError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import b64encode
 from data_safe_haven.pulumi import PulumiSHMStack
@@ -60,6 +61,12 @@ class ActiveDirectoryUsers:
                         ]
                     )
                 ]
+            else:
+                msg = (
+                    f"User {user.username} does not have all the required fields to "
+                    "add to the Active Directory."
+                )
+                raise DataSafeHavenActiveDirectoryError(msg)
         user_details_b64 = b64encode("\n".join(csv_contents))
         output = self.azure_api.run_remote_script(
             self.resource_group_name,
@@ -83,9 +90,10 @@ class ActiveDirectoryUsers:
             self.vm_name,
         )
         users = []
+        expected_columns = 6
         for line in output.split("\n"):
             tokens = line.split(";")
-            if len(tokens) >= 6:  # noqa: PLR2004
+            if len(tokens) >= expected_columns:
                 users.append(
                     ResearchUser(
                         email_address=tokens[4],
@@ -96,6 +104,12 @@ class ActiveDirectoryUsers:
                         user_principal_name=tokens[5],
                     )
                 )
+            else:
+                msg = (
+                    "Fewer than expected number of fields returned for Active Directory"
+                    f" user: {tokens}"
+                )
+                raise DataSafeHavenActiveDirectoryError(msg)
         return users
 
     def register(self, sre_name: str, usernames: Sequence[str]) -> None:
