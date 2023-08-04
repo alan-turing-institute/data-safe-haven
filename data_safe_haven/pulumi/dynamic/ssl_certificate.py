@@ -62,7 +62,7 @@ class SSLCertificateProvider(DshResourceProvider):
             client = ACMEClient(
                 domains=[props["domain_name"]],
                 email=props["admin_email_address"],
-                directory="https://acme-staging-v02.api.letsencrypt.org/directory",
+                directory="https://acme-v02.api.letsencrypt.org/directory",
                 nameservers=["8.8.8.8", "1.1.1.1"],
                 new_account=True,
             )
