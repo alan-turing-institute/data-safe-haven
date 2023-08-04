@@ -34,7 +34,7 @@ Some parts of the checklist are only relevant when there are multiple SREs attac
 
 ```{important}
 - If you haven't already, you'll need download a VPN certificate and configure {ref}`VPN access <deploy_shm_vpn>` for the SHM
-- Make sure you can use Remote Desktop to log in to the {ref}`domain controller (DC1) <roles_system_deployer_shm_remote_desktop>` and the {ref}`network policy server (NPS) <roles_system_deployer_shm_remote_desktop_nps>`.
+- Make sure you can use Remote Desktop to log in to the {ref}`domain controller (DC1) <roles_system_deployer_shm_remote_desktop>`.
 ```
 
 The following users will be needed for this checklist
