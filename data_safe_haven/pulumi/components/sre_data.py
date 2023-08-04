@@ -218,7 +218,9 @@ class SREDataComponent(ComponentResource):
         sre_fqdn_certificate = SSLCertificate(
             f"{self._name}_kvc_https_certificate",
             SSLCertificateProps(
-                certificate_secret_name=props.sre_fqdn,
+                certificate_secret_name=Output.from_input(props.sre_fqdn).apply(
+                    lambda s: replace_separators(s, "-")
+                ),
                 domain_name=props.sre_fqdn,
                 admin_email_address=props.admin_email_address,
                 key_vault_name=key_vault.name,
