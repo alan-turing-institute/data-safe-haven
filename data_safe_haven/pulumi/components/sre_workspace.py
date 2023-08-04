@@ -186,7 +186,7 @@ class SREWorkspaceComponent(ComponentResource):
             pathlib.Path(__file__).parent.parent.parent / "resources" / "workspace"
         )
         with open(
-            resources_path / "srd.cloud_init.mustache.yaml", encoding="utf-8"
+            resources_path / "workspace.cloud_init.mustache.yaml", encoding="utf-8"
         ) as f_cloudinit:
             mustache_values = {
                 "domain_sid": domain_sid,
