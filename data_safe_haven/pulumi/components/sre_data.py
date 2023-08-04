@@ -215,10 +215,10 @@ class SREDataComponent(ComponentResource):
         )
 
         # Define SSL certificate for this FQDN
-        https_certificate = SSLCertificate(
+        sre_fqdn_certificate = SSLCertificate(
             f"{self._name}_kvc_https_certificate",
             SSLCertificateProps(
-                certificate_secret_name="https-certificate-sre-remote-desktop",
+                certificate_secret_name=props.sre_fqdn,
                 domain_name=props.sre_fqdn,
                 admin_email_address=props.admin_email_address,
                 key_vault_name=key_vault.name,
@@ -588,13 +588,13 @@ class SREDataComponent(ComponentResource):
         )
 
         # Register outputs
+        self.sre_fqdn_certificate_secret_id = sre_fqdn_certificate.secret_id
         self.storage_account_userdata_name = storage_account_userdata.name
         self.storage_account_securedata_name = storage_account_securedata.name
         self.storage_account_state_key = Output.secret(
             storage_account_state_keys.keys[0].value
         )
         self.storage_account_state_name = storage_account_state.name
-        self.certificate_secret_id = https_certificate.secret_id
         self.managed_identity = identity_key_vault_reader
         self.password_nexus_admin = Output.secret(props.password_nexus_admin)
         self.password_database_service_admin = Output.secret(

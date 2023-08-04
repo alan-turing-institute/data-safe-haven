@@ -130,7 +130,7 @@ class DeclarativeSRE:
             "sre_application_gateway",
             self.stack_name,
             SREApplicationGatewayProps(
-                key_vault_certificate_id=data.certificate_secret_id,
+                key_vault_certificate_id=data.sre_fqdn_certificate_secret_id,
                 key_vault_identity=data.managed_identity,
                 resource_group=networking.resource_group,
                 subnet_application_gateway=networking.subnet_application_gateway,
