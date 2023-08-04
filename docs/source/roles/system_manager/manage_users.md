@@ -193,7 +193,7 @@ This is useful if users require access from new, or different, IP addresses.
 For example if their institutional IP address changes, or an additional location is approved.
 
 - In the Azure Portal, navigate to `RG_SHM_<SHM_ID>_SRE_<SRE_ID>_NETWORKING`
-- On the `Overview` tab, navigate to the Network Security Group for the appropriate remote desktop service (e.g `NSG_SHM_<SHM_ID>_SRE_<SRE_ID>_GUACAMOLE`)
+- On the `Overview` tab, navigate to `NSG_SHM_<SHM_ID>_SRE_<SRE_ID>_GUACAMOLE`, the Network Security Group for the remote desktop service
 - Navigate to `Inbound Security Rules`, and open the entry called `AllowUsersApprovedHttpsInbound`
 - For the field `Source IP addresses/CIDR ranges`, add the desired IP address or range to the existing entry, or overwrite the existing entry if it is no longer required
 - Users will then be able to access the remote desktop interface from the new IP address
