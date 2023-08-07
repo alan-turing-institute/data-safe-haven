@@ -104,7 +104,7 @@ def sre(
         Optional[list[str]],  # noqa: UP007
         typer.Option(
             "--data-provider-ip-address",
-            "-i",
+            "-d",
             help="An IP address or range used by your data providers. [*may be specified several times*]",
             callback=lambda vms: [validate_ip_address(vm) for vm in vms],
         ),
@@ -113,7 +113,7 @@ def sre(
         Optional[list[DatabaseSystem]],  # noqa: UP007
         typer.Option(
             "--database",
-            "-d",
+            "-b",
             help="Make a database of this system available to users of this SRE.",
         ),
     ] = None,
