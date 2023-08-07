@@ -20,8 +20,8 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
 - [ ] Deploy an SHM from this branch and save a transcript of the deployment logs in a secure location
 - [ ] Build an SRE compute image (SRD) and save transcripts of the logs in a secure location
 - Using the new image, deploy two SREs which between them cover tiers 2 and 3 and Guacamole/Microsoft RDS
-    - [ ] Save transcript of T2 SRE deplpoyment log to a secure location
-    - [ ] Save transcript of T3 SRE deplpoyment log to a secure location
+    - [ ] Save the transcript of your tier 2 SRE deployment
+    - [ ] Save the transcript of your tier 3 SRE deployment
 - [ ] Complete the [Security evaluation checklist](https://data-safe-haven.readthedocs.io/en/latest/deployment/security_checklist.html) from the deployment documentation
 
 **For MAJOR releases:**
