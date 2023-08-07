@@ -1,4 +1,6 @@
 """Pulumi component for SRE state"""
+import datetime
+
 from pulumi import ComponentResource, Input, ResourceOptions
 from pulumi_azure_native import dataprotection, resources
 
@@ -25,6 +27,7 @@ class SREBackupComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:BackupComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        start_date = str(datetime.datetime.now(datetime.timezone.utc).date())
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -62,12 +65,78 @@ class SREBackupComponent(ComponentResource):
                 datasource_types=["Microsoft.Storage/storageAccounts/blobServices"],
                 object_type="BackupPolicy",
                 policy_rules=[
+                    # Retain for 30 days
                     dataprotection.AzureRetentionRuleArgs(
                         is_default=True,
                         lifecycles=[
                             dataprotection.SourceLifeCycleArgs(
                                 delete_after=dataprotection.AbsoluteDeleteOptionArgs(
-                                    duration="P30D",  # 30 days
+                                    duration="P30D",
+                                    object_type="AbsoluteDeleteOption",
+                                ),
+                                source_data_store=dataprotection.DataStoreInfoBaseArgs(
+                                    data_store_type=dataprotection.DataStoreTypes.OPERATIONAL_STORE,
+                                    object_type="DataStoreInfoBase",
+                                ),
+                            ),
+                        ],
+                        name="Default",
+                        object_type="AzureRetentionRule",
+                    ),
+                ],
+            ),
+            resource_group_name=resource_group.name,
+            vault_name=backup_vault.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=backup_vault)
+            ),
+        )
+
+        # Backup policy for disks
+        dataprotection.BackupPolicy(
+            f"{self._name}_backup_policy_disks",
+            backup_policy_name="backup-policy-disks",
+            properties=dataprotection.BackupPolicyArgs(
+                datasource_types=["Microsoft.Compute/disks"],
+                object_type="BackupPolicy",
+                policy_rules=[
+                    # Backup at 02:00 every day
+                    dataprotection.AzureBackupRuleArgs(
+                        backup_parameters=dataprotection.AzureBackupParamsArgs(
+                            backup_type="Incremental",
+                            object_type="AzureBackupParams",
+                        ),
+                        data_store=dataprotection.DataStoreInfoBaseArgs(
+                            data_store_type=dataprotection.DataStoreTypes.OPERATIONAL_STORE,
+                            object_type="DataStoreInfoBase",
+                        ),
+                        name="BackupDaily",
+                        object_type="AzureBackupRule",
+                        trigger=dataprotection.ScheduleBasedTriggerContextArgs(
+                            object_type="ScheduleBasedTriggerContext",
+                            schedule=dataprotection.BackupScheduleArgs(
+                                repeating_time_intervals=[
+                                    f"R/{start_date}T02:00:00+00:00/P1D"
+                                ],
+                            ),
+                            tagging_criteria=[
+                                dataprotection.TaggingCriteriaArgs(
+                                    is_default=True,
+                                    tag_info=dataprotection.RetentionTagArgs(
+                                        tag_name="Default",
+                                    ),
+                                    tagging_priority=99,
+                                )
+                            ],
+                        ),
+                    ),
+                    # Retain for 30 days
+                    dataprotection.AzureRetentionRuleArgs(
+                        is_default=True,
+                        lifecycles=[
+                            dataprotection.SourceLifeCycleArgs(
+                                delete_after=dataprotection.AbsoluteDeleteOptionArgs(
+                                    duration="P30D",
                                     object_type="AbsoluteDeleteOption",
                                 ),
                                 source_data_store=dataprotection.DataStoreInfoBaseArgs(
