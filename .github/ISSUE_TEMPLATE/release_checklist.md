@@ -18,7 +18,7 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
 - [ ] Create a release branch called e.g. `release-v0.0.1`
 - [ ] Draft a changelog for the release similar to our previous releases, see https://github.com/alan-turing-institute/data-safe-haven/releases
 - [ ] Deploy an SHM from this branch and save a transcript of the deployment logs in a secure location
-- [ ] Build an SRE compute image and save transcripts of the logs in a secure location
+- [ ] Build an SRE compute image (SRD) and save transcripts of the logs in a secure location
 - Using the new image, deploy two SREs covering tier 2/3 and Guacamole/RDS
     - [ ] Save transcript of T2 SRE deplpoyment log to a secure location
     - [ ] Save transcript of T3 SRE deplpoyment log to a secure location
