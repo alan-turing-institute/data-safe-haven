@@ -19,7 +19,7 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
 - [ ] Draft a changelog for the release similar to our previous releases, see https://github.com/alan-turing-institute/data-safe-haven/releases
 - [ ] Deploy an SHM from this branch and save a transcript of the deployment logs in a secure location
 - [ ] Build an SRE compute image and save transcripts of the logs in a secure location
-- Deploy two SREs covering tier 2/3 and Guacamole/RDS
+- Using the new image, deploy two SREs covering tier 2/3 and Guacamole/RDS
     - [ ] Save transcript of T2 SRE deplpoyment log to a secure location
     - [ ] Save transcript of T3 SRE deplpoyment log to a secure location
 - [ ] Complete the [Security evaluation checklist](https://data-safe-haven.readthedocs.io/en/latest/deployment/security_checklist.html) from the deployment documentation
@@ -32,8 +32,8 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
 
 - **Version number:** _
 - **SHM ID:** _
-- **T2 SRE ID:**
-- **T3 SRE ID:**
+- **T2 SRE ID:** _
+- **T3 SRE ID:** _
 
 ## :deciduous_tree: Deployment problems
 
