@@ -592,6 +592,7 @@ class SREDataComponent(ComponentResource):
         # Register outputs
         self.sre_fqdn_certificate_secret_id = sre_fqdn_certificate.secret_id
         self.storage_account_userdata_name = storage_account_userdata.name
+        self.storage_account_securedata_id = storage_account_securedata.id
         self.storage_account_securedata_name = storage_account_securedata.name
         self.storage_account_state_key = Output.secret(
             storage_account_state_keys.keys[0].value
