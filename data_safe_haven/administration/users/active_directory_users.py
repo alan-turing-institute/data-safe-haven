@@ -93,7 +93,7 @@ class ActiveDirectoryUsers:
         expected_columns = 6
         for line in output.split("\n"):
             tokens = line.split(";")
-            if len(tokens) >= expected_columns:
+            if (n_tokens := len(tokens)) == expected_columns:
                 users.append(
                     ResearchUser(
                         email_address=tokens[4],
@@ -106,8 +106,9 @@ class ActiveDirectoryUsers:
                 )
             else:
                 msg = (
-                    "Fewer than expected number of fields returned for Active Directory"
-                    f" user: {tokens}"
+                    "Unexpected number of  fields returned for Active Directory user.\n"
+                    f"Expected {expected_columns}, got {n_tokens}:\n"
+                    f"{tokens}"
                 )
                 raise DataSafeHavenActiveDirectoryError(msg)
         return users
