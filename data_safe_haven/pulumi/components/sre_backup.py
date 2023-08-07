@@ -187,3 +187,7 @@ class SREBackupComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=backup_policy_blobs)
             ),
         )
+
+        # Backup instance for disks
+        # We currently have no disks except OS disks so no backup is needed
+        # This may change in future, so we leave the policy above
