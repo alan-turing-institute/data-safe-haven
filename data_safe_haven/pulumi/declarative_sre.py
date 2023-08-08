@@ -7,6 +7,7 @@ from .components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
+from .components.sre_backup import SREBackupComponent, SREBackupProps
 from .components.sre_data import SREDataComponent, SREDataProps
 from .components.sre_monitoring import SREMonitoringComponent, SREMonitoringProps
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
@@ -238,6 +239,17 @@ class DeclarativeSRE:
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
                 virtual_network=networking.virtual_network,
                 virtual_network_resource_group_name=networking.resource_group.name,
+            ),
+        )
+
+        # Deploy backup service
+        SREBackupComponent(
+            "sre_user_services",
+            self.stack_name,
+            SREBackupProps(
+                location=self.cfg.azure.location,
+                storage_account_securedata_id=data.storage_account_securedata_id,
+                storage_account_securedata_name=data.storage_account_securedata_name,
             ),
         )
 
