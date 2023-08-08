@@ -1,6 +1,4 @@
 """Pulumi component for SRE state"""
-import datetime
-
 from pulumi import ComponentResource, Input, ResourceOptions
 from pulumi_azure_native import dataprotection, resources
 
@@ -31,7 +29,6 @@ class SREBackupComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:BackupComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        start_date = str(datetime.datetime.now(datetime.timezone.utc).date())
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -120,7 +117,7 @@ class SREBackupComponent(ComponentResource):
                             object_type="ScheduleBasedTriggerContext",
                             schedule=dataprotection.BackupScheduleArgs(
                                 repeating_time_intervals=[
-                                    f"R/{start_date}T02:00:00+00:00/P1D"
+                                    "R/2023-01-01T02:00:00+00:00/P1D"
                                 ],
                             ),
                             tagging_criteria=[
