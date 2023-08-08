@@ -154,7 +154,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access="Allow",
-                    description="Allow inbound internet to Application Gateway.",
+                    description="Allow inbound connections from users over the internet.",
                     destination_address_prefix=subnet_application_gateway_prefix,
                     destination_port_ranges=["80", "443"],
                     direction="Inbound",
@@ -179,6 +179,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
+                    description="Allow outbound connections to the Guacamole server.",
+                    destination_address_prefix=subnet_guacamole_containers_prefix,
+                    destination_port_ranges=["80"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowGuacamoleContainersOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_application_gateway_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
                     destination_address_prefix="*",
                     destination_port_range="*",
@@ -198,6 +210,18 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             security_rules=[
                 # Inbound
+                network.SecurityRuleArgs(
+                    access="Allow",
+                    description="Allow inbound connections from the Application Gateway.",
+                    destination_address_prefix=subnet_guacamole_containers_prefix,
+                    destination_port_ranges=["80"],
+                    direction="Inbound",
+                    name="AllowApplicationGatewayInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_APPLICATION_GATEWAY,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_application_gateway_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other inbound traffic.",
