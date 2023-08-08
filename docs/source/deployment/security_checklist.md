@@ -78,16 +78,6 @@ Attempt to login to the remote desktop web client as the **SRE standard user**
 ```
 </details>
 
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>login works but apps cannot be viewed</summary>
-
-```{image} security_checklist/login_no_mfa_msrds.png
-:alt: Microsoft RDS dashboard with no apps
-:align: center
-```
-</details>
-````
-
 #### Check: Membership of the correct group is insufficient to give access
 
 Add the **SRE standard user** to the relevant `Research Users` group under `Safe Haven Security Groups` on the domain controller.
@@ -103,24 +93,6 @@ Add the **SRE standard user** to the relevant `Research Users` group under `Safe
 :align: center
 ```
 </details>
-
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>login works and apps can be viewed</summary>
-
-```{image} security_checklist/msrds_dashboard_with_apps.png
-:alt: Microsoft RDS dashboard with apps
-:align: center
-```
-</details>
-
-<details><summary>attempting to login to SRD Main fails</summary>
-
-```{image} security_checklist/msrds_failed_to_connect.png
-:alt: Microsoft RDS failed to connect
-:align: center
-```
-</details>
-````
 
 #### User can self-register for MFA
 
@@ -165,16 +137,6 @@ Check that the **SRE standard user** can authenticate with MFA.
 ```
 </details>
 
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>you are prompted for MFA and can respond when attempting to log in to <i>SRD Main (Desktop)</i></summary>
-
-```{image} security_checklist/aad_mfa_approve_signin_request.png
-:alt: AAD MFA approve sign-in request
-:align: center
-```
-</details>
-````
-
 #### Authenticated user can access the Secure Research Desktop (SRD) desktop
 
 Check that the **SRE standard user** can access the Secure Research Desktop (SRD) desktop.
@@ -192,16 +154,6 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 :align: center
 ```
 </details>
-
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>you can connect to <i>SRD Main (Desktop)</i></summary>
-
-```{image} security_checklist/msrds_srd_desktop.png
-:alt: SRD desktop
-:align: center
-```
-</details>
-````
 
 ## 2. Isolated Network
 
@@ -372,8 +324,7 @@ A device is able to connect to the environment if and only if it is managed (wit
 There are network rules permitting access to the remote desktop gateway from allow-listed IP addresses only
 
 - Navigate to the NSG for this SRE in the portal:
-    - {{bento_box}} **Microsoft Remote Desktop:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
-    - {{pear}} **Guacamole:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
+    - {{pear}} `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -461,8 +412,7 @@ Connection from within the secure physical space is possible.
 ````
 
 - Find the public IP address for the remote desktop server VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
-    - {{pear}} **Guacamole:** VM name will be `GUACAMOLE-SRE-<SRE ID>`
-    - {{bento_box}} **Microsoft Remote Desktop:** VM name will be `RDG-SRE-<SRE ID>`
+    - {{pear}} VM name will be `GUACAMOLE-SRE-<SRE ID>`
 - Attempt to login as the **SRE standard user** via `SSH` with `ssh <user.name>@<public IP>` (e.g. `ssh ada.lovelace@8.8.8.8`)
 
 ````{attention}
