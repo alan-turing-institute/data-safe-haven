@@ -183,6 +183,21 @@ A sample email might look like the following
 >
 > --details about network and location/VPN restrictions here--
 
+(modifying_network)=
+
+## {{globe_with_meridians}} Changing user network access restrictions
+
+One of the controls used by Tier 2/3 SREs is to restrict access based on network addresses.
+The network addresses that are allowed to access an SRE can be modified after deployment.
+This is useful if users require access from new, or different, IP addresses.
+For example if their institutional IP address changes, or an additional location is approved.
+
+- In the Azure Portal, navigate to `RG_SHM_<SHM_ID>_SRE_<SRE_ID>_NETWORKING`
+- On the `Overview` tab, navigate to `NSG_SHM_<SHM_ID>_SRE_<SRE_ID>_GUACAMOLE`, the Network Security Group for the remote desktop service
+- Navigate to `Inbound Security Rules`, and open the entry called `AllowUsersApprovedHttpsInbound`
+- Update the `Source IP addresses/CIDR ranges` field to include IP addresses that should be able to access the SRE and remove any that should not
+- Users will now be able to access the remote desktop interface from only the desired IP addresses
+
 ## {{construction_worker}} Common user problems
 
 One of the most common user issues is that they are unable to log in to the environment.
