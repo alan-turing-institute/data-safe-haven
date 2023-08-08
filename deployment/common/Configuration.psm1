@@ -854,8 +854,8 @@ function Get-SreConfig {
         }
     }
 
-    # Remote desktop either through Apache Guacamole or Microsoft RDS
-    # ---------------------------------------------------------------
+    # Remote desktop either through Apache Guacamole
+    # ----------------------------------------------
     $config.sre.remoteDesktop.rg = "$($config.sre.rgPrefix)_REMOTE_DESKTOP".ToUpper()
     if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
         $config.sre.network.vnet.subnets.remoteDesktop.nsg = [ordered]@{
