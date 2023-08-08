@@ -68,15 +68,14 @@ Attempt to login to the remote desktop web client as the **SRE standard user**
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
-<details><summary>user is prompted to setup MFA</summary>
+ <details><summary> user is prompted to setup MFA</summary>
 
 ```{image} security_checklist/login_no_mfa_guacamole.png
 :alt: Guacamole MFA setup prompt
 :align: center
 ```
 </details>
+````
 
 #### Check: Membership of the correct group is insufficient to give access
 
@@ -84,8 +83,6 @@ Add the **SRE standard user** to the relevant `Research Users` group under `Safe
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
 <details><summary>user is prompted to setup MFA</summary>
 
 ```{image} security_checklist/login_no_mfa_guacamole.png
@@ -93,6 +90,7 @@ Add the **SRE standard user** to the relevant `Research Users` group under `Safe
 :align: center
 ```
 </details>
+````
 
 #### User can self-register for MFA
 
@@ -127,8 +125,6 @@ Check that the **SRE standard user** can authenticate with MFA.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
 <details><summary>you are prompted for MFA and can respond</summary>
 
 ```{image} security_checklist/aad_mfa_approve_signin_request.png
@@ -136,6 +132,7 @@ Check that the **SRE standard user** can authenticate with MFA.
 :align: center
 ```
 </details>
+````
 
 #### Authenticated user can access the Secure Research Desktop (SRD) desktop
 
@@ -145,8 +142,6 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
 <details><summary>you can connect to <i>Desktop: Ubuntu0</i></summary>
 
 ```{image} security_checklist/guacamole_srd_desktop.png
@@ -154,6 +149,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 :align: center
 ```
 </details>
+````
 
 ## 2. Isolated Network
 
