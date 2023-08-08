@@ -74,6 +74,7 @@ Attempt to login to the remote desktop web client as the **SRE standard user**
 :alt: Guacamole MFA setup prompt
 :align: center
 ```
+
 </details>
 ````
 
@@ -89,6 +90,7 @@ Add the **SRE standard user** to the relevant `Research Users` group under `Safe
 :alt: Guacamole MFA setup prompt
 :align: center
 ```
+
 </details>
 ````
 
@@ -131,6 +133,7 @@ Check that the **SRE standard user** can authenticate with MFA.
 :alt: AAD MFA approve sign-in request
 :align: center
 ```
+
 </details>
 ````
 
@@ -148,6 +151,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 :alt: SRD desktop
 :align: center
 ```
+
 </details>
 ````
 
@@ -196,6 +200,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 :alt: SRD no internet
 :align: center
 ```
+
 </details>
 
 <details><summary>you cannot access the website using curl</summary>
@@ -204,6 +209,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 :alt: SRD no curl
 :align: center
 ```
+
 </details>
 
 <details><summary>you cannot look up the IP address for the website using nslookup</summary>
@@ -232,6 +238,7 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 :alt: SSH connection failure
 :align: center
 ```
+
 </details>
 ````
 
