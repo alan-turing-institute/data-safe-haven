@@ -361,6 +361,18 @@ class SRENetworkingComponent(ComponentResource):
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from SRE workspaces.",
+                    destination_address_prefix=subnet_user_services_containers_prefix,
+                    destination_port_ranges=["22", "80", "443"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other inbound traffic.",
                     destination_address_prefix="*",
@@ -373,6 +385,18 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to container support services.",
+                    destination_address_prefix=subnet_user_services_containers_support_prefix,
+                    destination_port_ranges=["5432"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowUserServicesContainersSupportOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS_SUPPORT,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
@@ -396,14 +420,14 @@ class SRENetworkingComponent(ComponentResource):
                 # Inbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound connections from SRE workspaces.",
-                    destination_address_prefix=subnet_user_services_containers_prefix,
-                    destination_port_ranges=["22", "80", "443"],
+                    description="Allow inbound connections from containers.",
+                    destination_address_prefix=subnet_guacamole_containers_support_prefix,
+                    destination_port_ranges=["5432"],
                     direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowWorkspacesInbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    name="AllowUserServicesContainersInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
