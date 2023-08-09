@@ -143,7 +143,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound gateway management traffic over the internet.",
-                    destination_address_prefix=subnet_application_gateway_prefix,
+                    destination_address_prefix="*",  # this must be '*' or Azure validation will fail
                     destination_port_range="65200-65535",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGatewayManagerInternetInbound",
@@ -187,6 +187,18 @@ class SRENetworkingComponent(ComponentResource):
                     priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_application_gateway_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound gateway management traffic over the internet.",
+                    destination_address_prefix="Internet",
+                    destination_port_range="65200-65535",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowGatewayManagerInternetOutbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",  # this must be '*' or Azure validation will fail
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
