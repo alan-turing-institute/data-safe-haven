@@ -465,6 +465,18 @@ class SRENetworkingComponent(ComponentResource):
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from SRE workspaces.",
+                    destination_address_prefix=subnet_user_services_databases_prefix,
+                    destination_port_ranges=["1433", "5432"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other inbound traffic.",
                     destination_address_prefix="*",
@@ -637,7 +649,7 @@ class SRENetworkingComponent(ComponentResource):
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to user services databases.",
                     destination_address_prefix=subnet_user_services_databases_prefix,
-                    destination_port_ranges=["5432"],
+                    destination_port_ranges=["1433", "5432"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowUserServicesDatabasesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_DATABASES,
