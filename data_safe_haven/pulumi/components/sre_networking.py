@@ -129,7 +129,7 @@ class SRENetworkingComponent(ComponentResource):
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound gateway management service traffic.",
                     destination_address_prefix="*",
                     destination_port_range="*",
@@ -141,7 +141,7 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound gateway management traffic over the internet.",
                     destination_address_prefix=subnet_application_gateway_prefix,
                     destination_port_range="65200-65535",
@@ -153,7 +153,7 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from users over the internet.",
                     destination_address_prefix=subnet_application_gateway_prefix,
                     destination_port_ranges=["80", "443"],
@@ -211,7 +211,7 @@ class SRENetworkingComponent(ComponentResource):
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from the Application Gateway.",
                     destination_address_prefix=subnet_guacamole_containers_prefix,
                     destination_port_ranges=["80"],
@@ -236,7 +236,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Outbound
                 network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.DENY,
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to Guacamole support services.",
                     destination_address_prefix=subnet_guacamole_containers_support_prefix,
                     destination_port_ranges=["5432"],
@@ -244,6 +244,18 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowGuacamoleContainersSupportOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_REMOTE_DESKTOP_SUPPORT,
                     protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to SRE workspaces.",
+                    destination_address_prefix=subnet_workspaces_prefix,
+                    destination_port_ranges=["22", "3389"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowWorkspacesOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
                 ),
@@ -269,7 +281,7 @@ class SRENetworkingComponent(ComponentResource):
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from Guacamole remote desktop gateway.",
                     destination_address_prefix=subnet_guacamole_containers_support_prefix,
                     destination_port_ranges=["5432"],
@@ -486,7 +498,7 @@ class SRENetworkingComponent(ComponentResource):
                 # Inbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow connections to SRDs from Guacamole remote desktop gateway.",
+                    description="Allow inbound connections from Guacamole remote desktop gateway.",
                     destination_address_prefix=subnet_workspaces_prefix,
                     destination_port_ranges=["22", "3389"],
                     direction=network.SecurityRuleDirection.INBOUND,
@@ -496,6 +508,7 @@ class SRENetworkingComponent(ComponentResource):
                     source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
                 ),
+
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other inbound traffic.",
