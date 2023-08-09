@@ -27,7 +27,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 $firewallRules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." ".." "safe_haven_management_environment" "network_rules" "shm-firewall-rules.json") -Parameters $config.shm -AsHashtable
 $allowedFqdns = @($firewallRules.applicationRuleCollections | ForEach-Object { $_.properties.rules.targetFqdns }) +
                 @(Get-PrivateDnsZones -ResourceGroupName $config.shm.network.vnet.rg -SubscriptionName $config.shm.subscriptionName | ForEach-Object { $_.Name }) +
-                @("*.docker.io")
+                @("docker.io")
 # List all unique FQDNs
 $allowedFqdns = $allowedFqdns |
                 Where-Object { $_ -notlike "*-sb.servicebus.windows.net" } | # Remove AzureADConnect password reset endpoints
