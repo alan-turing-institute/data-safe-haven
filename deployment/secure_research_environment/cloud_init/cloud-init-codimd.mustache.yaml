@@ -132,7 +132,7 @@ disk_setup:
     overwrite: true
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
-    partition: 1
+    partition: auto
     filesystem: ext4
 mounts:
   - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
