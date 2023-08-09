@@ -668,7 +668,7 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to local monitoring tools.",
+                    description="Allow outbound connections to SHM monitoring tools.",
                     destination_address_prefix=str(props.shm_subnet_monitoring_prefix),
                     destination_port_ranges=["443"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
