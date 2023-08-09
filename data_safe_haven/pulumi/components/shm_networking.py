@@ -58,13 +58,6 @@ class SHMNetworkingComponent(ComponentResource):
         )
 
         # Define NSGs
-        nsg_monitoring = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_monitoring",
-            network_security_group_name=f"{stack_name}-nsg-monitoring",
-            resource_group_name=resource_group.name,
-            security_rules=[],
-            opts=child_opts,
-        )
         nsg_bastion = network.NetworkSecurityGroup(
             f"{self._name}_nsg_bastion",
             network_security_group_name=f"{stack_name}-nsg-bastion",
@@ -195,6 +188,64 @@ class SHMNetworkingComponent(ComponentResource):
             ],
             opts=child_opts,
         )
+        nsg_identity_servers = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_identity",
+            network_security_group_name=f"{stack_name}-nsg-identity",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound LDAP to domain controllers.",
+                    destination_address_prefix=str(
+                        props.subnet_identity_servers_iprange
+                    ),
+                    destination_port_ranges=["389", "636"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowLDAPClientUDPInbound",
+                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_UDP,
+                    protocol=network.SecurityRuleProtocol.UDP,
+                    source_address_prefix="VirtualNetwork",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound LDAP to domain controllers.",
+                    destination_address_prefix=str(
+                        props.subnet_identity_servers_iprange
+                    ),
+                    destination_port_ranges=["389", "636"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowLDAPClientTCPInbound",
+                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix="VirtualNetwork",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound RDP connections from admins using AzureBastion.",
+                    destination_address_prefix=str(
+                        props.subnet_identity_servers_iprange
+                    ),
+                    destination_port_ranges=["3389"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowBastionAdminsInbound",
+                    priority=NetworkingPriorities.INTERNAL_SHM_BASTION,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=str(props.subnet_bastion_iprange),
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+        )
+        nsg_monitoring = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_monitoring",
+            network_security_group_name=f"{stack_name}-nsg-monitoring",
+            resource_group_name=resource_group.name,
+            security_rules=[],
+            opts=child_opts,
+        )
         nsg_update_servers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_update_servers",
             network_security_group_name=f"{stack_name}-nsg-update-servers",
@@ -208,7 +259,7 @@ class SHMNetworkingComponent(ComponentResource):
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowVirtualNetworkInbound",
-                    priority=NetworkingPriorities.INTERNAL_DSH_VIRTUAL_NETWORK,
+                    priority=NetworkingPriorities.INTERNAL_SELF,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix="VirtualNetwork",
                     source_port_range="*",
@@ -265,57 +316,6 @@ class SHMNetworkingComponent(ComponentResource):
             ],
             opts=child_opts,
         )
-        nsg_identity_servers = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_identity",
-            network_security_group_name=f"{stack_name}-nsg-identity",
-            resource_group_name=resource_group.name,
-            security_rules=[
-                # Inbound
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound LDAP to domain controllers.",
-                    destination_address_prefix=str(
-                        props.subnet_identity_servers_iprange
-                    ),
-                    destination_port_ranges=["389", "636"],
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowLDAPClientUDPInbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_UDP,
-                    protocol=network.SecurityRuleProtocol.UDP,
-                    source_address_prefix="*",
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound LDAP to domain controllers.",
-                    destination_address_prefix=str(
-                        props.subnet_identity_servers_iprange
-                    ),
-                    destination_port_ranges=["389", "636"],
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowLDAPClientTCPInbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix="*",
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound RDP connections from admins using AzureBastion.",
-                    destination_address_prefix=str(
-                        props.subnet_identity_servers_iprange
-                    ),
-                    destination_port_ranges=["3389"],
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowBastionAdminsInbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_BASTION,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=str(props.subnet_bastion_iprange),
-                    source_port_range="*",
-                ),
-            ],
-            opts=child_opts,
-        )
 
         # Define route table
         route_table = network.RouteTable(
@@ -335,9 +335,9 @@ class SHMNetworkingComponent(ComponentResource):
         # Define the virtual network and its subnets
         subnet_firewall_name = "AzureFirewallSubnet"  # this name is forced by https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
         subnet_bastion_name = "AzureBastionSubnet"  # this name is forced by https://learn.microsoft.com/en-us/azure/bastion/configuration-settings#subnet
+        subnet_identity_servers_name = "IdentityServersSubnet"
         subnet_monitoring_name = "MonitoringSubnet"
         subnet_update_servers_name = "UpdateServersSubnet"
-        subnet_identity_servers_name = "IdentityServersSubnet"
         virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
@@ -361,6 +361,15 @@ class SHMNetworkingComponent(ComponentResource):
                     ),
                     route_table=None,  # the bastion subnet must NOT be attached to the route table
                 ),
+                # Identity servers subnet
+                network.SubnetArgs(
+                    address_prefix=str(props.subnet_identity_servers_iprange),
+                    name=subnet_identity_servers_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_identity_servers.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),
                 # Monitoring subnet
                 network.SubnetArgs(
                     address_prefix=str(props.subnet_monitoring_iprange),
@@ -376,15 +385,6 @@ class SHMNetworkingComponent(ComponentResource):
                     name=subnet_update_servers_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_update_servers.id
-                    ),
-                    route_table=network.RouteTableArgs(id=route_table.id),
-                ),
-                # Identity servers subnet
-                network.SubnetArgs(
-                    address_prefix=str(props.subnet_identity_servers_iprange),
-                    name=subnet_identity_servers_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_identity_servers.id
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
