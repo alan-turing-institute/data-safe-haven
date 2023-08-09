@@ -511,6 +511,18 @@ class SRENetworkingComponent(ComponentResource):
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from SRE workspaces.",
+                    destination_address_prefix=subnet_user_services_software_repositories_prefix,
+                    destination_port_ranges=["80", "443", "3128"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other inbound traffic.",
                     destination_address_prefix="*",
@@ -653,6 +665,18 @@ class SRENetworkingComponent(ComponentResource):
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowUserServicesDatabasesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_DATABASES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to user services software repositories.",
+                    destination_address_prefix=subnet_user_services_software_repositories_prefix,
+                    destination_port_ranges=["80", "443", "3128"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowUserServicesSoftwareRepositoriesOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
