@@ -158,7 +158,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=subnet_application_gateway_prefix,
                     destination_port_ranges=["80", "443"],
                     direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowInternetInbound",
+                    name="AllowUsersInternetInbound",
                     priority=NetworkingPriorities.AUTHORISED_EXTERNAL_USER_IPS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=props.public_ip_range_users,
