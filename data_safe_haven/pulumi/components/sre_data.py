@@ -55,7 +55,8 @@ class SREDataProps:
     ) -> None:
         self.admin_email_address = admin_email_address
         self.admin_group_id = admin_group_id
-        self.approved_ip_addresses = Output.all(
+        self.data_configuration_ip_addresses = admin_ip_addresses
+        self.data_private_sensitive_ip_addresses = Output.all(
             admin_ip_addresses, data_provider_ip_addresses
         ).apply(
             lambda address_lists: {
@@ -308,6 +309,7 @@ class SREDataComponent(ComponentResource):
                 f"{''.join(truncate_tokens(stack_name.split('-'), 14))}configdata"
             )[:24],
             kind=storage.Kind.STORAGE_V2,
+            location=props.location,
             resource_group_name=resource_group.name,
             sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
             opts=child_opts,
@@ -391,7 +393,9 @@ class SREDataComponent(ComponentResource):
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
-                ip_rules=Output.from_input(props.approved_ip_addresses).apply(
+                ip_rules=Output.from_input(
+                    props.data_private_sensitive_ip_addresses
+                ).apply(
                     lambda ip_ranges: [
                         storage.IPRuleArgs(
                             action=storage.Action.ALLOW,
@@ -651,7 +655,9 @@ class SREDataComponent(ComponentResource):
             storage_account_data_private_sensitive.name
         )
         self.storage_account_data_configuration_key = Output.secret(
-            storage_account_data_configuration_keys.keys[0].value
+            storage_account_data_configuration_keys.apply(
+                lambda keys: keys.keys[0].value
+            )
         )
         self.storage_account_data_configuration_name = (
             storage_account_data_configuration.name
