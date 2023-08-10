@@ -613,8 +613,10 @@ function Get-SreConfig {
     $sreConfigBase = Get-CoreConfig -shmId $shmId -sreId $sreId
 
     # Support for "MicrosoftRDS" has been removed. The "remotedDesktopProvider" field now defaults to "ApacheGuacamole"
-    if ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") {
-        Add-LogMessage -Level Warning "MicrosoftRDS support is deprecated. Apache Guacamole will be used to provide Remote Desktop services."
+    if ($sreConfigBase.remoteDesktopProvider -ne "ApacheGuacamole") {
+        Add-LogMessage -Level Fatal "Support for remote desktops other than ApacheGuacamole has been removed"
+    } elseif ($sreConfigBase.remoteDesktopProvider -eq "ApacheGuacamole") {
+        Add-LogMessage -Level Warning "The remoteDesktopProvider configuration option has been deprecated and will be removed in the future"
     }
     $sreConfigBase.remoteDesktopProvider = "ApacheGuacamole"
 
