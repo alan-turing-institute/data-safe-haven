@@ -142,18 +142,6 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound gateway management traffic over the internet.",
-                    destination_address_prefix="*",  # this must be '*' or Azure validation will fail
-                    destination_port_range="65200-65535",
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowGatewayManagerInternetInbound",
-                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
-                    protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix="Internet",
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from users over the internet.",
                     destination_address_prefix=subnet_application_gateway_prefix,
                     destination_port_ranges=["80", "443"],
@@ -162,6 +150,18 @@ class SRENetworkingComponent(ComponentResource):
                     priority=NetworkingPriorities.AUTHORISED_EXTERNAL_USER_IPS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=props.public_ip_range_users,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound gateway management traffic over the internet.",
+                    destination_address_prefix="*",  # this must be '*' or Azure validation will fail
+                    destination_port_range="65200-65535",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowGatewayManagerInternetInbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="Internet",
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -178,7 +178,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Outbound
                 network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.DENY,
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to the Guacamole remote desktop gateway.",
                     destination_address_prefix=subnet_guacamole_containers_prefix,
                     destination_port_ranges=["80"],
