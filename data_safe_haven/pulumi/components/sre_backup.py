@@ -1,4 +1,4 @@
-"""Pulumi component for SRE state"""
+"""Pulumi component for SRE backup"""
 from pulumi import ComponentResource, Input, ResourceOptions
 from pulumi_azure_native import dataprotection, resources
 

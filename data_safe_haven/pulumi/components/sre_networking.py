@@ -30,6 +30,9 @@ class SRENetworkingProps:
         self.subnet_application_gateway_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(256)
         )
+        self.subnet_configuration_data_iprange = self.vnet_iprange.apply(
+            lambda r: r.next_subnet(8)
+        )
         self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
         )
@@ -37,7 +40,7 @@ class SRENetworkingProps:
             lambda r: r.next_subnet(8)
         )
         self.subnet_private_data_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(16)
+            lambda r: r.next_subnet(8)
         )
         self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
@@ -100,6 +103,9 @@ class SRENetworkingComponent(ComponentResource):
         )
         subnet_private_data_prefix = props.subnet_private_data_iprange.apply(
             lambda r: str(r)
+        )
+        subnet_configuration_data_prefix = (
+            props.subnet_configuration_data_iprange.apply(lambda r: str(r))
         )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
@@ -201,6 +207,40 @@ class SRENetworkingComponent(ComponentResource):
                     source_address_prefix="*",  # this must be '*' or Azure validation will fail
                     source_port_range="*",
                 ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+        )
+        nsg_configuration_data = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_configuration_data",
+            network_security_group_name=f"{stack_name}-nsg-configuration-data",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
@@ -664,7 +704,6 @@ class SRENetworkingComponent(ComponentResource):
                     source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
                 ),
-
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other inbound traffic.",
@@ -795,6 +834,7 @@ class SRENetworkingComponent(ComponentResource):
 
         # Define the virtual network and its subnets
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
+        subnet_configuration_data_name = "ConfigurationDataSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
         subnet_private_data_name = "PrivateDataSubnet"
@@ -821,6 +861,20 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_application_gateway.id
                     ),
+                ),
+                # Configuration data subnet
+                network.SubnetArgs(
+                    address_prefix=subnet_configuration_data_prefix,
+                    name=subnet_configuration_data_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_configuration_data.id
+                    ),
+                    service_endpoints=[
+                        network.ServiceEndpointPropertiesFormatArgs(
+                            locations=[props.location],
+                            service="Microsoft.Storage",
+                        )
+                    ],
                 ),
                 # Guacamole containers
                 network.SubnetArgs(
@@ -1066,6 +1120,11 @@ class SRENetworkingComponent(ComponentResource):
         self.sre_private_dns_zone = sre_private_dns_zone
         self.subnet_application_gateway = network.get_subnet_output(
             subnet_name=subnet_application_gateway_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_configuration_data = network.get_subnet_output(
+            subnet_name=subnet_configuration_data_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
