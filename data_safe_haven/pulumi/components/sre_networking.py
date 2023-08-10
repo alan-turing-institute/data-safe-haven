@@ -101,11 +101,11 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_containers_support_prefix = (
             props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
         )
-        subnet_data_private_prefix = props.subnet_data_private_iprange.apply(
-            lambda r: str(r)
-        )
         subnet_data_configuration_prefix = (
             props.subnet_data_configuration_iprange.apply(lambda r: str(r))
+        )
+        subnet_data_private_prefix = props.subnet_data_private_iprange.apply(
+            lambda r: str(r)
         )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
@@ -301,12 +301,12 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to private data endpoints.",
-                    destination_address_prefix=subnet_data_private_prefix,
+                    description="Allow outbound connections to configuration data endpoints.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowPrivateDataEndpointsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
+                    name="AllowConfigurationDataEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
@@ -347,13 +347,49 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from Guacamole remote desktop gateway.",
-                    destination_address_prefix=subnet_guacamole_containers_support_prefix,
+                    destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_ranges=["5432"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGuacamoleContainersSupportInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_APPLICATION_GATEWAY,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from Guacamole remote desktop gateway.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowGuacamoleContainersInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from user services containers.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowUserServicesContainersInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from user services software repositories.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowUserServicesSoftwareRepositoriesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_software_repositories_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -400,42 +436,6 @@ class SRENetworkingComponent(ComponentResource):
                     priority=NetworkingPriorities.ALL_OTHER,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix="*",
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound connections from Guacamole remote desktop gateway.",
-                    destination_address_prefix=subnet_data_private_prefix,
-                    destination_port_range="*",
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowGuacamoleContainersInbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
-                    protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound connections from user services containers.",
-                    destination_address_prefix=subnet_data_private_prefix,
-                    destination_port_range="*",
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowUserServicesContainersInbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
-                    protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_containers_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound connections from user services software repositories.",
-                    destination_address_prefix=subnet_data_private_prefix,
-                    destination_port_range="*",
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowUserServicesSoftwareRepositoriesInbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
-                    protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_software_repositories_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -499,12 +499,12 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to private data endpoints.",
-                    destination_address_prefix=subnet_data_private_prefix,
+                    description="Allow outbound connections to configuration data endpoints.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowPrivateDataEndpointsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
+                    name="AllowConfigurationDataEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_user_services_containers_prefix,
                     source_port_range="*",
@@ -615,12 +615,12 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to private data endpoints.",
-                    destination_address_prefix=subnet_data_private_prefix,
+                    description="Allow outbound connections to configuration data endpoints.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowPrivateDataEndpointsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
+                    name="AllowConfigurationDataEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_user_services_software_repositories_prefix,
                     source_port_range="*",
@@ -835,9 +835,9 @@ class SRENetworkingComponent(ComponentResource):
         # Define the virtual network and its subnets
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
         subnet_data_configuration_name = "ConfigurationDataSubnet"
+        subnet_data_private_name = "PrivateDataSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
-        subnet_data_private_name = "PrivateDataSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
         subnet_user_services_containers_support_name = (
             "UserServicesContainersSupportSubnet"
@@ -876,6 +876,20 @@ class SRENetworkingComponent(ComponentResource):
                         )
                     ],
                 ),
+                # Private data
+                network.SubnetArgs(
+                    address_prefix=subnet_data_private_prefix,
+                    name=subnet_data_private_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_data_private.id
+                    ),
+                    service_endpoints=[
+                        network.ServiceEndpointPropertiesFormatArgs(
+                            locations=[props.location],
+                            service="Microsoft.Storage",
+                        )
+                    ],
+                ),
                 # Guacamole containers
                 network.SubnetArgs(
                     address_prefix=subnet_guacamole_containers_prefix,
@@ -899,20 +913,6 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_guacamole_containers_support.id
                     ),
                     private_endpoint_network_policies="Disabled",
-                ),
-                # Private data
-                network.SubnetArgs(
-                    address_prefix=subnet_data_private_prefix,
-                    name=subnet_data_private_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_data_private.id
-                    ),
-                    service_endpoints=[
-                        network.ServiceEndpointPropertiesFormatArgs(
-                            locations=[props.location],
-                            service="Microsoft.Storage",
-                        )
-                    ],
                 ),
                 # User services containers
                 network.SubnetArgs(
