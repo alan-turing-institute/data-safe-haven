@@ -310,6 +310,25 @@ class SREDataComponent(ComponentResource):
             )[:24],
             kind=storage.Kind.STORAGE_V2,
             location=props.location,
+            network_rule_set=storage.NetworkRuleSetArgs(
+                bypass=storage.Bypass.AZURE_SERVICES,
+                default_action=storage.DefaultAction.DENY,
+                ip_rules=Output.from_input(props.data_configuration_ip_addresses).apply(
+                    lambda ip_ranges: [
+                        storage.IPRuleArgs(
+                            action=storage.Action.ALLOW,
+                            i_p_address_or_range=str(ip_address),
+                        )
+                        for ip_range in sorted(ip_ranges)
+                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all_ips()
+                    ]
+                ),
+                virtual_network_rules=[
+                    storage.VirtualNetworkRuleArgs(
+                        virtual_network_resource_id=props.subnet_data_configuration_id,
+                    )
+                ],
+            ),
             resource_group_name=resource_group.name,
             sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
             opts=child_opts,
