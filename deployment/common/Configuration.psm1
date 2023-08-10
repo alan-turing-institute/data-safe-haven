@@ -612,7 +612,7 @@ function Get-SreConfig {
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $sreConfigBase = Get-CoreConfig -shmId $shmId -sreId $sreId
 
-    # "MicrosoftRDS" is deprecated and the "remotedDesktopProvider" field now defaults to "ApacheGuacamole"
+    # Support for "MicrosoftRDS" has been removed. The "remotedDesktopProvider" field now defaults to "ApacheGuacamole"
     if ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") {
         Add-LogMessage -Level Warning "MicrosoftRDS support is deprecated. Apache Guacamole will be used to provide Remote Desktop services."
     }
