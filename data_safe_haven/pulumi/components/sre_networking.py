@@ -30,16 +30,16 @@ class SRENetworkingProps:
         self.subnet_application_gateway_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(256)
         )
-        self.subnet_configuration_data_iprange = self.vnet_iprange.apply(
+        self.subnet_data_configuration_iprange = self.vnet_iprange.apply(
+            lambda r: r.next_subnet(8)
+        )
+        self.subnet_data_private_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
         )
         self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
         )
         self.subnet_guacamole_containers_support_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
-        )
-        self.subnet_private_data_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
         )
         self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(
@@ -101,11 +101,11 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_containers_support_prefix = (
             props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
         )
-        subnet_private_data_prefix = props.subnet_private_data_iprange.apply(
+        subnet_data_private_prefix = props.subnet_data_private_iprange.apply(
             lambda r: str(r)
         )
-        subnet_configuration_data_prefix = (
-            props.subnet_configuration_data_iprange.apply(lambda r: str(r))
+        subnet_data_configuration_prefix = (
+            props.subnet_data_configuration_iprange.apply(lambda r: str(r))
         )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
@@ -222,8 +222,8 @@ class SRENetworkingComponent(ComponentResource):
             ],
             opts=child_opts,
         )
-        nsg_configuration_data = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_configuration_data",
+        nsg_data_configuration = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_data_configuration",
             network_security_group_name=f"{stack_name}-nsg-configuration-data",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -302,11 +302,11 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to private data endpoints.",
-                    destination_address_prefix=subnet_private_data_prefix,
+                    destination_address_prefix=subnet_data_private_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowPrivateDataEndpointsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_PRIVATE_DATA,
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
@@ -384,8 +384,8 @@ class SRENetworkingComponent(ComponentResource):
             ],
             opts=child_opts,
         )
-        nsg_private_data = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_private_data",
+        nsg_data_private = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_data_private",
             network_security_group_name=f"{stack_name}-nsg-private-data",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -405,7 +405,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from Guacamole remote desktop gateway.",
-                    destination_address_prefix=subnet_private_data_prefix,
+                    destination_address_prefix=subnet_data_private_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGuacamoleContainersInbound",
@@ -417,7 +417,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from user services containers.",
-                    destination_address_prefix=subnet_private_data_prefix,
+                    destination_address_prefix=subnet_data_private_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowUserServicesContainersInbound",
@@ -429,7 +429,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from user services software repositories.",
-                    destination_address_prefix=subnet_private_data_prefix,
+                    destination_address_prefix=subnet_data_private_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowUserServicesSoftwareRepositoriesInbound",
@@ -441,7 +441,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from SRE workspaces.",
-                    destination_address_prefix=subnet_private_data_prefix,
+                    destination_address_prefix=subnet_data_private_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowWorkspacesInbound",
@@ -500,11 +500,11 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to private data endpoints.",
-                    destination_address_prefix=subnet_private_data_prefix,
+                    destination_address_prefix=subnet_data_private_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowPrivateDataEndpointsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_PRIVATE_DATA,
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_user_services_containers_prefix,
                     source_port_range="*",
@@ -616,11 +616,11 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to private data endpoints.",
-                    destination_address_prefix=subnet_private_data_prefix,
+                    destination_address_prefix=subnet_data_private_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowPrivateDataEndpointsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_PRIVATE_DATA,
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_user_services_software_repositories_prefix,
                     source_port_range="*",
@@ -732,11 +732,11 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to private data endpoints.",
-                    destination_address_prefix=subnet_private_data_prefix,
+                    destination_address_prefix=subnet_data_private_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowPrivateDataEndpointsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_PRIVATE_DATA,
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
@@ -834,10 +834,10 @@ class SRENetworkingComponent(ComponentResource):
 
         # Define the virtual network and its subnets
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
-        subnet_configuration_data_name = "ConfigurationDataSubnet"
+        subnet_data_configuration_name = "ConfigurationDataSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
-        subnet_private_data_name = "PrivateDataSubnet"
+        subnet_data_private_name = "PrivateDataSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
         subnet_user_services_containers_support_name = (
             "UserServicesContainersSupportSubnet"
@@ -864,10 +864,10 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Configuration data subnet
                 network.SubnetArgs(
-                    address_prefix=subnet_configuration_data_prefix,
-                    name=subnet_configuration_data_name,
+                    address_prefix=subnet_data_configuration_prefix,
+                    name=subnet_data_configuration_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_configuration_data.id
+                        id=nsg_data_configuration.id
                     ),
                     service_endpoints=[
                         network.ServiceEndpointPropertiesFormatArgs(
@@ -902,10 +902,10 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Private data
                 network.SubnetArgs(
-                    address_prefix=subnet_private_data_prefix,
-                    name=subnet_private_data_name,
+                    address_prefix=subnet_data_private_prefix,
+                    name=subnet_data_private_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_private_data.id
+                        id=nsg_data_private.id
                     ),
                     service_endpoints=[
                         network.ServiceEndpointPropertiesFormatArgs(
@@ -1123,8 +1123,8 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_configuration_data = network.get_subnet_output(
-            subnet_name=subnet_configuration_data_name,
+        self.subnet_data_configuration = network.get_subnet_output(
+            subnet_name=subnet_data_configuration_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
@@ -1138,8 +1138,8 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_private_data = network.get_subnet_output(
-            subnet_name=subnet_private_data_name,
+        self.subnet_data_private = network.get_subnet_output(
+            subnet_name=subnet_data_private_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

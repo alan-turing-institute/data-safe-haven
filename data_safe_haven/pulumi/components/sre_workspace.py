@@ -37,8 +37,8 @@ class SREWorkspaceProps:
         log_analytics_workspace_key: Input[str],
         sre_fqdn: Input[str],
         sre_name: Input[str],
-        storage_account_userdata_name: Input[str],
-        storage_account_securedata_name: Input[str],
+        storage_account_data_private_user_name: Input[str],
+        storage_account_data_private_sensitive_name: Input[str],
         subnet_workspaces: Input[network.GetSubnetResult],
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
@@ -60,8 +60,12 @@ class SREWorkspaceProps:
         self.log_analytics_workspace_key = log_analytics_workspace_key
         self.sre_fqdn = sre_fqdn
         self.sre_name = sre_name
-        self.storage_account_userdata_name = storage_account_userdata_name
-        self.storage_account_securedata_name = storage_account_securedata_name
+        self.storage_account_data_private_user_name = (
+            storage_account_data_private_user_name
+        )
+        self.storage_account_data_private_sensitive_name = (
+            storage_account_data_private_sensitive_name
+        )
         self.virtual_network_name = Output.from_input(virtual_network).apply(
             get_name_from_vnet
         )
@@ -119,8 +123,8 @@ class SREWorkspaceComponent(ComponentResource):
             ldap_user_search_base=props.ldap_user_search_base,
             linux_update_server_ip=props.linux_update_server_ip,
             sre_fqdn=props.sre_fqdn,
-            storage_account_userdata_name=props.storage_account_userdata_name,
-            storage_account_securedata_name=props.storage_account_securedata_name,
+            storage_account_data_private_user_name=props.storage_account_data_private_user_name,
+            storage_account_data_private_sensitive_name=props.storage_account_data_private_sensitive_name,
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
 
         # Deploy a variable number of VMs depending on the input parameters
@@ -179,8 +183,8 @@ class SREWorkspaceComponent(ComponentResource):
         ldap_user_search_base: str,
         linux_update_server_ip: str,
         sre_fqdn: str,
-        storage_account_userdata_name: str,
-        storage_account_securedata_name: str,
+        storage_account_data_private_user_name: str,
+        storage_account_data_private_sensitive_name: str,
     ) -> str:
         resources_path = (
             pathlib.Path(__file__).parent.parent.parent / "resources" / "workspace"
@@ -199,8 +203,8 @@ class SREWorkspaceComponent(ComponentResource):
                 "ldap_user_search_base": ldap_user_search_base,
                 "linux_update_server_ip": linux_update_server_ip,
                 "sre_fqdn": sre_fqdn,
-                "storage_account_userdata_name": storage_account_userdata_name,
-                "storage_account_securedata_name": storage_account_securedata_name,
+                "storage_account_data_private_user_name": storage_account_data_private_user_name,
+                "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive_name,
             }
             cloudinit = chevron.render(f_cloudinit, mustache_values)
             return b64encode(cloudinit)

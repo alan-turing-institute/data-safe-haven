@@ -9,12 +9,16 @@ class SREBackupProps:
     def __init__(
         self,
         location: Input[str],
-        storage_account_securedata_id: Input[str],
-        storage_account_securedata_name: Input[str],
+        storage_account_data_private_sensitive_id: Input[str],
+        storage_account_data_private_sensitive_name: Input[str],
     ) -> None:
         self.location = location
-        self.storage_account_securedata_id = storage_account_securedata_id
-        self.storage_account_securedata_name = storage_account_securedata_name
+        self.storage_account_data_private_sensitive_id = (
+            storage_account_data_private_sensitive_id
+        )
+        self.storage_account_data_private_sensitive_name = (
+            storage_account_data_private_sensitive_name
+        )
 
 
 class SREBackupComponent(ComponentResource):
@@ -164,19 +168,19 @@ class SREBackupComponent(ComponentResource):
             backup_instance_name="backup-instance-blobs",
             properties=dataprotection.BackupInstanceArgs(
                 data_source_info=dataprotection.DatasourceArgs(
-                    resource_id=props.storage_account_securedata_id,
+                    resource_id=props.storage_account_data_private_sensitive_id,
                     datasource_type="Microsoft.Storage/storageAccounts/blobServices",
                     object_type="Datasource",
                     resource_location=props.location,
-                    resource_name=props.storage_account_securedata_name,
+                    resource_name=props.storage_account_data_private_sensitive_name,
                     resource_type="Microsoft.Storage/storageAccounts",
-                    resource_uri=props.storage_account_securedata_id,
+                    resource_uri=props.storage_account_data_private_sensitive_id,
                 ),
                 object_type="BackupInstance",
                 policy_info=dataprotection.PolicyInfoArgs(
                     policy_id=backup_policy_blobs.id,
                 ),
-                friendly_name="BlobBackupSecureData",
+                friendly_name="BlobBackupSensitiveData",
             ),
             resource_group_name=resource_group.name,
             vault_name=backup_vault.name,
