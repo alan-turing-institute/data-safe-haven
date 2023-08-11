@@ -1,0 +1,64 @@
+---
+name: Update Pulumi Docker image versions
+
+# Run workflow on pushes to matching branches
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [python-migration]
+  schedule:
+    - cron: "0 0 */7 * *"  # run once per week
+  workflow_dispatch:  # allow this workflow to be manually triggered
+
+# checkout needs 'contents:read'
+# pull request needs 'pull-requests:write' and 'contents:write'
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update_docker_versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python packages
+        run: |
+          pip install --upgrade pip
+          pip install -r .github/scripts/requirements.txt
+
+      - name: Update Docker image versions
+        run: |
+          python .github/scripts/update_docker_versions.py
+
+      - name: Create pull request
+        if: ${{ ! env.ACT }}
+        id: pull-request
+        uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38  # This commit corresponds to tag 5.0.2
+        with:
+          commit-message: Update Pulumi Docker images
+          committer: GitHub Actions <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          base: python-migration
+          branch: pulumi-docker-images
+          delete-branch: true
+          title: Update Pulumi Docker images
+          body: |
+            ### :arrow_heading_up: Summary
+            - Apply Pulumi image version diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
+
+            ### :closed_umbrella: Related issues
+            None
+
+            ### :microscope: Tests
+            Package versions only
+          labels: |
+            affected: developers
+            severity: minor
+            type: enhancement
+          draft: false
