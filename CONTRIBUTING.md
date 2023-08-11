@@ -34,7 +34,7 @@ For the Data Safe Haven project, we follow a DevOps development philosophy.
 This means different things to different people, but the definition that we're using is [best summed up here](https://www.guru99.com/agile-vs-devops.html).
 
 <p align="center">
-   <img src="docs/contributing/devops_gap.png" width="80%" title="Taken from https://www.guru99.com/agile-vs-devops.html">
+   <img src="docs/source/contributing/devops_gap.png" width="80%" title="Taken from https://www.guru99.com/agile-vs-devops.html">
 </p>
 
 This is a software development method which focuses on:
@@ -87,7 +87,7 @@ In order to contribute via GitHub you'll need to set up a free account and sign 
 We use the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
 <p align="center">
-   <img src="docs/contributing/gitflow.svg" width="80%" title="Taken from https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">
+   <img src="docs/source/contributing/gitflow.svg" width="80%" title="Taken from https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">
 </p>
 
 This means that:
@@ -172,7 +172,7 @@ For example, `@KirstieJane` will send a notification to `Kirstie Whitaker` so sh
 Alternatively (and this is encouraged) you can use the issue to keep track of where you're up to with the task and add information about next steps and barriers.
 
 <p align="center">
-   <img src="docs/contributing/example-conversation-in-issue.png" width="80%" title="example-conversation-in-issue">
+   <img src="docs/source/contributing/example-conversation-in-issue.png" width="80%" title="example-conversation-in-issue">
 </p>
 
 ### Working in a private repository
@@ -226,21 +226,7 @@ The docs, including for older releases, are available [here](https://data-safe-h
 
 You should follow the same instructions as above to [make a change with a pull request](#making-a-change-with-a-pull-request) when editing the documentation.
 
-To preview your changes, you can build the docs locally.
-The documentation build dependencies are listed in [a requirements file](docs/build/requirements.txt) that can be installed using `pip`:
-
-```{shell}
-pip install -r docs/build/requirements.txt
-```
-
-Check out your branch, navigate to the `docs` folder and `make` them:
-
-```{shell}
-cd data-safe-haven/docs
-make html
-```
-
-This will add the contents to a folder called `_output` inside `docs`. Open the index html from a browser and you should be able to navigate the docs and view your changes.
+To preview your changes, you can build the docs locally. See [docs/README.md](docs/README.md).
 
 ### Who's involved in the project
 

@@ -78,8 +78,6 @@ For example:
 :align: center
 ```
 
-(available_python_and_r_versions)=
-
 ### {{snake}} Available Python and R versions
 
 Typing `R` at the command line will give you the system version of `R` with many custom packages pre-installed.

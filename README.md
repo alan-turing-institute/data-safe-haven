@@ -41,6 +41,8 @@ Follow the link from any release to view and clone this repository as at that re
 
 Read our [versioning scheme](VERSIONING.md) for how we number and label releases, as well as details of releases that have been used in production and releases that have undergone formal security evaluation.
 
+When making a new release, open an issue on GitHub and choose the `Release checklist` template, which can be used to track the completion of security checks for the release.
+
 ## :mailbox_with_mail: Vulnerability disclosure
 
 We value those who take the time and effort to report security vulnerabilities.

@@ -6,6 +6,26 @@
 This document assumes that you already have access to a {ref}`Safe Haven Management (SHM) environment <deploy_shm>` and one or more {ref}`Secure Research Environments (SREs) <deploy_sre>` that are linked to it.
 ```
 
+```{include} ../../deployment/snippets/00_symbols.partial.md
+:relative-images:
+```
+
+(renew_ssl)=
+
+## {{alarm_clock}} Renewing SRE Domain Certificates
+
+The remote desktop frontend of an SRE will need to periodically have its SSL certificate renewed so that it can be accessed via HTTPS.
+After each 90 day period that the SRE is live, re-run the script to update the certificate.
+
+![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=ten%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
+
+```powershell
+PS> ./Update_SRE_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
+
 (resize_vm)=
 
 ## {{arrow_upper_right}} Resize the Virtual Machine (VM) of a Secure Research Desktop (SRD)
