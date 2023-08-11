@@ -231,22 +231,6 @@ If users give the wrong username or password they will not be able to progress p
 **Solution**: Check user credentials, password may need to be reset.
 ```
 
-### {{train}} Unable to open any remote apps
-
-Users are stuck at the `Opening remote port` message and never receive the MFA prompt.
-
-```{image} administrator_guide/srd_login_opening_port.png
-:alt: Login failure - no MFA prompt
-:align: center
-```
-
-```{tip}
-**Solution**: Check MFA setup
-
-- Ensure that the user has been assigned a license in Azure Active Directory
-- Check that the user has set up MFA (at [https://aka.ms/mfasetup](https://aka.ms/mfasetup) ) and is using the phone-call or app authentication method
-```
-
 ### {{see_no_evil}} Unable to see SRD or SSH connection options
 
 After logging in with Microsoft, users can't see the option to log into the SRE via the SRD or SSH options.

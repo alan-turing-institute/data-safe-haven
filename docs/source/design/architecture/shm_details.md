@@ -16,8 +16,6 @@ The Windows Servers are running Active Directory and are acting as Domain Contro
 They are configured within an Azure availability set to ensure maximum up time.
 The Domain Controllers synchronise user details to the Azure Active Directory that is associated with the Management subscription to support self-service account activation and password reset.
 
-In addition to the Domain Controllers there is a Windows Network Policy server, this server provides Multifactor Authentication services to the Remote Desktop Servers hosted within the SREs, connecting with Azure AD to provide this service.
-
 Network security is provided by Azure Network Security Groups that ensure that inbound connections from the SREs are limited to Active Directory and RADIUS traffic.
 
 For management of the environment there is an Azure point-to-site (P2S) VPN service configured.

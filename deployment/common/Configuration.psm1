@@ -186,14 +186,12 @@ function Get-ShmConfig {
         netbiosName = ($shmConfigBase.netbiosName ? $shmConfigBase.netbiosName : $shm.id).ToUpper() | Limit-StringLength -MaximumLength 15 -FailureIsFatal
         dn          = "DC=$(($shmConfigBase.domain).Replace('.',',DC='))"
         ous         = [ordered]@{
-            databaseServers   = [ordered]@{ name = "Secure Research Environment Database Servers" }
-            linuxServers      = [ordered]@{ name = "Secure Research Environment Linux Servers" }
-            rdsGatewayServers = [ordered]@{ name = "Secure Research Environment RDS Gateway Servers" }
-            rdsSessionServers = [ordered]@{ name = "Secure Research Environment RDS Session Servers" }
-            researchUsers     = [ordered]@{ name = "Safe Haven Research Users" }
-            securityGroups    = [ordered]@{ name = "Safe Haven Security Groups" }
-            serviceAccounts   = [ordered]@{ name = "Safe Haven Service Accounts" }
-            identityServers   = [ordered]@{ name = "Safe Haven Identity Servers" }
+            databaseServers = [ordered]@{ name = "Secure Research Environment Database Servers" }
+            linuxServers    = [ordered]@{ name = "Secure Research Environment Linux Servers" }
+            researchUsers   = [ordered]@{ name = "Safe Haven Research Users" }
+            securityGroups  = [ordered]@{ name = "Safe Haven Security Groups" }
+            serviceAccounts = [ordered]@{ name = "Safe Haven Service Accounts" }
+            identityServers = [ordered]@{ name = "Safe Haven Identity Servers" }
         }
     }
     $shm.domain.fqdnLower = ($shm.domain.fqdn).ToLower()
@@ -400,30 +398,20 @@ function Get-ShmConfig {
     # ---------
     $shm.users = [ordered]@{
         computerManagers = [ordered]@{
-            databaseServers   = [ordered]@{
+            databaseServers = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Database Servers Manager"
                 samAccountName     = "$($shm.id)databasesrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-database-servers".ToLower()
             }
-            identityServers   = [ordered]@{
+            identityServers = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Identity Servers Manager"
                 samAccountName     = "$($shm.id)identitysrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-identity-servers".ToLower()
             }
-            linuxServers      = [ordered]@{
+            linuxServers    = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Linux Servers Manager"
                 samAccountName     = "$($shm.id)linuxsrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-linux-servers".ToLower()
-            }
-            rdsGatewayServers = [ordered]@{
-                name               = "$($shm.domain.netbiosName) RDS Gateway Manager"
-                samAccountName     = "$($shm.id)gatewaysrvrs".ToLower() | Limit-StringLength -MaximumLength 20
-                passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-gateway-servers".ToLower()
-            }
-            rdsSessionServers = [ordered]@{
-                name               = "$($shm.domain.netbiosName) RDS Session Servers Manager"
-                samAccountName     = "$($shm.id)sessionsrvrs".ToLower() | Limit-StringLength -MaximumLength 20
-                passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-session-servers".ToLower()
             }
         }
         serviceAccounts  = [ordered]@{
@@ -624,22 +612,17 @@ function Get-SreConfig {
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $sreConfigBase = Get-CoreConfig -shmId $shmId -sreId $sreId
 
+    # Support for "MicrosoftRDS" has been removed. The "remotedDesktopProvider" field now defaults to "ApacheGuacamole"
+    if ($sreConfigBase.remoteDesktopProvider -ne "ApacheGuacamole") {
+        Add-LogMessage -Level Fatal "Support for remote desktops other than ApacheGuacamole has been removed"
+    } elseif ($sreConfigBase.remoteDesktopProvider -eq "ApacheGuacamole") {
+        Add-LogMessage -Level Warning "The remoteDesktopProvider configuration option has been deprecated and will be removed in the future"
+    }
+    $sreConfigBase.remoteDesktopProvider = "ApacheGuacamole"
+
     # Secure research environment config
     # ----------------------------------
-    # Check that one of the allowed remote desktop providers is selected
-    $remoteDesktopProviders = @("ApacheGuacamole", "MicrosoftRDS")
-    if (-not $sreConfigBase.remoteDesktopProvider) {
-        Add-LogMessage -Level Warning "No remoteDesktopType was provided. Defaulting to $($remoteDesktopProviders[0])"
-        $sreConfigBase.remoteDesktopProvider = $remoteDesktopProviders[0]
-    }
-    if (-not $remoteDesktopProviders.Contains($sreConfigBase.remoteDesktopProvider)) {
-        Add-LogMessage -Level Fatal "Did not recognise remote desktop provider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
-    }
-    if (
-        ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") -and (-not @(2, 3, 4).Contains([int]$sreConfigBase.tier))
-    ) {
-        Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($sreConfigBase.tier)'"
-    }
+
     # Setup the basic config
     $config = [ordered]@{
         shm = Get-ShmConfig -shmId $sreConfigBase.shmId
@@ -879,8 +862,8 @@ function Get-SreConfig {
         }
     }
 
-    # Remote desktop either through Apache Guacamole or Microsoft RDS
-    # ---------------------------------------------------------------
+    # Apache Guacamole remote desktop
+    # -------------------------------
     $config.sre.remoteDesktop.rg = "$($config.sre.rgPrefix)_REMOTE_DESKTOP".ToUpper()
     if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
         $config.sre.network.vnet.subnets.remoteDesktop.nsg = [ordered]@{
@@ -894,44 +877,6 @@ function Get-SreConfig {
             vmSize                          = "Standard_DS2_v2"
             ip                              = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
             disks                           = [ordered]@{
-                os = [ordered]@{
-                    sizeGb = "128"
-                    type   = $config.sre.diskTypeDefault
-                }
-            }
-        }
-    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        $config.sre.remoteDesktop.gateway = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
-            vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
-            vmSize                  = "Standard_DS2_v2"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
-            installationDirectory   = "C:\Installation"
-            nsg                     = [ordered]@{
-                name  = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
-                rules = "sre-nsg-rules-gateway.json"
-            }
-            disks                   = [ordered]@{
-                data = [ordered]@{
-                    sizeGb = "1023"
-                    type   = $config.sre.diskTypeDefault
-                }
-                os   = [ordered]@{
-                    sizeGb = "128"
-                    type   = $config.sre.diskTypeDefault
-                }
-            }
-        }
-        $config.sre.remoteDesktop.appSessionHost = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
-            vmName                  = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
-            vmSize                  = "Standard_DS2_v2"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 5
-            nsg                     = [ordered]@{
-                name  = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
-                rules = "sre-nsg-rules-session-hosts.json"
-            }
-            disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
                     type   = $config.sre.diskTypeDefault

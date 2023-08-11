@@ -34,7 +34,6 @@ if ($Group -eq "Identity") {
 } elseif ($Group -eq "Mirrors") {
     # Remove Identity VMs from list
     $vmsByRg.Remove($config.dc.rg)
-    $vmsByRg.Remove($config.nps.rg)
 }
 
 switch ($Action) {
@@ -48,23 +47,19 @@ switch ($Action) {
             $primaryDCAlreadyRunning = Confirm-VmRunning -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
             if ($primaryDCAlreadyRunning) {
                 Add-LogMessage -Level InfoSuccess "VM '$($config.dc.vmName)' already running."
-                # Start Secondary DC and NPS
+                # Start Secondary DC
                 Start-VM -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
-                Start-VM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg -SkipIfNotExist
             } else {
-                # Stop Secondary DC and NPS as these must start after Primary DC
+                # Stop Secondary DC as it must start after Primary DC
                 Add-LogMessage -Level Info "Stopping Secondary DC and NPS as Primary DC is not running."
                 Stop-Vm -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
-                Stop-Vm -Name $config.nps.vmName -ResourceGroupName $config.nps.rg -SkipIfNotExist
                 # Start Primary DC
                 Start-VM -Name $config.dc.vmName -ResourceGroupName $config.dc.rg
-                # Start Secondary DC and NPS
+                # Start Secondary DC
                 Start-VM -Name $config.dcb.vmName -ResourceGroupName $config.dc.rg
-                Start-VM -Name $config.nps.vmName -ResourceGroupName $config.nps.rg -SkipIfNotExist
             }
             # Remove Identity VMs from general VM list so they are not processed twice
             $vmsByRg.Remove($config.dc.rg)
-            $vmsByRg.Remove($config.nps.rg)
         }
         # Process remaining SHM VMs covered by the specified group
         foreach ($key in $vmsByRg.Keys) {
