@@ -36,6 +36,10 @@ jobs:
         run: |
           python .github/scripts/update_docker_versions.py
 
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
       - name: Create pull request
         if: ${{ ! env.ACT }}
         id: pull-request
