@@ -1,0 +1,37 @@
+---
+name: Update Pulumi Docker image versions
+
+# Run workflow on pushes to matching branches
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [develop, python-migration, docker-auto-update]
+  schedule:
+    - cron: "0 0 */7 * *"  # run once per week
+  workflow_dispatch:  # allow this workflow to be manually triggered
+
+# checkout needs 'contents:read'
+# pull request needs 'pull-requests:write' and 'contents:write'
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update_docker_versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python packages
+        run: |
+          pip install --upgrade pip
+          pip install -r .github/scripts/requirements.txt
+
+      - name: Update Docker image versions
+        run: |
+          python .github/scripts/update_docker_versions.py
