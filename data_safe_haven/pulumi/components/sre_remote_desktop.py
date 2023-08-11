@@ -265,7 +265,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-remote-desktop",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="caddy:2",
+                    image="caddy:2.7.2",
                     name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
@@ -290,7 +290,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 # Note that the environment variables are not all documented.
                 # More information at https://github.com/apache/guacamole-client/blob/master/guacamole-docker/bin/start.sh
                 containerinstance.ContainerArgs(
-                    image="guacamole/guacamole:1.5.2",
+                    image="guacamole/guacamole:1.5.3",
                     name="guacamole"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
@@ -351,7 +351,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="guacamole/guacd:1.5.2",
+                    image="guacamole/guacd:1.5.3",
                     name="guacd"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
