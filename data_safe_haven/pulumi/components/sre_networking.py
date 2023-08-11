@@ -513,6 +513,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests over TCP.",
+                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
+                    destination_port_ranges=["389", "636"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowLDAPClientTCPOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
