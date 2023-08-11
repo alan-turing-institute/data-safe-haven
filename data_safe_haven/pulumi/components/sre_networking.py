@@ -443,7 +443,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from Guacamole remote desktop gateway.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=subnet_guacamole_containers_support_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGuacamoleContainersInbound",
@@ -559,13 +559,13 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from user services containers.",
-                    destination_address_prefix=subnet_guacamole_containers_support_prefix,
+                    destination_address_prefix=subnet_user_services_containers_support_prefix,
                     destination_port_ranges=["5432"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowUserServicesContainersInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=subnet_user_services_containers_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -636,7 +636,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowConfigurationDataEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_software_repositories_prefix,
+                    source_address_prefix=subnet_user_services_databases_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
