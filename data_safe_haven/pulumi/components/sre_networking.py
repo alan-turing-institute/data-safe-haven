@@ -843,6 +843,18 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound configuration traffic over the internet.",
+                    destination_address_prefix="Internet",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowConfigurationInternetOutbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
                     destination_address_prefix="*",
