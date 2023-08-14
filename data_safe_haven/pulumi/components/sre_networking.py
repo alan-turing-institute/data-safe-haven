@@ -12,6 +12,7 @@ class SRENetworkingProps:
 
     def __init__(
         self,
+        firewall_ip_address: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
@@ -58,6 +59,7 @@ class SRENetworkingProps:
             lambda r: r.next_subnet(256)
         )
         # Other variables
+        self.firewall_ip_address = firewall_ip_address
         self.location = location
         self.public_ip_range_users = "Internet"
         self.shm_fqdn = shm_fqdn
@@ -88,6 +90,23 @@ class SRENetworkingComponent(ComponentResource):
             f"{self._name}_resource_group",
             location=props.location,
             resource_group_name=f"{stack_name}-rg-networking",
+            opts=child_opts,
+        )
+
+        # Define route table
+        network.RouteTable(
+            f"{self._name}_route_table",
+            location=props.location,
+            resource_group_name=resource_group.name,
+            route_table_name=f"{stack_name}-route",
+            routes=[
+                network.RouteArgs(
+                    address_prefix="0.0.0.0/0",
+                    name="ViaFirewall",
+                    next_hop_ip_address=props.firewall_ip_address,
+                    next_hop_type=network.RouteNextHopType.VIRTUAL_APPLIANCE,
+                ),
+            ],
             opts=child_opts,
         )
 

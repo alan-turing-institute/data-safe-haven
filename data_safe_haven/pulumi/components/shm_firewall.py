@@ -1154,3 +1154,8 @@ class SHMFirewallComponent(ComponentResource):
         self.ntp_fqdns = ntp_fqdns
         self.ntp_ip_addresses = ntp_ip_addresses
         self.public_ip_id = public_ip.id
+
+        # Register exports
+        self.exports = {
+            "private_ip_address": private_ip_address,
+        }

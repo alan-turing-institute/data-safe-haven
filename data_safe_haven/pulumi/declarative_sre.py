@@ -60,6 +60,9 @@ class DeclarativeSRE:
             "sre_networking",
             self.stack_name,
             SRENetworkingProps(
+                firewall_ip_address=self.pulumi_opts.require(
+                    "shm-firewall-private-ip-address"
+                ),
                 location=self.cfg.azure.location,
                 shm_fqdn=self.cfg.shm.fqdn,
                 shm_networking_resource_group_name=self.pulumi_opts.require(
