@@ -84,7 +84,7 @@ class SHMFirewallComponent(ComponentResource):
             application_rule_collections=[
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
-                    name=f"{stack_name}-allow",
+                    name=f"{stack_name}-identity-servers",
                     priority=1000,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
@@ -785,20 +785,6 @@ class SHMFirewallComponent(ComponentResource):
                             ],
                         ),
                         network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external script downloads from GitHub",
-                            name="AllowExternalGitHubScriptDownload",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "raw.githubusercontent.com",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
                             description="Allow external AzureAD login requests",
                             name="AllowExternalAzureADLogin",
                             protocols=[
@@ -814,35 +800,6 @@ class SHMFirewallComponent(ComponentResource):
                                 "login.microsoftonline.com",
                                 "login.windows.net",
                                 "secure.aadcdn.microsoftonline-p.com",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external Azure Automation requests",
-                            name="AllowExternalAzureAutomationOperations",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=["*"],
-                            target_fqdns=[
-                                "ac-jobruntimedata-prod-su1.azure-automation.net",
-                                "ae-jobruntimedata-prod-su1.azure-automation.net",
-                                "ase-jobruntimedata-prod-su1.azure-automation.net",
-                                "cc-jobruntimedata-prod-su1.azure-automation.net",
-                                "cid-jobruntimedata-prod-su1.azure-automation.net",
-                                "eus2-jobruntimedata-prod-su1.azure-automation.net",
-                                "jpe-jobruntimedata-prod-su1.azure-automation.net",
-                                "ne-jobruntimedata-prod-su1.azure-automation.net",
-                                "scus-jobruntimedata-prod-su1.azure-automation.net",
-                                "sea-jobruntimedata-prod-su1.azure-automation.net",
-                                "stzn-jobruntimedata-prod-su1.azure-automation.net",
-                                "uks-jobruntimedata-prod-su1.azure-automation.net",
-                                "usge-jobruntimedata-prod-su1.azure-automation.us",
-                                "wcus-jobruntimedata-prod-su1.azure-automation.net",
-                                "we-jobruntimedata-prod-su1.azure-automation.net",
-                                "wus2-jobruntimedata-prod-su1.azure-automation.net",
                             ],
                         ),
                         network.AzureFirewallApplicationRuleArgs(
@@ -886,7 +843,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=["*"],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
                                 "crl.microsoft.com",
                                 "crl3.digicert.com",
@@ -895,102 +852,18 @@ class SHMFirewallComponent(ComponentResource):
                             ],
                         ),
                         network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external NTP requests",
-                            name="AllowExternalGoogleNTP",
+                            description="Allow external script downloads from GitHub",
+                            name="AllowExternalGitHubScriptDownload",
                             protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=123,
-                                    protocol_type="Http",
-                                )
-                            ],
-                            source_addresses=["*"],
-                            target_fqdns=ntp_fqdns,
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external Linux update requests",
-                            name="AllowExternalLinuxUpdate",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=80,
-                                    protocol_type="Http",
-                                ),
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=443,
                                     protocol_type="Https",
-                                ),
+                                )
                             ],
-                            source_addresses=[props.subnet_update_servers_iprange],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
-                                "apt.postgresql.org",
-                                "archive.ubuntu.com",
-                                "azure.archive.ubuntu.com",
-                                "changelogs.ubuntu.com",
-                                "cloudapp.azure.com",  # this is where azure.archive.ubuntu.com is hosted
-                                "d20rj4el6vkp4c.cloudfront.net",
-                                "dbeaver.io",
-                                "developer.download.nvidia.com",
-                                "packages.gitlab.com",
-                                "packages.microsoft.com",
-                                "qgis.org",
-                                "security.ubuntu.com",
-                                "ubuntu.qgis.org",
+                                "raw.githubusercontent.com",
                             ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external Linux ClamAV update requests",
-                            name="AllowExternalLinuxClamAVUpdate",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=80,
-                                    protocol_type="Http",
-                                ),
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                ),
-                            ],
-                            source_addresses=["*"],
-                            target_fqdns=[
-                                "current.cvd.clamav.net",
-                                "database.clamav.net.cdn.cloudflare.net",
-                                "database.clamav.net",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external CRAN package requests",
-                            name="AllowExternalPackageDownloadCRAN",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[
-                                "*"
-                                # "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
-                                # "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
-                                # "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
-                                # "{{network.vnetRepositoriesTier3.subnets.proxies.cidr}}"
-                            ],
-                            target_fqdns=["cran.r-project.org"],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external PyPI package requests",
-                            name="AllowExternalPackageDownloadPyPI",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[
-                                "*"
-                                # "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
-                                # "{{network.vnetRepositoriesTier2.subnets.proxies.cidr}}",
-                                # "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
-                                # "{{network.vnetRepositoriesTier3.subnets.proxies.cidr}}"
-                            ],
-                            target_fqdns=["files.pythonhosted.org", "pypi.org"],
                         ),
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Powershell module installation requests",
@@ -1001,10 +874,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=[
-                                props.subnet_identity_servers_iprange,
-                                props.subnet_update_servers_iprange,
-                            ],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
                                 "psg-prod-eastus.azureedge.net",
                                 "www.powershellgallery.com",
@@ -1035,10 +905,9 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 ),
                             ],
-                            source_addresses=["*"],
+                            source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
                                 "au.download.windowsupdate.com",
-                                # "{{storage.artifacts.accountName}}.blob.core.windows.net",
                                 "ctldl.windowsupdate.com",
                                 "download.microsoft.com",
                                 "download.windowsupdate.com",
@@ -1059,8 +928,151 @@ class SHMFirewallComponent(ComponentResource):
                                 "windowsupdate.microsoft.com",
                             ],
                         ),
+                    ]
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(type="Allow"),
+                    name=f"{stack_name}-any",
+                    priority=1010,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external Azure Automation requests",
+                            name="AllowExternalAzureAutomationOperations",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type="Https",
+                                )
+                            ],
+                            source_addresses=["*"],
+                            target_fqdns=[
+                                "ac-jobruntimedata-prod-su1.azure-automation.net",
+                                "ae-jobruntimedata-prod-su1.azure-automation.net",
+                                "ase-jobruntimedata-prod-su1.azure-automation.net",
+                                "cc-jobruntimedata-prod-su1.azure-automation.net",
+                                "cid-jobruntimedata-prod-su1.azure-automation.net",
+                                "eus2-jobruntimedata-prod-su1.azure-automation.net",
+                                "jpe-jobruntimedata-prod-su1.azure-automation.net",
+                                "ne-jobruntimedata-prod-su1.azure-automation.net",
+                                "scus-jobruntimedata-prod-su1.azure-automation.net",
+                                "sea-jobruntimedata-prod-su1.azure-automation.net",
+                                "stzn-jobruntimedata-prod-su1.azure-automation.net",
+                                "uks-jobruntimedata-prod-su1.azure-automation.net",
+                                "usge-jobruntimedata-prod-su1.azure-automation.us",
+                                "wcus-jobruntimedata-prod-su1.azure-automation.net",
+                                "we-jobruntimedata-prod-su1.azure-automation.net",
+                                "wus2-jobruntimedata-prod-su1.azure-automation.net",
+                            ],
+                        ),
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external NTP requests",
+                            name="AllowExternalGoogleNTP",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=123,
+                                    protocol_type="Http",
+                                )
+                            ],
+                            source_addresses=["*"],
+                            target_fqdns=ntp_fqdns,
+                        ),
+                    ]
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(type="Allow"),
+                    name=f"{stack_name}-update-servers",
+                    priority=1020,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external Linux update requests",
+                            name="AllowExternalLinuxUpdate",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=80,
+                                    protocol_type="Http",
+                                ),
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type="Https",
+                                ),
+                            ],
+                            source_addresses=[props.subnet_update_servers_iprange],
+                            target_fqdns=[
+                                "apt.postgresql.org",
+                                "archive.ubuntu.com",
+                                "azure.archive.ubuntu.com",
+                                "changelogs.ubuntu.com",
+                                "cloudapp.azure.com",  # this is where azure.archive.ubuntu.com is hosted
+                                "d20rj4el6vkp4c.cloudfront.net",
+                                "dbeaver.io",
+                                "developer.download.nvidia.com",
+                                "packages.gitlab.com",
+                                "packages.microsoft.com",
+                                "qgis.org",
+                                "security.ubuntu.com",
+                                "ubuntu.qgis.org",
+                            ],
+                        ),
                     ],
-                )
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(type="Allow"),
+                    name=f"{stack_name}-sre-package-repositories",
+                    priority=1100,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external CRAN package requests",
+                            name="AllowExternalPackageDownloadCRAN",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type="Https",
+                                )
+                            ],
+                            source_addresses=["*"],
+                            target_fqdns=["cran.r-project.org"],
+                        ),
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external PyPI package requests",
+                            name="AllowExternalPackageDownloadPyPI",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type="Https",
+                                )
+                            ],
+                            source_addresses=["*"],
+                            target_fqdns=["files.pythonhosted.org", "pypi.org"],
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(type="Allow"),
+                    name=f"{stack_name}-sre-workspaces",
+                    priority=1110,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external Linux ClamAV update requests",
+                            name="AllowExternalLinuxClamAVUpdate",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=80,
+                                    protocol_type="Http",
+                                ),
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type="Https",
+                                ),
+                            ],
+                            source_addresses=["*"],
+                            target_fqdns=[
+                                "current.cvd.clamav.net",
+                                "database.clamav.net.cdn.cloudflare.net",
+                                "database.clamav.net",
+                            ],
+                        ),
+                    ],
+                ),
             ],
             azure_firewall_name=f"{stack_name}-firewall",
             ip_configurations=[
@@ -1074,17 +1086,9 @@ class SHMFirewallComponent(ComponentResource):
             network_rule_collections=[
                 network.AzureFirewallNetworkRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
-                    name=f"{stack_name}-allow",
+                    name=f"{stack_name}-identity-servers",
                     priority=1000,
                     rules=[
-                        network.AzureFirewallNetworkRuleArgs(
-                            description="Allow external NTP requests",
-                            destination_addresses=ntp_ip_addresses,
-                            destination_ports=["123"],
-                            name="AllowExternalNTP",
-                            protocols=[network.AzureFirewallNetworkRuleProtocol.UDP],
-                            source_addresses=["*"],
-                        ),
                         network.AzureFirewallNetworkRuleArgs(
                             description="Allow external DNS resolver",
                             destination_addresses=[external_dns_resolver],
@@ -1096,15 +1100,20 @@ class SHMFirewallComponent(ComponentResource):
                             ],
                             source_addresses=[props.subnet_identity_servers_iprange],
                         ),
+                    ]
+                ),
+                network.AzureFirewallNetworkRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(type="Allow"),
+                    name=f"{stack_name}-all",
+                    priority=1010,
+                    rules=[
                         network.AzureFirewallNetworkRuleArgs(
-                            description="Allow external rsync requests to CRAN",
-                            destination_fqdns=["cran.r-project.org"],
-                            destination_ports=["873"],
-                            name="AllowExternalPackageRSyncCRAN",
-                            protocols=[network.AzureFirewallNetworkRuleProtocol.TCP],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            #         "{{network.vnetRepositoriesTier2.subnets.mirrorsExternal.cidr}}",
-                            #         "{{network.vnetRepositoriesTier3.subnets.mirrorsExternal.cidr}}",
+                            description="Allow external NTP requests",
+                            destination_addresses=ntp_ip_addresses,
+                            destination_ports=["123"],
+                            name="AllowExternalNTP",
+                            protocols=[network.AzureFirewallNetworkRuleProtocol.UDP],
+                            source_addresses=["*"],
                         ),
                     ],
                 )
