@@ -1079,6 +1079,20 @@ class SHMFirewallComponent(ComponentResource):
                                 "database.clamav.net",
                             ],
                         ),
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external Linux ClamAV update requests",
+                            name="AllowExternalUbuntuKeyserver",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=11371,
+                                    protocol_type="Http",
+                                ),
+                            ],
+                            source_addresses=sre_workspaces_subnets,
+                            target_fqdns=[
+                                "keyserver.ubuntu.com",
+                            ],
+                        ),
                     ],
                 ),
             ],
