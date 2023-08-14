@@ -68,6 +68,10 @@ class SHMFirewallComponent(ComponentResource):
             str(SRESubnetRanges(idx).user_services_software_repositories)
             for idx in range(1, SRESubnetRanges.max_index)
         ]
+        sre_remote_desktop_gateway_subnets = [
+            str(SRESubnetRanges(idx).guacamole_containers)
+            for idx in range(1, SRESubnetRanges.max_index)
+        ]
         sre_workspaces_subnets = [
             str(SRESubnetRanges(idx).workspaces)
             for idx in range(1, SRESubnetRanges.max_index)
@@ -1056,8 +1060,27 @@ class SHMFirewallComponent(ComponentResource):
                 ),
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
-                    name=f"{stack_name}-sre-workspaces",
+                    name=f"{stack_name}-sre-remote-desktop-gateways",
                     priority=1110,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external OAuth login requests",
+                            name="AllowExternalOAuthLogin",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type="Https",
+                                )
+                            ],
+                            source_addresses=sre_remote_desktop_gateway_subnets,
+                            target_fqdns=["login.microsoftonline.com"],
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(type="Allow"),
+                    name=f"{stack_name}-sre-workspaces",
+                    priority=1120,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Linux ClamAV update requests",
