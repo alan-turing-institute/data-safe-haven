@@ -95,17 +95,17 @@ class SRENetworkingComponent(ComponentResource):
         subnet_application_gateway_prefix = (
             props.subnet_application_gateway_iprange.apply(lambda r: str(r))
         )
-        subnet_guacamole_containers_prefix = (
-            props.subnet_guacamole_containers_iprange.apply(lambda r: str(r))
-        )
-        subnet_guacamole_containers_support_prefix = (
-            props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
-        )
         subnet_data_configuration_prefix = (
             props.subnet_data_configuration_iprange.apply(lambda r: str(r))
         )
         subnet_data_private_prefix = props.subnet_data_private_iprange.apply(
             lambda r: str(r)
+        )
+        subnet_guacamole_containers_prefix = (
+            props.subnet_guacamole_containers_iprange.apply(lambda r: str(r))
+        )
+        subnet_guacamole_containers_support_prefix = (
+            props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
         )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
