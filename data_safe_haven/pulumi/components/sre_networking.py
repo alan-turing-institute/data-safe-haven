@@ -214,7 +214,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_data_configuration = network.NetworkSecurityGroup(
             f"{self._name}_nsg_data_configuration",
-            network_security_group_name=f"{stack_name}-nsg-configuration-data",
+            network_security_group_name=f"{stack_name}-nsg-data-configuration",
             resource_group_name=resource_group.name,
             security_rules=[
                 # Inbound
@@ -284,7 +284,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_data_private = network.NetworkSecurityGroup(
             f"{self._name}_nsg_data_private",
-            network_security_group_name=f"{stack_name}-nsg-private-data",
+            network_security_group_name=f"{stack_name}-nsg-data-private",
             resource_group_name=resource_group.name,
             security_rules=[
                 # Inbound
@@ -377,7 +377,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowConfigurationDataEndpointsOutbound",
+                    name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_guacamole_containers_prefix,
@@ -529,7 +529,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowConfigurationDataEndpointsOutbound",
+                    name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_user_services_containers_prefix,
@@ -645,7 +645,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowConfigurationDataEndpointsOutbound",
+                    name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_user_services_databases_prefix,
@@ -703,7 +703,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowConfigurationDataEndpointsOutbound",
+                    name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_user_services_software_repositories_prefix,
@@ -824,7 +824,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=subnet_data_private_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowPrivateDataEndpointsOutbound",
+                    name="AllowDataPrivateEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_workspaces_prefix,
@@ -896,8 +896,8 @@ class SRENetworkingComponent(ComponentResource):
 
         # Define the virtual network and its subnets
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
-        subnet_data_configuration_name = "ConfigurationDataSubnet"
-        subnet_data_private_name = "PrivateDataSubnet"
+        subnet_data_configuration_name = "DataConfigurationSubnet"
+        subnet_data_private_name = "DataPrivateSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
