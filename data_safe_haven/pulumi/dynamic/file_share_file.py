@@ -113,6 +113,7 @@ class FileShareFileProvider(DshResourceProvider):
                 props["destination_path"],
             )
             if self.file_exists(file_client):
+                file_client.close_all_handles()
                 file_client.delete_file()
         except Exception as exc:
             file_name = file_client.file_name if file_client else ""
