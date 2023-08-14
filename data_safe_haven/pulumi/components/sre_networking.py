@@ -91,7 +91,7 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Define route table
-        network.RouteTable(
+        route_table = network.RouteTable(
             f"{self._name}_route_table",
             location=props.location,
             resource_group_name=resource_group.name,
@@ -939,6 +939,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_application_gateway.id
                     ),
+                    route_table=None,  # the application gateway must not go via the firewall
                 ),
                 # Configuration data subnet
                 network.SubnetArgs(
@@ -947,6 +948,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_data_configuration.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                     service_endpoints=[
                         network.ServiceEndpointPropertiesFormatArgs(
                             locations=[props.location],
@@ -961,6 +963,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_data_private.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                     service_endpoints=[
                         network.ServiceEndpointPropertiesFormatArgs(
                             locations=[props.location],
@@ -982,6 +985,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_guacamole_containers.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # Guacamole containers support
                 network.SubnetArgs(
@@ -991,6 +995,7 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_guacamole_containers_support.id
                     ),
                     private_endpoint_network_policies="Disabled",
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services containers
                 network.SubnetArgs(
@@ -1006,6 +1011,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_containers.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services containers support
                 network.SubnetArgs(
@@ -1014,6 +1020,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_containers_support.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services databases
                 network.SubnetArgs(
@@ -1022,6 +1029,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_databases.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services software repositories
                 network.SubnetArgs(
@@ -1037,6 +1045,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_software_repositories.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # Workspaces
                 network.SubnetArgs(
@@ -1045,6 +1054,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_workspaces.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
             ],
             virtual_network_name=f"{stack_name}-vnet",
