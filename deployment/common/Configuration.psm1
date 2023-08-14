@@ -729,7 +729,6 @@ function Get-SreConfig {
         }
     }
 
-
     # Firewall config
     # ---------------
     $config.sre.firewall = [ordered]@{
@@ -928,28 +927,10 @@ function Get-SreConfig {
     $config.sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule = ($config.sre.remoteDesktop.networkRules.outboundInternet -ne "Allow")
 
 
-    # CoCalc, CodiMD and Gitlab servers
-    # ---------------------------------
+    # CodiMD and Gitlab servers
+    # -------------------------
     $config.sre.webapps = [ordered]@{
         rg     = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
-        cocalc = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-cocalc"
-            dockerVersion           = "latest"
-            hostname                = "COCALC"
-            vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 7
-            osVersion               = "Ubuntu-latest"
-            disks                   = [ordered]@{
-                data = [ordered]@{
-                    sizeGb = "512"
-                    type   = $config.sre.diskTypeDefault
-                }
-                os   = [ordered]@{
-                    sizeGb = "32"
-                    type   = $config.sre.diskTypeDefault
-                }
-            }
-        }
         codimd = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-codimd"
             hostname                = "CODIMD"
