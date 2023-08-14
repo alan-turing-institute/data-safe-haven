@@ -155,17 +155,6 @@ write_files:
           options(repos = r)
       })
 
-  - path: "/etc/skel/Desktop/CoCalc.desktop"
-    permissions: "0755"
-    content: |
-      [Desktop Entry]
-      Version=1.0
-      Type=Link
-      Name=CoCalc
-      Comment=
-      Icon=/opt/icons/cocalc.png
-      URL=https://{{sre.webapps.cocalc.fqdn}}
-
   - path: "/etc/skel/Desktop/CodiMD.desktop"
     permissions: "0755"
     content: |
