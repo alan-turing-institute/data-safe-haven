@@ -5,6 +5,7 @@ write_files:
     content: |
       # Additional mirror domains that are allowed by this cache
       apt.postgresql.org
+      azure.archive.ubuntu.com
       d20rj4el6vkp4c.cloudfront.net
       dbeaver.io
       developer.download.nvidia.com
