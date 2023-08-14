@@ -925,6 +925,7 @@ class SHMFirewallComponent(ComponentResource):
                                 "archive.ubuntu.com",
                                 "azure.archive.ubuntu.com",
                                 "changelogs.ubuntu.com",
+                                "cloudapp.azure.com",  # this is where azure.archive.ubuntu.com is hosted
                                 "d20rj4el6vkp4c.cloudfront.net",
                                 "dbeaver.io",
                                 "developer.download.nvidia.com",
