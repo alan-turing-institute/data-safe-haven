@@ -46,7 +46,7 @@ class DeclarativeSHM:
         )
 
         # Deploy firewall and routing
-        SHMFirewallComponent(
+        firewall = SHMFirewallComponent(
             "shm_firewall",
             self.stack_name,
             SHMFirewallProps(
@@ -143,6 +143,7 @@ class DeclarativeSHM:
 
         # Export values for later use
         pulumi.export("domain_controllers", domain_controllers.exports)
+        pulumi.export("firewall", firewall.exports)
         pulumi.export("monitoring", monitoring.exports)
         pulumi.export("networking", networking.exports)
         pulumi.export("update_servers", update_servers.exports)

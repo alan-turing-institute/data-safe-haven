@@ -79,6 +79,11 @@ def deploy_sre(
             replace=True,
         )
         stack.add_option(
+            "shm-firewall-private-ip-address",
+            shm_stack.output("firewall")["private_ip_address"],
+            replace=True,
+        )
+        stack.add_option(
             "shm-monitoring-automation_account_name",
             shm_stack.output("monitoring")["automation_account_name"],
             replace=True,
