@@ -2,7 +2,7 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
-from data_safe_haven.pulumi.common import get_id_from_subnet
+from data_safe_haven.pulumi.common import SRESubnetRanges, get_id_from_subnet
 
 
 class SHMFirewallProps:
@@ -63,6 +63,14 @@ class SHMFirewallComponent(ComponentResource):
             "time2.google.com",
             "time3.google.com",
             "time4.google.com",
+        ]
+        sre_package_repositories_subnets = [
+            str(SRESubnetRanges(idx).user_services_software_repositories)
+            for idx in range(1, SRESubnetRanges.max_index)
+        ]
+        sre_workspaces_subnets = [
+            str(SRESubnetRanges(idx).workspaces)
+            for idx in range(1, SRESubnetRanges.max_index)
         ]
 
         # Deploy IP address
@@ -928,7 +936,7 @@ class SHMFirewallComponent(ComponentResource):
                                 "windowsupdate.microsoft.com",
                             ],
                         ),
-                    ]
+                    ],
                 ),
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
@@ -976,7 +984,7 @@ class SHMFirewallComponent(ComponentResource):
                             source_addresses=["*"],
                             target_fqdns=ntp_fqdns,
                         ),
-                    ]
+                    ],
                 ),
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
@@ -1029,7 +1037,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=["*"],
+                            source_addresses=sre_package_repositories_subnets,
                             target_fqdns=["cran.r-project.org"],
                         ),
                         network.AzureFirewallApplicationRuleArgs(
@@ -1041,7 +1049,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 )
                             ],
-                            source_addresses=["*"],
+                            source_addresses=sre_package_repositories_subnets,
                             target_fqdns=["files.pythonhosted.org", "pypi.org"],
                         ),
                     ],
@@ -1064,7 +1072,7 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type="Https",
                                 ),
                             ],
-                            source_addresses=["*"],
+                            source_addresses=sre_workspaces_subnets,
                             target_fqdns=[
                                 "current.cvd.clamav.net",
                                 "database.clamav.net.cdn.cloudflare.net",
@@ -1100,7 +1108,7 @@ class SHMFirewallComponent(ComponentResource):
                             ],
                             source_addresses=[props.subnet_identity_servers_iprange],
                         ),
-                    ]
+                    ],
                 ),
                 network.AzureFirewallNetworkRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
@@ -1116,7 +1124,7 @@ class SHMFirewallComponent(ComponentResource):
                             source_addresses=["*"],
                         ),
                     ],
-                )
+                ),
             ],
             resource_group_name=props.resource_group_name,
             sku=network.AzureFirewallSkuArgs(

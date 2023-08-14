@@ -2,9 +2,9 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-from data_safe_haven.external import AzureIPv4Range
+# from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
-from data_safe_haven.pulumi.common import NetworkingPriorities
+from data_safe_haven.pulumi.common import NetworkingPriorities, SRESubnetRanges
 
 
 class SRENetworkingProps:
@@ -25,39 +25,36 @@ class SRENetworkingProps:
         sre_name: Input[str],
     ) -> None:
         # Virtual network and subnet IP ranges
-        self.vnet_iprange = Output.from_input(sre_index).apply(
-            lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
+        subnet_ranges = Output.from_input(sre_index).apply(
+            lambda idx: SRESubnetRanges(idx)
         )
-        self.subnet_application_gateway_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(256)
+        self.vnet_iprange = subnet_ranges.apply(lambda s: s.vnet)
+        self.subnet_application_gateway_iprange = subnet_ranges.apply(
+            lambda s: s.application_gateway
         )
-        self.subnet_data_configuration_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_data_configuration_iprange = subnet_ranges.apply(
+            lambda s: s.data_configuration
         )
-        self.subnet_data_private_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_data_private_iprange = subnet_ranges.apply(lambda s: s.data_private)
+        self.subnet_guacamole_containers_iprange = subnet_ranges.apply(
+            lambda s: s.guacamole_containers
         )
-        self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_guacamole_containers_support_iprange = subnet_ranges.apply(
+            lambda s: s.guacamole_containers_support
         )
-        self.subnet_guacamole_containers_support_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_user_services_containers_iprange = subnet_ranges.apply(
+            lambda s: s.user_services_containers
         )
-        self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_user_services_containers_support_iprange = subnet_ranges.apply(
+            lambda s: s.user_services_containers_support
         )
-        self.subnet_user_services_containers_support_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_user_services_databases_iprange = subnet_ranges.apply(
+            lambda s: s.user_services_databases
         )
-        self.subnet_user_services_databases_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_user_services_software_repositories_iprange = subnet_ranges.apply(
+            lambda s: s.user_services_software_repositories
         )
-        self.subnet_user_services_software_repositories_iprange = (
-            self.vnet_iprange.apply(lambda r: r.next_subnet(8))
-        )
-        self.subnet_workspaces_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(256)
-        )
+        self.subnet_workspaces_iprange = subnet_ranges.apply(lambda s: s.workspaces)
         # Other variables
         self.firewall_ip_address = firewall_ip_address
         self.location = location
