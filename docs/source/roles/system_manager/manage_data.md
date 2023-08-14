@@ -150,7 +150,6 @@ The disks covered by the protection for each SRE are the
 
 - GitLab data disk
 - CodiMD data disk
-- CoCalc data disk
 - PostgreSQL data disk
 - MSSQL data disk
 

@@ -106,7 +106,7 @@ PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 </details>
 
 <details>
-<summary><strong>Deploy web applications (CoCalc, CodiMD and GitLab)</strong></summary>
+<summary><strong>Deploy web applications (CodiMD and GitLab)</strong></summary>
 
 ```{include} snippets/07_deploy_webapps.partial.md
 :relative-images:
@@ -237,13 +237,9 @@ If you see an error like the following when attempting to log in, it is likely t
 </details>
 ````
 
-### {{snowflake}} Test CoCalc, CodiMD and GitLab servers
+### {{snowflake}} Test CodiMD and GitLab servers
 
 - Connect to the remote desktop {ref}`using the instructions above <deploy_sre_apache_guacamole_test_remote_desktop>`
-- Test `CoCalc` by clicking on the `CoCalc` desktop icon.
-  - This should open a web browser inside the remote desktop
-  - You will get a warning about a `Potential Security Risk` related to a self-signed certificate. It is safe to trust this by selecting `Advanced > Accept the risk and continue`.
-  - Create a new username and password and use this to log in.
 - Test `CodiMD` by clicking on the `CodiMD` desktop icon.
   - This should open a web browser inside the remote desktop
   - Log in with the short-form `username` of a user in the `SG <SRE ID> Research Users` security group.
