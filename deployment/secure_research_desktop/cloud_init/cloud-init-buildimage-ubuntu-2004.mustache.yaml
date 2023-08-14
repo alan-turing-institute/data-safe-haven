@@ -260,8 +260,6 @@ runcmd:
   # Get icons for webapps
   - echo "Downloading icons..."
   - mkdir -p /opt/icons
-  - wget https://raw.githubusercontent.com/sagemathinc/cocalc/master/src/packages/assets/cocalc-icon.svg -O /tmp/cocalc-icon.svg || die "Could not find CoCalc icon!"
-  - convert -density 983 -transparent white /tmp/cocalc-icon.svg /opt/icons/cocalc.png || die "Could not convert CoCalc icon!"  # this should give a 1024x1024 png
   - wget https://raw.githubusercontent.com/hackmdio/codimd/develop/public/favicon.png -O /opt/icons/codimd.png || die "Could not find CodiMD icon!"
   - wget https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png -O /opt/icons/gitlab.png || die "Could not find GitLab icon!"
 
