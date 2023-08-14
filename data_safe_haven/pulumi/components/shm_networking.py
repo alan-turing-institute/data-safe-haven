@@ -502,6 +502,7 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Register exports
         self.exports = {
+            "fqdn_nameservers": self.dns_zone.name_servers,
             "private_dns_zone_base_id": self.private_dns_zone_base_id,
             "resource_group_name": resource_group.name,
             "subnet_bastion_prefix": self.subnet_bastion.apply(
