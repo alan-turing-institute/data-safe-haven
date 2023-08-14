@@ -21,14 +21,14 @@ class SHMNetworkingProps:
     ) -> None:
         # Virtual network and subnet IP ranges
         self.vnet_iprange = AzureIPv4Range("10.0.0.0", "10.0.255.255")
-        # Firewall subnet must be at least /26 in size (64 addresses)
-        self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
         # Bastion subnet must be at least /26 in size (64 addresses)
         self.subnet_bastion_iprange = self.vnet_iprange.next_subnet(64)
+        # Firewall subnet must be at least /26 in size (64 addresses)
+        self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
+        self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
         # Monitoring subnet needs 2 IP addresses for automation and 13 for log analytics
         self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(32)
         self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
-        self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
         # Other variables
         self.admin_ip_addresses = admin_ip_addresses
         self.fqdn = fqdn
@@ -345,13 +345,6 @@ class SHMNetworkingComponent(ComponentResource):
             ),
             resource_group_name=resource_group.name,
             subnets=[  # Note that we define subnets inline to avoid creation order issues
-                # AzureFirewall subnet
-                network.SubnetArgs(
-                    address_prefix=str(props.subnet_firewall_iprange),
-                    name=subnet_firewall_name,
-                    network_security_group=None,  # the firewall subnet must NOT have an NSG
-                    route_table=None,  # the firewall subnet must NOT be attached to the route table
-                ),
                 # Bastion subnet
                 network.SubnetArgs(
                     address_prefix=str(props.subnet_bastion_iprange),
@@ -360,6 +353,13 @@ class SHMNetworkingComponent(ComponentResource):
                         id=nsg_bastion.id
                     ),
                     route_table=None,  # the bastion subnet must NOT be attached to the route table
+                ),
+                # AzureFirewall subnet
+                network.SubnetArgs(
+                    address_prefix=str(props.subnet_firewall_iprange),
+                    name=subnet_firewall_name,
+                    network_security_group=None,  # the firewall subnet must NOT have an NSG
+                    route_table=None,  # the firewall subnet must NOT be attached to the route table
                 ),
                 # Identity servers subnet
                 network.SubnetArgs(
