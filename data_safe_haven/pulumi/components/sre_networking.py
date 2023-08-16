@@ -30,14 +30,17 @@ class SRENetworkingProps:
         self.subnet_application_gateway_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(256)
         )
+        self.subnet_data_configuration_iprange = self.vnet_iprange.apply(
+            lambda r: r.next_subnet(8)
+        )
+        self.subnet_data_private_iprange = self.vnet_iprange.apply(
+            lambda r: r.next_subnet(8)
+        )
         self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
         )
         self.subnet_guacamole_containers_support_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
-        )
-        self.subnet_private_data_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(16)
         )
         self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(
             lambda r: r.next_subnet(8)
@@ -92,14 +95,17 @@ class SRENetworkingComponent(ComponentResource):
         subnet_application_gateway_prefix = (
             props.subnet_application_gateway_iprange.apply(lambda r: str(r))
         )
+        subnet_data_configuration_prefix = (
+            props.subnet_data_configuration_iprange.apply(lambda r: str(r))
+        )
+        subnet_data_private_prefix = props.subnet_data_private_iprange.apply(
+            lambda r: str(r)
+        )
         subnet_guacamole_containers_prefix = (
             props.subnet_guacamole_containers_iprange.apply(lambda r: str(r))
         )
         subnet_guacamole_containers_support_prefix = (
             props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
-        )
-        subnet_private_data_prefix = props.subnet_private_data_iprange.apply(
-            lambda r: str(r)
         )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
@@ -127,40 +133,196 @@ class SRENetworkingComponent(ComponentResource):
             network_security_group_name=f"{stack_name}-nsg-application-gateway",
             resource_group_name=resource_group.name,
             security_rules=[
+                # Inbound
                 network.SecurityRuleArgs(
-                    access="Allow",
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound gateway management service traffic.",
                     destination_address_prefix="*",
-                    destination_port_range="*",
-                    direction="Inbound",
+                    destination_port_range="65200-65535",
+                    direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGatewayManagerServiceInbound",
                     priority=NetworkingPriorities.AZURE_GATEWAY_MANAGER,
-                    protocol="*",
+                    protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix="GatewayManager",
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
-                    access="Allow",
-                    description="Allow inbound gateway management traffic over the internet.",
-                    destination_address_prefix=subnet_application_gateway_prefix,
-                    destination_port_range="65200-65535",
-                    direction="Inbound",
-                    name="AllowGatewayManagerInternetInbound",
-                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
-                    protocol="*",
-                    source_address_prefix="Internet",
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound Azure load balancer traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowAzureLoadBalancerServiceInbound",
+                    priority=NetworkingPriorities.AZURE_LOAD_BALANCER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="AzureLoadBalancer",
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
-                    access="Allow",
-                    description="Allow inbound internet to Application Gateway.",
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from users over the internet.",
                     destination_address_prefix=subnet_application_gateway_prefix,
                     destination_port_ranges=["80", "443"],
-                    direction="Inbound",
-                    name="AllowInternetInbound",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowUsersInternetInbound",
                     priority=NetworkingPriorities.AUTHORISED_EXTERNAL_USER_IPS,
-                    protocol="TCP",
+                    protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=props.public_ip_range_users,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to the Guacamole remote desktop gateway.",
+                    destination_address_prefix=subnet_guacamole_containers_prefix,
+                    destination_port_ranges=["80"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowGuacamoleContainersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_application_gateway_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound gateway management traffic over the internet.",
+                    destination_address_prefix="Internet",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowGatewayManagerInternetOutbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Attempting to add our standard DenyAllOtherOutbound rule will cause
+                # this NSG to fail validation. See: https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-groups
+            ],
+            opts=child_opts,
+        )
+        nsg_data_configuration = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_data_configuration",
+            network_security_group_name=f"{stack_name}-nsg-data-configuration",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from Guacamole remote desktop gateway.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowGuacamoleContainersInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from user services containers.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowUserServicesContainersInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from user services software repositories.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowUserServicesSoftwareRepositoriesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_software_repositories_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+        )
+        nsg_data_private = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_data_private",
+            network_security_group_name=f"{stack_name}-nsg-data-private",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from SRE workspaces.",
+                    destination_address_prefix=subnet_data_private_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
                     source_port_range="*",
                 ),
             ],
@@ -170,42 +332,408 @@ class SRENetworkingComponent(ComponentResource):
             f"{self._name}_nsg_guacamole_containers",
             network_security_group_name=f"{stack_name}-nsg-guacamole-containers",
             resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from the Application Gateway.",
+                    destination_address_prefix=subnet_guacamole_containers_prefix,
+                    destination_port_ranges=["80"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowApplicationGatewayInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_APPLICATION_GATEWAY,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_application_gateway_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests over TCP.",
+                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
+                    destination_port_ranges=["389", "636"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowLDAPClientTCPOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to configuration data endpoints.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDataConfigurationEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to Guacamole support services.",
+                    destination_address_prefix=subnet_guacamole_containers_support_prefix,
+                    destination_port_ranges=["5432"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowGuacamoleContainersSupportOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS_SUPPORT,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to SRE workspaces.",
+                    destination_address_prefix=subnet_workspaces_prefix,
+                    destination_port_ranges=["22", "3389"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowWorkspacesOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound OAuth connections over the internet.",
+                    destination_address_prefix="Internet",
+                    destination_port_ranges=["80", "443"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowOAuthInternetOutbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
             opts=child_opts,
         )
         nsg_guacamole_containers_support = network.NetworkSecurityGroup(
             f"{self._name}_nsg_guacamole_containers_support",
             network_security_group_name=f"{stack_name}-nsg-guacamole-containers-support",
             resource_group_name=resource_group.name,
-            opts=child_opts,
-        )
-        nsg_private_data = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_private_data",
-            network_security_group_name=f"{stack_name}-nsg-private-data",
-            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from Guacamole remote desktop gateway.",
+                    destination_address_prefix=subnet_guacamole_containers_support_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowGuacamoleContainersInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
             opts=child_opts,
         )
         nsg_user_services_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers",
             network_security_group_name=f"{stack_name}-nsg-user-services-containers",
             resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from SRE workspaces.",
+                    destination_address_prefix=subnet_user_services_containers_prefix,
+                    destination_port_ranges=["22", "80", "443"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests over TCP.",
+                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
+                    destination_port_ranges=["389", "636"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowLDAPClientTCPOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to configuration data endpoints.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDataConfigurationEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to container support services.",
+                    destination_address_prefix=subnet_user_services_containers_support_prefix,
+                    destination_port_ranges=["5432"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowUserServicesContainersSupportOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS_SUPPORT,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
             opts=child_opts,
         )
         nsg_user_services_containers_support = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers_support",
             network_security_group_name=f"{stack_name}-nsg-user-services-containers-support",
             resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from user services containers.",
+                    destination_address_prefix=subnet_user_services_containers_support_prefix,
+                    destination_port_ranges=["5432"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowUserServicesContainersInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
             opts=child_opts,
         )
         nsg_user_services_databases = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_databases",
             network_security_group_name=f"{stack_name}-nsg-user-services-databases",
             resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from SRE workspaces.",
+                    destination_address_prefix=subnet_user_services_databases_prefix,
+                    destination_port_ranges=["1433", "5432"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to configuration data endpoints.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDataConfigurationEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_databases_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
             opts=child_opts,
         )
         nsg_user_services_software_repositories = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_software_repositories",
             network_security_group_name=f"{stack_name}-nsg-user-services-software-repositories",
             resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from SRE workspaces.",
+                    destination_address_prefix=subnet_user_services_software_repositories_prefix,
+                    destination_port_ranges=["80", "443", "3128"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to configuration data endpoints.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDataConfigurationEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_software_repositories_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to external repositories over the internet.",
+                    destination_address_prefix="Internet",
+                    destination_port_ranges=["80", "443"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowPackagesInternetOutbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_user_services_software_repositories_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
             opts=child_opts,
         )
         nsg_workspaces = network.NetworkSecurityGroup(
@@ -216,12 +744,12 @@ class SRENetworkingComponent(ComponentResource):
                 # Inbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow connections to SRDs from remote desktop gateway.",
+                    description="Allow inbound connections from Guacamole remote desktop gateway.",
                     destination_address_prefix=subnet_workspaces_prefix,
                     destination_port_ranges=["22", "3389"],
                     direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowRemoteDesktopGatewayInbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_REMOTE_DESKTOP,
+                    name="AllowGuacamoleContainersInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
@@ -241,36 +769,15 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to local monitoring tools.",
-                    destination_address_prefix=str(props.shm_subnet_monitoring_prefix),
-                    destination_port_ranges=["443"],
+                    description=(
+                        "Allow LDAP client requests over TCP. "
+                        "See https://devopstales.github.io/linux/pfsense-ad-join/ for details."
+                    ),
+                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
+                    destination_port_ranges=["389", "636"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowMonitoringToolsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_MONITORING_TOOLS,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to private data endpoints.",
-                    destination_address_prefix=subnet_private_data_prefix,
-                    destination_port_range="*",
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowPrivateDataEndpointsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_PRIVATE_DATA,
-                    protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_workspaces_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to Linux update servers.",
-                    destination_address_prefix=props.shm_subnet_update_servers_prefix,
-                    destination_port_ranges=["8000"],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLinuxUpdatesOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_UPDATE_SERVERS,
+                    name="AllowLDAPClientTCPOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
@@ -289,16 +796,37 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description=(
-                        "Allow LDAP client requests over TCP. "
-                        "See https://devopstales.github.io/linux/pfsense-ad-join/ for details."
-                    ),
-                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
-                    destination_port_ranges=["389", "636"],
+                    description="Allow outbound connections to SHM monitoring tools.",
+                    destination_address_prefix=str(props.shm_subnet_monitoring_prefix),
+                    destination_port_ranges=["443"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLDAPClientTCPOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
+                    name="AllowMonitoringToolsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SHM_MONITORING_TOOLS,
                     protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to Linux update servers.",
+                    destination_address_prefix=props.shm_subnet_update_servers_prefix,
+                    destination_port_ranges=["8000"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowLinuxUpdatesOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SHM_UPDATE_SERVERS,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to private data endpoints.",
+                    destination_address_prefix=subnet_data_private_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDataPrivateEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
@@ -318,12 +846,48 @@ class SRENetworkingComponent(ComponentResource):
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to user services databases.",
                     destination_address_prefix=subnet_user_services_databases_prefix,
-                    destination_port_ranges=["5432"],
+                    destination_port_ranges=["1433", "5432"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowUserServicesDatabasesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_DATABASES,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to user services software repositories.",
+                    destination_address_prefix=subnet_user_services_software_repositories_prefix,
+                    destination_port_ranges=["80", "443", "3128"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowUserServicesSoftwareRepositoriesOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound configuration traffic over the internet.",
+                    destination_address_prefix="Internet",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowConfigurationInternetOutbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
                     source_port_range="*",
                 ),
             ],
@@ -332,9 +896,10 @@ class SRENetworkingComponent(ComponentResource):
 
         # Define the virtual network and its subnets
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
+        subnet_data_configuration_name = "DataConfigurationSubnet"
+        subnet_data_private_name = "DataPrivateSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
-        subnet_private_data_name = "PrivateDataSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
         subnet_user_services_containers_support_name = (
             "UserServicesContainersSupportSubnet"
@@ -359,6 +924,34 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_application_gateway.id
                     ),
                 ),
+                # Configuration data subnet
+                network.SubnetArgs(
+                    address_prefix=subnet_data_configuration_prefix,
+                    name=subnet_data_configuration_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_data_configuration.id
+                    ),
+                    service_endpoints=[
+                        network.ServiceEndpointPropertiesFormatArgs(
+                            locations=[props.location],
+                            service="Microsoft.Storage",
+                        )
+                    ],
+                ),
+                # Private data
+                network.SubnetArgs(
+                    address_prefix=subnet_data_private_prefix,
+                    name=subnet_data_private_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_data_private.id
+                    ),
+                    service_endpoints=[
+                        network.ServiceEndpointPropertiesFormatArgs(
+                            locations=[props.location],
+                            service="Microsoft.Storage",
+                        )
+                    ],
+                ),
                 # Guacamole containers
                 network.SubnetArgs(
                     address_prefix=subnet_guacamole_containers_prefix,
@@ -382,20 +975,6 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_guacamole_containers_support.id
                     ),
                     private_endpoint_network_policies="Disabled",
-                ),
-                # Private data
-                network.SubnetArgs(
-                    address_prefix=subnet_private_data_prefix,
-                    name=subnet_private_data_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_private_data.id
-                    ),
-                    service_endpoints=[
-                        network.ServiceEndpointPropertiesFormatArgs(
-                            locations=[props.location],
-                            service="Microsoft.Storage",
-                        )
-                    ],
                 ),
                 # User services containers
                 network.SubnetArgs(
@@ -606,6 +1185,11 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
+        self.subnet_data_configuration = network.get_subnet_output(
+            subnet_name=subnet_data_configuration_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
         self.subnet_guacamole_containers = network.get_subnet_output(
             subnet_name=subnet_guacamole_containers_name,
             resource_group_name=resource_group.name,
@@ -616,8 +1200,8 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_private_data = network.get_subnet_output(
-            subnet_name=subnet_private_data_name,
+        self.subnet_data_private = network.get_subnet_output(
+            subnet_name=subnet_data_private_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

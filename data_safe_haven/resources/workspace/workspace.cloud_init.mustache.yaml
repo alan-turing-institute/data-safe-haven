@@ -57,11 +57,11 @@ write_files:
 
 mounts:
   # Secure data is in a blob container mounted as NFSv3
-  - ["{{storage_account_securedata_name}}.blob.core.windows.net:/{{storage_account_securedata_name}}/ingress", /data, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
-  - ["{{storage_account_securedata_name}}.blob.core.windows.net:/{{storage_account_securedata_name}}/egress", /output, nfs, "rw,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
+  - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress", /data, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
+  - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/egress", /output, nfs, "rw,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   # User data is in a file share mounted as NFSv4
-  - ["{{storage_account_userdata_name}}.file.core.windows.net:/{{storage_account_userdata_name}}/shared", /shared, nfs, "_netdev,sec=sys,nconnect=4"]
-  - ["{{storage_account_userdata_name}}.file.core.windows.net:/{{storage_account_userdata_name}}/home", /home, nfs, "_netdev,sec=sys,nconnect=4"]
+  - ["{{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/shared", /shared, nfs, "_netdev,sec=sys,nconnect=4"]
+  - ["{{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/home", /home, nfs, "_netdev,sec=sys,nconnect=4"]
 
 # Add additional apt repositories
 apt:

@@ -1,4 +1,4 @@
-"""Pulumi component for SRE state"""
+"""Pulumi component for SRE data"""
 from collections.abc import Sequence
 
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
@@ -47,14 +47,16 @@ class SREDataProps:
         networking_resource_group: Input[resources.ResourceGroup],
         pulumi_opts: Config,
         sre_fqdn: Input[str],
-        subnet_private_data: Input[network.GetSubnetResult],
+        subnet_data_configuration: Input[network.GetSubnetResult],
+        subnet_data_private: Input[network.GetSubnetResult],
         subscription_id: Input[str],
         subscription_name: Input[str],
         tenant_id: Input[str],
     ) -> None:
         self.admin_email_address = admin_email_address
         self.admin_group_id = admin_group_id
-        self.approved_ip_addresses = Output.all(
+        self.data_configuration_ip_addresses = admin_ip_addresses
+        self.data_private_sensitive_ip_addresses = Output.all(
             admin_ip_addresses, data_provider_ip_addresses
         ).apply(
             lambda address_lists: {
@@ -86,7 +88,10 @@ class SREDataProps:
             pulumi_opts, "shm-networking-private_dns_zone_base_id"
         )
         self.sre_fqdn = sre_fqdn
-        self.subnet_private_data_id = Output.from_input(subnet_private_data).apply(
+        self.subnet_data_configuration_id = Output.from_input(
+            subnet_data_configuration
+        ).apply(get_id_from_subnet)
+        self.subnet_data_private_id = Output.from_input(subnet_data_private).apply(
             get_id_from_subnet
         )
         self.subscription_id = subscription_id
@@ -98,7 +103,7 @@ class SREDataProps:
 
 
 class SREDataComponent(ComponentResource):
-    """Deploy SRE state with Pulumi"""
+    """Deploy SRE data with Pulumi"""
 
     def __init__(
         self,
@@ -296,21 +301,41 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions(parent=key_vault),
         )
 
-        # Deploy state storage account
-        storage_account_state = storage.StorageAccount(
-            f"{self._name}_storage_account_state",
+        # Deploy configuration data storage account
+        storage_account_data_configuration = storage.StorageAccount(
+            f"{self._name}_storage_account_data_configuration",
             # Note that account names have a maximum of 24 characters
             account_name=alphanumeric(
-                f"{''.join(truncate_tokens(stack_name.split('-'), 19))}state"
+                f"{''.join(truncate_tokens(stack_name.split('-'), 14))}configdata"
             )[:24],
             kind=storage.Kind.STORAGE_V2,
+            location=props.location,
+            network_rule_set=storage.NetworkRuleSetArgs(
+                bypass=storage.Bypass.AZURE_SERVICES,
+                default_action=storage.DefaultAction.DENY,
+                ip_rules=Output.from_input(props.data_configuration_ip_addresses).apply(
+                    lambda ip_ranges: [
+                        storage.IPRuleArgs(
+                            action=storage.Action.ALLOW,
+                            i_p_address_or_range=str(ip_address),
+                        )
+                        for ip_range in sorted(ip_ranges)
+                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all_ips()
+                    ]
+                ),
+                virtual_network_rules=[
+                    storage.VirtualNetworkRuleArgs(
+                        virtual_network_resource_id=props.subnet_data_configuration_id,
+                    )
+                ],
+            ),
             resource_group_name=resource_group.name,
             sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
             opts=child_opts,
         )
-        # Retrieve storage account keys
-        storage_account_state_keys = Output.all(
-            account_name=storage_account_state.name,
+        # Retrieve configuration data storage account keys
+        storage_account_data_configuration_keys = Output.all(
+            account_name=storage_account_data_configuration.name,
             resource_group_name=resource_group.name,
         ).apply(
             lambda kwargs: storage.list_storage_account_keys(
@@ -318,15 +343,55 @@ class SREDataComponent(ComponentResource):
                 resource_group_name=kwargs["resource_group_name"],
             )
         )
+        # Set up a private endpoint for the configuration data storage account
+        storage_account_data_configuration_private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_storage_account_data_configuration_private_endpoint",
+            location=props.location,
+            private_endpoint_name=f"{stack_name}-pep-storage-account-data-configuration",
+            private_link_service_connections=[
+                network.PrivateLinkServiceConnectionArgs(
+                    group_ids=["file"],
+                    name=f"{stack_name}-cnxn-pep-storage-account-data-configuration",
+                    private_link_service_id=storage_account_data_configuration.id,
+                )
+            ],
+            resource_group_name=resource_group.name,
+            subnet=network.SubnetArgs(id=props.subnet_data_configuration_id),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=storage_account_data_configuration)
+            ),
+        )
+        # Add a private DNS record for each configuration data endpoint custom DNS config
+        network.PrivateDnsZoneGroup(
+            f"{self._name}_storage_account_data_configuration_private_dns_zone_group",
+            private_dns_zone_configs=[
+                network.PrivateDnsZoneConfigArgs(
+                    name=replace_separators(
+                        f"{stack_name}-storage-account-data-configuration-to-{dns_zone_name}",
+                        "-",
+                    ),
+                    private_dns_zone_id=Output.concat(
+                        props.private_dns_zone_base_id, dns_zone_name
+                    ),
+                )
+                for dns_zone_name in ordered_private_dns_zones("Storage account")
+            ],
+            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-configuration",
+            private_endpoint_name=storage_account_data_configuration_private_endpoint.name,
+            resource_group_name=resource_group.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=storage_account_data_configuration)
+            ),
+        )
 
-        # Deploy secure data blob storage account
+        # Deploy sensitive data blob storage account
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
         # - Store the /data and /output folders here
-        storage_account_securedata = storage.StorageAccount(
-            f"{self._name}_storage_account_securedata",
+        storage_account_data_private_sensitive = storage.StorageAccount(
+            f"{self._name}_storage_account_data_private_sensitive",
             # Storage account names have a maximum of 24 characters
             account_name=alphanumeric(
-                f"{''.join(truncate_tokens(stack_name.split('-'), 14))}securedata{sha256hash(self._name)}"
+                f"{''.join(truncate_tokens(stack_name.split('-'), 11))}sensitivedata{sha256hash(self._name)}"
             )[:24],
             enable_https_traffic_only=True,
             enable_nfs_v3=True,
@@ -347,7 +412,9 @@ class SREDataComponent(ComponentResource):
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
-                ip_rules=Output.from_input(props.approved_ip_addresses).apply(
+                ip_rules=Output.from_input(
+                    props.data_private_sensitive_ip_addresses
+                ).apply(
                     lambda ip_ranges: [
                         storage.IPRuleArgs(
                             action=storage.Action.ALLOW,
@@ -359,7 +426,7 @@ class SREDataComponent(ComponentResource):
                 ),
                 virtual_network_rules=[
                     storage.VirtualNetworkRuleArgs(
-                        virtual_network_resource_id=props.subnet_private_data_id,
+                        virtual_network_resource_id=props.subnet_data_private_id,
                     )
                 ],
             ),
@@ -369,7 +436,7 @@ class SREDataComponent(ComponentResource):
         )
         # Give the "Storage Blob Data Owner" role to the Azure admin group
         authorization.RoleAssignment(
-            f"{self._name}_storage_account_securedata_data_owner_role_assignment",
+            f"{self._name}_storage_account_data_private_sensitive_data_owner_role_assignment",
             principal_id=props.admin_group_id,
             principal_type=authorization.PrincipalType.GROUP,
             role_assignment_name="b7e6dc6d-f1e8-4753-8033-0f276bb0955b",  # Storage Blob Data Owner
@@ -378,34 +445,37 @@ class SREDataComponent(ComponentResource):
                 props.subscription_id,
                 "/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
             ),
-            scope=storage_account_securedata.id,
+            scope=storage_account_data_private_sensitive.id,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_securedata)
+                child_opts,
+                ResourceOptions(parent=storage_account_data_private_sensitive),
             ),
         )
         # Deploy storage containers
         storage_container_egress = storage.BlobContainer(
             f"{self._name}_storage_container_egress",
-            account_name=storage_account_securedata.name,
+            account_name=storage_account_data_private_sensitive.name,
             container_name="egress",
             default_encryption_scope="$account-encryption-key",
             deny_encryption_scope_override=False,
             public_access=storage.PublicAccess.NONE,
             resource_group_name=resource_group.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_securedata)
+                child_opts,
+                ResourceOptions(parent=storage_account_data_private_sensitive),
             ),
         )
         storage_container_ingress = storage.BlobContainer(
             f"{self._name}_storage_container_ingress",
-            account_name=storage_account_securedata.name,
+            account_name=storage_account_data_private_sensitive.name,
             container_name="ingress",
             default_encryption_scope="$account-encryption-key",
             deny_encryption_scope_override=False,
             public_access=storage.PublicAccess.NONE,
             resource_group_name=resource_group.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_securedata)
+                child_opts,
+                ResourceOptions(parent=storage_account_data_private_sensitive),
             ),
         )
         # Set storage container ACLs
@@ -421,7 +491,7 @@ class SREDataComponent(ComponentResource):
                 apply_default_permissions=False,
                 container_name=storage_container_egress.name,
                 resource_group_name=resource_group.name,
-                storage_account_name=storage_account_securedata.name,
+                storage_account_name=storage_account_data_private_sensitive.name,
                 subscription_name=props.subscription_name,
             ),
             opts=ResourceOptions.merge(
@@ -439,38 +509,39 @@ class SREDataComponent(ComponentResource):
                 apply_default_permissions=True,
                 container_name=storage_container_ingress.name,
                 resource_group_name=resource_group.name,
-                storage_account_name=storage_account_securedata.name,
+                storage_account_name=storage_account_data_private_sensitive.name,
                 subscription_name=props.subscription_name,
             ),
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_container_ingress)
             ),
         )
-        # Set up a private endpoint for the securedata data account
-        storage_account_securedata_endpoint = network.PrivateEndpoint(
-            f"{self._name}_storage_account_securedata_private_endpoint",
+        # Set up a private endpoint for the sensitive data storage account
+        storage_account_data_private_sensitive_endpoint = network.PrivateEndpoint(
+            f"{self._name}_storage_account_data_private_sensitive_private_endpoint",
             location=props.location,
-            private_endpoint_name=f"{stack_name}-pep-storage-account-securedata",
+            private_endpoint_name=f"{stack_name}-pep-storage-account-data-private-sensitive",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["blob"],
-                    name=f"{stack_name}-cnxn-pep-storage-account-securedata",
-                    private_link_service_id=storage_account_securedata.id,
+                    name=f"{stack_name}-cnxn-pep-storage-account-data-private-sensitive",
+                    private_link_service_id=storage_account_data_private_sensitive.id,
                 )
             ],
             resource_group_name=resource_group.name,
-            subnet=network.SubnetArgs(id=props.subnet_private_data_id),
+            subnet=network.SubnetArgs(id=props.subnet_data_private_id),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_securedata)
+                child_opts,
+                ResourceOptions(parent=storage_account_data_private_sensitive),
             ),
         )
-        # Add a private DNS record for each securedata data custom DNS config
+        # Add a private DNS record for each sensitive data endpoint custom DNS config
         network.PrivateDnsZoneGroup(
-            f"{self._name}_storage_account_securedata_private_dns_zone_group",
+            f"{self._name}_storage_account_data_private_sensitive_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
                     name=replace_separators(
-                        f"{stack_name}-storage-account-securedata-to-{dns_zone_name}",
+                        f"{stack_name}-storage-account-data-private-sensitive-to-{dns_zone_name}",
                         "-",
                     ),
                     private_dns_zone_id=Output.concat(
@@ -479,20 +550,21 @@ class SREDataComponent(ComponentResource):
                 )
                 for dns_zone_name in ordered_private_dns_zones("Storage account")
             ],
-            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-securedata",
-            private_endpoint_name=storage_account_securedata_endpoint.name,
+            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-private-sensitive",
+            private_endpoint_name=storage_account_data_private_sensitive_endpoint.name,
             resource_group_name=resource_group.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_securedata)
+                child_opts,
+                ResourceOptions(parent=storage_account_data_private_sensitive),
             ),
         )
 
-        # Deploy userdata files storage account
+        # Deploy data_private_user files storage account
         # - Azure Files has better NFS support and cannot be accessed with Azure Storage Explorer
         # - Allows root-squashing to be configured
         # - Store the /home and /shared folders here
-        storage_account_userdata = storage.StorageAccount(
-            f"{self._name}_storage_account_userdata",
+        storage_account_data_private_user = storage.StorageAccount(
+            f"{self._name}_storage_account_data_private_user",
             access_tier=storage.AccessTier.COOL,
             # Storage account names have a maximum of 24 characters
             account_name=alphanumeric(
@@ -514,7 +586,7 @@ class SREDataComponent(ComponentResource):
                 default_action=storage.DefaultAction.DENY,
                 virtual_network_rules=[
                     storage.VirtualNetworkRuleArgs(
-                        virtual_network_resource_id=props.subnet_private_data_id,
+                        virtual_network_resource_id=props.subnet_data_private_id,
                     )
                 ],
             ),
@@ -525,7 +597,7 @@ class SREDataComponent(ComponentResource):
         storage.FileShare(
             f"{self._name}_storage_container_home",
             access_tier=storage.ShareAccessTier.PREMIUM,
-            account_name=storage_account_userdata.name,
+            account_name=storage_account_data_private_user.name,
             enabled_protocols=storage.EnabledProtocols.NFS,
             resource_group_name=resource_group.name,
             # Squashing prevents root from creating user home directories
@@ -533,47 +605,48 @@ class SREDataComponent(ComponentResource):
             share_name="home",
             share_quota=1024,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_userdata)
+                child_opts, ResourceOptions(parent=storage_account_data_private_user)
             ),
         )
         storage.FileShare(
             f"{self._name}_storage_container_shared",
             access_tier=storage.ShareAccessTier.PREMIUM,
-            account_name=storage_account_userdata.name,
+            account_name=storage_account_data_private_user.name,
             enabled_protocols=storage.EnabledProtocols.NFS,
             resource_group_name=resource_group.name,
             root_squash=storage.RootSquashType.ROOT_SQUASH,
             share_name="shared",
             share_quota=1024,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_userdata)
+                child_opts, ResourceOptions(parent=storage_account_data_private_user)
             ),
         )
-        # Set up a private endpoint for the userdata storage account
-        storage_account_userdata_endpoint = network.PrivateEndpoint(
-            f"{self._name}_storage_account_userdata_private_endpoint",
+        # Set up a private endpoint for the user data storage account
+        storage_account_data_private_user_endpoint = network.PrivateEndpoint(
+            f"{self._name}_storage_account_data_private_user_private_endpoint",
             location=props.location,
-            private_endpoint_name=f"{stack_name}-pep-storage-account-userdata",
+            private_endpoint_name=f"{stack_name}-pep-storage-account-data-private-user",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["file"],
-                    name=f"{stack_name}-cnxn-pep-storage-account-userdata",
-                    private_link_service_id=storage_account_userdata.id,
+                    name=f"{stack_name}-cnxn-pep-storage-account-data-private-user",
+                    private_link_service_id=storage_account_data_private_user.id,
                 )
             ],
             resource_group_name=resource_group.name,
-            subnet=network.SubnetArgs(id=props.subnet_private_data_id),
+            subnet=network.SubnetArgs(id=props.subnet_data_private_id),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_userdata)
+                child_opts, ResourceOptions(parent=storage_account_data_private_user)
             ),
         )
-        # Add a private DNS record for each userdata custom DNS config
+        # Add a private DNS record for each user data endpoint custom DNS config
         network.PrivateDnsZoneGroup(
-            f"{self._name}_storage_account_userdata_private_dns_zone_group",
+            f"{self._name}_storage_account_data_private_user_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
                     name=replace_separators(
-                        f"{stack_name}-storage-account-userdata-to-{dns_zone_name}", "-"
+                        f"{stack_name}-storage-account-data-private-user-to-{dns_zone_name}",
+                        "-",
                     ),
                     private_dns_zone_id=Output.concat(
                         props.private_dns_zone_base_id, dns_zone_name
@@ -581,23 +654,33 @@ class SREDataComponent(ComponentResource):
                 )
                 for dns_zone_name in ordered_private_dns_zones("Storage account")
             ],
-            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-userdata",
-            private_endpoint_name=storage_account_userdata_endpoint.name,
+            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-private-user",
+            private_endpoint_name=storage_account_data_private_user_endpoint.name,
             resource_group_name=resource_group.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_userdata)
+                child_opts, ResourceOptions(parent=storage_account_data_private_user)
             ),
         )
 
         # Register outputs
         self.sre_fqdn_certificate_secret_id = sre_fqdn_certificate.secret_id
-        self.storage_account_userdata_name = storage_account_userdata.name
-        self.storage_account_securedata_id = storage_account_securedata.id
-        self.storage_account_securedata_name = storage_account_securedata.name
-        self.storage_account_state_key = Output.secret(
-            storage_account_state_keys.keys[0].value
+        self.storage_account_data_private_user_name = (
+            storage_account_data_private_user.name
         )
-        self.storage_account_state_name = storage_account_state.name
+        self.storage_account_data_private_sensitive_id = (
+            storage_account_data_private_sensitive.id
+        )
+        self.storage_account_data_private_sensitive_name = (
+            storage_account_data_private_sensitive.name
+        )
+        self.storage_account_data_configuration_key = Output.secret(
+            storage_account_data_configuration_keys.apply(
+                lambda keys: keys.keys[0].value
+            )
+        )
+        self.storage_account_data_configuration_name = (
+            storage_account_data_configuration.name
+        )
         self.managed_identity = identity_key_vault_reader
         self.password_nexus_admin = Output.secret(props.password_nexus_admin)
         self.password_database_service_admin = Output.secret(

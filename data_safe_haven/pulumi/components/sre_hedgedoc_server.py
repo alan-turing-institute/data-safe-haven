@@ -282,12 +282,13 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LDAP_SEARCHFILTER",
-                            value=(
-                                "(&"
-                                "(objectClass=user)"
-                                f"(memberOf=CN={props.ldap_user_security_group_cn})"
-                                f"(sAMAccountName={{{{username}}}})"
-                                ")"
+                            value=Output.concat(
+                                "(&",
+                                "(objectClass=user)",
+                                "(memberOf=CN=",
+                                props.ldap_user_security_group_cn,
+                                ")",
+                                "(sAMAccountName={{username}}))",
                             ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
