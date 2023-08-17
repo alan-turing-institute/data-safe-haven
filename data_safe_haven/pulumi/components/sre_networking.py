@@ -37,6 +37,9 @@ class SRENetworkingProps:
             lambda s: s.data_configuration
         )
         self.subnet_data_private_iprange = subnet_ranges.apply(lambda s: s.data_private)
+        self.subnet_dns_containers_iprange = subnet_ranges.apply(
+            lambda s: s.dns_containers
+        )
         self.subnet_guacamole_containers_iprange = subnet_ranges.apply(
             lambda s: s.guacamole_containers
         )
@@ -116,6 +119,9 @@ class SRENetworkingComponent(ComponentResource):
             props.subnet_data_configuration_iprange.apply(lambda r: str(r))
         )
         subnet_data_private_prefix = props.subnet_data_private_iprange.apply(
+            lambda r: str(r)
+        )
+        subnet_dns_containers_prefix = props.subnet_dns_containers_iprange.apply(
             lambda r: str(r)
         )
         subnet_guacamole_containers_prefix = (
@@ -342,6 +348,64 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+        )
+        nsg_dns_containers = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_dns_containers",
+            network_security_group_name=f"{stack_name}-nsg-dns-containers",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from SRE workspaces.",
+                    destination_address_prefix=subnet_dns_containers_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound DNS traffic over the internet.",
+                    destination_address_prefix="Internet",
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDnsInternetOutbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_dns_containers_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
@@ -927,6 +991,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
         subnet_data_configuration_name = "DataConfigurationSubnet"
         subnet_data_private_name = "DataPrivateSubnet"
+        subnet_dns_containers_name = "DnsContainersSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
@@ -983,6 +1048,22 @@ class SRENetworkingComponent(ComponentResource):
                             service="Microsoft.Storage",
                         )
                     ],
+                ),
+                # DNS containers
+                network.SubnetArgs(
+                    address_prefix=subnet_dns_containers_prefix,
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
+                    name=subnet_dns_containers_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_dns_containers.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # Guacamole containers
                 network.SubnetArgs(
@@ -1226,6 +1307,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_data_configuration = network.get_subnet_output(
             subnet_name=subnet_data_configuration_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_dns_containers = network.get_subnet_output(
+            subnet_name=subnet_dns_containers_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

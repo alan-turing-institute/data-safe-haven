@@ -13,6 +13,7 @@ class SRESubnetRanges:
         self.application_gateway = self.vnet.next_subnet(256)
         self.data_configuration = self.vnet.next_subnet(8)
         self.data_private = self.vnet.next_subnet(8)
+        self.dns_containers = self.vnet.next_subnet(8)
         self.guacamole_containers = self.vnet.next_subnet(8)
         self.guacamole_containers_support = self.vnet.next_subnet(8)
         self.user_services_containers = self.vnet.next_subnet(8)
