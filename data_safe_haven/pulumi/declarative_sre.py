@@ -9,6 +9,7 @@ from .components.sre_application_gateway import (
 )
 from .components.sre_backup import SREBackupComponent, SREBackupProps
 from .components.sre_data import SREDataComponent, SREDataProps
+from .components.sre_dns_server import SREDnsServerComponent, SREDnsServerProps
 from .components.sre_monitoring import SREMonitoringComponent, SREMonitoringProps
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
 from .components.sre_remote_desktop import (
@@ -86,6 +87,15 @@ class DeclarativeSRE:
                 user_public_ip_ranges=self.cfg.sres[
                     self.sre_name
                 ].research_user_ip_addresses,
+            ),
+        )
+
+        # Deploy SRE DNS manager
+        SREDnsServerComponent(
+            "sre_dns_manager",
+            self.stack_name,
+            SREDnsServerProps(
+                resource_group=networking.resource_group,
             ),
         )
 
