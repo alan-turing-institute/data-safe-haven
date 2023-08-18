@@ -90,15 +90,6 @@ class DeclarativeSRE:
             ),
         )
 
-        # Deploy SRE DNS manager
-        SREDnsServerComponent(
-            "sre_dns_manager",
-            self.stack_name,
-            SREDnsServerProps(
-                resource_group=networking.resource_group,
-            ),
-        )
-
         # Deploy automated monitoring
         SREMonitoringComponent(
             "sre_monitoring",
@@ -140,6 +131,20 @@ class DeclarativeSRE:
                 subscription_id=self.cfg.azure.subscription_id,
                 subscription_name=self.cfg.subscription_name,
                 tenant_id=self.cfg.azure.tenant_id,
+            ),
+        )
+
+        # Deploy SRE DNS manager
+        SREDnsServerComponent(
+            "sre_dns_manager",
+            self.stack_name,
+            SREDnsServerProps(
+                resource_group_name=networking.resource_group.name,
+                subnet=networking.subnet_dns_containers,
+                storage_account_key=data.storage_account_data_configuration_key,
+                storage_account_name=data.storage_account_data_configuration_name,
+                storage_account_resource_group_name=data.resource_group_name,
+                virtual_network=networking.virtual_network,
             ),
         )
 
