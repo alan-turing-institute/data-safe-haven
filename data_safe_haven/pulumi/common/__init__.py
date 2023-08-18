@@ -1,4 +1,5 @@
 from .enums import NetworkingPriorities
+from .sre_subnet_ranges import SRESubnetRanges
 from .transformations import (
     get_available_ips_from_subnet,
     get_id_from_rg,
@@ -20,4 +21,5 @@ __all__ = [
     "get_name_from_subnet",
     "get_name_from_vnet",
     "NetworkingPriorities",
+    "SRESubnetRanges",
 ]

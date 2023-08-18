@@ -2,9 +2,9 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-from data_safe_haven.external import AzureIPv4Range
+# from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
-from data_safe_haven.pulumi.common import NetworkingPriorities
+from data_safe_haven.pulumi.common import NetworkingPriorities, SRESubnetRanges
 
 
 class SRENetworkingProps:
@@ -12,6 +12,7 @@ class SRENetworkingProps:
 
     def __init__(
         self,
+        firewall_ip_address: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
@@ -24,40 +25,38 @@ class SRENetworkingProps:
         sre_name: Input[str],
     ) -> None:
         # Virtual network and subnet IP ranges
-        self.vnet_iprange = Output.from_input(sre_index).apply(
-            lambda index: AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
+        subnet_ranges = Output.from_input(sre_index).apply(
+            lambda idx: SRESubnetRanges(idx)
         )
-        self.subnet_application_gateway_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(256)
+        self.vnet_iprange = subnet_ranges.apply(lambda s: s.vnet)
+        self.subnet_application_gateway_iprange = subnet_ranges.apply(
+            lambda s: s.application_gateway
         )
-        self.subnet_data_configuration_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_data_configuration_iprange = subnet_ranges.apply(
+            lambda s: s.data_configuration
         )
-        self.subnet_data_private_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_data_private_iprange = subnet_ranges.apply(lambda s: s.data_private)
+        self.subnet_guacamole_containers_iprange = subnet_ranges.apply(
+            lambda s: s.guacamole_containers
         )
-        self.subnet_guacamole_containers_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_guacamole_containers_support_iprange = subnet_ranges.apply(
+            lambda s: s.guacamole_containers_support
         )
-        self.subnet_guacamole_containers_support_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_user_services_containers_iprange = subnet_ranges.apply(
+            lambda s: s.user_services_containers
         )
-        self.subnet_user_services_containers_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_user_services_containers_support_iprange = subnet_ranges.apply(
+            lambda s: s.user_services_containers_support
         )
-        self.subnet_user_services_containers_support_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_user_services_databases_iprange = subnet_ranges.apply(
+            lambda s: s.user_services_databases
         )
-        self.subnet_user_services_databases_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(8)
+        self.subnet_user_services_software_repositories_iprange = subnet_ranges.apply(
+            lambda s: s.user_services_software_repositories
         )
-        self.subnet_user_services_software_repositories_iprange = (
-            self.vnet_iprange.apply(lambda r: r.next_subnet(8))
-        )
-        self.subnet_workspaces_iprange = self.vnet_iprange.apply(
-            lambda r: r.next_subnet(256)
-        )
+        self.subnet_workspaces_iprange = subnet_ranges.apply(lambda s: s.workspaces)
         # Other variables
+        self.firewall_ip_address = firewall_ip_address
         self.location = location
         self.public_ip_range_users = "Internet"
         self.shm_fqdn = shm_fqdn
@@ -88,6 +87,23 @@ class SRENetworkingComponent(ComponentResource):
             f"{self._name}_resource_group",
             location=props.location,
             resource_group_name=f"{stack_name}-rg-networking",
+            opts=child_opts,
+        )
+
+        # Define route table
+        route_table = network.RouteTable(
+            f"{self._name}_route_table",
+            location=props.location,
+            resource_group_name=resource_group.name,
+            route_table_name=f"{stack_name}-route",
+            routes=[
+                network.RouteArgs(
+                    address_prefix="0.0.0.0/0",
+                    name="ViaFirewall",
+                    next_hop_ip_address=props.firewall_ip_address,
+                    next_hop_type=network.RouteNextHopType.VIRTUAL_APPLIANCE,
+                ),
+            ],
             opts=child_opts,
         )
 
@@ -923,6 +939,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_application_gateway.id
                     ),
+                    route_table=None,  # the application gateway must not go via the firewall
                 ),
                 # Configuration data subnet
                 network.SubnetArgs(
@@ -931,6 +948,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_data_configuration.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                     service_endpoints=[
                         network.ServiceEndpointPropertiesFormatArgs(
                             locations=[props.location],
@@ -945,6 +963,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_data_private.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                     service_endpoints=[
                         network.ServiceEndpointPropertiesFormatArgs(
                             locations=[props.location],
@@ -966,6 +985,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_guacamole_containers.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # Guacamole containers support
                 network.SubnetArgs(
@@ -975,6 +995,7 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_guacamole_containers_support.id
                     ),
                     private_endpoint_network_policies="Disabled",
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services containers
                 network.SubnetArgs(
@@ -990,6 +1011,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_containers.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services containers support
                 network.SubnetArgs(
@@ -998,6 +1020,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_containers_support.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services databases
                 network.SubnetArgs(
@@ -1006,6 +1029,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_databases.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services software repositories
                 network.SubnetArgs(
@@ -1021,6 +1045,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_software_repositories.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # Workspaces
                 network.SubnetArgs(
@@ -1029,6 +1054,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_workspaces.id
                     ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
             ],
             virtual_network_name=f"{stack_name}-vnet",
