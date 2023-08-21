@@ -29,9 +29,18 @@ def get_id_from_subnet(subnet: network.GetSubnetResult) -> str:
     raise DataSafeHavenPulumiError(msg)
 
 
+def get_id_from_vnet(vnet: network.VirtualNetwork) -> Output[str]:
+    """Get the ID of a virtual network"""
+    if isinstance(vnet.id, Output):
+        return vnet.id
+    msg = f"Virtual network '{vnet.name}' has no ID."
+    raise DataSafeHavenPulumiError(msg)
+
+
 def get_ip_address_from_container_group(
     container_group: containerinstance.ContainerGroup,
 ) -> Output[str]:
+    """Get the IP address of a container group"""
     return container_group.ip_address.apply(
         lambda ip_address: (ip_address.ip if ip_address.ip else "")
         if ip_address
@@ -72,7 +81,7 @@ def get_name_from_subnet(subnet: network.GetSubnetResult) -> str:
 
 
 def get_name_from_vnet(vnet: network.VirtualNetwork) -> Output[str]:
-    """Get the ID of a virtual network"""
+    """Get the name of a virtual network"""
     if isinstance(vnet.name, Output):
         return vnet.name.apply(lambda s: str(s))
     msg = f"Virtual network '{vnet.id}' has no name."
