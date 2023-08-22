@@ -2,7 +2,7 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources
 
-from data_safe_haven.functions import ordered_private_dns_zones
+from data_safe_haven.functions import allowed_dns_lookups, ordered_private_dns_zones
 from data_safe_haven.pulumi.common import (
     NetworkingPriorities,
     SREDnsIpRanges,
@@ -178,13 +178,6 @@ class SREDnsServerComponent(ComponentResource):
         )
 
         # Define the DNS container group with AdGuard
-        allowed_fqdns = [
-            "*-jobruntimedata-prod-su1.azure-automation.net",
-            "*.clamav.net",
-            "database.clamav.net.cdn.cloudflare.net",
-            "keyserver.ubuntu.com",
-            "time.google.com",
-        ]
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
             container_group_name=f"{stack_name}-container-group-dns",
@@ -199,7 +192,10 @@ class SREDnsServerComponent(ComponentResource):
                         containerinstance.EnvironmentVariableArgs(
                             name="SPACE_SEPARATED_FILTER_ALLOW",
                             value=Output.concat(
-                                "*.", props.shm_fqdn, " ", " ".join(allowed_fqdns)
+                                "*.",
+                                props.shm_fqdn,
+                                " ",
+                                " ".join(allowed_dns_lookups()),
                             ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
