@@ -6,7 +6,7 @@ foreach ($user in $users) {
     $user | Add-Member -NotePropertyName GroupName -NotePropertyValue $groupName -Force
 }
 
-# Delete users not found in any group (with exception for named SG e.g. "Sandbox")
+# Delete users not found in any group
 foreach ($user in $users) {
     if (!($user.GroupName)) {
         $name = $user.SamAccountName

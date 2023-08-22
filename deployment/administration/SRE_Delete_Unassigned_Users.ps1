@@ -11,43 +11,15 @@ Import-Module $PSScriptRoot/../common/Logging -Force -ErrorAction Stop
 # Get config
 # -------------------------------
 $config = Get-ShmConfig -shmId $shmId
-# $originalContext = Get-AzContext
+$originalContext = Get-AzContext
 
-# Extract list of users
-# ---------------------
+# Delete users not currently in a security group
+# ----------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "Deleting users not assigned to any security group: $($config.shm.id) from $($config.dc.vmName)..."
 
-$script = @"
-`$userOuPath = (Get-ADObject -Filter * | Where-Object { `$_.Name -eq "Safe Haven Research Users" }).DistinguishedName
-`$users = Get-ADUser -Filter * -SearchBase "`$userOuPath" -Properties *
-foreach (`$user in `$users) {
-    `$groupName = (`$user | Select-Object -ExpandProperty MemberOf | ForEach-Object { ((`$_ -Split ",")[0] -Split "=")[1] }) -join "|"
-    `$user | Add-Member -NotePropertyName GroupName -NotePropertyValue `$groupName -Force
-}
+$script = "Delete_Unassigned_Users.ps1"
 
-# Delete users not found in any group
-foreach (`$user in `$users) {
-    if (!(`$user.GroupName)) {
-        `$name = `$user.SamAccountName
-        Remove-ADUser -Identity `$name
-    }
-}
-
-# Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
-Write-Output "Synchronising locally Active Directory with Azure"
-try {
-    Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -ErrorAction Stop
-    Start-ADSyncSyncCycle -PolicyType Delta
-}
-catch [System.IO.FileNotFoundException] {
-    Write-Output "Skipping as Azure AD Sync is not installed"
-}
-catch {
-    Write-Output "Unable to run Azure Active Directory synchronisation!"
-}
-"@
-
-$result = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
 
 $null = Set-AzContext -Context $originalContext -ErrorAction Stop
