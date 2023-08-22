@@ -62,6 +62,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREDnsServerProps(
                 location=self.cfg.azure.location,
+                shm_fqdn=self.cfg.shm.fqdn,
                 sre_index=self.cfg.sres[self.sre_name].index,
             ),
         )
@@ -234,6 +235,7 @@ class DeclarativeSRE:
             SREUserServicesProps(
                 database_service_admin_password=data.password_database_service_admin,
                 databases=self.cfg.sres[self.sre_name].databases,
+                dns_resource_group_name=dns.resource_group.name,
                 domain_netbios_name=self.pulumi_opts.require(
                     "shm-domain_controllers-netbios_name"
                 ),

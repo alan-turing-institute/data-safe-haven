@@ -20,6 +20,7 @@ class SREUserServicesProps:
         self,
         database_service_admin_password: Input[str],
         databases: list[DatabaseSystem],  # this must *not* be passed as an Input[T]
+        dns_resource_group_name: Input[str],
         domain_netbios_name: Input[str],
         gitea_database_password: Input[str],
         hedgedoc_database_password: Input[str],
@@ -47,6 +48,7 @@ class SREUserServicesProps:
     ) -> None:
         self.database_service_admin_password = database_service_admin_password
         self.databases = databases
+        self.dns_resource_group_name = dns_resource_group_name
         self.domain_netbios_name = domain_netbios_name
         self.gitea_database_password = gitea_database_password
         self.hedgedoc_database_password = hedgedoc_database_password
@@ -138,6 +140,7 @@ class SREUserServicesComponent(ComponentResource):
             SREGiteaServerProps(
                 database_subnet_id=props.subnet_containers_support_id,
                 database_password=props.gitea_database_password,
+                dns_resource_group_name=props.dns_resource_group_name,
                 ldap_bind_dn=props.ldap_bind_dn,
                 ldap_root_dn=props.ldap_root_dn,
                 ldap_search_password=props.ldap_search_password,
@@ -166,6 +169,7 @@ class SREUserServicesComponent(ComponentResource):
             SREHedgeDocServerProps(
                 database_subnet_id=props.subnet_containers_support_id,
                 database_password=props.hedgedoc_database_password,
+                dns_resource_group_name=props.dns_resource_group_name,
                 domain_netbios_name=props.domain_netbios_name,
                 ldap_bind_dn=props.ldap_bind_dn,
                 ldap_root_dn=props.ldap_root_dn,
@@ -193,6 +197,7 @@ class SREUserServicesComponent(ComponentResource):
             "sre_software_repositories",
             stack_name,
             SRESoftwareRepositoriesProps(
+                dns_resource_group_name=props.dns_resource_group_name,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
                 nexus_admin_password=props.nexus_admin_password,
@@ -217,6 +222,7 @@ class SREUserServicesComponent(ComponentResource):
                 SREDatabaseServerProps(
                     database_password=props.database_service_admin_password,
                     database_system=database,
+                    dns_resource_group_name=props.dns_resource_group_name,
                     location=props.location,
                     networking_resource_group_name=props.networking_resource_group_name,
                     sre_fqdn=props.sre_fqdn,

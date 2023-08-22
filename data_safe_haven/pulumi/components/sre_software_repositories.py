@@ -19,6 +19,7 @@ class SRESoftwareRepositoriesProps:
 
     def __init__(
         self,
+        dns_resource_group_name: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         nexus_admin_password: Input[str],
@@ -32,6 +33,7 @@ class SRESoftwareRepositoriesProps:
         virtual_network: Input[network.VirtualNetwork],
         virtual_network_resource_group_name: Input[str],
     ) -> None:
+        self.dns_resource_group_name = dns_resource_group_name
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.nexus_admin_password = Output.secret(nexus_admin_password)
@@ -326,7 +328,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
                 record_type="A",
                 relative_record_set_name="nexus",
-                resource_group_name=props.networking_resource_group_name,
+                resource_group_name=props.dns_resource_group_name,
                 ttl=3600,
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=container_group)

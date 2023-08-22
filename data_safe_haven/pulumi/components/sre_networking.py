@@ -1311,7 +1311,7 @@ class SRENetworkingComponent(ComponentResource):
             f"{self._name}_private_zone",
             location="Global",
             private_zone_name=Output.concat("privatelink.", sre_fqdn),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.dns_resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=sre_dns_zone)
             ),
@@ -1321,13 +1321,13 @@ class SRENetworkingComponent(ComponentResource):
             location="Global",
             private_zone_name=sre_private_dns_zone.name,
             registration_enabled=False,
-            resource_group_name=resource_group.name,
-            virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
+            resource_group_name=props.dns_resource_group_name,
+            virtual_network=network.SubResourceArgs(id=props.dns_virtual_network_id),
             virtual_network_link_name=Output.concat(
-                "link-to-", sre_virtual_network.name
+                "link-to-", props.dns_virtual_network_name
             ),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=sre_virtual_network)
+                child_opts, ResourceOptions(parent=sre_private_dns_zone)
             ),
         )
 

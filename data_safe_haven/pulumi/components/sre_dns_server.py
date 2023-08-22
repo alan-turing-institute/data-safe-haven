@@ -16,11 +16,13 @@ class SREDnsServerProps:
     def __init__(
         self,
         location: Input[str],
+        shm_fqdn: Input[str],
         sre_index: Input[int],
     ) -> None:
-        self.location = location
         subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
+        self.location = location
         self.sre_vnet_prefix = subnet_ranges.apply(lambda r: str(r.vnet))
+        self.shm_fqdn = shm_fqdn
         self.ip_range_prefix = str(SREDnsIpRanges().vnet)
 
 
@@ -193,7 +195,9 @@ class SREDnsServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="SPACE_SEPARATED_FILTER_ALLOW",
-                            value=" ".join(allowed_fqdns),
+                            value=Output.concat(
+                                "*.", props.shm_fqdn, " ", " ".join(allowed_fqdns)
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="SPACE_SEPARATED_FILTER_DENY", value="*.*"

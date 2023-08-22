@@ -22,6 +22,7 @@ class SREHedgeDocServerProps:
         self,
         database_password: Input[str],
         database_subnet_id: Input[str],
+        dns_resource_group_name: Input[str],
         domain_netbios_name: Input[str],
         ldap_bind_dn: Input[str],
         ldap_root_dn: Input[str],
@@ -47,6 +48,7 @@ class SREHedgeDocServerProps:
         self.database_username = (
             database_username if database_username else "postgresadmin"
         )
+        self.dns_resource_group_name = dns_resource_group_name
         self.domain_netbios_name = domain_netbios_name
         self.ldap_bind_dn = ldap_bind_dn
         self.ldap_root_dn = ldap_root_dn
@@ -376,7 +378,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
             record_type="A",
             relative_record_set_name="hedgedoc",
-            resource_group_name=props.networking_resource_group_name,
+            resource_group_name=props.dns_resource_group_name,
             ttl=3600,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=container_group)
