@@ -2,8 +2,7 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-# from data_safe_haven.external import AzureIPv4Range
-from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
+from data_safe_haven.functions import alphanumeric
 from data_safe_haven.pulumi.common import (
     NetworkingPriorities,
     SREDnsIpRanges,
@@ -1234,23 +1233,6 @@ class SRENetworkingComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=sre_virtual_network)
             ),
         )
-
-        # Link to SHM private DNS zones
-        for private_link_domain in ordered_private_dns_zones():
-            network.VirtualNetworkLink(
-                f"{self._name}_private_zone_{private_link_domain}_vnet_link",
-                location="Global",
-                private_zone_name=f"privatelink.{private_link_domain}",
-                registration_enabled=False,
-                resource_group_name=props.shm_networking_resource_group_name,
-                virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
-                virtual_network_link_name=Output.concat(
-                    "link-to-", sre_virtual_network.name
-                ),
-                opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=sre_virtual_network)
-                ),
-            )
 
         # Define SRE DNS zone
         shm_dns_zone = Output.all(
