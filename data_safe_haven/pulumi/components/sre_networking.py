@@ -1032,6 +1032,7 @@ class SRENetworkingComponent(ComponentResource):
             address_space=network.AddressSpaceArgs(
                 address_prefixes=[props.vnet_iprange.apply(lambda r: str(r))],
             ),
+            dhcp_options=network.DhcpOptionsArgs(dns_servers=[props.dns_server_ip]),
             resource_group_name=resource_group.name,
             # Note that we define subnets inline to avoid creation order issues
             subnets=[
