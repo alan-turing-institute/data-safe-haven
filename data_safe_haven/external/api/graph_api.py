@@ -20,7 +20,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalError,
     DataSafeHavenMicrosoftGraphError,
 )
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.utility import LoggingSingleton, NonLoggingSingleton
 
 
 class LocalTokenCache(SerializableTokenCache):
@@ -62,21 +62,20 @@ class GraphApi:
 
     def __init__(
         self,
-        *args: Any,
+        *,
         tenant_id: str | None = None,
         auth_token: str | None = None,
         application_id: str | None = None,
         application_secret: str | None = None,
         base_endpoint: str = "",
         default_scopes: Sequence[str] = [],
-        **kwargs: Any,
+        disable_logging: bool = False,
     ):
-        super().__init__(*args, **kwargs)
         self.base_endpoint = (
             base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
         )
         self.default_scopes = list(default_scopes)
-        self.logger = LoggingSingleton()
+        self.logger = NonLoggingSingleton() if disable_logging else LoggingSingleton()
         self.tenant_id = tenant_id
         if auth_token:
             self.token = auth_token
@@ -875,10 +874,14 @@ class GraphApi:
                     "You will need to delegate to the following nameservers:"
                     f" {', '.join([f'[green]{n}[/]' for n in expected_nameservers])}"
                 )
-                self.logger.confirm(
-                    f"Have you delegated {domain_name} to the Azure nameservers above?",
-                    default_to_yes=True,
-                )
+                if isinstance(self.logger, LoggingSingleton):
+                    self.logger.confirm(
+                        f"Have you delegated {domain_name} to the Azure nameservers above?",
+                        default_to_yes=True,
+                    )
+                else:
+                    msg = "Unable to confirm Azure nameserver delegation."
+                    raise NotImplementedError(msg)
             # Send verification request if needed
             if not any((d["id"] == domain_name and d["isVerified"]) for d in domains):
                 response = self.http_post(

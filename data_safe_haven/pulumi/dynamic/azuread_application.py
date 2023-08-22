@@ -30,7 +30,7 @@ class AzureADApplicationProvider(DshResourceProvider):
     def refresh(props: dict[str, Any]) -> dict[str, Any]:
         outs = dict(**props)
         with suppress(Exception):
-            graph_api = GraphApi(auth_token=outs["auth_token"])
+            graph_api = GraphApi(auth_token=outs["auth_token"], disable_logging=True)
             if json_response := graph_api.get_application_by_name(
                 outs["application_name"]
             ):
@@ -42,9 +42,7 @@ class AzureADApplicationProvider(DshResourceProvider):
         """Create new AzureAD application."""
         outs = dict(**props)
         try:
-            graph_api = GraphApi(
-                auth_token=props["auth_token"],
-            )
+            graph_api = GraphApi(auth_token=props["auth_token"], disable_logging=True)
             json_response = graph_api.create_application(
                 props["application_name"],
                 request_json={
@@ -71,9 +69,7 @@ class AzureADApplicationProvider(DshResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         try:
-            graph_api = GraphApi(
-                auth_token=props["auth_token"],
-            )
+            graph_api = GraphApi(auth_token=props["auth_token"], disable_logging=True)
             graph_api.delete_application(props["application_name"])
         except Exception as exc:
             msg = f"Failed to delete application [green]{props['application_name']}[/] from AzureAD.\n{exc}"
