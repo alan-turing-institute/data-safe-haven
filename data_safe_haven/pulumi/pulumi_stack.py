@@ -31,6 +31,7 @@ class PulumiStack:
         self.env_: dict[str, Any] | None = None
         self.logger = LoggingSingleton()
         self.stack_: automation.Stack | None = None
+        self.stack_outputs_: automation.OutputMap | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}
         self.program = program
         self.stack_name = self.program.stack_name
@@ -75,6 +76,7 @@ class PulumiStack:
                         env_vars=self.env,
                     ),
                 )
+                self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
             except automation.CommandError as exc:
                 msg = f"Could not load Pulumi stack {self.stack_name}.\n{exc}"
                 raise DataSafeHavenPulumiError(msg) from exc
@@ -112,6 +114,7 @@ class PulumiStack:
     def deploy(self) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
+            self.logger.info("Preparing to deploy infrastructure with Pulumi")
             self.initialise_workdir()
             self.install_plugins()
             self.apply_config_options()
@@ -230,7 +233,10 @@ class PulumiStack:
             raise DataSafeHavenPulumiError(msg) from exc
 
     def output(self, name: str) -> Any:
-        return self.stack.outputs()[name].value
+        """Get a named output value from a stack"""
+        if not self.stack_outputs_:
+            self.stack_outputs_ = self.stack.outputs()
+        return self.stack_outputs_[name].value
 
     def preview(self) -> None:
         """Preview the Pulumi stack."""
