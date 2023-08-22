@@ -17,17 +17,28 @@ class AzureCli:
         """Force log in via the Azure CLI"""
         try:
             self.logger.debug("Attempting to login using Azure CLI.")
+            # We do not use `check` in subprocess as this raises a CalledProcessError
+            # which would break the loop. Instead we check the return code of
+            # `az account show` which will be 0 on success.
             while True:
-                process = subprocess.run(["az", "account", "show"], capture_output=True)
+                # Check whether we are already logged in
+                process = subprocess.run(
+                    ["az", "account", "show"], capture_output=True, check=False
+                )
                 if process.returncode == 0:
                     break
+                # Note that subprocess.run will block until the process terminates so
+                # we need to print the guidance first.
                 self.logger.info(
-                    "Please login in your web browser at https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize."
+                    "Please login in your web browser at [bold]https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize[/]."
                 )
                 self.logger.info(
-                    "If no web browser is available, please run `az login --use-device-code` in a command line window."
+                    "If no web browser is available, please run [bold]az login --use-device-code[/] in a command line window."
                 )
-                subprocess.run(["az", "login"], capture_output=True)
+                # Attempt to log in at the command line
+                process = subprocess.run(
+                    ["az", "login"], capture_output=True, check=False
+                )
         except (FileNotFoundError, subprocess.CalledProcessError) as exc:
             msg = f"Please ensure that the Azure CLI is installed.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc

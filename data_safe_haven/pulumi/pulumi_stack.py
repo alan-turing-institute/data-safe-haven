@@ -197,6 +197,9 @@ class PulumiStack:
     def login(self) -> None:
         """Login to Pulumi."""
         try:
+            # Ensure we are authenticated with the Azure CLI
+            # Without this, we cannot read the encryption key from the keyvault
+            AzureCli().login()
             # Check whether we're already logged in
             # Note that we cannot retrieve self.stack without being logged in
             with suppress(DataSafeHavenPulumiError):
@@ -206,9 +209,6 @@ class PulumiStack:
                     return
             # Otherwise log in to Pulumi
             try:
-                # Ensure we are authenticated with the Azure CLI
-                # Without this, we cannot read the encryption key from the keyvault
-                AzureCli().login()
                 process = subprocess.run(
                     [
                         "pulumi",
