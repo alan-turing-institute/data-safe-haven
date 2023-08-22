@@ -1,16 +1,13 @@
-"""Pulumi component for SRE DNS management"""
-import pathlib
-
+"""Pulumi component for SRE DNS server"""
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, network, storage
+from pulumi_azure_native import containerinstance, network, resources
 
-# from data_safe_haven.external import AzureIPv4Range
-from data_safe_haven.pulumi.common import get_id_from_subnet
-from data_safe_haven.pulumi.dynamic.file_share_file import (
-    FileShareFile,
-    FileShareFileProps,
+from data_safe_haven.pulumi.common import (
+    NetworkingPriorities,
+    SREDnsIpRanges,
+    SREIpRanges,
+    get_ip_address_from_container_group,
 )
-from data_safe_haven.utility import FileReader
 
 
 class SREDnsServerProps:
@@ -18,23 +15,17 @@ class SREDnsServerProps:
 
     def __init__(
         self,
-        resource_group_name: Input[str],
-        subnet: Input[network.GetSubnetResult],
-        storage_account_name: Input[str],
-        storage_account_key: Input[str],
-        storage_account_resource_group_name: Input[str],
-        virtual_network: Input[network.VirtualNetwork],
+        location: Input[str],
+        sre_index: Input[int],
     ) -> None:
-        self.resource_group_name = resource_group_name
-        self.subnet_id = Output.from_input(subnet).apply(get_id_from_subnet)
-        self.storage_account_name = storage_account_name
-        self.storage_account_key = Output.secret(storage_account_key)
-        self.storage_account_resource_group_name = storage_account_resource_group_name
-        self.virtual_network = virtual_network
+        self.location = location
+        subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
+        self.sre_vnet_prefix = subnet_ranges.apply(lambda r: str(r.vnet))
+        self.ip_range_prefix = str(SREDnsIpRanges().vnet)
 
 
 class SREDnsServerComponent(ComponentResource):
-    """Deploy DNS management with Pulumi"""
+    """Deploy DNS server with Pulumi"""
 
     def __init__(
         self,
@@ -46,38 +37,112 @@ class SREDnsServerComponent(ComponentResource):
         super().__init__("dsh:sre:DnsServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
-        # Define configuration file shares
-        file_share_dns_adguard = storage.FileShare(
-            f"{self._name}_file_share_dns_adguard",
-            access_tier="TransactionOptimized",
-            account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group_name,
-            share_name="dns-adguard",
-            share_quota=1,
+        # Deploy resource group
+        resource_group = resources.ResourceGroup(
+            f"{self._name}_resource_group",
+            location=props.location,
+            resource_group_name=f"{stack_name}-rg-dns",
             opts=child_opts,
         )
 
-        # Upload PiHole entrypoint script
-        resources_path = (
-            pathlib.Path(__file__).parent.parent.parent / "resources" / "dns_server"
-        )
-        dns_adguard_adguardhome_yaml_reader = FileReader(
-            resources_path / "AdGuardHome.yaml"
-        )
-        file_share_dns_adguard_adguardhome_yaml = FileShareFile(
-            f"{self._name}_file_share_dns_adguard_adguardhome_yaml",
-            FileShareFileProps(
-                destination_path=dns_adguard_adguardhome_yaml_reader.name,
-                share_name=file_share_dns_adguard.name,
-                file_contents=Output.secret(
-                    dns_adguard_adguardhome_yaml_reader.file_contents()
+        # Define network security group
+        nsg = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_dns",
+            network_security_group_name=f"{stack_name}-nsg-dns",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from attached.",
+                    destination_address_prefix=props.ip_range_prefix,
+                    destination_port_ranges=["53", "80"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowSREInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_ANY,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=props.sre_vnet_prefix,
+                    source_port_range="*",
                 ),
-                storage_account_key=props.storage_account_key,
-                storage_account_name=props.storage_account_name,
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound DNS and rules list traffic over the internet.",
+                    destination_address_prefix="Internet",
+                    destination_port_ranges=["53", "80", "443"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDnsInternetOutbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=props.ip_range_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+        )
+
+        # Deploy dedicated virtual network
+        subnet_name = "DnsSubnet"
+        virtual_network = network.VirtualNetwork(
+            f"{self._name}_virtual_network",
+            address_space=network.AddressSpaceArgs(
+                address_prefixes=[props.ip_range_prefix],
             ),
+            resource_group_name=resource_group.name,
+            subnets=[  # Note that we define subnets inline to avoid creation order issues
+                # DNS subnet
+                network.SubnetArgs(
+                    address_prefix=props.ip_range_prefix,
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
+                    name=subnet_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(id=nsg.id),
+                    route_table=None,
+                ),
+            ],
+            virtual_network_name=f"{stack_name}-vnet-dns",
+            virtual_network_peerings=[],
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=file_share_dns_adguard)
+                child_opts,
+                ResourceOptions(
+                    ignore_changes=["virtual_network_peerings"]
+                ),  # allow peering to SRE virtual network
             ),
+        )
+
+        subnet_dns = network.get_subnet_output(
+            subnet_name=subnet_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=virtual_network.name,
         )
 
         # Define a network profile
@@ -87,21 +152,19 @@ class SREDnsServerComponent(ComponentResource):
                 network.ContainerNetworkInterfaceConfigurationArgs(
                     ip_configurations=[
                         network.IPConfigurationProfileArgs(
-                            name="ipconfigdnscontainers",
-                            subnet=network.SubnetArgs(
-                                id=props.subnet_id,
-                            ),
+                            name="ipconfigdns",
+                            subnet=network.SubnetArgs(id=subnet_dns.id),
                         )
                     ],
-                    name="networkinterfaceconfigdnscontainers",
+                    name="networkinterfaceconfigdns",
                 )
             ],
-            network_profile_name=f"{stack_name}-np-dns-containers",
-            resource_group_name=props.resource_group_name,
+            network_profile_name=f"{stack_name}-np-dns",
+            resource_group_name=resource_group.name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
-                    depends_on=[props.virtual_network],
+                    depends_on=[virtual_network],
                     ignore_changes=[
                         "container_network_interface_configurations"
                     ],  # allow container groups to be registered to this interface
@@ -110,13 +173,35 @@ class SREDnsServerComponent(ComponentResource):
         )
 
         # Define the DNS container group with AdGuard
-        containerinstance.ContainerGroup(
+        allowed_fqdns = [
+            "*-jobruntimedata-prod-su1.azure-automation.net",
+            "*.clamav.net",
+            "database.clamav.net.cdn.cloudflare.net",
+            "keyserver.ubuntu.com",
+            "time.google.com",
+        ]
+        container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
             container_group_name=f"{stack_name}-container-group-dns",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="adguard/adguardhome:v0.107.36",
-                    name="adguardhome",
+                    image="ghcr.io/alan-turing-institute/adguard-manager:main",
+                    name="adguard",
+                    environment_variables=[
+                        containerinstance.EnvironmentVariableArgs(
+                            name="ADMIN_PASSWORD", value="test"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="SPACE_SEPARATED_FILTER_ALLOW",
+                            value=" ".join(allowed_fqdns),
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="SPACE_SEPARATED_FILTER_DENY", value="*.*"
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="UPSTREAM_DNS", value="168.63.129.16"
+                        ),
+                    ],
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=53,
@@ -133,13 +218,7 @@ class SREDnsServerComponent(ComponentResource):
                             memory_in_gb=1,
                         ),
                     ),
-                    volume_mounts=[
-                        containerinstance.VolumeMountArgs(
-                            mount_path="/opt/adguardhome/conf",
-                            name="adguard-opt-adguardhome-conf",
-                            read_only=False,
-                        ),
-                    ],
+                    volume_mounts=[],
                 ),
             ],
             ip_address=containerinstance.IpAddressArgs(
@@ -155,27 +234,20 @@ class SREDnsServerComponent(ComponentResource):
                 id=container_network_profile.id,
             ),
             os_type=containerinstance.OperatingSystemTypes.LINUX,
-            resource_group_name=props.resource_group_name,
+            resource_group_name=resource_group.name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
-            volumes=[
-                containerinstance.VolumeArgs(
-                    azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_dns_adguard.name,
-                        storage_account_key=props.storage_account_key,
-                        storage_account_name=props.storage_account_name,
-                    ),
-                    name="adguard-opt-adguardhome-conf",
-                ),
-            ],
+            volumes=[],
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
                     delete_before_replace=True,
-                    depends_on=[
-                        file_share_dns_adguard_adguardhome_yaml,
-                    ],
                     replace_on_changes=["containers"],
                 ),
             ),
         )
+
+        # Register outputs
+        self.ip_address = get_ip_address_from_container_group(container_group)
+        self.resource_group = resource_group
+        self.virtual_network = virtual_network
