@@ -166,14 +166,14 @@ All packages installed successfully
 To test database connectivity you will need to know the connection details and can then run something like:
 
 ```none
-> python tests/test_databases_python.py --db-type mssql --db-name master --port 1433 --server-name MSSQL-T3MSRDS.testc.dsgroupdev.co.uk
+> python tests/test_databases_python.py --db-type mssql --db-name master --port 1433 --server-name MSSQL-T3GUAC.testc.dsgroupdev.co.uk
 ```
 
 This will attempt to connect to the relevant database server
 The expected output for a successful test is:
 
 ```none
-Attempting to connect to 'master' on 'MSSQL-T3MSRDS.testc.dsgroupdev.co.uk' via port 1433
+Attempting to connect to 'master' on 'MSSQL-T3GUAC.testc.dsgroupdev.co.uk' via port 1433
   TABLE_CATALOG TABLE_SCHEMA        TABLE_NAME  TABLE_TYPE
 0        master          dbo   spt_fallback_db  BASE TABLE
 1        master          dbo  spt_fallback_dev  BASE TABLE
@@ -271,14 +271,14 @@ All packages installed successfully
 To test database connectivity you will need to know the connection details and can then run something like:
 
 ```none
-> Rscript tests/test_databases_R.R mssql master 1433 MSSQL-T3MSRDS.testc.dsgroupdev.co.uk
+> Rscript tests/test_databases_R.R mssql master 1433 MSSQL-T3GUAC.testc.dsgroupdev.co.uk
 ```
 
 This will attempt to connect to the relevant database server
 The expected output for a successful test is:
 
 ```none
-[1] "Attempting to connect to 'master' on 'MSSQL-T3MSRDS.testc.dsgroupdev.co.uk' via port '1433"
+[1] "Attempting to connect to 'master' on 'MSSQL-T3GUAC.testc.dsgroupdev.co.uk' via port '1433"
   TABLE_CATALOG TABLE_SCHEMA       TABLE_NAME TABLE_TYPE
 1        master          dbo  spt_fallback_db BASE TABLE
 2        master          dbo spt_fallback_dev BASE TABLE

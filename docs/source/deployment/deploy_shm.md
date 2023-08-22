@@ -535,26 +535,6 @@ PS> ./Setup_SHM_Update_Servers.ps1 -shmId <SHM ID>
 
 </details>
 
-(roles_system_deployer_shm_deploy_nps)=
-
-<details>
-<summary><strong>Deploy network policy server</strong></summary>
-
-![Powershell: twenty minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=twenty%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
-
-```powershell
-PS> ./Setup_SHM_NPS.ps1 -shmId <SHM ID>
-```
-
-- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
-
-```{error}
-If you see an error similar to `New-AzResourceGroupDeployment: Resource Microsoft.Compute/virtualMachines/extensions NPS-SHM-<SHM ID>/joindomain' failed with message` you may find this error resolves if you wait and retry later.
-Alternatively, you can try deleting the extension from the `NPS-SHM-<SHM ID> > Extensions` blade in the Azure portal.
-```
-
-</details>
-
 (roles_system_deployer_shm_deploy_mirrors)=
 
 <details>
@@ -974,119 +954,7 @@ If you see a message about buying licences, you may need to refresh the page for
 
     </details>
 
-(roles_system_deployer_configure_nps)=
-
-## 10. {{station}} Configure network policy server
-
-(roles_system_deployer_shm_remote_desktop_nps)=
-
-### Configure the network policy server (NPS) via Remote Desktop
-
-![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
-
-- Navigate to the **network policy server** VM in the portal at `Resource Groups > RG_SHM_<SHM ID>_NPS > NPS-SHM-<SHM ID>` and note the `Private IP address` for this VM
-- Use the same `<admin login>` and `<admin password>` as for the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`)
-
-#### Configure NPS logging
-
-![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
-
-- Log into the **network policy server** (`NPS-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
-- Open Server Manager and select `Tools > Network Policy Server` (or open the `Network Policy Server` desktop app directly)
-- Configure NPS to log to a local text file:
-
-  - Select `NPS (Local) > Accounting` on the left-hand sidebar
-    <details><summary><b>Screenshots</b></summary>
-
-    ```{image} deploy_shm/nps_accounting.png
-    :alt: NPS accounting
-    :align: center
-    ```
-
-    </details>
-
-  - Click on `Accounting > Configure Accounting`
-    - On the `Introduction` screen, click `Next`.
-    - On the `Select Accounting Options` screen, select `Log to text file on the local computer` then click `Next`.
-    - On the `Configure Local File Logging` screen, click `Next`.
-    - On the `Summary` screen, click `Next`.
-    - On the `Conclusion` screen, click `Close`.
-  - Click on `Log file properties > Change log file properties`
-    - On the `Log file` tab, select `Daily` under `Create a new log file`
-    - Click `Ok`
-
-#### Configure MFA
-
-![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
-
-- Log into the **network policy server** (`NPS-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
-- Run the following command on the remote network policy server VM to configure MFA
-- On the webpage pop-up, provide credentials for your **native** Global Administrator for the SHM Azure AD
-
-```powershell
-& "C:\Program Files\Microsoft\AzureMfa\Config\AzureMfaNpsExtnConfigSetup.ps1"
-```
-
-- Enter `A` if prompted to install `Powershell` modules
-- On the webpage pop-up, provide credentials for your **native** Global Administrator for the SHM Azure AD
-- Back on the `Connect to Azure AD` screen, click `Next`
-- Approve the login with MFA if required
-- When prompted to `Provide your Tenant ID`, enter the Tenant ID that you {ref}`obtained from Azure Active Directory <roles_deployer_aad_tenant_id>` earlier
-- At the message `Configuration complete. Press Enter to continue`, press `Enter`
-
-```{note}
-Take care to consider any differences in the keyboard of your machine and the Windows remote desktop when entering the password.
-```
-
-```{error}
-If you receive an error box `We can't sign you in. Javascript is required to sign you in. Do you want to continue running scripts on this page`
-- Click `Yes`
-- Close the dialog by clicking `X`
-```
-
-```{error}
-If you get a Javascript error that prevents the script from running then simply run this script again.
-```
-
-```{error}
-If you receive an Internet Explorer pop-up dialog like `Content within this application coming from the website below is being blocked by Internet Explorer Advanced Security Configuration`
-- Add these webpages to the exceptions allowlist by clicking `Add` and clicking `Close`
-```
-
-```{error}
-If you see a Windows Security Warning when connecting to Azure AD, check `Don't show this message again` and click `Yes`.
-```
-
-```{error}
-If you see an error `New-MsolServicePrincipalCredential : Service principal was not found`, this indicates that the `Azure Multi-Factor Auth Client` is not enabled in Azure Active Directory.
-  <details><summary><b>Enabling Multi-Factor Auth Client</b></summary>
-
-  - Look at [the documentation here](https://docs.microsoft.com/en-us/azure/active-directory/authentication/howto-mfa-nps-extension#troubleshooting).
-  - Make sure the Safe Haven Azure Active Directory has valid P1 licenses:
-    - Go to the Azure Portal and click `Azure Active Directories` in the left hand side bar
-    - Click `Licenses`in the left hand side bar then `Manage > All products`
-    - You should see `Azure Active Directory Premium P1` in the list of products, with a non-zero number of available licenses.
-    - If you do not have P1 licences, purchase some following the instructions at the end of the {ref}`add additional administrators <roles_deploy_add_additional_admins>` section above, making sure to also follow the final step to configure the MFA settings on the Azure Active Directory.
-    - If you are using the trial `Azure Active Directory Premium P2` licences, you may find that enabling a trial of `Enterprise Mobility + Security E5` licences will resolve this.
-  - Make sure that you have added a P1 licence to at least one user in the `Azure Active Directory` and have gone through the MFA setup procedure for that user.
-  You may have to wait a few minutes after doing this
-  - If you've done all of these things and nothing is working, you may have accidentally removed the `Azure Multi-Factor Auth Client` Enterprise Application from your `Azure Active Directory`.
-  Run `C:\Installation\Ensure_MFA_SP_AAD.ps1` to create a new service principal and try the previous steps again.
-  </details>
-```
-
-```{error}
-If you get a `New-MsolServicePrincipalCredential: Access denied` error stating `You do not have permissions to call this cmdlet` please try the following:
-<details><summary><b>Check user credentials</b></summary>
-
-- Make sure you are logged in to the NPS server as a **domain** user rather than a local user.
-  - The output of the `whoami` command in Powershell should be `<SHM netBios domain>\<SHM admin>` rather than `NPS-SHM-<SHM ID>\<SHM admin>`.
-  - If it is not, reconnect to the remote desktop with the username `admin@<SHM domain>`, using the same password as before
-- Make sure you authenticate to `Azure Active Directory` your own **native** Global Administrator (i.e. `admin.firstname.lastname@<SHM domain>`) and that you have successfully logged in and verified your phone number and email address and configured MFA on your account.
-</details>
-```
-
-## 11. {{closed_lock_with_key}} Apply conditional access policies
+## 10. {{closed_lock_with_key}} Apply conditional access policies
 
 (roles_system_deployer_shm_require_mfa)=
 
@@ -1167,7 +1035,7 @@ Security defaults must be disabled in order to create this policy.
 This should have been done when creating a policy to {ref}`require MFA for all users <roles_system_deployer_shm_require_mfa>`.
 ```
 
-## 12. {{no_pedestrians}} Add MFA licences to any non-admin users
+## 11. {{no_pedestrians}} Add MFA licences to any non-admin users
 
 Administrator accounts can use MFA and reset their passwords without a licence needing to be assigned.
 However, when you create non-admin users they will need to be assigned an Azure Active Directory licence in order to reset their own password.

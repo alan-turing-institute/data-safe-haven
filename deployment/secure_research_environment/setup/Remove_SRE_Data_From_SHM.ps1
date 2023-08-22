@@ -98,18 +98,6 @@ if ($sreResources -or $sreResourceGroups) {
     $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.dc.vmName -ResourceGroupName $config.shm.dc.rg -Parameter $params
 
 
-    # Remove RDS Gateway RADIUS Client from SHM NPS
-    # ---------------------------------------------
-    if ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        Add-LogMessage -Level Info "Removing RDS Gateway RADIUS Client from SHM NPS..."
-        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "configure_shm_dc" "scripts" "Remove_RDS_Gateway_RADIUS_Client_Remote.ps1" -Resolve
-        $params = @{
-            rdsGatewayFqdn = $config.sre.remoteDesktop.gateway.fqdn
-        }
-        $null = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $scriptPath -VMName $config.shm.nps.vmName -ResourceGroupName $config.shm.nps.rg -Parameter $params
-    }
-
-
     # Remove SRE DNS Zone
     # -------------------
     $null = Set-AzContext -SubscriptionId $config.shm.dns.subscriptionName -ErrorAction Stop
@@ -157,8 +145,6 @@ if ($sreResources -or $sreResourceGroups) {
             # Remote desktop server CNAME record
             if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
                 $serverHostname = "$($config.sre.remoteDesktop.guacamole.hostname)".ToLower()
-            } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-                $serverHostname = "$($config.sre.remoteDesktop.gateway.hostname)".ToLower()
             } else {
                 Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
             }
