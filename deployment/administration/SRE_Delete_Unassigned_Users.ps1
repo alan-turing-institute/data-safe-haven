@@ -15,21 +15,8 @@ $config = Get-ShmConfig -shmId $shmId
 
 # Extract list of users
 # ---------------------
-# $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
-# Add-LogMessage -Level Info "Exporting user list for $($config.shm.id) from $($config.dc.vmName)..."
-# Run remote script
-# $script = @"
-# `$userOuPath = (Get-ADObject -Filter * | Where-Object { `$_.Name -eq "Safe Haven Research Users" }).DistinguishedName
-# `$users = Get-ADUser -Filter * -SearchBase "`$userOuPath" -Properties *
-# foreach (`$user in `$users) {
-#     `$groupName = (`$user | Select-Object -ExpandProperty MemberOf | ForEach-Object { ((`$_ -Split ",")[0] -Split "=")[1] }) -join "|"
-#     `$user | Add-Member -NotePropertyName GroupName -NotePropertyValue `$groupName -Force
-# }
-# `$users | Select-Object SamAccountName,GivenName,Surname,Mobile,GroupName | `
-#          ConvertTo-Csv | Where-Object { `$_ -notmatch '^#' } | `
-#          ForEach-Object { `$_.replace('"','') }
-# "@
-
+$null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
+Add-LogMessage -Level Info "Deleting users not assigned to any security group: $($config.shm.id) from $($config.dc.vmName)..."
 
 $script = @"
 `$userOuPath = (Get-ADObject -Filter * | Where-Object { `$_.Name -eq "Safe Haven Research Users" }).DistinguishedName
@@ -63,16 +50,4 @@ catch {
 
 $result = Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
 
-# # Delete users not found in any group (with exception for named SG e.g. "Sandbox")
-# # --------------------------------------------------------------------------------
-# Add-LogMessage -Level Info "Deleting users from $($config.shm.id) not in any security group..."
-# $users = $result.Value[0].Message | ConvertFrom-Csv
-# foreach ($user in $users) {
-#     if (!($user.GroupName)) {
-#         $name = $user.SamAccountName
-#         $script = "Remove-ADUser -Identity $name"
-#         Invoke-RemoteScript -Shell "PowerShell" -Script $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
-#     }
-# }
-
-# $null = Set-AzContext -Context $originalContext -ErrorAction Stop
+$null = Set-AzContext -Context $originalContext -ErrorAction Stop
