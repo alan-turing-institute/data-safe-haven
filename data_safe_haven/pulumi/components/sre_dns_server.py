@@ -2,6 +2,7 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources
 
+from data_safe_haven.functions import ordered_private_dns_zones
 from data_safe_haven.pulumi.common import (
     NetworkingPriorities,
     SREDnsIpRanges,
@@ -17,13 +18,15 @@ class SREDnsServerProps:
         self,
         location: Input[str],
         shm_fqdn: Input[str],
+        shm_networking_resource_group_name: Input[str],
         sre_index: Input[int],
     ) -> None:
         subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
-        self.location = location
-        self.sre_vnet_prefix = subnet_ranges.apply(lambda r: str(r.vnet))
-        self.shm_fqdn = shm_fqdn
         self.ip_range_prefix = str(SREDnsIpRanges().vnet)
+        self.location = location
+        self.shm_fqdn = shm_fqdn
+        self.shm_networking_resource_group_name = shm_networking_resource_group_name
+        self.sre_vnet_prefix = subnet_ranges.apply(lambda r: str(r.vnet))
 
 
 class SREDnsServerComponent(ComponentResource):
@@ -250,6 +253,23 @@ class SREDnsServerComponent(ComponentResource):
                 ),
             ),
         )
+
+        # Link virtual network to SHM private DNS zones
+        for private_link_domain in ordered_private_dns_zones():
+            network.VirtualNetworkLink(
+                f"{self._name}_private_zone_{private_link_domain}_vnet_dns_link",
+                location="Global",
+                private_zone_name=f"privatelink.{private_link_domain}",
+                registration_enabled=False,
+                resource_group_name=props.shm_networking_resource_group_name,
+                virtual_network=network.SubResourceArgs(id=virtual_network.id),
+                virtual_network_link_name=Output.concat(
+                    "link-to-", virtual_network.name
+                ),
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=virtual_network)
+                ),
+            )
 
         # Register outputs
         self.ip_address = get_ip_address_from_container_group(container_group)
