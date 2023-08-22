@@ -93,6 +93,7 @@ class PulumiStack:
     def apply_config_options(self) -> None:
         """Set Pulumi config options"""
         try:
+            self.logger.info("Updating Pulumi configuration")
             for name, (value, is_secret, replace) in self.options.items():
                 if replace:
                     self.set_config(name, value, secret=is_secret)
@@ -114,7 +115,6 @@ class PulumiStack:
     def deploy(self) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
-            self.logger.info("Preparing to deploy infrastructure with Pulumi")
             self.initialise_workdir()
             self.install_plugins()
             self.apply_config_options()
@@ -173,6 +173,7 @@ class PulumiStack:
     def initialise_workdir(self) -> None:
         """Create project directory if it does not exist and update local stack."""
         try:
+            self.logger.info("Initialising Pulumi work directory")
             self.logger.debug(f"Ensuring that [green]{self.work_dir}[/] exists...")
             if not self.work_dir.exists():
                 self.work_dir.mkdir(parents=True)
@@ -190,6 +191,7 @@ class PulumiStack:
     def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
         try:
+            self.logger.info("Installing required Pulumi plugins")
             self.stack.workspace.install_plugin(
                 "azure-native", metadata.version("pulumi-azure-native")
             )
@@ -205,6 +207,7 @@ class PulumiStack:
             AzureCli().login()
             # Check whether we're already logged in
             # Note that we cannot retrieve self.stack without being logged in
+            self.logger.info("Logging into Pulumi")
             with suppress(DataSafeHavenPulumiError):
                 result = self.stack.workspace.who_am_i()
                 if result.user:
@@ -241,10 +244,10 @@ class PulumiStack:
     def preview(self) -> None:
         """Preview the Pulumi stack."""
         try:
+            self.logger.info(
+                f"Previewing changes for stack [green]{self.stack.name}[/]."
+            )
             with suppress(automation.CommandError):
-                self.logger.info(
-                    f"Previewing changes for stack [green]{self.stack.name}[/]."
-                )
                 self.stack.preview(
                     color="always", diff=True, on_output=self.logger.info
                 )
@@ -300,6 +303,7 @@ class PulumiStack:
     def update(self) -> None:
         """Update deployed infrastructure."""
         try:
+            self.logger.info(f"Applying changes to stack [green]{self.stack.name}[/].")
             result = self.stack.up(color="always", on_output=self.logger.info)
             self.evaluate(result.summary.result)
         except automation.CommandError as exc:
