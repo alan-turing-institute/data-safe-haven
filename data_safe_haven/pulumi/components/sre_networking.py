@@ -231,6 +231,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_application_gateway_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to the Guacamole remote desktop gateway.",
                     destination_address_prefix=subnet_guacamole_containers_prefix,
                     destination_port_ranges=["80"],
@@ -407,6 +419,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over TCP.",
                     destination_address_prefix=props.shm_subnet_identity_servers_prefix,
                     destination_port_ranges=["389", "636"],
@@ -559,6 +583,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over TCP.",
                     destination_address_prefix=props.shm_subnet_identity_servers_prefix,
                     destination_port_ranges=["389", "636"],
@@ -687,6 +723,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_databases_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
@@ -743,6 +791,18 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_software_repositories_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
@@ -861,6 +921,18 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowLinuxUpdatesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SHM_UPDATE_SERVERS,
                     protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
@@ -1128,6 +1200,34 @@ class SRENetworkingComponent(ComponentResource):
             virtual_network_name=shm_virtual_network.name,
             virtual_network_peering_name=Output.concat(
                 "peer_shm_to_sre_", props.sre_name
+            ),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_virtual_network)
+            ),
+        )
+
+        # Peer the SRE virtual network to the DNS virtual network
+        network.VirtualNetworkPeering(
+            f"{self._name}_sre_to_dns_peering",
+            remote_virtual_network=network.SubResourceArgs(
+                id=props.dns_virtual_network_id
+            ),
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+            virtual_network_peering_name=Output.concat(
+                "peer_sre_", props.sre_name, "_to_dns"
+            ),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_virtual_network)
+            ),
+        )
+        network.VirtualNetworkPeering(
+            f"{self._name}_dns_to_sre_peering",
+            remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
+            resource_group_name=props.dns_resource_group_name,
+            virtual_network_name=props.dns_virtual_network_name,
+            virtual_network_peering_name=Output.concat(
+                "peer_dns_to_sre_", props.sre_name
             ),
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=sre_virtual_network)
