@@ -4,7 +4,13 @@ from pulumi_azure_native import network, resources
 
 # from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
-from data_safe_haven.pulumi.common import NetworkingPriorities, SRESubnetRanges
+from data_safe_haven.pulumi.common import (
+    NetworkingPriorities,
+    SREDnsIpRanges,
+    SREIpRanges,
+    get_id_from_vnet,
+    get_name_from_vnet,
+)
 
 
 class SRENetworkingProps:
@@ -26,9 +32,8 @@ class SRENetworkingProps:
         user_public_ip_ranges: Input[list[str]],
     ) -> None:
         # Virtual network and subnet IP ranges
-        subnet_ranges = Output.from_input(sre_index).apply(
-            lambda idx: SRESubnetRanges(idx)
-        )
+        subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
+        self.dns_servers_iprange = SREDnsIpRanges().vnet
         self.vnet_iprange = subnet_ranges.apply(lambda s: s.vnet)
         self.subnet_application_gateway_iprange = subnet_ranges.apply(
             lambda s: s.application_gateway
@@ -37,9 +42,6 @@ class SRENetworkingProps:
             lambda s: s.data_configuration
         )
         self.subnet_data_private_iprange = subnet_ranges.apply(lambda s: s.data_private)
-        self.subnet_dns_containers_iprange = subnet_ranges.apply(
-            lambda s: s.dns_containers
-        )
         self.subnet_guacamole_containers_iprange = subnet_ranges.apply(
             lambda s: s.guacamole_containers
         )
