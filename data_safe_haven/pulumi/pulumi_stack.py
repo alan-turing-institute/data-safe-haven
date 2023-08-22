@@ -198,10 +198,12 @@ class PulumiStack:
         """Login to Pulumi."""
         try:
             # Check whether we're already logged in
+            # Note that we cannot retrieve self.stack without being logged in
             with suppress(DataSafeHavenPulumiError):
-                username = self.whoami()
-                self.logger.info(f"Logged into Pulumi as [green]{username}[/]")
-                return
+                result = self.stack.workspace.who_am_i()
+                if result.user:
+                    self.logger.info(f"Logged into Pulumi as [green]{result.user}[/]")
+                    return
             # Otherwise log in to Pulumi
             try:
                 # Ensure we are authenticated with the Azure CLI
@@ -296,28 +298,6 @@ class PulumiStack:
             self.evaluate(result.summary.result)
         except automation.CommandError as exc:
             msg = f"Pulumi update failed.\n{exc}"
-            raise DataSafeHavenPulumiError(msg) from exc
-
-    def whoami(self) -> str:
-        """Check current Pulumi user."""
-        try:
-            AzureCli().login()  # this is needed to read the encryption key from the keyvault
-            self.work_dir.mkdir(parents=True, exist_ok=True)
-            try:
-                process = subprocess.run(
-                    ["pulumi", "whoami"],
-                    capture_output=True,
-                    check=True,
-                    cwd=self.work_dir,
-                    encoding="UTF-8",
-                    env={**os.environ, **self.env},
-                )
-                return process.stdout.strip()
-            except (subprocess.CalledProcessError, FileNotFoundError) as exc:
-                msg = f"No Pulumi user found.\n{exc}."
-                raise DataSafeHavenPulumiError(msg) from exc
-        except Exception as exc:
-            msg = f"Pulumi user check failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
 
