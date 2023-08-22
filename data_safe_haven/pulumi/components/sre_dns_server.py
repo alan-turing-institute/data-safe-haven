@@ -61,7 +61,7 @@ class SREDnsServerComponent(ComponentResource):
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from attached.",
                     destination_address_prefix=props.ip_range_prefix,
-                    destination_port_ranges=["53", "80"],
+                    destination_port_ranges=["53", "3000"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowSREInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_ANY,
