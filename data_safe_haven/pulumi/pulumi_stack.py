@@ -213,13 +213,13 @@ class PulumiStack:
                     [
                         "pulumi",
                         "login",
-                        f"'azblob://{self.cfg.pulumi.storage_container_name}'",
+                        f"azblob://{self.cfg.pulumi.storage_container_name}",
                     ],
-                    env={**os.environ, **self.env},
-                    encoding="UTF-8",
                     capture_output=True,
                     check=True,
                     cwd=self.work_dir,
+                    encoding="UTF-8",
+                    env={**os.environ, **self.env},
                 )
                 self.logger.info(process.stdout)
             except (subprocess.CalledProcessError, FileNotFoundError) as exc:
