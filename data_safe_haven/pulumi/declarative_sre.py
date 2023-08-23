@@ -83,6 +83,7 @@ class DeclarativeSRE:
                 shm_zone_name=self.cfg.shm.fqdn,
                 sre_index=self.cfg.sres[self.sre_name].index,
                 sre_name=self.sre_name,
+                user_public_ip_ranges=self.cfg.sres[self.sre_name].research_user_ip_addresses,
             ),
         )
 
