@@ -7,6 +7,7 @@ from .strings import (
     password,
     random_letters,
     replace_separators,
+    seeded_uuid,
     sha256hash,
     truncate_tokens,
 )
@@ -34,6 +35,7 @@ __all__ = [
     "password",
     "random_letters",
     "replace_separators",
+    "seeded_uuid",
     "sha256hash",
     "time_as_string",
     "truncate_tokens",

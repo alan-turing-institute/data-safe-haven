@@ -207,7 +207,7 @@ class PulumiStack:
             AzureCli().login()
             # Check whether we're already logged in
             # Note that we cannot retrieve self.stack without being logged in
-            self.logger.info("Logging into Pulumi")
+            self.logger.debug("Logging into Pulumi")
             with suppress(DataSafeHavenPulumiError):
                 result = self.stack.workspace.who_am_i()
                 if result.user:
