@@ -23,6 +23,7 @@ class SREHedgeDocServerProps:
         database_password: Input[str],
         database_subnet_id: Input[str],
         dns_resource_group_name: Input[str],
+        dns_server_ip: Input[str],
         domain_netbios_name: Input[str],
         ldap_bind_dn: Input[str],
         ldap_root_dn: Input[str],
@@ -49,6 +50,7 @@ class SREHedgeDocServerProps:
             database_username if database_username else "postgresadmin"
         )
         self.dns_resource_group_name = dns_resource_group_name
+        self.dns_server_ip = dns_server_ip
         self.domain_netbios_name = domain_netbios_name
         self.ldap_bind_dn = ldap_bind_dn
         self.ldap_root_dn = ldap_root_dn
@@ -322,6 +324,9 @@ class SREHedgeDocServerComponent(ComponentResource):
                     ],
                 ),
             ],
+            dns_config=containerinstance.DnsConfigurationArgs(
+                name_servers=[props.dns_server_ip],
+            ),
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(

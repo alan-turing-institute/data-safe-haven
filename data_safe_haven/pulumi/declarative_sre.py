@@ -177,6 +177,7 @@ class DeclarativeSRE:
                 allow_copy=self.cfg.sres[self.sre_name].remote_desktop.allow_copy,
                 allow_paste=self.cfg.sres[self.sre_name].remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
+                dns_server_ip=dns.ip_address,
                 ldap_bind_dn=ldap_bind_dn,
                 ldap_group_search_base=ldap_group_search_base,
                 ldap_search_password=ldap_search_password,
@@ -239,6 +240,7 @@ class DeclarativeSRE:
                 database_service_admin_password=data.password_database_service_admin,
                 databases=self.cfg.sres[self.sre_name].databases,
                 dns_resource_group_name=dns.resource_group.name,
+                dns_server_ip=dns.ip_address,
                 domain_netbios_name=self.pulumi_opts.require(
                     "shm-domain_controllers-netbios_name"
                 ),
