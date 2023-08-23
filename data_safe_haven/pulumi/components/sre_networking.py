@@ -2,7 +2,7 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-from data_safe_haven.functions import alphanumeric
+from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
 from data_safe_haven.pulumi.common import (
     NetworkingPriorities,
     SREDnsIpRanges,
@@ -1313,6 +1313,27 @@ class SRENetworkingComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=sre_private_dns_zone)
             ),
         )
+
+        # Link virtual network to SHM private DNS zones
+        # Note that although the DNS virtual network is already linked to these, Azure
+        # Container Instances do not have an IP address during deployment and so must
+        # use default Azure DNS when setting up file mounts. This means that we need to
+        # be able to resolve the "Storage Account" private DNS zones.
+        for private_link_domain in ordered_private_dns_zones("Storage account"):
+            network.VirtualNetworkLink(
+                f"{self._name}_private_zone_{private_link_domain}_vnet_link",
+                location="Global",
+                private_zone_name=f"privatelink.{private_link_domain}",
+                registration_enabled=False,
+                resource_group_name=props.shm_networking_resource_group_name,
+                virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
+                virtual_network_link_name=Output.concat(
+                    "link-to-", sre_virtual_network.name
+                ),
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=sre_virtual_network)
+                ),
+            )
 
         # Register outputs
         self.resource_group = resource_group
