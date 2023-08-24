@@ -222,18 +222,13 @@ class SREDnsServerComponent(ComponentResource):
                 containerinstance.ContainerArgs(
                     image="adguard/adguardhome:v0.107.36",
                     name="adguard",
-                    # Note that providing "command" overwrites the CMD arguments in the
-                    # Docker image, so we can either provide them here or set defaults
-                    # in our custom entrypoint.
-                    command=[
-                        "/bin/sh",
-                        "/opt/adguardhome/custom/entrypoint.sh",
-                        "--no-check-update",
-                        "-c",
-                        "/opt/adguardhome/conf/AdGuardHome.yaml",
-                        "-w",
-                        "/opt/adguardhome/work",
-                    ],
+                    # Providing "command" overwrites the CMD arguments in the Docker
+                    # image, so we can either provide them here or set defaults in our
+                    # custom entrypoint.
+                    #
+                    # The entrypoint script will not be executable when mounted so we
+                    # need to explicitly run it with /bin/sh
+                    command=["/bin/sh", "/opt/adguardhome/custom/entrypoint.sh"],
                     environment_variables=[],
                     ports=[
                         containerinstance.ContainerPortArgs(
