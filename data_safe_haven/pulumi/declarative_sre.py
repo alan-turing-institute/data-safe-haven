@@ -61,6 +61,7 @@ class DeclarativeSRE:
             "sre_dns_server",
             self.stack_name,
             SREDnsServerProps(
+                admin_password=self.pulumi_opts.require("password-dns-server-admin"),
                 location=self.cfg.azure.location,
                 shm_fqdn=self.cfg.shm.fqdn,
                 shm_networking_resource_group_name=self.pulumi_opts.require(

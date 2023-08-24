@@ -24,12 +24,15 @@ class SREDnsServerProps:
 
     def __init__(
         self,
+        admin_password: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
         sre_index: Input[int],
     ) -> None:
         subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
+        self.admin_password = Output.secret(admin_password)
+        self.admin_username = ("dshadmin",)
         self.ip_range_prefix = str(SREDnsIpRanges().vnet)
         self.location = location
         self.shm_fqdn = shm_fqdn
@@ -69,8 +72,10 @@ class SREDnsServerComponent(ComponentResource):
 
         # Expand AdGuardHome YAML configuration
         adguard_adguardhome_yaml_contents = Output.all(
-            admin_username="dshadmin",
-            admin_password_encrypted=bcrypt_encode("test"),
+            admin_username=props.admin_username,
+            admin_password_encrypted=props.admin_password.apply(
+                lambda p: bcrypt_encode(p)
+            ),
             upstream_dns="168.63.129.16",
             filter_deny=["*.*"],
             filter_allow=Output.from_input(props.shm_fqdn).apply(
