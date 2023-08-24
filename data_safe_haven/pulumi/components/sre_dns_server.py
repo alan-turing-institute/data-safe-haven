@@ -1,14 +1,22 @@
 """Pulumi component for SRE DNS server"""
+import pathlib
+
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources
 
-from data_safe_haven.functions import allowed_dns_lookups, ordered_private_dns_zones
+from data_safe_haven.functions import (
+    allowed_dns_lookups,
+    b64encode,
+    bcrypt_encode,
+    ordered_private_dns_zones,
+)
 from data_safe_haven.pulumi.common import (
     NetworkingPriorities,
     SREDnsIpRanges,
     SREIpRanges,
     get_ip_address_from_container_group,
 )
+from data_safe_haven.utility import FileReader
 
 
 class SREDnsServerProps:
@@ -48,6 +56,30 @@ class SREDnsServerComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-dns",
             opts=child_opts,
+        )
+
+        # Read AdGuardHome setup files
+        resources_path = (
+            pathlib.Path(__file__).parent.parent.parent / "resources" / "dns_server"
+        )
+        adguard_entrypoint_sh_reader = FileReader(resources_path / "entrypoint.sh")
+        adguard_adguardhome_yaml_reader = FileReader(
+            resources_path / "AdGuardHome.mustache.yaml"
+        )
+
+        # Expand AdGuardHome YAML configuration
+        adguard_adguardhome_yaml_contents = Output.all(
+            admin_username="dshadmin",
+            admin_password_encrypted=bcrypt_encode("test"),
+            upstream_dns="168.63.129.16",
+            filter_deny=["*.*"],
+            filter_allow=Output.from_input(props.shm_fqdn).apply(
+                lambda fqdn: [f"*.{fqdn}", *allowed_dns_lookups()]
+            ),
+        ).apply(
+            lambda mustache_values: adguard_adguardhome_yaml_reader.file_contents(
+                mustache_values
+            )
         )
 
         # Define network security group
@@ -183,28 +215,21 @@ class SREDnsServerComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-dns",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/adguard-manager:main",
+                    image="adguard/adguardhome:v0.107.36",
                     name="adguard",
-                    environment_variables=[
-                        containerinstance.EnvironmentVariableArgs(
-                            name="ADMIN_PASSWORD", value="test"
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="SPACE_SEPARATED_FILTER_ALLOW",
-                            value=Output.concat(
-                                "*.",
-                                props.shm_fqdn,
-                                " ",
-                                " ".join(allowed_dns_lookups()),
-                            ),
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="SPACE_SEPARATED_FILTER_DENY", value="*.*"
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="UPSTREAM_DNS", value="168.63.129.16"
-                        ),
+                    # Note that providing "command" overwrites the CMD arguments in the
+                    # Docker image, so we can either provide them here or set defaults
+                    # in our custom entrypoint.
+                    command=[
+                        "/bin/sh",
+                        "/opt/adguardhome/custom/entrypoint.sh",
+                        "--no-check-update",
+                        "-c",
+                        "/opt/adguardhome/conf/AdGuardHome.yaml",
+                        "-w",
+                        "/opt/adguardhome/work",
                     ],
+                    environment_variables=[],
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=53,
@@ -221,7 +246,13 @@ class SREDnsServerComponent(ComponentResource):
                             memory_in_gb=1,
                         ),
                     ),
-                    volume_mounts=[],
+                    volume_mounts=[
+                        containerinstance.VolumeMountArgs(
+                            mount_path="/opt/adguardhome/custom",
+                            name="adguard-opt-adguardhome-custom",
+                            read_only=True,
+                        ),
+                    ],
                 ),
             ],
             ip_address=containerinstance.IpAddressArgs(
@@ -240,7 +271,19 @@ class SREDnsServerComponent(ComponentResource):
             resource_group_name=resource_group.name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
-            volumes=[],
+            volumes=[
+                containerinstance.VolumeArgs(
+                    name="adguard-opt-adguardhome-custom",
+                    secret={
+                        "entrypoint.sh": b64encode(
+                            adguard_entrypoint_sh_reader.file_contents()
+                        ),
+                        "AdGuardHome.yaml": adguard_adguardhome_yaml_contents.apply(
+                            lambda s: b64encode(s)
+                        ),
+                    },
+                ),
+            ],
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
