@@ -8,6 +8,7 @@ class NetworkingPriorities(int, Enum):
     AZURE_CLOUD = 100
     AZURE_GATEWAY_MANAGER = 200
     AZURE_LOAD_BALANCER = 300
+    AZURE_PLATFORM_DNS = 400
     # SHM connections: 1000-1399
     INTERNAL_SELF = 1000
     INTERNAL_SHM_BASTION = 1100
