@@ -31,6 +31,7 @@ dependencies = [
   "azure-storage-blob~=12.15.0",
   "azure-storage-file-datalake~=12.10.0",
   "azure-storage-file-share~=12.10.0",
+  "bcrypt~=4.0.0",
   "chevron~=0.14.0",
   "chili~=2.1.0",
   "cryptography~=3.4.0",

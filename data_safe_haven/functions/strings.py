@@ -6,6 +6,8 @@ import string
 import uuid
 from collections.abc import Sequence
 
+import bcrypt
+
 
 def alphanumeric(input_string: str) -> str:
     """Strip any characters that are not letters or numbers from a string."""
@@ -15,11 +17,19 @@ def alphanumeric(input_string: str) -> str:
 
 
 def b64decode(input_string: str) -> str:
+    """Decode a Base64 string into a normal string."""
     return base64.b64decode(input_string.encode("utf-8")).decode()
 
 
 def b64encode(input_string: str) -> str:
+    """Encode a normal string into a Base64 string."""
     return base64.b64encode(input_string.encode("utf-8")).decode()
+
+
+def bcrypt_encode(input_string: str) -> str:
+    """Use bcrypt to encrypt an input string"""
+    encrypted_bytes = bcrypt.hashpw(input_string.encode("utf-8"), bcrypt.gensalt())
+    return encrypted_bytes.decode(encoding="utf-8")
 
 
 def hex_string(length: int) -> str:
