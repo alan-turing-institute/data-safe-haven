@@ -98,7 +98,7 @@ class SREDnsServerComponent(ComponentResource):
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from attached.",
                     destination_address_prefix=props.ip_range_prefix,
-                    destination_port_ranges=["53", "3000"],
+                    destination_port_ranges=["53"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowSREInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_ANY,
@@ -230,6 +230,9 @@ class SREDnsServerComponent(ComponentResource):
                     # need to explicitly run it with /bin/sh
                     command=["/bin/sh", "/opt/adguardhome/custom/entrypoint.sh"],
                     environment_variables=[],
+                    # All Azure Container Instances need to expose port 80 on at least
+                    # one container. In this case, the web interface is on 3000 so we
+                    # are not exposing that to users.
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=53,

@@ -1035,7 +1035,7 @@ class SRENetworkingComponent(ComponentResource):
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
                     destination_address_prefix=dns_servers_prefix,
-                    destination_port_ranges=["53", "3000"],
+                    destination_port_ranges=["53"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDNSServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
