@@ -34,7 +34,7 @@ Some parts of the checklist are only relevant when there are multiple SREs attac
 
 ```{important}
 - If you haven't already, you'll need download a VPN certificate and configure {ref}`VPN access <deploy_shm_vpn>` for the SHM
-- Make sure you can use Remote Desktop to log in to the {ref}`domain controller (DC1) <roles_system_deployer_shm_remote_desktop>` and the {ref}`network policy server (NPS) <roles_system_deployer_shm_remote_desktop_nps>`.
+- Make sure you can use Remote Desktop to log in to the {ref}`domain controller (DC1) <roles_system_deployer_shm_remote_desktop>`.
 ```
 
 The following users will be needed for this checklist
@@ -68,23 +68,13 @@ Attempt to login to the remote desktop web client as the **SRE standard user**
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
-<details><summary>user is prompted to setup MFA</summary>
+ <details><summary> user is prompted to setup MFA</summary>
 
 ```{image} security_checklist/login_no_mfa_guacamole.png
 :alt: Guacamole MFA setup prompt
 :align: center
 ```
-</details>
 
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>login works but apps cannot be viewed</summary>
-
-```{image} security_checklist/login_no_mfa_msrds.png
-:alt: Microsoft RDS dashboard with no apps
-:align: center
-```
 </details>
 ````
 
@@ -94,31 +84,13 @@ Add the **SRE standard user** to the relevant `Research Users` group under `Safe
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
 <details><summary>user is prompted to setup MFA</summary>
 
 ```{image} security_checklist/login_no_mfa_guacamole.png
 :alt: Guacamole MFA setup prompt
 :align: center
 ```
-</details>
 
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>login works and apps can be viewed</summary>
-
-```{image} security_checklist/msrds_dashboard_with_apps.png
-:alt: Microsoft RDS dashboard with apps
-:align: center
-```
-</details>
-
-<details><summary>attempting to login to SRD Main fails</summary>
-
-```{image} security_checklist/msrds_failed_to_connect.png
-:alt: Microsoft RDS failed to connect
-:align: center
-```
 </details>
 ````
 
@@ -155,23 +127,13 @@ Check that the **SRE standard user** can authenticate with MFA.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
 <details><summary>you are prompted for MFA and can respond</summary>
 
 ```{image} security_checklist/aad_mfa_approve_signin_request.png
 :alt: AAD MFA approve sign-in request
 :align: center
 ```
-</details>
 
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>you are prompted for MFA and can respond when attempting to log in to <i>SRD Main (Desktop)</i></summary>
-
-```{image} security_checklist/aad_mfa_approve_signin_request.png
-:alt: AAD MFA approve sign-in request
-:align: center
-```
 </details>
 ````
 
@@ -183,23 +145,13 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
 <details><summary>you can connect to <i>Desktop: Ubuntu0</i></summary>
 
 ```{image} security_checklist/guacamole_srd_desktop.png
 :alt: SRD desktop
 :align: center
 ```
-</details>
 
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>you can connect to <i>SRD Main (Desktop)</i></summary>
-
-```{image} security_checklist/msrds_srd_desktop.png
-:alt: SRD desktop
-:align: center
-```
 </details>
 ````
 
@@ -248,6 +200,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 :alt: SRD no internet
 :align: center
 ```
+
 </details>
 
 <details><summary>you cannot access the website using curl</summary>
@@ -256,6 +209,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 :alt: SRD no curl
 :align: center
 ```
+
 </details>
 
 <details><summary>you cannot look up the IP address for the website using nslookup</summary>
@@ -284,6 +238,7 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 :alt: SSH connection failure
 :align: center
 ```
+
 </details>
 ````
 
@@ -372,8 +327,7 @@ A device is able to connect to the environment if and only if it is managed (wit
 There are network rules permitting access to the remote desktop gateway from allow-listed IP addresses only
 
 - Navigate to the NSG for this SRE in the portal:
-    - {{bento_box}} **Microsoft Remote Desktop:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
-    - {{pear}} **Guacamole:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
+    - {{pear}} `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -461,8 +415,7 @@ Connection from within the secure physical space is possible.
 ````
 
 - Find the public IP address for the remote desktop server VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
-    - {{pear}} **Guacamole:** VM name will be `GUACAMOLE-SRE-<SRE ID>`
-    - {{bento_box}} **Microsoft Remote Desktop:** VM name will be `RDG-SRE-<SRE ID>`
+    - {{pear}} VM name will be `GUACAMOLE-SRE-<SRE ID>`
 - Attempt to login as the **SRE standard user** via `SSH` with `ssh <user.name>@<public IP>` (e.g. `ssh ada.lovelace@8.8.8.8`)
 
 ````{attention}

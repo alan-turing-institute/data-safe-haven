@@ -51,14 +51,6 @@
         "name": "Secure Research Environment Linux Servers",
         "path": "OU=Secure Research Environment Linux Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
       },
-      "rdsGatewayServers": {
-        "name": "Secure Research Environment RDS Gateway Servers",
-        "path": "OU=Secure Research Environment RDS Gateway Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
-      },
-      "rdsSessionServers": {
-        "name": "Secure Research Environment RDS Session Servers",
-        "path": "OU=Secure Research Environment RDS Session Servers,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
-      },
       "researchUsers": {
         "name": "Safe Haven Research Users",
         "path": "OU=Safe Haven Research Users,DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
@@ -1068,16 +1060,6 @@
         "name": "BLUE Linux Servers Manager",
         "passwordSecretName": "shm-blue-computer-manager-password-linux-servers",
         "samAccountName": "bluelinuxsrvrs"
-      },
-      "rdsGatewayServers": {
-        "name": "BLUE RDS Gateway Manager",
-        "passwordSecretName": "shm-blue-computer-manager-password-rds-gateway-servers",
-        "samAccountName": "bluegatewaysrvrs"
-      },
-      "rdsSessionServers": {
-        "name": "BLUE RDS Session Servers Manager",
-        "passwordSecretName": "shm-blue-computer-manager-password-rds-session-servers",
-        "samAccountName": "bluesessionsrvrs"
       }
     },
     "serviceAccounts": {

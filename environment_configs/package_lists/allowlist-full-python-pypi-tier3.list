@@ -323,6 +323,7 @@ mercantile
 miniKanren
 missingno
 mistune
+ml-dtypes
 mock
 modutil
 monotonic
