@@ -31,6 +31,7 @@ class PulumiStack:
         self.env_: dict[str, Any] | None = None
         self.logger = LoggingSingleton()
         self.stack_: automation.Stack | None = None
+        self.stack_outputs_: automation.OutputMap | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}
         self.program = program
         self.stack_name = self.program.stack_name
@@ -75,6 +76,7 @@ class PulumiStack:
                         env_vars=self.env,
                     ),
                 )
+                self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
             except automation.CommandError as exc:
                 msg = f"Could not load Pulumi stack {self.stack_name}.\n{exc}"
                 raise DataSafeHavenPulumiError(msg) from exc
@@ -91,6 +93,7 @@ class PulumiStack:
     def apply_config_options(self) -> None:
         """Set Pulumi config options"""
         try:
+            self.logger.info("Updating Pulumi configuration")
             for name, (value, is_secret, replace) in self.options.items():
                 if replace:
                     self.set_config(name, value, secret=is_secret)
@@ -170,6 +173,7 @@ class PulumiStack:
     def initialise_workdir(self) -> None:
         """Create project directory if it does not exist and update local stack."""
         try:
+            self.logger.info("Initialising Pulumi work directory")
             self.logger.debug(f"Ensuring that [green]{self.work_dir}[/] exists...")
             if not self.work_dir.exists():
                 self.work_dir.mkdir(parents=True)
@@ -187,6 +191,7 @@ class PulumiStack:
     def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
         try:
+            self.logger.info("Installing required Pulumi plugins")
             self.stack.workspace.install_plugin(
                 "azure-native", metadata.version("pulumi-azure-native")
             )
@@ -202,6 +207,7 @@ class PulumiStack:
             AzureCli().login()
             # Check whether we're already logged in
             # Note that we cannot retrieve self.stack without being logged in
+            self.logger.debug("Logging into Pulumi")
             with suppress(DataSafeHavenPulumiError):
                 result = self.stack.workspace.who_am_i()
                 if result.user:
@@ -230,15 +236,18 @@ class PulumiStack:
             raise DataSafeHavenPulumiError(msg) from exc
 
     def output(self, name: str) -> Any:
-        return self.stack.outputs()[name].value
+        """Get a named output value from a stack"""
+        if not self.stack_outputs_:
+            self.stack_outputs_ = self.stack.outputs()
+        return self.stack_outputs_[name].value
 
     def preview(self) -> None:
         """Preview the Pulumi stack."""
         try:
+            self.logger.info(
+                f"Previewing changes for stack [green]{self.stack.name}[/]."
+            )
             with suppress(automation.CommandError):
-                self.logger.info(
-                    f"Previewing changes for stack [green]{self.stack.name}[/]."
-                )
                 self.stack.preview(
                     color="always", diff=True, on_output=self.logger.info
                 )
@@ -294,6 +303,7 @@ class PulumiStack:
     def update(self) -> None:
         """Update deployed infrastructure."""
         try:
+            self.logger.info(f"Applying changes to stack [green]{self.stack.name}[/].")
             result = self.stack.up(color="always", on_output=self.logger.info)
             self.evaluate(result.summary.result)
         except automation.CommandError as exc:

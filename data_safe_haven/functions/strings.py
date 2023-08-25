@@ -1,7 +1,9 @@
 import base64
 import hashlib
+import random
 import secrets
 import string
+import uuid
 from collections.abc import Sequence
 
 
@@ -55,6 +57,13 @@ def replace_separators(input_string: str, separator: str = "") -> str:
         .replace("-", separator)
         .replace(".", separator)
     )
+
+
+def seeded_uuid(seed: str) -> uuid.UUID:
+    """Return a UUID seeded from a given string."""
+    generator = random.Random()
+    generator.seed(seed)
+    return uuid.UUID(int=generator.getrandbits(128), version=4)
 
 
 def sha256hash(input_string: str) -> str:

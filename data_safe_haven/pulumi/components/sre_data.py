@@ -16,6 +16,7 @@ from data_safe_haven.functions import (
     alphanumeric,
     ordered_private_dns_zones,
     replace_separators,
+    seeded_uuid,
     sha256hash,
     truncate_tokens,
 )
@@ -114,6 +115,9 @@ class SREDataComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:sre:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        azure_role_ids = {
+            "Storage Blob Data Owner": "b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
+        }
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -439,11 +443,14 @@ class SREDataComponent(ComponentResource):
             f"{self._name}_storage_account_data_private_sensitive_data_owner_role_assignment",
             principal_id=props.admin_group_id,
             principal_type=authorization.PrincipalType.GROUP,
-            role_assignment_name="b7e6dc6d-f1e8-4753-8033-0f276bb0955b",  # Storage Blob Data Owner
+            role_assignment_name=str(
+                seeded_uuid(f"{stack_name} Storage Blob Data Owner")
+            ),
             role_definition_id=Output.concat(
                 "/subscriptions/",
                 props.subscription_id,
-                "/providers/Microsoft.Authorization/roleDefinitions/b7e6dc6d-f1e8-4753-8033-0f276bb0955b",
+                "/providers/Microsoft.Authorization/roleDefinitions/",
+                azure_role_ids["Storage Blob Data Owner"],
             ),
             scope=storage_account_data_private_sensitive.id,
             opts=ResourceOptions.merge(
