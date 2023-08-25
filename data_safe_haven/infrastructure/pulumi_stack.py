@@ -13,10 +13,8 @@ from pulumi import automation
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCli
+from data_safe_haven.infrastructure.stacks import DeclarativeSHM, DeclarativeSRE
 from data_safe_haven.utility import LoggingSingleton
-
-from .declarative_shm import DeclarativeSHM
-from .declarative_sre import DeclarativeSRE
 
 
 class PulumiStack:

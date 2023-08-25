@@ -2,22 +2,39 @@
 import pulumi
 
 from data_safe_haven.config import Config
-
-from .components.sre_application_gateway import (
+from data_safe_haven.infrastructure.components.sre_application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
-from .components.sre_backup import SREBackupComponent, SREBackupProps
-from .components.sre_data import SREDataComponent, SREDataProps
-from .components.sre_dns_server import SREDnsServerComponent, SREDnsServerProps
-from .components.sre_monitoring import SREMonitoringComponent, SREMonitoringProps
-from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
-from .components.sre_remote_desktop import (
+from data_safe_haven.infrastructure.components.sre_backup import (
+    SREBackupComponent,
+    SREBackupProps,
+)
+from data_safe_haven.infrastructure.components.sre_data import (
+    SREDataComponent,
+    SREDataProps,
+)
+from data_safe_haven.infrastructure.components.sre_dns_server import (
+    SREDnsServerComponent,
+    SREDnsServerProps,
+)
+from data_safe_haven.infrastructure.components.sre_monitoring import (
+    SREMonitoringComponent,
+    SREMonitoringProps,
+)
+from data_safe_haven.infrastructure.components.sre_networking import (
+    SRENetworkingComponent,
+    SRENetworkingProps,
+)
+from data_safe_haven.infrastructure.components.sre_remote_desktop import (
     SRERemoteDesktopComponent,
     SRERemoteDesktopProps,
 )
-from .components.sre_user_services import SREUserServicesComponent, SREUserServicesProps
-from .components.sre_workspace import (
+from data_safe_haven.infrastructure.components.sre_user_services import (
+    SREUserServicesComponent,
+    SREUserServicesProps,
+)
+from data_safe_haven.infrastructure.components.sre_workspace import (
     SREWorkspaceComponent,
     SREWorkspaceProps,
 )
