@@ -21,11 +21,9 @@ class UserHandler:
     ):
         self.active_directory_users = ActiveDirectoryUsers(config)
         self.azure_ad_users = AzureADUsers(graph_api)
+        self.config = config
         self.logger = LoggingSingleton()
-        self.sre_guacamole_users = {
-            sre_name: GuacamoleUsers(config, sre_name)
-            for sre_name in config.sres.keys()
-        }
+        self.sre_guacamole_users_: dict[str, GuacamoleUsers] = {}
 
     def add(self, users_csv_path: pathlib.Path) -> None:
         """Add AzureAD and Guacamole users
@@ -73,7 +71,7 @@ class UserHandler:
         usernames = {}
         usernames["Azure AD"] = self.get_usernames_azure_ad()
         usernames["Domain controller"] = self.get_usernames_domain_controller()
-        for sre_name in self.sre_guacamole_users.keys():
+        for sre_name in self.config.sres.keys():
             usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(sre_name)
         return usernames
 
@@ -86,8 +84,18 @@ class UserHandler:
         return [user.username for user in self.active_directory_users.list()]
 
     def get_usernames_guacamole(self, sre_name: str) -> list[str]:
-        """Load usernames from Guacamole"""
-        return [user.username for user in self.sre_guacamole_users[sre_name].list()]
+        """Lazy-load usernames from Guacamole"""
+        try:
+            if sre_name not in self.sre_guacamole_users_.keys():
+                self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
+                    self.config, sre_name
+                )
+            return [
+                user.username for user in self.sre_guacamole_users_[sre_name].list()
+            ]
+        except Exception:
+            self.logger.error(f"Could not load users for SRE '{sre_name}'.")
+            return []
 
     def list(self) -> None:  # noqa: A003
         """List Active Directory, AzureAD and Guacamole users
