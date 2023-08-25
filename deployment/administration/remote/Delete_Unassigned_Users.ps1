@@ -3,12 +3,7 @@ $userOuPath = (Get-ADObject -Filter * | Where-Object { $_.Name -eq "Safe Haven R
 $users = Get-ADUser -Filter * -SearchBase "$userOuPath" -Properties *
 foreach ($user in $users) {
     $groupName = ($user | Select-Object -ExpandProperty MemberOf | ForEach-Object { (($_ -Split ",")[0] -Split "=")[1] }) -join "|"
-    $user | Add-Member -NotePropertyName GroupName -NotePropertyValue $groupName -Force
-}
-
-# Delete users not found in any group
-foreach ($user in $users) {
-    if (!($user.GroupName)) {
+    if (!($groupName)) {
         $name = $user.SamAccountName
         Remove-ADUser -Identity $name -Confirm:$false
     }
