@@ -11,15 +11,15 @@ from pulumi_azure_native import (
 )
 
 from data_safe_haven.external import AzureIPv4Range
-from data_safe_haven.pulumi.common import (
+from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
-from data_safe_haven.pulumi.dynamic.azuread_application import (
+from data_safe_haven.infrastructure.dynamic.azuread_application import (
     AzureADApplication,
     AzureADApplicationProps,
 )
-from data_safe_haven.pulumi.dynamic.file_share_file import (
+from data_safe_haven.infrastructure.dynamic.file_share_file import (
     FileShareFile,
     FileShareFileProps,
 )

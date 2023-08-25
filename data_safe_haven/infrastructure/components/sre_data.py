@@ -20,15 +20,15 @@ from data_safe_haven.functions import (
     sha256hash,
     truncate_tokens,
 )
-from data_safe_haven.pulumi.common import (
+from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
     get_name_from_rg,
 )
-from data_safe_haven.pulumi.dynamic.blob_container_acl import (
+from data_safe_haven.infrastructure.dynamic.blob_container_acl import (
     BlobContainerAcl,
     BlobContainerAclProps,
 )
-from data_safe_haven.pulumi.dynamic.ssl_certificate import (
+from data_safe_haven.infrastructure.dynamic.ssl_certificate import (
     SSLCertificate,
     SSLCertificateProps,
 )

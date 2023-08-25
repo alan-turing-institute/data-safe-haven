@@ -1,7 +1,7 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import dbforpostgresql, network, sql
 
-from data_safe_haven.pulumi.common import get_ip_addresses_from_private_endpoint
+from data_safe_haven.infrastructure.common import get_ip_addresses_from_private_endpoint
 from data_safe_haven.utility import DatabaseSystem
 
 

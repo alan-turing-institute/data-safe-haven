@@ -7,7 +7,7 @@ from data_safe_haven.external import (
     AzureContainerInstance,
     AzurePostgreSQLDatabase,
 )
-from data_safe_haven.pulumi import PulumiSHMStack, PulumiSREStack
+from data_safe_haven.infrastructure import PulumiSHMStack, PulumiSREStack
 from data_safe_haven.utility import FileReader, LoggingSingleton
 
 

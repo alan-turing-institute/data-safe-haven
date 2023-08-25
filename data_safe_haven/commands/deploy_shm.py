@@ -3,8 +3,8 @@ from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
+from data_safe_haven.infrastructure import PulumiSHMStack
 from data_safe_haven.provisioning import SHMProvisioningManager
-from data_safe_haven.pulumi import PulumiSHMStack
 
 
 def deploy_shm(

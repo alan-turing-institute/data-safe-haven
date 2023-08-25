@@ -4,7 +4,7 @@ from typing import Any
 
 from data_safe_haven.config import Config
 from data_safe_haven.external import AzurePostgreSQLDatabase
-from data_safe_haven.pulumi import PulumiSREStack
+from data_safe_haven.infrastructure import PulumiSREStack
 
 from .research_user import ResearchUser
 

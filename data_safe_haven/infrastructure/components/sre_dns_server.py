@@ -10,7 +10,7 @@ from data_safe_haven.functions import (
     bcrypt_encode,
     ordered_private_dns_zones,
 )
-from data_safe_haven.pulumi.common import (
+from data_safe_haven.infrastructure.common import (
     NetworkingPriorities,
     SREDnsIpRanges,
     SREIpRanges,

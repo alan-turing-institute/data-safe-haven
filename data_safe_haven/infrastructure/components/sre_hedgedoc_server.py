@@ -3,19 +3,20 @@ import pathlib
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
 
-from data_safe_haven.pulumi.common import (
+from data_safe_haven.functions import b64encode
+from data_safe_haven.infrastructure.common import (
     get_ip_address_from_container_group,
     get_ip_addresses_from_private_endpoint,
 )
-from data_safe_haven.pulumi.dynamic.file_share_file import (
+from data_safe_haven.infrastructure.dynamic.file_share_file import (
     FileShareFile,
     FileShareFileProps,
 )
 from data_safe_haven.utility import FileReader
 
 
-class SREGiteaServerProps:
-    """Properties for SREGiteaServerComponent"""
+class SREHedgeDocServerProps:
+    """Properties for SREHedgeDocServerComponent"""
 
     def __init__(
         self,
@@ -23,6 +24,7 @@ class SREGiteaServerProps:
         database_subnet_id: Input[str],
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
+        domain_netbios_name: Input[str],
         ldap_bind_dn: Input[str],
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
@@ -42,19 +44,30 @@ class SREGiteaServerProps:
         virtual_network_resource_group_name: Input[str],
         database_username: Input[str] | None = None,
     ) -> None:
-        self.database_password = database_password
         self.database_subnet_id = database_subnet_id
+        self.database_password = database_password
         self.database_username = (
             database_username if database_username else "postgresadmin"
         )
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
+        self.domain_netbios_name = domain_netbios_name
         self.ldap_bind_dn = ldap_bind_dn
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.ldap_user_search_base = ldap_user_search_base
-        self.ldap_user_security_group_name = ldap_user_security_group_name
+        self.ldap_user_security_group_cn = Output.all(
+            group_name=ldap_user_security_group_name, root_dn=ldap_root_dn
+        ).apply(
+            lambda kwargs: ",".join(
+                (
+                    kwargs["group_name"],
+                    "OU=Data Safe Haven Security Groups",
+                    kwargs["root_dn"],
+                )
+            )
+        )
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.network_profile_id = network_profile_id
@@ -68,113 +81,60 @@ class SREGiteaServerProps:
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
 
-class SREGiteaServerComponent(ComponentResource):
-    """Deploy Gitea server with Pulumi"""
+class SREHedgeDocServerComponent(ComponentResource):
+    """Deploy HedgeDoc server with Pulumi"""
 
     def __init__(
         self,
         name: str,
         stack_name: str,
-        props: SREGiteaServerProps,
+        props: SREHedgeDocServerProps,
         opts: ResourceOptions | None = None,
     ) -> None:
-        super().__init__("dsh:sre:GiteaServerComponent", name, {}, opts)
+        super().__init__("dsh:sre:HedgeDocServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Define configuration file shares
-        file_share_gitea_caddy = storage.FileShare(
-            f"{self._name}_file_share_gitea_caddy",
+        file_share_hedgedoc_caddy = storage.FileShare(
+            f"{self._name}_file_share_hedgedoc_caddy",
             access_tier="TransactionOptimized",
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
-            share_name="gitea-caddy",
-            share_quota=1,
-            opts=child_opts,
-        )
-        file_share_gitea_gitea = storage.FileShare(
-            f"{self._name}_file_share_gitea_gitea",
-            access_tier="TransactionOptimized",
-            account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group_name,
-            share_name="gitea-gitea",
+            share_name="hedgedoc-caddy",
             share_quota=1,
             opts=child_opts,
         )
 
         # Set resources path
         resources_path = (
-            pathlib.Path(__file__).parent.parent.parent / "resources" / "gitea"
+            pathlib.Path(__file__).parent.parent.parent / "resources" / "hedgedoc"
         )
 
         # Upload caddy file
         caddy_caddyfile_reader = FileReader(resources_path / "caddy" / "Caddyfile")
-        file_share_gitea_caddy_caddyfile = FileShareFile(
-            f"{self._name}_file_share_gitea_caddy_caddyfile",
+        file_share_hedgedoc_caddy_caddyfile = FileShareFile(
+            f"{self._name}_file_share_hedgedoc_caddy_caddyfile",
             FileShareFileProps(
                 destination_path=caddy_caddyfile_reader.name,
-                share_name=file_share_gitea_caddy.name,
+                share_name=file_share_hedgedoc_caddy.name,
                 file_contents=Output.secret(caddy_caddyfile_reader.file_contents()),
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=file_share_gitea_caddy)
+                child_opts, ResourceOptions(parent=file_share_hedgedoc_caddy)
             ),
         )
 
-        # Upload Gitea configuration script
-        gitea_configure_sh_reader = FileReader(
-            resources_path / "gitea" / "configure.mustache.sh"
-        )
-        gitea_configure_sh = Output.all(
-            admin_email="dshadmin@example.com",
-            admin_username="dshadmin",
-            ldap_bind_dn=props.ldap_bind_dn,
-            ldap_root_dn=props.ldap_root_dn,
-            ldap_search_password=props.ldap_search_password,
-            ldap_user_security_group_name=props.ldap_user_security_group_name,
-            ldap_server_ip=props.ldap_server_ip,
-            ldap_user_search_base=props.ldap_user_search_base,
-        ).apply(
-            lambda mustache_values: gitea_configure_sh_reader.file_contents(
-                mustache_values
-            )
-        )
-        file_share_gitea_gitea_configure_sh = FileShareFile(
-            f"{self._name}_file_share_gitea_gitea_configure_sh",
-            FileShareFileProps(
-                destination_path=gitea_configure_sh_reader.name,
-                share_name=file_share_gitea_gitea.name,
-                file_contents=Output.secret(gitea_configure_sh),
-                storage_account_key=props.storage_account_key,
-                storage_account_name=props.storage_account_name,
-            ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=file_share_gitea_gitea)
-            ),
-        )
-        # Upload Gitea entrypoint script
-        gitea_entrypoint_sh_reader = FileReader(
-            resources_path / "gitea" / "entrypoint.sh"
-        )
-        file_share_gitea_gitea_entrypoint_sh = FileShareFile(
-            f"{self._name}_file_share_gitea_gitea_entrypoint_sh",
-            FileShareFileProps(
-                destination_path=gitea_entrypoint_sh_reader.name,
-                share_name=file_share_gitea_gitea.name,
-                file_contents=Output.secret(gitea_entrypoint_sh_reader.file_contents()),
-                storage_account_key=props.storage_account_key,
-                storage_account_name=props.storage_account_name,
-            ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=file_share_gitea_gitea)
-            ),
+        # Load HedgeDoc configuration file for later use
+        hedgedoc_config_json_reader = FileReader(
+            resources_path / "hedgedoc" / "config.json"
         )
 
         # Define a PostgreSQL server and default database
-        db_server_gitea_name = f"{stack_name}-db-server-gitea"
-        db_server_gitea = dbforpostgresql.Server(
-            f"{self._name}_db_server_gitea",
+        db_server_hedgedoc_name = f"{stack_name}-db-server-hedgedoc"
+        db_server_hedgedoc = dbforpostgresql.Server(
+            f"{self._name}_db_server_hedgedoc",
             properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
                 administrator_login=props.database_username,
                 administrator_login_password=props.database_password,
@@ -192,7 +152,7 @@ class SREGiteaServerComponent(ComponentResource):
                 version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
             ),
             resource_group_name=props.user_services_resource_group_name,
-            server_name=db_server_gitea_name,
+            server_name=db_server_hedgedoc_name,
             sku=dbforpostgresql.SkuArgs(
                 capacity=2,
                 family="Gen5",
@@ -201,47 +161,47 @@ class SREGiteaServerComponent(ComponentResource):
             ),
             opts=child_opts,
         )
-        db_gitea_repository_name = "gitea"
+        db_hedgedoc_documents_name = "hedgedoc"
         dbforpostgresql.Database(
-            f"{self._name}_db_gitea_repository",
+            f"{self._name}_db_hedgedoc_documents",
             charset="UTF8",
-            database_name=db_gitea_repository_name,
+            database_name=db_hedgedoc_documents_name,
             resource_group_name=props.user_services_resource_group_name,
-            server_name=db_server_gitea.name,
+            server_name=db_server_hedgedoc.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=db_server_gitea)
+                child_opts, ResourceOptions(parent=db_server_hedgedoc)
             ),
         )
         # Deploy a private endpoint to the PostgreSQL server
-        db_server_gitea_private_endpoint = network.PrivateEndpoint(
-            f"{self._name}_db_server_gitea_private_endpoint",
-            private_endpoint_name=f"{stack_name}-endpoint-db-server-gitea",
+        db_server_hedgedoc_private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_db_server_hedgedoc_private_endpoint",
+            private_endpoint_name=f"{stack_name}-endpoint-db-server-hedgedoc",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["postgresqlServer"],
-                    name=f"{stack_name}-privatelink-db-server-gitea",
+                    name=f"{stack_name}-privatelink-db-server-hedgedoc",
                     private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
                         actions_required="None",
                         description="Auto-approved",
                         status="Approved",
                     ),
-                    private_link_service_id=db_server_gitea.id,
+                    private_link_service_id=db_server_hedgedoc.id,
                 )
             ],
             resource_group_name=props.user_services_resource_group_name,
             subnet=network.SubnetArgs(id=props.database_subnet_id),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=db_server_gitea)
+                child_opts, ResourceOptions(parent=db_server_hedgedoc)
             ),
         )
-        db_server_gitea_private_ip_address = get_ip_addresses_from_private_endpoint(
-            db_server_gitea_private_endpoint
+        hedgedoc_db_private_ip_address = get_ip_addresses_from_private_endpoint(
+            db_server_hedgedoc_private_endpoint
         ).apply(lambda ips: ips[0])
 
         # Define the container group with guacd, guacamole and caddy
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
-            container_group_name=f"{stack_name}-container-group-gitea",
+            container_group_name=f"{stack_name}-container-group-hedgedoc",
             containers=[
                 containerinstance.ContainerArgs(
                     image="caddy:2.7.4",
@@ -267,54 +227,88 @@ class SREGiteaServerComponent(ComponentResource):
                     ],
                 ),
                 containerinstance.ContainerArgs(
-                    image="gitea/gitea:1.20.3",
-                    name="gitea"[:63],
-                    command=["/app/custom/entrypoint.sh"],
+                    image="quay.io/hedgedoc/hedgedoc:1.9.9",
+                    name="hedgedoc"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
-                            name="APP_NAME", value="Data Safe Haven Git server"
+                            name="CMD_ALLOW_ANONYMOUS",
+                            value="false",
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="RUN_MODE", value="dev"
+                            name="CMD_DB_DATABASE",
+                            value=db_hedgedoc_documents_name,
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="GITEA__database__DB_TYPE", value="postgres"
+                            name="CMD_DB_DIALECT",
+                            value="postgres",
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="GITEA__database__HOST",
-                            value=db_server_gitea_private_ip_address,
+                            name="CMD_DB_HOST",
+                            value=hedgedoc_db_private_ip_address,
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="GITEA__database__NAME", value=db_gitea_repository_name
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="GITEA__database__USER",
-                            value=Output.concat(
-                                props.database_username, "@", db_server_gitea_name
-                            ),
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="GITEA__database__PASSWD",
+                            name="CMD_DB_PASSWORD",
                             secure_value=props.database_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="GITEA__database__SSL_MODE", value="require"
+                            name="CMD_DB_PORT",
+                            value="5432",
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="GITEA__log__LEVEL",
-                            # Options are: "Trace", "Debug", "Info" [default], "Warn", "Error", "Critical" or "None".
-                            value="Debug",
+                            name="CMD_DB_USERNAME",
+                            value=Output.concat(
+                                props.database_username, "@", db_server_hedgedoc_name
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="GITEA__security__INSTALL_LOCK", value="true"
+                            name="CMD_DOMAIN",
+                            value=Output.concat("hedgedoc.", props.sre_fqdn),
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_EMAIL",
+                            value="false",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_BINDCREDENTIALS",
+                            secure_value=props.ldap_search_password,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_BINDDN",
+                            value=props.ldap_bind_dn,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_PROVIDERNAME",
+                            value=props.domain_netbios_name,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_SEARCHBASE",
+                            value=props.ldap_user_search_base,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_SEARCHFILTER",
+                            value=Output.concat(
+                                "(&",
+                                "(objectClass=user)",
+                                "(memberOf=CN=",
+                                props.ldap_user_security_group_cn,
+                                ")",
+                                "(sAMAccountName={{username}}))",
+                            ),
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_URL",
+                            value=f"ldap://{props.ldap_server_ip}",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LDAP_USERIDFIELD",
+                            value="sAMAccountName",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="CMD_LOGLEVEL",
+                            value="info",
                         ),
                     ],
-                    ports=[
-                        containerinstance.ContainerPortArgs(
-                            port=22,
-                            protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
-                        ),
-                    ],
+                    ports=[],
                     resources=containerinstance.ResourceRequirementsArgs(
                         requests=containerinstance.ResourceRequestsArgs(
                             cpu=2,
@@ -323,8 +317,8 @@ class SREGiteaServerComponent(ComponentResource):
                     ),
                     volume_mounts=[
                         containerinstance.VolumeMountArgs(
-                            mount_path="/app/custom",
-                            name="gitea-app-custom",
+                            mount_path="/files",
+                            name="hedgedoc-files-config-json",
                             read_only=True,
                         ),
                     ],
@@ -352,19 +346,19 @@ class SREGiteaServerComponent(ComponentResource):
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_gitea_caddy.name,
+                        share_name=file_share_hedgedoc_caddy.name,
                         storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),
                     name="caddy-etc-caddy",
                 ),
                 containerinstance.VolumeArgs(
-                    azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_gitea_gitea.name,
-                        storage_account_key=props.storage_account_key,
-                        storage_account_name=props.storage_account_name,
-                    ),
-                    name="gitea-app-custom",
+                    name="hedgedoc-files-config-json",
+                    secret={
+                        "config.json": b64encode(
+                            hedgedoc_config_json_reader.file_contents()
+                        )
+                    },
                 ),
             ],
             opts=ResourceOptions.merge(
@@ -372,9 +366,7 @@ class SREGiteaServerComponent(ComponentResource):
                 ResourceOptions(
                     delete_before_replace=True,
                     depends_on=[
-                        file_share_gitea_caddy_caddyfile,
-                        file_share_gitea_gitea_configure_sh,
-                        file_share_gitea_gitea_entrypoint_sh,
+                        file_share_hedgedoc_caddy_caddyfile,
                     ],
                     replace_on_changes=["containers"],
                 ),
@@ -382,7 +374,7 @@ class SREGiteaServerComponent(ComponentResource):
         )
         # Register the container group in the SRE private DNS zone
         private_dns_record_set = network.PrivateRecordSet(
-            f"{self._name}_gitea_private_record_set",
+            f"{self._name}_hedgedoc_private_record_set",
             a_records=[
                 network.ARecordArgs(
                     ipv4_address=get_ip_address_from_container_group(container_group),
@@ -390,7 +382,7 @@ class SREGiteaServerComponent(ComponentResource):
             ],
             private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
             record_type="A",
-            relative_record_set_name="gitea",
+            relative_record_set_name="hedgedoc",
             resource_group_name=props.dns_resource_group_name,
             ttl=3600,
             opts=ResourceOptions.merge(
@@ -399,12 +391,12 @@ class SREGiteaServerComponent(ComponentResource):
         )
         # Redirect the public DNS to private DNS
         network.RecordSet(
-            f"{self._name}_gitea_public_record_set",
+            f"{self._name}_hedgedoc_public_record_set",
             cname_record=network.CnameRecordArgs(
-                cname=Output.concat("gitea.privatelink.", props.sre_fqdn)
+                cname=Output.concat("hedgedoc.privatelink.", props.sre_fqdn)
             ),
             record_type="CNAME",
-            relative_record_set_name="gitea",
+            relative_record_set_name="hedgedoc",
             resource_group_name=props.networking_resource_group_name,
             ttl=3600,
             zone_name=props.sre_fqdn,

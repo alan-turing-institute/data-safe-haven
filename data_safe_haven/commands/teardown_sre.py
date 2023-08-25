@@ -5,7 +5,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
 )
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.pulumi import PulumiSREStack
+from data_safe_haven.infrastructure import PulumiSREStack
 
 
 def teardown_sre(name: str) -> None:

@@ -6,7 +6,7 @@ from pulumi_azure_native import network, resources
 
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import ordered_private_dns_zones
-from data_safe_haven.pulumi.common import NetworkingPriorities
+from data_safe_haven.infrastructure.common import NetworkingPriorities
 
 
 class SHMNetworkingProps:

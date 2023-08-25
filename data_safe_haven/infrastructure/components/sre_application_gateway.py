@@ -4,7 +4,7 @@ from typing import Any
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import managedidentity, network, resources
 
-from data_safe_haven.pulumi.common import (
+from data_safe_haven.infrastructure.common import (
     get_available_ips_from_subnet,
     get_id_from_rg,
     get_id_from_subnet,

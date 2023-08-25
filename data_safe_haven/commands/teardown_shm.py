@@ -4,7 +4,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenError,
     DataSafeHavenInputError,
 )
-from data_safe_haven.pulumi import PulumiSHMStack
+from data_safe_haven.infrastructure import PulumiSHMStack
 
 
 def teardown_shm() -> None:

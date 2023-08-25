@@ -5,7 +5,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
 from data_safe_haven.functions import b64encode
-from data_safe_haven.pulumi.common import (
+from data_safe_haven.infrastructure.common import (
     get_available_ips_from_subnet,
     get_name_from_subnet,
 )

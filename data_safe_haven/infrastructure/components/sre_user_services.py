@@ -1,7 +1,7 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-from data_safe_haven.pulumi.common import get_id_from_subnet
+from data_safe_haven.infrastructure.common import get_id_from_subnet
 from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
 
 from .sre_database_server import SREDatabaseServerComponent, SREDatabaseServerProps
