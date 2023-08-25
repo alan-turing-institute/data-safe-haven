@@ -187,6 +187,18 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from from ssllabs.com for SSL quality reporting.",
+                    destination_address_prefix=subnet_application_gateway_prefix,
+                    destination_port_ranges=["443"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowSslLabsInternetInbound",
+                    priority=NetworkingPriorities.AUTHORISED_EXTERNAL_SSL_LABS_IPS,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix="64.41.200.0/24",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other inbound traffic.",
                     destination_address_prefix="*",
