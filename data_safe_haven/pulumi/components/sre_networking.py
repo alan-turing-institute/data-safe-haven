@@ -23,6 +23,7 @@ class SRENetworkingProps:
         shm_zone_name: Input[str],
         sre_index: Input[int],
         sre_name: Input[str],
+        user_public_ip_ranges: Input[list[str]],
     ) -> None:
         # Virtual network and subnet IP ranges
         subnet_ranges = Output.from_input(sre_index).apply(
@@ -58,7 +59,7 @@ class SRENetworkingProps:
         # Other variables
         self.firewall_ip_address = firewall_ip_address
         self.location = location
-        self.public_ip_range_users = "Internet"
+        self.user_public_ip_ranges = user_public_ip_ranges
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
         self.shm_subnet_identity_servers_prefix = shm_subnet_identity_servers_prefix
@@ -183,7 +184,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowUsersInternetInbound",
                     priority=NetworkingPriorities.AUTHORISED_EXTERNAL_USER_IPS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=props.public_ip_range_users,
+                    source_address_prefixes=props.user_public_ip_ranges,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
