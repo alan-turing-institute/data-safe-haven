@@ -6,7 +6,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 from data_safe_haven.infrastructure.common import get_name_from_subnet
-from data_safe_haven.infrastructure.dynamic.remote_powershell import (
+from data_safe_haven.infrastructure.components.dynamic.remote_powershell import (
     RemoteScript,
     RemoteScriptProps,
 )

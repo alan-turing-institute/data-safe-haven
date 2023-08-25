@@ -7,7 +7,7 @@ from pulumi_azure_native import containerinstance, network, storage
 from data_safe_haven.infrastructure.common import (
     get_ip_address_from_container_group,
 )
-from data_safe_haven.infrastructure.dynamic.file_share_file import (
+from data_safe_haven.infrastructure.components.dynamic.file_share_file import (
     FileShareFile,
     FileShareFileProps,
 )

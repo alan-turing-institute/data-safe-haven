@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, compute
 
-from data_safe_haven.infrastructure.dynamic.compiled_dsc import (
+from data_safe_haven.infrastructure.components.dynamic.compiled_dsc import (
     CompiledDsc,
     CompiledDscProps,
 )
