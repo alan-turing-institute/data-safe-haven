@@ -10,7 +10,7 @@ foreach ($user in $users) {
 foreach ($user in $users) {
     if (!($user.GroupName)) {
         $name = $user.SamAccountName
-        Remove-ADUser -Identity $name
+        Remove-ADUser -Identity $name -Confirm:$false
     }
 }
 
