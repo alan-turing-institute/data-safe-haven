@@ -271,28 +271,15 @@ class SREApplicationGatewayComponent(ComponentResource):
                     ),
                     name="sslProfile",
                     ssl_policy=network.ApplicationGatewaySslPolicyArgs(
-                        # We take the ones recommended by SSL Labs
-                        # (https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices)
-                        # excluding any that are unsupported
+                        # We take the ones recommended by SSL Labs excluding any that
+                        # are unsupported by Azure Application Gateway
                         cipher_suites=[
-                            "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
                             "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-                            "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
-                            "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
-                            "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-                            "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
-                            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
                             "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-                            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
-                            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-                            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-                            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
-                            "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-                            "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
-                            "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-                            "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+                            "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+                            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
                         ],
-                        min_protocol_version="TLSv1_1",
+                        min_protocol_version="TLSv1_2",
                         policy_type="Custom",
                     ),
                 )
