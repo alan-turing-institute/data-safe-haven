@@ -18,7 +18,7 @@ $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 Add-LogMessage -Level Info "Deleting users not assigned to any security group: $($config.shm.id) from $($config.dc.vmName)..."
 
-$script = "Delete_Unassigned_Users.ps1"
+$script = "remote/Delete_Unassigned_Users.ps1"
 
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg
 
