@@ -104,6 +104,7 @@ class SREApplicationGatewayComponent(ComponentResource):
             ],
             backend_http_settings_collection=[
                 network.ApplicationGatewayBackendHttpSettingsArgs(
+                    cookie_based_affinity=network.ApplicationGatewayCookieBasedAffinity.ENABLED,
                     name="appGatewayBackendHttpSettings",
                     port=80,
                     protocol="Http",
@@ -136,7 +137,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                 )
             ],
             http_listeners=[
-                # Guacamole listeners
+                # Guacamole http listener
                 network.ApplicationGatewayHttpListenerArgs(
                     frontend_ip_configuration=network.SubResourceArgs(
                         id=Output.concat(
@@ -154,6 +155,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                     name="GuacamoleHttpListener",
                     protocol="Http",
                 ),
+                # Guacamole https listener
                 network.ApplicationGatewayHttpListenerArgs(
                     frontend_ip_configuration=network.SubResourceArgs(
                         id=Output.concat(
@@ -174,12 +176,6 @@ class SREApplicationGatewayComponent(ComponentResource):
                         id=Output.concat(
                             props.resource_group_id,
                             f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/sslCertificates/letsencryptcertificate",
-                        ),
-                    ),
-                    ssl_profile=network.SubResourceArgs(
-                        id=Output.concat(
-                            props.resource_group_id,
-                            f"/providers/Microsoft.Network/applicationGateways/{application_gateway_name}/sslProfiles/sslProfile",
                         ),
                     ),
                 ),
@@ -264,38 +260,24 @@ class SREApplicationGatewayComponent(ComponentResource):
                     name="letsencryptcertificate",
                 ),
             ],
-            ssl_profiles=[
-                network.ApplicationGatewaySslProfileArgs(
-                    client_auth_configuration=network.ApplicationGatewayClientAuthConfigurationArgs(
-                        verify_client_cert_issuer_dn=True,
-                    ),
-                    name="sslProfile",
-                    ssl_policy=network.ApplicationGatewaySslPolicyArgs(
-                        # We take the ones recommended by SSL Labs
-                        # (https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices)
-                        # excluding any that are unsupported
-                        cipher_suites=[
-                            "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-                            "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-                            "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
-                            "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
-                            "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-                            "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
-                            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-                            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-                            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
-                            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-                            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-                            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
-                            "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-                            "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
-                            "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-                            "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-                        ],
-                        min_protocol_version="TLSv1_1",
-                        policy_type="Custom",
-                    ),
-                )
-            ],
+            ssl_policy=network.ApplicationGatewaySslPolicyArgs(
+                # We start with the Mozilla (https://wiki.mozilla.org/Security/Server_Side_TLS)
+                # recommended SSL ciphers then remove and not in this supported ciphers list
+                # (https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview#cipher-suites)
+                #
+                # The following TLSv1.3 ciphers are always included:
+                # - TLS_AES_256_GCM_SHA384
+                # - TLS_AES_128_GCM_SHA256
+                #
+                # Ordering is important: earlier ciphers will be tried first.
+                cipher_suites=[
+                    "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+                    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+                    "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+                    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+                ],
+                min_protocol_version=network.ApplicationGatewaySslProtocol.TL_SV1_2,
+                policy_type="CustomV2",
+            ),
             opts=child_opts,
         )
