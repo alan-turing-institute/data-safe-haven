@@ -7,7 +7,7 @@ from data_safe_haven.infrastructure.common import (
     get_ip_address_from_container_group,
     get_ip_addresses_from_private_endpoint,
 )
-from data_safe_haven.infrastructure.components.dynamic.file_share_file import (
+from data_safe_haven.infrastructure.components import (
     FileShareFile,
     FileShareFileProps,
 )

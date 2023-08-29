@@ -169,7 +169,7 @@ class SSLCertificateProvider(DshResourceProvider):
 
 
 class SSLCertificate(Resource):
-    _resource_type_name = "dsh:SSLCertificate"  # set resource type
+    _resource_type_name = "dsh:common:SSLCertificate"  # set resource type
     secret_id: Output[str]
 
     def __init__(

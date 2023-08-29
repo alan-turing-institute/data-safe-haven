@@ -98,7 +98,7 @@ class BlobContainerAclProvider(DshResourceProvider):
 
 
 class BlobContainerAcl(Resource):
-    _resource_type_name = "dsh:BlobContainerAcl"  # set resource type
+    _resource_type_name = "dsh:common:BlobContainerAcl"  # set resource type
 
     def __init__(
         self,

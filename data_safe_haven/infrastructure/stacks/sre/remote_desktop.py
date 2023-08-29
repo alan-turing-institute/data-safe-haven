@@ -15,11 +15,9 @@ from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
-from data_safe_haven.infrastructure.components.dynamic.azuread_application import (
+from data_safe_haven.infrastructure.components import (
     AzureADApplication,
     AzureADApplicationProps,
-)
-from data_safe_haven.infrastructure.components.dynamic.file_share_file import (
     FileShareFile,
     FileShareFileProps,
 )

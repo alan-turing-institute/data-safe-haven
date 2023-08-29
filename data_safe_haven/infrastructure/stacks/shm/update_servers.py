@@ -9,8 +9,8 @@ from data_safe_haven.infrastructure.common import (
     get_available_ips_from_subnet,
     get_name_from_subnet,
 )
-from data_safe_haven.infrastructure.components.composite.virtual_machine import (
-    LinuxVMProps,
+from data_safe_haven.infrastructure.components import (
+    LinuxVMComponentProps,
     VMComponent,
 )
 
@@ -62,7 +62,7 @@ class SHMUpdateServersComponent(ComponentResource):
         vm_name = f"{stack_name}-vm-linux-updates"
         VMComponent(
             vm_name,
-            LinuxVMProps(
+            LinuxVMComponentProps(
                 admin_password=props.admin_password,
                 admin_username=props.admin_username,
                 b64cloudinit=b64cloudinit,

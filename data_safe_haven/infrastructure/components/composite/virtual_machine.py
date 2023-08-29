@@ -7,7 +7,7 @@ from pulumi_azure_native import compute, network
 from data_safe_haven.functions import replace_separators
 
 
-class VMProps:
+class VMComponentProps:
     """Properties for WindowsVMComponent"""
 
     image_reference_args: compute.ImageReferenceArgs | None
@@ -59,7 +59,7 @@ class VMProps:
         return self.os_profile_args
 
 
-class WindowsVMProps(VMProps):
+class WindowsVMComponentProps(VMComponentProps):
     """Properties for WindowsVMComponent"""
 
     def __init__(
@@ -90,7 +90,7 @@ class WindowsVMProps(VMProps):
         self.log_analytics_extension_version = "1.0"
 
 
-class LinuxVMProps(VMProps):
+class LinuxVMComponentProps(VMComponentProps):
     """Properties for LinuxVMComponent"""
 
     def __init__(
@@ -125,7 +125,9 @@ class LinuxVMProps(VMProps):
 class VMComponent(ComponentResource):
     """Deploy SHM secrets with Pulumi"""
 
-    def __init__(self, name: str, props: VMProps, opts: ResourceOptions | None = None):
+    def __init__(
+        self, name: str, props: VMComponentProps, opts: ResourceOptions | None = None
+    ):
         super().__init__("dsh:common:VMComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 

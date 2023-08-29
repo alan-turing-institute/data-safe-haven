@@ -13,8 +13,8 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_subnet,
     get_name_from_vnet,
 )
-from data_safe_haven.infrastructure.components.composite.virtual_machine import (
-    LinuxVMProps,
+from data_safe_haven.infrastructure.components import (
+    LinuxVMComponentProps,
     VMComponent,
 )
 
@@ -133,7 +133,7 @@ class SREWorkspacesComponent(ComponentResource):
         vms = [
             VMComponent(
                 replace_separators(f"{self._name}_vm_workspace_{vm_idx+1:02d}", "_"),
-                LinuxVMProps(
+                LinuxVMComponentProps(
                     admin_password=props.admin_password,
                     admin_username=props.admin_username,
                     b64cloudinit=b64cloudinit,

@@ -70,7 +70,7 @@ class CompiledDscProvider(DshResourceProvider):
 
 
 class CompiledDsc(Resource):
-    _resource_type_name = "dsh:CompiledDsc"  # set resource type
+    _resource_type_name = "dsh:common:CompiledDsc"  # set resource type
 
     def __init__(
         self,

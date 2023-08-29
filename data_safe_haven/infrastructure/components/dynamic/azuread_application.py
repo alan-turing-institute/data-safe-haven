@@ -105,7 +105,7 @@ class AzureADApplicationProvider(DshResourceProvider):
 class AzureADApplication(Resource):
     application_id: Output[str]
     object_id: Output[str]
-    _resource_type_name = "dsh:AzureADApplication"  # set resource type
+    _resource_type_name = "dsh:common:AzureADApplication"  # set resource type
 
     def __init__(
         self,

@@ -74,7 +74,7 @@ class RemoteScriptProvider(DshResourceProvider):
 
 class RemoteScript(Resource):
     script_output: Output[str]
-    _resource_type_name = "dsh:RemoteScript"  # set resource type
+    _resource_type_name = "dsh:common:RemoteScript"  # set resource type
 
     def __init__(
         self,

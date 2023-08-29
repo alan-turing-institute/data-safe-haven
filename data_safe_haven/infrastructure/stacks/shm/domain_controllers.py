@@ -6,17 +6,13 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 from data_safe_haven.infrastructure.common import get_name_from_subnet
-from data_safe_haven.infrastructure.components.composite.automation_dsc_node import (
+from data_safe_haven.infrastructure.components import (
     AutomationDscNode,
     AutomationDscNodeProps,
-)
-from data_safe_haven.infrastructure.components.composite.virtual_machine import (
-    VMComponent,
-    WindowsVMProps,
-)
-from data_safe_haven.infrastructure.components.dynamic.remote_powershell import (
     RemoteScript,
     RemoteScriptProps,
+    VMComponent,
+    WindowsVMComponentProps,
 )
 from data_safe_haven.utility import FileReader
 
@@ -108,7 +104,7 @@ class SHMDomainControllersComponent(ComponentResource):
         # to domain admin when setting up the domain
         primary_domain_controller = VMComponent(
             f"{self._name}_primary_domain_controller",
-            WindowsVMProps(
+            WindowsVMComponentProps(
                 admin_password=props.password_domain_admin,
                 admin_username=props.username_domain_admin,
                 ip_address_public=False,

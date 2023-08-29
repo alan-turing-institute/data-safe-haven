@@ -135,7 +135,7 @@ class FileShareFileProvider(DshResourceProvider):
 
 class FileShareFile(Resource):
     file_name: Output[str]
-    _resource_type_name = "dsh:FileShareFile"  # set resource type
+    _resource_type_name = "dsh:common:FileShareFile"  # set resource type
 
     def __init__(
         self,

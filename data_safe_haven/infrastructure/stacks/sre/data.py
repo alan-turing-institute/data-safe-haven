@@ -24,11 +24,9 @@ from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
     get_name_from_rg,
 )
-from data_safe_haven.infrastructure.components.dynamic.blob_container_acl import (
+from data_safe_haven.infrastructure.components import (
     BlobContainerAcl,
     BlobContainerAclProps,
-)
-from data_safe_haven.infrastructure.components.dynamic.ssl_certificate import (
     SSLCertificate,
     SSLCertificateProps,
 )
