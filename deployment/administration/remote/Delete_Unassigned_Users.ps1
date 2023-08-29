@@ -20,7 +20,7 @@ foreach ($user in $users) {
 }
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
-if (!$dryRun){
+if (!($dryRun)){
     Write-Output "Synchronising locally Active Directory with Azure"
     try {
         Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -ErrorAction Stop
