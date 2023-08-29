@@ -1,4 +1,3 @@
-import pathlib
 from typing import Any
 
 import chevron
@@ -17,6 +16,7 @@ from data_safe_haven.infrastructure.components import (
     LinuxVMComponentProps,
     VMComponent,
 )
+from data_safe_haven.resources import resources_path
 
 
 class SREWorkspacesProps:
@@ -188,11 +188,9 @@ class SREWorkspacesComponent(ComponentResource):
         storage_account_data_private_user_name: str,
         storage_account_data_private_sensitive_name: str,
     ) -> str:
-        resources_path = (
-            pathlib.Path(__file__).parent.parent.parent / "resources" / "workspace"
-        )
         with open(
-            resources_path / "workspace.cloud_init.mustache.yaml", encoding="utf-8"
+            resources_path / "workspace" / "workspace.cloud_init.mustache.yaml",
+            encoding="utf-8",
         ) as f_cloudinit:
             mustache_values = {
                 "domain_sid": domain_sid,

@@ -1,5 +1,3 @@
-import pathlib
-
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
 
@@ -14,6 +12,7 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
 )
+from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
 
 
@@ -104,13 +103,10 @@ class SREGiteaServerComponent(ComponentResource):
             opts=child_opts,
         )
 
-        # Set resources path
-        resources_path = (
-            pathlib.Path(__file__).parent.parent.parent / "resources" / "gitea"
-        )
-
         # Upload caddy file
-        caddy_caddyfile_reader = FileReader(resources_path / "caddy" / "Caddyfile")
+        caddy_caddyfile_reader = FileReader(
+            resources_path / "gitea" / "caddy" / "Caddyfile"
+        )
         file_share_gitea_caddy_caddyfile = FileShareFile(
             f"{self._name}_file_share_gitea_caddy_caddyfile",
             FileShareFileProps(
@@ -127,7 +123,7 @@ class SREGiteaServerComponent(ComponentResource):
 
         # Upload Gitea configuration script
         gitea_configure_sh_reader = FileReader(
-            resources_path / "gitea" / "configure.mustache.sh"
+            resources_path / "gitea" / "gitea" / "configure.mustache.sh"
         )
         gitea_configure_sh = Output.all(
             admin_email="dshadmin@example.com",
@@ -158,7 +154,7 @@ class SREGiteaServerComponent(ComponentResource):
         )
         # Upload Gitea entrypoint script
         gitea_entrypoint_sh_reader = FileReader(
-            resources_path / "gitea" / "entrypoint.sh"
+            resources_path / "gitea" / "gitea" / "entrypoint.sh"
         )
         file_share_gitea_gitea_entrypoint_sh = FileShareFile(
             f"{self._name}_file_share_gitea_gitea_entrypoint_sh",

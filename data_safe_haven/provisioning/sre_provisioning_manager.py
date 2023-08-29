@@ -8,6 +8,7 @@ from data_safe_haven.external import (
     AzurePostgreSQLDatabase,
 )
 from data_safe_haven.infrastructure import PulumiSHMStack, PulumiSREStack
+from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader, LoggingSingleton
 
 
@@ -25,7 +26,6 @@ class SREProvisioningManager:
         self._available_vm_skus: dict[str, dict[str, Any]] | None = None
         self.azure_location = shm_stack.cfg.azure.location
         self.logger = LoggingSingleton()
-        self.resources_path = pathlib.Path(__file__).parent.parent / "resources"
         self.sre_name = sre_name
         self.subscription_name = subscription_name
 
@@ -80,7 +80,7 @@ class SREProvisioningManager:
 
     def create_security_groups(self) -> None:
         azure_api = AzureApi(self.subscription_name)
-        script = FileReader(self.resources_path / "active_directory" / "add_group.ps1")
+        script = FileReader(resources_path / "active_directory" / "add_group.ps1")
         for group_name in self.security_group_params["security_group_names"].values():
             script_parameters = {
                 "GroupName": group_name,

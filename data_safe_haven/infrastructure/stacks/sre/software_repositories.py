@@ -1,5 +1,4 @@
 """Pulumi component for SRE monitoring"""
-import pathlib
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
@@ -13,6 +12,7 @@ from data_safe_haven.infrastructure.components import (
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
 )
+from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader, SoftwarePackageCategory
 
 
@@ -99,7 +99,6 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         )
 
         # Upload Caddyfile
-        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
         caddyfile_reader = FileReader(
             resources_path / "software_repositories" / "caddy" / "Caddyfile"
         )

@@ -1,5 +1,4 @@
 """Pulumi component for SHM monitoring"""
-import pathlib
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
@@ -13,6 +12,7 @@ from data_safe_haven.infrastructure.components import (
     LinuxVMComponentProps,
     VMComponent,
 )
+from data_safe_haven.resources import resources_path
 
 
 class SHMUpdateServersProps:
@@ -86,11 +86,8 @@ class SHMUpdateServersComponent(ComponentResource):
     def read_cloudinit(
         self,
     ) -> str:
-        resources_path = (
-            pathlib.Path(__file__).parent.parent.parent / "resources" / "update_servers"
-        )
         with open(
-            resources_path / "update_server_linux.cloud_init.yaml",
+            resources_path / "update_servers" / "update_server_linux.cloud_init.yaml",
             encoding="utf-8",
         ) as f_cloudinit:
             cloudinit = f_cloudinit.read()

@@ -1,5 +1,4 @@
 """Pulumi component for SRE remote desktop"""
-import pathlib
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
@@ -22,6 +21,7 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
 )
+from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
 
 
@@ -147,7 +147,6 @@ class SRERemoteDesktopComponent(ComponentResource):
         )
 
         # Upload Caddyfile
-        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
         reader = FileReader(resources_path / "remote_desktop" / "caddy" / "Caddyfile")
         FileShareFile(
             f"{self._name}_file_share_caddyfile",

@@ -1,5 +1,4 @@
 """Pulumi component for SRE DNS server"""
-import pathlib
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources
@@ -16,6 +15,7 @@ from data_safe_haven.infrastructure.common import (
     SREIpRanges,
     get_ip_address_from_container_group,
 )
+from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
 
 
@@ -64,12 +64,11 @@ class SREDnsServerComponent(ComponentResource):
         )
 
         # Read AdGuardHome setup files
-        resources_path = (
-            pathlib.Path(__file__).parent.parent.parent / "resources" / "dns_server"
+        adguard_entrypoint_sh_reader = FileReader(
+            resources_path / "dns_server" / "entrypoint.sh"
         )
-        adguard_entrypoint_sh_reader = FileReader(resources_path / "entrypoint.sh")
         adguard_adguardhome_yaml_reader = FileReader(
-            resources_path / "AdGuardHome.mustache.yaml"
+            resources_path / "dns_server" / "AdGuardHome.mustache.yaml"
         )
 
         # Expand AdGuardHome YAML configuration

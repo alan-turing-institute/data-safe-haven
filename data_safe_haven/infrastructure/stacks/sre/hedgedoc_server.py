@@ -1,5 +1,3 @@
-import pathlib
-
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
 
@@ -15,6 +13,7 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
 )
+from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
 
 
@@ -108,13 +107,10 @@ class SREHedgeDocServerComponent(ComponentResource):
             opts=child_opts,
         )
 
-        # Set resources path
-        resources_path = (
-            pathlib.Path(__file__).parent.parent.parent / "resources" / "hedgedoc"
-        )
-
         # Upload caddy file
-        caddy_caddyfile_reader = FileReader(resources_path / "caddy" / "Caddyfile")
+        caddy_caddyfile_reader = FileReader(
+            resources_path / "hedgedoc" / "caddy" / "Caddyfile"
+        )
         file_share_hedgedoc_caddy_caddyfile = FileShareFile(
             f"{self._name}_file_share_hedgedoc_caddy_caddyfile",
             FileShareFileProps(
@@ -131,7 +127,7 @@ class SREHedgeDocServerComponent(ComponentResource):
 
         # Load HedgeDoc configuration file for later use
         hedgedoc_config_json_reader = FileReader(
-            resources_path / "hedgedoc" / "config.json"
+            resources_path / "hedgedoc" / "hedgedoc" / "config.json"
         )
 
         # Define a PostgreSQL server and default database

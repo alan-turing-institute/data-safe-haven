@@ -1,5 +1,4 @@
 """Pulumi component for SHM domain controllers"""
-import pathlib
 from collections.abc import Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -14,6 +13,7 @@ from data_safe_haven.infrastructure.components import (
     VMComponent,
     WindowsVMComponentProps,
 )
+from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
 
 
@@ -89,7 +89,6 @@ class SHMDomainControllersComponent(ComponentResource):
     ) -> None:
         super().__init__("dsh:shm:DomainControllersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
