@@ -9,8 +9,10 @@ from data_safe_haven.infrastructure.common import (
     get_available_ips_from_subnet,
     get_name_from_subnet,
 )
-
-from .virtual_machine import LinuxVMProps, VMComponent
+from data_safe_haven.infrastructure.components.virtual_machine import (
+    LinuxVMProps,
+    VMComponent,
+)
 
 
 class SHMUpdateServersProps:

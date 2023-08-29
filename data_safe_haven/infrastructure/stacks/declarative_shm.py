@@ -2,34 +2,17 @@
 import pulumi
 
 from data_safe_haven.config import Config
-from data_safe_haven.infrastructure.components.shm_bastion import (
-    SHMBastionComponent,
-    SHMBastionProps,
-)
-from data_safe_haven.infrastructure.components.shm_data import (
-    SHMDataComponent,
-    SHMDataProps,
-)
-from data_safe_haven.infrastructure.components.shm_domain_controllers import (
+
+from .shm.bastion import SHMBastionComponent, SHMBastionProps
+from .shm.data import SHMDataComponent, SHMDataProps
+from .shm.domain_controllers import (
     SHMDomainControllersComponent,
     SHMDomainControllersProps,
 )
-from data_safe_haven.infrastructure.components.shm_firewall import (
-    SHMFirewallComponent,
-    SHMFirewallProps,
-)
-from data_safe_haven.infrastructure.components.shm_monitoring import (
-    SHMMonitoringComponent,
-    SHMMonitoringProps,
-)
-from data_safe_haven.infrastructure.components.shm_networking import (
-    SHMNetworkingComponent,
-    SHMNetworkingProps,
-)
-from data_safe_haven.infrastructure.components.shm_update_servers import (
-    SHMUpdateServersComponent,
-    SHMUpdateServersProps,
-)
+from .shm.firewall import SHMFirewallComponent, SHMFirewallProps
+from .shm.monitoring import SHMMonitoringComponent, SHMMonitoringProps
+from .shm.networking import SHMNetworkingComponent, SHMNetworkingProps
+from .shm.update_servers import SHMUpdateServersComponent, SHMUpdateServersProps
 
 
 class DeclarativeSHM:
