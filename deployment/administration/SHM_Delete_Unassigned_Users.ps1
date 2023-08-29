@@ -18,14 +18,14 @@ $originalContext = Get-AzContext
 # Delete users not currently in a security group
 # ----------------------------------------------
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
-Add-LogMessage -Level Info "EDIT ME: Deleting users not assigned to any security group: $($config.shm.id) from $($config.dc.vmName)..."
-
 $script = "remote/Delete_Unassigned_Users.ps1"
 
 # Passing a param to a remote script requires it to be a string
 if ($dryRun.IsPresent){
-    $params = @{dryRun = "yes"}
+    Add-LogMessage -Level Info "Listing users not assigned to any security group from $($config.dc.vmName)..."
+    $params = @{dryRun = "yes" }
 } else {
+    Add-LogMessage -Level Info "Deleting users not assigned to any security group from $($config.dc.vmName)..."
     $params = @{dryRun = "no"}
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
