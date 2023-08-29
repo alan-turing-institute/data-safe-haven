@@ -1,16 +1,17 @@
 import pathlib
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, dbforpostgresql, network, storage
+from pulumi_azure_native import containerinstance, network, storage
 
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
     get_ip_address_from_container_group,
-    get_ip_addresses_from_private_endpoint,
 )
 from data_safe_haven.infrastructure.components import (
     FileShareFile,
     FileShareFileProps,
+    PostgresqlDatabaseComponent,
+    PostgresqlDatabaseProps,
 )
 from data_safe_haven.utility import FileReader
 
@@ -132,71 +133,20 @@ class SREHedgeDocServerComponent(ComponentResource):
         )
 
         # Define a PostgreSQL server and default database
-        db_server_hedgedoc_name = f"{stack_name}-db-server-hedgedoc"
-        db_server_hedgedoc = dbforpostgresql.Server(
-            f"{self._name}_db_server_hedgedoc",
-            properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
-                administrator_login=props.database_username,
-                administrator_login_password=props.database_password,
-                create_mode="Default",
-                infrastructure_encryption=dbforpostgresql.InfrastructureEncryption.DISABLED,
-                minimal_tls_version=dbforpostgresql.MinimalTlsVersionEnum.TLS_ENFORCEMENT_DISABLED,
-                public_network_access=dbforpostgresql.PublicNetworkAccessEnum.DISABLED,
-                ssl_enforcement=dbforpostgresql.SslEnforcementEnum.ENABLED,
-                storage_profile=dbforpostgresql.StorageProfileArgs(
-                    backup_retention_days=7,
-                    geo_redundant_backup=dbforpostgresql.GeoRedundantBackup.DISABLED,
-                    storage_autogrow=dbforpostgresql.StorageAutogrow.ENABLED,
-                    storage_mb=5120,
-                ),
-                version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
-            ),
-            resource_group_name=props.user_services_resource_group_name,
-            server_name=db_server_hedgedoc_name,
-            sku=dbforpostgresql.SkuArgs(
-                capacity=2,
-                family="Gen5",
-                name="GP_Gen5_2",
-                tier=dbforpostgresql.SkuTier.GENERAL_PURPOSE,  # required to use private link
+        db_hedgedoc_documents_name = "hedgedoc"
+        db_server_hedgedoc = PostgresqlDatabaseComponent(
+            f"{self._name}_db_gitea",
+            PostgresqlDatabaseProps(
+                database_names=[db_hedgedoc_documents_name],
+                database_password=props.database_password,
+                database_resource_group_name=props.user_services_resource_group_name,
+                database_server_name=f"{stack_name}-db-server-hedgedoc",
+                database_subnet_id=props.database_subnet_id,
+                database_username=props.database_username,
+                location=props.location,
             ),
             opts=child_opts,
         )
-        db_hedgedoc_documents_name = "hedgedoc"
-        dbforpostgresql.Database(
-            f"{self._name}_db_hedgedoc_documents",
-            charset="UTF8",
-            database_name=db_hedgedoc_documents_name,
-            resource_group_name=props.user_services_resource_group_name,
-            server_name=db_server_hedgedoc.name,
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=db_server_hedgedoc)
-            ),
-        )
-        # Deploy a private endpoint to the PostgreSQL server
-        db_server_hedgedoc_private_endpoint = network.PrivateEndpoint(
-            f"{self._name}_db_server_hedgedoc_private_endpoint",
-            private_endpoint_name=f"{stack_name}-endpoint-db-server-hedgedoc",
-            private_link_service_connections=[
-                network.PrivateLinkServiceConnectionArgs(
-                    group_ids=["postgresqlServer"],
-                    name=f"{stack_name}-privatelink-db-server-hedgedoc",
-                    private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
-                        actions_required="None",
-                        description="Auto-approved",
-                        status="Approved",
-                    ),
-                    private_link_service_id=db_server_hedgedoc.id,
-                )
-            ],
-            resource_group_name=props.user_services_resource_group_name,
-            subnet=network.SubnetArgs(id=props.database_subnet_id),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=db_server_hedgedoc)
-            ),
-        )
-        hedgedoc_db_private_ip_address = get_ip_addresses_from_private_endpoint(
-            db_server_hedgedoc_private_endpoint
-        ).apply(lambda ips: ips[0])
 
         # Define the container group with guacd, guacamole and caddy
         container_group = containerinstance.ContainerGroup(
@@ -244,7 +194,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_HOST",
-                            value=hedgedoc_db_private_ip_address,
+                            value=db_server_hedgedoc.private_ip_address,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_PASSWORD",
@@ -257,7 +207,9 @@ class SREHedgeDocServerComponent(ComponentResource):
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_USERNAME",
                             value=Output.concat(
-                                props.database_username, "@", db_server_hedgedoc_name
+                                props.database_username,
+                                "@",
+                                db_server_hedgedoc.db_server.name,
                             ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
