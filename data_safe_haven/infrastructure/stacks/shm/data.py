@@ -140,7 +140,7 @@ class SHMDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-domain-admin",
             vault_name=key_vault.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_azure_ad_connect",
@@ -150,7 +150,7 @@ class SHMDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-domain-azure-ad-connect",
             vault_name=key_vault.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_computer_manager",
@@ -160,7 +160,7 @@ class SHMDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-domain-computer-manager",
             vault_name=key_vault.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_searcher",
@@ -170,7 +170,7 @@ class SHMDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-domain-ldap-searcher",
             vault_name=key_vault.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_update_server_linux_admin",
@@ -180,7 +180,7 @@ class SHMDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-update-server-linux-admin",
             vault_name=key_vault.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
 
         # Deploy persistent data account
@@ -232,7 +232,9 @@ class SHMDataComponent(ComponentResource):
             deny_encryption_scope_override=False,
             public_access=storage.PublicAccess.NONE,
             resource_group_name=resource_group.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=storage_account_persistent_data)
+            ),
         )
 
         # Register outputs

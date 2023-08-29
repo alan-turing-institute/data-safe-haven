@@ -107,7 +107,9 @@ class SHMMonitoringComponent(ComponentResource):
                 ),
                 module_name=module_name,
                 resource_group_name=resource_group.name,
-                opts=child_opts,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=automation_account)
+                ),
             )
 
         # Set up a private endpoint for the automation account
@@ -124,7 +126,9 @@ class SHMMonitoringComponent(ComponentResource):
             ],
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=automation_account)
+            ),
         )
 
         # Add a private DNS record for each automation custom DNS config
@@ -142,7 +146,9 @@ class SHMMonitoringComponent(ComponentResource):
             private_dns_zone_group_name=f"{stack_name}-dzg-aa",
             private_endpoint_name=automation_account_private_endpoint.name,
             resource_group_name=resource_group.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=automation_account_private_endpoint)
+            ),
         )
 
         # Deploy log analytics workspace and get workspace keys
@@ -167,7 +173,9 @@ class SHMMonitoringComponent(ComponentResource):
             location="Global",
             resource_group_name=resource_group.name,
             scope_name=f"{stack_name}-ampls-log",
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=log_analytics)
+            ),
         )
         log_analytics_private_endpoint = network.PrivateEndpoint(
             f"{self._name}_log_analytics_private_endpoint",
@@ -182,7 +190,9 @@ class SHMMonitoringComponent(ComponentResource):
             ],
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
+            ),
         )
         insights.PrivateLinkScopedResource(
             f"{self._name}_log_analytics_ampls_connection",
@@ -190,7 +200,9 @@ class SHMMonitoringComponent(ComponentResource):
             name=f"{stack_name}-cnxn-ampls-log-to-log",
             resource_group_name=resource_group.name,
             scope_name=log_analytics_private_link_scope.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
+            ),
         )
 
         # Add a private DNS record for each log analytics workspace custom DNS config
@@ -210,6 +222,9 @@ class SHMMonitoringComponent(ComponentResource):
             private_dns_zone_group_name=f"{stack_name}-dzg-log",
             private_endpoint_name=log_analytics_private_endpoint.name,
             resource_group_name=resource_group.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=log_analytics_private_endpoint)
+            ),
         )
 
         # Link automation account to log analytics workspace
@@ -219,7 +234,9 @@ class SHMMonitoringComponent(ComponentResource):
             resource_group_name=resource_group.name,
             resource_id=automation_account.id,
             workspace_name=log_analytics.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=automation_account)
+            ),
         )
 
         # Deploy log analytics solutions
@@ -245,13 +262,15 @@ class SHMMonitoringComponent(ComponentResource):
                 ),
                 resource_group_name=resource_group.name,
                 solution_name=solution_name,
-                opts=child_opts,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=log_analytics)
+                ),
             )
 
         # Get the current subscription_resource_id for use in scheduling.
         # This is safe as schedules only apply to VMs that are registered with the log analytics workspace
         subscription_resource_id = resource_group.id.apply(
-            lambda id_: id_.split("/resourceGroups/")[0]
+            lambda id_: str(id_).split("/resourceGroups/")[0]
         )
         # Create Windows VM virus definitions update schedule: daily at 01:01
         automation.SoftwareUpdateConfigurationByName(
@@ -286,7 +305,10 @@ class SHMMonitoringComponent(ComponentResource):
             ),
             opts=ResourceOptions.merge(
                 child_opts,
-                ResourceOptions(ignore_changes=["schedule_info"]),
+                ResourceOptions(
+                    ignore_changes=["schedule_info"],
+                    parent=automation_account,
+                ),
             ),
         )
         # Create Windows VM system update schedule: daily at 02:02
@@ -338,7 +360,8 @@ class SHMMonitoringComponent(ComponentResource):
                     ignore_changes=[
                         "schedule_info",  # options are added after deployment
                         "updateConfiguration.windows.included_package_classifications",  # ordering might change
-                    ]
+                    ],
+                    parent=automation_account,
                 ),
             ),
         )
@@ -388,7 +411,8 @@ class SHMMonitoringComponent(ComponentResource):
                     ignore_changes=[
                         "schedule_info",  # options are added after deployment
                         "updateConfiguration.linux.included_package_classifications",  # ordering might change
-                    ]
+                    ],
+                    parent=automation_account,
                 ),
             ),
         )

@@ -159,7 +159,10 @@ class SHMDomainControllersComponent(ComponentResource):
             ),
             opts=ResourceOptions.merge(
                 child_opts,
-                ResourceOptions(depends_on=[primary_domain_controller]),
+                ResourceOptions(
+                    depends_on=[primary_domain_controller],
+                    parent=primary_domain_controller,
+                ),
             ),
         )
         # Extract the domain SID
@@ -183,7 +186,8 @@ class SHMDomainControllersComponent(ComponentResource):
                     depends_on=[
                         primary_domain_controller,
                         primary_domain_controller_dsc_node,
-                    ]
+                    ],
+                    parent=primary_domain_controller,
                 ),
             ),
         )

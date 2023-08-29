@@ -627,21 +627,7 @@ class SHMFirewallComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             route_name="ViaFirewall",
             route_table_name=props.route_table_name,
-            opts=child_opts,
-        )
-
-        # Add an A record for the domain controller
-        network.RecordSet(
-            f"{self._name}_a_record",
-            a_records=public_ip.ip_address.apply(
-                lambda ip: [network.ARecordArgs(ipv4_address=ip)] if ip else []
-            ),
-            record_type="A",
-            relative_record_set_name="ad",
-            resource_group_name=props.resource_group_name,
-            ttl=30,
-            zone_name=props.dns_zone_name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=firewall)),
         )
 
         # Register outputs

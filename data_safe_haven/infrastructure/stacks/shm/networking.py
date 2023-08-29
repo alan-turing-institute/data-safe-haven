@@ -422,7 +422,7 @@ class SHMNetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             ttl=30,
             zone_name=dns_zone.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=dns_zone)),
         )
         network.RecordSet(
             f"{self._name}_domain_verification_record",
@@ -434,7 +434,7 @@ class SHMNetworkingComponent(ComponentResource):
                 network.TxtRecordArgs(value=[props.record_domain_verification])
             ],
             zone_name=dns_zone.name,
-            opts=child_opts,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=dns_zone)),
         )
 
         # Set up private link domains
@@ -445,7 +445,9 @@ class SHMNetworkingComponent(ComponentResource):
                 location="Global",
                 private_zone_name=f"privatelink.{private_link_domain}",
                 resource_group_name=resource_group.name,
-                opts=child_opts,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=dns_zone)
+                ),
             )
             network.VirtualNetworkLink(
                 f"{self._name}_private_zone_{private_link_domain}_vnet_link",
@@ -457,7 +459,9 @@ class SHMNetworkingComponent(ComponentResource):
                 virtual_network_link_name=Output.concat(
                     "link-to-", virtual_network.name
                 ),
-                opts=child_opts,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=private_zone)
+                ),
             )
             private_zone_ids.append(
                 private_zone.id.apply(
