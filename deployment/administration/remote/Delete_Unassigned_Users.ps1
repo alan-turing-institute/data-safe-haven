@@ -1,3 +1,8 @@
+param(
+    [Parameter(Mandatory = $false, HelpMessage = "Shows the users to be deleted without performing deletion")]
+    [bool]$dryRun
+)
+
 # Extract list of users
 $userOuPath = (Get-ADObject -Filter * | Where-Object { $_.Name -eq "Safe Haven Research Users" }).DistinguishedName
 $users = Get-ADUser -Filter * -SearchBase "$userOuPath" -Properties *
@@ -5,7 +10,12 @@ foreach ($user in $users) {
     $groupName = ($user | Select-Object -ExpandProperty MemberOf | ForEach-Object { (($_ -Split ",")[0] -Split "=")[1] }) -join "|"
     if (!($groupName)) {
         $name = $user.SamAccountName
-        Remove-ADUser -Identity $name -Confirm:$false
+        if ($dryRun) {
+            Write-Output "User $name would be deleted by this action"
+        } else {
+            Write-Output "Deleting $name"
+            Remove-ADUser -Identity $name -Confirm:$false
+        }
     }
 }
 
