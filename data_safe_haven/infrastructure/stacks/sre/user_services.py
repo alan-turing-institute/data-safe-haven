@@ -4,10 +4,10 @@ from pulumi_azure_native import network, resources
 from data_safe_haven.infrastructure.common import get_id_from_subnet
 from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
 
-from .sre_database_server import SREDatabaseServerComponent, SREDatabaseServerProps
-from .sre_gitea_server import SREGiteaServerComponent, SREGiteaServerProps
-from .sre_hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
-from .sre_software_repositories import (
+from .database_servers import SREDatabaseServerComponent, SREDatabaseServerProps
+from .gitea_server import SREGiteaServerComponent, SREGiteaServerProps
+from .hedgedoc_server import SREHedgeDocServerComponent, SREHedgeDocServerProps
+from .software_repositories import (
     SRESoftwareRepositoriesComponent,
     SRESoftwareRepositoriesProps,
 )

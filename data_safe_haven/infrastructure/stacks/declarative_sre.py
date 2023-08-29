@@ -2,41 +2,42 @@
 import pulumi
 
 from data_safe_haven.config import Config
-from data_safe_haven.infrastructure.components.sre_application_gateway import (
+
+from .sre.application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
-from data_safe_haven.infrastructure.components.sre_backup import (
+from .sre.backup import (
     SREBackupComponent,
     SREBackupProps,
 )
-from data_safe_haven.infrastructure.components.sre_data import (
+from .sre.data import (
     SREDataComponent,
     SREDataProps,
 )
-from data_safe_haven.infrastructure.components.sre_dns_server import (
+from .sre.dns_server import (
     SREDnsServerComponent,
     SREDnsServerProps,
 )
-from data_safe_haven.infrastructure.components.sre_monitoring import (
+from .sre.monitoring import (
     SREMonitoringComponent,
     SREMonitoringProps,
 )
-from data_safe_haven.infrastructure.components.sre_networking import (
+from .sre.networking import (
     SRENetworkingComponent,
     SRENetworkingProps,
 )
-from data_safe_haven.infrastructure.components.sre_remote_desktop import (
+from .sre.remote_desktop import (
     SRERemoteDesktopComponent,
     SRERemoteDesktopProps,
 )
-from data_safe_haven.infrastructure.components.sre_user_services import (
+from .sre.user_services import (
     SREUserServicesComponent,
     SREUserServicesProps,
 )
-from data_safe_haven.infrastructure.components.sre_workspace import (
-    SREWorkspaceComponent,
-    SREWorkspaceProps,
+from .sre.workspaces import (
+    SREWorkspacesComponent,
+    SREWorkspacesProps,
 )
 
 
@@ -215,10 +216,10 @@ class DeclarativeSRE:
         )
 
         # Deploy workspaces
-        workspaces = SREWorkspaceComponent(
+        workspaces = SREWorkspacesComponent(
             "sre_workspaces",
             self.stack_name,
-            SREWorkspaceProps(
+            SREWorkspacesProps(
                 admin_password=data.password_workspace_admin,
                 domain_sid=self.pulumi_opts.require(
                     "shm-domain_controllers-domain_sid"

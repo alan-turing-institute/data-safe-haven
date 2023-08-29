@@ -13,12 +13,14 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_subnet,
     get_name_from_vnet,
 )
+from data_safe_haven.infrastructure.components.virtual_machine import (
+    LinuxVMProps,
+    VMComponent,
+)
 
-from .virtual_machine import LinuxVMProps, VMComponent
 
-
-class SREWorkspaceProps:
-    """Properties for SREWorkspaceComponent"""
+class SREWorkspacesProps:
+    """Properties for SREWorkspacesComponent"""
 
     def __init__(
         self,
@@ -90,17 +92,17 @@ class SREWorkspaceProps:
         return get_available_ips_from_subnet(subnet)[: len(vm_details)]
 
 
-class SREWorkspaceComponent(ComponentResource):
+class SREWorkspacesComponent(ComponentResource):
     """Deploy workspaces with Pulumi"""
 
     def __init__(
         self,
         name: str,
         stack_name: str,
-        props: SREWorkspaceProps,
+        props: SREWorkspacesProps,
         opts: ResourceOptions | None = None,
     ) -> None:
-        super().__init__("dsh:sre:WorkspaceComponent", name, {}, opts)
+        super().__init__("dsh:sre:WorkspacesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
 
         # Deploy resource group
