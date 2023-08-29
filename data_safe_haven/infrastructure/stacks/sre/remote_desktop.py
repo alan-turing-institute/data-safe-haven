@@ -4,7 +4,6 @@ import pathlib
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     containerinstance,
-    dbforpostgresql,
     network,
     resources,
     storage,
@@ -20,6 +19,8 @@ from data_safe_haven.infrastructure.components import (
     AzureADApplicationProps,
     FileShareFile,
     FileShareFileProps,
+    PostgresqlDatabaseComponent,
+    PostgresqlDatabaseProps,
 )
 from data_safe_haven.utility import FileReader
 
@@ -161,73 +162,19 @@ class SRERemoteDesktopComponent(ComponentResource):
         )
 
         # Define a PostgreSQL server to hold user and connection details
-        db_server_guacamole_name = f"{stack_name}-db-server-guacamole"
-        db_server_guacamole = dbforpostgresql.Server(
-            f"{self._name}_db_server_guacamole",
-            properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
-                administrator_login=props.database_username,
-                administrator_login_password=props.database_password,
-                create_mode="Default",
-                infrastructure_encryption=dbforpostgresql.InfrastructureEncryption.DISABLED,
-                minimal_tls_version=dbforpostgresql.MinimalTlsVersionEnum.TLS_ENFORCEMENT_DISABLED,
-                public_network_access=dbforpostgresql.PublicNetworkAccessEnum.DISABLED,
-                ssl_enforcement=dbforpostgresql.SslEnforcementEnum.ENABLED,
-                storage_profile=dbforpostgresql.StorageProfileArgs(
-                    backup_retention_days=7,
-                    geo_redundant_backup=dbforpostgresql.GeoRedundantBackup.DISABLED,
-                    storage_autogrow=dbforpostgresql.StorageAutogrow.ENABLED,
-                    storage_mb=5120,
-                ),
-                version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
-            ),
-            resource_group_name=resource_group.name,
-            server_name=db_server_guacamole_name,
-            sku=dbforpostgresql.SkuArgs(
-                capacity=2,
-                family="Gen5",
-                name="GP_Gen5_2",
-                tier=dbforpostgresql.SkuTier.GENERAL_PURPOSE,  # required to use private link
+        db_guacamole_connections = "guacamole"
+        db_server_guacamole = PostgresqlDatabaseComponent(
+            f"{self._name}_db_guacamole",
+            PostgresqlDatabaseProps(
+                database_names=[db_guacamole_connections],
+                database_password=props.database_password,
+                database_resource_group_name=resource_group.name,
+                database_server_name=f"{stack_name}-db-server-guacamole",
+                database_subnet_id=props.subnet_guacamole_containers_support_id,
+                database_username=props.database_username,
+                location=props.location,
             ),
             opts=child_opts,
-        )
-        network.PrivateEndpoint(
-            f"{self._name}_db_server_guacamole_private_endpoint",
-            custom_dns_configs=[
-                network.CustomDnsConfigPropertiesFormatArgs(
-                    ip_addresses=[
-                        props.subnet_guacamole_containers_support_ip_addresses[0]
-                    ],
-                )
-            ],
-            private_endpoint_name=f"{stack_name}-endpoint-db-server-guacamole",
-            private_link_service_connections=[
-                network.PrivateLinkServiceConnectionArgs(
-                    group_ids=["postgresqlServer"],
-                    name=f"{stack_name}-privatelink-db-server-guacamole",
-                    private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
-                        actions_required="None",
-                        description="Auto-approved",
-                        status="Approved",
-                    ),
-                    private_link_service_id=db_server_guacamole.id,
-                )
-            ],
-            resource_group_name=resource_group.name,
-            subnet=network.SubnetArgs(id=props.subnet_guacamole_containers_support_id),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=db_server_guacamole)
-            ),
-        )
-        connection_db_name = "guacamole"
-        connection_db = dbforpostgresql.Database(
-            f"{self._name}_connection_db",
-            charset="UTF8",
-            database_name=connection_db_name,
-            resource_group_name=resource_group.name,
-            server_name=db_server_guacamole.name,
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=db_server_guacamole)
-            ),
         )
 
         # Define a network profile
@@ -323,7 +270,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                             value="preferred_username",  # this is 'username@domain'
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_DATABASE", value=connection_db_name
+                            name="POSTGRES_DATABASE", value=db_guacamole_connections
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_HOSTNAME",
@@ -340,7 +287,11 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_USER",
-                            value=f"{props.database_username}@{db_server_guacamole_name}",
+                            value=Output.concat(
+                                props.database_username,
+                                "@",
+                                db_server_guacamole.db_server.name,
+                            ),
                         ),
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
@@ -405,7 +356,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_DB_NAME",
-                            value=connection_db_name,
+                            value=db_guacamole_connections,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_HOST",
@@ -419,7 +370,11 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_USERNAME",
-                            value=f"{props.database_username}@{db_server_guacamole_name}",
+                            value=Output.concat(
+                                props.database_username,
+                                "@",
+                                db_server_guacamole.db_server.name,
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="REPEAT_INTERVAL",
@@ -476,8 +431,8 @@ class SRERemoteDesktopComponent(ComponentResource):
 
         # Register exports
         self.exports = {
-            "connection_db_name": connection_db.name,
-            "connection_db_server_name": db_server_guacamole_name,
+            "connection_db_name": db_guacamole_connections,
+            "connection_db_server_name": db_server_guacamole.db_server.name,
             "container_group_name": container_group.name,
             "container_ip_address": get_ip_address_from_container_group(
                 container_group
