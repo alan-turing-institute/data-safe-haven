@@ -13,7 +13,7 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_subnet,
     get_name_from_vnet,
 )
-from data_safe_haven.infrastructure.components.virtual_machine import (
+from data_safe_haven.infrastructure.components.composite.virtual_machine import (
     LinuxVMProps,
     VMComponent,
 )

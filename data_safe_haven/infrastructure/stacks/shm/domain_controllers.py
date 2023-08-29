@@ -6,17 +6,17 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 from data_safe_haven.infrastructure.common import get_name_from_subnet
-from data_safe_haven.infrastructure.components.automation_dsc_node import (
+from data_safe_haven.infrastructure.components.composite.automation_dsc_node import (
     AutomationDscNode,
     AutomationDscNodeProps,
+)
+from data_safe_haven.infrastructure.components.composite.virtual_machine import (
+    VMComponent,
+    WindowsVMProps,
 )
 from data_safe_haven.infrastructure.components.dynamic.remote_powershell import (
     RemoteScript,
     RemoteScriptProps,
-)
-from data_safe_haven.infrastructure.components.virtual_machine import (
-    VMComponent,
-    WindowsVMProps,
 )
 from data_safe_haven.utility import FileReader
 
