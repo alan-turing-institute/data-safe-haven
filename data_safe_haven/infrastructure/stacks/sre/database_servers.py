@@ -1,7 +1,11 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import dbforpostgresql, network, sql
+from pulumi_azure_native import network, sql
 
 from data_safe_haven.infrastructure.common import get_ip_addresses_from_private_endpoint
+from data_safe_haven.infrastructure.components import (
+    PostgresqlDatabaseComponent,
+    PostgresqlDatabaseProps,
+)
 from data_safe_haven.utility import DatabaseSystem
 
 
@@ -136,67 +140,26 @@ class SREDatabaseServerComponent(ComponentResource):
             )
 
         if props.database_system == DatabaseSystem.POSTGRESQL:
-            # Define a PostgreSQL server
-            db_server_postgresql_name = f"{stack_name}-db-server-postgresql"
-            db_server_postgresql = dbforpostgresql.Server(
-                f"{self._name}_db_server_postgresql",
-                location=props.location,
-                properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
-                    administrator_login=props.database_username,
-                    administrator_login_password=props.database_password,
-                    create_mode="Default",
-                    infrastructure_encryption=dbforpostgresql.InfrastructureEncryption.DISABLED,
-                    minimal_tls_version=dbforpostgresql.MinimalTlsVersionEnum.TLS_ENFORCEMENT_DISABLED,
-                    public_network_access=dbforpostgresql.PublicNetworkAccessEnum.DISABLED,
-                    ssl_enforcement=dbforpostgresql.SslEnforcementEnum.ENABLED,
-                    storage_profile=dbforpostgresql.StorageProfileArgs(
-                        backup_retention_days=7,
-                        geo_redundant_backup=dbforpostgresql.GeoRedundantBackup.DISABLED,
-                        storage_autogrow=dbforpostgresql.StorageAutogrow.ENABLED,
-                        storage_mb=5120,
-                    ),
-                    version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
-                ),
-                resource_group_name=props.user_services_resource_group_name,
-                server_name=db_server_postgresql_name,
-                sku=dbforpostgresql.SkuArgs(
-                    capacity=2,
-                    family="Gen5",
-                    name="GP_Gen5_2",
-                    tier=dbforpostgresql.SkuTier.GENERAL_PURPOSE,  # required to use private link
+            # Define a PostgreSQL server and default database
+            db_server_postgresql = PostgresqlDatabaseComponent(
+                f"{self._name}_db_postgresql",
+                PostgresqlDatabaseProps(
+                    database_names=[],
+                    database_password=props.database_password,
+                    database_resource_group_name=props.user_services_resource_group_name,
+                    database_server_name=f"{stack_name}-db-server-postgresql",
+                    database_subnet_id=props.subnet_id,
+                    database_username=props.database_username,
+                    location=props.location,
                 ),
                 opts=child_opts,
-            )
-            # Deploy a private endpoint for the PostgreSQL server
-            db_server_postgresql_private_endpoint = network.PrivateEndpoint(
-                f"{self._name}_db_server_postgresql_private_endpoint",
-                private_endpoint_name=f"{stack_name}-endpoint-db-server-postgresql",
-                private_link_service_connections=[
-                    network.PrivateLinkServiceConnectionArgs(
-                        group_ids=["postgresqlServer"],
-                        name=f"{stack_name}-privatelink-db-server-postgresql",
-                        private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
-                            actions_required="None",
-                            description="Auto-approved",
-                            status="Approved",
-                        ),
-                        private_link_service_id=db_server_postgresql.id,
-                    )
-                ],
-                resource_group_name=props.user_services_resource_group_name,
-                subnet=network.SubnetArgs(id=props.subnet_id),
-                opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=db_server_postgresql)
-                ),
             )
             # Add the PostgreSQL server to the SRE private DNS zone
             private_dns_record_set = network.PrivateRecordSet(
                 f"{self._name}_db_server_postgresql_private_record_set",
                 a_records=[
                     network.ARecordArgs(
-                        ipv4_address=get_ip_addresses_from_private_endpoint(
-                            db_server_postgresql_private_endpoint
-                        ).apply(lambda ips: ips[0]),
+                        ipv4_address=db_server_postgresql.private_ip_address,
                     )
                 ],
                 private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
@@ -206,7 +169,7 @@ class SREDatabaseServerComponent(ComponentResource):
                 ttl=3600,
                 opts=ResourceOptions.merge(
                     child_opts,
-                    ResourceOptions(parent=db_server_postgresql_private_endpoint),
+                    ResourceOptions(parent=db_server_postgresql.private_endpoint),
                 ),
             )
             # Redirect the PostgreSQL server public DNS record to private DNS
