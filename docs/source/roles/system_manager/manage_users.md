@@ -137,6 +137,14 @@ The `DC1` is the source of truth for user details. If these details need to be c
     - Click on `Users` under `Manage` and search for the user
     - Confirm the user is no longer present
 
+### {{x}} Automatically deleting all usassigned users
+
+In some situations, such as at the end of a project after an SRE has been torn down, you may want to remove all users from the SHM who are not assigned to the security group of any remaining attached SREs.
+
+- Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
+- Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
+- Run `./SHM_Delete_Unassigned_Users.ps1 -shmId <SHM ID>` (use the `-dryRun` flag to see who would get deleted with out performing the deletion)
+
 ## {{calling}} Assign MFA licences
 
 ### {{hand}} Manually add licence to each user
