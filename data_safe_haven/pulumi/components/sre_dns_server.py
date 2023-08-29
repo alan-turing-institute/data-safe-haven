@@ -74,7 +74,7 @@ class SREDnsServerComponent(ComponentResource):
         adguard_adguardhome_yaml_contents = Output.all(
             admin_username=props.admin_username,
             admin_password_encrypted=props.admin_password.apply(
-                lambda p: bcrypt_encode(p)
+                lambda passwd: bcrypt_encode(passwd, stack_name)
             ),
             # Use Azure virtual DNS server as upstream
             # https://learn.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
