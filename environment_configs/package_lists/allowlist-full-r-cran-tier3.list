@@ -156,7 +156,6 @@ gdtools
 generics
 geojson
 geojsonio
-geojsonlint
 geojsonsf
 geometries
 geometry
@@ -235,7 +234,6 @@ jqr
 jquerylib
 jsonify
 jsonlite
-jsonvalidate
 kdensity
 kernlab
 KernSmooth
