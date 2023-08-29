@@ -1,6 +1,6 @@
 param(
-    [Parameter(Mandatory = $false, HelpMessage = "No-op mode which will not remove anything")]
-    [Switch]$dryRun
+    [Parameter(Mandatory = $true, HelpMessage = "yes/no determines whether users should actually be deleted")]
+    [string]$dryRun
 )
 
 # Extract list of users
@@ -10,7 +10,7 @@ foreach ($user in $users) {
     $groupName = ($user | Select-Object -ExpandProperty MemberOf | ForEach-Object { (($_ -Split ",")[0] -Split "=")[1] }) -join "|"
     if (!($groupName)) {
         $name = $user.SamAccountName
-        if ($dryRun.IsPresent) {
+        if ($dryRun -eq "yes") {
             Write-Output "User $name would be deleted by this action"
         } else {
             Write-Output "Deleting $name"
@@ -20,7 +20,7 @@ foreach ($user in $users) {
 }
 
 # Force sync with AzureAD. It will still take around 5 minutes for changes to propagate
-if (!($dryRun.IsPresent)) {
+if ($dryRun -eq "no") {
     Write-Output "Synchronising locally Active Directory with Azure"
     try {
         Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -ErrorAction Stop
