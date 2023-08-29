@@ -12,6 +12,7 @@ querylog:
   enabled: true
 filters:
 user_rules:
+  # https://github.com/AdguardTeam/AdGuardHome/wiki/Hosts-Blocklists#adblock-style-syntax
   {{#filter_deny}}
   - "{{.}}"
   {{/filter_deny}}
