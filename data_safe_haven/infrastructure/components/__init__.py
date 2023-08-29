@@ -2,6 +2,8 @@ from .composite import (
     AutomationDscNode,
     AutomationDscNodeProps,
     LinuxVMComponentProps,
+    PostgresqlDatabaseComponent,
+    PostgresqlDatabaseProps,
     VMComponent,
     WindowsVMComponentProps,
 )
@@ -32,6 +34,8 @@ __all__ = [
     "FileShareFile",
     "FileShareFileProps",
     "LinuxVMComponentProps",
+    "PostgresqlDatabaseComponent",
+    "PostgresqlDatabaseProps",
     "RemoteScript",
     "RemoteScriptProps",
     "SSLCertificate",
