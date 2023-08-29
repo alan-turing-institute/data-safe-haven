@@ -123,9 +123,9 @@ class SREDnsServerComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound DNS and rules list traffic over the internet.",
+                    description="Allow outbound DNS traffic over the internet.",
                     destination_address_prefix="Internet",
-                    destination_port_ranges=["53", "80", "443"],
+                    destination_port_ranges=["53"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDnsInternetOutbound",
                     priority=NetworkingPriorities.EXTERNAL_INTERNET,
