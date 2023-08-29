@@ -10,6 +10,8 @@ from data_safe_haven.infrastructure.common import (
 from data_safe_haven.infrastructure.components import (
     FileShareFile,
     FileShareFileProps,
+    LocalDnsRecordComponent,
+    LocalDnsRecordProps,
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
 )
@@ -324,35 +326,18 @@ class SREHedgeDocServerComponent(ComponentResource):
                 ),
             ),
         )
-        # Register the container group in the SRE private DNS zone
-        private_dns_record_set = network.PrivateRecordSet(
-            f"{self._name}_hedgedoc_private_record_set",
-            a_records=[
-                network.ARecordArgs(
-                    ipv4_address=get_ip_address_from_container_group(container_group),
-                )
-            ],
-            private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
-            record_type="A",
-            relative_record_set_name="hedgedoc",
-            resource_group_name=props.dns_resource_group_name,
-            ttl=3600,
+
+        # Register the container group in the SRE DNS zone
+        LocalDnsRecordComponent(
+            f"{self._name}_hedgedoc_dns_record_set",
+            LocalDnsRecordProps(
+                base_fqdn=props.sre_fqdn,
+                public_dns_resource_group_name=props.networking_resource_group_name,
+                private_dns_resource_group_name=props.dns_resource_group_name,
+                private_ip_address=get_ip_address_from_container_group(container_group),
+                record_name="hedgedoc",
+            ),
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=container_group)
-            ),
-        )
-        # Redirect the public DNS to private DNS
-        network.RecordSet(
-            f"{self._name}_hedgedoc_public_record_set",
-            cname_record=network.CnameRecordArgs(
-                cname=Output.concat("hedgedoc.privatelink.", props.sre_fqdn)
-            ),
-            record_type="CNAME",
-            relative_record_set_name="hedgedoc",
-            resource_group_name=props.networking_resource_group_name,
-            ttl=3600,
-            zone_name=props.sre_fqdn,
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=private_dns_record_set)
             ),
         )
