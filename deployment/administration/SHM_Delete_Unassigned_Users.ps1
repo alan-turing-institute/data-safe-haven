@@ -22,6 +22,10 @@ Add-LogMessage -Level Info "EDIT ME: Deleting users not assigned to any security
 
 $script = "remote/Delete_Unassigned_Users.ps1"
 
-$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter @{"dryRun" = "$dryRun"}
+$params = @{
+    dryRun = $dryRun
+}
+
+$result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 
 $null = Set-AzContext -Context $originalContext -ErrorAction Stop
