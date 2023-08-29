@@ -1,8 +1,10 @@
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, ResourceOptions
 from pulumi_azure_native import network, sql
 
 from data_safe_haven.infrastructure.common import get_ip_addresses_from_private_endpoint
 from data_safe_haven.infrastructure.components import (
+    LocalDnsRecordComponent,
+    LocalDnsRecordProps,
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
 )
@@ -103,39 +105,20 @@ class SREDatabaseServerComponent(ComponentResource):
                     child_opts, ResourceOptions(parent=db_server_mssql)
                 ),
             )
-            # Add the Microsoft SQL server to the SRE private DNS zone
-            private_dns_record_set = network.PrivateRecordSet(
-                f"{self._name}_db_server_mssql_private_record_set",
-                a_records=[
-                    network.ARecordArgs(
-                        ipv4_address=get_ip_addresses_from_private_endpoint(
-                            db_server_mssql_private_endpoint
-                        ).apply(lambda ips: ips[0]),
-                    )
-                ],
-                private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
-                record_type="A",
-                relative_record_set_name="mssql",
-                resource_group_name=props.dns_resource_group_name,
-                ttl=3600,
-                opts=ResourceOptions.merge(
-                    child_opts,
-                    ResourceOptions(parent=db_server_mssql_private_endpoint),
+            # Register the database in the SRE DNS zone
+            LocalDnsRecordComponent(
+                f"{self._name}_mssql_dns_record_set",
+                LocalDnsRecordProps(
+                    base_fqdn=props.sre_fqdn,
+                    public_dns_resource_group_name=props.networking_resource_group_name,
+                    private_dns_resource_group_name=props.dns_resource_group_name,
+                    private_ip_address=get_ip_addresses_from_private_endpoint(
+                        db_server_mssql_private_endpoint
+                    ).apply(lambda ips: ips[0]),
+                    record_name="mssql",
                 ),
-            )
-            # Redirect the Microsoft SQL server public DNS record to private DNS
-            network.RecordSet(
-                f"{self._name}_db_server_mssql_public_record_set",
-                cname_record=network.CnameRecordArgs(
-                    cname=Output.concat("mssql.privatelink.", props.sre_fqdn)
-                ),
-                record_type="CNAME",
-                relative_record_set_name="mssql",
-                resource_group_name=props.networking_resource_group_name,
-                ttl=3600,
-                zone_name=props.sre_fqdn,
                 opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=private_dns_record_set)
+                    child_opts, ResourceOptions(parent=db_server_mssql)
                 ),
             )
 
@@ -154,36 +137,17 @@ class SREDatabaseServerComponent(ComponentResource):
                 ),
                 opts=child_opts,
             )
-            # Add the PostgreSQL server to the SRE private DNS zone
-            private_dns_record_set = network.PrivateRecordSet(
-                f"{self._name}_db_server_postgresql_private_record_set",
-                a_records=[
-                    network.ARecordArgs(
-                        ipv4_address=db_server_postgresql.private_ip_address,
-                    )
-                ],
-                private_zone_name=Output.concat("privatelink.", props.sre_fqdn),
-                record_type="A",
-                relative_record_set_name="postgresql",
-                resource_group_name=props.dns_resource_group_name,
-                ttl=3600,
-                opts=ResourceOptions.merge(
-                    child_opts,
-                    ResourceOptions(parent=db_server_postgresql.private_endpoint),
+            # Register the database in the SRE DNS zone
+            LocalDnsRecordComponent(
+                f"{self._name}_postgresql_dns_record_set",
+                LocalDnsRecordProps(
+                    base_fqdn=props.sre_fqdn,
+                    public_dns_resource_group_name=props.networking_resource_group_name,
+                    private_dns_resource_group_name=props.dns_resource_group_name,
+                    private_ip_address=db_server_postgresql.private_ip_address,
+                    record_name="postgresql",
                 ),
-            )
-            # Redirect the PostgreSQL server public DNS record to private DNS
-            network.RecordSet(
-                f"{self._name}_db_server_postgresql_public_record_set",
-                cname_record=network.CnameRecordArgs(
-                    cname=Output.concat("postgresql.privatelink.", props.sre_fqdn)
-                ),
-                record_type="CNAME",
-                relative_record_set_name="postgresql",
-                resource_group_name=props.networking_resource_group_name,
-                ttl=3600,
-                zone_name=props.sre_fqdn,
                 opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=private_dns_record_set)
+                    child_opts, ResourceOptions(parent=db_server_postgresql)
                 ),
             )
