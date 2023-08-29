@@ -1,8 +1,8 @@
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
     [string]$shmId,
-    [Parameter(Mandatory = $false, HelpMessage = "Shows the users to be deleted without performing deletion")]
-    [bool]$dryRun
+    [Parameter(Mandatory = $false, HelpMessage = "No-op mode which will not remove anything")]
+    [Switch]$dryRun
 )
 
 Import-Module Az.Accounts -ErrorAction Stop
