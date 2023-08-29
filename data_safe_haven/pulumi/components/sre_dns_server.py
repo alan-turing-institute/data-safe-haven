@@ -76,6 +76,8 @@ class SREDnsServerComponent(ComponentResource):
             admin_password_encrypted=props.admin_password.apply(
                 lambda p: bcrypt_encode(p)
             ),
+            # Azure virtual DNS server
+            # https://learn.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
             upstream_dns="168.63.129.16",
             filter_deny=["*.*"],
             filter_allow=Output.from_input(props.shm_fqdn).apply(
