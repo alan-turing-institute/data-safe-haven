@@ -422,7 +422,7 @@ class AzureApi(AzureAuthenticator):
             )
             return certificate
         except Exception as exc:
-            msg = f"Failed to create certificate '{certificate_url}'."
+            msg = f"Failed to create certificate '{certificate_url}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_managed_identity(
@@ -575,7 +575,7 @@ class AzureApi(AzureAuthenticator):
             )
             return container
         except HttpResponseError as exc:
-            msg = f"Failed to create storage container [green]{container_name}."
+            msg = f"Failed to create storage container [green]{container_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def get_keyvault_certificate(
@@ -598,7 +598,7 @@ class AzureApi(AzureAuthenticator):
         try:
             return certificate_client.get_certificate(certificate_name)
         except Exception as exc:
-            msg = f"Failed to retrieve certificate {certificate_name}."
+            msg = f"Failed to retrieve certificate {certificate_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def get_keyvault_secret(self, key_vault_name: str, secret_name: str) -> str:
@@ -622,7 +622,7 @@ class AzureApi(AzureAuthenticator):
             msg = f"Secret {secret_name} has no value."
             raise DataSafeHavenAzureError(msg)
         except Exception as exc:
-            msg = f"Failed to retrieve secret {secret_name}."
+            msg = f"Failed to retrieve secret {secret_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def get_locations(self) -> list[str]:
@@ -750,7 +750,7 @@ class AzureApi(AzureAuthenticator):
             )
             return certificate
         except Exception as exc:
-            msg = f"Failed to import certificate '{certificate_name}'."
+            msg = f"Failed to import certificate '{certificate_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def list_available_vm_skus(self, location: str) -> dict[str, dict[str, Any]]:
@@ -779,9 +779,7 @@ class AzureApi(AzureAuthenticator):
             return skus
         except Exception as exc:
             msg = f"Failed to load available VM sizes for Azure location {location}.\n{exc}"
-            raise DataSafeHavenAzureError(
-                msg,
-            ) from exc
+            raise DataSafeHavenAzureError(msg) from exc
 
     def purge_keyvault_certificate(
         self,
@@ -817,10 +815,8 @@ class AzureApi(AzureAuthenticator):
                 f"Purged certificate [green]{certificate_name}[/] from Key Vault [green]{key_vault_name}[/].",
             )
         except Exception as exc:
-            msg = f"Failed to remove certificate '{certificate_name}' from Key Vault '{key_vault_name}'."
-            raise DataSafeHavenAzureError(
-                msg,
-            ) from exc
+            msg = f"Failed to remove certificate '{certificate_name}' from Key Vault '{key_vault_name}'.\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc
 
     def remove_dns_txt_record(
         self,
@@ -920,7 +916,7 @@ class AzureApi(AzureAuthenticator):
                 f"Removed certificate [green]{certificate_name}[/] from Key Vault [green]{key_vault_name}[/].",
             )
         except Exception as exc:
-            msg = f"Failed to remove certificate '{certificate_name}' from Key Vault '{key_vault_name}'."
+            msg = f"Failed to remove certificate '{certificate_name}' from Key Vault '{key_vault_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def remove_resource_group(self, resource_group_name: str) -> None:
@@ -1059,7 +1055,7 @@ class AzureApi(AzureAuthenticator):
                     resource_group_name, storage_account_name, container_name
                 )
                 if container.name != container_name:
-                    msg = "Container could not be found."
+                    msg = f"Container '{container_name}' could not be found."
                     raise HttpResponseError(msg)
             except HttpResponseError:
                 self.logger.warning(
