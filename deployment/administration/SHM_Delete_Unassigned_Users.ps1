@@ -21,12 +21,12 @@ $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
 $script = "remote/Delete_Unassigned_Users.ps1"
 
 # Passing a param to a remote script requires it to be a string
-if ($dryRun.IsPresent){
+if ($dryRun.IsPresent) {
     Add-LogMessage -Level Info "Listing users not assigned to any security group from $($config.dc.vmName)..."
     $params = @{dryRun = "yes" }
 } else {
     Add-LogMessage -Level Info "Deleting users not assigned to any security group from $($config.dc.vmName)..."
-    $params = @{dryRun = "no"}
+    $params = @{dryRun = "no" }
 }
 $result = Invoke-RemoteScript -Shell "PowerShell" -ScriptPath $script -VMName $config.dc.vmName -ResourceGroupName $config.dc.rg -Parameter $params
 

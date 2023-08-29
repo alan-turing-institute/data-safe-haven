@@ -25,11 +25,9 @@ if ($dryRun -eq "no") {
     try {
         Import-Module -Name "C:\Program Files\Microsoft Azure AD Sync\Bin\ADSync" -ErrorAction Stop
         Start-ADSyncSyncCycle -PolicyType Delta
-    }
-    catch [System.IO.FileNotFoundException] {
+    } catch [System.IO.FileNotFoundException] {
         Write-Output "Skipping as Azure AD Sync is not installed"
-    }
-    catch {
+    } catch {
         Write-Output "Unable to run Azure Active Directory synchronisation!"
     }
 }
