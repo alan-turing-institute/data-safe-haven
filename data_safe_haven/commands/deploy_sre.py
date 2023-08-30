@@ -27,7 +27,7 @@ def deploy_sre(
         # Use a JSON-safe SRE name
         sre_name = alphanumeric(name).lower()
 
-        # Load config file
+        # Load and validate config file
         config = Config()
         config.sre(sre_name).update(
             allow_copy=allow_copy,

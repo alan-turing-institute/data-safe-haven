@@ -47,12 +47,24 @@ class Validator:
 
         Validation fails if the provided validation function raises an exception.
         """
-        for attr_name, validator in self.validation_functions.items():
-            try:
-                validator(getattr(self, attr_name))
-            except Exception as exc:
-                msg = f"Invalid value for '{attr_name}' ({getattr(self, attr_name)}).\n{exc}"
-                raise DataSafeHavenConfigError(msg) from exc
+        try:
+            for attr_name in self.validation_functions.keys():
+                self.validate_attribute(attr_name)
+        except Exception as exc:
+            msg = f"Failed to validate command line arguments.\n{exc}"
+            raise DataSafeHavenConfigError(msg) from exc
+
+    def validate_attribute(self, attribute_name: str) -> None:
+        """Validate single instance attribute.
+
+        Validation fails if the provided validation function raises an exception.
+        """
+        try:
+            validator = self.validation_functions[attribute_name]
+            validator(getattr(self, attribute_name))
+        except Exception as exc:
+            msg = f"Invalid value for '{attribute_name}': '{getattr(self, attribute_name)}'.\n{exc}"
+            raise DataSafeHavenConfigError(msg) from exc
 
 
 class ConfigSection(Validator):
@@ -160,28 +172,33 @@ class ConfigSectionSHM(ConfigSection):
         logger.info(
             f"[bold]AzureAD tenant ID[/] will be [green]{self.aad_tenant_id}[/]."
         )
+        self.validate_attribute("aad_tenant_id")
         # Set admin email address
         if admin_email_address:
             self.admin_email_address = admin_email_address
         logger.info(
             f"[bold]Admin email address[/] will be [green]{self.admin_email_address}[/]."
         )
+        self.validate_attribute("admin_email_address")
         # Set admin IP addresses
         if admin_ip_addresses:
             self.admin_ip_addresses = admin_ip_addresses
         logger.info(
             f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
         )
+        self.validate_attribute("admin_ip_addresses")
         # Set fully-qualified domain name
         if fqdn:
             self.fqdn = fqdn
         logger.info(
             f"[bold]Fully-qualified domain name[/] will be [green]{self.fqdn}[/]."
         )
+        self.validate_attribute("fqdn")
         # Set timezone
         if timezone:
             self.timezone = timezone
         logger.info(f"[bold]Timezone[/] will be [green]{self.timezone}[/].")
+        self.validate_attribute("timezone")
 
 
 @dataclass
@@ -232,7 +249,11 @@ class ConfigSectionSRE(ConfigSection):
         "data_provider_ip_addresses": partial(
             validate_list, validator=validate_ip_address
         ),
-        "databases": lambda pkg: isinstance(pkg, DatabaseSystem),
+        "databases": partial(
+            validate_list,
+            validator=lambda pkg: isinstance(pkg, DatabaseSystem),
+            allow_empty=True,
+        ),
         "index": lambda idx: isinstance(idx, int) and idx >= 0,
         "remote_desktop": lambda dsktop: dsktop.validate(),
         "workspace_skus": partial(validate_list, validator=validate_azure_vm_sku),
@@ -271,6 +292,7 @@ class ConfigSectionSRE(ConfigSection):
         logger.info(
             f"[bold]IP addresses used by data providers[/] will be [green]{self.data_provider_ip_addresses}[/]."
         )
+        self.validate_attribute("data_provider_ip_addresses")
         # Set which databases to deploy
         if databases:
             self.databases = sorted(set(databases))
@@ -279,24 +301,29 @@ class ConfigSectionSRE(ConfigSection):
         logger.info(
             f"[bold]Databases available to users[/] will be [green]{[database.value for database in self.databases]}[/]."
         )
+        self.validate_attribute("databases")
         # Pass allow_copy and allow_paste to remote desktop
         self.remote_desktop.update(allow_copy=allow_copy, allow_paste=allow_paste)
+        self.validate_attribute("remote_desktop")
         # Set research desktop SKUs
         if workspace_skus:
             self.workspace_skus = workspace_skus
         logger.info(f"[bold]Workspace SKUs[/] will be [green]{self.workspace_skus}[/].")
+        self.validate_attribute("remote_desktop")
         # Select which software packages can be installed by users
         if software_packages:
             self.software_packages = software_packages
         logger.info(
             f"[bold]Software packages[/] from [green]{self.software_packages.value}[/] sources will be installable."
         )
+        self.validate_attribute("software_packages")
         # Set user IP addresses
         if user_ip_addresses:
             self.research_user_ip_addresses = user_ip_addresses
         logger.info(
             f"[bold]IP addresses used by users[/] will be [green]{self.research_user_ip_addresses}[/]."
         )
+        self.validate_attribute("research_user_ip_addresses")
 
 
 @dataclass

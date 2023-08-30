@@ -55,10 +55,14 @@ def validate_ip_address(
 
 
 def validate_list(
-    value: list[Any], validator: Callable[[Any], Any] | None = None
+    value: list[Any],
+    validator: Callable[[Any], Any] | None = None,
+    *,
+    allow_empty: bool = False,
 ) -> list[Any]:
     try:
-        validate_non_empty_list(value)
+        if not allow_empty:
+            validate_non_empty_list(value)
         if validator:
             for element in value:
                 validator(element)

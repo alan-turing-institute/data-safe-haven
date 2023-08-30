@@ -17,7 +17,7 @@ def deploy_shm(
 ) -> None:
     """Deploy a Safe Haven Management component"""
     try:
-        # Load config file
+        # Load and validate config file
         config = Config()
         config.shm.update(
             aad_tenant_id=aad_tenant_id,
