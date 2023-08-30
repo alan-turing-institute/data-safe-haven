@@ -247,8 +247,9 @@ class PulumiStack:
                 f"Previewing changes for stack [green]{self.stack.name}[/]."
             )
             with suppress(automation.CommandError):
+                # Note that we disable parallelisation which can cause deadlock
                 self.stack.preview(
-                    color="always", diff=True, on_output=self.logger.info
+                    color="always", parallel=1, diff=True, on_output=self.logger.info
                 )
         except Exception as exc:
             msg = f"Pulumi preview failed.\n{exc}."
