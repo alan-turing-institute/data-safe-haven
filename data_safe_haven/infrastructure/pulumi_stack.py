@@ -139,6 +139,7 @@ class PulumiStack:
                     if any(
                         error in str(exc)
                         for error in (
+                            "Linked Service is used by a solution",
                             "NetworkProfileAlreadyInUseWithContainerNics",
                             "InUseSubnetCannotBeDeleted",
                         )
