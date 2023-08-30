@@ -4,7 +4,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenError,
 )
 from data_safe_haven.external import GraphApi
-from data_safe_haven.functions import alphanumeric, password
+from data_safe_haven.functions import alphanumeric, bcrypt_salt, password
 from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.pulumi import PulumiSHMStack, PulumiSREStack
 from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
@@ -141,6 +141,7 @@ def deploy_sre(
         # Add necessary secrets
         stack.copy_secret("password-domain-ldap-searcher", shm_stack)
         stack.add_secret("password-database-service-admin", password(20), replace=False)
+        stack.add_secret("password-dns-server-admin", password(20), replace=False)
         stack.add_secret("password-gitea-database-admin", password(20), replace=False)
         stack.add_secret(
             "password-hedgedoc-database-admin", password(20), replace=False
@@ -148,6 +149,7 @@ def deploy_sre(
         stack.add_secret("password-nexus-admin", password(20), replace=False)
         stack.add_secret("password-user-database-admin", password(20), replace=False)
         stack.add_secret("password-workspace-admin", password(20), replace=False)
+        stack.add_secret("salt-dns-server-admin", bcrypt_salt(), replace=False)
         stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
 
         # Deploy Azure infrastructure with Pulumi

@@ -4,6 +4,16 @@ from typing import Any
 import pytz
 
 
+def allowed_dns_lookups() -> list[str]:
+    dns_lookups = {
+        "clamav": ["clamav.net", "database.clamav.net.cdn.cloudflare.net"],
+        "oauth": ["login.microsoftonline.com"],
+        "private_dns": ordered_private_dns_zones(),
+        "ubuntu_setup": ["keyserver.ubuntu.com"],
+    }
+    return sorted({zone for zones in dns_lookups.values() for zone in zones})
+
+
 def as_dict(container: Any) -> dict[str, Any]:
     if (
         not isinstance(container, dict)
@@ -24,7 +34,6 @@ def ordered_private_dns_zones(resource_type: str | None = None) -> list[str]:
         "Azure Automation": ["azure-automation.net"],
         "Azure Monitor": [
             "agentsvc.azure-automation.net",
-            # "applicationinsights.azure.com", # not currently used
             "blob.core.windows.net",
             "monitor.azure.com",
             "ods.opinsights.azure.com",

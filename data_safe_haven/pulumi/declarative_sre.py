@@ -9,6 +9,7 @@ from .components.sre_application_gateway import (
 )
 from .components.sre_backup import SREBackupComponent, SREBackupProps
 from .components.sre_data import SREDataComponent, SREDataProps
+from .components.sre_dns_server import SREDnsServerComponent, SREDnsServerProps
 from .components.sre_monitoring import SREMonitoringComponent, SREMonitoringProps
 from .components.sre_networking import SRENetworkingComponent, SRENetworkingProps
 from .components.sre_remote_desktop import (
@@ -55,11 +56,30 @@ class DeclarativeSRE:
         )
         ldap_user_security_group_name = f"Data Safe Haven SRE {self.sre_name} Users"
 
+        # Deploy SRE DNS server
+        dns = SREDnsServerComponent(
+            "sre_dns_server",
+            self.stack_name,
+            SREDnsServerProps(
+                admin_password=self.pulumi_opts.require("password-dns-server-admin"),
+                admin_password_salt=self.pulumi_opts.require("salt-dns-server-admin"),
+                location=self.cfg.azure.location,
+                shm_fqdn=self.cfg.shm.fqdn,
+                shm_networking_resource_group_name=self.pulumi_opts.require(
+                    "shm-networking-resource_group_name"
+                ),
+                sre_index=self.cfg.sres[self.sre_name].index,
+            ),
+        )
+
         # Deploy networking
         networking = SRENetworkingComponent(
             "sre_networking",
             self.stack_name,
             SRENetworkingProps(
+                dns_resource_group_name=dns.resource_group.name,
+                dns_server_ip=dns.ip_address,
+                dns_virtual_network=dns.virtual_network,
                 firewall_ip_address=self.pulumi_opts.require(
                     "shm-firewall-private-ip-address"
                 ),
@@ -159,6 +179,7 @@ class DeclarativeSRE:
                 allow_copy=self.cfg.sres[self.sre_name].remote_desktop.allow_copy,
                 allow_paste=self.cfg.sres[self.sre_name].remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
+                dns_server_ip=dns.ip_address,
                 ldap_bind_dn=ldap_bind_dn,
                 ldap_group_search_base=ldap_group_search_base,
                 ldap_search_password=ldap_search_password,
@@ -220,6 +241,8 @@ class DeclarativeSRE:
             SREUserServicesProps(
                 database_service_admin_password=data.password_database_service_admin,
                 databases=self.cfg.sres[self.sre_name].databases,
+                dns_resource_group_name=dns.resource_group.name,
+                dns_server_ip=dns.ip_address,
                 domain_netbios_name=self.pulumi_opts.require(
                     "shm-domain_controllers-netbios_name"
                 ),

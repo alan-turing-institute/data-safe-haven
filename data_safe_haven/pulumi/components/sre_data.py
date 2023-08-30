@@ -72,6 +72,9 @@ class SREDataProps:
         self.password_database_service_admin = self.get_secret(
             pulumi_opts, "password-database-service-admin"
         )
+        self.password_dns_server_admin = self.get_secret(
+            pulumi_opts, "password-dns-server-admin"
+        )
         self.password_gitea_database_admin = self.get_secret(
             pulumi_opts, "password-gitea-database-admin"
         )
@@ -253,6 +256,16 @@ class SREDataComponent(ComponentResource):
             ),
             resource_group_name=resource_group.name,
             secret_name="password-database-service-admin",
+            vault_name=key_vault.name,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+        )
+        keyvault.Secret(
+            f"{self._name}_kvs_password_dns_server_admin",
+            properties=keyvault.SecretPropertiesArgs(
+                value=props.password_dns_server_admin
+            ),
+            resource_group_name=resource_group.name,
+            secret_name="password-dns-server-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
@@ -693,6 +706,7 @@ class SREDataComponent(ComponentResource):
         self.password_database_service_admin = Output.secret(
             props.password_database_service_admin
         )
+        self.password_dns_server_admin = Output.secret(props.password_dns_server_admin)
         self.password_gitea_database_admin = Output.secret(
             props.password_gitea_database_admin
         )

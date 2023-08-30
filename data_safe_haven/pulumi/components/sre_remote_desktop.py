@@ -38,6 +38,7 @@ class SRERemoteDesktopProps:
         allow_copy: Input[bool],
         allow_paste: Input[bool],
         database_password: Input[str],
+        dns_server_ip: Input[str],
         ldap_bind_dn: Input[str],
         ldap_group_search_base: Input[str],
         ldap_search_password: Input[str],
@@ -64,6 +65,7 @@ class SRERemoteDesktopProps:
         )
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
+        self.dns_server_ip = dns_server_ip
         self.ldap_bind_dn = ldap_bind_dn
         self.ldap_group_search_base = ldap_group_search_base
         self.ldap_search_password = ldap_search_password
@@ -434,6 +436,9 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ),
                 ),
             ],
+            dns_config=containerinstance.DnsConfigurationArgs(
+                name_servers=[props.dns_server_ip],
+            ),
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(

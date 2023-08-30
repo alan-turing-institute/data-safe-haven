@@ -2,9 +2,14 @@
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-# from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import alphanumeric, ordered_private_dns_zones
-from data_safe_haven.pulumi.common import NetworkingPriorities, SRESubnetRanges
+from data_safe_haven.pulumi.common import (
+    NetworkingPriorities,
+    SREDnsIpRanges,
+    SREIpRanges,
+    get_id_from_vnet,
+    get_name_from_vnet,
+)
 
 
 class SRENetworkingProps:
@@ -12,6 +17,9 @@ class SRENetworkingProps:
 
     def __init__(
         self,
+        dns_resource_group_name: Input[str],
+        dns_server_ip: Input[str],
+        dns_virtual_network: Input[network.VirtualNetwork],
         firewall_ip_address: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
@@ -26,9 +34,8 @@ class SRENetworkingProps:
         user_public_ip_ranges: Input[list[str]],
     ) -> None:
         # Virtual network and subnet IP ranges
-        subnet_ranges = Output.from_input(sre_index).apply(
-            lambda idx: SRESubnetRanges(idx)
-        )
+        subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
+        self.dns_servers_iprange = SREDnsIpRanges().vnet
         self.vnet_iprange = subnet_ranges.apply(lambda s: s.vnet)
         self.subnet_application_gateway_iprange = subnet_ranges.apply(
             lambda s: s.application_gateway
@@ -57,6 +64,14 @@ class SRENetworkingProps:
         )
         self.subnet_workspaces_iprange = subnet_ranges.apply(lambda s: s.workspaces)
         # Other variables
+        self.dns_resource_group_name = dns_resource_group_name
+        self.dns_virtual_network_id = Output.from_input(dns_virtual_network).apply(
+            get_id_from_vnet
+        )
+        self.dns_virtual_network_name = Output.from_input(dns_virtual_network).apply(
+            get_name_from_vnet
+        )
+        self.dns_server_ip = dns_server_ip
         self.firewall_ip_address = firewall_ip_address
         self.location = location
         self.user_public_ip_ranges = user_public_ip_ranges
@@ -109,6 +124,7 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Set address prefixes from ranges
+        dns_servers_prefix = str(props.dns_servers_iprange)
         subnet_application_gateway_prefix = (
             props.subnet_application_gateway_iprange.apply(lambda r: str(r))
         )
@@ -214,6 +230,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_application_gateway_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to the Guacamole remote desktop gateway.",
                     destination_address_prefix=subnet_guacamole_containers_prefix,
                     destination_port_ranges=["80"],
@@ -298,6 +326,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
                     destination_address_prefix="*",
                     destination_port_range="*",
@@ -344,6 +384,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
                     destination_address_prefix="*",
                     destination_port_range="*",
@@ -388,6 +440,30 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over TCP.",
@@ -496,6 +572,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
                     destination_address_prefix="*",
                     destination_port_range="*",
@@ -540,6 +628,30 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over TCP.",
@@ -624,6 +736,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Outbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
                     destination_address_prefix="*",
                     destination_port_range="*",
@@ -668,6 +792,30 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_databases_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
@@ -726,6 +874,30 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_software_repositories_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
@@ -797,6 +969,18 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Outbound
                 network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description=(
                         "Allow LDAP client requests over TCP. "
@@ -844,6 +1028,18 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowLinuxUpdatesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SHM_UPDATE_SERVERS,
                     protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=["53"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
@@ -943,8 +1139,10 @@ class SRENetworkingComponent(ComponentResource):
             address_space=network.AddressSpaceArgs(
                 address_prefixes=[props.vnet_iprange.apply(lambda r: str(r))],
             ),
+            dhcp_options=network.DhcpOptionsArgs(dns_servers=[props.dns_server_ip]),
             resource_group_name=resource_group.name,
-            subnets=[  # Note that we define subnets inline to avoid creation order issues
+            # Note that we define subnets inline to avoid creation order issues
+            subnets=[
                 # Application gateway subnet
                 network.SubnetArgs(
                     address_prefix=subnet_application_gateway_prefix,
@@ -1080,7 +1278,7 @@ class SRENetworkingComponent(ComponentResource):
             ),
         )
 
-        # Peer the SHM virtual network to the SRE virtual network
+        # Peer the SRE virtual network to the SHM virtual network
         shm_virtual_network = Output.all(
             resource_group_name=props.shm_networking_resource_group_name,
             virtual_network_name=props.shm_virtual_network_name,
@@ -1116,22 +1314,33 @@ class SRENetworkingComponent(ComponentResource):
             ),
         )
 
-        # Link to SHM private DNS zones
-        for private_link_domain in ordered_private_dns_zones():
-            network.VirtualNetworkLink(
-                f"{self._name}_private_zone_{private_link_domain}_vnet_link",
-                location="Global",
-                private_zone_name=f"privatelink.{private_link_domain}",
-                registration_enabled=False,
-                resource_group_name=props.shm_networking_resource_group_name,
-                virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
-                virtual_network_link_name=Output.concat(
-                    "link-to-", sre_virtual_network.name
-                ),
-                opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=sre_virtual_network)
-                ),
-            )
+        # Peer the SRE virtual network to the DNS virtual network
+        network.VirtualNetworkPeering(
+            f"{self._name}_sre_to_dns_peering",
+            remote_virtual_network=network.SubResourceArgs(
+                id=props.dns_virtual_network_id
+            ),
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+            virtual_network_peering_name=Output.concat(
+                "peer_sre_", props.sre_name, "_to_dns"
+            ),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_virtual_network)
+            ),
+        )
+        network.VirtualNetworkPeering(
+            f"{self._name}_dns_to_sre_peering",
+            remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
+            resource_group_name=props.dns_resource_group_name,
+            virtual_network_name=props.dns_virtual_network_name,
+            virtual_network_peering_name=Output.concat(
+                "peer_dns_to_sre_", props.sre_name
+            ),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=sre_virtual_network)
+            ),
+        )
 
         # Define SRE DNS zone
         shm_dns_zone = Output.all(
@@ -1193,7 +1402,7 @@ class SRENetworkingComponent(ComponentResource):
             f"{self._name}_private_zone",
             location="Global",
             private_zone_name=Output.concat("privatelink.", sre_fqdn),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.dns_resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=sre_dns_zone)
             ),
@@ -1203,15 +1412,36 @@ class SRENetworkingComponent(ComponentResource):
             location="Global",
             private_zone_name=sre_private_dns_zone.name,
             registration_enabled=False,
-            resource_group_name=resource_group.name,
-            virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
+            resource_group_name=props.dns_resource_group_name,
+            virtual_network=network.SubResourceArgs(id=props.dns_virtual_network_id),
             virtual_network_link_name=Output.concat(
-                "link-to-", sre_virtual_network.name
+                "link-to-", props.dns_virtual_network_name
             ),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=sre_virtual_network)
+                child_opts, ResourceOptions(parent=sre_private_dns_zone)
             ),
         )
+
+        # Link virtual network to SHM private DNS zones
+        # Note that although the DNS virtual network is already linked to these, Azure
+        # Container Instances do not have an IP address during deployment and so must
+        # use default Azure DNS when setting up file mounts. This means that we need to
+        # be able to resolve the "Storage Account" private DNS zones.
+        for private_link_domain in ordered_private_dns_zones("Storage account"):
+            network.VirtualNetworkLink(
+                f"{self._name}_private_zone_{private_link_domain}_vnet_link",
+                location="Global",
+                private_zone_name=f"privatelink.{private_link_domain}",
+                registration_enabled=False,
+                resource_group_name=props.shm_networking_resource_group_name,
+                virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
+                virtual_network_link_name=Output.concat(
+                    "link-to-", sre_virtual_network.name
+                ),
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=sre_virtual_network)
+                ),
+            )
 
         # Register outputs
         self.resource_group = resource_group

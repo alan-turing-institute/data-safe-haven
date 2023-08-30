@@ -1,8 +1,15 @@
-from .miscellaneous import as_dict, ordered_private_dns_zones, time_as_string
+from .miscellaneous import (
+    allowed_dns_lookups,
+    as_dict,
+    ordered_private_dns_zones,
+    time_as_string,
+)
 from .strings import (
     alphanumeric,
     b64decode,
     b64encode,
+    bcrypt_encode,
+    bcrypt_salt,
     hex_string,
     password,
     random_letters,
@@ -26,10 +33,13 @@ from .validators import (
 )
 
 __all__ = [
+    "allowed_dns_lookups",
     "alphanumeric",
     "as_dict",
     "b64decode",
     "b64encode",
+    "bcrypt_encode",
+    "bcrypt_salt",
     "hex_string",
     "ordered_private_dns_zones",
     "password",
