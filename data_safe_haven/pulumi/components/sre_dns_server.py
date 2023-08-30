@@ -25,6 +25,7 @@ class SREDnsServerProps:
     def __init__(
         self,
         admin_password: Input[str],
+        admin_password_salt: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
@@ -32,6 +33,7 @@ class SREDnsServerProps:
     ) -> None:
         subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
         self.admin_password = Output.secret(admin_password)
+        self.admin_password_salt = Output.secret(admin_password_salt)
         self.admin_username = ("dshadmin",)
         self.ip_range_prefix = str(SREDnsIpRanges().vnet)
         self.location = location
@@ -73,9 +75,9 @@ class SREDnsServerComponent(ComponentResource):
         # Expand AdGuardHome YAML configuration
         adguard_adguardhome_yaml_contents = Output.all(
             admin_username=props.admin_username,
-            admin_password_encrypted=props.admin_password.apply(
-                lambda passwd: bcrypt_encode(passwd, stack_name)
-            ),
+            admin_password_encrypted=Output.all(
+                password=props.admin_password, salt=props.admin_password_salt
+            ).apply(lambda kwargs: bcrypt_encode(kwargs["password"], kwargs["salt"])),
             # Use Azure virtual DNS server as upstream
             # https://learn.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
             # This server is aware of private DNS zones

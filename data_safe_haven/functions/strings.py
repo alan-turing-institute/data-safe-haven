@@ -26,19 +26,22 @@ def b64encode(input_string: str) -> str:
     return base64.b64encode(input_string.encode("utf-8")).decode()
 
 
-def bcrypt_encode(input_string: str, salt_generator: str) -> str:
+def bcrypt_encode(input_string: str, salt: str) -> str:
     """
     Use bcrypt to encrypt an input string.
     See https://en.wikipedia.org/wiki/Bcrypt#Description for structure.
     """
-    # We must use between 4 and 31 hashing rounds
-    rounds = 4 + len(salt_generator) % 28
-    # bcrypt uses a different Base64 algorithm. UUID will give us a 16 byte salt.
-    salt = bcrypt._bcrypt.encode_base64(seeded_uuid(salt_generator).bytes)
-    # This string is $algorithm$cost$salt
-    prefix_bytes = b"$".join([b"", b"2b", f"{rounds:02d}".encode(), salt])
-    encrypted_bytes = bcrypt.hashpw(input_string.encode("utf-8"), prefix_bytes)
+    encrypted_bytes = bcrypt.hashpw(input_string.encode(), salt.encode())
     return encrypted_bytes.decode(encoding="utf-8")
+
+
+def bcrypt_salt() -> str:
+    """Generate a bcrypt salt as a string.
+
+    Returns:
+      $algorithm$cost$salt: str
+    """
+    return bcrypt.gensalt().decode()
 
 
 def hex_string(length: int) -> str:
