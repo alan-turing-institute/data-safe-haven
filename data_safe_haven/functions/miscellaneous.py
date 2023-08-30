@@ -6,9 +6,9 @@ import pytz
 
 def allowed_dns_lookups() -> list[str]:
     dns_lookups = {
-        "clamav": ["*.clamav.net", "database.clamav.net.cdn.cloudflare.net"],
+        "clamav": ["clamav.net", "database.clamav.net.cdn.cloudflare.net"],
         "oauth": ["login.microsoftonline.com"],
-        "private_dns": [f"*.{zone_name}" for zone_name in ordered_private_dns_zones()],
+        "private_dns": ordered_private_dns_zones(),
         "ubuntu_setup": ["keyserver.ubuntu.com"],
     }
     return sorted({zone for zones in dns_lookups.values() for zone in zones})
