@@ -620,7 +620,7 @@ class SHMFirewallComponent(ComponentResource):
             else next(filter(lambda _: _, [cfg.private_ip_address for cfg in cfgs]))
         )
         network.Route(
-            f"{self._name}_via_firewall",
+            f"{self._name}_route_via_firewall",
             address_prefix="0.0.0.0/0",
             next_hop_ip_address=private_ip_address,
             next_hop_type=network.RouteNextHopType.VIRTUAL_APPLIANCE,
