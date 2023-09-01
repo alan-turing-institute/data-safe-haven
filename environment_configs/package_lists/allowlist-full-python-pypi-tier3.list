@@ -28,7 +28,6 @@ arviz
 asn1crypto
 astor
 astroid
-astropy
 asttokens
 astunparse
 async_generator
@@ -105,7 +104,6 @@ comm
 commonmark
 confection
 configparser
-confuse
 conllu
 cons
 constantly
@@ -248,7 +246,6 @@ ipaddress
 ipykernel
 ipython
 ipython_genutils
-ipywidgets
 isort
 itsdangerous
 Janome
@@ -280,7 +277,6 @@ jupyterlab
 jupyterlab-launcher
 jupyterlab-pygments
 jupyterlab-server
-jupyterlab-widgets
 keras
 Keras-Applications
 keras-nightly
@@ -458,7 +454,6 @@ pycurl
 pydantic
 pydantic-core
 pydot
-pyerfa
 pyflakes
 pyFUME
 Pygments
@@ -684,7 +679,6 @@ webencodings
 websocket-client
 Werkzeug
 wheel
-widgetsnbextension
 Wikipedia-API
 win_unicode_console
 win32-setctime
