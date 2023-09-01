@@ -1,4 +1,4 @@
-hash: 9bedd474cc4060b5167c0a3d8e644249a90594da9005c4909aca1cdec58840fc
+hash: 981fcbb30d5dea283188fcef1a9cdf177bb51b83884a63fd3c9c224d1486b01e
 version: 2023.06.2-561
 debfile: rstudio-|VERSION|-amd64.deb
 remote: https://download1.rstudio.org/electron/focal/amd64/|DEBFILE|
