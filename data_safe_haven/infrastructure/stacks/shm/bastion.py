@@ -56,6 +56,7 @@ class SHMBastionComponent(ComponentResource):
                 )
             ],
             resource_group_name=props.resource_group_name,
+            opts=child_opts,
         )
 
         # Register outputs
