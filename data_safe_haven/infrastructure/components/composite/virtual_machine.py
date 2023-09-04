@@ -130,6 +130,7 @@ class VMComponent(ComponentResource):
     ):
         super().__init__("dsh:common:VMComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        name_underscored = replace_separators(self._name, "_")
 
         # Retrieve existing resources
         subnet = network.get_subnet_output(
@@ -142,7 +143,7 @@ class VMComponent(ComponentResource):
         network_interface_ip_params: dict[str, Any] = {}
         if props.ip_address_public:
             public_ip = network.PublicIPAddress(
-                f"{self._name}_public_ip",
+                f"{name_underscored}_public_ip",
                 public_ip_address_name=Output.concat(props.vm_name, "-public-ip"),
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,
@@ -157,7 +158,7 @@ class VMComponent(ComponentResource):
 
         # Define network card
         network_interface = network.NetworkInterface(
-            f"{self._name}_network_interface",
+            f"{name_underscored}_network_interface",
             enable_accelerated_networking=True,
             ip_configurations=[
                 network.NetworkInterfaceIPConfigurationArgs(
@@ -177,7 +178,7 @@ class VMComponent(ComponentResource):
 
         # Define virtual machine
         virtual_machine = compute.VirtualMachine(
-            replace_separators(self._name, "_"),
+            name_underscored,
             diagnostics_profile=compute.DiagnosticsProfileArgs(
                 boot_diagnostics=compute.BootDiagnosticsArgs(enabled=True)
             ),
@@ -219,7 +220,7 @@ class VMComponent(ComponentResource):
         # Register with Log Analytics workspace
         if props.log_analytics_workspace_key and props.log_analytics_workspace_id:
             compute.VirtualMachineExtension(
-                replace_separators(f"{self._name}_log_analytics_extension", "_"),
+                f"{name_underscored}_log_analytics_extension",
                 auto_upgrade_minor_version=True,
                 enable_automatic_upgrade=False,
                 location=props.location,
