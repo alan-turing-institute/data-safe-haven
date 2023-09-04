@@ -110,14 +110,14 @@ class AutomationDscNode(ComponentResource):
             resource_group_name=props.vm_resource_group_name,
             settings={
                 "configurationArguments": {
-                    "RegistrationUrl": props.automation_account_registration_url,
-                    "ConfigurationMode": "ApplyAndMonitor",
-                    "RebootNodeIfNeeded": True,
                     "ActionAfterReboot": "ContinueConfiguration",
-                    "ConfigurationModeFrequencyMins": 15,
-                    "RefreshFrequencyMins": 30,
                     "AllowModuleOverwrite": False,
+                    "ConfigurationMode": "ApplyAndMonitor",
+                    "ConfigurationModeFrequencyMins": 15,
                     "NodeConfigurationName": f"{props.configuration_name}.localhost",
+                    "RebootNodeIfNeeded": True,
+                    "RefreshFrequencyMins": 30,
+                    "RegistrationUrl": props.automation_account_registration_url,
                 }
             },
             protected_settings={
