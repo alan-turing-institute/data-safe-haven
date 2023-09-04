@@ -2,7 +2,7 @@
 from collections.abc import Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network, resources
+from pulumi_azure_native import automation, network, resources
 
 from data_safe_haven.infrastructure.common import get_name_from_subnet
 from data_safe_haven.infrastructure.components import (
@@ -23,7 +23,7 @@ class SHMDomainControllersProps:
     def __init__(
         self,
         automation_account_modules: Input[Sequence[str]],
-        automation_account_name: Input[str],
+        automation_account: Input[automation.AutomationAccount],
         automation_account_registration_key: Input[str],
         automation_account_registration_url: Input[str],
         automation_account_resource_group_name: Input[str],
@@ -42,8 +42,11 @@ class SHMDomainControllersProps:
         virtual_network_name: Input[str],
         virtual_network_resource_group_name: Input[str],
     ) -> None:
+        self.automation_account = automation_account
         self.automation_account_modules = automation_account_modules
-        self.automation_account_name = automation_account_name
+        self.automation_account_name = Output.from_input(automation_account).apply(
+            lambda account: account.name
+        )
         self.automation_account_registration_url = automation_account_registration_url
         self.automation_account_registration_key = automation_account_registration_key
         self.automation_account_resource_group_name = (
@@ -98,9 +101,9 @@ class SHMDomainControllersComponent(ComponentResource):
             opts=child_opts,
         )
 
-        # Create the DC
-        # We use the domain admin credentials here as the VM admin is promoted
-        # to domain admin when setting up the domain
+        # Create the Domain Controller
+        # We use the domain admin credentials here as the VM admin is promoted to a
+        # domain admin when setting up the domain
         primary_domain_controller = VMComponent(
             f"{self._name}_primary_domain_controller",
             WindowsVMComponentProps(
@@ -159,7 +162,7 @@ class SHMDomainControllersComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
-                    depends_on=[primary_domain_controller],
+                    depends_on=[props.automation_account, primary_domain_controller],
                     parent=primary_domain_controller,
                 ),
             ),
@@ -186,7 +189,7 @@ class SHMDomainControllersComponent(ComponentResource):
                         primary_domain_controller,
                         primary_domain_controller_dsc_node,
                     ],
-                    parent=primary_domain_controller,
+                    parent=primary_domain_controller_dsc_node,
                 ),
             ),
         )

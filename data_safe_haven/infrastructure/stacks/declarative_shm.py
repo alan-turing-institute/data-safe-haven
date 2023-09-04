@@ -116,8 +116,8 @@ class DeclarativeSHM:
             "shm_domain_controllers",
             self.stack_name,
             SHMDomainControllersProps(
+                automation_account=monitoring.automation_account,
                 automation_account_modules=monitoring.automation_account_modules,
-                automation_account_name=monitoring.automation_account.name,
                 automation_account_registration_key=monitoring.automation_account_primary_key,
                 automation_account_registration_url=monitoring.automation_account_agentsvc_url,
                 automation_account_resource_group_name=monitoring.resource_group_name,
