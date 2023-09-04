@@ -165,7 +165,7 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
         This function is designed to handle messages from non-Python code inside this package.
         """
         tokens = message.split(":")
-        level, remainder = tokens[0], ":".join(tokens[1:]).strip()
+        level, remainder = tokens[0].upper(), ":".join(tokens[1:]).strip()
         if level == "CRITICAL":
             return self.critical(remainder)
         elif level == "ERROR":

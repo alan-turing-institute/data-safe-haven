@@ -1,4 +1,5 @@
 """Deploy with Pulumi"""
+import logging
 import os
 import pathlib
 import shutil
@@ -131,7 +132,10 @@ class PulumiStack:
             while True:
                 try:
                     result = self.stack.destroy(
-                        color="always", on_output=self.logger.info, parallel=1
+                        color="always",
+                        parallel=1,
+                        on_output=self.logger.info,
+                        debug=self.logger.isEnabledFor(logging.DEBUG),
                     )
                     self.evaluate(result.summary.result)
                     break
@@ -249,7 +253,11 @@ class PulumiStack:
             with suppress(automation.CommandError):
                 # Note that we disable parallelisation which can cause deadlock
                 self.stack.preview(
-                    color="always", parallel=1, diff=True, on_output=self.logger.info
+                    color="always",
+                    parallel=1,
+                    diff=True,
+                    on_output=self.logger.info,
+                    debug=self.logger.isEnabledFor(logging.DEBUG),
                 )
         except Exception as exc:
             msg = f"Pulumi preview failed.\n{exc}."
@@ -304,7 +312,11 @@ class PulumiStack:
         """Update deployed infrastructure."""
         try:
             self.logger.info(f"Applying changes to stack [green]{self.stack.name}[/].")
-            result = self.stack.up(color="always", on_output=self.logger.info)
+            result = self.stack.up(
+                color="always",
+                on_output=self.logger.info,
+                debug=self.logger.isEnabledFor(logging.DEBUG),
+            )
             self.evaluate(result.summary.result)
         except automation.CommandError as exc:
             msg = f"Pulumi update failed.\n{exc}"
