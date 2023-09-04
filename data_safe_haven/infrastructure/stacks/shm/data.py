@@ -225,7 +225,7 @@ class SHMDataComponent(ComponentResource):
         )
         # Deploy staging container for holding any data that does not have an SRE
         storage.BlobContainer(
-            f"{self._name}_st_data_staging",
+            f"{storage_account_persistent_data._name}_blob_staging",
             account_name=storage_account_persistent_data.name,
             container_name=replace_separators(f"{stack_name}-staging", "-")[:63],
             default_encryption_scope="$account-encryption-key",

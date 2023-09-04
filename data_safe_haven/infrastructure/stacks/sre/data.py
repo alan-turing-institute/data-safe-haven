@@ -360,7 +360,7 @@ class SREDataComponent(ComponentResource):
         )
         # Set up a private endpoint for the configuration data storage account
         storage_account_data_configuration_private_endpoint = network.PrivateEndpoint(
-            f"{self._name}_storage_account_data_configuration_private_endpoint",
+            f"{storage_account_data_configuration._name}_private_endpoint",
             location=props.location,
             private_endpoint_name=f"{stack_name}-pep-storage-account-data-configuration",
             private_link_service_connections=[
@@ -378,7 +378,7 @@ class SREDataComponent(ComponentResource):
         )
         # Add a private DNS record for each configuration data endpoint custom DNS config
         network.PrivateDnsZoneGroup(
-            f"{self._name}_storage_account_data_configuration_private_dns_zone_group",
+            f"{storage_account_data_configuration._name}_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
                     name=replace_separators(
@@ -471,7 +471,7 @@ class SREDataComponent(ComponentResource):
         )
         # Deploy storage containers
         storage_container_egress = storage.BlobContainer(
-            f"{self._name}_storage_container_egress",
+            f"{self._name}_blob_egress",
             account_name=storage_account_data_private_sensitive.name,
             container_name="egress",
             default_encryption_scope="$account-encryption-key",
@@ -484,7 +484,7 @@ class SREDataComponent(ComponentResource):
             ),
         )
         storage_container_ingress = storage.BlobContainer(
-            f"{self._name}_storage_container_ingress",
+            f"{self._name}_blob_ingress",
             account_name=storage_account_data_private_sensitive.name,
             container_name="ingress",
             default_encryption_scope="$account-encryption-key",
@@ -498,7 +498,7 @@ class SREDataComponent(ComponentResource):
         )
         # Set storage container ACLs
         BlobContainerAcl(
-            f"{self._name}_storage_container_egress_acl",
+            f"{storage_container_egress._name}_acl",
             BlobContainerAclProps(
                 acl_user="rwx",
                 acl_group="rwx",
@@ -517,7 +517,7 @@ class SREDataComponent(ComponentResource):
             ),
         )
         BlobContainerAcl(
-            f"{self._name}_storage_container_ingress_acl",
+            f"{storage_container_ingress._name}_acl",
             BlobContainerAclProps(
                 acl_user="rwx",
                 acl_group="r-x",
@@ -536,7 +536,7 @@ class SREDataComponent(ComponentResource):
         )
         # Set up a private endpoint for the sensitive data storage account
         storage_account_data_private_sensitive_endpoint = network.PrivateEndpoint(
-            f"{self._name}_storage_account_data_private_sensitive_private_endpoint",
+            f"{storage_account_data_private_sensitive._name}_private_endpoint",
             location=props.location,
             private_endpoint_name=f"{stack_name}-pep-storage-account-data-private-sensitive",
             private_link_service_connections=[
@@ -555,7 +555,7 @@ class SREDataComponent(ComponentResource):
         )
         # Add a private DNS record for each sensitive data endpoint custom DNS config
         network.PrivateDnsZoneGroup(
-            f"{self._name}_storage_account_data_private_sensitive_private_dns_zone_group",
+            f"{storage_account_data_private_sensitive._name}_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
                     name=replace_separators(
@@ -613,7 +613,7 @@ class SREDataComponent(ComponentResource):
             opts=child_opts,
         )
         storage.FileShare(
-            f"{self._name}_storage_container_home",
+            f"{storage_account_data_private_user._name}_files_home",
             access_tier=storage.ShareAccessTier.PREMIUM,
             account_name=storage_account_data_private_user.name,
             enabled_protocols=storage.EnabledProtocols.NFS,
@@ -627,7 +627,7 @@ class SREDataComponent(ComponentResource):
             ),
         )
         storage.FileShare(
-            f"{self._name}_storage_container_shared",
+            f"{storage_account_data_private_user._name}_files_shared",
             access_tier=storage.ShareAccessTier.PREMIUM,
             account_name=storage_account_data_private_user.name,
             enabled_protocols=storage.EnabledProtocols.NFS,
@@ -641,7 +641,7 @@ class SREDataComponent(ComponentResource):
         )
         # Set up a private endpoint for the user data storage account
         storage_account_data_private_user_endpoint = network.PrivateEndpoint(
-            f"{self._name}_storage_account_data_private_user_private_endpoint",
+            f"{storage_account_data_private_user._name}_private_endpoint",
             location=props.location,
             private_endpoint_name=f"{stack_name}-pep-storage-account-data-private-user",
             private_link_service_connections=[
@@ -659,7 +659,7 @@ class SREDataComponent(ComponentResource):
         )
         # Add a private DNS record for each user data endpoint custom DNS config
         network.PrivateDnsZoneGroup(
-            f"{self._name}_storage_account_data_private_user_private_dns_zone_group",
+            f"{storage_account_data_private_user._name}_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
                     name=replace_separators(
