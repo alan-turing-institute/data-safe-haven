@@ -3,7 +3,7 @@
 # Deploy an SRE with Microsoft RDS
 
 ```{warning}
-Support for Microsoft Remote Desktop is deprecated. Deployment scripts and related documentation will be removed in version `4.1.0` of the Data Safe Haven.
+Support for Microsoft Remote Desktop is deprecated. Deployment scripts and related documentation will be removed in version `4.2.0` of the Data Safe Haven.
 ```
 
 These instructions will walk you through deploying a Secure Research Environment (SRE) that uses an existing Safe Haven Management (SHM) environment.
@@ -210,6 +210,10 @@ These certificates will **not** be trusted by your browser, and so should not be
 ```
 
 To complete the account setup, follow the instructions for password and MFA setup present in the {ref}`user guide <user_setup_password_mfa>`.
+
+```{warning}
+At present, only phone call identification works correctly with MS RDS. Do not attempt to use the Authenticator app. If you have both the Authenticator and phone call set up as authentication methods, select phone call as the default when intending to use the MS RDS interface.
+```
 
 ### {{nut_and_bolt}} Test the Microsoft RDS remote desktop
 

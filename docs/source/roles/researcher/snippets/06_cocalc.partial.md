@@ -1,5 +1,9 @@
 ## {{couple}} Collaborate on code using CoCalc
 
+```{warning}
+Support for `CoCalc` is deprecated. Deployment scripts and related documentation will be removed in version `4.2.0` of the Data Safe Haven.
+```
+
 `CoCalc` is a collaborative calculation and data science environment.
 It lets you work with others on projects, using `Jupyter`, `LaTeX`, `Octave`, `Python` or `R` in collaborative notebooks.
 

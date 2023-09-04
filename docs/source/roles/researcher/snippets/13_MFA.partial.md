@@ -147,6 +147,10 @@ This is known as multi-factor authentication (MFA).
 
 #### {{iphone}} Authenticator app registration
 
+```{warning}
+If the SRE you are using will use the Microsoft Remote Desktop interface, do not attempt to use the Authenticator app. At present, only phone call identification works correctly with MS RDS. If you have both the Authenticator and phone call set up as methods, select phone call as the default when intending to use the MS RDS interface.
+```
+
 - If you want to use the Microsoft Authenticator app for MFA (which will work if you have wifi but no phone signal) then click on `+ Add sign-in method` and select `Authenticator app`
 
   ```{image} user_guide/account_setup_mfa_add_authenticator_app.png
