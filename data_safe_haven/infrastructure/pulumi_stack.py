@@ -151,11 +151,17 @@ class PulumiStack:
                     ):
                         time.sleep(10)
                     else:
-                        raise
-            if self.stack_:
-                self.stack_.workspace.remove_stack(self.stack_name)
-        except automation.CommandError as exc:
-            msg = "Pulumi destroy failed."
+                        msg = f"Pulumi resource destruction failed.\n{exc}"
+                        raise DataSafeHavenPulumiError(msg) from exc
+            try:
+                if self.stack_:
+                    self.stack_.workspace.remove_stack(self.stack_name)
+            except automation.CommandError as exc:
+                if "no stack named" not in str(exc):
+                    msg = f"Pulumi stack could not be deleted.\n{exc}"
+                    raise DataSafeHavenPulumiError(msg) from exc
+        except DataSafeHavenPulumiError as exc:
+            msg = f"Pulumi destroy failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
     def ensure_config(self, name: str, value: str, *, secret: bool) -> None:
