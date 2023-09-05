@@ -116,14 +116,14 @@ class ConfigSectionBackend(ConfigSection):
 
 @dataclass
 class ConfigSectionPulumi(ConfigSection):
-    encryption_key_id: str = ""
     encryption_key_name: str = "pulumi-encryption-key"
+    encryption_key_version: str = ""
     stacks: dict[str, str] = field(default_factory=dict)
     storage_container_name: str = "pulumi"
 
     validation_functions = {  # noqa: RUF012
-        "encryption_key_id": validate_non_empty_string,
         "encryption_key_name": validate_non_empty_string,
+        "encryption_key_version": validate_non_empty_string,
         "stacks": lambda stacks: isinstance(stacks, dict),
         "storage_container_name": validate_non_empty_string,
     }

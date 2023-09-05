@@ -71,7 +71,7 @@ class PulumiStack:
                     stack_name=replace_separators(self.stack_name, "_"),
                     program=self.program.run,
                     opts=automation.LocalWorkspaceOptions(
-                        secrets_provider=f"azurekeyvault://{self.cfg.backend.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi.encryption_key_id}",
+                        secrets_provider=f"azurekeyvault://{self.cfg.backend.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi.encryption_key_version}",
                         work_dir=str(self.work_dir),
                         env_vars=self.env,
                     ),
@@ -225,6 +225,8 @@ class PulumiStack:
                     return
             # Otherwise log in to Pulumi
             try:
+                cmd_env = {**os.environ, **self.env}
+                self.logger.debug(f"Running command using environment {cmd_env}")
                 process = subprocess.run(
                     [
                         "pulumi",
@@ -235,7 +237,7 @@ class PulumiStack:
                     check=True,
                     cwd=self.work_dir,
                     encoding="UTF-8",
-                    env={**os.environ, **self.env},
+                    env=cmd_env,
                 )
                 self.logger.info(process.stdout)
             except (subprocess.CalledProcessError, FileNotFoundError) as exc:
