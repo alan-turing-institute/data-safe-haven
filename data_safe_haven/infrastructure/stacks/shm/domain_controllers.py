@@ -1,5 +1,5 @@
 """Pulumi component for SHM domain controllers"""
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, network, resources
@@ -89,9 +89,11 @@ class SHMDomainControllersComponent(ComponentResource):
         stack_name: str,
         props: SHMDomainControllersProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:shm:DomainControllersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -99,6 +101,7 @@ class SHMDomainControllersComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-identity",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Create the Domain Controller
@@ -122,6 +125,7 @@ class SHMDomainControllersComponent(ComponentResource):
                 vm_size="Standard_DS2_v2",
             ),
             opts=child_opts,
+            tags=child_tags,
         )
         # Register the primary domain controller for automated DSC
         dsc_configuration_name = "PrimaryDomainController"
@@ -166,6 +170,7 @@ class SHMDomainControllersComponent(ComponentResource):
                     parent=primary_domain_controller,
                 ),
             ),
+            tags=child_tags,
         )
         # Extract the domain SID
         domain_sid_script = FileReader(

@@ -1,4 +1,6 @@
 """Pulumi component for SHM monitoring"""
+from collections.abc import Mapping
+
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     automation,
@@ -46,9 +48,11 @@ class SHMMonitoringComponent(ComponentResource):
         stack_name: str,
         props: SHMMonitoringProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:shm:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -56,6 +60,7 @@ class SHMMonitoringComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-monitoring",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Deploy automation account
@@ -67,6 +72,7 @@ class SHMMonitoringComponent(ComponentResource):
             resource_group_name=resource_group.name,
             sku=automation.SkuArgs(name=automation.SkuNameEnum.FREE),
             opts=child_opts,
+            tags=child_tags,
         )
         automation_keys = Output.all(
             automation_account_name=automation_account.name,
@@ -110,6 +116,7 @@ class SHMMonitoringComponent(ComponentResource):
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=automation_account)
                 ),
+                tags=child_tags,
             )
 
         # Set up a private endpoint for the automation account
@@ -129,6 +136,7 @@ class SHMMonitoringComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=automation_account)
             ),
+            tags=child_tags,
         )
 
         # Add a private DNS record for each automation custom DNS config
@@ -162,6 +170,7 @@ class SHMMonitoringComponent(ComponentResource):
             ),
             workspace_name=f"{stack_name}-log",
             opts=child_opts,
+            tags=child_tags,
         )
         log_analytics_keys = Output.all(
             resource_group_name=resource_group.name, workspace_name=log_analytics.name
@@ -176,6 +185,7 @@ class SHMMonitoringComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=log_analytics)
             ),
+            tags=child_tags,
         )
         log_analytics_private_endpoint = network.PrivateEndpoint(
             f"{self._name}_log_analytics_private_endpoint",
@@ -193,6 +203,7 @@ class SHMMonitoringComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
             ),
+            tags=child_tags,
         )
         insights.PrivateLinkScopedResource(
             f"{self._name}_log_analytics_ampls_connection",
@@ -237,6 +248,7 @@ class SHMMonitoringComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=automation_account)
             ),
+            tags=child_tags,
         )
 
         # Deploy log analytics solutions
@@ -265,6 +277,7 @@ class SHMMonitoringComponent(ComponentResource):
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=log_analytics)
                 ),
+                tags=child_tags,
             )
 
         # Get the current subscription_resource_id for use in scheduling.

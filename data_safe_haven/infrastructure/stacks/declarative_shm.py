@@ -40,6 +40,7 @@ class DeclarativeSHM:
                     "verification-azuread-custom-domain"
                 ),
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy firewall and routing
@@ -56,6 +57,7 @@ class DeclarativeSHM:
                 subnet_identity_servers=networking.subnet_identity_servers,
                 subnet_update_servers=networking.subnet_update_servers,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy firewall and routing
@@ -67,6 +69,7 @@ class DeclarativeSHM:
                 resource_group_name=networking.resource_group_name,
                 subnet=networking.subnet_bastion,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy data storage
@@ -80,6 +83,7 @@ class DeclarativeSHM:
                 pulumi_opts=self.pulumi_opts,
                 tenant_id=self.cfg.azure.tenant_id,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy automated monitoring
@@ -93,6 +97,7 @@ class DeclarativeSHM:
                 subnet_monitoring=networking.subnet_monitoring,
                 timezone=self.cfg.shm.timezone,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy update servers
@@ -109,6 +114,7 @@ class DeclarativeSHM:
                 virtual_network_name=networking.virtual_network.name,
                 virtual_network_resource_group_name=networking.resource_group_name,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy domain controllers
@@ -136,6 +142,7 @@ class DeclarativeSHM:
                 virtual_network_name=networking.virtual_network.name,
                 virtual_network_resource_group_name=networking.resource_group_name,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Export values for later use

@@ -1,4 +1,6 @@
 """Pulumi component for SRE networking"""
+from collections.abc import Mapping
+
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
@@ -94,9 +96,11 @@ class SRENetworkingComponent(ComponentResource):
         stack_name: str,
         props: SRENetworkingProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -104,6 +108,7 @@ class SRENetworkingComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-networking",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define route table
@@ -121,6 +126,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Set address prefixes from ranges
@@ -268,6 +274,7 @@ class SRENetworkingComponent(ComponentResource):
                 # this NSG to fail validation. See: https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-groups
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_data_configuration = network.NetworkSecurityGroup(
             f"{self._name}_nsg_data_configuration",
@@ -350,6 +357,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_data_private = network.NetworkSecurityGroup(
             f"{self._name}_nsg_data_private",
@@ -408,6 +416,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_guacamole_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_guacamole_containers",
@@ -538,6 +547,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_guacamole_containers_support = network.NetworkSecurityGroup(
             f"{self._name}_nsg_guacamole_containers_support",
@@ -596,6 +606,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_user_services_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers",
@@ -702,6 +713,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_user_services_containers_support = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers_support",
@@ -760,6 +772,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_user_services_databases = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_databases",
@@ -842,6 +855,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_user_services_software_repositories = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_software_repositories",
@@ -936,6 +950,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_workspaces = network.NetworkSecurityGroup(
             f"{self._name}_nsg_workspaces",
@@ -1117,6 +1132,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define the virtual network and its subnets
@@ -1276,6 +1292,7 @@ class SRENetworkingComponent(ComponentResource):
                     ignore_changes=["virtual_network_peerings"]
                 ),  # allow peering to SHM virtual network
             ),
+            tags=child_tags,
         )
 
         # Peer the SRE virtual network to the SHM virtual network
@@ -1363,6 +1380,7 @@ class SRENetworkingComponent(ComponentResource):
             zone_name=sre_fqdn,
             zone_type=network.ZoneType.PUBLIC,
             opts=child_opts,
+            tags=child_tags,
         )
         shm_ns_record = network.RecordSet(
             f"{self._name}_ns_record",
@@ -1406,6 +1424,7 @@ class SRENetworkingComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=sre_dns_zone)
             ),
+            tags=child_tags,
         )
         network.VirtualNetworkLink(
             f"{self._name}_private_zone_internal_vnet_link",
@@ -1441,6 +1460,7 @@ class SRENetworkingComponent(ComponentResource):
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=sre_virtual_network)
                 ),
+                tags=child_tags,
             )
 
         # Register outputs

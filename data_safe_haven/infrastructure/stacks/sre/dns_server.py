@@ -1,4 +1,5 @@
 """Pulumi component for SRE DNS server"""
+from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources
@@ -51,9 +52,11 @@ class SREDnsServerComponent(ComponentResource):
         stack_name: str,
         props: SREDnsServerProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:DnsServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -61,6 +64,7 @@ class SREDnsServerComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-dns",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Read AdGuardHome setup files
@@ -148,6 +152,7 @@ class SREDnsServerComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Deploy dedicated virtual network
@@ -182,6 +187,7 @@ class SREDnsServerComponent(ComponentResource):
                     ignore_changes=["virtual_network_peerings"]
                 ),  # allow peering to SRE virtual network
             ),
+            tags=child_tags,
         )
 
         subnet_dns = network.get_subnet_output(
@@ -215,6 +221,7 @@ class SREDnsServerComponent(ComponentResource):
                     ],  # allow container groups to be registered to this interface
                 ),
             ),
+            tags=child_tags,
         )
 
         # Define the DNS container group with AdGuard
@@ -297,6 +304,7 @@ class SREDnsServerComponent(ComponentResource):
                     replace_on_changes=["containers"],
                 ),
             ),
+            tags=child_tags,
         )
 
         # Link virtual network to SHM private DNS zones
@@ -314,6 +322,7 @@ class SREDnsServerComponent(ComponentResource):
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=virtual_network)
                 ),
+                tags=child_tags,
             )
 
         # Register outputs

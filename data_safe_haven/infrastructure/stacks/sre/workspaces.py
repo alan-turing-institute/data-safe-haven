@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Any
 
 import chevron
@@ -101,9 +102,11 @@ class SREWorkspacesComponent(ComponentResource):
         stack_name: str,
         props: SREWorkspacesProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:WorkspacesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -111,6 +114,7 @@ class SREWorkspacesComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-workspaces",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Load cloud-init file
@@ -151,6 +155,7 @@ class SREWorkspacesComponent(ComponentResource):
                     vm_size=vm_size,
                 ),
                 opts=child_opts,
+                tags=child_tags,
             )
             for vm_idx, vm_size in props.vm_details
         ]

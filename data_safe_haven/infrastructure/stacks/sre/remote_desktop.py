@@ -1,4 +1,5 @@
 """Pulumi component for SRE remote desktop"""
+from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
@@ -112,9 +113,11 @@ class SRERemoteDesktopComponent(ComponentResource):
         stack_name: str,
         props: SRERemoteDesktopProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:RemoteDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -122,6 +125,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-remote-desktop",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define AzureAD application
@@ -174,6 +178,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                 location=props.location,
             ),
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define a network profile
@@ -203,6 +208,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ],  # allow container groups to be registered to this interface
                 ),
             ),
+            tags=child_tags,
         )
 
         # Define the container group with guacd, guacamole and caddy
@@ -423,6 +429,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     delete_before_replace=True, replace_on_changes=["containers"]
                 ),
             ),
+            tags=child_tags,
         )
 
         # Register outputs

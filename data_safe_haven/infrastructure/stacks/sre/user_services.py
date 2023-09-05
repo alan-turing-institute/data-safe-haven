@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
@@ -94,9 +96,11 @@ class SREUserServicesComponent(ComponentResource):
         stack_name: str,
         props: SREUserServicesProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:UserServicesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -104,6 +108,7 @@ class SREUserServicesComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-user-services",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define a network profile
@@ -133,6 +138,7 @@ class SREUserServicesComponent(ComponentResource):
                     ],  # allow container groups to be registered to this interface
                 ),
             ),
+            tags=child_tags,
         )
 
         # Deploy the Gitea server
@@ -163,6 +169,7 @@ class SREUserServicesComponent(ComponentResource):
                 virtual_network_resource_group_name=props.virtual_network_resource_group_name,
             ),
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Deploy the HedgeDoc server
@@ -194,6 +201,7 @@ class SREUserServicesComponent(ComponentResource):
                 virtual_network_resource_group_name=props.virtual_network_resource_group_name,
             ),
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Deploy software repository servers
@@ -217,6 +225,7 @@ class SREUserServicesComponent(ComponentResource):
                 virtual_network_resource_group_name=props.virtual_network_resource_group_name,
             ),
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Deploy whichever database systems are selected
@@ -235,4 +244,5 @@ class SREUserServicesComponent(ComponentResource):
                     user_services_resource_group_name=resource_group.name,
                 ),
                 opts=child_opts,
+                tags=child_tags,
             )

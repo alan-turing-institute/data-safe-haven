@@ -88,6 +88,7 @@ class DeclarativeSRE:
                 ),
                 sre_index=self.cfg.sres[self.sre_name].index,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy networking
@@ -125,6 +126,7 @@ class DeclarativeSRE:
                     self.sre_name
                 ].research_user_ip_addresses,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy automated monitoring
@@ -145,6 +147,7 @@ class DeclarativeSRE:
                 sre_index=self.cfg.sres[self.sre_name].index,
                 timezone=self.cfg.shm.timezone,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy data storage
@@ -169,6 +172,7 @@ class DeclarativeSRE:
                 subscription_name=self.cfg.subscription_name,
                 tenant_id=self.cfg.azure.tenant_id,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy frontend application gateway
@@ -183,6 +187,7 @@ class DeclarativeSRE:
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
                 sre_fqdn=networking.sre_fqdn,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy containerised remote desktop gateway
@@ -213,6 +218,7 @@ class DeclarativeSRE:
                 virtual_network_resource_group_name=networking.resource_group.name,
                 virtual_network=networking.virtual_network,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy workspaces
@@ -250,6 +256,7 @@ class DeclarativeSRE:
                 virtual_network=networking.virtual_network,
                 vm_details=list(enumerate(self.cfg.sres[self.sre_name].workspace_skus)),
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy containerised user services
@@ -288,6 +295,7 @@ class DeclarativeSRE:
                 virtual_network=networking.virtual_network,
                 virtual_network_resource_group_name=networking.resource_group.name,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Deploy backup service
@@ -299,6 +307,7 @@ class DeclarativeSRE:
                 storage_account_data_private_sensitive_id=data.storage_account_data_private_sensitive_id,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
             ),
+            tags=self.cfg.tags.to_dict(),
         )
 
         # Export values for later use

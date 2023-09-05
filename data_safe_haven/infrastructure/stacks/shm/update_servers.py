@@ -1,4 +1,5 @@
 """Pulumi component for SHM monitoring"""
+from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
@@ -53,9 +54,11 @@ class SHMUpdateServersComponent(ComponentResource):
         stack_name: str,
         props: SHMUpdateServersProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:shm:UpdateServersComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Load cloud-init file
         b64cloudinit = self.read_cloudinit()
@@ -78,6 +81,7 @@ class SHMUpdateServersComponent(ComponentResource):
                 vm_size="Standard_F1s",
             ),
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Register exports

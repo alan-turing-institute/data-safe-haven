@@ -1,4 +1,5 @@
 """Pulumi component for SRE monitoring"""
+from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
@@ -65,9 +66,11 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         stack_name: str,
         props: SRESoftwareRepositoriesProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:SRESoftwareRepositoriesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Define configuration file shares
         file_share_caddy = storage.FileShare(
@@ -177,6 +180,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     ],  # allow container groups to be registered to this interface
                 ),
             ),
+            tags=child_tags,
         )
 
         # Define the container group with nexus and caddy
@@ -320,6 +324,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         delete_before_replace=True, replace_on_changes=["containers"]
                     ),
                 ),
+                tags=child_tags,
             )
 
             # Register the container group in the SRE DNS zone

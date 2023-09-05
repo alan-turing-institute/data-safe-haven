@@ -1,5 +1,5 @@
 """Pulumi component for SHM state"""
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, resources, storage
@@ -52,9 +52,11 @@ class SHMDataComponent(ComponentResource):
         stack_name: str,
         props: SHMDataProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:shm:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -62,6 +64,7 @@ class SHMDataComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-data",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Deploy key vault
@@ -131,6 +134,7 @@ class SHMDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             vault_name=f"{replace_separators(stack_name)[:17]}secrets",  # maximum of 24 characters
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Deploy key vault secrets
@@ -141,6 +145,7 @@ class SHMDataComponent(ComponentResource):
             secret_name="password-domain-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_azure_ad_connect",
@@ -151,6 +156,7 @@ class SHMDataComponent(ComponentResource):
             secret_name="password-domain-azure-ad-connect",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_computer_manager",
@@ -161,6 +167,7 @@ class SHMDataComponent(ComponentResource):
             secret_name="password-domain-computer-manager",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_searcher",
@@ -171,6 +178,7 @@ class SHMDataComponent(ComponentResource):
             secret_name="password-domain-ldap-searcher",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_update_server_linux_admin",
@@ -181,6 +189,7 @@ class SHMDataComponent(ComponentResource):
             secret_name="password-update-server-linux-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
 
         # Deploy persistent data account
@@ -222,6 +231,7 @@ class SHMDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
             opts=child_opts,
+            tags=child_tags,
         )
         # Deploy staging container for holding any data that does not have an SRE
         storage.BlobContainer(

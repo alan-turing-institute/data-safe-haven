@@ -1,5 +1,5 @@
 """Pulumi component for SHM networking"""
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
@@ -45,9 +45,11 @@ class SHMNetworkingComponent(ComponentResource):
         stack_name: str,
         props: SHMNetworkingProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:shm:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -55,6 +57,7 @@ class SHMNetworkingComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-networking",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define NSGs
@@ -187,6 +190,7 @@ class SHMNetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_identity_servers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_identity",
@@ -238,6 +242,7 @@ class SHMNetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_monitoring = network.NetworkSecurityGroup(
             f"{self._name}_nsg_monitoring",
@@ -245,6 +250,7 @@ class SHMNetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             security_rules=[],
             opts=child_opts,
+            tags=child_tags,
         )
         nsg_update_servers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_update_servers",
@@ -315,6 +321,7 @@ class SHMNetworkingComponent(ComponentResource):
                 ),
             ],
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define route table
@@ -330,6 +337,7 @@ class SHMNetworkingComponent(ComponentResource):
                     ignore_changes=["routes"]
                 ),  # allow routes to be created outside this definition
             ),
+            tags=child_tags,
         )
 
         # Define the virtual network and its subnets
@@ -397,6 +405,7 @@ class SHMNetworkingComponent(ComponentResource):
                     ignore_changes=["virtual_network_peerings"]
                 ),  # allow SRE virtual networks to peer to this
             ),
+            tags=child_tags,
         )
 
         # Define SHM DNS zone
@@ -407,6 +416,7 @@ class SHMNetworkingComponent(ComponentResource):
             zone_name=props.fqdn,
             zone_type=network.ZoneType.PUBLIC,
             opts=child_opts,
+            tags=child_tags,
         )
         network.RecordSet(
             f"{self._name}_caa_record",
@@ -448,6 +458,7 @@ class SHMNetworkingComponent(ComponentResource):
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=dns_zone)
                 ),
+                tags=child_tags,
             )
             network.VirtualNetworkLink(
                 f"{self._name}_private_zone_{private_link_domain}_vnet_link",
@@ -462,6 +473,7 @@ class SHMNetworkingComponent(ComponentResource):
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=private_zone)
                 ),
+                tags=child_tags,
             )
             private_zone_ids.append(
                 private_zone.id.apply(

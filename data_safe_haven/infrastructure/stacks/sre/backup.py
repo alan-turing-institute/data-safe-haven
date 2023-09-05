@@ -1,4 +1,6 @@
 """Pulumi component for SRE backup"""
+from collections.abc import Mapping
+
 from pulumi import ComponentResource, Input, ResourceOptions
 from pulumi_azure_native import dataprotection, resources
 
@@ -30,9 +32,11 @@ class SREBackupComponent(ComponentResource):
         stack_name: str,
         props: SREBackupProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:BackupComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -40,6 +44,7 @@ class SREBackupComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-backup",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Deploy backup vault
@@ -60,6 +65,7 @@ class SREBackupComponent(ComponentResource):
             resource_group_name=resource_group.name,
             vault_name=f"{stack_name}-bv-backup",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Backup policy for blobs

@@ -1,4 +1,5 @@
 """Pulumi component for SRE application gateway"""
+from collections.abc import Mapping
 from typing import Any
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -53,9 +54,11 @@ class SREApplicationGatewayComponent(ComponentResource):
         stack_name: str,
         props: SREApplicationGatewayProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:ApplicationGatewayComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Define public IP address
         public_ip = network.PublicIPAddress(
@@ -67,6 +70,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                 name=network.PublicIPAddressSkuName.STANDARD
             ),
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Link the public IP address to the SRE domain
@@ -280,4 +284,5 @@ class SREApplicationGatewayComponent(ComponentResource):
                 policy_type="CustomV2",
             ),
             opts=child_opts,
+            tags=child_tags,
         )

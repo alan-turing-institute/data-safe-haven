@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
 
@@ -79,9 +81,11 @@ class SREGiteaServerComponent(ComponentResource):
         stack_name: str,
         props: SREGiteaServerProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:GiteaServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Define configuration file shares
         file_share_gitea_caddy = storage.FileShare(
@@ -184,6 +188,7 @@ class SREGiteaServerComponent(ComponentResource):
                 location=props.location,
             ),
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define the container group with guacd, guacamole and caddy
@@ -329,6 +334,7 @@ class SREGiteaServerComponent(ComponentResource):
                     replace_on_changes=["containers"],
                 ),
             ),
+            tags=child_tags,
         )
 
         # Register the container group in the SRE DNS zone

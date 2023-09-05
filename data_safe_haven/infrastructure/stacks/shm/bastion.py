@@ -1,4 +1,6 @@
 """Pulumi component for SHM monitoring"""
+from collections.abc import Mapping
+
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
@@ -27,9 +29,11 @@ class SHMBastionComponent(ComponentResource):
         stack_name: str,
         props: SHMBastionProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:shm:BastionComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Deploy IP address
         public_ip = network.PublicIPAddress(
@@ -41,6 +45,7 @@ class SHMBastionComponent(ComponentResource):
                 name=network.PublicIPAddressSkuName.STANDARD
             ),
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Deploy bastion host
@@ -57,6 +62,7 @@ class SHMBastionComponent(ComponentResource):
             ],
             resource_group_name=props.resource_group_name,
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Register outputs

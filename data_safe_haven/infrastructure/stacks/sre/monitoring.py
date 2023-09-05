@@ -1,4 +1,6 @@
 """Pulumi component for SHM monitoring"""
+from collections.abc import Mapping
+
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation
 
@@ -34,9 +36,11 @@ class SREMonitoringComponent(ComponentResource):
         stack_name: str,
         props: SREMonitoringProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:MonitoringComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        _ = tags if tags else {}  # subresources here do not currently use tags
 
         # Create Linux VM system update schedule: daily at 03:<index>
         automation.SoftwareUpdateConfigurationByName(

@@ -1,5 +1,6 @@
 """Pulumi component for SRE data"""
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from typing import ClassVar
 
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import (
@@ -107,18 +108,21 @@ class SREDataProps:
 class SREDataComponent(ComponentResource):
     """Deploy SRE data with Pulumi"""
 
+    azure_role_ids: ClassVar[dict[str, str]] = {
+        "Storage Blob Data Owner": "b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
+    }
+
     def __init__(
         self,
         name: str,
         stack_name: str,
         props: SREDataProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:DataComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        azure_role_ids = {
-            "Storage Blob Data Owner": "b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
-        }
+        child_tags = tags if tags else {}
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -126,6 +130,7 @@ class SREDataComponent(ComponentResource):
             location=props.location,
             resource_group_name=f"{stack_name}-rg-data",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define Key Vault reader
@@ -135,6 +140,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             resource_name_=f"{stack_name}-id-key-vault-reader",
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define SRE KeyVault
@@ -222,6 +228,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             vault_name=f"{''.join(truncate_tokens(stack_name.split('-'), 17))}secrets",  # maximum of 24 characters
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define SSL certificate for this FQDN
@@ -256,6 +263,7 @@ class SREDataComponent(ComponentResource):
             secret_name="password-database-service-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_dns_server_admin",
@@ -266,6 +274,7 @@ class SREDataComponent(ComponentResource):
             secret_name="password-dns-server-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_gitea_database_admin",
@@ -276,6 +285,7 @@ class SREDataComponent(ComponentResource):
             secret_name="password-gitea-database-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_hedgedoc_database_admin",
@@ -286,6 +296,7 @@ class SREDataComponent(ComponentResource):
             secret_name="password-hedgedoc-database-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_nexus_admin",
@@ -294,6 +305,7 @@ class SREDataComponent(ComponentResource):
             secret_name="password-nexus-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_user_database_admin",
@@ -304,6 +316,7 @@ class SREDataComponent(ComponentResource):
             secret_name="password-user-database-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_workspace_admin",
@@ -314,6 +327,7 @@ class SREDataComponent(ComponentResource):
             secret_name="password-workspace-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=key_vault),
+            tags=child_tags,
         )
 
         # Deploy configuration data storage account
@@ -347,6 +361,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
             opts=child_opts,
+            tags=child_tags,
         )
         # Retrieve configuration data storage account keys
         storage_account_data_configuration_keys = Output.all(
@@ -375,6 +390,7 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_account_data_configuration)
             ),
+            tags=child_tags,
         )
         # Add a private DNS record for each configuration data endpoint custom DNS config
         network.PrivateDnsZoneGroup(
@@ -448,6 +464,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
+            tags=child_tags,
         )
         # Give the "Storage Blob Data Owner" role to the Azure admin group
         authorization.RoleAssignment(
@@ -461,7 +478,7 @@ class SREDataComponent(ComponentResource):
                 "/subscriptions/",
                 props.subscription_id,
                 "/providers/Microsoft.Authorization/roleDefinitions/",
-                azure_role_ids["Storage Blob Data Owner"],
+                self.azure_role_ids["Storage Blob Data Owner"],
             ),
             scope=storage_account_data_private_sensitive.id,
             opts=ResourceOptions.merge(
@@ -552,6 +569,7 @@ class SREDataComponent(ComponentResource):
                 child_opts,
                 ResourceOptions(parent=storage_account_data_private_sensitive),
             ),
+            tags=child_tags,
         )
         # Add a private DNS record for each sensitive data endpoint custom DNS config
         network.PrivateDnsZoneGroup(
@@ -611,6 +629,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
+            tags=child_tags,
         )
         storage.FileShare(
             f"{storage_account_data_private_user._name}_files_home",
@@ -656,6 +675,7 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_account_data_private_user)
             ),
+            tags=child_tags,
         )
         # Add a private DNS record for each user data endpoint custom DNS config
         network.PrivateDnsZoneGroup(

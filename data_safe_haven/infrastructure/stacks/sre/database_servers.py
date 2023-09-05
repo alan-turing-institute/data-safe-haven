@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+
 from pulumi import ComponentResource, Input, ResourceOptions
 from pulumi_azure_native import network, sql
 
@@ -48,9 +50,11 @@ class SREDatabaseServerComponent(ComponentResource):
         stack_name: str,
         props: SREDatabaseServerProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:DatabaseServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         if props.database_system == DatabaseSystem.MICROSOFT_SQL_SERVER:
             # Define a Microsoft SQL server
@@ -66,6 +70,7 @@ class SREDatabaseServerComponent(ComponentResource):
                 server_name=db_server_mssql_name,
                 version="12.0",
                 opts=child_opts,
+                tags=child_tags,
             )
             # Add a default database
             sql.Database(
@@ -82,6 +87,7 @@ class SREDatabaseServerComponent(ComponentResource):
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=db_server_mssql)
                 ),
+                tags=child_tags,
             )
             # Deploy a private endpoint for the Microsoft SQL server
             db_server_mssql_private_endpoint = network.PrivateEndpoint(
@@ -104,6 +110,7 @@ class SREDatabaseServerComponent(ComponentResource):
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=db_server_mssql)
                 ),
+                tags=child_tags,
             )
             # Register the database in the SRE DNS zone
             LocalDnsRecordComponent(
@@ -136,6 +143,7 @@ class SREDatabaseServerComponent(ComponentResource):
                     location=props.location,
                 ),
                 opts=child_opts,
+                tags=child_tags,
             )
             # Register the database in the SRE DNS zone
             LocalDnsRecordComponent(

@@ -1,4 +1,6 @@
 """Pulumi component for SHM traffic routing"""
+from collections.abc import Mapping
+
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
@@ -44,9 +46,11 @@ class SHMFirewallComponent(ComponentResource):
         stack_name: str,
         props: SHMFirewallProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:shm:FirewallComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Important IP addresses
         # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
@@ -86,6 +90,7 @@ class SHMFirewallComponent(ComponentResource):
                 name=network.PublicIPAddressSkuName.STANDARD
             ),
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Deploy firewall
@@ -611,6 +616,7 @@ class SHMFirewallComponent(ComponentResource):
             threat_intel_mode="Alert",
             zones=[],
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Route all connected traffic through the firewall

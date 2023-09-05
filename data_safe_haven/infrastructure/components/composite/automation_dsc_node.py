@@ -1,6 +1,6 @@
 """Register a VM as an Azure Automation DSC node"""
 import time
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, compute
@@ -56,9 +56,11 @@ class AutomationDscNode(ComponentResource):
         name: str,
         props: AutomationDscNodeProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:common:AutomationDscNode", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Upload the primary domain controller DSC
         dsc = automation.DscConfiguration(
@@ -85,6 +87,7 @@ class AutomationDscNode(ComponentResource):
                     delete_before_replace=True, replace_on_changes=["source.hash"]
                 ),
             ),
+            tags=child_tags,
         )
         dsc_compiled = CompiledDsc(
             f"{self._name}_dsc_compiled",
@@ -136,4 +139,5 @@ class AutomationDscNode(ComponentResource):
                 child_opts,
                 ResourceOptions(depends_on=[dsc_compiled]),
             ),
+            tags=child_tags,
         )

@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, storage
 
@@ -92,9 +94,11 @@ class SREHedgeDocServerComponent(ComponentResource):
         stack_name: str,
         props: SREHedgeDocServerProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:HedgeDocServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Define configuration file shares
         file_share_hedgedoc_caddy = storage.FileShare(
@@ -144,6 +148,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                 location=props.location,
             ),
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define the container group with guacd, guacamole and caddy
@@ -321,6 +326,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                     replace_on_changes=["containers"],
                 ),
             ),
+            tags=child_tags,
         )
 
         # Register the container group in the SRE DNS zone

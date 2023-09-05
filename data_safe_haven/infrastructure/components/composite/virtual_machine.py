@@ -1,4 +1,5 @@
 """Pulumi component for virtual machines"""
+from collections.abc import Mapping
 from typing import Any
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -126,10 +127,15 @@ class VMComponent(ComponentResource):
     """Deploy SHM secrets with Pulumi"""
 
     def __init__(
-        self, name: str, props: VMComponentProps, opts: ResourceOptions | None = None
+        self,
+        name: str,
+        props: VMComponentProps,
+        opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ):
         super().__init__("dsh:common:VMComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
         name_underscored = replace_separators(self._name, "_")
 
         # Retrieve existing resources
@@ -151,6 +157,7 @@ class VMComponent(ComponentResource):
                     name=network.PublicIPAddressSkuName.STANDARD
                 ),
                 opts=child_opts,
+                tags=child_tags,
             )
             network_interface_ip_params[
                 "public_ip_address"
@@ -174,6 +181,7 @@ class VMComponent(ComponentResource):
             network_interface_name=Output.concat(props.vm_name, "-nic"),
             resource_group_name=props.resource_group_name,
             opts=child_opts,
+            tags=child_tags,
         )
 
         # Define virtual machine
@@ -215,6 +223,7 @@ class VMComponent(ComponentResource):
                     delete_before_replace=True, replace_on_changes=["os_profile"]
                 ),
             ),
+            tags=child_tags,
         )
 
         # Register with Log Analytics workspace
@@ -239,6 +248,7 @@ class VMComponent(ComponentResource):
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=virtual_machine)
                 ),
+                tags=child_tags,
             )
 
         # Register outputs

@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import dbforpostgresql, network
@@ -36,9 +36,11 @@ class PostgresqlDatabaseComponent(ComponentResource):
         name: str,
         props: PostgresqlDatabaseProps,
         opts: ResourceOptions | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:common:PostgresqlDatabaseComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
+        child_tags = tags if tags else {}
 
         # Define a PostgreSQL server
         db_server = dbforpostgresql.Server(
@@ -69,6 +71,7 @@ class PostgresqlDatabaseComponent(ComponentResource):
                 tier=dbforpostgresql.SkuTier.GENERAL_PURPOSE,  # required to use private link
             ),
             opts=child_opts,
+            tags=child_tags,
         )
         # Add any databases that are requested
         props.database_names.apply(
@@ -107,6 +110,7 @@ class PostgresqlDatabaseComponent(ComponentResource):
             resource_group_name=props.database_resource_group_name,
             subnet=network.SubnetArgs(id=props.database_subnet_id),
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=db_server)),
+            tags=child_tags,
         )
 
         # Register outputs
