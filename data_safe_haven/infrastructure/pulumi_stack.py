@@ -133,9 +133,9 @@ class PulumiStack:
                 try:
                     result = self.stack.destroy(
                         color="always",
-                        parallel=1,
-                        on_output=self.logger.info,
                         debug=self.logger.isEnabledFor(logging.DEBUG),
+                        log_flow=True,
+                        on_output=self.logger.info,
                     )
                     self.evaluate(result.summary.result)
                     break
@@ -254,10 +254,11 @@ class PulumiStack:
                 # Note that we disable parallelisation which can cause deadlock
                 self.stack.preview(
                     color="always",
-                    parallel=1,
-                    diff=True,
-                    on_output=self.logger.info,
                     debug=self.logger.isEnabledFor(logging.DEBUG),
+                    diff=True,
+                    log_flow=True,
+                    on_output=self.logger.info,
+                    parallel=1,
                 )
         except Exception as exc:
             msg = f"Pulumi preview failed.\n{exc}."
@@ -314,8 +315,10 @@ class PulumiStack:
             self.logger.info(f"Applying changes to stack [green]{self.stack.name}[/].")
             result = self.stack.up(
                 color="always",
-                on_output=self.logger.info,
                 debug=self.logger.isEnabledFor(logging.DEBUG),
+                log_flow=True,
+                on_output=self.logger.info,
+                parallel=1,
             )
             self.evaluate(result.summary.result)
         except automation.CommandError as exc:
