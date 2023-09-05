@@ -14,6 +14,7 @@ from pulumi import automation
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCli
+from data_safe_haven.functions import replace_separators
 from data_safe_haven.infrastructure.stacks import DeclarativeSHM, DeclarativeSRE
 from data_safe_haven.utility import LoggingSingleton
 
@@ -67,7 +68,7 @@ class PulumiStack:
             try:
                 self.stack_ = automation.create_or_select_stack(
                     project_name="data_safe_haven",
-                    stack_name=self.stack_name,
+                    stack_name=replace_separators(self.stack_name, "_"),
                     program=self.program.run,
                     opts=automation.LocalWorkspaceOptions(
                         secrets_provider=f"azurekeyvault://{self.cfg.backend.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi.encryption_key_id}",
