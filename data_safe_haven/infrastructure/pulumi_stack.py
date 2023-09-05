@@ -319,7 +319,6 @@ class PulumiStack:
                 debug=self.logger.isEnabledFor(logging.DEBUG),
                 log_flow=True,
                 on_output=self.logger.info,
-                parallel=1,
             )
             self.evaluate(result.summary.result)
         except automation.CommandError as exc:
