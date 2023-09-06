@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import compute, network
+from pulumi_azure_native import compute, network, operationalinsights
 
 from data_safe_haven.functions import replace_separators
 
@@ -29,6 +29,7 @@ class VMComponentProps:
         vm_size: Input[str],
         admin_username: Input[str] | None = None,
         ip_address_public: Input[bool] | None = None,
+        log_analytics_workspace: Input[operationalinsights.Workspace] | None = None,
         log_analytics_workspace_id: Input[str] | None = None,
         log_analytics_workspace_key: Input[str] | None = None,
     ) -> None:
@@ -38,6 +39,7 @@ class VMComponentProps:
         self.ip_address_private = ip_address_private
         self.ip_address_public = ip_address_public
         self.location = location
+        self.log_analytics_workspace = log_analytics_workspace
         self.log_analytics_workspace_id = log_analytics_workspace_id
         self.log_analytics_workspace_key = log_analytics_workspace_key
         self.os_profile_args = None
@@ -246,7 +248,11 @@ class VMComponent(ComponentResource):
                 vm_extension_name=props.log_analytics_extension_name,
                 vm_name=virtual_machine.name,
                 opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=virtual_machine)
+                    child_opts,
+                    ResourceOptions(
+                        depends_on=[props.log_analytics_workspace],
+                        parent=virtual_machine,
+                    ),
                 ),
                 tags=child_tags,
             )

@@ -2,7 +2,7 @@
 from collections.abc import Sequence
 from typing import Any
 
-from pulumi import Input, ResourceOptions
+from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 
 from data_safe_haven.external import AzureApi
@@ -70,6 +70,10 @@ class CompiledDscProvider(DshResourceProvider):
 
 
 class CompiledDsc(Resource):
+    automation_account_name: Output[str]
+    configuration_name: Output[str]
+    location: Output[str]
+    resource_group_name: Output[str]
     _resource_type_name = "dsh:common:CompiledDsc"  # set resource type
 
     def __init__(

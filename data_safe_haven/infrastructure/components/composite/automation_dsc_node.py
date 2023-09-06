@@ -17,7 +17,7 @@ class AutomationDscNodeProps:
 
     def __init__(
         self,
-        automation_account_name: Input[str],
+        automation_account: Input[automation.AutomationAccount],
         automation_account_registration_key: Input[str],
         automation_account_registration_url: Input[str],
         automation_account_resource_group_name: Input[str],
@@ -31,7 +31,10 @@ class AutomationDscNodeProps:
         vm_name: Input[str],
         vm_resource_group_name: Input[str],
     ) -> None:
-        self.automation_account_name = automation_account_name
+        self.automation_account = automation_account
+        self.automation_account_name = Output.from_input(automation_account).apply(
+            lambda account: account.name
+        )
         self.automation_account_registration_key = automation_account_registration_key
         self.automation_account_registration_url = automation_account_registration_url
         self.automation_account_resource_group_name = (
@@ -84,7 +87,9 @@ class AutomationDscNode(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
-                    delete_before_replace=True, replace_on_changes=["source.hash"]
+                    delete_before_replace=True,
+                    depends_on=[props.automation_account],
+                    replace_on_changes=["source.hash"],
                 ),
             ),
             tags=child_tags,
@@ -117,7 +122,10 @@ class AutomationDscNode(ComponentResource):
                     "AllowModuleOverwrite": False,
                     "ConfigurationMode": "ApplyAndMonitor",
                     "ConfigurationModeFrequencyMins": 15,
-                    "NodeConfigurationName": f"{props.configuration_name}.localhost",
+                    # "NodeConfigurationName": f"{props.configuration_name}.localhost",
+                    "NodeConfigurationName": Output.concat(
+                        dsc_compiled.configuration_name, ".localhost"
+                    ),
                     "RebootNodeIfNeeded": True,
                     "RefreshFrequencyMins": 30,
                     "RegistrationUrl": props.automation_account_registration_url,

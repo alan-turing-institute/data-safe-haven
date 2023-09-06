@@ -2,7 +2,7 @@
 from collections.abc import Mapping, Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import automation, network, resources
+from pulumi_azure_native import automation, network, operationalinsights, resources
 
 from data_safe_haven.infrastructure.common import get_name_from_subnet
 from data_safe_haven.infrastructure.components import (
@@ -22,14 +22,16 @@ class SHMDomainControllersProps:
 
     def __init__(
         self,
-        automation_account_modules: Input[Sequence[str]],
         automation_account: Input[automation.AutomationAccount],
+        automation_account_modules: Input[Sequence[str]],
+        automation_account_private_dns: Input[network.PrivateDnsZoneGroup],
         automation_account_registration_key: Input[str],
         automation_account_registration_url: Input[str],
         automation_account_resource_group_name: Input[str],
         domain_fqdn: Input[str],
         domain_netbios_name: Input[str],
         location: Input[str],
+        log_analytics_workspace: Input[operationalinsights.Workspace],
         log_analytics_workspace_id: Input[str],
         log_analytics_workspace_key: Input[str],
         password_domain_admin: Input[str],
@@ -44,9 +46,7 @@ class SHMDomainControllersProps:
     ) -> None:
         self.automation_account = automation_account
         self.automation_account_modules = automation_account_modules
-        self.automation_account_name = Output.from_input(automation_account).apply(
-            lambda account: account.name
-        )
+        self.automation_account_private_dns = automation_account_private_dns
         self.automation_account_registration_url = automation_account_registration_url
         self.automation_account_registration_key = automation_account_registration_key
         self.automation_account_resource_group_name = (
@@ -60,6 +60,7 @@ class SHMDomainControllersProps:
             lambda n: n[:15]
         )  # maximum of 15 characters
         self.location = location
+        self.log_analytics_workspace = log_analytics_workspace
         self.log_analytics_workspace_id = log_analytics_workspace_id
         self.log_analytics_workspace_key = log_analytics_workspace_key
         self.password_domain_admin = password_domain_admin
@@ -115,6 +116,7 @@ class SHMDomainControllersComponent(ComponentResource):
                 ip_address_public=False,
                 ip_address_private=props.private_ip_address,
                 location=props.location,
+                log_analytics_workspace=props.log_analytics_workspace,
                 log_analytics_workspace_id=props.log_analytics_workspace_id,
                 log_analytics_workspace_key=props.log_analytics_workspace_key,
                 resource_group_name=resource_group.name,
@@ -137,7 +139,7 @@ class SHMDomainControllersComponent(ComponentResource):
         primary_domain_controller_dsc_node = AutomationDscNode(
             f"{self._name}_primary_domain_controller_dsc_node",
             AutomationDscNodeProps(
-                automation_account_name=props.automation_account_name,
+                automation_account=props.automation_account,
                 automation_account_registration_key=props.automation_account_registration_key,
                 automation_account_registration_url=props.automation_account_registration_url,
                 automation_account_resource_group_name=props.automation_account_resource_group_name,
@@ -166,7 +168,11 @@ class SHMDomainControllersComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
-                    depends_on=[props.automation_account, primary_domain_controller],
+                    depends_on=[
+                        props.automation_account,
+                        props.automation_account_private_dns,
+                        primary_domain_controller,
+                    ],
                     parent=primary_domain_controller,
                 ),
             ),

@@ -140,7 +140,7 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Add a private DNS record for each automation custom DNS config
-        network.PrivateDnsZoneGroup(
+        automation_account_private_dns = network.PrivateDnsZoneGroup(
             f"{self._name}_automation_account_private_dns_zone_group",
             private_dns_zone_configs=[
                 network.PrivateDnsZoneConfigArgs(
@@ -432,9 +432,6 @@ class SHMMonitoringComponent(ComponentResource):
 
         # Register outputs
         self.automation_account = automation_account
-        self.automation_account_jrds_url = (
-            automation_account.automation_hybrid_service_url
-        )
         self.automation_account_agentsvc_url = (
             automation_account.automation_hybrid_service_url.apply(
                 lambda url: url.replace("jrds", "agentsvc").replace(
@@ -444,10 +441,15 @@ class SHMMonitoringComponent(ComponentResource):
                 else ""
             )
         )
+        self.automation_account_jrds_url = (
+            automation_account.automation_hybrid_service_url
+        )
         self.automation_account_modules = list(modules.keys())
         self.automation_account_primary_key = Output.secret(
             automation_keys.keys[0].value
         )
+        self.automation_account_private_dns = automation_account_private_dns
+        self.log_analytics_workspace = log_analytics
         self.log_analytics_workspace_id = log_analytics.customer_id
         self.log_analytics_workspace_key = Output.secret(
             log_analytics_keys.primary_shared_key

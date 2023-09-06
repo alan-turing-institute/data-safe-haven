@@ -107,6 +107,7 @@ class DeclarativeSHM:
             SHMUpdateServersProps(
                 admin_password=data.password_update_server_linux_admin,
                 location=self.cfg.azure.location,
+                log_analytics_workspace=monitoring.log_analytics_workspace,
                 log_analytics_workspace_id=monitoring.log_analytics_workspace_id,
                 log_analytics_workspace_key=monitoring.log_analytics_workspace_key,
                 resource_group_name=monitoring.resource_group_name,
@@ -124,12 +125,14 @@ class DeclarativeSHM:
             SHMDomainControllersProps(
                 automation_account=monitoring.automation_account,
                 automation_account_modules=monitoring.automation_account_modules,
+                automation_account_private_dns=monitoring.automation_account_private_dns,
                 automation_account_registration_key=monitoring.automation_account_primary_key,
                 automation_account_registration_url=monitoring.automation_account_agentsvc_url,
                 automation_account_resource_group_name=monitoring.resource_group_name,
                 domain_fqdn=networking.dns_zone.name,
                 domain_netbios_name=self.shm_name.upper(),
                 location=self.cfg.azure.location,
+                log_analytics_workspace=monitoring.log_analytics_workspace,
                 log_analytics_workspace_id=monitoring.log_analytics_workspace_id,
                 log_analytics_workspace_key=monitoring.log_analytics_workspace_key,
                 password_domain_admin=data.password_domain_admin,
