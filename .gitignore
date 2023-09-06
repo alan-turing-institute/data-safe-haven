@@ -28,9 +28,13 @@ docs/*.pdf
 # ... except the tiers flowchart
 !docs/tiersflowchart.pdf
 
-# Sphinx output
-docs/_output
+# Sphinx output and venv
+docs/build
+docs/venv
 
 # Files produced during testing
 .mustache_config.json
 expanded.yaml
+
+# Lychee cache
+.lycheecache

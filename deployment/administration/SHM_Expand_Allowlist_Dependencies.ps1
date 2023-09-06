@@ -32,11 +32,13 @@ function Test-PackageExistence {
         if ($Repository -eq "pypi") {
             # The best PyPI results come from the package JSON files
             $response = Invoke-RestMethod -Uri "https://pypi.org/${Repository}/${Package}/json" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+            if ($response -is [String]) { $response = $response | ConvertFrom-Json -AsHashtable }
             $versions = $response.releases | Get-Member -MemberType NoteProperty | ForEach-Object { $_.Name }
             $name = $response.info.name
         } elseif ($Repository -eq "cran") {
             # Use the RStudio package manager for CRAN packages
             $response = Invoke-RestMethod -Uri "https://packagemanager.rstudio.com/__api__/repos/${RepositoryId}/packages?name=${Package}&case_insensitive=true" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
+            if ($response -is [String]) { $response = $response | ConvertFrom-Json -AsHashtable }
             $name = $response.name
             $response = Invoke-RestMethod -Uri "https://packagemanager.rstudio.com/__api__/repos/${RepositoryId}/packages/${name}" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
             $versions = @($response.version) + ($response.archived | ForEach-Object { $_.version })
@@ -44,6 +46,7 @@ function Test-PackageExistence {
             # For other repositories we use libraries.io
             # As we are rate-limited to 60 requests per minute this request can fail. If it does, we retry every few seconds for 1 minute
             $response = Invoke-RestMethod -Uri "https://libraries.io/api/${Repository}/${Package}?api_key=${ApiKey}" -MaximumRetryCount 16 -RetryIntervalSec 4 -ErrorAction Stop
+            if ($response -is [String]) { $response = $response | ConvertFrom-Json -AsHashtable }
             $versions = $response.versions | ForEach-Object { $_.number }
             $name = $response.Name
         }
@@ -93,7 +96,8 @@ function Get-Dependencies {
                 if ($Repository -eq "pypi") {
                     # The best PyPI results come from the package JSON files
                     $response = Invoke-RestMethod -Uri "https://pypi.org/${Repository}/${Package}/${Version}/json" -MaximumRetryCount 4 -RetryIntervalSec 1 -ErrorAction Stop
-                    $Cache[$Repository][$Package][$Version] = @($response.info.requires_dist | Where-Object { $_ -and ($_ -notmatch "extra ==") } | ForEach-Object { ($_ -split '[;[( ><=]')[0].Trim() } | Sort-Object -Unique)
+                    # Add canonical names to dependencies
+                    $Cache[$Repository][$Package][$Version] = @($response.info.requires_dist | Where-Object { $_ -and ($_ -notmatch "extra ==") } | ForEach-Object { ($_ -split '[;[( ><=!~]')[0].Trim().ToLower() } | Sort-Object -Unique)
                 } else {
                     # For other repositories we use libraries.io
                     try {
@@ -123,10 +127,10 @@ function Get-Dependencies {
 # --------------------------
 $languageName = @{cran = "r"; pypi = "python" }[$Repository]
 $coreAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-core-${languageName}-${Repository}-tier3.list"
+$extraAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-extra-${languageName}-${Repository}-tier3.list"
 $fullAllowlistPath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "allowlist-full-${languageName}-${Repository}-tier3.list"
 $dependencyCachePath = Join-Path $PSScriptRoot ".." ".." "environment_configs" "package_lists" "dependency-cache.json"
-$corePackageList = Get-Content $coreAllowlistPath | Sort-Object -Unique
-
+$corePackageList = (Get-Content $coreAllowlistPath) + (Get-Content $extraAllowlistPath) | Sort-Object -Unique
 
 # Initialise the package queue
 # ----------------------------
@@ -142,6 +146,7 @@ if (-not $NoCache) {
     if (Test-Path $dependencyCachePath -PathType Leaf) {
         $dependencyCache = Get-Content $dependencyCachePath | ConvertFrom-Json -AsHashtable
     }
+    if (-not $dependencyCache) { $dependencyCache = [ordered]@{} }
 }
 if ($Repository -notin $dependencyCache.Keys) { $dependencyCache[$Repository] = [ordered]@{} }
 if ("unavailable_packages" -notin $dependencyCache.Keys) { $dependencyCache["unavailable_packages"] = [ordered]@{} }
@@ -171,6 +176,10 @@ while ($queue.Count) {
         # Check that the package exists and add it to the allowlist if so
         Add-LogMessage -Level Info "Looking for '${unverifiedName}' in ${Repository}..."
         $packageData = Test-PackageExistence -Repository $Repository -Package $unverifiedName -ApiKey $ApiKey -RepositoryId $RepositoryId
+        if (-not $($packageData.name)) {
+            Add-LogMessage -Level Error "Package '${unverifiedName}' could not be found!"
+            continue
+        }
         if ($packageData.name -cne $unverifiedName) {
             Add-LogMessage -Level Warning "Package '${unverifiedName}' should be '$($packageData.name)'"
         }

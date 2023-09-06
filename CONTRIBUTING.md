@@ -34,7 +34,7 @@ For the Data Safe Haven project, we follow a DevOps development philosophy.
 This means different things to different people, but the definition that we're using is [best summed up here](https://www.guru99.com/agile-vs-devops.html).
 
 <p align="center">
-   <img src="docs/contributing/devops_gap.png" width="80%" title="Taken from https://www.guru99.com/agile-vs-devops.html">
+   <img src="docs/source/contributing/devops_gap.png" width="80%" title="Taken from https://www.guru99.com/agile-vs-devops.html">
 </p>
 
 This is a software development method which focuses on:
@@ -87,7 +87,7 @@ In order to contribute via GitHub you'll need to set up a free account and sign 
 We use the [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
 <p align="center">
-   <img src="docs/contributing/gitflow.svg" width="80%" title="Taken from https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">
+   <img src="docs/source/contributing/gitflow.svg" width="80%" title="Taken from https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">
 </p>
 
 This means that:
@@ -172,7 +172,7 @@ For example, `@KirstieJane` will send a notification to `Kirstie Whitaker` so sh
 Alternatively (and this is encouraged) you can use the issue to keep track of where you're up to with the task and add information about next steps and barriers.
 
 <p align="center">
-   <img src="docs/contributing/example-conversation-in-issue.png" width="80%" title="example-conversation-in-issue">
+   <img src="docs/source/contributing/example-conversation-in-issue.png" width="80%" title="example-conversation-in-issue">
 </p>
 
 ### Working in a private repository
@@ -208,7 +208,7 @@ Make sure to [keep your fork up to date](https://docs.github.com/en/pull-request
 #### 3. Make the changes you've discussed
 
 Try to keep the changes focused. If you submit a large amount of work in all in one go it will be much more work for whomever is reviewing your pull request. [Help them help you](https://media.giphy.com/media/uRb2p09vY8lEs/giphy.gif) :wink:
-If you feel tempted to "branch out" then please make a [new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) and a [new issue][https://github.com/alan-turing-institute/data-safe-haven/issues] to go with it.
+If you feel tempted to "branch out" then please make a [new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) and a [new issue](https://github.com/alan-turing-institute/data-safe-haven/issues) to go with it.
 
 #### 4. Submit a pull request
 
@@ -222,18 +222,11 @@ GitHub has a [nice introduction](https://docs.github.com/en/get-started/quicksta
 
 ### Making a change to the documentation
 
-The docs, including for older releases, are available [here](https://alan-turing-institute.github.io/data-safe-haven).
+The docs, including for older releases, are available [here](https://data-safe-haven.readthedocs.io).
 
 You should follow the same instructions as above to [make a change with a pull request](#making-a-change-with-a-pull-request) when editing the documentation.
 
-To test your changes, build the docs locally by checking out your fork of the repo, navigating to the `docs` folder and `make`ing them:
-
-```{bash}
-cd data-safe-haven/docs
-make html
-```
-
-This will add the contents to a folder called `_output` inside `docs`. Open the index html from a browser and you should be able to navigate the docs and view your changes.
+To preview your changes, you can build the docs locally. See [docs/README.md](docs/README.md).
 
 ### Who's involved in the project
 

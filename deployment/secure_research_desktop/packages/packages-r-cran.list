@@ -1,3 +1,4 @@
+arrow
 BiocManager
 caret
 csv
@@ -35,7 +36,6 @@ text2vec
 tidytext
 tidyverse
 tidyxl
-tmap
 tsbox
 validate
 vroom

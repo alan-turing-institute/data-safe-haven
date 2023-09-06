@@ -81,7 +81,7 @@ $subnet = Deploy-Subnet -Name $config.srdImage.build.subnet.name -VirtualNetwork
 Add-LogMessage -Level Info "Ensure that build NSG '$($config.srdImage.build.nsg.name)' exists..."
 $buildNsg = Deploy-NetworkSecurityGroup -Name $config.srdImage.build.nsg.name -ResourceGroupName $config.srdImage.network.rg -Location $config.srdImage.location
 # Get list of IP addresses which are allowed to connect to the VM candidates
-$existingRule = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $buildNsg | Where-Object { $_.Name -eq "AllowBuildAdminSshInbound" }
+$existingRule = Get-AzNetworkSecurityRuleConfig -NetworkSecurityGroup $buildNsg | Where-Object { $_.Name -eq "AllowAdminApprovedSshInbound" }
 $allowedIpAddresses = @($config.srdImage.build.nsg.allowedIpAddresses)
 $allowedIpAddresses += $existingRule ? @($existingRule.SourceAddressPrefix) : @()
 $config["buildAdminIpAddresses"] = $allowedIpAddresses | Where-Object { $_ } | Sort-Object | Get-Unique

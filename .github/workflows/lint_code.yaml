@@ -9,32 +9,6 @@ on:  # yamllint disable-line rule:truthy
     branches: [develop]
 
 jobs:
-  lint_html:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Get tags
-        run: git fetch --tags origin
-      - name: Install requirements
-        shell: bash
-        run: |
-          sudo gem install html-proofer -v 4.4.1
-          pip install -r docs/build/requirements.txt
-      - name: Generate HTML documention
-        shell: bash
-        run: |
-          DISABLE_VERSION_LINKS=1 make -C docs html
-      - name: Lint HTML
-        shell: bash
-        run: |
-          htmlproofer docs/_output \
-            --allow-missing-href=true \
-            --enforce-https=true \
-            --ignore-files "/_static/" \
-            --ignore-status-codes "502,503" \
-            --ignore-urls "/github.com\/alan-turing-institute\/data-classification-app/,/www.turing.ac.uk/"
-
   lint_json:
     runs-on: ubuntu-latest
     steps:

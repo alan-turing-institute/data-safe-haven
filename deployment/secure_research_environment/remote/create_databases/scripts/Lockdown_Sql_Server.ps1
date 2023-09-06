@@ -107,7 +107,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
         # Create a DB user for each login group
         Write-Output "Ensuring that an SQL user exists for '$domainGroup' on: '$serverName'..."
         $sqlCommand = "IF NOT EXISTS(SELECT * FROM sys.database_principals WHERE name = '$domainGroup') CREATE USER [$domainGroup] FOR LOGIN [$domainGroup];"
-        Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+        Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query "$sqlCommand" -TrustServerCertificate -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
         if ($? -And -Not $sqlErrorMessage) {
             Write-Output " [o] Ensured that '$domainGroup' user exists on: '$serverName'"
             Start-Sleep -s 10  # allow time for the database action to complete
@@ -124,7 +124,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     foreach ($groupSchemaTuple in @(($DataAdminGroup, "data"), ($ResearchUsersGroup, "dbopublic"))) {
         $domainGroup, $schemaName = $groupSchemaTuple
         $sqlCommand = "IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'$schemaName') EXEC('CREATE SCHEMA $schemaName AUTHORIZATION [$domainGroup]');"
-        Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+        Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -TrustServerCertificate -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
         if ($? -And -Not $sqlErrorMessage) {
             Write-Output " [o] Successfully ensured that '$schemaName' schema exists on: '$serverName'"
             Start-Sleep -s 10  # allow time for the database action to complete
@@ -154,7 +154,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
             Write-Output " [x] Role $role not recognised!"
             continue
         }
-        Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+        Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -TrustServerCertificate -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
         if ($? -And -Not $sqlErrorMessage) {
             Write-Output " [o] Successfully gave '$domainGroup' $role permissions on: '$serverName'"
             Start-Sleep -s 10  # allow time for the database action to complete
@@ -171,7 +171,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     # ------------------------------------
     Write-Output "Running T-SQL lockdown script on: '$serverName'..."
     $sqlCommand = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($ServerLockdownCommandB64))
-    Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+    Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -TrustServerCertificate -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
     if ($? -And -Not $sqlErrorMessage) {
         Write-Output " [o] Successfully ran T-SQL lockdown script on: '$serverName'"
     } else {
@@ -187,7 +187,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     $windowsAdmin = "${serverName}\${VmAdminUsername}"
     Write-Output "Removing database access from $windowsAdmin on: '$serverName'..."
     $sqlCommand = "DROP USER IF EXISTS [$windowsAdmin]; IF EXISTS(SELECT * FROM master.dbo.syslogins WHERE loginname = '$windowsAdmin') DROP LOGIN [$windowsAdmin]"
-    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+    Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -TrustServerCertificate -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
     if ($? -And -Not $sqlErrorMessage) {
         Write-Output " [o] Successfully removed database access for $windowsAdmin on: '$serverName'"
         Start-Sleep -s 10  # allow time for the database action to complete
@@ -203,7 +203,7 @@ if ($operationFailed -Or (-Not $loginExists)) {
     # ---------------------------------------------------------------------------------
     Write-Output "Revoking sysadmin role from $DbAdminUsername on: '$serverName'..."
     $sqlCommand = "ALTER SERVER ROLE sysadmin DROP MEMBER $DbAdminUsername;"
-    Invoke-SqlCmd -ServerInstance $serverInstance -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
+    Invoke-SqlCmd -ServerInstance $serverName -Credential $sqlAdminCredentials -QueryTimeout $connectionTimeoutInSeconds -Query $sqlCommand -TrustServerCertificate -ErrorAction SilentlyContinue -ErrorVariable sqlErrorMessage -OutputSqlErrors $true
     if ($? -And -Not $sqlErrorMessage) {
         Write-Output " [o] Successfully revoked sysadmin role on: '$serverName'"
         Start-Sleep -s 10  # allow time for the database action to complete

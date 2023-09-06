@@ -9,7 +9,7 @@ disk_setup:
 
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
-    partition: 1
+    partition: auto
     filesystem: ext4
 
 mounts:
@@ -122,7 +122,7 @@ write_files:
   - path: "/etc/cron.d/pull-from-internet"
     permissions: "0644"
     content: |
-      # External update (rsync from CRAN) every 6 hours
+      # External update from PyPi every 6 hours
       0 */6 * * * mirrordaemon ~mirrordaemon/pull_from_internet.sh
 
   - path: "/etc/cron.d/pull-then-push"
@@ -313,7 +313,7 @@ runcmd:
 
   # Install bandersnatch with pip
   - echo ">=== Installing bandersnatch... ===<"
-  - pip3 install bandersnatch==4.2.0
+  - pip3 install bandersnatch==4.2.0 packaging==21.3
   - echo "Using bandersnatch from '$(which bandersnatch)'"
 
   # Initialise allowlist if appropriate

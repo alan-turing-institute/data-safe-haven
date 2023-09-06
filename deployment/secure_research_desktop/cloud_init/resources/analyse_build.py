@@ -146,12 +146,12 @@ def main():
     with suppress(FileNotFoundError):
         for fname in glob.glob("/opt/monitoring/python-*-safety-check.json"):
             with open(fname, "r") as f_safety_check:
-                packages = json.load(f_safety_check)
-            if packages:
+                output = json.load(f_safety_check)
+            if output["affected_packages"]:
                 python_version = fname.split("-")[1]
                 log(timestamp, "WARNING", f"Safety check found problems with Python {python_version}")
-            for package in packages:
-                log(timestamp, "WARNING", f"... {package[0]} [{package[2]}] is affected by issue {package[4]} (for versions {package[1]})")
+            for package in output["vulnerabilities"]:
+                log(timestamp, "WARNING", f"... {package['package_name']} [{package['analyzed_version']}] is affected by issue {package['vulnerability_id']} (for versions {package['all_vulnerable_specs']})")
 
 
 if __name__ == "__main__":

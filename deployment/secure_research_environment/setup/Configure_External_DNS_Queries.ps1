@@ -26,10 +26,11 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 # --------------------------------------
 $firewallRules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." ".." "safe_haven_management_environment" "network_rules" "shm-firewall-rules.json") -Parameters $config.shm -AsHashtable
 $allowedFqdns = @($firewallRules.applicationRuleCollections | ForEach-Object { $_.properties.rules.targetFqdns }) +
-                @(Get-PrivateDnsZones -ResourceGroupName $config.shm.network.vnet.rg -SubscriptionName $config.shm.subscriptionName | ForEach-Object { $_.Name })
+                @(Get-PrivateDnsZones -ResourceGroupName $config.shm.network.vnet.rg -SubscriptionName $config.shm.subscriptionName | ForEach-Object { $_.Name }) +
+                @("docker.io")
 # List all unique FQDNs
 $allowedFqdns = $allowedFqdns |
-                Where-Object { $_ -notlike "g*.servicebus.windows.net" } | # Remove AzureADConnect password reset endpoints
+                Where-Object { $_ -notlike "*-sb.servicebus.windows.net" } | # Remove AzureADConnect password reset endpoints
                 Where-Object { $_ -notlike "pksproddatastore*.blob.core.windows.net" } | # Remove AzureAD operations endpoints
                 Sort-Object -Unique
 Add-LogMessage -Level Info "Restricted networks will be allowed to run DNS lookup on the following $($allowedFqdns.Count) FQDNs:"
@@ -81,7 +82,8 @@ Add-LogMessage -Level Info "Looking for SRD with IP address '$vmIpAddress'..."
 if (-not $vmIpAddress) {
     Add-LogMessage -Level Fatal "No SRD found with IP address '$vmIpAddress'. Cannot run test to confirm external DNS resolution."
 } else {
-    $vmName = @(Get-AzNetworkInterface | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress } | ForEach-Object { $_.VirtualMachine.Id.Split("/")[-1] })[0]
+    # Match on IP address within approriate SRE resource group
+    $vmName = @(Get-AzNetworkInterface -ResourceGroupName $config.sre.srd.rg | Where-Object { $_.IpConfigurations.PrivateIpAddress -eq $vmIpAddress } | ForEach-Object { $_.VirtualMachine.Id.Split("/")[-1] })[0]
     Add-LogMessage -Level Info "Testing external DNS resolution on VM '$vmName'..."
     $params = @{
         SHM_DOMAIN_FQDN   = $config.shm.domain.fqdn

@@ -68,11 +68,13 @@ try {
 # :: Databases
 try {
     foreach ($keyName in $config.sre.databases.Keys) {
-        if ($config.sre.databases[$keyName] -isnot [System.Collections.IDictionary]) { continue }
-        $dbAdminUsername = ($keyName -eq "dbpostgresql") ? "postgres" : "sre$($config.sre.id)dbadmin".ToLower() # The postgres admin username is hardcoded as 'postgres' but we save it to the keyvault to ensure a consistent record structure
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$keyName].adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$keyName].dbAdminUsernameSecretName $dbAdminUsername -AsPlaintext
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.databases[$keyName].dbAdminPasswordSecretName -DefaultLength 20 -AsPlaintext
+        foreach ($dbInstance in $config.sre.databases[$keyName]) {
+            if ($dbInstance -isnot [System.Collections.IDictionary]) { continue }
+            $dbAdminUsername = ($keyName -eq "dbpostgresql") ? "postgres" : "sre$($config.sre.id)dbadmin".ToLower() # The postgres admin username is hardcoded as 'postgres' but we save it to the keyvault to ensure a consistent record structure
+            $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $dbInstance.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
+            $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $dbInstance.dbAdminUsernameSecretName $dbAdminUsername -AsPlaintext
+            $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $dbInstance.dbAdminPasswordSecretName -DefaultLength 20 -AsPlaintext
+        }
     }
     Add-LogMessage -Level Success "Ensured that SRE database secrets exist"
 } catch {

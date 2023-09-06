@@ -6,7 +6,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 # Set package versions
 ARG AZURE_CLI_VERSION="2.42.0"
-ARG PWSH_VERSION="7.2.6"
+ARG PWSH_VERSION="7.3.6"
 
 # Set up TARGETARCH variable to use to pull the right binaries for the current architecture.
 ARG TARGETARCH
@@ -46,7 +46,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
 USER $USERNAME
 
 # Install Sphinx dependencies
-COPY ./docs/build/requirements.txt /build/requirements.txt
+COPY ./docs/requirements.txt /build/requirements.txt
 RUN pip3 install -r /build/requirements.txt
 
 # Install/check needed powershell modules
