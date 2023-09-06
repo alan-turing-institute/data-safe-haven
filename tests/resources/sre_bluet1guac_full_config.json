@@ -1387,26 +1387,6 @@
       }
     },
     "webapps": {
-      "cocalc": {
-        "adminPasswordSecretName": "sre-t1guac-vm-admin-password-cocalc",
-        "disks": {
-          "data": {
-            "sizeGb": "512",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "32",
-            "type": "Standard_LRS"
-          }
-        },
-        "dockerVersion": "latest",
-        "fqdn": "COCALC.t1guac.blue.develop.turingsafehaven.ac.uk",
-        "hostname": "COCALC",
-        "ip": "10.151.5.7",
-        "osVersion": "Ubuntu-latest",
-        "vmName": "COCALC-SRE-T1GUAC",
-        "vmSize": "Standard_D2s_v3"
-      },
       "codimd": {
         "adminPasswordSecretName": "sre-t1guac-vm-admin-password-codimd",
         "codimd": {
