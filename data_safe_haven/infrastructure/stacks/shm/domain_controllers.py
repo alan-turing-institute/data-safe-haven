@@ -2,7 +2,7 @@
 from collections.abc import Mapping, Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network, operationalinsights, resources
+from pulumi_azure_native import network, resources
 
 from data_safe_haven.infrastructure.common import get_name_from_subnet
 from data_safe_haven.infrastructure.components import (
@@ -13,6 +13,7 @@ from data_safe_haven.infrastructure.components import (
     VMComponent,
     WindowsVMComponentProps,
     WrappedAutomationAccount,
+    WrappedLogAnalyticsWorkspace,
 )
 from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
@@ -29,9 +30,7 @@ class SHMDomainControllersProps:
         domain_fqdn: Input[str],
         domain_netbios_name: Input[str],
         location: Input[str],
-        log_analytics_workspace: Input[operationalinsights.Workspace],
-        log_analytics_workspace_id: Input[str],
-        log_analytics_workspace_key: Input[str],
+        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         password_domain_admin: Input[str],
         password_domain_azuread_connect: Input[str],
         password_domain_computer_manager: Input[str],
@@ -63,8 +62,12 @@ class SHMDomainControllersProps:
         )  # maximum of 15 characters
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
-        self.log_analytics_workspace_id = log_analytics_workspace_id
-        self.log_analytics_workspace_key = log_analytics_workspace_key
+        self.log_analytics_workspace_id = Output.from_input(
+            log_analytics_workspace
+        ).apply(lambda w: w.workspace_id)
+        self.log_analytics_workspace_key = Output.from_input(
+            log_analytics_workspace
+        ).apply(lambda w: w.workspace_key)
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect
         self.password_domain_computer_manager = password_domain_computer_manager

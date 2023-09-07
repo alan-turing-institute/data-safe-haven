@@ -2,7 +2,7 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network, operationalinsights
+from pulumi_azure_native import network
 
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
@@ -12,6 +12,7 @@ from data_safe_haven.infrastructure.common import (
 from data_safe_haven.infrastructure.components import (
     LinuxVMComponentProps,
     VMComponent,
+    WrappedLogAnalyticsWorkspace,
 )
 from data_safe_haven.resources import resources_path
 
@@ -23,9 +24,7 @@ class SHMUpdateServersProps:
         self,
         admin_password: Input[str],
         location: Input[str],
-        log_analytics_workspace: Input[operationalinsights.Workspace],
-        log_analytics_workspace_id: Input[str],
-        log_analytics_workspace_key: Input[str],
+        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         resource_group_name: Input[str],
         subnet: Input[network.GetSubnetResult],
         virtual_network_name: Input[str],
@@ -39,8 +38,12 @@ class SHMUpdateServersProps:
         self.ip_address_linux = available_ip_addresses.apply(lambda ips: ips[0])
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
-        self.log_analytics_workspace_id = log_analytics_workspace_id
-        self.log_analytics_workspace_key = log_analytics_workspace_key
+        self.log_analytics_workspace_id = Output.from_input(
+            log_analytics_workspace
+        ).apply(lambda w: w.workspace_id)
+        self.log_analytics_workspace_key = Output.from_input(
+            log_analytics_workspace
+        ).apply(lambda w: w.workspace_key)
         self.resource_group_name = resource_group_name
         self.subnet_name = Output.from_input(subnet).apply(get_name_from_subnet)
         self.virtual_network_name = virtual_network_name

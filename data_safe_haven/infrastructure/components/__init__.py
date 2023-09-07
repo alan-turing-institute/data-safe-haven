@@ -25,6 +25,7 @@ from .dynamic import (
 )
 from .wrapped import (
     WrappedAutomationAccount,
+    WrappedLogAnalyticsWorkspace,
 )
 
 __all__ = [
@@ -50,4 +51,5 @@ __all__ = [
     "VMComponent",
     "WindowsVMComponentProps",
     "WrappedAutomationAccount",
+    "WrappedLogAnalyticsWorkspace",
 ]

@@ -17,7 +17,10 @@ from data_safe_haven.functions import (
     time_as_string,
 )
 from data_safe_haven.infrastructure.common import get_id_from_subnet
-from data_safe_haven.infrastructure.components import WrappedAutomationAccount
+from data_safe_haven.infrastructure.components import (
+    WrappedAutomationAccount,
+    WrappedLogAnalyticsWorkspace,
+)
 
 
 class SHMMonitoringProps:
@@ -157,7 +160,7 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Deploy log analytics workspace and get workspace keys
-        log_analytics = operationalinsights.Workspace(
+        log_analytics = WrappedLogAnalyticsWorkspace(
             f"{self._name}_log_analytics",
             location=props.location,
             resource_group_name=resource_group.name,
@@ -169,9 +172,6 @@ class SHMMonitoringComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
-        log_analytics_keys = Output.all(
-            resource_group_name=resource_group.name, workspace_name=log_analytics.name
-        ).apply(lambda kwargs: operationalinsights.get_shared_keys(**kwargs))
 
         # Set up a private linkscope and endpoint for the log analytics workspace
         log_analytics_private_link_scope = insights.PrivateLinkScope(
@@ -432,18 +432,12 @@ class SHMMonitoringComponent(ComponentResource):
         self.automation_account_modules = list(modules.keys())
         self.automation_account_private_dns = automation_account_private_dns
         self.log_analytics_workspace = log_analytics
-        self.log_analytics_workspace_id = log_analytics.customer_id
-        self.log_analytics_workspace_key = Output.secret(
-            log_analytics_keys.primary_shared_key
-            if log_analytics_keys.primary_shared_key
-            else "UNKNOWN"
-        )
         self.resource_group_name = resource_group.name
 
         # Register exports
         self.exports = {
             "automation_account_name": automation_account.name,
-            "log_analytics_workspace_id": self.log_analytics_workspace_id,
-            "log_analytics_workspace_key": self.log_analytics_workspace_key,
+            "log_analytics_workspace_id": self.log_analytics_workspace.workspace_id,
+            "log_analytics_workspace_key": self.log_analytics_workspace.workspace_key,
             "resource_group_name": resource_group.name,
         }

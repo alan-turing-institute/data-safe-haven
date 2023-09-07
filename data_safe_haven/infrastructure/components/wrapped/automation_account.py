@@ -40,7 +40,7 @@ class WrappedAutomationAccount(automation.AutomationAccount):
                 "/automationAccounts/", "/accounts/"
             )
             if url
-            else ""
+            else "UNKNOWN"
         )
 
     @property
@@ -48,7 +48,9 @@ class WrappedAutomationAccount(automation.AutomationAccount):
         """
         Gets the URL of the jrds.
         """
-        return self.automation_hybrid_service_url.apply(lambda url: url if url else "")
+        return self.automation_hybrid_service_url.apply(
+            lambda url: url if url else "UNKNOWN"
+        )
 
     @property
     def primary_key(self) -> pulumi.Output[str]:
@@ -63,7 +65,7 @@ class WrappedAutomationAccount(automation.AutomationAccount):
         ).apply(
             lambda kwargs: automation.list_key_by_automation_account(**kwargs).keys
         )
-        return automation_keys.apply(lambda keys: keys[0].value if keys else "")
+        return automation_keys.apply(lambda keys: keys[0].value if keys else "UNKNOWN")
 
     @property
     def resource_group_name(self) -> pulumi.Output[str]:
