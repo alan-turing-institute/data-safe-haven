@@ -15,13 +15,13 @@ from pulumi.resource import (
 )
 
 __all__ = [
-    "Config",
-    "Resource",
-    "ComponentResource",
-    "ResourceOptions",
-    "export",
-    "Output",
-    "Input",
-    "dynamic",
     "automation",
+    "ComponentResource",
+    "Config",
+    "dynamic",
+    "export",
+    "Input",
+    "Output",
+    "Resource",
+    "ResourceOptions",
 ]
