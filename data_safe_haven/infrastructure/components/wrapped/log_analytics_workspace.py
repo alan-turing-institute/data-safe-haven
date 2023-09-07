@@ -50,10 +50,12 @@ class WrappedLogAnalyticsWorkspace(operationalinsights.Workspace):
         ).apply(
             lambda kwargs: operationalinsights.get_shared_keys_output(**kwargs)
         )
-        return workspace_keys.apply(
-            lambda keys: keys.primary_shared_key
-            if keys.primary_shared_key
-            else "UNKNOWN"
+        return pulumi.Output.secret(
+            workspace_keys.apply(
+                lambda keys: keys.primary_shared_key
+                if keys.primary_shared_key
+                else "UNKNOWN"
+            )
         )
 
     @property

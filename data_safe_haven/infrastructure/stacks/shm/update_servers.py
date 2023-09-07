@@ -38,12 +38,6 @@ class SHMUpdateServersProps:
         self.ip_address_linux = available_ip_addresses.apply(lambda ips: ips[0])
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
-        self.log_analytics_workspace_id = Output.from_input(
-            log_analytics_workspace
-        ).apply(lambda w: w.workspace_id)
-        self.log_analytics_workspace_key = Output.from_input(
-            log_analytics_workspace
-        ).apply(lambda w: w.workspace_key)
         self.resource_group_name = resource_group_name
         self.subnet_name = Output.from_input(subnet).apply(get_name_from_subnet)
         self.virtual_network_name = virtual_network_name
@@ -77,8 +71,6 @@ class SHMUpdateServersComponent(ComponentResource):
                 ip_address_private=props.ip_address_linux,
                 location=props.location,
                 log_analytics_workspace=props.log_analytics_workspace,
-                log_analytics_workspace_id=props.log_analytics_workspace_id,
-                log_analytics_workspace_key=props.log_analytics_workspace_key,
                 resource_group_name=props.resource_group_name,
                 subnet_name=props.subnet_name,
                 virtual_network_name=props.virtual_network_name,

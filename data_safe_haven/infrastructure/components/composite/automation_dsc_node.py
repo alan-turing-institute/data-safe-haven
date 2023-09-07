@@ -5,9 +5,12 @@ from collections.abc import Mapping, Sequence
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation, compute
 
-from data_safe_haven.infrastructure.components.dynamic.compiled_dsc import (
+from data_safe_haven.infrastructure.components.dynamic import (
     CompiledDsc,
     CompiledDscProps,
+)
+from data_safe_haven.infrastructure.components.wrapped import (
+    WrappedAutomationAccount,
 )
 from data_safe_haven.utility import FileReader
 
@@ -17,10 +20,7 @@ class AutomationDscNodeProps:
 
     def __init__(
         self,
-        automation_account: Input[automation.AutomationAccount],
-        automation_account_registration_key: Input[str],
-        automation_account_registration_url: Input[str],
-        automation_account_resource_group_name: Input[str],
+        automation_account: WrappedAutomationAccount,
         configuration_name: Input[str],
         dsc_description: Input[str],
         dsc_file: Input[FileReader],
@@ -32,14 +32,6 @@ class AutomationDscNodeProps:
         vm_resource_group_name: Input[str],
     ) -> None:
         self.automation_account = automation_account
-        self.automation_account_name = Output.from_input(automation_account).apply(
-            lambda account: account.name
-        )
-        self.automation_account_registration_key = automation_account_registration_key
-        self.automation_account_registration_url = automation_account_registration_url
-        self.automation_account_resource_group_name = (
-            automation_account_resource_group_name
-        )
         self.configuration_name = configuration_name
         self.dsc_description = dsc_description
         self.dsc_file = dsc_file
@@ -68,12 +60,12 @@ class AutomationDscNode(ComponentResource):
         # Upload the primary domain controller DSC
         dsc = automation.DscConfiguration(
             f"{self._name}_dsc",
-            automation_account_name=props.automation_account_name,
+            automation_account_name=props.automation_account.name,
             configuration_name=props.configuration_name,
             description=props.dsc_description,
             location=props.location,
             name=props.configuration_name,
-            resource_group_name=props.automation_account_resource_group_name,
+            resource_group_name=props.automation_account.resource_group_name,
             source=automation.ContentSourceArgs(
                 hash=automation.ContentHashArgs(
                     algorithm="sha256",
@@ -97,14 +89,14 @@ class AutomationDscNode(ComponentResource):
         dsc_compiled = CompiledDsc(
             f"{self._name}_dsc_compiled",
             CompiledDscProps(
-                automation_account_name=props.automation_account_name,
+                automation_account_name=props.automation_account.name,
                 configuration_name=dsc.name,
                 content_hash=Output.from_input(props.dsc_file).apply(
                     lambda f: f.sha256()
                 ),
                 location=props.location,
                 parameters=props.dsc_parameters,
-                resource_group_name=props.automation_account_resource_group_name,
+                resource_group_name=props.automation_account.resource_group_name,
                 required_modules=props.dsc_required_modules,
                 subscription_name=props.subscription_name,
             ),
@@ -127,14 +119,14 @@ class AutomationDscNode(ComponentResource):
                     ),
                     "RebootNodeIfNeeded": True,
                     "RefreshFrequencyMins": 30,
-                    "RegistrationUrl": props.automation_account_registration_url,
+                    "RegistrationUrl": props.automation_account.agentsvc_url,
                 }
             },
             protected_settings={
                 "configurationArguments": {
                     "registrationKey": {
                         "userName": f"notused{time.time()}",  # force refresh every time
-                        "Password": props.automation_account_registration_key,
+                        "Password": props.automation_account.primary_key,
                     }
                 }
             },

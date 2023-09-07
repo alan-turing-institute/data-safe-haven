@@ -44,15 +44,6 @@ class SHMDomainControllersProps:
         self.automation_account = automation_account
         self.automation_account_modules = automation_account_modules
         self.automation_account_private_dns = automation_account_private_dns
-        self.automation_account_registration_url = Output.from_input(
-            automation_account
-        ).apply(lambda a: a.agentsvc_url)
-        self.automation_account_registration_key = Output.from_input(
-            automation_account
-        ).apply(lambda a: a.primary_key)
-        self.automation_account_resource_group_name = Output.from_input(
-            automation_account
-        ).apply(lambda a: a.resource_group_name)
         self.domain_fqdn = domain_fqdn
         self.domain_root_dn = Output.from_input(domain_fqdn).apply(
             lambda dn: f"DC={dn.replace('.', ',DC=')}"
@@ -62,12 +53,6 @@ class SHMDomainControllersProps:
         )  # maximum of 15 characters
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
-        self.log_analytics_workspace_id = Output.from_input(
-            log_analytics_workspace
-        ).apply(lambda w: w.workspace_id)
-        self.log_analytics_workspace_key = Output.from_input(
-            log_analytics_workspace
-        ).apply(lambda w: w.workspace_key)
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect
         self.password_domain_computer_manager = password_domain_computer_manager
@@ -122,8 +107,6 @@ class SHMDomainControllersComponent(ComponentResource):
                 ip_address_private=props.private_ip_address,
                 location=props.location,
                 log_analytics_workspace=props.log_analytics_workspace,
-                log_analytics_workspace_id=props.log_analytics_workspace_id,
-                log_analytics_workspace_key=props.log_analytics_workspace_key,
                 resource_group_name=resource_group.name,
                 subnet_name=props.subnet_name,
                 virtual_network_name=props.virtual_network_name,
@@ -145,9 +128,6 @@ class SHMDomainControllersComponent(ComponentResource):
             f"{self._name}_primary_domain_controller_dsc_node",
             AutomationDscNodeProps(
                 automation_account=props.automation_account,
-                automation_account_registration_key=props.automation_account_registration_key,
-                automation_account_registration_url=props.automation_account_registration_url,
-                automation_account_resource_group_name=props.automation_account_resource_group_name,
                 configuration_name=dsc_configuration_name,
                 dsc_description="DSC for Data Safe Haven primary domain controller",
                 dsc_file=dsc_reader,

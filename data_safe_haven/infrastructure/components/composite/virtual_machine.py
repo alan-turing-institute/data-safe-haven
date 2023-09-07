@@ -3,9 +3,12 @@ from collections.abc import Mapping
 from typing import Any
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import compute, network, operationalinsights
+from pulumi_azure_native import compute, network
 
 from data_safe_haven.functions import replace_separators
+from data_safe_haven.infrastructure.components.wrapped import (
+    WrappedLogAnalyticsWorkspace,
+)
 
 
 class VMComponentProps:
@@ -29,9 +32,7 @@ class VMComponentProps:
         vm_size: Input[str],
         admin_username: Input[str] | None = None,
         ip_address_public: Input[bool] | None = None,
-        log_analytics_workspace: Input[operationalinsights.Workspace] | None = None,
-        log_analytics_workspace_id: Input[str] | None = None,
-        log_analytics_workspace_key: Input[str] | None = None,
+        log_analytics_workspace: WrappedLogAnalyticsWorkspace | None = None,
     ) -> None:
         self.admin_password = admin_password
         self.admin_username = admin_username if admin_username else "dshvmadmin"
@@ -40,8 +41,6 @@ class VMComponentProps:
         self.ip_address_public = ip_address_public
         self.location = location
         self.log_analytics_workspace = log_analytics_workspace
-        self.log_analytics_workspace_id = log_analytics_workspace_id
-        self.log_analytics_workspace_key = log_analytics_workspace_key
         self.os_profile_args = None
         self.resource_group_name = resource_group_name
         self.subnet_name = subnet_name
@@ -229,7 +228,7 @@ class VMComponent(ComponentResource):
         )
 
         # Register with Log Analytics workspace
-        if props.log_analytics_workspace_key and props.log_analytics_workspace_id:
+        if props.log_analytics_workspace:
             compute.VirtualMachineExtension(
                 f"{name_underscored}_log_analytics_extension",
                 auto_upgrade_minor_version=True,
@@ -237,12 +236,12 @@ class VMComponent(ComponentResource):
                 location=props.location,
                 publisher="Microsoft.EnterpriseCloud.Monitoring",
                 protected_settings=Output.from_input(
-                    props.log_analytics_workspace_key
+                    props.log_analytics_workspace.workspace_key
                 ).apply(lambda key: {"workspaceKey": key}),
                 resource_group_name=props.resource_group_name,
-                settings=Output.from_input(props.log_analytics_workspace_id).apply(
-                    lambda wid: {"workspaceId": wid}
-                ),
+                settings=Output.from_input(
+                    props.log_analytics_workspace.workspace_id
+                ).apply(lambda wid: {"workspaceId": wid}),
                 type=props.log_analytics_extension_name,
                 type_handler_version=props.log_analytics_extension_version,
                 vm_extension_name=props.log_analytics_extension_name,

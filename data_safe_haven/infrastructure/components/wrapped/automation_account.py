@@ -65,7 +65,9 @@ class WrappedAutomationAccount(automation.AutomationAccount):
         ).apply(
             lambda kwargs: automation.list_key_by_automation_account(**kwargs).keys
         )
-        return automation_keys.apply(lambda keys: keys[0].value if keys else "UNKNOWN")
+        return pulumi.Output.secret(
+            automation_keys.apply(lambda keys: keys[0].value if keys else "UNKNOWN")
+        )
 
     @property
     def resource_group_name(self) -> pulumi.Output[str]:
