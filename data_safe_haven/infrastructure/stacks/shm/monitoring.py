@@ -134,7 +134,10 @@ class SHMMonitoringComponent(ComponentResource):
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=automation_account)
+                child_opts,
+                ResourceOptions(
+                    ignore_changes=["custom_dns_configs"], parent=automation_account
+                ),
             ),
             tags=child_tags,
         )
@@ -198,7 +201,11 @@ class SHMMonitoringComponent(ComponentResource):
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_monitoring_id),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
+                child_opts,
+                ResourceOptions(
+                    ignore_changes=["custom_dns_configs"],
+                    parent=log_analytics_private_link_scope,
+                ),
             ),
             tags=child_tags,
         )
