@@ -17,6 +17,7 @@ from data_safe_haven.functions import (
     time_as_string,
 )
 from data_safe_haven.infrastructure.common import get_id_from_subnet
+from data_safe_haven.infrastructure.components import WrappedAutomationAccount
 
 
 class SHMMonitoringProps:
@@ -64,7 +65,7 @@ class SHMMonitoringComponent(ComponentResource):
         )
 
         # Deploy automation account
-        automation_account = automation.AutomationAccount(
+        automation_account = WrappedAutomationAccount(
             f"{self._name}_automation_account",
             automation_account_name=f"{stack_name}-aa",
             location=props.location,
@@ -74,10 +75,6 @@ class SHMMonitoringComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
-        automation_keys = Output.all(
-            automation_account_name=automation_account.name,
-            resource_group_name=resource_group.name,
-        ).apply(lambda kwargs: automation.list_key_by_automation_account(**kwargs))
 
         # List of modules as 'name: (version, SHA256 hash)'
         # Note that we exclude ComputerManagementDsc which is already present (https://docs.microsoft.com/en-us/azure/automation/shared-resources/modules#default-modules)
@@ -432,22 +429,7 @@ class SHMMonitoringComponent(ComponentResource):
 
         # Register outputs
         self.automation_account = automation_account
-        self.automation_account_agentsvc_url = (
-            automation_account.automation_hybrid_service_url.apply(
-                lambda url: url.replace("jrds", "agentsvc").replace(
-                    "/automationAccounts/", "/accounts/"
-                )
-                if url
-                else ""
-            )
-        )
-        self.automation_account_jrds_url = (
-            automation_account.automation_hybrid_service_url
-        )
         self.automation_account_modules = list(modules.keys())
-        self.automation_account_primary_key = Output.secret(
-            automation_keys.keys[0].value
-        )
         self.automation_account_private_dns = automation_account_private_dns
         self.log_analytics_workspace = log_analytics
         self.log_analytics_workspace_id = log_analytics.customer_id

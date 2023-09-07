@@ -122,7 +122,6 @@ class AutomationDscNode(ComponentResource):
                     "AllowModuleOverwrite": False,
                     "ConfigurationMode": "ApplyAndMonitor",
                     "ConfigurationModeFrequencyMins": 15,
-                    # "NodeConfigurationName": f"{props.configuration_name}.localhost",
                     "NodeConfigurationName": Output.concat(
                         dsc_compiled.configuration_name, ".localhost"
                     ),

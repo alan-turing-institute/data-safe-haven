@@ -2,7 +2,7 @@
 from collections.abc import Mapping, Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import automation, network, operationalinsights, resources
+from pulumi_azure_native import network, operationalinsights, resources
 
 from data_safe_haven.infrastructure.common import get_name_from_subnet
 from data_safe_haven.infrastructure.components import (
@@ -12,6 +12,7 @@ from data_safe_haven.infrastructure.components import (
     RemoteScriptProps,
     VMComponent,
     WindowsVMComponentProps,
+    WrappedAutomationAccount,
 )
 from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
@@ -22,12 +23,9 @@ class SHMDomainControllersProps:
 
     def __init__(
         self,
-        automation_account: Input[automation.AutomationAccount],
+        automation_account: Input[WrappedAutomationAccount],
         automation_account_modules: Input[Sequence[str]],
         automation_account_private_dns: Input[network.PrivateDnsZoneGroup],
-        automation_account_registration_key: Input[str],
-        automation_account_registration_url: Input[str],
-        automation_account_resource_group_name: Input[str],
         domain_fqdn: Input[str],
         domain_netbios_name: Input[str],
         location: Input[str],
@@ -47,11 +45,15 @@ class SHMDomainControllersProps:
         self.automation_account = automation_account
         self.automation_account_modules = automation_account_modules
         self.automation_account_private_dns = automation_account_private_dns
-        self.automation_account_registration_url = automation_account_registration_url
-        self.automation_account_registration_key = automation_account_registration_key
-        self.automation_account_resource_group_name = (
-            automation_account_resource_group_name
-        )
+        self.automation_account_registration_url = Output.from_input(
+            automation_account
+        ).apply(lambda a: a.agentsvc_url)
+        self.automation_account_registration_key = Output.from_input(
+            automation_account
+        ).apply(lambda a: a.primary_key)
+        self.automation_account_resource_group_name = Output.from_input(
+            automation_account
+        ).apply(lambda a: a.resource_group_name)
         self.domain_fqdn = domain_fqdn
         self.domain_root_dn = Output.from_input(domain_fqdn).apply(
             lambda dn: f"DC={dn.replace('.', ',DC=')}"

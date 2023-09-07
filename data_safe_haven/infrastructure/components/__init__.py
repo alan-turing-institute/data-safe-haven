@@ -23,6 +23,9 @@ from .dynamic import (
     SSLCertificate,
     SSLCertificateProps,
 )
+from .wrapped import (
+    WrappedAutomationAccount,
+)
 
 __all__ = [
     "AutomationDscNode",
@@ -46,4 +49,5 @@ __all__ = [
     "SSLCertificateProps",
     "VMComponent",
     "WindowsVMComponentProps",
+    "WrappedAutomationAccount",
 ]
