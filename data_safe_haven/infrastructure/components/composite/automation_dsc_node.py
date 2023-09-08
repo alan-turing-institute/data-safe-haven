@@ -91,9 +91,6 @@ class AutomationDscNode(ComponentResource):
             CompiledDscProps(
                 automation_account_name=props.automation_account.name,
                 configuration_name=dsc.name,
-                content_hash=Output.from_input(props.dsc_file).apply(
-                    lambda f: f.sha256()
-                ),
                 location=props.location,
                 parameters=props.dsc_parameters,
                 resource_group_name=props.automation_account.resource_group_name,

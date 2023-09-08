@@ -115,6 +115,18 @@ class AzureApi(AzureAuthenticator):
             ):
                 break
             time.sleep(10)
+        # Wait until configuration is available
+        while True:
+            try:
+                automation_client.dsc_configuration.get(
+                    resource_group_name=resource_group_name,
+                    automation_account_name=automation_account_name,
+                    configuration_name=configuration_name,
+                )
+                break
+            except ResourceNotFoundError as exc:
+                self.logger.debug(f"Could not load configuration {configuration_name}, retrying.")
+                time.sleep(10)
         # Begin creation
         compilation_job_name = f"{configuration_name}-{time.time_ns()}"
         with suppress(ResourceExistsError):

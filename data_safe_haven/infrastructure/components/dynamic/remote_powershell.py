@@ -33,7 +33,7 @@ class RemoteScriptProps:
 
 class RemoteScriptProvider(DshResourceProvider):
     def create(self, props: dict[str, Any]) -> CreateResult:
-        """Create compiled desired state file."""
+        """Run a remote script on a VM"""
         outs = dict(**props)
         azure_api = AzureApi(props["subscription_name"], disable_logging=True)
         # Run remote script
@@ -49,7 +49,7 @@ class RemoteScriptProvider(DshResourceProvider):
         )
 
     def delete(self, id_: str, props: dict[str, Any]) -> None:
-        """The Python SDK does not support configuration deletion"""
+        """It is not possible to un-run a script"""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id((id_, props))
 

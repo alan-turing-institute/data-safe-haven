@@ -17,7 +17,6 @@ class CompiledDscProps:
         self,
         automation_account_name: Input[str],
         configuration_name: Input[str],
-        content_hash: Input[str],
         location: Input[str],
         parameters: Input[dict[str, Any]],
         resource_group_name: Input[str],
@@ -26,7 +25,6 @@ class CompiledDscProps:
     ) -> None:
         self.automation_account_name = automation_account_name
         self.configuration_name = configuration_name
-        self.content_hash = content_hash
         self.location = location
         self.parameters = parameters
         self.resource_group_name = resource_group_name
