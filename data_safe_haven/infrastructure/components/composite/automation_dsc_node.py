@@ -1,5 +1,4 @@
 """Register a VM as an Azure Automation DSC node"""
-import time
 from collections.abc import Mapping, Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -97,7 +96,12 @@ class AutomationDscNode(ComponentResource):
                 required_modules=props.dsc_required_modules,
                 subscription_name=props.subscription_name,
             ),
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(depends_on=[dsc])),
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    depends_on=[dsc],
+                ),
+            ),
         )
         compute.VirtualMachineExtension(
             f"{self._name}_dsc_extension",
@@ -108,12 +112,10 @@ class AutomationDscNode(ComponentResource):
             settings={
                 "configurationArguments": {
                     "ActionAfterReboot": "ContinueConfiguration",
-                    "AllowModuleOverwrite": False,
+                    "AllowModuleOverwrite": True,
                     "ConfigurationMode": "ApplyAndMonitor",
                     "ConfigurationModeFrequencyMins": 15,
-                    "NodeConfigurationName": Output.concat(
-                        dsc_compiled.configuration_name, ".localhost"
-                    ),
+                    "NodeConfigurationName": dsc_compiled.local_configuration_name,
                     "RebootNodeIfNeeded": True,
                     "RefreshFrequencyMins": 30,
                     "RegistrationUrl": props.automation_account.agentsvc_url,
@@ -122,7 +124,7 @@ class AutomationDscNode(ComponentResource):
             protected_settings={
                 "configurationArguments": {
                     "registrationKey": {
-                        "userName": f"notused{time.time()}",  # force refresh every time
+                        "userName": "notused",
                         "Password": props.automation_account.primary_key,
                     }
                 }
@@ -133,7 +135,9 @@ class AutomationDscNode(ComponentResource):
             vm_extension_name="Microsoft.Powershell.DSC",
             opts=ResourceOptions.merge(
                 child_opts,
-                ResourceOptions(depends_on=[dsc_compiled]),
+                ResourceOptions(
+                    depends_on=[dsc_compiled],
+                ),
             ),
             tags=child_tags,
         )

@@ -124,8 +124,10 @@ class AzureApi(AzureAuthenticator):
                     configuration_name=configuration_name,
                 )
                 break
-            except ResourceNotFoundError as exc:
-                self.logger.debug(f"Could not load configuration {configuration_name}, retrying.")
+            except ResourceNotFoundError:
+                self.logger.debug(
+                    f"Could not load configuration {configuration_name}, retrying."
+                )
                 time.sleep(10)
         # Begin creation
         compilation_job_name = f"{configuration_name}-{time.time_ns()}"

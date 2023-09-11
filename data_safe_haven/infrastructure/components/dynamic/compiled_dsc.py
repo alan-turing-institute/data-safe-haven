@@ -35,6 +35,7 @@ class CompiledDscProps:
 class CompiledDscProvider(DshResourceProvider):
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Create compiled desired state file."""
+        outputs = dict(**props)
         azure_api = AzureApi(props["subscription_name"], disable_logging=True)
         # Compile desired state
         azure_api.compile_desired_state(
@@ -45,9 +46,11 @@ class CompiledDscProvider(DshResourceProvider):
             resource_group_name=props["resource_group_name"],
             required_modules=props["required_modules"],
         )
+        # Set localhost configuration name
+        outputs["local_configuration_name"] = f"{props['configuration_name']}.localhost"
         return CreateResult(
             f"CompiledDsc-{props['configuration_name']}",
-            outs=dict(**props),
+            outs=outputs,
         )
 
     def delete(self, id_: str, props: dict[str, Any]) -> None:
@@ -70,6 +73,7 @@ class CompiledDscProvider(DshResourceProvider):
 class CompiledDsc(Resource):
     automation_account_name: Output[str]
     configuration_name: Output[str]
+    local_configuration_name: Output[str]
     location: Output[str]
     resource_group_name: Output[str]
     _resource_type_name = "dsh:common:CompiledDsc"  # set resource type
@@ -80,4 +84,9 @@ class CompiledDsc(Resource):
         props: CompiledDscProps,
         opts: ResourceOptions | None = None,
     ):
-        super().__init__(CompiledDscProvider(), name, {**vars(props)}, opts)
+        super().__init__(
+            CompiledDscProvider(),
+            name,
+            {"local_configuration_name": None, **vars(props)},
+            opts,
+        )

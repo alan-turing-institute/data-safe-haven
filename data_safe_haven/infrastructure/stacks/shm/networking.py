@@ -402,7 +402,10 @@ class SHMNetworkingComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
-                    ignore_changes=["virtual_network_peerings"]
+                    ignore_changes=[
+                        "subnets",
+                        "virtual_network_peerings",
+                    ]
                 ),  # allow SRE virtual networks to peer to this
             ),
             tags=child_tags,

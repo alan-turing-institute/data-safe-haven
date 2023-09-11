@@ -325,6 +325,7 @@ class PulumiStack:
                 color="always",
                 debug=self.logger.isEnabledFor(logging.DEBUG),
                 log_flow=True,
+                log_verbosity=9,
                 on_output=self.logger.info,
             )
             self.evaluate(result.summary.result)
