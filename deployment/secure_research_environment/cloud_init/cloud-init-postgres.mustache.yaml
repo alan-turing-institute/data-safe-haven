@@ -25,7 +25,7 @@ disk_setup:
 
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
-    partition: 1
+    partition: auto
     filesystem: ext4
 
 mounts:

@@ -8,7 +8,7 @@ param (
 Import-Module $PSScriptRoot/common/Logging -Force -ErrorAction Stop
 
 # Requirements
-$PowershellSupportedVersion = "7.3.2"
+$PowershellSupportedVersion = "7.3.6"
 $ModuleVersionRequired = @{
     "Az.Accounts"                                  = @("ge", "2.11.1")
     "Az.Automation"                                = @("ge", "1.9.0")

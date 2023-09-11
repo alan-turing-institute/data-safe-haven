@@ -12,7 +12,7 @@ disk_setup:
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
     filesystem: ext4
-    partition: 1
+    partition: auto
 
 # Note that we do not include the blobfuse mounts here as these are controlled by systemd
 mounts:

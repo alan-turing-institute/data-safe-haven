@@ -330,7 +330,7 @@ function Get-ShmConfig {
                 ) # *-jobruntimedata-prod-su1.azure-automation.net
                 linux           = (
                     @("72.32.157.246", "87.238.57.227", "147.75.85.69", "217.196.149.55") + # apt.postgresql.org
-                    @("91.189.91.38", "91.189.91.39", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
+                    @("91.189.91.38", "91.189.91.39", "91.189.91.48", "91.189.91.49", "91.189.91.81", "91.189.91.82", "91.189.91.83", "185.125.190.17", "185.125.190.18", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
                     $cloudFlareIpAddresses + # database.clamav.net, packages.gitlab.com and qgis.org use Cloudflare
                     $cloudFrontIpAddresses + # packages.gitlab.com uses Cloudfront to host its Release file
                     @("104.131.190.124") + # dbeaver.io

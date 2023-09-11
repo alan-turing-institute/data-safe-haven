@@ -39,9 +39,8 @@ packages:
     pathos:
     pg8000:
     Pillow:
+    pip-tools:
     plotly:
-    poetry:  # also used by installation scripts
-        "all": [">1.0.0"]  # increase solver flexibility
     prophet:
     psycopg2:
     pydot:

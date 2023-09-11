@@ -640,7 +640,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** software uploaded to the by a non-admin can be read by administrators
+{{white_check_mark}} **Verify that:** software uploaded by a non-admin can be read by administrators
 ```
 
 ```{attention}
