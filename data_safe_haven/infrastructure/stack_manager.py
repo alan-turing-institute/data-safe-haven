@@ -14,6 +14,7 @@ from pulumi import automation
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCli
+from data_safe_haven.functions import replace_separators
 from data_safe_haven.infrastructure.stacks import DeclarativeSHM, DeclarativeSRE
 from data_safe_haven.utility import LoggingSingleton
 
@@ -33,7 +34,7 @@ class StackManager:
         self.stack_outputs_: automation.OutputMap | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}
         self.program = program
-        self.project_name = "data-safe-haven"
+        self.project_name = replace_separators(self.cfg.tags.project.lower(), "-")
         self.stack_name = self.program.stack_name
         self.work_dir = config.work_directory / "pulumi" / self.program.short_name
         self.work_dir.mkdir(parents=True, exist_ok=True)
