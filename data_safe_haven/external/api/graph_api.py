@@ -856,7 +856,9 @@ class GraphApi:
             while True:
                 # Check whether all expected nameservers are active
                 with suppress(resolver.NXDOMAIN):
-                    self.logger.info("Checking domain verification status.")
+                    self.logger.info(
+                        f"Checking [green]{domain_name}[/] domain verification status ..."
+                    )
                     active_nameservers = [
                         str(ns) for ns in iter(resolver.resolve(domain_name, "NS"))
                     ]
@@ -864,19 +866,25 @@ class GraphApi:
                         any(nameserver in n for n in active_nameservers)
                         for nameserver in expected_nameservers
                     ):
+                        self.logger.info(
+                            f"Verified that domain [green]{domain_name}[/] is delegated to Azure."
+                        )
                         break
-                # Prompt user to set domain delegation manually
-                self.logger.info(
-                    f"To proceed you will need to delegate [green]{domain_name}[/] to Azure"
-                    " (https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain)"
+                self.logger.warning(
+                    f"Domain [green]{domain_name}[/] is not currently delegated to Azure."
                 )
+                # Prompt user to set domain delegation manually
+                docs_link = "https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain"
                 self.logger.info(
-                    "You will need to delegate to the following nameservers:"
-                    f" {', '.join([f'[green]{n}[/]' for n in expected_nameservers])}"
+                    f"To proceed you will need to delegate [green]{domain_name}[/] to Azure ({docs_link})"
+                )
+                ns_list = ", ".join([f"[green]{n}[/]" for n in expected_nameservers])
+                self.logger.info(
+                    f"You will need to create an NS record pointing to: {ns_list}"
                 )
                 if isinstance(self.logger, LoggingSingleton):
                     self.logger.confirm(
-                        f"Have you delegated {domain_name} to the Azure nameservers above?",
+                        f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
                         default_to_yes=True,
                     )
                 else:

@@ -71,17 +71,17 @@ def deploy_shm(
         else:
             stack.deploy(force=force)
 
-        # Add the SHM domain as a custom domain in AzureAD
-        graph_api.verify_custom_domain(
-            config.shm.fqdn,
-            stack.output("networking")["fqdn_nameservers"],
-        )
-
         # Add Pulumi infrastructure information to the config file
         config.read_stack(stack.stack_name, stack.local_stack_path)
 
         # Upload config to blob storage
         config.upload()
+
+        # Add the SHM domain as a custom domain in AzureAD
+        graph_api.verify_custom_domain(
+            config.shm.fqdn,
+            stack.output("networking")["fqdn_nameservers"],
+        )
 
         # Provision SHM with anything that could not be done in Pulumi
         manager = SHMProvisioningManager(
