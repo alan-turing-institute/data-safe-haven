@@ -137,7 +137,7 @@ The `DC1` is the source of truth for user details. If these details need to be c
     - Click on `Users` under `Manage` and search for the user
     - Confirm the user is no longer present
 
-### {{x}} Automatically deleting all usassigned users
+### {{x}} Automatically deleting all unassigned users
 
 In some situations, such as at the end of a project after an SRE has been torn down, you may want to remove all users from the SHM who are not assigned to the security group of any remaining attached SREs.
 
