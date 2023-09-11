@@ -18,7 +18,7 @@ from data_safe_haven.infrastructure.stacks import DeclarativeSHM, DeclarativeSRE
 from data_safe_haven.utility import LoggingSingleton
 
 
-class PulumiStack:
+class StackManager:
     """Interact with infrastructure using Pulumi"""
 
     def __init__(
@@ -125,11 +125,11 @@ class PulumiStack:
                 f"No ongoing Pulumi operation found for stack [green]{self.stack.name}[/]."
             )
 
-    def copy_option(self, name: str, other_stack: "PulumiStack") -> None:
+    def copy_option(self, name: str, other_stack: "StackManager") -> None:
         """Copy a public configuration option from another Pulumi stack"""
         self.add_option(name, other_stack.secret(name), replace=True)
 
-    def copy_secret(self, name: str, other_stack: "PulumiStack") -> None:
+    def copy_secret(self, name: str, other_stack: "StackManager") -> None:
         """Copy a secret configuration option from another Pulumi stack"""
         self.add_secret(name, other_stack.secret(name), replace=True)
 
@@ -381,7 +381,7 @@ class PulumiStack:
             raise DataSafeHavenPulumiError(msg) from exc
 
 
-class PulumiSHMStack(PulumiStack):
+class SHMStackManager(StackManager):
     """Interact with an SHM using Pulumi"""
 
     def __init__(
@@ -392,7 +392,7 @@ class PulumiSHMStack(PulumiStack):
         super().__init__(config, DeclarativeSHM(config, config.shm.name))
 
 
-class PulumiSREStack(PulumiStack):
+class SREStackManager(StackManager):
     """Interact with an SRE using Pulumi"""
 
     def __init__(

@@ -5,7 +5,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
 )
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.infrastructure import PulumiSREStack
+from data_safe_haven.infrastructure import SREStackManager
 
 
 def teardown_sre(name: str) -> None:
@@ -21,7 +21,7 @@ def teardown_sre(name: str) -> None:
 
         # Remove infrastructure deployed with Pulumi
         try:
-            stack = PulumiSREStack(config, sre_name)
+            stack = SREStackManager(config, sre_name)
             if stack.work_dir.exists():
                 stack.teardown()
             else:

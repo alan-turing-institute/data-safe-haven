@@ -1,6 +1,6 @@
-from .pulumi_stack import PulumiSHMStack, PulumiSREStack
+from .stack_manager import SHMStackManager, SREStackManager
 
 __all__ = [
-    "PulumiSHMStack",
-    "PulumiSREStack",
+    "SHMStackManager",
+    "SREStackManager",
 ]

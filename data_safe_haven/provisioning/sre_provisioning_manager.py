@@ -7,7 +7,7 @@ from data_safe_haven.external import (
     AzureContainerInstance,
     AzurePostgreSQLDatabase,
 )
-from data_safe_haven.infrastructure import PulumiSHMStack, PulumiSREStack
+from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader, LoggingSingleton
 
@@ -17,9 +17,9 @@ class SREProvisioningManager:
 
     def __init__(
         self,
-        shm_stack: PulumiSHMStack,
+        shm_stack: SHMStackManager,
         sre_name: str,
-        sre_stack: PulumiSREStack,
+        sre_stack: SREStackManager,
         subscription_name: str,
         timezone: str,
     ):

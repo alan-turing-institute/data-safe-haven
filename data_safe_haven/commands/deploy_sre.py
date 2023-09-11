@@ -5,7 +5,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric, bcrypt_salt, password
-from data_safe_haven.infrastructure import PulumiSHMStack, PulumiSREStack
+from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
 
@@ -48,8 +48,8 @@ def deploy_sre(
         )
 
         # Initialise Pulumi stack
-        shm_stack = PulumiSHMStack(config)
-        stack = PulumiSREStack(config, sre_name)
+        shm_stack = SHMStackManager(config)
+        stack = SREStackManager(config, sre_name)
         # Set Azure options
         stack.add_option("azure-native:location", config.azure.location, replace=False)
         stack.add_option(
