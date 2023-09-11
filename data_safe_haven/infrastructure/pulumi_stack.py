@@ -60,6 +60,15 @@ class PulumiStack:
         return self.env_
 
     @property
+    def pulumi_extra_args(self) -> dict[str, Any]:
+        extra_args = {}
+        if self.logger.isEnabledFor(logging.DEBUG):
+            extra_args["debug"] = True
+            extra_args["log_to_std_err"] = True
+            extra_args["log_verbosity"] = 9
+        return extra_args
+
+    @property
     def stack(self) -> automation.Stack:
         """Load the Pulumi stack, creating if needed."""
         if not self.stack_:
@@ -136,6 +145,7 @@ class PulumiStack:
                         debug=self.logger.isEnabledFor(logging.DEBUG),
                         log_flow=True,
                         on_output=self.logger.info,
+                        **self.pulumi_extra_args,
                     )
                     self.evaluate(result.summary.result)
                     break
@@ -262,11 +272,11 @@ class PulumiStack:
                 # Note that we disable parallelisation which can cause deadlock
                 self.stack.preview(
                     color="always",
-                    debug=self.logger.isEnabledFor(logging.DEBUG),
                     diff=True,
                     log_flow=True,
                     on_output=self.logger.info,
                     parallel=1,
+                    **self.pulumi_extra_args,
                 )
         except Exception as exc:
             msg = f"Pulumi preview failed.\n{exc}."
@@ -323,10 +333,9 @@ class PulumiStack:
             self.logger.info(f"Applying changes to stack [green]{self.stack.name}[/].")
             result = self.stack.up(
                 color="always",
-                debug=self.logger.isEnabledFor(logging.DEBUG),
                 log_flow=True,
-                log_verbosity=9,
                 on_output=self.logger.info,
+                **self.pulumi_extra_args,
             )
             self.evaluate(result.summary.result)
         except automation.CommandError as exc:
