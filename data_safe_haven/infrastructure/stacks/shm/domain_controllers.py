@@ -147,19 +147,12 @@ class SHMDomainControllersComponent(ComponentResource):
                 dsc_required_modules=props.automation_account_modules,
                 location=props.location,
                 subscription_name=props.subscription_name,
-                vm_name=primary_domain_controller.vm_name,
-                vm_resource_group_name=resource_group.name,
+                vm=primary_domain_controller,
             ),
             opts=ResourceOptions.merge(
                 child_opts,
-                # To avoid a race condition when applying two VM extensions at the same
-                # time, we explicitly add a dependency on the Log Analytics extension.
                 ResourceOptions(
-                    depends_on=[
-                        props.automation_account,
-                        props.automation_account_private_dns,
-                        primary_domain_controller.log_analytics_extension,
-                    ],
+                    depends_on=[props.automation_account_private_dns],
                     parent=primary_domain_controller,
                 ),
             ),

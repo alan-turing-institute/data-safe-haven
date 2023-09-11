@@ -13,6 +13,8 @@ from data_safe_haven.infrastructure.components.wrapped import (
 )
 from data_safe_haven.utility import FileReader
 
+from .virtual_machine import VMComponent
+
 
 class AutomationDscNodeProps:
     """Props for the AutomationDscNode class"""
@@ -27,8 +29,7 @@ class AutomationDscNodeProps:
         dsc_required_modules: Input[Sequence[str]],
         location: Input[str],
         subscription_name: Input[str],
-        vm_name: Input[str],
-        vm_resource_group_name: Input[str],
+        vm: Input[VMComponent],
     ) -> None:
         self.automation_account = automation_account
         self.configuration_name = configuration_name
@@ -38,8 +39,13 @@ class AutomationDscNodeProps:
         self.dsc_required_modules = dsc_required_modules
         self.location = location
         self.subscription_name = subscription_name
-        self.vm_name = vm_name
-        self.vm_resource_group_name = vm_resource_group_name
+        self.vm_log_analytics_extension = Output.from_input(vm).apply(
+            lambda vm: vm.log_analytics_extension
+        )
+        self.vm_name = Output.from_input(vm).apply(lambda vm: vm.vm_name)
+        self.vm_resource_group_name = Output.from_input(vm).apply(
+            lambda vm: vm.resource_group_name
+        )
 
 
 class AutomationDscNode(ComponentResource):
@@ -96,12 +102,7 @@ class AutomationDscNode(ComponentResource):
                 required_modules=props.dsc_required_modules,
                 subscription_name=props.subscription_name,
             ),
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(
-                    depends_on=[dsc],
-                ),
-            ),
+            opts=child_opts,
         )
         compute.VirtualMachineExtension(
             f"{self._name}_dsc_extension",
@@ -133,10 +134,12 @@ class AutomationDscNode(ComponentResource):
             type_handler_version="2.77",
             vm_name=props.vm_name,
             vm_extension_name="Microsoft.Powershell.DSC",
+            # To avoid a race condition when applying two VM extensions at the same
+            # time, we explicitly add a dependency on the Log Analytics extension.
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
-                    depends_on=[dsc_compiled],
+                    depends_on=[props.vm_log_analytics_extension],
                 ),
             ),
             tags=child_tags,
