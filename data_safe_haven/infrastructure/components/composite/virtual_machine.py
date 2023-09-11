@@ -24,6 +24,7 @@ class VMComponentProps:
         admin_password: Input[str],
         ip_address_private: Input[str],
         location: Input[str],
+        log_analytics_workspace: WrappedLogAnalyticsWorkspace,
         resource_group_name: Input[str],
         subnet_name: Input[str],
         virtual_network_name: Input[str],
@@ -32,7 +33,6 @@ class VMComponentProps:
         vm_size: Input[str],
         admin_username: Input[str] | None = None,
         ip_address_public: Input[bool] | None = None,
-        log_analytics_workspace: WrappedLogAnalyticsWorkspace | None = None,
     ) -> None:
         self.admin_password = admin_password
         self.admin_username = admin_username if admin_username else "dshvmadmin"
@@ -121,7 +121,7 @@ class LinuxVMComponentProps(VMComponentProps):
             ),
         )
         self.log_analytics_extension_name = "OmsAgentForLinux"
-        self.log_analytics_extension_version = "1.14"
+        self.log_analytics_extension_version = "1.0"
 
 
 class VMComponent(ComponentResource):
@@ -228,38 +228,38 @@ class VMComponent(ComponentResource):
         )
 
         # Register with Log Analytics workspace
-        if props.log_analytics_workspace:
-            compute.VirtualMachineExtension(
-                f"{name_underscored}_log_analytics_extension",
-                auto_upgrade_minor_version=True,
-                enable_automatic_upgrade=False,
-                location=props.location,
-                publisher="Microsoft.EnterpriseCloud.Monitoring",
-                protected_settings=Output.from_input(
-                    props.log_analytics_workspace.workspace_key
-                ).apply(lambda key: {"workspaceKey": key}),
-                resource_group_name=props.resource_group_name,
-                settings=Output.from_input(
-                    props.log_analytics_workspace.workspace_id
-                ).apply(lambda wid: {"workspaceId": wid}),
-                type=props.log_analytics_extension_name,
-                type_handler_version=props.log_analytics_extension_version,
-                vm_extension_name=props.log_analytics_extension_name,
-                vm_name=virtual_machine.name,
-                opts=ResourceOptions.merge(
-                    child_opts,
-                    ResourceOptions(
-                        depends_on=[props.log_analytics_workspace],
-                        parent=virtual_machine,
-                    ),
+        log_analytics_extension = compute.VirtualMachineExtension(
+            f"{name_underscored}_log_analytics_extension",
+            auto_upgrade_minor_version=True,
+            enable_automatic_upgrade=False,
+            location=props.location,
+            publisher="Microsoft.EnterpriseCloud.Monitoring",
+            protected_settings=Output.from_input(
+                props.log_analytics_workspace.workspace_key
+            ).apply(lambda key: {"workspaceKey": key}),
+            resource_group_name=props.resource_group_name,
+            settings=Output.from_input(
+                props.log_analytics_workspace.workspace_id
+            ).apply(lambda wid: {"workspaceId": wid}),
+            type=props.log_analytics_extension_name,
+            type_handler_version=props.log_analytics_extension_version,
+            vm_extension_name=props.log_analytics_extension_name,
+            vm_name=virtual_machine.name,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    depends_on=[props.log_analytics_workspace],
+                    parent=virtual_machine,
                 ),
-                tags=child_tags,
-            )
+            ),
+            tags=child_tags,
+        )
 
         # Register outputs
         self.ip_address_private: Output[str] = Output.from_input(
             props.ip_address_private
         )
+        self.log_analytics_extension = log_analytics_extension
         self.resource_group_name: Output[str] = Output.from_input(
             props.resource_group_name
         )
