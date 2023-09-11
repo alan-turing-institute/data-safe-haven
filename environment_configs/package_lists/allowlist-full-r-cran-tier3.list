@@ -91,7 +91,6 @@ DBI
 dbplyr
 ddalpha
 debugme
-decor
 deldir
 DEoptimR
 desc
@@ -106,7 +105,6 @@ diffobj
 digest
 dimRed
 distributional
-distro
 doMC
 doParallel
 dotCall64
@@ -116,7 +114,6 @@ dplyr
 DRR
 DT
 dtplyr
-duckdb
 dygraphs
 e1071
 ellipsis
