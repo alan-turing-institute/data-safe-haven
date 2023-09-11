@@ -12,7 +12,7 @@ from typing import Any
 from pulumi import automation
 
 from data_safe_haven.config import Config
-from data_safe_haven.exceptions import DataSafeHavenPulumiError
+from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCli
 from data_safe_haven.infrastructure.stacks import DeclarativeSHM, DeclarativeSRE
 from data_safe_haven.utility import LoggingSingleton
@@ -33,6 +33,7 @@ class PulumiStack:
         self.stack_outputs_: automation.OutputMap | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}
         self.program = program
+        self.project_name = "data-safe-haven"
         self.stack_name = self.program.stack_name
         self.work_dir = config.work_directory / "pulumi" / self.program.short_name
         self.work_dir.mkdir(parents=True, exist_ok=True)
@@ -75,7 +76,7 @@ class PulumiStack:
             self.logger.info(f"Creating/loading stack [green]{self.stack_name}[/].")
             try:
                 self.stack_ = automation.create_or_select_stack(
-                    project_name="data-safe-haven",
+                    project_name=self.project_name,
                     stack_name=self.stack_name,
                     program=self.program.run,
                     opts=automation.LocalWorkspaceOptions(
@@ -176,12 +177,35 @@ class PulumiStack:
                     else:
                         msg = f"Pulumi resource destruction failed.\n{exc}"
                         raise DataSafeHavenPulumiError(msg) from exc
+            # Remove stack JSON
             try:
+                self.logger.info(f"Removing Pulumi stack [green]{self.stack_name}[/].")
                 if self.stack_:
                     self.stack_.workspace.remove_stack(self.stack_name)
             except automation.CommandError as exc:
                 if "no stack named" not in str(exc):
-                    msg = f"Pulumi stack could not be deleted.\n{exc}"
+                    msg = f"Pulumi stack could not be removed.\n{exc}"
+                    raise DataSafeHavenPulumiError(msg) from exc
+            # Remove stack JSON backup
+            stack_backup_name = f"{self.stack_name}.json.bak"
+            try:
+                self.logger.info(
+                    f"Removing Pulumi stack backup [green]{stack_backup_name}[/]."
+                )
+                azure_api = AzureApi(self.cfg.subscription_name)
+                azure_api.remove_blob(
+                    blob_name=f".pulumi/stacks/{self.project_name}/{stack_backup_name}",
+                    resource_group_name=self.cfg.backend.resource_group_name,
+                    storage_account_name=self.cfg.backend.storage_account_name,
+                    storage_container_name=self.cfg.pulumi.storage_container_name,
+                )
+            except DataSafeHavenAzureError as exc:
+                if "blob does not exist" in str(exc):
+                    self.logger.warning(
+                        f"Pulumi stack backup [green]{stack_backup_name}[/] could not be found."
+                    )
+                else:
+                    msg = f"Pulumi stack backup could not be removed.\n{exc}"
                     raise DataSafeHavenPulumiError(msg) from exc
         except DataSafeHavenPulumiError as exc:
             msg = f"Pulumi destroy failed.\n{exc}"

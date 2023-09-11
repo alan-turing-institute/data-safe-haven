@@ -832,6 +832,44 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to remove certificate '{certificate_name}' from Key Vault '{key_vault_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
+    def remove_blob(
+        self,
+        blob_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        storage_container_name: str,
+    ) -> None:
+        """Remove a file from Azure blob storage
+
+        Returns:
+            None
+
+        Raises:
+            DataSafeHavenAzureError if the blob could not be removed
+        """
+        try:
+            # Connect to Azure client
+            storage_account_keys = self.get_storage_account_keys(
+                resource_group_name, storage_account_name
+            )
+            blob_service_client = BlobServiceClient.from_connection_string(
+                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
+            )
+            if not isinstance(blob_service_client, BlobServiceClient):
+                msg = f"Could not connect to storage account '{storage_account_name}'."
+                raise DataSafeHavenAzureError(msg)
+            # Remove the requested blob
+            blob_client = blob_service_client.get_blob_client(
+                container=storage_container_name, blob=blob_name
+            )
+            blob_client.delete_blob(delete_snapshots="include")
+            self.logger.info(
+                f"Removed file [green]{blob_name}[/] from blob storage.",
+            )
+        except Exception as exc:
+            msg = f"Blob file '{blob_name}' could not be removed from '{storage_account_name}'\n{exc}."
+            raise DataSafeHavenAzureError(msg) from exc
+
     def remove_dns_txt_record(
         self,
         record_name: str,
