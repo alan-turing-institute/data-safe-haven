@@ -1,12 +1,12 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, ResourceOptions
-from pulumi_azure_native import network, sql
 
-from data_safe_haven.infrastructure.common import get_ip_addresses_from_private_endpoint
 from data_safe_haven.infrastructure.components import (
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
+    MicrosoftSQLDatabaseComponent,
+    MicrosoftSQLDatabaseProps,
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
 )
@@ -57,59 +57,19 @@ class SREDatabaseServerComponent(ComponentResource):
         child_tags = tags if tags else {}
 
         if props.database_system == DatabaseSystem.MICROSOFT_SQL_SERVER:
-            # Define a Microsoft SQL server
-            db_server_mssql_name = f"{stack_name}-db-server-mssql"
-            db_server_mssql = sql.Server(
-                f"{self._name}_db_server_mssql",
-                administrator_login=props.database_username,
-                administrator_login_password=props.database_password,
-                location=props.location,
-                minimal_tls_version=None,
-                public_network_access=sql.ServerPublicNetworkAccess.DISABLED,
-                resource_group_name=props.user_services_resource_group_name,
-                server_name=db_server_mssql_name,
-                version="12.0",
+            # Define a Microsoft SQL server and default database
+            db_server_mssql = MicrosoftSQLDatabaseComponent(
+                f"{self._name}_db_mssql",
+                MicrosoftSQLDatabaseProps(
+                    database_names=[],
+                    database_password=props.database_password,
+                    database_resource_group_name=props.user_services_resource_group_name,
+                    database_server_name=f"{stack_name}-db-server-mssql",
+                    database_subnet_id=props.subnet_id,
+                    database_username=props.database_username,
+                    location=props.location,
+                ),
                 opts=child_opts,
-                tags=child_tags,
-            )
-            # Add a default database
-            sql.Database(
-                f"{self._name}_db_server_mssql_mssql",
-                database_name="mssql",
-                location=props.location,
-                resource_group_name=props.user_services_resource_group_name,
-                server_name=db_server_mssql_name,
-                sku=sql.SkuArgs(
-                    capacity=1,
-                    family="Gen5",
-                    name="GP_S_Gen5",
-                ),
-                opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=db_server_mssql)
-                ),
-                tags=child_tags,
-            )
-            # Deploy a private endpoint for the Microsoft SQL server
-            db_server_mssql_private_endpoint = network.PrivateEndpoint(
-                f"{self._name}_db_server_mssql_private_endpoint",
-                private_endpoint_name=f"{stack_name}-endpoint-db-server-mssql",
-                private_link_service_connections=[
-                    network.PrivateLinkServiceConnectionArgs(
-                        group_ids=["sqlServer"],
-                        name=f"{stack_name}-privatelink-db-server-mssql",
-                        private_link_service_connection_state=network.PrivateLinkServiceConnectionStateArgs(
-                            actions_required="None",
-                            description="Auto-approved",
-                            status="Approved",
-                        ),
-                        private_link_service_id=db_server_mssql.id,
-                    )
-                ],
-                resource_group_name=props.user_services_resource_group_name,
-                subnet=network.SubnetArgs(id=props.subnet_id),
-                opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=db_server_mssql)
-                ),
                 tags=child_tags,
             )
             # Register the database in the SRE DNS zone
@@ -119,9 +79,7 @@ class SREDatabaseServerComponent(ComponentResource):
                     base_fqdn=props.sre_fqdn,
                     public_dns_resource_group_name=props.networking_resource_group_name,
                     private_dns_resource_group_name=props.dns_resource_group_name,
-                    private_ip_address=get_ip_addresses_from_private_endpoint(
-                        db_server_mssql_private_endpoint
-                    ).apply(lambda ips: ips[0]),
+                    private_ip_address=db_server_mssql.private_ip_address,
                     record_name="mssql",
                 ),
                 opts=ResourceOptions.merge(
