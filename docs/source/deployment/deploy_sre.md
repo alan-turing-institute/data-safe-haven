@@ -106,6 +106,41 @@ PS> ./Setup_SRE_Guacamole_Servers.ps1 -shmId <SHM ID> -sreId <SRE ID>
 </details>
 
 <details>
+<summary><strong>Update SSL certificate</strong></summary>
+
+![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
+
+```powershell
+PS> ./Update_SRE_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
+
+- where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
+- where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
+- where `<email>` is an email address that you want to be notified when certificates are close to expiry
+
+```{tip}
+`./Update_SRE_RDS_SSL_Certificate.ps1` should be run again whenever you want to update the certificate for this SRE.
+```
+
+```{caution}
+`Let's Encrypt` will only issue **5 certificates per week** for a particular host (e.g. `rdg-sre-sandbox.project.turingsafehaven.ac.uk`).
+To reduce the number of calls to `Let's Encrypt`, the signed certificates are stored in the Key Vault for easy redeployment.
+For production environments this should usually not be an issue.
+```
+
+````{important}
+If you find yourself frequently redeploying a test environment and hit the `Let's Encrypt` certificate limit, you can can use:
+
+```powershell
+> ./Update_SRE_RDS_SSL_Certificate.ps1 -dryRun $true
+```
+
+to use the `Let's Encrypt` staging server, which will issue certificates more frequently.
+These certificates will **not** be trusted by your browser, and so should not be used in production.
+````
+</details>
+
+<details>
 <summary><strong>Deploy web applications (CodiMD and GitLab)</strong></summary>
 
 ```{include} snippets/07_deploy_webapps.partial.md
