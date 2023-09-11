@@ -25,7 +25,9 @@ If you prefer to enter these at the command line, run `dsh init -h` to see the n
 You will be prompted for various settings.
 Run `dsh deploy shm -h` to see the necessary command line flags and provide them as arguments.
 
-- Add one or more users from a CSV file with columns named (`GivenName`, `Surname`, `Phone`, `Email`). Note that the phone number must be in full international format.
+- Add one or more users from a CSV file with columns named (`GivenName`, `Surname`, `Phone`, `Email`, `CountryCode`).
+  Note that the phone number must be in full international format.
+  Note that the country code is the two letter `ISO 3166-1 Alpha-2` code.
 
 ```bash
 > dsh admin add-users <my CSV users file>
