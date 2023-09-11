@@ -61,7 +61,7 @@ class PulumiStack:
 
     @property
     def pulumi_extra_args(self) -> dict[str, Any]:
-        extra_args = {}
+        extra_args: dict[str, Any] = {}
         if self.logger.isEnabledFor(logging.DEBUG):
             extra_args["debug"] = True
             extra_args["log_to_std_err"] = True
@@ -112,6 +112,18 @@ class PulumiStack:
             msg = f"Applying Pulumi configuration options failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
+    def cancel(self) -> None:
+        """Cancel ongoing Pulumi operation."""
+        try:
+            self.logger.warning(
+                f"Cancelling ongoing Pulumi operation for stack [green]{self.stack.name}[/]."
+            )
+            self.stack.cancel()
+        except automation.CommandError:
+            self.logger.error(
+                f"No ongoing Pulumi operation found for stack [green]{self.stack.name}[/]."
+            )
+
     def copy_option(self, name: str, other_stack: "PulumiStack") -> None:
         """Copy a public configuration option from another Pulumi stack"""
         self.add_option(name, other_stack.secret(name), replace=True)
@@ -120,12 +132,14 @@ class PulumiStack:
         """Copy a secret configuration option from another Pulumi stack"""
         self.add_secret(name, other_stack.secret(name), replace=True)
 
-    def deploy(self) -> None:
+    def deploy(self, *, force: bool = False) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
             self.initialise_workdir()
             self.install_plugins()
             self.apply_config_options()
+            if force:
+                self.cancel()
             self.refresh()
             self.preview()
             self.update()

@@ -17,6 +17,7 @@ def deploy_sre(
     allow_paste: bool | None = None,
     data_provider_ip_addresses: list[str] | None = None,
     databases: list[DatabaseSystem] | None = None,
+    force: bool | None = None,
     workspace_skus: list[str] | None = None,
     software_packages: SoftwarePackageCategory | None = None,
     user_ip_addresses: list[str] | None = None,
@@ -153,7 +154,10 @@ def deploy_sre(
         stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
 
         # Deploy Azure infrastructure with Pulumi
-        stack.deploy()
+        if force is None:
+            stack.deploy()
+        else:
+            stack.deploy(force=force)
 
         # Add Pulumi infrastructure information to the config file
         config.read_stack(stack.stack_name, stack.local_stack_path)

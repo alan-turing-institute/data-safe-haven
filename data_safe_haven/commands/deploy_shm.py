@@ -12,6 +12,7 @@ def deploy_shm(
     aad_tenant_id: str | None = None,
     admin_email_address: str | None = None,
     admin_ip_addresses: list[str] | None = None,
+    force: bool | None = None,
     fqdn: str | None = None,
     timezone: str | None = None,
 ) -> None:
@@ -65,7 +66,10 @@ def deploy_shm(
         )
 
         # Deploy Azure infrastructure with Pulumi
-        stack.deploy()
+        if force is None:
+            stack.deploy()
+        else:
+            stack.deploy(force=force)
 
         # Add the SHM domain as a custom domain in AzureAD
         graph_api.verify_custom_domain(
