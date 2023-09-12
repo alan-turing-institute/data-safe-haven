@@ -28,15 +28,21 @@ class AzureADApplicationProps:
 class AzureADApplicationProvider(DshResourceProvider):
     @staticmethod
     def refresh(props: dict[str, Any]) -> dict[str, Any]:
-        outs = dict(**props)
-        with suppress(Exception):
-            graph_api = GraphApi(auth_token=outs["auth_token"], disable_logging=True)
-            if json_response := graph_api.get_application_by_name(
-                outs["application_name"]
-            ):
-                outs["object_id"] = json_response["id"]
-                outs["application_id"] = json_response["appId"]
-        return outs
+        try:
+            outs = dict(**props)
+            with suppress(DataSafeHavenMicrosoftGraphError):
+                graph_api = GraphApi(
+                    auth_token=outs["auth_token"], disable_logging=True
+                )
+                if json_response := graph_api.get_application_by_name(
+                    outs["application_name"]
+                ):
+                    outs["object_id"] = json_response["id"]
+                    outs["application_id"] = json_response["appId"]
+            return outs
+        except Exception as exc:
+            msg = f"Failed to refresh application [green]{props['application_name']}[/] in AzureAD.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Create new AzureAD application."""
@@ -94,12 +100,17 @@ class AzureADApplicationProvider(DshResourceProvider):
         new_props: dict[str, Any],
     ) -> UpdateResult:
         """Updating is deleting followed by creating."""
-        # Note that we need to use the auth token from new_props
-        props = {**old_props}
-        props["auth_token"] = new_props["auth_token"]
-        self.delete(id_, props)
-        updated = self.create(new_props)
-        return UpdateResult(outs=updated.outs)
+        try:
+            # Delete the old application, using the auth token from new_props
+            old_props_ = {**old_props}
+            old_props_["auth_token"] = new_props["auth_token"]
+            self.delete(id_, old_props_)
+            # Create a new application
+            updated = self.create(new_props)
+            return UpdateResult(outs=updated.outs)
+        except Exception as exc:
+            msg = f"Failed to update application [green]{new_props['application_name']}[/] in AzureAD.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
 
 class AzureADApplication(Resource):
