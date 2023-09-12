@@ -2,6 +2,7 @@
 import pulumi
 
 from data_safe_haven.config import Config
+from data_safe_haven.infrastructure.common import get_subscription_id_from_rg
 
 from .sre.application_gateway import (
     SREApplicationGatewayComponent,
@@ -138,8 +139,8 @@ class DeclarativeSRE:
                     "shm-monitoring-automation_account_name"
                 ),
                 location=self.cfg.azure.location,
-                subscription_resource_id=networking.resource_group.id.apply(
-                    lambda id_: id_.split("/resourceGroups/")[0]
+                subscription_resource_id=get_subscription_id_from_rg(
+                    dns.resource_group
                 ),
                 resource_group_name=self.pulumi_opts.require(
                     "shm-monitoring-resource_group_name"

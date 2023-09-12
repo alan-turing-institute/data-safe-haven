@@ -10,6 +10,7 @@ from .transformations import (
     get_name_from_rg,
     get_name_from_subnet,
     get_name_from_vnet,
+    get_subscription_id_from_rg,
 )
 
 __all__ = [
@@ -22,6 +23,7 @@ __all__ = [
     "get_name_from_rg",
     "get_name_from_subnet",
     "get_name_from_vnet",
+    "get_subscription_id_from_rg",
     "NetworkingPriorities",
     "SREDnsIpRanges",
     "SREIpRanges",

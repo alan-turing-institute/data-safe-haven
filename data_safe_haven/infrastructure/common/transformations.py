@@ -86,3 +86,11 @@ def get_name_from_vnet(vnet: network.VirtualNetwork) -> Output[str]:
         return vnet.name.apply(lambda s: str(s))
     msg = f"Virtual network '{vnet.id}' has no name."
     raise DataSafeHavenPulumiError(msg)
+
+
+def get_subscription_id_from_rg(rg: resources.ResourceGroup) -> Output[str]:
+    """Get the ID of a subscription from a resource group"""
+    if isinstance(rg.id, Output):
+        return rg.id.apply(lambda id_: id_.split("/resourceGroups/")[0])
+    msg = f"Could not extract subscription ID from resource group '{rg.name}'."
+    raise DataSafeHavenPulumiError(msg)
