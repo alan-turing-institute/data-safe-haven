@@ -14,7 +14,7 @@ from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 from simple_acme_dns import ACMEClient
 
-from data_safe_haven.exceptions import DataSafeHavenSSLError
+from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenSSLError
 from data_safe_haven.external import AzureApi
 
 from .dsh_resource_provider import DshResourceProvider
@@ -44,7 +44,7 @@ class SSLCertificateProvider(DshResourceProvider):
     @staticmethod
     def refresh(props: dict[str, Any]) -> dict[str, Any]:
         outs = dict(**props)
-        with suppress(Exception):
+        with suppress(DataSafeHavenAzureError):
             azure_api = AzureApi(outs["subscription_name"], disable_logging=True)
             certificate = azure_api.get_keyvault_certificate(
                 outs["certificate_secret_name"], outs["key_vault_name"]
@@ -57,8 +57,6 @@ class SSLCertificateProvider(DshResourceProvider):
         """Create new SSL certificate."""
         outs = dict(**props)
         try:
-            # Note that we must set the key to RSA-2048 before generating the CSR
-            # The default is ecdsa-with-SHA25, which Azure Key Vault cannot read
             client = ACMEClient(
                 domains=[props["domain_name"]],
                 email=props["admin_email_address"],
@@ -67,6 +65,8 @@ class SSLCertificateProvider(DshResourceProvider):
                 new_account=True,
             )
             # Generate private key and CSR
+            # Note that we must set the key to RSA-2048 before generating the CSR
+            # The default is ecdsa-with-SHA25, which Azure Key Vault cannot read
             private_key_bytes = client.generate_private_key(key_type="rsa2048")
             client.generate_csr()
             # Request DNS verification tokens and add them to the DNS record
@@ -92,9 +92,9 @@ class SSLCertificateProvider(DshResourceProvider):
                     "ACME validation error:\n"
                     + "\n".join([str(auth_error) for auth_error in exc.failed_authzrs])
                 ) from exc
-            # Although KeyVault will accept a PEM certificate (where we simply
-            # prepend the private key) we need a PFX certificate for
-            # compatibility with ApplicationGateway
+            # Although KeyVault will accept a PEM certificate (where we simply prepend
+            # the private key) we need a PFX certificate for compatibility with
+            # ApplicationGateway
             private_key = load_pem_private_key(private_key_bytes, None)
             if not isinstance(private_key, RSAPrivateKey):
                 msg = f"Private key is of type {type(private_key)} not RSAPrivateKey."
@@ -122,10 +122,9 @@ class SSLCertificateProvider(DshResourceProvider):
             )
             outs["secret_id"] = kvcert.secret_id
         except Exception as exc:
-            msg = (
-                f"Failed to create SSL certificate [green]{props['certificate_secret_name']}[/]"
-                f" for [green]{props['domain_name']}[/].\n{exc}"
-            )
+            cert_name = f"[green]{props['certificate_secret_name']}[/]"
+            domain_name = f"[green]{props['domain_name']}[/]"
+            msg = f"Failed to create SSL certificate {cert_name} for {domain_name}.\n{exc}"
             raise DataSafeHavenSSLError(msg) from exc
         return CreateResult(
             f"SSLCertificate-{props['certificate_secret_name']}",
@@ -150,10 +149,9 @@ class SSLCertificateProvider(DshResourceProvider):
                 key_vault_name=props["key_vault_name"],
             )
         except Exception as exc:
-            msg = (
-                f"Failed to delete SSL certificate [green]{props['certificate_secret_name']}[/]"
-                f" for [green]{props['domain_name']}[/].\n{exc}"
-            )
+            cert_name = f"[green]{props['certificate_secret_name']}[/]"
+            domain_name = f"[green]{props['domain_name']}[/]"
+            msg = f"Failed to delete SSL certificate {cert_name} for {domain_name}.\n{exc}"
             raise DataSafeHavenSSLError(msg) from exc
 
     def diff(
