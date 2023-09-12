@@ -394,10 +394,10 @@ class GraphApi:
                 result = app.acquire_token_by_device_flow(flow)
             return str(result["access_token"])
         except Exception as exc:
-            error_description = "Could not create access token"
+            error_description = "Could not create Microsoft Graph access token."
             if isinstance(result, dict) and "error_description" in result:
-                error_description += f": {result['error_description']}"
-            msg = f"{error_description}.\n{exc}"
+                error_description += f"\n{result['error_description']}."
+            msg = f"{error_description}\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_token_application(
@@ -591,7 +591,7 @@ class GraphApi:
                 timeout=300,
                 **kwargs,
             )
-            if not response.ok:
+            if response.status_code != 200:
                 raise DataSafeHavenInternalError(response.content)
             return response
         except Exception as exc:
@@ -614,7 +614,7 @@ class GraphApi:
                 timeout=300,
                 **kwargs,
             )
-            if not response.ok:
+            if response.status_code != 200:
                 raise DataSafeHavenInternalError(response.content)
             return response
         except Exception as exc:
@@ -637,7 +637,7 @@ class GraphApi:
                 timeout=300,
                 **kwargs,
             )
-            if not response.ok:
+            if response.status_code != 200:
                 raise DataSafeHavenInternalError(response.content)
             return response
         except Exception as exc:
@@ -660,7 +660,7 @@ class GraphApi:
                 timeout=300,
                 **kwargs,
             )
-            if not response.ok:
+            if response.status_code != 200:
                 raise DataSafeHavenInternalError(response.content)
             time.sleep(30)  # wait for operation to complete
             return response
