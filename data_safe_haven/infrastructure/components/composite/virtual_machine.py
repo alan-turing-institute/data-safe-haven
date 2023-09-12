@@ -24,7 +24,6 @@ class VMComponentProps:
         admin_password: Input[str],
         ip_address_private: Input[str],
         location: Input[str],
-        log_analytics_workspace: WrappedLogAnalyticsWorkspace,
         resource_group_name: Input[str],
         subnet_name: Input[str],
         virtual_network_name: Input[str],
@@ -33,6 +32,9 @@ class VMComponentProps:
         vm_size: Input[str],
         admin_username: Input[str] | None = None,
         ip_address_public: Input[bool] | None = None,
+        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace] | None = None,
+        log_analytics_workspace_id: Input[str] | None = None,
+        log_analytics_workspace_key: Input[str] | None = None,
     ) -> None:
         self.admin_password = admin_password
         self.admin_username = admin_username if admin_username else "dshvmadmin"
@@ -40,7 +42,28 @@ class VMComponentProps:
         self.ip_address_private = ip_address_private
         self.ip_address_public = ip_address_public
         self.location = location
-        self.log_analytics_workspace = log_analytics_workspace
+        if log_analytics_workspace:
+            self.log_analytics_workspace_id = Output.from_input(
+                log_analytics_workspace
+            ).apply(lambda workspace: workspace.workspace_id)
+        elif log_analytics_workspace_id:
+            self.log_analytics_workspace_id = Output.from_input(
+                log_analytics_workspace_id
+            )
+        else:
+            msg = "No value provided for 'log_analytics_workspace_id'"
+            raise ValueError(msg)
+        if log_analytics_workspace:
+            self.log_analytics_workspace_key = Output.from_input(
+                log_analytics_workspace
+            ).apply(lambda workspace: workspace.workspace_key)
+        elif log_analytics_workspace_key:
+            self.log_analytics_workspace_key = Output.from_input(
+                log_analytics_workspace_key
+            )
+        else:
+            msg = "No value provided for 'log_analytics_workspace_key'"
+            raise ValueError(msg)
         self.os_profile_args = None
         self.resource_group_name = resource_group_name
         self.subnet_name = subnet_name
@@ -234,23 +257,20 @@ class VMComponent(ComponentResource):
             enable_automatic_upgrade=False,
             location=props.location,
             publisher="Microsoft.EnterpriseCloud.Monitoring",
-            protected_settings=Output.from_input(
-                props.log_analytics_workspace.workspace_key
-            ).apply(lambda key: {"workspaceKey": key}),
+            protected_settings=props.log_analytics_workspace_key.apply(
+                lambda key: {"workspaceKey": key}
+            ),
             resource_group_name=props.resource_group_name,
-            settings=Output.from_input(
-                props.log_analytics_workspace.workspace_id
-            ).apply(lambda wid: {"workspaceId": wid}),
+            settings=props.log_analytics_workspace_id.apply(
+                lambda id_: {"workspaceId": id_}
+            ),
             type=props.log_analytics_extension_name,
             type_handler_version=props.log_analytics_extension_version,
             vm_extension_name=props.log_analytics_extension_name,
             vm_name=virtual_machine.name,
             opts=ResourceOptions.merge(
                 child_opts,
-                ResourceOptions(
-                    depends_on=[props.log_analytics_workspace],
-                    parent=virtual_machine,
-                ),
+                ResourceOptions(parent=virtual_machine),
             ),
             tags=child_tags,
         )
