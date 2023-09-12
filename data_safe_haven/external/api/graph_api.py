@@ -216,6 +216,7 @@ class GraphApi:
                             "resourceAccess": scopes,
                         }
                     ]
+                self.logger.debug("Making creation HTTP POST request.")
                 json_response = self.http_post(
                     f"{self.base_endpoint}/applications",
                     json=request_json,
@@ -588,12 +589,17 @@ class GraphApi:
             response = requests.delete(
                 url,
                 headers={"Authorization": f"Bearer {self.token}"},
-                timeout=300,
+                timeout=120,
                 **kwargs,
             )
-            if response.status_code != 200:
-                raise DataSafeHavenInternalError(response.content)
-            return response
+            # We do not use response.ok as this allows 3xx codes
+            if (
+                requests.codes.OK
+                <= response.status_code
+                < requests.codes.MULTIPLE_CHOICES
+            ):
+                return response
+            raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
             msg = f"Could not execute DELETE request.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
@@ -611,12 +617,17 @@ class GraphApi:
             response = requests.get(
                 url,
                 headers={"Authorization": f"Bearer {self.token}"},
-                timeout=300,
+                timeout=120,
                 **kwargs,
             )
-            if response.status_code != 200:
-                raise DataSafeHavenInternalError(response.content)
-            return response
+            # We do not use response.ok as this allows 3xx codes
+            if (
+                requests.codes.OK
+                <= response.status_code
+                < requests.codes.MULTIPLE_CHOICES
+            ):
+                return response
+            raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
             msg = f"Could not execute GET request.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
@@ -634,12 +645,17 @@ class GraphApi:
             response = requests.patch(
                 url,
                 headers={"Authorization": f"Bearer {self.token}"},
-                timeout=300,
+                timeout=120,
                 **kwargs,
             )
-            if response.status_code != 200:
-                raise DataSafeHavenInternalError(response.content)
-            return response
+            # We do not use response.ok as this allows 3xx codes
+            if (
+                requests.codes.OK
+                <= response.status_code
+                < requests.codes.MULTIPLE_CHOICES
+            ):
+                return response
+            raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
             msg = f"Could not execute PATCH request.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
@@ -657,13 +673,18 @@ class GraphApi:
             response = requests.post(
                 url,
                 headers={"Authorization": f"Bearer {self.token}"},
-                timeout=300,
+                timeout=120,
                 **kwargs,
             )
-            if response.status_code != 200:
-                raise DataSafeHavenInternalError(response.content)
-            time.sleep(30)  # wait for operation to complete
-            return response
+            # We do not use response.ok as this allows 3xx codes
+            if (
+                requests.codes.OK
+                <= response.status_code
+                < requests.codes.MULTIPLE_CHOICES
+            ):
+                time.sleep(30)  # wait for operation to complete
+                return response
+            raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
             msg = f"Could not execute POST request.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
