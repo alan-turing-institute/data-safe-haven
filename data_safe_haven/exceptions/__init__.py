@@ -1,4 +1,4 @@
-class DataSafeHavenError(BaseException):
+class DataSafeHavenError(Exception):
     pass
 
 
