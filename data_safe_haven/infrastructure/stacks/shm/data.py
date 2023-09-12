@@ -125,6 +125,7 @@ class SHMDataComponent(ComponentResource):
                 enabled_for_deployment=True,
                 enabled_for_disk_encryption=True,
                 enabled_for_template_deployment=True,
+                soft_delete_retention_in_days=7,  # minimum allowed
                 sku=keyvault.SkuArgs(
                     family="A",
                     name=keyvault.SkuName.STANDARD,

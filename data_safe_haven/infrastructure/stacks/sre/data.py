@@ -223,6 +223,7 @@ class SREDataComponent(ComponentResource):
                     family="A",
                     name=keyvault.SkuName.STANDARD,
                 ),
+                soft_delete_retention_in_days=7,  # minimum allowed
                 tenant_id=props.tenant_id,
             ),
             resource_group_name=resource_group.name,
@@ -524,9 +525,8 @@ class SREDataComponent(ComponentResource):
                 acl_user="rwx",
                 acl_group="rwx",
                 acl_other="rwx",
-                # due to an Azure bug `apply_default_permissions=True` also
-                # gives ownership of the fileshare to user 65533 (preventing
-                # use inside the SRE)
+                # due to an Azure bug `apply_default_permissions=True` also gives user
+                # 65533 ownership of the fileshare (preventing use inside the SRE)
                 apply_default_permissions=False,
                 container_name=storage_container_egress.name,
                 resource_group_name=resource_group.name,
@@ -543,8 +543,8 @@ class SREDataComponent(ComponentResource):
                 acl_user="rwx",
                 acl_group="r-x",
                 acl_other="r-x",
-                # ensure that the above permissions are also set on any newly
-                # created files (eg. with Azure Storage Explorer)
+                # ensure that the above permissions are also set on any newly created
+                # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
                 container_name=storage_container_ingress.name,
                 resource_group_name=resource_group.name,
