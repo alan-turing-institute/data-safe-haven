@@ -661,7 +661,7 @@ class AzureApi(AzureAuthenticator):
             raise DataSafeHavenAzureError(msg) from exc
 
     def get_storage_account_keys(
-        self, resource_group_name: str, storage_account_name: str
+        self, resource_group_name: str, storage_account_name: str, *, attempts: int = 3
     ) -> list[StorageAccountKey]:
         """Retrieve the storage account keys for an existing storage account
 
@@ -671,34 +671,33 @@ class AzureApi(AzureAuthenticator):
         Raises:
             DataSafeHavenAzureError if the keys could not be loaded
         """
-        # Connect to Azure client
+        msg_sa = f"storage account [green]'{storage_account_name}'[/]"
+        msg_rg = f"resource group [green]'{resource_group_name}'[/]"
         try:
+            # Connect to Azure client
             storage_client = StorageManagementClient(
                 self.credential, self.subscription_id
             )
-            storage_keys = storage_client.storage_accounts.list_keys(
-                resource_group_name,
-                storage_account_name,
-            )
+            storage_keys = None
+            for _ in range(attempts):
+                with suppress(HttpResponseError):
+                    storage_keys = storage_client.storage_accounts.list_keys(
+                        resource_group_name,
+                        storage_account_name,
+                    )
+                if storage_keys:
+                    break
+                time.sleep(5)
             if not isinstance(storage_keys, StorageAccountListKeysResult):
-                msg = (
-                    f"Could not connect to storage account '{storage_account_name}'"
-                    f" in resource group '{resource_group_name}'."
-                )
+                msg = f"Could not connect to {msg_sa} in {msg_rg}."
                 raise DataSafeHavenAzureError(msg)
             keys = storage_keys.keys
             if not keys or not isinstance(keys, list) or len(keys) == 0:
-                msg = (
-                    f"No keys were retrieved for storage account '{storage_account_name}'"
-                    f" in resource group '{resource_group_name}'."
-                )
+                msg = f"No keys were retrieved for {msg_sa} in {msg_rg}."
                 raise DataSafeHavenAzureError(msg)
             return keys
         except Exception as exc:
-            msg = (
-                f"Keys could not be loaded for storage account '{storage_account_name}'"
-                f" in resource group '{resource_group_name}'.\n{exc}"
-            )
+            msg = f"Keys could not be loaded for {msg_sa} in {msg_rg}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def get_vm_sku_details(self, sku: str) -> tuple[str, str, str]:
