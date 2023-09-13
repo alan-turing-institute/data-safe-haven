@@ -37,6 +37,7 @@ asyncio
 asynctest
 atomicwrites
 attrs
+autocommand
 autograd
 autograd-gamma
 Automat
@@ -240,6 +241,7 @@ importlib
 importlib-metadata
 importlib-resources
 incremental
+inflect
 iniconfig
 installer
 interface-meta
@@ -250,7 +252,16 @@ ipython_genutils
 isort
 itsdangerous
 Janome
+jaraco.apt
 jaraco.classes
+jaraco.collections
+jaraco.context
+jaraco.functools
+jaraco.structures
+jaraco.text
+jaraco.timing
+jaraco.ui
+jaraco.windows
 jarowinkler
 jax
 jedi
@@ -558,6 +569,7 @@ Send2Trash
 sentencepiece
 setuptools
 setuptools-git
+setuptools-scm
 shapely
 shellingham
 simpful
@@ -606,6 +618,7 @@ tabulate
 tangled-up-in-unicode
 tblib
 tdda
+tempora
 tenacity
 tensorboard
 tensorboard-data-server
@@ -699,7 +712,9 @@ y-py
 yarl
 yaspin
 ydata-profiling
+yg.lockfile
 ypy-websocket
+zc.lockfile
 zict
 zipfile36
 zipp
