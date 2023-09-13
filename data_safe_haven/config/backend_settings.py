@@ -35,7 +35,7 @@ class BackendSettings:
 
         # Load previous backend settings (if any)
         self.config_directory = pathlib.Path(
-            appdirs.user_config_dir("data_safe_haven")
+            appdirs.user_config_dir(appname="data_safe_haven")
         ).resolve()
         self.config_file_path = self.config_directory / "config.yaml"
         self.read()
