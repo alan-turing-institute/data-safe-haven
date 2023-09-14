@@ -415,8 +415,13 @@ Configuration DownloadInstallers {
         }
 
         xRemoteFile DisconnectAD { # from xPSDesiredStateConfiguration
-            Uri = "https://raw.githubusercontent.com/alan-turing-institute/data-safe-haven/python-migration/data_safe_haven/resources/active_directory/disconnect_ad.ps1"
+            Uri = "https://raw.githubusercontent.com/alan-turing-institute/data-safe-haven/python-migration/data_safe_haven/resources/desired_state_configuration/DisconnectAD.ps1"
             DestinationPath = Join-Path $DIInstallerBasePath "DisconnectAD.ps1"
+        }
+
+        xRemoteFile UpdateAADSyncRule { # from xPSDesiredStateConfiguration
+            Uri = "https://raw.githubusercontent.com/alan-turing-institute/data-safe-haven/python-migration/data_safe_haven/resources/desired_state_configuration/UpdateAADSyncRule.ps1"
+            DestinationPath = Join-Path $DIInstallerBasePath "UpdateAADSyncRule.ps1"
         }
     }
 }
