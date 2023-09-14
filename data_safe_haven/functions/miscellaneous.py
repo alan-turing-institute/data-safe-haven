@@ -8,6 +8,11 @@ def allowed_dns_lookups() -> list[str]:
     dns_lookups = {
         "clamav": ["clamav.net", "database.clamav.net.cdn.cloudflare.net"],
         "oauth": ["login.microsoftonline.com"],
+        "package_repositories": [
+            "cran.r-project.org",
+            "files.pythonhosted.org",
+            "pypi.org",
+        ],
         "private_dns": ordered_private_dns_zones(),
         "ubuntu_setup": ["keyserver.ubuntu.com"],
     }
