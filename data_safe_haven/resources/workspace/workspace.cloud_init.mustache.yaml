@@ -44,11 +44,21 @@ write_files:
   - path: "/etc/pip.conf"
     permissions: "0444"
     content: |
-      # Add the PyPI mirror to our global settings
+      # Use the PyPI proxy for package installation
       [global]
       index = http://nexus.{{sre_fqdn}}/repository/pypi-proxy
       index-url = http://nexus.{{sre_fqdn}}/repository/pypi-proxy/simple
       trusted-host = nexus.{{sre_fqdn}}
+
+  - path: "/etc/R/Rprofile.site"
+    permissions: "0444"
+    content: |
+      # Use the CRAN proxy for package installation
+      local({
+          r <- getOption("repos")
+          r["CRAN"] <- "http://nexus.{{sre_fqdn}}/repository/cran-proxy"
+          options(repos = r)
+      })
 
   - path: "/etc/skel/.xsession"
     permissions: "0444"

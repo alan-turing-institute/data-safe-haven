@@ -1,2 +1,4 @@
 cli
 data.table
+DBI
+odbc
