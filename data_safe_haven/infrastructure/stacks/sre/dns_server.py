@@ -35,7 +35,7 @@ class SREDnsServerProps:
         subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
         self.admin_password = Output.secret(admin_password)
         self.admin_password_salt = Output.secret(admin_password_salt)
-        self.admin_username = ("dshadmin",)
+        self.admin_username = "dshadmin"
         self.ip_range_prefix = str(SREDnsIpRanges().vnet)
         self.location = location
         self.shm_fqdn = shm_fqdn
