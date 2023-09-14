@@ -3,9 +3,7 @@ import pathlib
 
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config
-from data_safe_haven.exceptions import (
-    DataSafeHavenError,
-)
+from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 
 

@@ -27,7 +27,7 @@ def admin_register_users(
             msg = "SRE name must be specified."
             raise DataSafeHavenError(msg)
         LoggingSingleton().info(
-            f"Preparing to register {len(usernames)} users with SRE '{sre_name}'"
+            f"Preparing to register {len(usernames)} user(s) with SRE '{sre_name}'"
         )
 
         # Load GraphAPI as this may require user-interaction that is not

@@ -5,8 +5,8 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric, bcrypt_salt, password
+from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 from data_safe_haven.provisioning import SREProvisioningManager
-from data_safe_haven.pulumi import PulumiSHMStack, PulumiSREStack
 from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
 
 
@@ -17,6 +17,7 @@ def deploy_sre(
     allow_paste: bool | None = None,
     data_provider_ip_addresses: list[str] | None = None,
     databases: list[DatabaseSystem] | None = None,
+    force: bool | None = None,
     workspace_skus: list[str] | None = None,
     software_packages: SoftwarePackageCategory | None = None,
     user_ip_addresses: list[str] | None = None,
@@ -27,7 +28,7 @@ def deploy_sre(
         # Use a JSON-safe SRE name
         sre_name = alphanumeric(name).lower()
 
-        # Load config file
+        # Load and validate config file
         config = Config()
         config.sre(sre_name).update(
             allow_copy=allow_copy,
@@ -39,16 +40,16 @@ def deploy_sre(
             user_ip_addresses=user_ip_addresses,
         )
 
-        # Load GraphAPI as this may require user-interaction that is not
-        # possible as part of a Pulumi declarative command
+        # Load GraphAPI as this may require user-interaction that is not possible as
+        # part of a Pulumi declarative command
         graph_api = GraphApi(
             tenant_id=config.shm.aad_tenant_id,
             default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
         )
 
         # Initialise Pulumi stack
-        shm_stack = PulumiSHMStack(config)
-        stack = PulumiSREStack(config, sre_name)
+        shm_stack = SHMStackManager(config)
+        stack = SREStackManager(config, sre_name)
         # Set Azure options
         stack.add_option("azure-native:location", config.azure.location, replace=False)
         stack.add_option(
@@ -153,7 +154,10 @@ def deploy_sre(
         stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
 
         # Deploy Azure infrastructure with Pulumi
-        stack.deploy()
+        if force is None:
+            stack.deploy()
+        else:
+            stack.deploy(force=force)
 
         # Add Pulumi infrastructure information to the config file
         config.read_stack(stack.stack_name, stack.local_stack_path)

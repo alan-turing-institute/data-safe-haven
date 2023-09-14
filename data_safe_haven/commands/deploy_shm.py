@@ -3,8 +3,8 @@ from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
+from data_safe_haven.infrastructure import SHMStackManager
 from data_safe_haven.provisioning import SHMProvisioningManager
-from data_safe_haven.pulumi import PulumiSHMStack
 
 
 def deploy_shm(
@@ -12,12 +12,13 @@ def deploy_shm(
     aad_tenant_id: str | None = None,
     admin_email_address: str | None = None,
     admin_ip_addresses: list[str] | None = None,
+    force: bool | None = None,
     fqdn: str | None = None,
     timezone: str | None = None,
 ) -> None:
     """Deploy a Safe Haven Management component"""
     try:
-        # Load config file
+        # Load and validate config file
         config = Config()
         config.shm.update(
             aad_tenant_id=aad_tenant_id,
@@ -39,7 +40,7 @@ def deploy_shm(
         verification_record = graph_api.add_custom_domain(config.shm.fqdn)
 
         # Initialise Pulumi stack
-        stack = PulumiSHMStack(config)
+        stack = SHMStackManager(config)
         # Set Azure options
         stack.add_option("azure-native:location", config.azure.location, replace=False)
         stack.add_option(
@@ -65,19 +66,22 @@ def deploy_shm(
         )
 
         # Deploy Azure infrastructure with Pulumi
-        stack.deploy()
-
-        # Add the SHM domain as a custom domain in AzureAD
-        graph_api.verify_custom_domain(
-            config.shm.fqdn,
-            stack.output("networking")["fqdn_nameservers"],
-        )
+        if force is None:
+            stack.deploy()
+        else:
+            stack.deploy(force=force)
 
         # Add Pulumi infrastructure information to the config file
         config.read_stack(stack.stack_name, stack.local_stack_path)
 
         # Upload config to blob storage
         config.upload()
+
+        # Add the SHM domain as a custom domain in AzureAD
+        graph_api.verify_custom_domain(
+            config.shm.fqdn,
+            stack.output("networking")["fqdn_nameservers"],
+        )
 
         # Provision SHM with anything that could not be done in Pulumi
         manager = SHMProvisioningManager(

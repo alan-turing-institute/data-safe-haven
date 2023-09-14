@@ -216,6 +216,7 @@ class GraphApi:
                             "resourceAccess": scopes,
                         }
                     ]
+                self.logger.debug("Making creation HTTP POST request.")
                 json_response = self.http_post(
                     f"{self.base_endpoint}/applications",
                     json=request_json,
@@ -394,10 +395,10 @@ class GraphApi:
                 result = app.acquire_token_by_device_flow(flow)
             return str(result["access_token"])
         except Exception as exc:
-            error_description = "Could not create access token"
+            error_description = "Could not create Microsoft Graph access token."
             if isinstance(result, dict) and "error_description" in result:
-                error_description += f": {result['error_description']}"
-            msg = f"{error_description}.\n{exc}"
+                error_description += f"\n{result['error_description']}."
+            msg = f"{error_description}\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_token_application(
@@ -588,12 +589,17 @@ class GraphApi:
             response = requests.delete(
                 url,
                 headers={"Authorization": f"Bearer {self.token}"},
-                timeout=300,
+                timeout=120,
                 **kwargs,
             )
-            if not response.ok:
-                raise DataSafeHavenInternalError(response.content)
-            return response
+            # We do not use response.ok as this allows 3xx codes
+            if (
+                requests.codes.OK
+                <= response.status_code
+                < requests.codes.MULTIPLE_CHOICES
+            ):
+                return response
+            raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
             msg = f"Could not execute DELETE request.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
@@ -611,12 +617,17 @@ class GraphApi:
             response = requests.get(
                 url,
                 headers={"Authorization": f"Bearer {self.token}"},
-                timeout=300,
+                timeout=120,
                 **kwargs,
             )
-            if not response.ok:
-                raise DataSafeHavenInternalError(response.content)
-            return response
+            # We do not use response.ok as this allows 3xx codes
+            if (
+                requests.codes.OK
+                <= response.status_code
+                < requests.codes.MULTIPLE_CHOICES
+            ):
+                return response
+            raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
             msg = f"Could not execute GET request.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
@@ -634,12 +645,17 @@ class GraphApi:
             response = requests.patch(
                 url,
                 headers={"Authorization": f"Bearer {self.token}"},
-                timeout=300,
+                timeout=120,
                 **kwargs,
             )
-            if not response.ok:
-                raise DataSafeHavenInternalError(response.content)
-            return response
+            # We do not use response.ok as this allows 3xx codes
+            if (
+                requests.codes.OK
+                <= response.status_code
+                < requests.codes.MULTIPLE_CHOICES
+            ):
+                return response
+            raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
             msg = f"Could not execute PATCH request.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
@@ -657,13 +673,18 @@ class GraphApi:
             response = requests.post(
                 url,
                 headers={"Authorization": f"Bearer {self.token}"},
-                timeout=300,
+                timeout=120,
                 **kwargs,
             )
-            if not response.ok:
-                raise DataSafeHavenInternalError(response.content)
-            time.sleep(30)  # wait for operation to complete
-            return response
+            # We do not use response.ok as this allows 3xx codes
+            if (
+                requests.codes.OK
+                <= response.status_code
+                < requests.codes.MULTIPLE_CHOICES
+            ):
+                time.sleep(30)  # wait for operation to complete
+                return response
+            raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
             msg = f"Could not execute POST request.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
@@ -856,27 +877,35 @@ class GraphApi:
             while True:
                 # Check whether all expected nameservers are active
                 with suppress(resolver.NXDOMAIN):
+                    self.logger.info(
+                        f"Checking [green]{domain_name}[/] domain verification status ..."
+                    )
                     active_nameservers = [
                         str(ns) for ns in iter(resolver.resolve(domain_name, "NS"))
                     ]
-                    self.logger.info("Checking domain verification status.")
                     if all(
                         any(nameserver in n for n in active_nameservers)
                         for nameserver in expected_nameservers
                     ):
+                        self.logger.info(
+                            f"Verified that domain [green]{domain_name}[/] is delegated to Azure."
+                        )
                         break
-                # Prompt user to set domain delegation manually
-                self.logger.info(
-                    f"To proceed you will need to delegate [green]{domain_name}[/] to Azure"
-                    " (https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain)"
+                self.logger.warning(
+                    f"Domain [green]{domain_name}[/] is not currently delegated to Azure."
                 )
+                # Prompt user to set domain delegation manually
+                docs_link = "https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain"
                 self.logger.info(
-                    "You will need to delegate to the following nameservers:"
-                    f" {', '.join([f'[green]{n}[/]' for n in expected_nameservers])}"
+                    f"To proceed you will need to delegate [green]{domain_name}[/] to Azure ({docs_link})"
+                )
+                ns_list = ", ".join([f"[green]{n}[/]" for n in expected_nameservers])
+                self.logger.info(
+                    f"You will need to create an NS record pointing to: {ns_list}"
                 )
                 if isinstance(self.logger, LoggingSingleton):
                     self.logger.confirm(
-                        f"Have you delegated {domain_name} to the Azure nameservers above?",
+                        f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
                         default_to_yes=True,
                     )
                 else:

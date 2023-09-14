@@ -84,9 +84,8 @@ class Backend:
                 key_name=self.config.pulumi.encryption_key_name,
                 key_vault_name=keyvault.name,
             )
-            self.config.pulumi.encryption_key_id = pulumi_encryption_key.id.split("/")[
-                -1
-            ]
+            key_version = pulumi_encryption_key.id.split("/")[-1]
+            self.config.pulumi.encryption_key_version = key_version
         except Exception as exc:
             msg = f"Failed to create backend resources.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc

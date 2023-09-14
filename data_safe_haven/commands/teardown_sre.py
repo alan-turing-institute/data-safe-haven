@@ -5,23 +5,22 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
 )
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.pulumi import PulumiSREStack
+from data_safe_haven.infrastructure import SREStackManager
 
 
 def teardown_sre(name: str) -> None:
     """Teardown a deployed Secure Research Environment"""
-    environment_name = "UNKNOWN"
+    sre_name = "UNKNOWN"
     try:
         # Use a JSON-safe SRE name
         sre_name = alphanumeric(name).lower()
 
         # Load config file
         config = Config()
-        environment_name = config.name
 
         # Remove infrastructure deployed with Pulumi
         try:
-            stack = PulumiSREStack(config, sre_name)
+            stack = SREStackManager(config, sre_name)
             if stack.work_dir.exists():
                 stack.teardown()
             else:
@@ -38,5 +37,5 @@ def teardown_sre(name: str) -> None:
         # Upload config to blob storage
         config.upload()
     except DataSafeHavenError as exc:
-        msg = f"Could not teardown Data Safe Haven '{environment_name}'.\n{exc}"
+        msg = f"Could not teardown Secure Research Environment '{sre_name}'.\n{exc}"
         raise DataSafeHavenError(msg) from exc

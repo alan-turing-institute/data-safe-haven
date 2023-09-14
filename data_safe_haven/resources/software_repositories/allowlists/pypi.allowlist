@@ -7,7 +7,7 @@ numpy
 packaging
 pandas
 pillow
-pscopg2-binary
+psycopg-binary
 pyodbc
 pyparsing
 python-dateutil

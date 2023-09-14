@@ -53,12 +53,20 @@ def shm(
             callback=lambda ips: [validate_ip_address(ip) for ip in ips],
         ),
     ] = None,
-    fqdn: Annotated[
+    domain: Annotated[
         Optional[str],  # noqa: UP007
         typer.Option(
-            "--fqdn",
-            "-f",
+            "--domain",
+            "-d",
             help="The domain that SHM users will belong to.",
+        ),
+    ] = None,
+    force: Annotated[
+        Optional[bool],  # noqa: UP007
+        typer.Option(
+            "--force",
+            "-f",
+            help="Force this operation, cancelling any others that are in progress.",
         ),
     ] = None,
     timezone: Annotated[
@@ -76,7 +84,8 @@ def shm(
         aad_tenant_id=aad_tenant_id,
         admin_email_address=admin_email_address,
         admin_ip_addresses=admin_ip_addresses,
-        fqdn=fqdn,
+        force=force,
+        fqdn=domain,
         timezone=timezone,
     )
 
@@ -117,6 +126,14 @@ def sre(
             help="Make a database of this system available to users of this SRE.",
         ),
     ] = None,
+    force: Annotated[
+        Optional[bool],  # noqa: UP007
+        typer.Option(
+            "--force",
+            "-f",
+            help="Force this operation, cancelling any others that are in progress.",
+        ),
+    ] = None,
     software_packages: Annotated[
         Optional[SoftwarePackageCategory],  # noqa: UP007
         typer.Option(
@@ -154,6 +171,7 @@ def sre(
         allow_paste=allow_paste,
         data_provider_ip_addresses=data_provider_ip_addresses,
         databases=databases,
+        force=force,
         software_packages=software_packages,
         user_ip_addresses=user_ip_addresses,
         workspace_skus=workspace_skus,

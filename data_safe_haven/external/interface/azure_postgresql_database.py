@@ -5,7 +5,7 @@ import time
 from collections.abc import Sequence
 from typing import Any
 
-import psycopg2
+import psycopg
 import requests
 from azure.core.polling import LROPoller
 from azure.mgmt.rdbms.postgresql import PostgreSQLManagementClient
@@ -52,6 +52,7 @@ class AzurePostgreSQLDatabase:
         self.db_server_ = None
         self.db_server_admin_password = database_server_admin_password
         self.logger = LoggingSingleton()
+        self.port = 5432
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
         self.rule_suffix = datetime.datetime.now(tz=datetime.timezone.utc).strftime(
@@ -65,6 +66,19 @@ class AzurePostgreSQLDatabase:
             time.sleep(10)
 
     @property
+    def connection_string(self) -> str:
+        return " ".join(
+            [
+                f"dbname={self.db_name}",
+                f"host={self.db_server.fully_qualified_domain_name}",
+                f"password={self.db_server_admin_password}",
+                f"port={self.port}",
+                f"user={self.db_server.administrator_login}@{self.server_name}",
+                "sslmode=require",
+            ]
+        )
+
+    @property
     def db_client(self) -> PostgreSQLManagementClient:
         """Get the database client."""
         if not self.db_client_:
@@ -76,26 +90,20 @@ class AzurePostgreSQLDatabase:
     @property
     def db_server(self) -> Server:
         """Get the database server."""
+        # self.logger.debug(f"Connecting to database using {self.connection_string}")
         if not self.db_server_:
             self.db_server_ = self.db_client.servers.get(
                 self.resource_group_name, self.server_name
             )
         return self.db_server_
 
-    def db_connection(self, n_retries: int = 0) -> psycopg2.extensions.connection:
+    def db_connection(self, n_retries: int = 0) -> psycopg.Connection:
         """Get the database connection."""
         while True:
             try:
-                connection = psycopg2.connect(
-                    user=f"{self.db_server.administrator_login}@{self.server_name}",
-                    password=self.db_server_admin_password,
-                    host=self.db_server.fully_qualified_domain_name,
-                    port="5432",
-                    database=self.db_name,
-                    sslmode="require",
-                )
+                connection = psycopg.connect(self.connection_string)
                 break
-            except psycopg2.OperationalError as exc:
+            except psycopg.OperationalError as exc:
                 if n_retries > 0:
                     n_retries -= 1
                     time.sleep(10)
@@ -124,7 +132,7 @@ class AzurePostgreSQLDatabase:
     ) -> list[list[str]]:
         """Execute scripts on the PostgreSQL server."""
         outputs: list[list[str]] = []
-        connection: psycopg2.extensions.connection | None = None
+        connection: psycopg.Connection | None = None
         cursor = None
 
         try:
@@ -140,21 +148,21 @@ class AzurePostgreSQLDatabase:
                 _filepath = pathlib.Path(filepath)
                 self.logger.info(f"Running SQL script: [green]{_filepath.name}[/].")
                 commands = self.load_sql(_filepath, mustache_values)
-                cursor.execute(commands)
-                if "SELECT" in cursor.statusmessage:
+                cursor.execute(query=commands.encode())
+                if cursor.statusmessage and "SELECT" in cursor.statusmessage:
                     outputs += [[str(msg) for msg in msg_tuple] for msg_tuple in cursor]
 
             # Commit changes
             connection.commit()
             self.logger.info(f"Finished running {len(filepaths)} SQL scripts.")
-        except (Exception, psycopg2.Error) as exc:
+        except (Exception, psycopg.Error) as exc:
             msg = f"Error while connecting to PostgreSQL.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
         finally:
             # Close the connection if it is open
             if connection:
                 if cursor:
-                    cursor.close()  # type: ignore
+                    cursor.close()
                 connection.close()
             # Remove temporary firewall rules
             self.set_database_access("disabled")

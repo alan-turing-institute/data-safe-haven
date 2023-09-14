@@ -115,6 +115,20 @@ class AzureApi(AzureAuthenticator):
             ):
                 break
             time.sleep(10)
+        # Wait until configuration is available
+        while True:
+            try:
+                automation_client.dsc_configuration.get(
+                    resource_group_name=resource_group_name,
+                    automation_account_name=automation_account_name,
+                    configuration_name=configuration_name,
+                )
+                break
+            except ResourceNotFoundError:
+                self.logger.debug(
+                    f"Could not load configuration {configuration_name}, retrying."
+                )
+                time.sleep(10)
         # Begin creation
         compilation_job_name = f"{configuration_name}-{time.time_ns()}"
         with suppress(ResourceExistsError):
@@ -647,7 +661,7 @@ class AzureApi(AzureAuthenticator):
             raise DataSafeHavenAzureError(msg) from exc
 
     def get_storage_account_keys(
-        self, resource_group_name: str, storage_account_name: str
+        self, resource_group_name: str, storage_account_name: str, *, attempts: int = 3
     ) -> list[StorageAccountKey]:
         """Retrieve the storage account keys for an existing storage account
 
@@ -657,34 +671,33 @@ class AzureApi(AzureAuthenticator):
         Raises:
             DataSafeHavenAzureError if the keys could not be loaded
         """
-        # Connect to Azure client
+        msg_sa = f"storage account [green]'{storage_account_name}'[/]"
+        msg_rg = f"resource group [green]'{resource_group_name}'[/]"
         try:
+            # Connect to Azure client
             storage_client = StorageManagementClient(
                 self.credential, self.subscription_id
             )
-            storage_keys = storage_client.storage_accounts.list_keys(
-                resource_group_name,
-                storage_account_name,
-            )
+            storage_keys = None
+            for _ in range(attempts):
+                with suppress(HttpResponseError):
+                    storage_keys = storage_client.storage_accounts.list_keys(
+                        resource_group_name,
+                        storage_account_name,
+                    )
+                if storage_keys:
+                    break
+                time.sleep(5)
             if not isinstance(storage_keys, StorageAccountListKeysResult):
-                msg = (
-                    f"Could not connect to storage account '{storage_account_name}'"
-                    f" in resource group '{resource_group_name}'."
-                )
+                msg = f"Could not connect to {msg_sa} in {msg_rg}."
                 raise DataSafeHavenAzureError(msg)
             keys = storage_keys.keys
             if not keys or not isinstance(keys, list) or len(keys) == 0:
-                msg = (
-                    f"No keys were retrieved for storage account '{storage_account_name}'"
-                    f" in resource group '{resource_group_name}'."
-                )
+                msg = f"No keys were retrieved for {msg_sa} in {msg_rg}."
                 raise DataSafeHavenAzureError(msg)
             return keys
         except Exception as exc:
-            msg = (
-                f"Keys could not be loaded for storage account '{storage_account_name}'"
-                f" in resource group '{resource_group_name}'.\n{exc}"
-            )
+            msg = f"Keys could not be loaded for {msg_sa} in {msg_rg}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def get_vm_sku_details(self, sku: str) -> tuple[str, str, str]:
@@ -816,6 +829,44 @@ class AzureApi(AzureAuthenticator):
             )
         except Exception as exc:
             msg = f"Failed to remove certificate '{certificate_name}' from Key Vault '{key_vault_name}'.\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc
+
+    def remove_blob(
+        self,
+        blob_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        storage_container_name: str,
+    ) -> None:
+        """Remove a file from Azure blob storage
+
+        Returns:
+            None
+
+        Raises:
+            DataSafeHavenAzureError if the blob could not be removed
+        """
+        try:
+            # Connect to Azure client
+            storage_account_keys = self.get_storage_account_keys(
+                resource_group_name, storage_account_name
+            )
+            blob_service_client = BlobServiceClient.from_connection_string(
+                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
+            )
+            if not isinstance(blob_service_client, BlobServiceClient):
+                msg = f"Could not connect to storage account '{storage_account_name}'."
+                raise DataSafeHavenAzureError(msg)
+            # Remove the requested blob
+            blob_client = blob_service_client.get_blob_client(
+                container=storage_container_name, blob=blob_name
+            )
+            blob_client.delete_blob(delete_snapshots="include")
+            self.logger.info(
+                f"Removed file [green]{blob_name}[/] from blob storage.",
+            )
+        except Exception as exc:
+            msg = f"Blob file '{blob_name}' could not be removed from '{storage_account_name}'\n{exc}."
             raise DataSafeHavenAzureError(msg) from exc
 
     def remove_dns_txt_record(
