@@ -9,6 +9,7 @@ pandas
 pillow
 psycopg
 psycopg-binary
+pymssql
 pyodbc
 pyparsing
 python-dateutil
