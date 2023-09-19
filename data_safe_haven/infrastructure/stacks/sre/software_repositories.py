@@ -251,6 +251,12 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                                 name="NEXUS_PORT",
                                 value="8081",
                             ),
+                            # Use fallback updating method due to issue with changes to
+                            # files on Azure storage mount not being recognised by entr
+                            containerinstance.EnvironmentVariableArgs(
+                                name="ENTR_FALLBACK",
+                                value="1",
+                            ),
                         ],
                         ports=[],
                         resources=containerinstance.ResourceRequirementsArgs(
