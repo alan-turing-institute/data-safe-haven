@@ -251,6 +251,13 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                                 name="NEXUS_PORT",
                                 value="8081",
                             ),
+                            # Fix issue with changes to files on Azure storage mount not
+                            # being recognised by entr
+                            # https://github.com/eradman/entr/blob/5.4/README.md#docker-and-wsl
+                            containerinstance.EnvironmentVariableArgs(
+                                name="ENTR_INOTIFY_WORKAROUND",
+                                value="1",
+                            ),
                         ],
                         ports=[],
                         resources=containerinstance.ResourceRequirementsArgs(
