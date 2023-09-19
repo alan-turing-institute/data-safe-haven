@@ -253,6 +253,7 @@ class DeclarativeSRE:
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
                 subnet_workspaces=networking.subnet_workspaces,
+                subscription_name=self.cfg.subscription_name,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
                 vm_details=list(enumerate(self.cfg.sres[self.sre_name].workspace_skus)),

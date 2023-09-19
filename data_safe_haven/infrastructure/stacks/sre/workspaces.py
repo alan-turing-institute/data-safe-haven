@@ -14,10 +14,13 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_vnet,
 )
 from data_safe_haven.infrastructure.components import (
+    FileUpload,
+    FileUploadProps,
     LinuxVMComponentProps,
     VMComponent,
 )
 from data_safe_haven.resources import resources_path
+from data_safe_haven.utility import FileReader
 
 
 class SREWorkspacesProps:
@@ -43,6 +46,7 @@ class SREWorkspacesProps:
         storage_account_data_private_user_name: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
         subnet_workspaces: Input[network.GetSubnetResult],
+        subscription_name: Input[str],
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
         vm_details: list[tuple[int, str]],  # this must *not* be passed as an Input[T]
@@ -69,6 +73,7 @@ class SREWorkspacesProps:
         self.storage_account_data_private_sensitive_name = (
             storage_account_data_private_sensitive_name
         )
+        self.subscription_name = subscription_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
             get_name_from_vnet
         )
@@ -169,6 +174,25 @@ class SREWorkspacesComponent(ComponentResource):
             }
             for vm in vms
         ]
+
+        # Upload smoke tests
+        run_all_tests = FileReader(resources_path / "workspace" / "run_all_tests.bats")
+        for vm, vm_output in zip(vms, vm_outputs, strict=True):
+            file_run_all_tests = FileUpload(
+                f"{self._name}_file_run_all_tests",
+                FileUploadProps(
+                    file_contents=run_all_tests.file_contents(),
+                    file_hash=run_all_tests.sha256(),
+                    file_permissions="0444",
+                    file_target=f"/opt/tests/{run_all_tests.name}",
+                    force_refresh=True,
+                    subscription_name=props.subscription_name,
+                    vm_name=vm.vm_name,
+                    vm_resource_group_name=resource_group.name,
+                ),
+                opts=child_opts,
+            )
+            vm_output["run_all_tests"] = file_run_all_tests.script_output
 
         # Register outputs
         self.resource_group = resource_group
