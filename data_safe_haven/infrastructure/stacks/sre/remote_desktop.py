@@ -291,7 +291,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="POSTGRESQL_SSL_MODE", value="require"
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_SOCKET_TIMEOUT", value=5
+                            name="POSTGRESQL_SOCKET_TIMEOUT", value=5
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_USER",
