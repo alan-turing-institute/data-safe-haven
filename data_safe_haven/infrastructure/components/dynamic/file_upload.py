@@ -4,6 +4,7 @@ from typing import Any
 from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource, UpdateResult
 
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import b64encode
 
@@ -44,7 +45,11 @@ class FileUploadProvider(DshResourceProvider):
         mkdir -p $target_dir 2> /dev/null;
         echo $contents_b64 | base64 --decode > $target;
         chmod {props['file_permissions']} $target;
-        echo "Wrote file to $target";
+        if [ -f "$target" ]; then
+            echo "Wrote file to $target";
+        else
+            echo "Failed to write file to $target";
+        fi
         """
         script_parameters = {
             "contents_b64": b64encode(props["file_contents"]),
@@ -64,6 +69,8 @@ class FileUploadProvider(DshResourceProvider):
                 if line
             ]
         )
+        if "Failed to write" in outs["script_output"]:
+            raise DataSafeHavenAzureError(outs["script_output"])
         return CreateResult(
             f"FileUpload-{props['file_hash']}",
             outs=outs,
