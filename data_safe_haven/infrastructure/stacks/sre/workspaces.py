@@ -1,3 +1,4 @@
+import pathlib
 from collections.abc import Mapping
 from typing import Any
 
@@ -166,7 +167,7 @@ class SREWorkspacesComponent(ComponentResource):
         ]
 
         # Get details for each deployed VM
-        vm_outputs = [
+        vm_outputs: list[dict[str, Any]] = [
             {
                 "ip_address": vm.ip_address_private,
                 "name": vm.vm_name,
@@ -176,23 +177,30 @@ class SREWorkspacesComponent(ComponentResource):
         ]
 
         # Upload smoke tests
-        run_all_tests = FileReader(resources_path / "workspace" / "run_all_tests.bats")
+        mustache_values={
+            "check_uninstallable_packages": "0",
+        }
+        file_uploads = [(FileReader(resources_path / "workspace" / "run_all_tests.bats"), "0444")]
+        for test_file in pathlib.Path(resources_path / "workspace").glob("test*"):
+            file_uploads.append((FileReader(test_file), "0444"))
         for vm, vm_output in zip(vms, vm_outputs, strict=True):
-            file_run_all_tests = FileUpload(
-                f"{self._name}_file_run_all_tests",
-                FileUploadProps(
-                    file_contents=run_all_tests.file_contents(),
-                    file_hash=run_all_tests.sha256(),
-                    file_permissions="0444",
-                    file_target=f"/opt/tests/{run_all_tests.name}",
-                    force_refresh=True,
-                    subscription_name=props.subscription_name,
-                    vm_name=vm.vm_name,
-                    vm_resource_group_name=resource_group.name,
-                ),
-                opts=child_opts,
-            )
-            vm_output["run_all_tests"] = file_run_all_tests.script_output
+            outputs: dict[str, Output[str]] = {}
+            for file_upload, file_permissions in file_uploads:
+                file_smoke_test = FileUpload(
+                    replace_separators(f"{self._name}_file_{file_upload.name}", "_"),
+                    FileUploadProps(
+                        file_contents=file_upload.file_contents(mustache_values=mustache_values),
+                        file_hash=file_upload.sha256(),
+                        file_permissions=file_permissions,
+                        file_target=f"/opt/tests/{file_upload.name}",
+                        subscription_name=props.subscription_name,
+                        vm_name=vm.vm_name,
+                        vm_resource_group_name=resource_group.name,
+                    ),
+                    opts=child_opts,
+                )
+                outputs[file_upload.name] = file_smoke_test.script_output
+            vm_output["file_uploads"] = outputs
 
         # Register outputs
         self.resource_group = resource_group

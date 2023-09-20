@@ -29,7 +29,7 @@ class FileUploadProps:
         self.file_hash = file_hash
         self.file_target = file_target
         self.file_permissions = file_permissions
-        self.force_refresh = force_refresh
+        self.force_refresh = Output.from_input(force_refresh).apply(lambda force: force if force else False)
         self.subscription_name = subscription_name
         self.vm_name = vm_name
         self.vm_resource_group_name = vm_resource_group_name
