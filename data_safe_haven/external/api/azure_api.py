@@ -1084,6 +1084,42 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to run command on '{vm_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
+    def run_remote_script_waiting(
+        self,
+        resource_group_name: str,
+        script: str,
+        script_parameters: dict[str, str],
+        vm_name: str,
+    ) -> str:
+        """Run a script on a remote virtual machine waiting for other scripts to complete
+
+        Returns:
+            str: The script output
+
+        Raises:
+            DataSafeHavenAzureError if running the script failed
+        """
+        while True:
+            try:
+                script_output = self.run_remote_script(
+                    resource_group_name=resource_group_name,
+                    script=script,
+                    script_parameters=script_parameters,
+                    vm_name=vm_name,
+                )
+                break
+            except DataSafeHavenAzureError as exc:
+                if all(
+                    reason not in str(exc)
+                    for reason in (
+                        "The request failed due to conflict with a concurrent request",
+                        "Run command extension execution is in progress",
+                    )
+                ):
+                    raise
+                time.sleep(5)
+        return script_output
+
     def set_blob_container_acl(
         self,
         container_name: str,

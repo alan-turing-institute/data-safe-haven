@@ -2,7 +2,7 @@
 from typing import Any
 
 from pulumi import Input, Output, ResourceOptions
-from pulumi.dynamic import CreateResult, DiffResult, Resource
+from pulumi.dynamic import CreateResult, DiffResult, Resource, UpdateResult
 
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import b64encode
@@ -51,11 +51,18 @@ class FileUploadProvider(DshResourceProvider):
             "target": props["file_target"],
         }
         # Run remote script
-        outs["script_output"] = azure_api.run_remote_script(
+        script_output = azure_api.run_remote_script_waiting(
             props["vm_resource_group_name"],
             script_contents,
             script_parameters,
             props["vm_name"],
+        )
+        outs["script_output"] = "\n".join(
+            [
+                line.strip()
+                for line in script_output.replace("Enable succeeded:", "").split("\n")
+                if line
+            ]
         )
         return CreateResult(
             f"FileUpload-{props['file_hash']}",
@@ -65,8 +72,7 @@ class FileUploadProvider(DshResourceProvider):
     def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Delete the remote file from the VM"""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
-        id((id_, props))
-        outs = dict(**props)
+        id(id_)
         azure_api = AzureApi(props["subscription_name"], disable_logging=True)
         script_contents = """
         rm -f "$target";
@@ -76,7 +82,7 @@ class FileUploadProvider(DshResourceProvider):
             "target": props["file_target"],
         }
         # Run remote script
-        outs["script_output"] = azure_api.run_remote_script(
+        azure_api.run_remote_script_waiting(
             props["vm_resource_group_name"],
             script_contents,
             script_parameters,
@@ -97,9 +103,21 @@ class FileUploadProvider(DshResourceProvider):
                 changes=True,
                 replaces=list(new_props.keys()),
                 stables=[],
-                delete_before_replace=True,
+                delete_before_replace=False,
             )
         return self.partial_diff(old_props, new_props, [])
+
+    def update(
+        self,
+        id_: str,
+        old_props: dict[str, Any],
+        new_props: dict[str, Any],
+    ) -> UpdateResult:
+        """Updating is creating without the need to delete."""
+        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
+        id((id_, old_props))
+        updated = self.create(new_props)
+        return UpdateResult(outs=updated.outs)
 
 
 class FileUpload(Resource):
