@@ -28,6 +28,7 @@ class AzureAuthenticator:
                 exclude_interactive_browser_credential=False,
                 exclude_shared_token_cache_credential=True,  # this requires multiple approvals per sign-in
                 exclude_visual_studio_code_credential=True,  # this often fails
+                additionally_allowed_tenants=["*"],
             )
         return self.credential_
 
