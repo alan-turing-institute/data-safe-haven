@@ -6,8 +6,17 @@ import psycopg
 import pymssql
 
 
-def test_database(server_name, hostname, port, db_type, db_name, username, password):
-    print(f"Attempting to connect to '{db_name}' on '{server_name}' via port {port}")
+def test_database(
+    server_name: str,
+    hostname: str,
+    port: int,
+    db_type: str,
+    db_name: str,
+    username: str,
+    password: str,
+) -> None:
+    msg = f"Attempting to connect to '{db_name}' on '{server_name}' via port {port}"
+    print(msg)  # noqa: T201
     username_full = f"{username}@{hostname}"
     cnxn = None
     if db_type == "mssql":
@@ -18,13 +27,15 @@ def test_database(server_name, hostname, port, db_type, db_name, username, passw
         connection_string = f"host={server_name} port={port} dbname={db_name} user={username_full} password={password}"
         cnxn = psycopg.connect(connection_string)
     else:
-        raise ValueError(f"Database type '{db_type}' was not recognised")
+        msg = f"Database type '{db_type}' was not recognised"
+        raise ValueError(msg)
     df = pd.read_sql("SELECT * FROM information_schema.tables;", cnxn)
     if df.size:
-        print(df.head(5))
-        print("All database tests passed")
+        print(df.head(5))  # noqa: T201
+        print("All database tests passed")  # noqa: T201
     else:
-        raise ValueError(f"Reading from database '{db_name}' failed.")
+        msg = f"Reading from database '{db_name}' failed."
+        raise ValueError(msg)
 
 
 # Parse command line arguments

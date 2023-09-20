@@ -177,10 +177,12 @@ class SREWorkspacesComponent(ComponentResource):
         ]
 
         # Upload smoke tests
-        mustache_values={
+        mustache_values = {
             "check_uninstallable_packages": "0",
         }
-        file_uploads = [(FileReader(resources_path / "workspace" / "run_all_tests.bats"), "0444")]
+        file_uploads = [
+            (FileReader(resources_path / "workspace" / "run_all_tests.bats"), "0444")
+        ]
         for test_file in pathlib.Path(resources_path / "workspace").glob("test*"):
             file_uploads.append((FileReader(test_file), "0444"))
         for vm, vm_output in zip(vms, vm_outputs, strict=True):
@@ -189,7 +191,9 @@ class SREWorkspacesComponent(ComponentResource):
                 file_smoke_test = FileUpload(
                     replace_separators(f"{self._name}_file_{file_upload.name}", "_"),
                     FileUploadProps(
-                        file_contents=file_upload.file_contents(mustache_values=mustache_values),
+                        file_contents=file_upload.file_contents(
+                            mustache_values=mustache_values
+                        ),
                         file_hash=file_upload.sha256(),
                         file_permissions=file_permissions,
                         file_target=f"/opt/tests/{file_upload.name}",
