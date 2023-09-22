@@ -33,13 +33,15 @@ class AzureCli:
         if not self._account:
             try:
                 result = subprocess.check_output(
-                    [self.path, "account", "show", "--output", "json"]
+                    [self.path, "account", "show", "--output", "json"],
+                    stderr=subprocess.PIPE,
+                    encoding="utf8",
                 )
 
                 try:
                     result_dict = json.loads(result)
                 except json.JSONDecodeError as exc:
-                    msg = f"Unable to parse Azure CLI output as JSON\n{result}"
+                    msg = f"Unable to parse Azure CLI output as JSON.\n{result}"
                     raise DataSafeHavenAzureError(msg) from exc
 
                 self._account = AzureCliAccount(
@@ -49,7 +51,7 @@ class AzureCli:
                 )
 
             except subprocess.CalledProcessError as exc:
-                msg = "Error getting account information from Azure CLI"
+                msg = f"Error getting account information from Azure CLI.\n{exc.stderr}"
                 raise DataSafeHavenAzureError(msg) from exc
 
         return self._account
