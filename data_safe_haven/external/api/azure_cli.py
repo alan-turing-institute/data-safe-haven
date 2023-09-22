@@ -1,6 +1,6 @@
 """Interface to the Azure CLI"""
-import subprocess
 import json
+import subprocess
 from dataclasses import dataclass
 from shutil import which
 
@@ -23,10 +23,8 @@ class AzureCli:
 
         self.path = which("az")
         if self.path is None:
-            raise DataSafeHavenAzureError(
-                "Unable to find Azure CLI executable in your path.\n"
-                "Please ensure that Azure CLI is installed"
-            )
+            msg = "Unable to find Azure CLI executable in your path.\nPlease ensure that Azure CLI is installed"
+            raise DataSafeHavenAzureError(msg)
 
         self._account = None
 
@@ -41,19 +39,17 @@ class AzureCli:
                 try:
                     result_dict = json.loads(result)
                 except json.JSONDecodeError as exc:
-                    raise DataSafeHavenAzureError(
-                        "Unable to parse Azure CLI output as JSON\n{result}"
-                    ) from exc
+                    msg = f"Unable to parse Azure CLI output as JSON\n{result}"
+                    raise DataSafeHavenAzureError(msg) from exc
 
                 self._account = AzureCliAccount(
-                    name=result_dict.get('user').get('name'),
-                    id_=result_dict.get('id'),
-                    tenant_id=result_dict.get('tenantId'),
+                    name=result_dict.get("user").get("name"),
+                    id_=result_dict.get("id"),
+                    tenant_id=result_dict.get("tenantId"),
                 )
 
             except subprocess.CalledProcessError as exc:
-                raise DataSafeHavenAzureError(
-                    "Error getting account information from Azure CLI"
-                ) from exc
+                msg = "Error getting account information from Azure CLI"
+                raise DataSafeHavenAzureError(msg) from exc
 
         return self._account
