@@ -1,44 +1,59 @@
 """Interface to the Azure CLI"""
 import subprocess
-from typing import Any
+import json
+from dataclasses import dataclass
+from shutil import which
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.utility import LoggingSingleton
 
 
+@dataclass
+class AzureCliAccount:
+    name: str
+    id_: str
+    tenant_id: str
+
+
 class AzureCli:
     """Interface to the Azure CLI"""
 
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
         self.logger = LoggingSingleton()
 
-    def login(self) -> None:
-        """Force log in via the Azure CLI"""
-        try:
-            self.logger.debug("Attempting to login using Azure CLI.")
-            # We do not use `check` in subprocess as this raises a CalledProcessError
-            # which would break the loop. Instead we check the return code of
-            # `az account show` which will be 0 on success.
-            while True:
-                # Check whether we are already logged in
-                process = subprocess.run(
-                    ["az", "account", "show"], capture_output=True, check=False
+        self.path = which("az")
+        if self.path is None:
+            raise DataSafeHavenAzureError(
+                "Unable to find Azure CLI executable in your path.\n"
+                "Please ensure that Azure CLI is installed"
+            )
+
+        self._account = None
+
+    @property
+    def account(self) -> AzureCliAccount:
+        if not self._account:
+            try:
+                result = subprocess.check_output(
+                    [self.path, "account", "show", "--output", "json"]
                 )
-                if process.returncode == 0:
-                    break
-                # Note that subprocess.run will block until the process terminates so
-                # we need to print the guidance first.
-                self.logger.info(
-                    "Please login in your web browser at [bold]https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize[/]."
+
+                try:
+                    result_dict = json.loads(result)
+                except json.JSONDecodeError as exc:
+                    raise DataSafeHavenAzureError(
+                        "Unable to parse Azure CLI output as JSON\n{result}"
+                    ) from exc
+
+                self._account = AzureCliAccount(
+                    name=result_dict.get('user').get('name'),
+                    id_=result_dict.get('id'),
+                    tenant_id=result_dict.get('tenantId'),
                 )
-                self.logger.info(
-                    "If no web browser is available, please run [bold]az login --use-device-code[/] in a command line window."
-                )
-                # Attempt to log in at the command line
-                process = subprocess.run(
-                    ["az", "login"], capture_output=True, check=False
-                )
-        except FileNotFoundError as exc:
-            msg = f"Please ensure that the Azure CLI is installed.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
+
+            except subprocess.CalledProcessError as exc:
+                raise DataSafeHavenAzureError(
+                    "Error getting account information from Azure CLI"
+                ) from exc
+
+        return self._account
