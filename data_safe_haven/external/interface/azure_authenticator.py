@@ -2,7 +2,7 @@
 from typing import cast
 
 from azure.core.exceptions import ClientAuthenticationError
-from azure.identity import DefaultAzureCredential
+from azure.identity import AzureCliCredential
 from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.resource.subscriptions.models import Subscription
 
@@ -17,17 +17,14 @@ class AzureAuthenticator:
 
     def __init__(self, subscription_name: str) -> None:
         self.subscription_name: str = subscription_name
-        self.credential_: DefaultAzureCredential | None = None
+        self.credential_: AzureCliCredential | None = None
         self.subscription_id_: str | None = None
         self.tenant_id_: str | None = None
 
     @property
-    def credential(self) -> DefaultAzureCredential:
+    def credential(self) -> AzureCliCredential:
         if not self.credential_:
-            self.credential_ = DefaultAzureCredential(
-                exclude_interactive_browser_credential=True,
-                exclude_shared_token_cache_credential=True,  # this requires multiple approvals per sign-in
-                exclude_visual_studio_code_credential=True,  # this often fails
+            self.credential_ = AzureCliCredential(
                 additionally_allowed_tenants=["*"],
             )
         return self.credential_
