@@ -104,6 +104,8 @@ packages:
   - libpq-dev     # interact with PostgreSQL databases
   - msodbcsql17   # interact with Microsoft SQL databases
   - unixodbc-dev  # interact with Microsoft SQL databases
+  # Bash testing
+  - bats
 package_update: true
 package_upgrade: true
 

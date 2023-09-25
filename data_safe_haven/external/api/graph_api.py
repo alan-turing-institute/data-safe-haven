@@ -361,7 +361,9 @@ class GraphApi:
         result = None
         try:
             # Load local token cache
-            local_token_cache = LocalTokenCache(pathlib.Path.home() / ".msal_cache")
+            local_token_cache = LocalTokenCache(
+                pathlib.Path.home() / f".msal_cache_{self.tenant_id}"
+            )
             # Use the Powershell application by default as this should be pre-installed
             app = PublicClientApplication(
                 authority=f"https://login.microsoftonline.com/{self.tenant_id}",
