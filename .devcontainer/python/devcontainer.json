@@ -2,14 +2,8 @@
 {
     "name": "Turing Data Safe Haven - Pulumi",
     "build": {
-        "context": "..",
-        "dockerfile": "Dockerfile",
-        "args": {
-            "POETRY_VERSION": "1.2.2",
-            "VARIANT": "3.10",
-            "PWSH_VERSION": "7.2.6",
-            "AZURE_CLI_VERSION": "2.42.0"
-        }
+        "context": "../..",
+        "dockerfile": "Dockerfile"
     },
     "settings": {
         "terminal.integrated.defaultProfile.linux": "bash"
@@ -24,7 +18,7 @@
     "remoteUser": "deploydsh",
     "features": {
         "ghcr.io/devcontainers-contrib/features/pulumi:1": {
-            "version": "3.45.0",
+            "version": "3.80.0",
             "bashCompletion": false
         }
     }

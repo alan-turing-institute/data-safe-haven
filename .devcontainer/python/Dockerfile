@@ -3,9 +3,8 @@ FROM python:${VARIANT}-buster
 
 # Set package versions
 ARG AZURE_CLI_VERSION="2.42.0"
-ARG PWSH_VERSION="7.2.6"
-ARG PULUMI_VERSION="3.45.0"
-ARG POETRY_VERSION="1.2.2"
+ARG PWSH_VERSION="7.3.6"
+ARG PULUMI_VERSION="3.80.0"
 
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
@@ -22,6 +21,7 @@ ARG TARGETARCH
 # Standard install method currently does not support ARM64
 # Use pip instead - https://github.com/Azure/azure-cli/issues/22875
 RUN pip3 install azure-cli==${AZURE_CLI_VERSION}
+RUN pip3 install hatch
 
 # Install Powershell
 # Pull different binaries from Github depending on system architecture
@@ -65,8 +65,3 @@ RUN pwsh -Command "& {Set-PSRepository -Name PSGallery -InstallationPolicy Trust
 
 # Set PATH for pulumi - pulumi installed as feature to work round installing as root
 ENV PATH=$PATH:/home/${USERNAME}/.pulumi/bin
-
-# Install poetry
-# Respects environment variables $POETRY_HOME and $POETRY_VERSION
-RUN curl -sSL https://install.python-poetry.org | python3 - \
-  && /home/${USERNAME}/.local/bin/poetry config virtualenvs.in-project true
