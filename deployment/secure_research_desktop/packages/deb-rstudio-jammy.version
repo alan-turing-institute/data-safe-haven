@@ -1,4 +1,4 @@
-hash: bb6b3c21510abb18fd6e697567d7ff3d4135bf7980cf25536753e9ceac60c82c
-version: 2023.06.2-561
+hash: 24083e5c32fb3ad759a3e43fffe8726eb9f82280dd528ef6c178b8cfefadfad2
+version: 2023.09.0-463
 debfile: rstudio-|VERSION|-amd64.deb
 remote: https://download1.rstudio.org/electron/jammy/amd64/|DEBFILE|
