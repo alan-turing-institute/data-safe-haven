@@ -12,7 +12,11 @@ import yaml
 from yaml.parser import ParserError
 
 from data_safe_haven import __version__
-from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenConfigError, DataSafeHavenParameterError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
+    DataSafeHavenConfigError,
+    DataSafeHavenParameterError,
+)
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
     alphanumeric,
