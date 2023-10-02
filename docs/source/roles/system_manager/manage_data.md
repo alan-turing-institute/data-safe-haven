@@ -23,7 +23,7 @@ The following steps show how to generate a temporary write-only upload token tha
 - Click `Networking` under `Settings` and paste the data provider's IP address as one of those allowed under the `Firewall` header, then hit the save icon in the top left
 - From the `Overview` tab, click the link to `Containers` (in the middle of the page)
 - Click `ingress`
-- Click `Shared access signature` under `Settings` and do the following:
+- Click `Shared access tokens` under `Settings` and do the following:
     - Under `Permissions`, check these boxes:
         - `Write`
         - `List`
@@ -70,7 +70,7 @@ The {ref}`role_system_manager` creates a time-limited and IP restricted link to 
     - Ensure that the IP address of the person to receive the outputs is listed and enter it if not
 - Click `Containers` under `Data storage`
 - Click `egress`
-- Click `Shared access signature` under `Settings` and do the following:
+- Click `Shared access tokens` under `Settings` and do the following:
     - Under `Permissions`, check these boxes:
         - `Read`
         - `List`
@@ -150,7 +150,6 @@ The disks covered by the protection for each SRE are the
 
 - GitLab data disk
 - CodiMD data disk
-- CoCalc data disk
 - PostgreSQL data disk
 - MSSQL data disk
 

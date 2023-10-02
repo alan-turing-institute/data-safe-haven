@@ -143,6 +143,13 @@
             "217.196.149.55",
             "91.189.91.38",
             "91.189.91.39",
+            "91.189.91.48",
+            "91.189.91.49",
+            "91.189.91.81",
+            "91.189.91.82",
+            "91.189.91.83",
+            "185.125.190.17",
+            "185.125.190.18",
             "185.125.190.36",
             "185.125.190.39",
             "103.21.244.0/22",
@@ -1093,15 +1100,8 @@
       "instances": [
         {
           "adminPasswordSecretName": "sre-t1guac-vm-admin-password-mssql",
-          "dbAdminUsernameSecretName": "sre-t1guac-db-admin-username-mssql",
           "dbAdminPasswordSecretName": "sre-t1guac-db-admin-password-mssql",
-          "vmName": "MSSQL-T1GUAC",
-          "type": "MSSQL",
-          "ip": "10.151.3.4",
-          "port": "1433",
-          "sku": "sqldev-gen2",
-          "subnet": "databases",
-          "vmSize": "Standard_DS2_v2",
+          "dbAdminUsernameSecretName": "sre-t1guac-db-admin-username-mssql",
           "disks": {
             "data": {
               "sizeGb": "1024",
@@ -1112,19 +1112,19 @@
               "type": "Standard_LRS"
             }
           },
-          "enableSSIS": true
+          "enableSSIS": true,
+          "ip": "10.151.3.4",
+          "port": "1433",
+          "sku": "sqldev-gen2",
+          "subnet": "databases",
+          "type": "MSSQL",
+          "vmName": "MSSQL-T1GUAC",
+          "vmSize": "Standard_DS2_v2"
         },
         {
           "adminPasswordSecretName": "sre-t1guac-vm-admin-password-postgresql",
-          "dbAdminUsernameSecretName": "sre-t1guac-db-admin-username-postgresql",
           "dbAdminPasswordSecretName": "sre-t1guac-db-admin-password-postgresql",
-          "vmName": "PSTGRS-T1GUAC",
-          "type": "PostgreSQL",
-          "ip": "10.151.3.5",
-          "port": "5432",
-          "sku": "Ubuntu-latest",
-          "subnet": "databases",
-          "vmSize": "Standard_DS2_v2",
+          "dbAdminUsernameSecretName": "sre-t1guac-db-admin-username-postgresql",
           "disks": {
             "data": {
               "sizeGb": "1024",
@@ -1134,7 +1134,14 @@
               "sizeGb": "128",
               "type": "Standard_LRS"
             }
-          }
+          },
+          "ip": "10.151.3.5",
+          "port": "5432",
+          "sku": "Ubuntu-latest",
+          "subnet": "databases",
+          "type": "PostgreSQL",
+          "vmName": "PSTGRS-T1GUAC",
+          "vmSize": "Standard_DS2_v2"
         }
       ],
       "rg": "RG_SHM_BLUE_SRE_T1GUAC_DATABASES"
@@ -1284,7 +1291,7 @@
       "rg": "RG_SHM_BLUE_SRE_T1GUAC_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2023031401"
+        "version": "20.04.2023082900"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
@@ -1387,26 +1394,6 @@
       }
     },
     "webapps": {
-      "cocalc": {
-        "adminPasswordSecretName": "sre-t1guac-vm-admin-password-cocalc",
-        "disks": {
-          "data": {
-            "sizeGb": "512",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "32",
-            "type": "Standard_LRS"
-          }
-        },
-        "dockerVersion": "latest",
-        "fqdn": "COCALC.t1guac.blue.develop.turingsafehaven.ac.uk",
-        "hostname": "COCALC",
-        "ip": "10.151.5.7",
-        "osVersion": "Ubuntu-latest",
-        "vmName": "COCALC-SRE-T1GUAC",
-        "vmSize": "Standard_D2s_v3"
-      },
       "codimd": {
         "adminPasswordSecretName": "sre-t1guac-vm-admin-password-codimd",
         "codimd": {

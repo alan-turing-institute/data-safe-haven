@@ -143,6 +143,13 @@
             "217.196.149.55",
             "91.189.91.38",
             "91.189.91.39",
+            "91.189.91.48",
+            "91.189.91.49",
+            "91.189.91.81",
+            "91.189.91.82",
+            "91.189.91.83",
+            "185.125.190.17",
+            "185.125.190.18",
             "185.125.190.36",
             "185.125.190.39",
             "103.21.244.0/22",
@@ -1284,7 +1291,7 @@
       "rg": "RG_SHM_BLUE_SRE_T3GUAC_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2023031401"
+        "version": "20.04.2023082900"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
@@ -1387,26 +1394,6 @@
       }
     },
     "webapps": {
-      "cocalc": {
-        "adminPasswordSecretName": "sre-t3guac-vm-admin-password-cocalc",
-        "disks": {
-          "data": {
-            "sizeGb": "512",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "32",
-            "type": "Standard_LRS"
-          }
-        },
-        "dockerVersion": "latest",
-        "fqdn": "COCALC.t3guac.blue.develop.turingsafehaven.ac.uk",
-        "hostname": "COCALC",
-        "ip": "10.153.5.7",
-        "osVersion": "Ubuntu-latest",
-        "vmName": "COCALC-SRE-T3GUAC",
-        "vmSize": "Standard_D2s_v3"
-      },
       "codimd": {
         "adminPasswordSecretName": "sre-t3guac-vm-admin-password-codimd",
         "codimd": {

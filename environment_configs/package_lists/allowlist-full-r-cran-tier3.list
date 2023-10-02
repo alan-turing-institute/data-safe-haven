@@ -156,7 +156,6 @@ gdtools
 generics
 geojson
 geojsonio
-geojsonlint
 geojsonsf
 geometries
 geometry
@@ -235,7 +234,6 @@ jqr
 jquerylib
 jsonify
 jsonlite
-jsonvalidate
 kdensity
 kernlab
 KernSmooth
@@ -382,6 +380,7 @@ quadprog
 quanteda
 quantmod
 quantreg
+QuickJSR
 qvcalc
 R.cache
 R.methodsS3

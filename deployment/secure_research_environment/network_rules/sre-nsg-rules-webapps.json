@@ -60,18 +60,6 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowPrivateDataEndpointsOutbound",
-        "access": "Allow",
-        "description": "Allow outbound connections to private endpoints in the VNet",
-        "destinationAddressPrefix": "{{sre.network.vnet.subnets.data.cidr}}",
-        "destinationPortRange": "*",
-        "direction": "Outbound",
-        "priority": 400,
-        "protocol": "*",
-        "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
-        "sourcePortRange": "*"
-    },
-    {
         "name": "AllowDNSOutbound",
         "access": "Allow",
         "description": "Allow DNS requests to SHM",
@@ -95,20 +83,6 @@
         "sourceAddressPrefix": "{{sre.network.vnet.subnets.webapps.cidr}}",
         "sourcePortRange": "*"
     },
-    {{#sre.repositories.network.cidr}}
-        {
-            "name": "AllowPackageRepositoriesOutbound",
-            "access": "Allow",
-            "description": "Allow package requests over http/https",
-            "destinationAddressPrefix": "{{sre.repositories.network.cidr}}",
-            "destinationPortRange": ["80", "443", "3128"],
-            "direction": "Outbound",
-            "priority": 1400,
-            "protocol": "*",
-            "sourceAddressPrefix": "{{sre.webapps.cocalc.ip}}",
-            "sourcePortRange": "*"
-        },
-    {{/sre.repositories.network.cidr}}
     {
         "name": "AllowExternalNTPOutbound",
         "access": "Allow",

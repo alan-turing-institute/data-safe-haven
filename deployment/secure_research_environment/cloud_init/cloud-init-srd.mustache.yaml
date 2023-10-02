@@ -12,7 +12,7 @@ disk_setup:
 fs_setup:
   - device: /dev/disk/azure/scsi1/lun1
     filesystem: ext4
-    partition: 1
+    partition: auto
 
 # Note that we do not include the blobfuse mounts here as these are controlled by systemd
 mounts:
@@ -154,17 +154,6 @@ write_files:
           r["CRAN"] <- "{{sre.repositories.cran.url}}"
           options(repos = r)
       })
-
-  - path: "/etc/skel/Desktop/CoCalc.desktop"
-    permissions: "0755"
-    content: |
-      [Desktop Entry]
-      Version=1.0
-      Type=Link
-      Name=CoCalc
-      Comment=
-      Icon=/opt/icons/cocalc.png
-      URL=https://{{sre.webapps.cocalc.fqdn}}
 
   - path: "/etc/skel/Desktop/CodiMD.desktop"
     permissions: "0755"

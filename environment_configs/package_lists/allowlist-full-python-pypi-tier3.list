@@ -28,7 +28,6 @@ arviz
 asn1crypto
 astor
 astroid
-astropy
 asttokens
 astunparse
 async_generator
@@ -38,6 +37,7 @@ asyncio
 asynctest
 atomicwrites
 attrs
+autocommand
 autograd
 autograd-gamma
 Automat
@@ -75,6 +75,7 @@ Bottleneck
 bpemb
 branca
 Brotli
+brotlicffi
 bson
 build
 bulwark
@@ -105,7 +106,6 @@ comm
 commonmark
 confection
 configparser
-confuse
 conllu
 cons
 constantly
@@ -241,6 +241,7 @@ importlib
 importlib-metadata
 importlib-resources
 incremental
+inflect
 iniconfig
 installer
 interface-meta
@@ -248,11 +249,19 @@ ipaddress
 ipykernel
 ipython
 ipython_genutils
-ipywidgets
 isort
 itsdangerous
 Janome
+jaraco.apt
 jaraco.classes
+jaraco.collections
+jaraco.context
+jaraco.functools
+jaraco.structures
+jaraco.text
+jaraco.timing
+jaraco.ui
+jaraco.windows
 jarowinkler
 jax
 jedi
@@ -280,7 +289,6 @@ jupyterlab
 jupyterlab-launcher
 jupyterlab-pygments
 jupyterlab-server
-jupyterlab-widgets
 keras
 Keras-Applications
 keras-nightly
@@ -458,7 +466,6 @@ pycurl
 pydantic
 pydantic-core
 pydot
-pyerfa
 pyflakes
 pyFUME
 Pygments
@@ -562,6 +569,7 @@ Send2Trash
 sentencepiece
 setuptools
 setuptools-git
+setuptools-scm
 shapely
 shellingham
 simpful
@@ -610,6 +618,7 @@ tabulate
 tangled-up-in-unicode
 tblib
 tdda
+tempora
 tenacity
 tensorboard
 tensorboard-data-server
@@ -684,7 +693,6 @@ webencodings
 websocket-client
 Werkzeug
 wheel
-widgetsnbextension
 Wikipedia-API
 win_unicode_console
 win32-setctime
@@ -704,7 +712,9 @@ y-py
 yarl
 yaspin
 ydata-profiling
+yg.lockfile
 ypy-websocket
+zc.lockfile
 zict
 zipfile36
 zipp
