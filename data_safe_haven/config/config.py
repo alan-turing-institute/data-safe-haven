@@ -356,8 +356,8 @@ class Config:
         try:
             self.name = settings.name
         except DataSafeHavenParameterError as exc:
-            msg = f"Data Safe Haven has not been initialised: run '[bright_cyan]dsh init[/]' before continuing."
-            raise DataSafeHavenConfigError(msg) from exc        
+            msg = "Data Safe Haven has not been initialised: run '[bright_cyan]dsh init[/]' before continuing."
+            raise DataSafeHavenConfigError(msg) from exc
         self.subscription_name = settings.subscription_name
         self.azure.location = settings.location
         self.azure.admin_group_id = settings.admin_group_id
