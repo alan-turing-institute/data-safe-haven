@@ -98,6 +98,7 @@ click
 click-plugins
 cligj
 clikit
+cloudpathlib
 cloudpickle
 cmake
 cmdstanpy
@@ -688,6 +689,7 @@ visions
 vistir
 wasabi
 wcwidth
+weasel
 webargs
 webencodings
 websocket-client
