@@ -253,6 +253,9 @@ class StackManager:
             self.stack.workspace.install_plugin(
                 "azure-native", metadata.version("pulumi-azure-native")
             )
+            self.stack.workspace.install_plugin(
+                "random", metadata.version("pulumi-random")
+            )
         except Exception as exc:
             msg = f"Installing Pulumi plugins failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc

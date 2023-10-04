@@ -40,6 +40,7 @@ dependencies = [
   "psycopg~=3.1.10",
   "pulumi~=3.80.0",
   "pulumi-azure-native~=1.104.0",
+  "pulumi-random~=4.14.0",
   "pytz~=2022.7.0",
   "PyYAML~=6.0",
   "rich~=13.4.2",

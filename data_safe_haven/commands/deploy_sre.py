@@ -141,7 +141,6 @@ def deploy_sre(
         )
         # Add necessary secrets
         stack.copy_secret("password-domain-ldap-searcher", shm_stack)
-        stack.add_secret("password-database-service-admin", password(20), replace=False)
         stack.add_secret("password-dns-server-admin", password(20), replace=False)
         stack.add_secret("password-gitea-database-admin", password(20), replace=False)
         stack.add_secret(
