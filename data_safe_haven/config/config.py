@@ -12,7 +12,11 @@ import yaml
 from yaml.parser import ParserError
 
 from data_safe_haven import __version__
-from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenConfigError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
+    DataSafeHavenConfigError,
+    DataSafeHavenParameterError,
+)
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
     alphanumeric,
@@ -352,7 +356,12 @@ class Config:
         self.sres: dict[str, ConfigSectionSRE] = defaultdict(ConfigSectionSRE)
         # Read backend settings
         settings = BackendSettings()
-        self.name = settings.name
+        # Check if backend exists and was loaded
+        try:
+            self.name = settings.name
+        except DataSafeHavenParameterError as exc:
+            msg = "Data Safe Haven has not been initialised: run '[bright_cyan]dsh init[/]' before continuing."
+            raise DataSafeHavenConfigError(msg) from exc
         self.subscription_name = settings.subscription_name
         self.azure.location = settings.location
         self.azure.admin_group_id = settings.admin_group_id
