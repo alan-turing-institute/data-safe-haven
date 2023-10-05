@@ -607,6 +607,7 @@ SQLAlchemy
 sqlitedict
 srsly
 stack-data
+stanio
 statsmodels
 stumpy
 subprocess32
