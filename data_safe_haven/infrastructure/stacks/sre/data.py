@@ -71,9 +71,6 @@ class SREDataProps:
         self.networking_resource_group_name = Output.from_input(
             networking_resource_group
         ).apply(get_name_from_rg)
-        self.password_gitea_database_admin = self.get_secret(
-            pulumi_opts, "password-gitea-database-admin"
-        )
         self.password_hedgedoc_database_admin = self.get_secret(
             pulumi_opts, "password-hedgedoc-database-admin"
         )
@@ -280,11 +277,14 @@ class SREDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Deploy key vault secrets
+        # Secret: Gitea database admin password
+        password_gitea_database_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_gitea_database_admin", length=20, special=True
+        )
         keyvault.Secret(
             f"{self._name}_kvs_password_gitea_database_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_gitea_database_admin
+                value=password_gitea_database_admin.result
             ),
             resource_group_name=resource_group.name,
             secret_name="password-gitea-database-admin",
@@ -292,6 +292,8 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
             tags=child_tags,
         )
+
+        # Deploy key vault secrets
         keyvault.Secret(
             f"{self._name}_kvs_password_hedgedoc_database_admin",
             properties=keyvault.SecretPropertiesArgs(
@@ -739,7 +741,7 @@ class SREDataComponent(ComponentResource):
             props.password_dns_server_admin.result
         )
         self.password_gitea_database_admin = Output.secret(
-            props.password_gitea_database_admin
+            password_gitea_database_admin.result
         )
         self.password_hedgedoc_database_admin = Output.secret(
             props.password_hedgedoc_database_admin
