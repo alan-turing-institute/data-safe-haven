@@ -49,7 +49,7 @@ def deploy_sre(
 
         # Initialise Pulumi stack
         shm_stack = SHMStackManager(config)
-        stack = SREStackManager(config, sre_name)
+        stack = SREStackManager(config, sre_name, graph_api_token=graph_api.token)
         # Set Azure options
         stack.add_option("azure-native:location", config.azure.location, replace=False)
         stack.add_option(
@@ -142,7 +142,6 @@ def deploy_sre(
         # Add necessary secrets
         stack.copy_secret("password-domain-ldap-searcher", shm_stack)
         stack.add_secret("salt-dns-server-admin", bcrypt_salt(), replace=False)
-        stack.add_secret("token-azuread-graphapi", graph_api.token, replace=True)
 
         # Deploy Azure infrastructure with Pulumi
         if force is None:

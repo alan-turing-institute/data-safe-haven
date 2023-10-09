@@ -45,8 +45,11 @@ from .sre.workspaces import (
 class DeclarativeSRE:
     """Deploy with Pulumi"""
 
-    def __init__(self, config: Config, shm_name: str, sre_name: str) -> None:
+    def __init__(
+        self, config: Config, shm_name: str, sre_name: str, graph_api_token: str
+    ) -> None:
         self.cfg = config
+        self.graph_api_token = graph_api_token
         self.shm_name = shm_name
         self.sre_name = sre_name
         self.short_name = f"sre-{sre_name}"
@@ -198,7 +201,7 @@ class DeclarativeSRE:
             SRERemoteDesktopProps(
                 aad_application_name=f"sre-{self.sre_name}-azuread-guacamole",
                 aad_application_fqdn=networking.sre_fqdn,
-                aad_auth_token=self.pulumi_opts.require("token-azuread-graphapi"),
+                aad_auth_token=self.graph_api_token,
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
                 allow_copy=self.cfg.sres[self.sre_name].remote_desktop.allow_copy,
                 allow_paste=self.cfg.sres[self.sre_name].remote_desktop.allow_paste,

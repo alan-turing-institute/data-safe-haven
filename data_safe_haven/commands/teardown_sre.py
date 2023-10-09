@@ -4,6 +4,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenError,
     DataSafeHavenInputError,
 )
+from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.infrastructure import SREStackManager
 
@@ -18,9 +19,16 @@ def teardown_sre(name: str) -> None:
         # Load config file
         config = Config()
 
+        # Load GraphAPI as this may require user-interaction that is not possible as
+        # part of a Pulumi declarative command
+        graph_api = GraphApi(
+            tenant_id=config.shm.aad_tenant_id,
+            default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
+        )
+
         # Remove infrastructure deployed with Pulumi
         try:
-            stack = SREStackManager(config, sre_name)
+            stack = SREStackManager(config, sre_name, graph_api_token=graph_api.token)
             if stack.work_dir.exists():
                 stack.teardown()
             else:

@@ -401,6 +401,11 @@ class SREStackManager(StackManager):
         self,
         config: Config,
         sre_name: str,
+        *,
+        graph_api_token: str | None = None,
     ) -> None:
         """Constructor"""
-        super().__init__(config, DeclarativeSRE(config, config.shm.name, sre_name))
+        token = graph_api_token if graph_api_token else ""
+        super().__init__(
+            config, DeclarativeSRE(config, config.shm.name, sre_name, token)
+        )
