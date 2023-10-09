@@ -71,7 +71,6 @@ class SREDataProps:
         self.networking_resource_group_name = Output.from_input(
             networking_resource_group
         ).apply(get_name_from_rg)
-        self.password_nexus_admin = self.get_secret(pulumi_opts, "password-nexus-admin")
         self.password_user_database_admin = self.get_secret(
             pulumi_opts, "password-user-database-admin"
         )
@@ -306,16 +305,21 @@ class SREDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Deploy key vault secrets
+        # Secret: Nexus admin password
+        password_nexus_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_nexus_admin", length=20, special=True
+        )
         keyvault.Secret(
             f"{self._name}_kvs_password_nexus_admin",
-            properties=keyvault.SecretPropertiesArgs(value=props.password_nexus_admin),
+            properties=keyvault.SecretPropertiesArgs(value=password_nexus_admin.result),
             resource_group_name=resource_group.name,
             secret_name="password-nexus-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
             tags=child_tags,
         )
+
+        # Deploy key vault secrets
         keyvault.Secret(
             f"{self._name}_kvs_password_user_database_admin",
             properties=keyvault.SecretPropertiesArgs(
@@ -735,7 +739,7 @@ class SREDataComponent(ComponentResource):
             storage_account_data_configuration.name
         )
         self.managed_identity = identity_key_vault_reader
-        self.password_nexus_admin = Output.secret(props.password_nexus_admin)
+        self.password_nexus_admin = Output.secret(password_nexus_admin.result)
         self.password_database_service_admin = Output.secret(
             password_database_service_admin.result
         )

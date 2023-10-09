@@ -141,7 +141,6 @@ def deploy_sre(
         )
         # Add necessary secrets
         stack.copy_secret("password-domain-ldap-searcher", shm_stack)
-        stack.add_secret("password-nexus-admin", password(20), replace=False)
         stack.add_secret("password-user-database-admin", password(20), replace=False)
         stack.add_secret("password-workspace-admin", password(20), replace=False)
         stack.add_secret("salt-dns-server-admin", bcrypt_salt(), replace=False)
