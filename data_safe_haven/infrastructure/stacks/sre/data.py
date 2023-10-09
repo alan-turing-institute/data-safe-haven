@@ -71,9 +71,6 @@ class SREDataProps:
         self.networking_resource_group_name = Output.from_input(
             networking_resource_group
         ).apply(get_name_from_rg)
-        self.password_workspace_admin = self.get_secret(
-            pulumi_opts, "password-workspace-admin"
-        )
         self.private_dns_zone_base_id = self.get_secret(
             pulumi_opts, "shm-networking-private_dns_zone_base_id"
         )
@@ -332,11 +329,14 @@ class SREDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Deploy key vault secrets
+        # Secret: Workspace admin password
+        password_workspace_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_workspace_admin", length=20, special=True
+        )
         keyvault.Secret(
             f"{self._name}_kvs_password_workspace_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_workspace_admin
+                value=password_workspace_admin.result
             ),
             resource_group_name=resource_group.name,
             secret_name="password-workspace-admin",
@@ -757,5 +757,5 @@ class SREDataComponent(ComponentResource):
         self.password_user_database_admin = Output.secret(
             password_user_database_admin.result
         )
-        self.password_workspace_admin = Output.secret(props.password_workspace_admin)
+        self.password_workspace_admin = Output.secret(password_workspace_admin.result)
         self.resource_group_name = resource_group.name
