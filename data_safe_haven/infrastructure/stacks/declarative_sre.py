@@ -80,7 +80,6 @@ class DeclarativeSRE:
             "sre_dns_server",
             self.stack_name,
             SREDnsServerProps(
-                admin_password=self.pulumi_opts.require("password-dns-server-admin"),
                 admin_password_salt=self.pulumi_opts.require("salt-dns-server-admin"),
                 location=self.cfg.azure.location,
                 shm_fqdn=self.cfg.shm.fqdn,
@@ -163,6 +162,7 @@ class DeclarativeSRE:
                     self.sre_name
                 ].data_provider_ip_addresses,
                 dns_record=networking.shm_ns_record,
+                dns_server_admin_password=dns.password_admin,
                 location=self.cfg.azure.location,
                 networking_resource_group=networking.resource_group,
                 pulumi_opts=self.pulumi_opts,

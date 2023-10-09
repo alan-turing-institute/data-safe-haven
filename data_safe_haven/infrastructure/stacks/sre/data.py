@@ -44,6 +44,7 @@ class SREDataProps:
         admin_ip_addresses: Input[Sequence[str]],
         data_provider_ip_addresses: Input[Sequence[str]],
         dns_record: Input[network.RecordSet],
+        dns_server_admin_password: Input[pulumi_random.RandomPassword],
         location: Input[str],
         networking_resource_group: Input[resources.ResourceGroup],
         pulumi_opts: Config,
@@ -65,13 +66,11 @@ class SREDataProps:
             }
         )
         self.dns_record = dns_record
+        self.password_dns_server_admin = dns_server_admin_password
         self.location = location
         self.networking_resource_group_name = Output.from_input(
             networking_resource_group
         ).apply(get_name_from_rg)
-        self.password_dns_server_admin = self.get_secret(
-            pulumi_opts, "password-dns-server-admin"
-        )
         self.password_gitea_database_admin = self.get_secret(
             pulumi_opts, "password-gitea-database-admin"
         )
@@ -268,11 +267,11 @@ class SREDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Deploy key vault secrets
+        # Secret: database service admin password
         keyvault.Secret(
             f"{self._name}_kvs_password_dns_server_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_dns_server_admin
+                value=props.password_dns_server_admin.result,
             ),
             resource_group_name=resource_group.name,
             secret_name="password-dns-server-admin",
@@ -280,6 +279,8 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
             tags=child_tags,
         )
+
+        # Deploy key vault secrets
         keyvault.Secret(
             f"{self._name}_kvs_password_gitea_database_admin",
             properties=keyvault.SecretPropertiesArgs(
@@ -734,7 +735,9 @@ class SREDataComponent(ComponentResource):
         self.password_database_service_admin = Output.secret(
             password_database_service_admin.result
         )
-        self.password_dns_server_admin = Output.secret(props.password_dns_server_admin)
+        self.password_dns_server_admin = Output.secret(
+            props.password_dns_server_admin.result
+        )
         self.password_gitea_database_admin = Output.secret(
             props.password_gitea_database_admin
         )

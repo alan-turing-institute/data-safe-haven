@@ -1,6 +1,7 @@
 """Pulumi component for SRE DNS server"""
 from collections.abc import Mapping
 
+import pulumi_random
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources
 
@@ -25,7 +26,6 @@ class SREDnsServerProps:
 
     def __init__(
         self,
-        admin_password: Input[str],
         admin_password_salt: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
@@ -33,7 +33,6 @@ class SREDnsServerProps:
         sre_index: Input[int],
     ) -> None:
         subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
-        self.admin_password = Output.secret(admin_password)
         self.admin_password_salt = Output.secret(admin_password_salt)
         self.admin_username = "dshadmin"
         self.ip_range_prefix = str(SREDnsIpRanges().vnet)
@@ -67,6 +66,11 @@ class SREDnsServerComponent(ComponentResource):
             tags=child_tags,
         )
 
+        # Generate admin password
+        password_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_admin", length=20, special=True
+        )
+
         # Read AdGuardHome setup files
         adguard_entrypoint_sh_reader = FileReader(
             resources_path / "dns_server" / "entrypoint.sh"
@@ -79,7 +83,7 @@ class SREDnsServerComponent(ComponentResource):
         adguard_adguardhome_yaml_contents = Output.all(
             admin_username=props.admin_username,
             admin_password_encrypted=Output.all(
-                password=props.admin_password, salt=props.admin_password_salt
+                password=password_admin.result, salt=props.admin_password_salt
             ).apply(lambda kwargs: bcrypt_encode(kwargs["password"], kwargs["salt"])),
             # Use Azure virtual DNS server as upstream
             # https://learn.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
@@ -327,5 +331,6 @@ class SREDnsServerComponent(ComponentResource):
 
         # Register outputs
         self.ip_address = get_ip_address_from_container_group(container_group)
+        self.password_admin = password_admin
         self.resource_group = resource_group
         self.virtual_network = virtual_network
