@@ -77,3 +77,49 @@ where you must specify the usernames for each user you want to add to this SRE
 ```bash
 > dsh teardown backend
 ```
+
+## Code structure
+
+- administration
+    - this is where we keep utility commands for adminstrators of a deployed DSH
+    - eg. "add a user"; "remove a user from an SRE"
+- backend
+    - in order to use the Pulumi Azure backend we need a KeyVault, Identity and Storage Account
+    - this code deploys those resources to bootstrap the rest of the Pulumi-based code
+- commands
+    - the main `dsh` command line entrypoint lives in `cli.py`
+    - the subsidiary `typer` command line entrypoints (eg. `dsh deploy shm`) live here
+- config
+    - serialises and deserialises a config file from Azure
+    - `backend_settings` manages basic settings related to the Azure backend: arguably this could/should live in `backend`
+- exceptions
+    - definitions of a Python exception hierarchy
+- external
+    - Python wrappers around:
+        - APIs: Azure Python SDK, Azure CLI, Graph API
+        - Azure interfaces: CLI authentication, container instances, fileshares, available IP addresses in a subnet, databases
+        - Utility for running scripts on databases
+- functions
+    - Various functions that don't fit anywhere else
+    - string manipulation, type conversions, validators, lists of allowed external FQDNs
+- infrastructure
+    - Management of the Pulumi stack, which handles passing the correct backend options
+    - common
+        - common Pulumi transformations, enums and IP address ranges
+    - components
+        - composite
+            - a logical group of existing Pulumi components that is used in several places
+        - dynamic
+            - a custom component to implement some functionality that is not natively supported
+        - wrapped
+            - thin wrappers around Pulumi resources to expose additional methods/attributes
+    - stacks
+        - definitions of the `shm` and `sre` stacks
+- provisioning
+    - all configuration options that is currently done outside Pulumi
+    - eg. Initialise the Guacamole database, reboot some VMs, create security groups on domain controller
+    - in the future this could be replaced by better orchestration options (eg. Ansible) or moved into Pulumi
+- resources
+    - configuration files and templates used by Pulumi (e.g. cloud-init configs, Caddyfiles etc.)
+- utility
+    - Useful classes: logging, file reading, types
