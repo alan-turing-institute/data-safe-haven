@@ -317,7 +317,7 @@ class SREDataComponent(ComponentResource):
         password_user_database_admin = pulumi_random.RandomPassword(
             f"{self._name}_password_user_database_admin", length=20, special=True
         )
-        keyvault.Secret(
+        kvs_password_user_database_admin = keyvault.Secret(
             f"{self._name}_kvs_password_user_database_admin",
             properties=keyvault.SecretPropertiesArgs(
                 value=password_user_database_admin.result
@@ -759,3 +759,9 @@ class SREDataComponent(ComponentResource):
         )
         self.password_workspace_admin = Output.secret(password_workspace_admin.result)
         self.resource_group_name = resource_group.name
+
+        # Register exports
+        self.exports = {
+            "key_vault_name": key_vault.name,
+            "password_user_database_admin_secret": kvs_password_user_database_admin.name,
+        }

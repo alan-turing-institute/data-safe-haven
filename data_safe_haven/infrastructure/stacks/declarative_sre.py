@@ -313,6 +313,7 @@ class DeclarativeSRE:
         )
 
         # Export values for later use
+        pulumi.export("data", data.exports)
         pulumi.export(
             "ldap",
             {
