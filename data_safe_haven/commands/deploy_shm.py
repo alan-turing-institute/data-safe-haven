@@ -51,9 +51,6 @@ def deploy_shm(
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
         # Add necessary secrets
         stack.add_secret(
-            "password-domain-azure-ad-connect", password(20), replace=False
-        )
-        stack.add_secret(
             "password-domain-computer-manager", password(20), replace=False
         )
         stack.add_secret("password-domain-ldap-searcher", password(20), replace=False)

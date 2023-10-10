@@ -23,9 +23,6 @@ class SHMDataProps:
         self.admin_group_id = admin_group_id
         self.admin_ip_addresses = admin_ip_addresses
         self.location = location
-        self.password_domain_azure_ad_connect = self.get_secret(
-            pulumi_opts, "password-domain-azure-ad-connect"
-        )
         self.password_domain_computer_manager = self.get_secret(
             pulumi_opts, "password-domain-computer-manager"
         )
@@ -142,7 +139,9 @@ class SHMDataComponent(ComponentResource):
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_admin",
-            properties=keyvault.SecretPropertiesArgs(value=password_domain_admin.result),
+            properties=keyvault.SecretPropertiesArgs(
+                value=password_domain_admin.result
+            ),
             resource_group_name=resource_group.name,
             secret_name="password-domain-admin",
             vault_name=key_vault.name,
@@ -150,11 +149,14 @@ class SHMDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Deploy key vault secrets
+        # Secret: Azure ADConnect password
+        password_domain_azure_ad_connect = pulumi_random.RandomPassword(
+            f"{self._name}_password_domain_azure_ad_connect", length=20, special=True
+        )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_azure_ad_connect",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_domain_azure_ad_connect
+                value=password_domain_azure_ad_connect.result
             ),
             resource_group_name=resource_group.name,
             secret_name="password-domain-azure-ad-connect",
@@ -162,6 +164,8 @@ class SHMDataComponent(ComponentResource):
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
             tags=child_tags,
         )
+
+        # Deploy key vault secrets
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_computer_manager",
             properties=keyvault.SecretPropertiesArgs(
@@ -253,7 +257,9 @@ class SHMDataComponent(ComponentResource):
 
         # Register outputs
         self.password_domain_admin = Output.secret(password_domain_admin.result)
-        self.password_domain_azure_ad_connect = props.password_domain_azure_ad_connect
+        self.password_domain_azure_ad_connect = Output.secret(
+            password_domain_azure_ad_connect.result
+        )
         self.password_domain_computer_manager = props.password_domain_computer_manager
         self.password_domain_searcher = props.password_domain_searcher
         self.password_update_server_linux_admin = (
