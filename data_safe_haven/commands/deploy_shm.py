@@ -52,9 +52,6 @@ def deploy_shm(
         # Add necessary secrets
         stack.add_secret("password-domain-ldap-searcher", password(20), replace=False)
         stack.add_secret(
-            "password-update-server-linux-admin", password(20), replace=False
-        )
-        stack.add_secret(
             "verification-azuread-custom-domain", verification_record, replace=False
         )
 

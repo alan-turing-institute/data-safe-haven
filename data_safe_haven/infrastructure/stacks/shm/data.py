@@ -26,9 +26,6 @@ class SHMDataProps:
         self.password_domain_searcher = self.get_secret(
             pulumi_opts, "password-domain-ldap-searcher"
         )
-        self.password_update_server_linux_admin = self.get_secret(
-            pulumi_opts, "password-update-server-linux-admin"
-        )
         self.tenant_id = tenant_id
 
     def get_secret(self, pulumi_opts: Config, secret_name: str) -> Output[str]:
@@ -162,7 +159,23 @@ class SHMDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Deploy key vault secrets
+        # Secret: Linux update server admin password
+        password_update_server_linux_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_update_server_linux_admin", length=20, special=True
+        )
+        keyvault.Secret(
+            f"{self._name}_kvs_password_update_server_linux_admin",
+            properties=keyvault.SecretPropertiesArgs(
+                value=password_update_server_linux_admin.result
+            ),
+            resource_group_name=resource_group.name,
+            secret_name="password-update-server-linux-admin",
+            vault_name=key_vault.name,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            tags=child_tags,
+        )
+
+        # Add other Pulumi secrets to key vault
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_searcher",
             properties=keyvault.SecretPropertiesArgs(
@@ -170,17 +183,6 @@ class SHMDataComponent(ComponentResource):
             ),
             resource_group_name=resource_group.name,
             secret_name="password-domain-ldap-searcher",
-            vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
-            tags=child_tags,
-        )
-        keyvault.Secret(
-            f"{self._name}_kvs_password_update_server_linux_admin",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_update_server_linux_admin
-            ),
-            resource_group_name=resource_group.name,
-            secret_name="password-update-server-linux-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
             tags=child_tags,
@@ -246,9 +248,9 @@ class SHMDataComponent(ComponentResource):
         self.password_domain_azure_ad_connect = Output.secret(
             password_domain_azure_ad_connect.result
         )
-        self.password_domain_searcher = props.password_domain_searcher
-        self.password_update_server_linux_admin = (
-            props.password_update_server_linux_admin
+        self.password_domain_searcher = Output.secret(props.password_domain_searcher)
+        self.password_update_server_linux_admin = Output.secret(
+            password_update_server_linux_admin.result
         )
         self.resource_group_name = Output.from_input(resource_group.name)
         self.vault = key_vault
