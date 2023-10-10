@@ -1,3 +1,4 @@
+import pathlib
 from collections.abc import Mapping
 from typing import Any
 
@@ -14,10 +15,13 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_vnet,
 )
 from data_safe_haven.infrastructure.components import (
+    FileUpload,
+    FileUploadProps,
     LinuxVMComponentProps,
     VMComponent,
 )
 from data_safe_haven.resources import resources_path
+from data_safe_haven.utility import FileReader
 
 
 class SREWorkspacesProps:
@@ -43,6 +47,7 @@ class SREWorkspacesProps:
         storage_account_data_private_user_name: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
         subnet_workspaces: Input[network.GetSubnetResult],
+        subscription_name: Input[str],
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
         vm_details: list[tuple[int, str]],  # this must *not* be passed as an Input[T]
@@ -69,6 +74,7 @@ class SREWorkspacesProps:
         self.storage_account_data_private_sensitive_name = (
             storage_account_data_private_sensitive_name
         )
+        self.subscription_name = subscription_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
             get_name_from_vnet
         )
@@ -161,7 +167,7 @@ class SREWorkspacesComponent(ComponentResource):
         ]
 
         # Get details for each deployed VM
-        vm_outputs = [
+        vm_outputs: list[dict[str, Any]] = [
             {
                 "ip_address": vm.ip_address_private,
                 "name": vm.vm_name,
@@ -169,6 +175,36 @@ class SREWorkspacesComponent(ComponentResource):
             }
             for vm in vms
         ]
+
+        # Upload smoke tests
+        mustache_values = {
+            "check_uninstallable_packages": "0",
+        }
+        file_uploads = [
+            (FileReader(resources_path / "workspace" / "run_all_tests.bats"), "0444")
+        ]
+        for test_file in pathlib.Path(resources_path / "workspace").glob("test*"):
+            file_uploads.append((FileReader(test_file), "0444"))
+        for vm, vm_output in zip(vms, vm_outputs, strict=True):
+            outputs: dict[str, Output[str]] = {}
+            for file_upload, file_permissions in file_uploads:
+                file_smoke_test = FileUpload(
+                    replace_separators(f"{self._name}_file_{file_upload.name}", "_"),
+                    FileUploadProps(
+                        file_contents=file_upload.file_contents(
+                            mustache_values=mustache_values
+                        ),
+                        file_hash=file_upload.sha256(),
+                        file_permissions=file_permissions,
+                        file_target=f"/opt/tests/{file_upload.name}",
+                        subscription_name=props.subscription_name,
+                        vm_name=vm.vm_name,
+                        vm_resource_group_name=resource_group.name,
+                    ),
+                    opts=child_opts,
+                )
+                outputs[file_upload.name] = file_smoke_test.script_output
+            vm_output["file_uploads"] = outputs
 
         # Register outputs
         self.resource_group = resource_group

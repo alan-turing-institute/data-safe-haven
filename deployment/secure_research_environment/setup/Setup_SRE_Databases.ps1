@@ -58,7 +58,6 @@ foreach ($databaseCfg in $config.sre.databases.instances) {
             }
         } else {
             Add-LogMessage -Level Warning "Database VM '$($databaseCfg.vmName)' already exists. Use the '-Redeploy' option if you want to remove the existing database and its data and deploy a new one."
-            continue
         }
     }
 

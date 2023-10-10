@@ -88,7 +88,7 @@ class BackendSettings:
         if not self._name:
             msg = (
                 "Data Safe Haven deployment name not provided:"
-                " use '[bright_cyan]--deployment-name[/]' / '[green]-d[/]' to do so."
+                " use '[bright_cyan]--name[/]' / '[green]-n[/]' to do so."
             )
             raise DataSafeHavenParameterError(msg)
         return self._name

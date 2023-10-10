@@ -15,6 +15,7 @@ pyodbc
 pyparsing
 python-dateutil
 pytz
+scikit-learn
 six
 typing-extensions
 tzdata

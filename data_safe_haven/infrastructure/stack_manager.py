@@ -39,6 +39,8 @@ class StackManager:
         self.work_dir = config.work_directory / "pulumi" / self.program.short_name
         self.work_dir.mkdir(parents=True, exist_ok=True)
         self.login()  # Log in to the Pulumi backend
+        self.initialise_workdir()
+        self.install_plugins()
 
     @property
     def local_stack_path(self) -> pathlib.Path:
@@ -137,8 +139,6 @@ class StackManager:
     def deploy(self, *, force: bool = False) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
-            self.initialise_workdir()
-            self.install_plugins()
             self.apply_config_options()
             if force:
                 self.cancel()
@@ -357,8 +357,6 @@ class StackManager:
     def teardown(self) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
         try:
-            self.initialise_workdir()
-            self.install_plugins()
             self.refresh()
             self.destroy()
             self.remove_workdir()

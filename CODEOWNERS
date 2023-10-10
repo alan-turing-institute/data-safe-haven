@@ -10,5 +10,5 @@
 # We only plan to require code owner review for
 # main and other branches that may be deployed from.
 # Note: /dir/ applies to directory and all subdirectories
-/deployment/      @martintoreilly @jemrobinson @JimMadge
+/deployment/      @martintoreilly @jemrobinson @JimMadge @craddm
 /docs/            @martintoreilly @jemrobinson @JimMadge @craddm @edwardchalstrey1

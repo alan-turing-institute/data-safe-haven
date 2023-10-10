@@ -64,6 +64,7 @@ We usually deploy the latest available version of the Data Safe Haven for each o
 | December 2021    | DSG 2021-12                   | [v3.3.1](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.3.1)           |
 | December 2022    | DSG 2022-12                   | [v4.0.2](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.2)           |
 | February 2023    | DSG 2023-02                   | [v4.0.3](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.3)           |
+| May 2023         | DSG 2023-05                   | [v4.0.3](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.3)           |
 
 ## Versions that have undergone formal security evaluation
 

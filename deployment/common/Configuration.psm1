@@ -330,7 +330,7 @@ function Get-ShmConfig {
                 ) # *-jobruntimedata-prod-su1.azure-automation.net
                 linux           = (
                     @("72.32.157.246", "87.238.57.227", "147.75.85.69", "217.196.149.55") + # apt.postgresql.org
-                    @("91.189.91.38", "91.189.91.39", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
+                    @("91.189.91.38", "91.189.91.39", "91.189.91.48", "91.189.91.49", "91.189.91.81", "91.189.91.82", "91.189.91.83", "185.125.190.17", "185.125.190.18", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
                     $cloudFlareIpAddresses + # database.clamav.net, packages.gitlab.com and qgis.org use Cloudflare
                     $cloudFrontIpAddresses + # packages.gitlab.com uses Cloudfront to host its Release file
                     @("104.131.190.124") + # dbeaver.io
@@ -729,7 +729,6 @@ function Get-SreConfig {
         }
     }
 
-
     # Firewall config
     # ---------------
     $config.sre.firewall = [ordered]@{
@@ -928,28 +927,10 @@ function Get-SreConfig {
     $config.sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule = ($config.sre.remoteDesktop.networkRules.outboundInternet -ne "Allow")
 
 
-    # CoCalc, CodiMD and Gitlab servers
-    # ---------------------------------
+    # CodiMD and Gitlab servers
+    # -------------------------
     $config.sre.webapps = [ordered]@{
         rg     = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
-        cocalc = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-cocalc"
-            dockerVersion           = "latest"
-            hostname                = "COCALC"
-            vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 7
-            osVersion               = "Ubuntu-latest"
-            disks                   = [ordered]@{
-                data = [ordered]@{
-                    sizeGb = "512"
-                    type   = $config.sre.diskTypeDefault
-                }
-                os   = [ordered]@{
-                    sizeGb = "32"
-                    type   = $config.sre.diskTypeDefault
-                }
-            }
-        }
         codimd = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-codimd"
             hostname                = "CODIMD"

@@ -90,7 +90,7 @@ def seeded_uuid(seed: str) -> uuid.UUID:
 
 def sha256hash(input_string: str) -> str:
     """Return the SHA256 hash of a string as a string."""
-    return hashlib.sha256(str.encode(input_string, encoding="utf-8")).hexdigest()
+    return hashlib.sha256(input_string.encode("utf-8")).hexdigest()
 
 
 def truncate_tokens(tokens: Sequence[str], max_length: int) -> list[str]:
