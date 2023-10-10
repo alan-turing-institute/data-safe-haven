@@ -129,7 +129,10 @@ class SHMDataComponent(ComponentResource):
 
         # Secret: Domain admin password
         password_domain_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_domain_admin", length=20, special=True
+            f"{self._name}_password_domain_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_admin",
@@ -139,13 +142,18 @@ class SHMDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-domain-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_domain_admin)
+            ),
             tags=child_tags,
         )
 
         # Secret: Azure ADConnect password
         password_domain_azure_ad_connect = pulumi_random.RandomPassword(
-            f"{self._name}_password_domain_azure_ad_connect", length=20, special=True
+            f"{self._name}_password_domain_azure_ad_connect",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_azure_ad_connect",
@@ -155,13 +163,18 @@ class SHMDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-domain-azure-ad-connect",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_domain_azure_ad_connect)
+            ),
             tags=child_tags,
         )
 
         # Secret: Linux update server admin password
         password_update_server_linux_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_update_server_linux_admin", length=20, special=True
+            f"{self._name}_password_update_server_linux_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_update_server_linux_admin",
@@ -171,7 +184,9 @@ class SHMDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-update-server-linux-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_update_server_linux_admin)
+            ),
             tags=child_tags,
         )
 

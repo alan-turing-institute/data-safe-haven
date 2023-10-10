@@ -68,7 +68,7 @@ class SREDnsServerComponent(ComponentResource):
 
         # Generate admin password
         password_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_admin", length=20, special=True
+            f"{self._name}_password_admin", length=20, special=True, opts=child_opts
         )
 
         # Read AdGuardHome setup files

@@ -240,7 +240,10 @@ class SREDataComponent(ComponentResource):
 
         # Secret: database service admin password
         password_database_service_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_database_service_admin", length=20, special=True
+            f"{self._name}_password_database_service_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_database_service_admin",
@@ -250,7 +253,9 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-database-service-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_database_service_admin)
+            ),
             tags=child_tags,
         )
 
@@ -269,7 +274,10 @@ class SREDataComponent(ComponentResource):
 
         # Secret: Gitea database admin password
         password_gitea_database_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_gitea_database_admin", length=20, special=True
+            f"{self._name}_password_gitea_database_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_gitea_database_admin",
@@ -279,13 +287,18 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-gitea-database-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_gitea_database_admin)
+            ),
             tags=child_tags,
         )
 
         # Secret: Hedgedoc database admin password
         password_hedgedoc_database_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_hedgedoc_database_admin", length=20, special=True
+            f"{self._name}_password_hedgedoc_database_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_hedgedoc_database_admin",
@@ -295,13 +308,18 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-hedgedoc-database-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_hedgedoc_database_admin)
+            ),
             tags=child_tags,
         )
 
         # Secret: Nexus admin password
         password_nexus_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_nexus_admin", length=20, special=True
+            f"{self._name}_password_nexus_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_nexus_admin",
@@ -309,13 +327,18 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-nexus-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_nexus_admin)
+            ),
             tags=child_tags,
         )
 
         # Secret: Guacamole user database admin password
         password_user_database_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_user_database_admin", length=20, special=True
+            f"{self._name}_password_user_database_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         kvs_password_user_database_admin = keyvault.Secret(
             f"{self._name}_kvs_password_user_database_admin",
@@ -325,13 +348,18 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-user-database-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_user_database_admin)
+            ),
             tags=child_tags,
         )
 
         # Secret: Workspace admin password
         password_workspace_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_workspace_admin", length=20, special=True
+            f"{self._name}_password_workspace_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_workspace_admin",
@@ -341,7 +369,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             secret_name="password-workspace-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions(parent=key_vault),
+            opts=ResourceOptions(parent=password_workspace_admin),
             tags=child_tags,
         )
 
