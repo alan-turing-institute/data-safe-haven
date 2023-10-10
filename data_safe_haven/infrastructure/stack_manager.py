@@ -1,22 +1,111 @@
 """Deploy with Pulumi"""
 import logging
-import os
 import pathlib
 import shutil
 import subprocess
 import time
 from contextlib import suppress
 from importlib import metadata
+from shutil import which
 from typing import Any
 
 from pulumi import automation
+import typer
 
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
-from data_safe_haven.external import AzureApi, AzureCli
+from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.infrastructure.stacks import DeclarativeSHM, DeclarativeSRE
 from data_safe_haven.utility import LoggingSingleton
+
+
+def handle_pulumi_login(config) -> None:
+    account = PulumiAccount(config)
+
+    if not account.confirm():
+        account.login()
+        if not account.confirm():
+            raise typer.Exit()
+
+
+def pulumi_env(config: Config) -> dict[str, Any]:
+    azure_api = AzureApi(config.subscription_name)
+    backend_storage_account_keys = azure_api.get_storage_account_keys(
+        config.backend.resource_group_name,
+        config.backend.storage_account_name,
+    )
+    return {
+        "AZURE_STORAGE_ACCOUNT": config.backend.storage_account_name,
+        "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
+        "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
+    }
+
+
+class PulumiAccount:
+    def __init__(self, config: Config):
+        self.cfg = config
+        self.path = which("pulumi")
+        if self.path is None:
+            msg = "Unable to find Pulumi CLI executable in your path.\nPlease ensure that Pulumi is installed"
+            raise DataSafeHavenPulumiError(msg)
+        self.env_: dict[str, Any] | None = None
+
+    @property
+    def env(self) -> dict[str, Any]:
+        """Get necessary Pulumi environment variables"""
+        if not self.env_:
+            self.env_ = pulumi_env(self.cfg)
+        return self.env_
+
+    def confirm(self) -> bool:
+        """Prompt user to confirm the Pulumi account is correct"""
+        # Because the who_am_i method requires a stack and workspace, it is difficult to
+        # do this with a minimal dummy stack which also works with the Azure backend
+        # stack = automation.create_or_select_stack(
+        #     stack_name="dummy_stack",
+        #     project_name="dummy_project",
+        #     work_dir="./",
+        #     opts=automation.LocalWorkspaceOptions(
+        #         env_vars=self.env,
+        #     ),
+        # )
+        # result = stack.workspace.who_am_i()
+        # print(
+        #     f"user: {result.user}\n",
+        #     f"url: {result.url}\n",
+        #     f"organisations: {result.organizations}"
+        # )
+        try:
+            result = subprocess.check_output(
+                [self.path, "whoami", "--verbose"],
+                stderr=subprocess.PIPE,
+                encoding="utf8",
+                env=self.env
+            )
+        except subprocess.CalledProcessError as exc:
+            msg = f"Logging into Pulumi failed.\n{exc}\n{result}"
+            raise DataSafeHavenPulumiError(msg) from exc
+
+        print(result)
+        return typer.confirm("Is this the Pulumi account you expect?\n")
+
+    def login(self) -> None:
+        """Login to Pulumi."""
+        try:
+            subprocess.check_call(
+                [
+                    self.path,
+                    "login",
+                    f"azblob://{self.cfg.pulumi.storage_container_name}",
+                ],
+                stderr=subprocess.PIPE,
+                encoding="utf8",
+                env=self.env
+            )
+        except subprocess.CalledProcessError as exc:
+            msg = f"Logging into Pulumi failed.\n{exc}."
+            raise DataSafeHavenPulumiError(msg) from exc
 
 
 class StackManager:
@@ -38,7 +127,6 @@ class StackManager:
         self.stack_name = self.program.stack_name
         self.work_dir = config.work_directory / "pulumi" / self.program.short_name
         self.work_dir.mkdir(parents=True, exist_ok=True)
-        self.login()  # Log in to the Pulumi backend
         self.initialise_workdir()
         self.install_plugins()
 
@@ -51,16 +139,7 @@ class StackManager:
     def env(self) -> dict[str, Any]:
         """Get necessary Pulumi environment variables"""
         if not self.env_:
-            azure_api = AzureApi(self.cfg.subscription_name)
-            backend_storage_account_keys = azure_api.get_storage_account_keys(
-                self.cfg.backend.resource_group_name,
-                self.cfg.backend.storage_account_name,
-            )
-            self.env_ = {
-                "AZURE_STORAGE_ACCOUNT": self.cfg.backend.storage_account_name,
-                "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
-                "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
-            }
+            self.env_ = pulumi_env(self.cfg)
         return self.env_
 
     @property
@@ -255,44 +334,6 @@ class StackManager:
             )
         except Exception as exc:
             msg = f"Installing Pulumi plugins failed.\n{exc}."
-            raise DataSafeHavenPulumiError(msg) from exc
-
-    def login(self) -> None:
-        """Login to Pulumi."""
-        try:
-            # Ensure we are authenticated with the Azure CLI
-            # Without this, we cannot read the encryption key from the keyvault
-            AzureCli().login()
-            # Check whether we're already logged in
-            # Note that we cannot retrieve self.stack without being logged in
-            self.logger.debug("Logging into Pulumi")
-            with suppress(DataSafeHavenPulumiError):
-                result = self.stack.workspace.who_am_i()
-                if result.user:
-                    self.logger.info(f"Logged into Pulumi as [green]{result.user}[/]")
-                    return
-            # Otherwise log in to Pulumi
-            try:
-                cmd_env = {**os.environ, **self.env}
-                self.logger.debug(f"Running command using environment {cmd_env}")
-                process = subprocess.run(
-                    [
-                        "pulumi",
-                        "login",
-                        f"azblob://{self.cfg.pulumi.storage_container_name}",
-                    ],
-                    capture_output=True,
-                    check=True,
-                    cwd=self.work_dir,
-                    encoding="UTF-8",
-                    env=cmd_env,
-                )
-                self.logger.info(process.stdout)
-            except (subprocess.CalledProcessError, FileNotFoundError) as exc:
-                msg = f"Logging into Pulumi failed.\n{exc}."
-                raise DataSafeHavenPulumiError(msg) from exc
-        except Exception as exc:
-            msg = f"Logging into Pulumi failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def output(self, name: str) -> Any:
