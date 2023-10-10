@@ -1,6 +1,7 @@
 """Pulumi component for SHM state"""
 from collections.abc import Mapping, Sequence
 
+import pulumi_random
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, resources, storage
 
@@ -22,20 +23,8 @@ class SHMDataProps:
         self.admin_group_id = admin_group_id
         self.admin_ip_addresses = admin_ip_addresses
         self.location = location
-        self.password_domain_admin = self.get_secret(
-            pulumi_opts, "password-domain-admin"
-        )
-        self.password_domain_azure_ad_connect = self.get_secret(
-            pulumi_opts, "password-domain-azure-ad-connect"
-        )
-        self.password_domain_computer_manager = self.get_secret(
-            pulumi_opts, "password-domain-computer-manager"
-        )
         self.password_domain_searcher = self.get_secret(
             pulumi_opts, "password-domain-ldap-searcher"
-        )
-        self.password_update_server_linux_admin = self.get_secret(
-            pulumi_opts, "password-update-server-linux-admin"
         )
         self.tenant_id = tenant_id
 
@@ -138,38 +127,70 @@ class SHMDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Deploy key vault secrets
+        # Secret: Domain admin password
+        password_domain_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_domain_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+        )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_admin",
-            properties=keyvault.SecretPropertiesArgs(value=props.password_domain_admin),
+            properties=keyvault.SecretPropertiesArgs(
+                value=password_domain_admin.result
+            ),
             resource_group_name=resource_group.name,
             secret_name="password-domain-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_domain_admin)
+            ),
             tags=child_tags,
+        )
+
+        # Secret: Azure ADConnect password
+        password_domain_azure_ad_connect = pulumi_random.RandomPassword(
+            f"{self._name}_password_domain_azure_ad_connect",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_azure_ad_connect",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_domain_azure_ad_connect
+                value=password_domain_azure_ad_connect.result
             ),
             resource_group_name=resource_group.name,
             secret_name="password-domain-azure-ad-connect",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_domain_azure_ad_connect)
+            ),
             tags=child_tags,
+        )
+
+        # Secret: Linux update server admin password
+        password_update_server_linux_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_update_server_linux_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
-            f"{self._name}_kvs_password_domain_computer_manager",
+            f"{self._name}_kvs_password_update_server_linux_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_domain_computer_manager
+                value=password_update_server_linux_admin.result
             ),
             resource_group_name=resource_group.name,
-            secret_name="password-domain-computer-manager",
+            secret_name="password-update-server-linux-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_update_server_linux_admin)
+            ),
             tags=child_tags,
         )
+
+        # Add other Pulumi secrets to key vault
         keyvault.Secret(
             f"{self._name}_kvs_password_domain_searcher",
             properties=keyvault.SecretPropertiesArgs(
@@ -177,17 +198,6 @@ class SHMDataComponent(ComponentResource):
             ),
             resource_group_name=resource_group.name,
             secret_name="password-domain-ldap-searcher",
-            vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
-            tags=child_tags,
-        )
-        keyvault.Secret(
-            f"{self._name}_kvs_password_update_server_linux_admin",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_update_server_linux_admin
-            ),
-            resource_group_name=resource_group.name,
-            secret_name="password-update-server-linux-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
             tags=child_tags,
@@ -249,12 +259,13 @@ class SHMDataComponent(ComponentResource):
         )
 
         # Register outputs
-        self.password_domain_admin = props.password_domain_admin
-        self.password_domain_azure_ad_connect = props.password_domain_azure_ad_connect
-        self.password_domain_computer_manager = props.password_domain_computer_manager
-        self.password_domain_searcher = props.password_domain_searcher
-        self.password_update_server_linux_admin = (
-            props.password_update_server_linux_admin
+        self.password_domain_admin = Output.secret(password_domain_admin.result)
+        self.password_domain_azure_ad_connect = Output.secret(
+            password_domain_azure_ad_connect.result
+        )
+        self.password_domain_searcher = Output.secret(props.password_domain_searcher)
+        self.password_update_server_linux_admin = Output.secret(
+            password_update_server_linux_admin.result
         )
         self.resource_group_name = Output.from_input(resource_group.name)
         self.vault = key_vault

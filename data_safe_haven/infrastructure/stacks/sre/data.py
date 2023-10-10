@@ -2,6 +2,7 @@
 from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
+import pulumi_random
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
@@ -43,6 +44,7 @@ class SREDataProps:
         admin_ip_addresses: Input[Sequence[str]],
         data_provider_ip_addresses: Input[Sequence[str]],
         dns_record: Input[network.RecordSet],
+        dns_server_admin_password: Input[pulumi_random.RandomPassword],
         location: Input[str],
         networking_resource_group: Input[resources.ResourceGroup],
         pulumi_opts: Config,
@@ -64,29 +66,11 @@ class SREDataProps:
             }
         )
         self.dns_record = dns_record
+        self.password_dns_server_admin = dns_server_admin_password
         self.location = location
         self.networking_resource_group_name = Output.from_input(
             networking_resource_group
         ).apply(get_name_from_rg)
-        self.password_database_service_admin = self.get_secret(
-            pulumi_opts, "password-database-service-admin"
-        )
-        self.password_dns_server_admin = self.get_secret(
-            pulumi_opts, "password-dns-server-admin"
-        )
-        self.password_gitea_database_admin = self.get_secret(
-            pulumi_opts, "password-gitea-database-admin"
-        )
-        self.password_hedgedoc_database_admin = self.get_secret(
-            pulumi_opts, "password-hedgedoc-database-admin"
-        )
-        self.password_nexus_admin = self.get_secret(pulumi_opts, "password-nexus-admin")
-        self.password_user_database_admin = self.get_secret(
-            pulumi_opts, "password-user-database-admin"
-        )
-        self.password_workspace_admin = self.get_secret(
-            pulumi_opts, "password-workspace-admin"
-        )
         self.private_dns_zone_base_id = self.get_secret(
             pulumi_opts, "shm-networking-private_dns_zone_base_id"
         )
@@ -254,22 +238,32 @@ class SREDataComponent(ComponentResource):
             ),
         )
 
-        # Deploy key vault secrets
+        # Secret: database service admin password
+        password_database_service_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_database_service_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+        )
         keyvault.Secret(
             f"{self._name}_kvs_password_database_service_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_database_service_admin
+                value=password_database_service_admin.result,
             ),
             resource_group_name=resource_group.name,
             secret_name="password-database-service-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_database_service_admin)
+            ),
             tags=child_tags,
         )
+
+        # Secret: database service admin password
         keyvault.Secret(
             f"{self._name}_kvs_password_dns_server_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_dns_server_admin
+                value=props.password_dns_server_admin.result,
             ),
             resource_group_name=resource_group.name,
             secret_name="password-dns-server-admin",
@@ -277,57 +271,105 @@ class SREDataComponent(ComponentResource):
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
             tags=child_tags,
         )
+
+        # Secret: Gitea database admin password
+        password_gitea_database_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_gitea_database_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+        )
         keyvault.Secret(
             f"{self._name}_kvs_password_gitea_database_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_gitea_database_admin
+                value=password_gitea_database_admin.result
             ),
             resource_group_name=resource_group.name,
             secret_name="password-gitea-database-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_gitea_database_admin)
+            ),
             tags=child_tags,
+        )
+
+        # Secret: Hedgedoc database admin password
+        password_hedgedoc_database_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_hedgedoc_database_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_hedgedoc_database_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_hedgedoc_database_admin
+                value=password_hedgedoc_database_admin.result
             ),
             resource_group_name=resource_group.name,
             secret_name="password-hedgedoc-database-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_hedgedoc_database_admin)
+            ),
             tags=child_tags,
+        )
+
+        # Secret: Nexus admin password
+        password_nexus_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_nexus_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_nexus_admin",
-            properties=keyvault.SecretPropertiesArgs(value=props.password_nexus_admin),
+            properties=keyvault.SecretPropertiesArgs(value=password_nexus_admin.result),
             resource_group_name=resource_group.name,
             secret_name="password-nexus-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_nexus_admin)
+            ),
             tags=child_tags,
         )
-        keyvault.Secret(
+
+        # Secret: Guacamole user database admin password
+        password_user_database_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_user_database_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+        )
+        kvs_password_user_database_admin = keyvault.Secret(
             f"{self._name}_kvs_password_user_database_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_user_database_admin
+                value=password_user_database_admin.result
             ),
             resource_group_name=resource_group.name,
             secret_name="password-user-database-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=password_user_database_admin)
+            ),
             tags=child_tags,
+        )
+
+        # Secret: Workspace admin password
+        password_workspace_admin = pulumi_random.RandomPassword(
+            f"{self._name}_password_workspace_admin",
+            length=20,
+            special=True,
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
         )
         keyvault.Secret(
             f"{self._name}_kvs_password_workspace_admin",
             properties=keyvault.SecretPropertiesArgs(
-                value=props.password_workspace_admin
+                value=password_workspace_admin.result
             ),
             resource_group_name=resource_group.name,
             secret_name="password-workspace-admin",
             vault_name=key_vault.name,
-            opts=ResourceOptions(parent=key_vault),
+            opts=ResourceOptions(parent=password_workspace_admin),
             tags=child_tags,
         )
 
@@ -727,19 +769,27 @@ class SREDataComponent(ComponentResource):
             storage_account_data_configuration.name
         )
         self.managed_identity = identity_key_vault_reader
-        self.password_nexus_admin = Output.secret(props.password_nexus_admin)
+        self.password_nexus_admin = Output.secret(password_nexus_admin.result)
         self.password_database_service_admin = Output.secret(
-            props.password_database_service_admin
+            password_database_service_admin.result
         )
-        self.password_dns_server_admin = Output.secret(props.password_dns_server_admin)
+        self.password_dns_server_admin = Output.secret(
+            props.password_dns_server_admin.result
+        )
         self.password_gitea_database_admin = Output.secret(
-            props.password_gitea_database_admin
+            password_gitea_database_admin.result
         )
         self.password_hedgedoc_database_admin = Output.secret(
-            props.password_hedgedoc_database_admin
+            password_hedgedoc_database_admin.result
         )
         self.password_user_database_admin = Output.secret(
-            props.password_user_database_admin
+            password_user_database_admin.result
         )
-        self.password_workspace_admin = Output.secret(props.password_workspace_admin)
+        self.password_workspace_admin = Output.secret(password_workspace_admin.result)
         self.resource_group_name = resource_group.name
+
+        # Register exports
+        self.exports = {
+            "key_vault_name": key_vault.name,
+            "password_user_database_admin_secret": kvs_password_user_database_admin.name,
+        }

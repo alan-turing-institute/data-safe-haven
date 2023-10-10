@@ -29,11 +29,19 @@ class SREProvisioningManager:
         self.sre_name = sre_name
         self.subscription_name = subscription_name
 
+        # Read secrets from key vault
+        keyvault_name = sre_stack.output("data")["key_vault_name"]
+        secret_name = sre_stack.output("data")["password_user_database_admin_secret"]
+        azure_api = AzureApi(self.subscription_name)
+        connection_db_server_password = azure_api.get_keyvault_secret(
+            keyvault_name, secret_name
+        )
+
         # Construct remote desktop parameters
         self.remote_desktop_params = sre_stack.output("remote_desktop")
-        self.remote_desktop_params["connection_db_server_password"] = sre_stack.secret(
-            "password-user-database-admin"
-        )
+        self.remote_desktop_params[
+            "connection_db_server_password"
+        ] = connection_db_server_password
         self.remote_desktop_params["timezone"] = timezone
 
         # Construct security group parameters

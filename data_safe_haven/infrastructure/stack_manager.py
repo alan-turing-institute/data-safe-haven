@@ -253,6 +253,9 @@ class StackManager:
             self.stack.workspace.install_plugin(
                 "azure-native", metadata.version("pulumi-azure-native")
             )
+            self.stack.workspace.install_plugin(
+                "random", metadata.version("pulumi-random")
+            )
         except Exception as exc:
             msg = f"Installing Pulumi plugins failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
@@ -398,6 +401,11 @@ class SREStackManager(StackManager):
         self,
         config: Config,
         sre_name: str,
+        *,
+        graph_api_token: str | None = None,
     ) -> None:
         """Constructor"""
-        super().__init__(config, DeclarativeSRE(config, config.shm.name, sre_name))
+        token = graph_api_token if graph_api_token else ""
+        super().__init__(
+            config, DeclarativeSRE(config, config.shm.name, sre_name, token)
+        )
