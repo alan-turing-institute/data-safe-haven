@@ -33,7 +33,6 @@ class SHMDomainControllersProps:
         log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace],
         password_domain_admin: Input[str],
         password_domain_azuread_connect: Input[str],
-        password_domain_computer_manager: Input[str],
         password_domain_searcher: Input[str],
         private_ip_address: Input[str],
         subnet_identity_servers: Input[network.GetSubnetResult],
@@ -55,7 +54,6 @@ class SHMDomainControllersProps:
         self.log_analytics_workspace = log_analytics_workspace
         self.password_domain_admin = password_domain_admin
         self.password_domain_azuread_connect = password_domain_azuread_connect
-        self.password_domain_computer_manager = password_domain_computer_manager
         self.password_domain_searcher = password_domain_searcher
         self.private_ip_address = private_ip_address
         self.subnet_name = Output.from_input(subnet_identity_servers).apply(
@@ -65,7 +63,6 @@ class SHMDomainControllersProps:
         # Note that usernames have a maximum of 20 characters
         self.username_domain_admin = "dshdomainadmin"
         self.username_domain_azuread_connect = "dshazureadsync"
-        self.username_domain_computer_manager = "dshcomputermanager"
         self.username_domain_searcher = "dshldapsearcher"
         self.virtual_network_name = virtual_network_name
         self.virtual_network_resource_group_name = virtual_network_resource_group_name
@@ -136,8 +133,6 @@ class SHMDomainControllersComponent(ComponentResource):
                     AzureADConnectUsername=props.username_domain_azuread_connect,
                     DomainAdministratorPassword=props.password_domain_admin,
                     DomainAdministratorUsername=props.username_domain_admin,
-                    DomainComputerManagerPassword=props.password_domain_computer_manager,
-                    DomainComputerManagerUsername=props.username_domain_computer_manager,
                     DomainName=props.domain_fqdn,
                     DomainNetBios=props.domain_netbios_name,
                     DomainRootDn=props.domain_root_dn,

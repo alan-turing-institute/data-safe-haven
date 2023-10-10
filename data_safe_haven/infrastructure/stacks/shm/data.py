@@ -23,9 +23,6 @@ class SHMDataProps:
         self.admin_group_id = admin_group_id
         self.admin_ip_addresses = admin_ip_addresses
         self.location = location
-        self.password_domain_computer_manager = self.get_secret(
-            pulumi_opts, "password-domain-computer-manager"
-        )
         self.password_domain_searcher = self.get_secret(
             pulumi_opts, "password-domain-ldap-searcher"
         )
@@ -167,17 +164,6 @@ class SHMDataComponent(ComponentResource):
 
         # Deploy key vault secrets
         keyvault.Secret(
-            f"{self._name}_kvs_password_domain_computer_manager",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_domain_computer_manager
-            ),
-            resource_group_name=resource_group.name,
-            secret_name="password-domain-computer-manager",
-            vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
-            tags=child_tags,
-        )
-        keyvault.Secret(
             f"{self._name}_kvs_password_domain_searcher",
             properties=keyvault.SecretPropertiesArgs(
                 value=props.password_domain_searcher
@@ -260,7 +246,6 @@ class SHMDataComponent(ComponentResource):
         self.password_domain_azure_ad_connect = Output.secret(
             password_domain_azure_ad_connect.result
         )
-        self.password_domain_computer_manager = props.password_domain_computer_manager
         self.password_domain_searcher = props.password_domain_searcher
         self.password_update_server_linux_admin = (
             props.password_update_server_linux_admin
