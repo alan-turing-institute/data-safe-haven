@@ -160,24 +160,24 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 
-(roles_deployer_setup_aad)=
+(roles_deployer_setup_meid)=
 
-## 3. {{file_folder}} Setup Azure Active Directory (AAD)
+## 3. {{file_folder}} Setup Microsoft Entra ID (MEID)
 
 ```{warning}
-If you wish to reuse an existing Azure Active Directory please make sure you remove any existing `Conditional Access Policies` by going to `Security > Conditional Access > Policies` and manually removing the `Restrict Azure Active Directory access` and `Require MFA` policies.
-You can then continue to the next step: {ref}`getting the Azure AD tenant ID <roles_deployer_aad_tenant_id>`.
+If you wish to reuse an existing Microsoft Entra ID directory please make sure you remove any existing `Conditional Access Policies` by going to `Security > Conditional Access > Policies` and manually removing the `Restrict Microsoft Entra ID access` and `Require MFA` policies.
+You can then continue to the next step: {ref}`getting the Entra ID tenant ID <roles_deployer_meid_tenant_id>`.
 ```
 
 ### Create a new Azure Active Directory
 
 ![Portal: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=one%20minute)
 
-- From the Azure portal, click `Create a Resource` and search for `Azure Active Directory` (AAD)
+- From the Azure portal, click `Create a Resource` and search for `Azure Active Directory`
   <details><summary><b>Screenshots</b></summary>
 
   ```{image} deploy_shm/AAD.png
-  :alt: Azure Active Directory
+  :alt: Microsoft Entra ID
   :align: center
   ```
 
@@ -198,17 +198,17 @@ You can then continue to the next step: {ref}`getting the Azure AD tenant ID <ro
   </details>
 
 - Click `Create`
-- Wait for the Azure Active Directory to be created
+- Wait for Entra ID to be created
 
-(roles_deployer_aad_tenant_id)=
+(roles_deployer_me-id_tenant_id)=
 
-### Get the Azure Active Directory Tenant ID
+### Get the Entra ID Tenant ID
 
 ![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
 
-- From the Azure portal, navigate to the AAD you have created.
+- From the Azure portal, navigate to the ME-ID you have created.
   You can do this by:
-    - Clicking the link displayed at the end of the initial AAD deployment.
+    - Clicking the link displayed at the end of the initial ME-ID deployment.
     - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of the `Directory + Subscription` panel that then displays.
 - If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
 - Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
@@ -225,7 +225,7 @@ You can then continue to the next step: {ref}`getting the Azure AD tenant ID <ro
 
 (roles_deployer_shm_configure_dns)=
 
-## 4. {{door}} Register custom domain with Azure Active Directory
+## 4. {{door}} Register custom domain with Entra ID
 
 ### Configure DNS for the custom domain
 
@@ -255,7 +255,7 @@ If you see a message `You need to add the following NS records to the parent DNS
 </details>
 ````
 
-### Add the SHM domain to the Azure Active Directory
+### Add the SHM domain to the Entra ID
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
