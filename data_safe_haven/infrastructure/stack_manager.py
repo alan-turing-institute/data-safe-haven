@@ -50,21 +50,8 @@ class PulumiAccount:
     def confirm(self) -> bool:
         """Prompt user to confirm the Pulumi account is correct"""
         # Because the who_am_i method requires a stack and workspace, it is difficult to
-        # do this with a minimal dummy stack which also works with the Azure backend
-        # stack = automation.create_or_select_stack(
-        #     stack_name="dummy_stack",
-        #     project_name="dummy_project",
-        #     work_dir="./",
-        #     opts=automation.LocalWorkspaceOptions(
-        #         env_vars=self.env,
-        #     ),
-        # )
-        # result = stack.workspace.who_am_i()
-        # print(
-        #     f"user: {result.user}\n",
-        #     f"url: {result.url}\n",
-        #     f"organisations: {result.organizations}"
-        # )
+        # do this with a minimal dummy stack which also works with the Azure backend.
+        # A subprocess call is used here.
         try:
             result = subprocess.check_output(
                 [self.path, "whoami", "--verbose"],
