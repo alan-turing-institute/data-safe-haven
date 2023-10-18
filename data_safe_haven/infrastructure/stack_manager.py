@@ -20,24 +20,16 @@ from data_safe_haven.infrastructure.stacks import DeclarativeSHM, DeclarativeSRE
 from data_safe_haven.utility import LoggingSingleton
 
 
-def handle_pulumi_login(config) -> None:
-    account = PulumiAccount(config)
-
-    if not account.confirm():
-        account.login()
-        if not account.confirm():
-            raise typer.Exit()
-
-
 class PulumiAccount:
     """Manage and interact with Pulumi backend account"""
     def __init__(self, config: Config):
         self.cfg = config
+        self.env_: dict[str, Any] | None = None
+        self.logger = LoggingSingleton()
         self.path = which("pulumi")
         if self.path is None:
             msg = "Unable to find Pulumi CLI executable in your path.\nPlease ensure that Pulumi is installed"
             raise DataSafeHavenPulumiError(msg)
-        self.env_: dict[str, Any] | None = None
 
     @property
     def env(self) -> dict[str, Any]:
@@ -84,8 +76,15 @@ class PulumiAccount:
             msg = f"Logging into Pulumi failed.\n{exc}\n{result}"
             raise DataSafeHavenPulumiError(msg) from exc
 
-        print(result)
-        return typer.confirm("Is this the Pulumi account you expect?\n")
+        self.logger.info("Confirming Pulumi account details")
+        for line in result.splitlines():
+            self.logger.info(line)
+
+        if typer.confirm("Is this the Pulumi account you expect?"):
+            self.logger.info("confirmed")
+            return True
+        else:
+            return False
 
     def login(self) -> None:
         """Login to Pulumi."""
@@ -103,6 +102,15 @@ class PulumiAccount:
         except subprocess.CalledProcessError as exc:
             msg = f"Logging into Pulumi failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
+
+    def handle_login(self) -> None:
+        if not self.confirm():
+            msg = f"Attempting to login to Pulumi account using container [green]{self.cfg.pulumi.storage_container_name}[/] in Azure storage account [green]{self.cfg.backend.storage_account_name}[/]"
+            self.logger.info(msg)
+            self.login()
+            if not self.confirm():
+                self.logger.error("Mismatch between expected Pulumi account and configuration")
+                raise typer.Exit(1)
 
 
 class StackManager:
