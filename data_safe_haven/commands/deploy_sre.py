@@ -5,7 +5,11 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric, bcrypt_salt, password
-from data_safe_haven.infrastructure import SHMStackManager, SREStackManager, PulumiAccount
+from data_safe_haven.infrastructure import (
+    PulumiAccount,
+    SHMStackManager,
+    SREStackManager,
+)
 from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
 

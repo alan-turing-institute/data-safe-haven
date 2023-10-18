@@ -61,8 +61,7 @@ class AzureCli:
     def confirm(self) -> None:
         account = self.account
         print(
-            f"name: {account.name} (id: {account.id_}\n",
-            f"tenant: {account.tenant_id}"
+            f"name: {account.name} (id: {account.id_}\n", f"tenant: {account.tenant_id}"
         )
         if not typer.confirm("Is this the Azure account you expect?\n"):
             typer.Exit()

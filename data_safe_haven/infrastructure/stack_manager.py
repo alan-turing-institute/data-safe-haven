@@ -9,8 +9,8 @@ from importlib import metadata
 from shutil import which
 from typing import Any
 
-from pulumi import automation
 import typer
+from pulumi import automation
 
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
@@ -22,6 +22,7 @@ from data_safe_haven.utility import LoggingSingleton
 
 class PulumiAccount:
     """Manage and interact with Pulumi backend account"""
+
     def __init__(self, config: Config):
         self.cfg = config
         self.env_: dict[str, Any] | None = None
@@ -57,7 +58,7 @@ class PulumiAccount:
                 [self.path, "whoami", "--verbose"],
                 stderr=subprocess.PIPE,
                 encoding="utf8",
-                env=self.env
+                env=self.env,
             )
         except subprocess.CalledProcessError as exc:
             msg = f"Logging into Pulumi failed.\n{exc}\n{result}"
@@ -84,7 +85,7 @@ class PulumiAccount:
                 ],
                 stderr=subprocess.PIPE,
                 encoding="utf8",
-                env=self.env
+                env=self.env,
             )
         except subprocess.CalledProcessError as exc:
             msg = f"Logging into Pulumi failed.\n{exc}."
@@ -96,7 +97,9 @@ class PulumiAccount:
             self.logger.info(msg)
             self.login()
             if not self.confirm():
-                self.logger.error("Mismatch between expected Pulumi account and configuration")
+                self.logger.error(
+                    "Mismatch between expected Pulumi account and configuration"
+                )
                 raise typer.Exit(1)
 
 

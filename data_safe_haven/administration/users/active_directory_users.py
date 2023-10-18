@@ -7,7 +7,7 @@ from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenActiveDirectoryError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import b64encode
-from data_safe_haven.infrastructure import SHMStackManager, PulumiAccount
+from data_safe_haven.infrastructure import PulumiAccount, SHMStackManager
 from data_safe_haven.utility import FileReader, LoggingSingleton
 
 from .research_user import ResearchUser
