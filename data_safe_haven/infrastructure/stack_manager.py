@@ -29,20 +29,8 @@ def handle_pulumi_login(config) -> None:
             raise typer.Exit()
 
 
-def pulumi_env(config: Config) -> dict[str, Any]:
-    azure_api = AzureApi(config.subscription_name)
-    backend_storage_account_keys = azure_api.get_storage_account_keys(
-        config.backend.resource_group_name,
-        config.backend.storage_account_name,
-    )
-    return {
-        "AZURE_STORAGE_ACCOUNT": config.backend.storage_account_name,
-        "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
-        "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
-    }
-
-
 class PulumiAccount:
+    """Manage and interact with Pulumi backend account"""
     def __init__(self, config: Config):
         self.cfg = config
         self.path = which("pulumi")
@@ -55,7 +43,16 @@ class PulumiAccount:
     def env(self) -> dict[str, Any]:
         """Get necessary Pulumi environment variables"""
         if not self.env_:
-            self.env_ = pulumi_env(self.cfg)
+            azure_api = AzureApi(self.cfg.subscription_name)
+            backend_storage_account_keys = azure_api.get_storage_account_keys(
+                self.cfg.backend.resource_group_name,
+                self.cfg.backend.storage_account_name,
+            )
+            self.env_ = {
+                "AZURE_STORAGE_ACCOUNT": self.cfg.backend.storage_account_name,
+                "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
+                "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
+            }
         return self.env_
 
     def confirm(self) -> bool:
@@ -116,8 +113,8 @@ class StackManager:
         config: Config,
         program: DeclarativeSHM | DeclarativeSRE,
     ) -> None:
+        self.account = PulumiAccount(config)
         self.cfg: Config = config
-        self.env_: dict[str, Any] | None = None
         self.logger = LoggingSingleton()
         self.stack_: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
@@ -134,13 +131,6 @@ class StackManager:
     def local_stack_path(self) -> pathlib.Path:
         """Return the local stack path"""
         return self.work_dir / f"Pulumi.{self.stack_name}.yaml"
-
-    @property
-    def env(self) -> dict[str, Any]:
-        """Get necessary Pulumi environment variables"""
-        if not self.env_:
-            self.env_ = pulumi_env(self.cfg)
-        return self.env_
 
     @property
     def pulumi_extra_args(self) -> dict[str, Any]:
@@ -164,7 +154,7 @@ class StackManager:
                     opts=automation.LocalWorkspaceOptions(
                         secrets_provider=f"azurekeyvault://{self.cfg.backend.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi.encryption_key_version}",
                         work_dir=str(self.work_dir),
-                        env_vars=self.env,
+                        env_vars=self.account.env,
                     ),
                 )
                 self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
