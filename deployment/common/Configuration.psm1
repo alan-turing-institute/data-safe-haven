@@ -479,7 +479,7 @@ function Get-ShmConfig {
 
     # Storage config
     # --------------
-    $shmStoragePrefix = "shm$($shm.id)"
+    $shmStoragePrefix = "shm$($shm.id)".Replace("-", "")
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
     $storageRg = "$($shm.rgPrefix)_STORAGE".ToUpper()
     $shm.storage = [ordered]@{
@@ -738,7 +738,7 @@ function Get-SreConfig {
     # Storage config
     # --------------
     $storageRg = "$($config.sre.rgPrefix)_STORAGE".ToUpper()
-    $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)"
+    $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)".Replace("-", "")
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
         accessPolicies  = [ordered]@{
