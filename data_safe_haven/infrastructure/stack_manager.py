@@ -93,7 +93,11 @@ class PulumiAccount:
 
     def handle_login(self) -> None:
         if not self.confirm():
-            msg = f"Attempting to login to Pulumi account using container [green]{self.cfg.pulumi.storage_container_name}[/] in Azure storage account [green]{self.cfg.backend.storage_account_name}[/]"
+            msg = (
+                "Attempting to login to Pulumi account using"
+                f" container [green]{self.cfg.pulumi.storage_container_name}[/]"
+                f" in Azure storage account [green]{self.cfg.backend.storage_account_name}[/]"
+            )
             self.logger.info(msg)
             self.login()
             if not self.confirm():
