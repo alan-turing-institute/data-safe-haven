@@ -27,6 +27,7 @@ Jump to the following sections:
     - [Who's involved in the project](#whos-involved-in-the-project)
     - [Make a change with a pull request](#making-a-change-with-a-pull-request)
     - [Make a change to the documentation](#making-a-change-to-the-documentation)
+    - [Adding new contributors](#adding-new-contributors)
 
 ## A DevOps development philosophy
 
@@ -266,6 +267,18 @@ To preview your changes, you can build the docs locally. See [docs/README.md](do
 | Rachel Winstanley    | [@rwinstanley1](https://github.com/rwinstanley1)           |
 | Warwick Wood         | [@warwick26](https://github.com/warwick26)                 |
 | Kevin Xu             | [@kevinxufs](https://github.com/kevinxufs)                 | -->
+
+Take a look at the full list of contributors on our [README](README.md).
+
+### Adding new contributors
+
+We use the @all-contributors bot. See the [documentation](https://allcontributors.org/docs/en/bot/usage) on how this is used.
+
+In short, you can comment on an Issue or Pull Request, asking @all-contributors to add a contributor:
+
+```
+@all-contributors please add @<username> for <contributions>
+```
 
 ## Get in touch
 
