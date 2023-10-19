@@ -12,6 +12,7 @@ from data_safe_haven.utility import LoggingSingleton
 
 @dataclass
 class AzureCliAccount:
+    """Dataclass for Azure CLI Account details"""
     name: str
     id_: str
     tenant_id: str
@@ -59,6 +60,7 @@ class AzureCli:
         return self._account
 
     def confirm(self) -> None:
+        """Prompt user to confirm the Azure CLI account is correct"""
         account = self.account
         self.logger.info(
             f"name: {account.name} (id: {account.id_}\n", f"tenant: {account.tenant_id}"

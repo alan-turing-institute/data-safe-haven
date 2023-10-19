@@ -92,6 +92,7 @@ class PulumiAccount:
             raise DataSafeHavenPulumiError(msg) from exc
 
     def handle_login(self) -> None:
+        """Ensure the user is using the DSH Pulumi backend"""
         if not self.confirm():
             msg = (
                 "Attempting to login to Pulumi account using"
