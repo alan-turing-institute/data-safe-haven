@@ -66,4 +66,7 @@ class AzureCli:
             f"name: {account.name} (id: {account.id_}\ntenant: {account.tenant_id}"
         )
         if not typer.confirm("Is this the Azure account you expect?\n"):
-            typer.Exit()
+            self.logger.error(
+                "Please use `az login` to connect to the correct Azure CLI account"
+            )
+            raise typer.Exit(1)
