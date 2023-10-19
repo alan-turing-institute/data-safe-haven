@@ -13,6 +13,7 @@ It was developed as part of the Alan Turing Institute's [Data Safe Havens in the
 [![Slack](https://img.shields.io/badge/Join%20us!-yellow?style=flat&logo=slack&logoColor=white&labelColor=4A154B&label=Slack)](https://join.slack.com/t/turingdatasafehaven/signup)
 ![Licence](https://img.shields.io/github/license/alan-turing-institute/data-safe-haven)
 [![Citation](https://img.shields.io/badge/citation-cite%20this%20project-informational)](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/CITATION.cff)
+[![All Contributors](https://img.shields.io/github/all-contributors/alan-turing-institute/data-safe-haven?color=ee8449&style=flat-square)](#contributors)
 
 ## :family: Community & support
 
