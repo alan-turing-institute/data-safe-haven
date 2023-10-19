@@ -32,6 +32,17 @@ There are lots of ways to contribute, not just writing code!
 
 See our [Code of Conduct](CODE_OF_CONDUCT.md) and our [Contributor Guide](CONTRIBUTING.md) to learn more about how we work together as a community and how you can contribute.
 
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
 ## :cake: Releases
 
 If you're new to the project, why not check out our [latest release](https://github.com/alan-turing-institute/data-safe-haven/releases/latest)?
