@@ -14,7 +14,7 @@ from pulumi import automation
 
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureApi, AzureCli
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.infrastructure.stacks import DeclarativeSHM, DeclarativeSRE
 from data_safe_haven.utility import LoggingSingleton
@@ -31,6 +31,10 @@ class PulumiAccount:
         if self.path is None:
             msg = "Unable to find Pulumi CLI executable in your path.\nPlease ensure that Pulumi is installed"
             raise DataSafeHavenPulumiError(msg)
+
+        # Ensure Azure CLI account is correct
+        # This will be needed to populate env
+        AzureCli().confirm()
 
     @property
     def env(self) -> dict[str, Any]:
