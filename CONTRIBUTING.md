@@ -230,9 +230,7 @@ To preview your changes, you can build the docs locally. See [docs/README.md](do
 
 ### Who's involved in the project
 
-As some users have `GitHub` IDs that make it a little difficult to know who they are in real life and it's sometimes nice to know **who** you're working with on the project, hopefully this table will help you put names to faces and IDs :sparkles:
-
-The following people have made one or more commits to the project:
+<!-- The following people have made one or more commits to the project:
 
 | Name                 | GitHub ID                                                  |
 | -------------------- | ---------------------------------------------------------- |
@@ -267,7 +265,7 @@ The following people have made one or more commits to the project:
 | Kirstie Whitaker     | [@KirstieJane](https://github.com/KirstieJane)             |
 | Rachel Winstanley    | [@rwinstanley1](https://github.com/rwinstanley1)           |
 | Warwick Wood         | [@warwick26](https://github.com/warwick26)                 |
-| Kevin Xu             | [@kevinxufs](https://github.com/kevinxufs)                 |
+| Kevin Xu             | [@kevinxufs](https://github.com/kevinxufs)                 | -->
 
 ## Get in touch
 
