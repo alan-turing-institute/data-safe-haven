@@ -13,6 +13,7 @@ from data_safe_haven.utility import LoggingSingleton
 @dataclass
 class AzureCliAccount:
     """Dataclass for Azure CLI Account details"""
+
     name: str
     id_: str
     tenant_id: str
