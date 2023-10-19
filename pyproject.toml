@@ -120,7 +120,6 @@ ignore = [
   "E501",     # ignore line length
   "S106",     # ignore check for possible passwords
   "S603",     # allow subprocess without shell=True
-  "S607",     # allow subprocess without absolute path
   "C901",     # ignore complex-structure
   "PLR0912",  # ignore too-many-branches
   "PLR0913",  # ignore too-many-arguments
