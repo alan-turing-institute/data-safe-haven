@@ -27,10 +27,11 @@ class PulumiAccount:
         self.cfg = config
         self.env_: dict[str, Any] | None = None
         self.logger = LoggingSingleton()
-        self.path = which("pulumi")
-        if self.path is None:
+        path = which("pulumi")
+        if path is None:
             msg = "Unable to find Pulumi CLI executable in your path.\nPlease ensure that Pulumi is installed"
             raise DataSafeHavenPulumiError(msg)
+        self.path = path
 
         # Ensure Azure CLI account is correct
         # This will be needed to populate env

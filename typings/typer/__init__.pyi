@@ -1,4 +1,5 @@
 from click.exceptions import BadParameter, Exit
+from click.termui import confirm
 
 from .main import Typer
 from .params import Argument
@@ -10,4 +11,5 @@ __all__ = [
     "Exit",
     "Option",
     "Typer",
+    "confirm",
 ]

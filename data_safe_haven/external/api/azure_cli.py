@@ -22,15 +22,16 @@ class AzureCliAccount:
 class AzureCli:
     """Interface to the Azure CLI"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = LoggingSingleton()
 
-        self.path = which("az")
-        if self.path is None:
+        path = which("az")
+        if path is None:
             msg = "Unable to find Azure CLI executable in your path.\nPlease ensure that Azure CLI is installed"
             raise DataSafeHavenAzureError(msg)
+        self.path = path
 
-        self._account = None
+        self._account: AzureCliAccount | None = None
 
     @property
     def account(self) -> AzureCliAccount:
