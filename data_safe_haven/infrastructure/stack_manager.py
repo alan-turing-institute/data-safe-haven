@@ -81,7 +81,7 @@ class PulumiAccount:
     def login(self) -> None:
         """Login to Pulumi."""
         try:
-            subprocess.check_call(
+            result = subprocess.check_output(
                 [
                     self.path,
                     "login",
@@ -91,6 +91,7 @@ class PulumiAccount:
                 encoding="utf8",
                 env=self.env,
             )
+            self.logger.info(result)
         except subprocess.CalledProcessError as exc:
             msg = f"Logging into Pulumi failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
