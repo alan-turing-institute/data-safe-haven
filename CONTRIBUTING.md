@@ -276,9 +276,7 @@ We use the @all-contributors bot. See the [documentation](https://allcontributor
 
 In short, you can comment on an Issue or Pull Request, asking @all-contributors to add a contributor:
 
-```
-@all-contributors please add @<username> for <contributions>
-```
+`@all-contributors please add @<username> for <contributions>`
 
 ## Get in touch
 
