@@ -20,8 +20,7 @@ def teardown_sre(name: str) -> None:
 
         # Remove infrastructure deployed with Pulumi
         try:
-            account = PulumiAccount(config)
-            account.handle_login()
+            PulumiAccount(config).handle_login()
             stack = SREStackManager(config, sre_name)
             if stack.work_dir.exists():
                 stack.teardown()

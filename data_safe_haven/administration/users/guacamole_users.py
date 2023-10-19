@@ -12,8 +12,7 @@ from .research_user import ResearchUser
 class GuacamoleUsers:
     def __init__(self, config: Config, sre_name: str, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        account = PulumiAccount(config)
-        account.handle_login()
+        PulumiAccount(config).handle_login()
         sre_stack = SREStackManager(config, sre_name)
         self.postgres_provisioner = AzurePostgreSQLDatabase(
             sre_stack.output("remote_desktop")["connection_db_name"],

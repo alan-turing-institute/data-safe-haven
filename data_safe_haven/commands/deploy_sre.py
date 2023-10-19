@@ -52,8 +52,7 @@ def deploy_sre(
         )
 
         # Initialise Pulumi stack
-        account = PulumiAccount(config)
-        account.handle_login()
+        PulumiAccount(config).handle_login()
         shm_stack = SHMStackManager(config)
         stack = SREStackManager(config, sre_name)
         # Set Azure options

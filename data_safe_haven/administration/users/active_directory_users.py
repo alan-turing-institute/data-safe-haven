@@ -23,8 +23,7 @@ class ActiveDirectoryUsers:
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        account = PulumiAccount(config)
-        account.handle_login()
+        PulumiAccount(config).handle_login()
         shm_stack = SHMStackManager(config)
         self.azure_api = AzureApi(config.subscription_name)
         self.logger = LoggingSingleton()

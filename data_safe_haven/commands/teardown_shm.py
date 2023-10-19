@@ -15,8 +15,7 @@ def teardown_shm() -> None:
 
         # Remove infrastructure deployed with Pulumi
         try:
-            account = PulumiAccount(config)
-            account.handle_login()
+            PulumiAccount(config).handle_login()
             stack = SHMStackManager(config)
             stack.teardown()
         except Exception as exc:

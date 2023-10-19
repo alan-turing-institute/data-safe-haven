@@ -40,8 +40,7 @@ def deploy_shm(
         verification_record = graph_api.add_custom_domain(config.shm.fqdn)
 
         # Initialise Pulumi stack
-        account = PulumiAccount(config)
-        account.handle_login()
+        PulumiAccount(config).handle_login()
         stack = SHMStackManager(config)
         # Set Azure options
         stack.add_option("azure-native:location", config.azure.location, replace=False)
