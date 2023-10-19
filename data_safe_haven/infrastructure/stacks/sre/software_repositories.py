@@ -232,7 +232,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="ghcr.io/alan-turing-institute/nexus-allowlist:v0.6.0",
+                        image="ghcr.io/alan-turing-institute/nexus-allowlist:v0.8.0",
                         name="nexus-allowlist"[:63],
                         environment_variables=[
                             containerinstance.EnvironmentVariableArgs(
@@ -250,6 +250,12 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                             containerinstance.EnvironmentVariableArgs(
                                 name="NEXUS_PORT",
                                 value="8081",
+                            ),
+                            # Use fallback updating method due to issue with changes to
+                            # files on Azure storage mount not being recognised by entr
+                            containerinstance.EnvironmentVariableArgs(
+                                name="ENTR_FALLBACK",
+                                value="1",
                             ),
                         ],
                         ports=[],

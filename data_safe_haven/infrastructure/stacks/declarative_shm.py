@@ -130,7 +130,6 @@ class DeclarativeSHM:
                 log_analytics_workspace=monitoring.log_analytics_workspace,
                 password_domain_admin=data.password_domain_admin,
                 password_domain_azuread_connect=data.password_domain_azure_ad_connect,
-                password_domain_computer_manager=data.password_domain_computer_manager,
                 password_domain_searcher=data.password_domain_searcher,
                 private_ip_address=networking.domain_controller_private_ip,
                 subnet_identity_servers=networking.subnet_identity_servers,

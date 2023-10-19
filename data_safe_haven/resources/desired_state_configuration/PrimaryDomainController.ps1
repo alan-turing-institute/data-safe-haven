@@ -138,14 +138,6 @@ Configuration ConfigureActiveDirectory {
         [ValidateNotNullOrEmpty()]
         [String]$CADDomainAdministratorUsername,
 
-        [Parameter(Mandatory = $true, HelpMessage = "Domain computer manager password")]
-        [ValidateNotNullOrEmpty()]
-        [String]$CADDomainComputerManagerPassword,
-
-        [Parameter(Mandatory = $true, HelpMessage = "Domain computer manager username")]
-        [ValidateNotNullOrEmpty()]
-        [String]$CADDomainComputerManagerUsername,
-
         [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM domain")]
         [ValidateNotNullOrEmpty()]
         [String]$CADDomainName,
@@ -192,11 +184,6 @@ Configuration ConfigureActiveDirectory {
             Description = "Azure Active Directory synchronisation manager"
             Password    = $CADAzureADConnectPassword
             Username    = $CADAzureADConnectUsername
-        }
-        ComputerManager     = @{
-            Description = "DSH domain computers manager"
-            Password    = $CADDomainComputerManagerPassword
-            Username    = $CADDomainComputerManagerUsername
         }
         LDAPSearcher        = @{
             Description = "DSH LDAP searcher"
@@ -344,50 +331,6 @@ Configuration ConfigureActiveDirectory {
             TestScript = { $false }
             DependsOn = "[ADUser]AzureADSynchroniser"
         }
-
-        # Allow the computer manager to register computers in the domain
-        Script SetComputerManagerPermissions {
-            SetScript = {
-                try {
-                    $success = $true
-                    $DomainComputerManagerUsername = $using:DataSafeHavenServiceAccounts.ComputerManager.Username
-                    # $OuDescription = $using:DataSafeHavenUnits.DomainComputers.Description
-                    # $OrganisationalUnit = Get-ADObject -Filter "Name -eq '$OuDescription'"
-                    $OrganisationalUnit = Get-ADObject -Filter "Name -eq '$($using:DataSafeHavenUnits.DomainComputers.Description)'"
-                    $DomainComputerManagerSID = (Get-ADUser -Identity $DomainComputerManagerUsername).SID
-                    # Add permission to create child computer objects
-                    $null = dsacls $OrganisationalUnit /I:T /G "${userPrincipalName}:CC;computer"
-                    $success = $success -and $?
-                    # Give 'write property' permissions over several attributes of child computer objects
-                    $null = dsacls $OrganisationalUnit /I:S /G "${DomainComputerManagerSID}:WP;DNS Host Name Attributes;computer"
-                    $success = $success -and $?
-                    $null = dsacls $OrganisationalUnit /I:S /G "${DomainComputerManagerSID}:WP;msDS-SupportedEncryptionTypes;computer"
-                    $success = $success -and $?
-                    $null = dsacls $OrganisationalUnit /I:S /G "${DomainComputerManagerSID}:WP;operatingSystem;computer"
-                    $success = $success -and $?
-                    $null = dsacls $OrganisationalUnit /I:S /G "${DomainComputerManagerSID}:WP;operatingSystemVersion;computer"
-                    $success = $success -and $?
-                    $null = dsacls $OrganisationalUnit /I:S /G "${DomainComputerManagerSID}:WP;operatingSystemServicePack;computer"
-                    $success = $success -and $?
-                    $null = dsacls $OrganisationalUnit /I:S /G "${DomainComputerManagerSID}:WP;sAMAccountName;computer"
-                    $success = $success -and $?
-                    $null = dsacls $OrganisationalUnit /I:S /G "${DomainComputerManagerSID}:WP;servicePrincipalName;computer"
-                    $success = $success -and $?
-                    $null = dsacls $OrganisationalUnit /I:S /G "${DomainComputerManagerSID}:WP;userPrincipalName;computer"
-                    $success = $success -and $?
-                    if ($success) {
-                        Write-Verbose -Message "Successfully delegated Active Directory permissions on '$OrganisationalUnit' to '$DomainComputerManagerUsername'"
-                    } else {
-                        throw "Failed to delegate Active Directory permissions on '$OrganisationalUnit' to '$DomainComputerManagerUsername'!"
-                    }
-                } catch {
-                    Write-Error "SetComputerManagerPermissions: $($_.Exception)"
-                }
-            }
-            GetScript = { @{} }
-            TestScript = { $false }
-            DependsOn = "[ADUser]ComputerManager"
-        }
     }
 }
 
@@ -443,14 +386,6 @@ Configuration PrimaryDomainController {
         [Parameter(Mandatory = $true, HelpMessage = "Domain administrator username")]
         [ValidateNotNullOrEmpty()]
         [String]$DomainAdministratorUsername,
-
-        [Parameter(Mandatory = $true, HelpMessage = "Domain computer manager password")]
-        [ValidateNotNullOrEmpty()]
-        [String]$DomainComputerManagerPassword,
-
-        [Parameter(Mandatory = $true, HelpMessage = "Domain computer manager username")]
-        [ValidateNotNullOrEmpty()]
-        [String]$DomainComputerManagerUsername,
 
         [Parameter(Mandatory = $true, HelpMessage = "FQDN for the SHM domain")]
         [ValidateNotNullOrEmpty()]
@@ -510,8 +445,6 @@ Configuration PrimaryDomainController {
             CADAzureADConnectUsername = $AzureADConnectUsername
             CADDomainAdministratorPassword = $DomainAdministratorPassword
             CADDomainAdministratorUsername = $DomainAdministratorUsername
-            CADDomainComputerManagerPassword = $DomainComputerManagerPassword
-            CADDomainComputerManagerUsername = $DomainComputerManagerUsername
             CADDomainName = $DomainName
             CADDomainRootDn = $DomainRootDn
             CADLDAPSearcherPassword = $LDAPSearcherPassword
