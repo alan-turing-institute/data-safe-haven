@@ -143,6 +143,7 @@ descartes
 dill
 distlib
 distributed
+dm-tree
 dnspython
 docopt
 docutils
@@ -161,7 +162,7 @@ executing
 fastjsonschema
 fastprogress
 filelock
-Fiona
+fiona
 first
 flair
 flake8
@@ -351,6 +352,7 @@ munch
 murmurhash
 mypy
 mypy-extensions
+namex
 NavPy
 nbclassic
 nbclient
@@ -549,6 +551,7 @@ Rtree
 ruamel.base
 ruamel.ordereddict
 ruamel.yaml
+ruamel.yaml.clib
 s3fs
 s3transfer
 sacremoses

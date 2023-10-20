@@ -27,6 +27,7 @@ base64enc
 bayesplot
 bibtex
 biganalytics
+bigD
 biglm
 bigmemory
 bigmemory.sri
@@ -234,6 +235,7 @@ jqr
 jquerylib
 jsonify
 jsonlite
+juicyjuice
 kdensity
 kernlab
 KernSmooth
@@ -276,7 +278,6 @@ manipulateWidget
 mapdeck
 mapproj
 maps
-maptools
 mapview
 markdown
 MASS
@@ -422,8 +423,6 @@ reshape
 reshape2
 reticulate
 rex
-rgdal
-rgeos
 rgexf
 rgl
 RgoogleMaps
