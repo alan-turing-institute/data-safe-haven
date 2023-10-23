@@ -4,7 +4,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenError,
     DataSafeHavenInputError,
 )
-from data_safe_haven.infrastructure import PulumiAccount, SHMStackManager
+from data_safe_haven.infrastructure import SHMStackManager
 
 
 def teardown_shm() -> None:
@@ -15,7 +15,6 @@ def teardown_shm() -> None:
 
         # Remove infrastructure deployed with Pulumi
         try:
-            PulumiAccount(config).handle_login()
             stack = SHMStackManager(config)
             stack.teardown()
         except Exception as exc:

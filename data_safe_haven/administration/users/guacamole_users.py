@@ -4,7 +4,7 @@ from typing import Any
 
 from data_safe_haven.config import Config
 from data_safe_haven.external import AzurePostgreSQLDatabase
-from data_safe_haven.infrastructure import PulumiAccount, SREStackManager
+from data_safe_haven.infrastructure import SREStackManager
 
 from .research_user import ResearchUser
 
@@ -12,7 +12,6 @@ from .research_user import ResearchUser
 class GuacamoleUsers:
     def __init__(self, config: Config, sre_name: str, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
-        PulumiAccount(config).handle_login()
         sre_stack = SREStackManager(config, sre_name)
         self.postgres_provisioner = AzurePostgreSQLDatabase(
             sre_stack.output("remote_desktop")["connection_db_name"],

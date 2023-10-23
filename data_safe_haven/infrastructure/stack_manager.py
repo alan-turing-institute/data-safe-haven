@@ -2,14 +2,12 @@
 import logging
 import pathlib
 import shutil
-import subprocess
 import time
 from contextlib import suppress
 from importlib import metadata
 from shutil import which
 from typing import Any
 
-import typer
 from pulumi import automation
 
 from data_safe_haven.config import Config
@@ -26,12 +24,10 @@ class PulumiAccount:
     def __init__(self, config: Config):
         self.cfg = config
         self.env_: dict[str, Any] | None = None
-        self.logger = LoggingSingleton()
         path = which("pulumi")
         if path is None:
             msg = "Unable to find Pulumi CLI executable in your path.\nPlease ensure that Pulumi is installed"
             raise DataSafeHavenPulumiError(msg)
-        self.path = path
 
         # Ensure Azure CLI account is correct
         # This will be needed to populate env
@@ -50,68 +46,9 @@ class PulumiAccount:
                 "AZURE_STORAGE_ACCOUNT": self.cfg.backend.storage_account_name,
                 "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
+                "PULUMI_BACKEND_URL": f"azblob://{self.cfg.pulumi.storage_container_name}",
             }
         return self.env_
-
-    def confirm(self) -> bool:
-        """Prompt user to confirm the Pulumi account is correct"""
-        # Because the who_am_i method requires a stack and workspace, it is difficult to
-        # do this with a minimal dummy stack which also works with the Azure backend.
-        # A subprocess call is used here.
-        try:
-            result = subprocess.check_output(
-                [self.path, "whoami", "--verbose"],
-                stderr=subprocess.PIPE,
-                encoding="utf8",
-                env=self.env,
-            )
-        except subprocess.CalledProcessError as exc:
-            msg = f"Logging into Pulumi failed.\n{exc}\n{result}"
-            raise DataSafeHavenPulumiError(msg) from exc
-
-        self.logger.info("Confirming Pulumi account details")
-        for line in result.splitlines():
-            self.logger.info(line)
-
-        if typer.confirm("Is this the Pulumi account you expect?"):
-            self.logger.info("confirmed")
-            return True
-        else:
-            return False
-
-    def login(self) -> None:
-        """Login to Pulumi."""
-        try:
-            result = subprocess.check_output(
-                [
-                    self.path,
-                    "login",
-                    f"azblob://{self.cfg.pulumi.storage_container_name}",
-                ],
-                stderr=subprocess.PIPE,
-                encoding="utf8",
-                env=self.env,
-            )
-            self.logger.info(result)
-        except subprocess.CalledProcessError as exc:
-            msg = f"Logging into Pulumi failed.\n{exc}."
-            raise DataSafeHavenPulumiError(msg) from exc
-
-    def handle_login(self) -> None:
-        """Ensure the user is using the DSH Pulumi backend"""
-        if not self.confirm():
-            msg = (
-                "Attempting to login to Pulumi account using"
-                f" container [green]{self.cfg.pulumi.storage_container_name}[/]"
-                f" in Azure storage account [green]{self.cfg.backend.storage_account_name}[/]"
-            )
-            self.logger.info(msg)
-            self.login()
-            if not self.confirm():
-                self.logger.error(
-                    "Mismatch between expected Pulumi account and configuration"
-                )
-                raise typer.Exit(1)
 
 
 class StackManager:

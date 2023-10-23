@@ -5,11 +5,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric, bcrypt_salt
-from data_safe_haven.infrastructure import (
-    PulumiAccount,
-    SHMStackManager,
-    SREStackManager,
-)
+from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
 
@@ -52,7 +48,6 @@ def deploy_sre(
         )
 
         # Initialise Pulumi stack
-        PulumiAccount(config).handle_login()
         shm_stack = SHMStackManager(config)
         stack = SREStackManager(config, sre_name, graph_api_token=graph_api.token)
         # Set Azure options

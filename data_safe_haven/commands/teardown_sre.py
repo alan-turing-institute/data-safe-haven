@@ -6,7 +6,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.infrastructure import PulumiAccount, SREStackManager
+from data_safe_haven.infrastructure import SREStackManager
 
 
 def teardown_sre(name: str) -> None:
@@ -28,7 +28,6 @@ def teardown_sre(name: str) -> None:
 
         # Remove infrastructure deployed with Pulumi
         try:
-            PulumiAccount(config).handle_login()
             stack = SREStackManager(config, sre_name, graph_api_token=graph_api.token)
             if stack.work_dir.exists():
                 stack.teardown()
