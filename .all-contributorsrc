@@ -89,6 +89,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "miguelmorin",
+      "name": "miguelmorin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32396311?v=4",
+      "profile": "https://github.com/miguelmorin",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
