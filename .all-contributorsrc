@@ -69,6 +69,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "OscartGiles",
+      "name": "Oscar T Giles",
+      "avatar_url": "https://avatars.githubusercontent.com/u/12784013?v=4",
+      "profile": "https://github.com/OscartGiles",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
