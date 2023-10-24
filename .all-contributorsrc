@@ -79,6 +79,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "james-c",
+      "name": "James Cunningham",
+      "avatar_url": "https://avatars.githubusercontent.com/u/150765?v=4",
+      "profile": "https://github.com/james-c",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
