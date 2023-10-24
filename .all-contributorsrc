@@ -121,7 +121,8 @@
         "code",
         "doc",
         "bug",
-        "ideas"
+        "ideas",
+        "content"
       ]
     },
     {
@@ -144,7 +145,8 @@
         "code",
         "doc",
         "bug",
-        "ideas"
+        "ideas",
+        "content"
       ]
     },
     {
@@ -193,7 +195,8 @@
         "doc",
         "ideas",
         "projectManagement",
-        "promotion"
+        "promotion",
+        "content"
       ]
     },
     {
@@ -314,7 +317,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/22940095?v=4",
       "profile": "https://warwick.ac.uk/fac/sci/mathsys/people/students/2015intake/cabrejas-egea/",
       "contributions": [
-        "code"
+        "code",
+        "content"
       ]
     },
     {
@@ -342,7 +346,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/34555297?v=4",
       "profile": "https://github.com/getcarter21",
       "contributions": [
-        "code"
+        "code",
+        "content"
       ]
     },
     {
@@ -373,7 +378,8 @@
       "profile": "https://darenasc.github.io/",
       "contributions": [
         "code",
-        "ideas"
+        "ideas",
+        "content"
       ]
     },
     {
@@ -395,7 +401,8 @@
       "contributions": [
         "doc",
         "bug",
-        "ideas"
+        "ideas",
+        "content"
       ]
     },
     {
@@ -416,7 +423,8 @@
       "contributions": [
         "doc",
         "ideas",
-        "bug"
+        "bug",
+        "content"
       ]
     },
     {
@@ -459,7 +467,8 @@
         "ideas",
         "bug",
         "code",
-        "doc"
+        "doc",
+        "content"
       ]
     },
     {
@@ -468,7 +477,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/217966?v=4",
       "profile": "http://helen.st/cv",
       "contributions": [
-        "ideas"
+        "ideas",
+        "content"
       ]
     },
     {
@@ -478,6 +488,62 @@
       "profile": "https://github.com/DDelbarre",
       "contributions": [
         "bug"
+      ]
+    },
+    {
+      "login": "steven-cd",
+      "name": "Steven Carlysle-Davies",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5108635?v=4",
+      "profile": "https://github.com/steven-cd",
+      "contributions": [
+        "code",
+        "content",
+        "ideas"
+      ]
+    },
+    {
+      "login": "evelinag",
+      "name": "Evelina Gabasova",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5541162?v=4",
+      "profile": "http://evelinag.com/",
+      "contributions": [
+        "content"
+      ]
+    },
+    {
+      "login": "triangle-man",
+      "name": "James Geddes",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1172905?v=4",
+      "profile": "https://github.com/triangle-man",
+      "contributions": [
+        "content"
+      ]
+    },
+    {
+      "login": "radka-j",
+      "name": "Radka Jersakova",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29207091?v=4",
+      "profile": "https://github.com/radka-j",
+      "contributions": [
+        "content"
+      ]
+    },
+    {
+      "login": "fkiraly",
+      "name": "Franz Király",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7985502?v=4",
+      "profile": "https://github.com/fkiraly",
+      "contributions": [
+        "content"
+      ]
+    },
+    {
+      "login": "catavallejos",
+      "name": "Catalina Vallejos",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7511093?v=4",
+      "profile": "https://vallejosgroup.github.io/",
+      "contributions": [
+        "content"
       ]
     }
   ],
