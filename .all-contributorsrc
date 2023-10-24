@@ -545,6 +545,17 @@
       "contributions": [
         "content"
       ]
+    },
+    {
+      "login": "Arielle-Bennett",
+      "name": "arielle-bennett",
+      "avatar_url": "https://avatars.githubusercontent.com/u/74651964?v=4",
+      "profile": "https://github.com/Arielle-Bennett",
+      "contributions": [
+        "fundingFinding",
+        "ideas",
+        "projectManagement"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
