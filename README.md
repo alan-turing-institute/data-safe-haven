@@ -14,7 +14,7 @@ It was developed as part of the Alan Turing Institute's [Data Safe Havens in the
 ![Licence](https://img.shields.io/github/license/alan-turing-institute/data-safe-haven)
 [![Citation](https://img.shields.io/badge/citation-cite%20this%20project-informational)](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/CITATION.cff)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-24-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-25-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ## :family: Community & support
@@ -73,6 +73,7 @@ See our [Code of Conduct](CODE_OF_CONDUCT.md) and our [Contributor Guide](CONTRI
       <td align="center" valign="top" width="14.28%"><a href="https://warwick.ac.uk/fac/sci/mathsys/people/students/2015intake/cabrejas-egea/"><img src="https://avatars.githubusercontent.com/u/22940095?v=4?s=100" width="100px;" alt="Alvaro Cabrejas Egea"/><br /><sub><b>Alvaro Cabrejas Egea</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=ACabrejas" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=ACabrejas" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/harisood"><img src="https://avatars.githubusercontent.com/u/67151373?v=4?s=100" width="100px;" alt="harisood"/><br /><sub><b>harisood</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=harisood" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=harisood" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/getcarter21"><img src="https://avatars.githubusercontent.com/u/34555297?v=4?s=100" width="100px;" alt="getcarter21"/><br /><sub><b>getcarter21</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=getcarter21" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=getcarter21" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/christopheredsall"><img src="https://avatars.githubusercontent.com/u/1021204?v=4?s=100" width="100px;" alt="Christopher Edsall"/><br /><sub><b>Christopher Edsall</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=christopheredsall" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=christopheredsall" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
