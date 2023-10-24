@@ -7,7 +7,7 @@ from shutil import which
 import typer
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.utility import LoggingSingleton, Singleton
 
 
 @dataclass
@@ -19,7 +19,7 @@ class AzureCliAccount:
     tenant_id: str
 
 
-class AzureCli:
+class AzureCliSingleton(metaclass=Singleton):
     """Interface to the Azure CLI"""
 
     def __init__(self) -> None:
@@ -32,6 +32,7 @@ class AzureCli:
         self.path = path
 
         self._account: AzureCliAccount | None = None
+        self._confirmed = False
 
     @property
     def account(self) -> AzureCliAccount:
@@ -62,6 +63,9 @@ class AzureCli:
 
     def confirm(self) -> None:
         """Prompt user to confirm the Azure CLI account is correct"""
+        if self._confirmed:
+            return None
+
         account = self.account
         self.logger.info(
             f"name: {account.name} (id: {account.id_}\ntenant: {account.tenant_id})"
@@ -71,3 +75,5 @@ class AzureCli:
                 "Please use `az login` to connect to the correct Azure CLI account"
             )
             raise typer.Exit(1)
+
+        self._confirmed = True
