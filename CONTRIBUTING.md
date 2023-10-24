@@ -235,11 +235,11 @@ Take a look at the full list of contributors on our [README](README.md).
 
 ### Adding new contributors
 
-We use the @all-contributors bot. See the [documentation](https://allcontributors.org/docs/en/bot/usage) on how this is used.
+We use @all-contributors to maintain the contributor list on the README, however we do not use the GitHub bot.
 
-In short, you can comment on an Issue or Pull Request, asking @all-contributors to add a contributor:
+You should follow the same instructions as above to [make a change with a pull request](#making-a-change-with-a-pull-request) when adding a new contributor.
 
-`@all-contributors please add @<username> for <contributions>`
+To add new contributor to the README table, see the [all-contributors CLI documentation](https://allcontributors.org/docs/en/cli/overview) and use the CLI to add the new contributor, then make a pull request with your changes.
 
 ## Get in touch
 
