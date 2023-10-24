@@ -269,6 +269,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "darenasc",
+      "name": "Diego Arenas",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7409896?v=4",
+      "profile": "https://darenasc.github.io/",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
