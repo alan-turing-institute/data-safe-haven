@@ -361,6 +361,7 @@
       ]
     }
   ],
+  "contributorsSortAlphabetically": true,
   "contributorsPerLine": 7,
   "linkToUsage": false
 }
