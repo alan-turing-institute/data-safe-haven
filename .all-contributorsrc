@@ -209,6 +209,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "sysdan",
+      "name": "Daniel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/49038294?v=4",
+      "profile": "https://github.com/sysdan",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
