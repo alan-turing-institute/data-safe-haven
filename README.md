@@ -14,7 +14,7 @@ It was developed as part of the Alan Turing Institute's [Data Safe Havens in the
 ![Licence](https://img.shields.io/github/license/alan-turing-institute/data-safe-haven)
 [![Citation](https://img.shields.io/badge/citation-cite%20this%20project-informational)](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/CITATION.cff)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ## :family: Community & support
@@ -44,6 +44,7 @@ See our [Code of Conduct](CODE_OF_CONDUCT.md) and our [Contributor Guide](CONTRI
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/jemrobinson"><img src="https://avatars.githubusercontent.com/u/3502751?v=4?s=100" width="100px;" alt="James Robinson"/><br /><sub><b>James Robinson</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=jemrobinson" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=jemrobinson" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/martintoreilly"><img src="https://avatars.githubusercontent.com/u/21147592?v=4?s=100" width="100px;" alt="Martin O'Reilly"/><br /><sub><b>Martin O'Reilly</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=martintoreilly" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=martintoreilly" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
