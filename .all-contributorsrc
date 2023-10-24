@@ -169,6 +169,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "ens-george-holmes",
+      "name": "ens-george-holmes",
+      "avatar_url": "https://avatars.githubusercontent.com/u/62715301?v=4",
+      "profile": "https://github.com/ens-george-holmes",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
