@@ -9,6 +9,7 @@ design/index.md
 deployment/index.md
 processes/index.md
 roles/index.md
+contributing/index.md
 ```
 
 ```{image} _static/scriberia_diagram.jpg
