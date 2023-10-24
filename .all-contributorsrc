@@ -339,6 +339,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "jack89roberts",
+      "name": "Jack Roberts",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16308271?v=4",
+      "profile": "https://github.com/jack89roberts",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,

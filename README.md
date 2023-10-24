@@ -14,7 +14,7 @@ It was developed as part of the Alan Turing Institute's [Data Safe Havens in the
 ![Licence](https://img.shields.io/github/license/alan-turing-institute/data-safe-haven)
 [![Citation](https://img.shields.io/badge/citation-cite%20this%20project-informational)](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/CITATION.cff)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-33-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-34-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ## :family: Community & support
@@ -84,6 +84,7 @@ See our [Code of Conduct](CODE_OF_CONDUCT.md) and our [Contributor Guide](CONTRI
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/JulesMarz"><img src="https://avatars.githubusercontent.com/u/40864686?v=4?s=100" width="100px;" alt="Jules M"/><br /><sub><b>Jules M</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=JulesMarz" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=JulesMarz" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/DavidBeavan"><img src="https://avatars.githubusercontent.com/u/6524799?v=4?s=100" width="100px;" alt="David Beavan"/><br /><sub><b>David Beavan</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=DavidBeavan" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=DavidBeavan" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/gn5"><img src="https://avatars.githubusercontent.com/u/50482094?v=4?s=100" width="100px;" alt="Guillaume Noell"/><br /><sub><b>Guillaume Noell</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=gn5" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=gn5" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/jack89roberts"><img src="https://avatars.githubusercontent.com/u/16308271?v=4?s=100" width="100px;" alt="Jack Roberts"/><br /><sub><b>Jack Roberts</b></sub></a><br /><a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=jack89roberts" title="Code">💻</a> <a href="https://github.com/alan-turing-institute/data-safe-haven/commits?author=jack89roberts" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
