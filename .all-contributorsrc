@@ -109,6 +109,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "bw-faststream",
+      "name": "bw-faststream",
+      "avatar_url": "https://avatars.githubusercontent.com/u/54804128?v=4",
+      "profile": "https://github.com/bw-faststream",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
