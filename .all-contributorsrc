@@ -349,6 +349,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "RobC-CTL",
+      "name": "Rob Clarke",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29575619?v=4",
+      "profile": "https://www.coriniumtech.com/",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
