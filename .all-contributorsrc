@@ -129,6 +129,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "jamespjh",
+      "name": "James Hetherington",
+      "avatar_url": "https://avatars.githubusercontent.com/u/55009?v=4",
+      "profile": "https://github.com/jamespjh",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
