@@ -14,8 +14,8 @@ It was developed as part of the Alan Turing Institute's [Data Safe Havens in the
 ![Licence](https://img.shields.io/github/license/alan-turing-institute/data-safe-haven)
 [![Citation](https://img.shields.io/badge/citation-cite%20this%20project-informational)](https://github.com/alan-turing-institute/data-safe-haven/blob/develop/CITATION.cff)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![All Contributors](https://img.shields.io/github/all-contributors/alan-turing-institute/data-safe-haven?color=ee8449&style=flat-square)](#contributors)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ## :family: Community & support
 
@@ -38,12 +38,6 @@ See our [Code of Conduct](CODE_OF_CONDUCT.md) and our [Contributor Guide](CONTRI
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-<!-- ALL-CONTRIBUTORS-LIST:END -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 
