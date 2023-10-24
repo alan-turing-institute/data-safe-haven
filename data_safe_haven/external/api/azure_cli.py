@@ -64,7 +64,7 @@ class AzureCli:
         """Prompt user to confirm the Azure CLI account is correct"""
         account = self.account
         self.logger.info(
-            f"name: {account.name} (id: {account.id_}\ntenant: {account.tenant_id}"
+            f"name: {account.name} (id: {account.id_}\ntenant: {account.tenant_id})"
         )
         if not typer.confirm("Is this the Azure account you expect?\n"):
             self.logger.error(
