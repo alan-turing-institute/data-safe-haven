@@ -219,6 +219,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "ACabrejas",
+      "name": "Alvaro Cabrejas Egea",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22940095?v=4",
+      "profile": "https://warwick.ac.uk/fac/sci/mathsys/people/students/2015intake/cabrejas-egea/",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
