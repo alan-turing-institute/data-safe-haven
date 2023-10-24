@@ -18,7 +18,20 @@
       "profile": "https://github.com/jemrobinson",
       "contributions": [
         "code",
-        "doc"
+        "content",
+        "doc",
+        "bug",
+        "ideas",
+        "fundingFinding",
+        "eventOrganizing",
+        "infra",
+        "projectManagement",
+        "promotion",
+        "question",
+        "review",
+        "security",
+        "test",
+        "talk"
       ]
     },
     {
@@ -28,7 +41,20 @@
       "profile": "https://github.com/martintoreilly",
       "contributions": [
         "code",
-        "doc"
+        "content",
+        "doc",
+        "bug",
+        "ideas",
+        "fundingFinding",
+        "eventOrganizing",
+        "infra",
+        "projectManagement",
+        "promotion",
+        "question",
+        "review",
+        "security",
+        "test",
+        "talk"
       ]
     },
     {
@@ -38,7 +64,18 @@
       "profile": "https://github.com/JimMadge",
       "contributions": [
         "code",
-        "doc"
+        "doc",
+        "bug",
+        "ideas",
+        "fundingFinding",
+        "eventOrganizing",
+        "infra",
+        "projectManagement",
+        "promotion",
+        "question",
+        "review",
+        "security",
+        "test"
       ]
     },
     {
@@ -48,7 +85,12 @@
       "profile": "http://edchalstrey.com/",
       "contributions": [
         "code",
-        "doc"
+        "doc",
+        "bug",
+        "ideas",
+        "eventOrganizing",
+        "review",
+        "test"
       ]
     },
     {
@@ -58,7 +100,16 @@
       "profile": "https://github.com/craddm",
       "contributions": [
         "code",
-        "doc"
+        "doc",
+        "bug",
+        "ideas",
+        "fundingFinding",
+        "eventOrganizing",
+        "promotion",
+        "question",
+        "review",
+        "security",
+        "test"
       ]
     },
     {
@@ -68,7 +119,9 @@
       "profile": "https://github.com/tomdoel",
       "contributions": [
         "code",
-        "doc"
+        "doc",
+        "bug",
+        "ideas"
       ]
     },
     {
@@ -78,7 +131,8 @@
       "profile": "https://github.com/OscartGiles",
       "contributions": [
         "code",
-        "doc"
+        "doc",
+        "ideas"
       ]
     },
     {
@@ -88,7 +142,9 @@
       "profile": "https://github.com/james-c",
       "contributions": [
         "code",
-        "doc"
+        "doc",
+        "bug",
+        "ideas"
       ]
     },
     {
@@ -98,7 +154,9 @@
       "profile": "https://github.com/miguelmorin",
       "contributions": [
         "code",
-        "doc"
+        "doc",
+        "ideas",
+        "test"
       ]
     },
     {
@@ -107,7 +165,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/38755168?v=4",
       "profile": "https://github.com/cathiest",
       "contributions": [
-        "doc"
+        "content",
+        "doc",
+        "bug",
+        "ideas"
       ]
     },
     {
@@ -116,7 +177,11 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/54804128?v=4",
       "profile": "https://github.com/bw-faststream",
       "contributions": [
-        "doc"
+        "doc",
+        "ideas",
+        "bug",
+        "projectManagement",
+        "userTesting"
       ]
     },
     {
@@ -125,7 +190,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/49275282?v=4",
       "profile": "https://github.com/oforrest",
       "contributions": [
-        "doc"
+        "doc",
+        "ideas",
+        "projectManagement",
+        "promotion"
       ]
     },
     {
@@ -134,8 +202,14 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/55009?v=4",
       "profile": "https://github.com/jamespjh",
       "contributions": [
-        "code",
-        "doc"
+        "doc",
+        "bug",
+        "ideas",
+        "fundingFinding",
+        "projectManagement",
+        "promotion",
+        "talk",
+        "content"
       ]
     },
     {
@@ -145,7 +219,7 @@
       "profile": "https://github.com/warwick26",
       "contributions": [
         "code",
-        "doc"
+        "ideas"
       ]
     },
     {
@@ -154,8 +228,16 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/3626306?v=4",
       "profile": "https://github.com/KirstieJane",
       "contributions": [
-        "code",
-        "doc"
+        "content",
+        "doc",
+        "bug",
+        "ideas",
+        "fundingFinding",
+        "eventOrganizing",
+        "projectManagement",
+        "promotion",
+        "talk",
+        "userTesting"
       ]
     },
     {
@@ -165,7 +247,9 @@
       "profile": "https://github.com/thobson88",
       "contributions": [
         "code",
-        "doc"
+        "bug",
+        "doc",
+        "ideas"
       ]
     },
     {
@@ -175,7 +259,7 @@
       "profile": "https://github.com/ens-george-holmes",
       "contributions": [
         "code",
-        "doc"
+        "ideas"
       ]
     },
     {
@@ -185,7 +269,9 @@
       "profile": "https://github.com/fedenanni",
       "contributions": [
         "code",
-        "doc"
+        "bug",
+        "doc",
+        "ideas"
       ]
     },
     {
@@ -195,7 +281,9 @@
       "profile": "https://github.com/tomaslaz",
       "contributions": [
         "code",
-        "doc"
+        "doc",
+        "bug",
+        "ideas"
       ]
     },
     {
@@ -204,7 +292,10 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/56362072?v=4",
       "profile": "https://github.com/rwinstanley1",
       "contributions": [
-        "doc"
+        "doc",
+        "ideas",
+        "projectManagement",
+        "security"
       ]
     },
     {
@@ -214,7 +305,7 @@
       "profile": "https://github.com/sysdan",
       "contributions": [
         "code",
-        "doc"
+        "bug"
       ]
     },
     {
@@ -223,8 +314,7 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/22940095?v=4",
       "profile": "https://warwick.ac.uk/fac/sci/mathsys/people/students/2015intake/cabrejas-egea/",
       "contributions": [
-        "code",
-        "doc"
+        "code"
       ]
     },
     {
@@ -233,7 +323,17 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/67151373?v=4",
       "profile": "https://github.com/harisood",
       "contributions": [
-        "doc"
+        "doc",
+        "bug",
+        "ideas",
+        "fundingFinding",
+        "eventOrganizing",
+        "projectManagement",
+        "promotion",
+        "question",
+        "talk",
+        "security",
+        "userTesting"
       ]
     },
     {
@@ -242,8 +342,7 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/34555297?v=4",
       "profile": "https://github.com/getcarter21",
       "contributions": [
-        "code",
-        "doc"
+        "code"
       ]
     },
     {
@@ -253,7 +352,8 @@
       "profile": "https://github.com/christopheredsall",
       "contributions": [
         "code",
-        "doc"
+        "doc",
+        "bug"
       ]
     },
     {
@@ -263,7 +363,7 @@
       "profile": "https://github.com/ens-brett-todd",
       "contributions": [
         "code",
-        "doc"
+        "ideas"
       ]
     },
     {
@@ -273,7 +373,7 @@
       "profile": "https://darenasc.github.io/",
       "contributions": [
         "code",
-        "doc"
+        "ideas"
       ]
     },
     {
@@ -282,7 +382,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/48526846?v=4",
       "profile": "https://github.com/kevinxufs",
       "contributions": [
-        "doc"
+        "doc",
+        "ideas",
+        "security"
       ]
     },
     {
@@ -291,8 +393,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/12613127?v=4",
       "profile": "https://github.com/vollmersj",
       "contributions": [
-        "code",
-        "doc"
+        "doc",
+        "bug",
+        "ideas"
       ]
     },
     {
@@ -301,8 +404,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/22677759?v=4",
       "profile": "https://github.com/callummole",
       "contributions": [
-        "code",
-        "doc"
+        "bug",
+        "code"
       ]
     },
     {
@@ -311,8 +414,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/40864686?v=4",
       "profile": "https://github.com/JulesMarz",
       "contributions": [
-        "code",
-        "doc"
+        "doc",
+        "ideas",
+        "bug"
       ]
     },
     {
@@ -321,8 +425,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/6524799?v=4",
       "profile": "https://github.com/DavidBeavan",
       "contributions": [
-        "code",
-        "doc"
+        "doc",
+        "content"
       ]
     },
     {
@@ -331,8 +435,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/50482094?v=4",
       "profile": "https://github.com/gn5",
       "contributions": [
-        "code",
-        "doc"
+        "doc",
+        "bug",
+        "ideas"
       ]
     },
     {
@@ -342,7 +447,7 @@
       "profile": "https://github.com/jack89roberts",
       "contributions": [
         "code",
-        "doc"
+        "bug"
       ]
     },
     {
@@ -351,8 +456,28 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/29575619?v=4",
       "profile": "https://www.coriniumtech.com/",
       "contributions": [
+        "ideas",
+        "bug",
         "code",
         "doc"
+      ]
+    },
+    {
+      "login": "helenst",
+      "name": "Helen Sherwood-Taylor",
+      "avatar_url": "https://avatars.githubusercontent.com/u/217966?v=4",
+      "profile": "http://helen.st/cv",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "DDelbarre",
+      "name": "DDelbarre",
+      "avatar_url": "https://avatars.githubusercontent.com/u/108824056?v=4",
+      "profile": "https://github.com/DDelbarre",
+      "contributions": [
+        "bug"
       ]
     }
   ],
