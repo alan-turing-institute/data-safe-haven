@@ -159,6 +159,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "thobson88",
+      "name": "Tim Hobson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/26117394?v=4",
+      "profile": "https://github.com/thobson88",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
