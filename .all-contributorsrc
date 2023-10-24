@@ -49,6 +49,16 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "craddm",
+      "name": "Matt Craddock",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5796417?v=4",
+      "profile": "https://github.com/craddm",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
