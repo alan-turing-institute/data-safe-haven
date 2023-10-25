@@ -556,6 +556,21 @@
         "ideas",
         "projectManagement"
       ]
+    },
+    {
+      "login": "Davsarper",
+      "name": "davsarper",
+      "avatar_url": "https://avatars.githubusercontent.com/u/118986872?v=4",
+      "profile": "https://github.com/Davsarper",
+      "contributions": [
+        "doc",
+        "eventOrganizing",
+        "fundingFinding",
+        "ideas",
+        "projectManagement",
+        "promotion",
+        "talk"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
