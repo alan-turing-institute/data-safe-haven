@@ -1,7 +1,7 @@
 """Standalone logging class implemented as a singleton"""
 import io
 import logging
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 from rich.console import Console
 from rich.highlighter import RegexHighlighter
@@ -98,8 +98,6 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
 
     date_fmt = r"%Y-%m-%d %H:%M:%S"
     rich_format = r"[log.time]%(asctime)s[/] [%(levelname)8s] %(message)s"
-    # Due to https://bugs.python.org/issue45857 we must use `Optional`
-    _instance: Optional["LoggingSingleton"] = None
 
     def __init__(self) -> None:
         super().__init__(name="data_safe_haven", level=logging.INFO)

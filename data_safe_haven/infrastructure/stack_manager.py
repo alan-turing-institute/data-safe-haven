@@ -1,51 +1,37 @@
 """Deploy with Pulumi"""
 import logging
-import os
 import pathlib
 import shutil
-import subprocess
 import time
 from contextlib import suppress
 from importlib import metadata
+from shutil import which
 from typing import Any
 
 from pulumi import automation
 
 from data_safe_haven.config import Config
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
-from data_safe_haven.external import AzureApi, AzureCli
+from data_safe_haven.external import AzureApi, AzureCliSingleton
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.infrastructure.stacks import DeclarativeSHM, DeclarativeSRE
 from data_safe_haven.utility import LoggingSingleton
 
 
-class StackManager:
-    """Interact with infrastructure using Pulumi"""
+class PulumiAccount:
+    """Manage and interact with Pulumi backend account"""
 
-    def __init__(
-        self,
-        config: Config,
-        program: DeclarativeSHM | DeclarativeSRE,
-    ) -> None:
-        self.cfg: Config = config
+    def __init__(self, config: Config):
+        self.cfg = config
         self.env_: dict[str, Any] | None = None
-        self.logger = LoggingSingleton()
-        self.stack_: automation.Stack | None = None
-        self.stack_outputs_: automation.OutputMap | None = None
-        self.options: dict[str, tuple[str, bool, bool]] = {}
-        self.program = program
-        self.project_name = replace_separators(self.cfg.tags.project.lower(), "-")
-        self.stack_name = self.program.stack_name
-        self.work_dir = config.work_directory / "pulumi" / self.program.short_name
-        self.work_dir.mkdir(parents=True, exist_ok=True)
-        self.login()  # Log in to the Pulumi backend
-        self.initialise_workdir()
-        self.install_plugins()
+        path = which("pulumi")
+        if path is None:
+            msg = "Unable to find Pulumi CLI executable in your path.\nPlease ensure that Pulumi is installed"
+            raise DataSafeHavenPulumiError(msg)
 
-    @property
-    def local_stack_path(self) -> pathlib.Path:
-        """Return the local stack path"""
-        return self.work_dir / f"Pulumi.{self.stack_name}.yaml"
+        # Ensure Azure CLI account is correct
+        # This will be needed to populate env
+        AzureCliSingleton().confirm()
 
     @property
     def env(self) -> dict[str, Any]:
@@ -60,8 +46,37 @@ class StackManager:
                 "AZURE_STORAGE_ACCOUNT": self.cfg.backend.storage_account_name,
                 "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
+                "PULUMI_BACKEND_URL": f"azblob://{self.cfg.pulumi.storage_container_name}",
             }
         return self.env_
+
+
+class StackManager:
+    """Interact with infrastructure using Pulumi"""
+
+    def __init__(
+        self,
+        config: Config,
+        program: DeclarativeSHM | DeclarativeSRE,
+    ) -> None:
+        self.account = PulumiAccount(config)
+        self.cfg: Config = config
+        self.logger = LoggingSingleton()
+        self.stack_: automation.Stack | None = None
+        self.stack_outputs_: automation.OutputMap | None = None
+        self.options: dict[str, tuple[str, bool, bool]] = {}
+        self.program = program
+        self.project_name = replace_separators(self.cfg.tags.project.lower(), "-")
+        self.stack_name = self.program.stack_name
+        self.work_dir = config.work_directory / "pulumi" / self.program.short_name
+        self.work_dir.mkdir(parents=True, exist_ok=True)
+        self.initialise_workdir()
+        self.install_plugins()
+
+    @property
+    def local_stack_path(self) -> pathlib.Path:
+        """Return the local stack path"""
+        return self.work_dir / f"Pulumi.{self.stack_name}.yaml"
 
     @property
     def pulumi_extra_args(self) -> dict[str, Any]:
@@ -85,7 +100,7 @@ class StackManager:
                     opts=automation.LocalWorkspaceOptions(
                         secrets_provider=f"azurekeyvault://{self.cfg.backend.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi.encryption_key_version}",
                         work_dir=str(self.work_dir),
-                        env_vars=self.env,
+                        env_vars=self.account.env,
                     ),
                 )
                 self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
@@ -258,44 +273,6 @@ class StackManager:
             )
         except Exception as exc:
             msg = f"Installing Pulumi plugins failed.\n{exc}."
-            raise DataSafeHavenPulumiError(msg) from exc
-
-    def login(self) -> None:
-        """Login to Pulumi."""
-        try:
-            # Ensure we are authenticated with the Azure CLI
-            # Without this, we cannot read the encryption key from the keyvault
-            AzureCli().login()
-            # Check whether we're already logged in
-            # Note that we cannot retrieve self.stack without being logged in
-            self.logger.debug("Logging into Pulumi")
-            with suppress(DataSafeHavenPulumiError):
-                result = self.stack.workspace.who_am_i()
-                if result.user:
-                    self.logger.info(f"Logged into Pulumi as [green]{result.user}[/]")
-                    return
-            # Otherwise log in to Pulumi
-            try:
-                cmd_env = {**os.environ, **self.env}
-                self.logger.debug(f"Running command using environment {cmd_env}")
-                process = subprocess.run(
-                    [
-                        "pulumi",
-                        "login",
-                        f"azblob://{self.cfg.pulumi.storage_container_name}",
-                    ],
-                    capture_output=True,
-                    check=True,
-                    cwd=self.work_dir,
-                    encoding="UTF-8",
-                    env=cmd_env,
-                )
-                self.logger.info(process.stdout)
-            except (subprocess.CalledProcessError, FileNotFoundError) as exc:
-                msg = f"Logging into Pulumi failed.\n{exc}."
-                raise DataSafeHavenPulumiError(msg) from exc
-        except Exception as exc:
-            msg = f"Logging into Pulumi failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def output(self, name: str) -> Any:

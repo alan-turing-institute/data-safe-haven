@@ -1,44 +1,79 @@
 """Interface to the Azure CLI"""
+import json
 import subprocess
-from typing import Any
+from dataclasses import dataclass
+from shutil import which
+
+import typer
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.utility import LoggingSingleton, Singleton
 
 
-class AzureCli:
+@dataclass
+class AzureCliAccount:
+    """Dataclass for Azure CLI Account details"""
+
+    name: str
+    id_: str
+    tenant_id: str
+
+
+class AzureCliSingleton(metaclass=Singleton):
     """Interface to the Azure CLI"""
 
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
         self.logger = LoggingSingleton()
 
-    def login(self) -> None:
-        """Force log in via the Azure CLI"""
-        try:
-            self.logger.debug("Attempting to login using Azure CLI.")
-            # We do not use `check` in subprocess as this raises a CalledProcessError
-            # which would break the loop. Instead we check the return code of
-            # `az account show` which will be 0 on success.
-            while True:
-                # Check whether we are already logged in
-                process = subprocess.run(
-                    ["az", "account", "show"], capture_output=True, check=False
+        path = which("az")
+        if path is None:
+            msg = "Unable to find Azure CLI executable in your path.\nPlease ensure that Azure CLI is installed"
+            raise DataSafeHavenAzureError(msg)
+        self.path = path
+
+        self._account: AzureCliAccount | None = None
+        self._confirmed = False
+
+    @property
+    def account(self) -> AzureCliAccount:
+        if not self._account:
+            try:
+                result = subprocess.check_output(
+                    [self.path, "account", "show", "--output", "json"],
+                    stderr=subprocess.PIPE,
+                    encoding="utf8",
                 )
-                if process.returncode == 0:
-                    break
-                # Note that subprocess.run will block until the process terminates so
-                # we need to print the guidance first.
-                self.logger.info(
-                    "Please login in your web browser at [bold]https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize[/]."
-                )
-                self.logger.info(
-                    "If no web browser is available, please run [bold]az login --use-device-code[/] in a command line window."
-                )
-                # Attempt to log in at the command line
-                process = subprocess.run(
-                    ["az", "login"], capture_output=True, check=False
-                )
-        except FileNotFoundError as exc:
-            msg = f"Please ensure that the Azure CLI is installed.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
+            except subprocess.CalledProcessError as exc:
+                msg = f"Error getting account information from Azure CLI.\n{exc.stderr}"
+                raise DataSafeHavenAzureError(msg) from exc
+
+            try:
+                result_dict = json.loads(result)
+            except json.JSONDecodeError as exc:
+                msg = f"Unable to parse Azure CLI output as JSON.\n{result}"
+                raise DataSafeHavenAzureError(msg) from exc
+
+            self._account = AzureCliAccount(
+                name=result_dict.get("user").get("name"),
+                id_=result_dict.get("id"),
+                tenant_id=result_dict.get("tenantId"),
+            )
+
+        return self._account
+
+    def confirm(self) -> None:
+        """Prompt user to confirm the Azure CLI account is correct"""
+        if self._confirmed:
+            return None
+
+        account = self.account
+        self.logger.info(
+            f"name: {account.name} (id: {account.id_}\ntenant: {account.tenant_id})"
+        )
+        if not typer.confirm("Is this the Azure account you expect?\n"):
+            self.logger.error(
+                "Please use `az login` to connect to the correct Azure CLI account"
+            )
+            raise typer.Exit(1)
+
+        self._confirmed = True
