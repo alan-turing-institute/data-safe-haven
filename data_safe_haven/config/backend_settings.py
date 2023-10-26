@@ -1,4 +1,5 @@
 """Load global and local settings from dotfiles"""
+from dataclasses import dataclass
 import pathlib
 
 import appdirs
@@ -12,33 +13,71 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.utility import LoggingSingleton
 
 
-class BackendSettings:
+@dataclass
+class Context():
+    admin_group_id: str
+    location: str
+    name: str
+    subscription_name: str
+
+
+class ContextSettings:
     """Load global and local settings from dotfiles with structure like the following
 
-    azure:
-      admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-      location: uksouth
-      subscription_name: Data Safe Haven (Acme)
-    current:
-      name: Acme Deployment
+    selected: acme_deployment
+    contexts:
+        acme_deployment:
+            name: Acme Deployment
+            azure:
+                admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+                location: uksouth
+                subscription_name: Data Safe Haven (Acme)
+        ...
     """
 
-    def __init__(
-        self,
-    ) -> None:
-        # Define instance variables
-        self._admin_group_id: str | None = None
-        self._location: str | None = None
-        self._name: str | None = None
-        self._subscription_name: str | None = None
+    def __init__(self) -> None:
         self.logger = LoggingSingleton()
 
-        # Load previous backend settings (if any)
-        self.config_directory = pathlib.Path(
+        self._selected: str | None = None
+        self._context: Context | None = None
+
+        config_directory = pathlib.Path(
             appdirs.user_config_dir(appname="data_safe_haven")
         ).resolve()
-        self.config_file_path = self.config_directory / "config.yaml"
+        self.config_file_path = config_directory / "config.yaml"
         self.read()
+
+    def read(self) -> None:
+        """Read settings from YAML file"""
+        try:
+            with open(self.config_file_path, encoding="utf-8") as f_yaml:
+                settings = yaml.safe_load(f_yaml)
+            if isinstance(settings, dict):
+                self.logger.info(
+                    f"Reading project settings from '[green]{self.config_file_path}[/]'."
+                )
+                self._selected = settings.get("selected")
+                self._context = Context(**settings.get("contexts").get(self._selected))
+        except FileNotFoundError as exc:
+            msg = f"Could not find file {self.config_file_path}.\n{exc}"
+            raise DataSafeHavenConfigError(msg) from exc
+        except ParserError as exc:
+            msg = f"Could not load settings from {self.config_file_path}.\n{exc}"
+            raise DataSafeHavenConfigError(msg) from exc
+
+    @property
+    def selected(self) -> str:
+        if not self._selected:
+            msg = f"Selected context is not defined in {self.config_file_path}."
+            raise DataSafeHavenParameterError(msg)
+        return self._selected
+
+    @property
+    def context(self) -> Context:
+        if not self._context:
+            msg = f"Context {self._selected} is not defined in {self.config_file_path}."
+            raise DataSafeHavenParameterError(msg)
+        return self._context
 
     def update(
         self,
@@ -68,63 +107,6 @@ class BackendSettings:
 
         # Write backend settings to disk (this will trigger errors for uninitialised parameters)
         self.write()
-
-    @property
-    def admin_group_id(self) -> str:
-        if not self._admin_group_id:
-            msg = "Azure administrator group not provided: use '[bright_cyan]--admin-group[/]' / '[green]-a[/]' to do so."
-            raise DataSafeHavenParameterError(msg)
-        return self._admin_group_id
-
-    @property
-    def location(self) -> str:
-        if not self._location:
-            msg = "Azure location not provided: use '[bright_cyan]--location[/]' / '[green]-l[/]' to do so."
-            raise DataSafeHavenParameterError(msg)
-        return self._location
-
-    @property
-    def name(self) -> str:
-        if not self._name:
-            msg = (
-                "Data Safe Haven deployment name not provided:"
-                " use '[bright_cyan]--name[/]' / '[green]-n[/]' to do so."
-            )
-            raise DataSafeHavenParameterError(msg)
-        return self._name
-
-    @property
-    def subscription_name(self) -> str:
-        if not self._subscription_name:
-            msg = "Azure subscription not provided: use '[bright_cyan]--subscription[/]' / '[green]-s[/]' to do so."
-            raise DataSafeHavenParameterError(msg)
-        return self._subscription_name
-
-    def read(self) -> None:
-        """Read settings from YAML file"""
-        try:
-            if self.config_file_path.exists():
-                with open(self.config_file_path, encoding="utf-8") as f_yaml:
-                    settings = yaml.safe_load(f_yaml)
-                if isinstance(settings, dict):
-                    self.logger.info(
-                        f"Reading project settings from '[green]{self.config_file_path}[/]'."
-                    )
-                    if admin_group_id := settings.get("azure", {}).get(
-                        "admin_group_id", None
-                    ):
-                        self._admin_group_id = admin_group_id
-                    if location := settings.get("azure", {}).get("location", None):
-                        self._location = location
-                    if name := settings.get("current", {}).get("name", None):
-                        self._name = name
-                    if subscription_name := settings.get("azure", {}).get(
-                        "subscription_name", None
-                    ):
-                        self._subscription_name = subscription_name
-        except ParserError as exc:
-            msg = f"Could not load settings from {self.config_file_path}.\n{exc}"
-            raise DataSafeHavenConfigError(msg) from exc
 
     def write(self) -> None:
         """Write settings to YAML file"""
