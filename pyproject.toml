@@ -86,6 +86,14 @@ all = [
   "typing",
 ]
 
+[tool.hatch.envs.test]
+dependencies = [
+  "pytest~=7.4.3"
+]
+
+[tool.hatch.envs.test.scripts]
+test = "pytest {args:-vvv tests_}"
+
 [tool.black]
 target-version = ["py310", "py311"]
 
@@ -167,3 +175,8 @@ module = [
     "websocket.*",
 ]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
