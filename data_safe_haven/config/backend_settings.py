@@ -60,7 +60,7 @@ class ContextSettings:
         })
 
         try:
-            self._settings: schema.validate(settings_dict)
+            self._settings = schema.validate(settings_dict)
         except SchemaError as exc:
             msg = f"Invalid context configuration file.\n{exc}"
             raise DataSafeHavenParameterError(msg)
