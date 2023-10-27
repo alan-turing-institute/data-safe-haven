@@ -52,6 +52,6 @@ jobs:
           make html SPHINXOPTS="-W"
       - name: Link Checker
         uses: lycheeverse/lychee-action@v1.7.0
-        with:
-          args: find ./docs/build/html -type f -name '*.html' ! -path './docs/build/html/contributing/index.html' | xargs lychee --config='./.lychee.toml' --no-progress
-          fail: true  # fail on broken links
+        run: |
+          find ./docs/build/html -type f -name '*.html' ! -path './docs/build/html/contributing/index.html' | xargs lychee --config='./.lychee.toml' --no-progress
+        fail: true  # fail on broken links
