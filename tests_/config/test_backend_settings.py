@@ -91,3 +91,11 @@ class TestContextSettings:
         assert settings.context.name == "Gems"
         settings.update(name="replaced")
         assert settings.context.name == "replaced"
+
+    def test_available(self):
+        settings = ContextSettings(yaml.safe_load(self.context_settings))
+        available = settings.available
+        print(available)
+        assert isinstance(available, list)
+        assert all([isinstance(item, str) for item in available])
+        assert available == ["acme_deployment", "gems"]

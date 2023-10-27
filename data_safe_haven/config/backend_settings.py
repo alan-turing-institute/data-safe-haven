@@ -94,6 +94,10 @@ class ContextSettings:
             msg = f"Context {self.selected} is not defined."
             raise DataSafeHavenParameterError(msg)
 
+    @property
+    def available(self) -> list[str]:
+        return list(self.settings.get("contexts").keys())
+
     def update(
         self,
         *,

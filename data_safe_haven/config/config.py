@@ -40,8 +40,6 @@ from data_safe_haven.utility import (
     SoftwarePackageCategory,
 )
 
-from .backend_settings import BackendSettings
-
 
 class Validator:
     validation_functions: ClassVar[dict[str, Callable[[Any], Any]]] = {}
