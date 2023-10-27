@@ -75,7 +75,7 @@ def switch(
     name: Annotated[str, typer.Argument(help="Name of the context to switch to.")]
 ) -> None:
     settings = BackendSettings()
-    settings.switch(name)
+    settings.context = name
 
 
 @context_command_group.command()
