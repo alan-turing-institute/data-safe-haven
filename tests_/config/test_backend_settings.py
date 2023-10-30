@@ -120,6 +120,18 @@ class TestContextSettings:
         assert settings.context.name == "Example"
         assert settings.context.subscription_name == "Data Safe Haven (Example)"
 
+    def test_invalid_add(self):
+        settings = ContextSettings(yaml.safe_load(self.context_settings))
+        with pytest.raises(DataSafeHavenParameterError) as exc:
+            settings.add(
+                key="acme_deployment",
+                name="Acme Deployment",
+                subscription_name="Data Safe Haven (Acme)",
+                admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+                location="uksouth",
+            )
+            assert "A context with key 'acme' is already defined." in exc
+
     def test_from_file(self, tmp_path):
         config_file_path = tmp_path / "config.yaml"
         with open(config_file_path, "w") as f:

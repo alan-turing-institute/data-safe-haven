@@ -136,7 +136,7 @@ class ContextSettings:
     ) -> None:
         # Ensure context is not already present
         if key in self.settings["contexts"].keys():
-            msg = f"A context with key '{key}' is already defined"
+            msg = f"A context with key '{key}' is already defined."
             raise DataSafeHavenParameterError(msg)
 
         self.settings["contexts"][key] = {
