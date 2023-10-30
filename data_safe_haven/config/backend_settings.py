@@ -125,6 +125,27 @@ class ContextSettings:
             )
             context_dict["subscription_name"] = subscription_name
 
+    def add(
+        self,
+        *,
+        key: str,
+        name: str,
+        admin_group_id: str,
+        location: str,
+        subscription_name: str
+    ) -> None:
+        # Ensure context is not already present
+        if key in self.settings["contexts"].keys():
+            msg = f"A context with key '{key}' is already defined"
+            raise DataSafeHavenParameterError(msg)
+
+        self.settings["contexts"][key] = {
+            "name": name,
+            "admin_group_id": admin_group_id,
+            "location": location,
+            "subscription_name": subscription_name,
+        }
+
     @classmethod
     def from_file(cls, config_file_path: str = config_file_path) -> None:
         logger = LoggingSingleton()

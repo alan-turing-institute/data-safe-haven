@@ -79,6 +79,14 @@ class TestContextSettings:
             for item in yaml_settings["contexts"]["gems"].keys()
         ])
 
+    def test_available(self):
+        settings = ContextSettings(yaml.safe_load(self.context_settings))
+        available = settings.available
+        print(available)
+        assert isinstance(available, list)
+        assert all([isinstance(item, str) for item in available])
+        assert available == ["acme_deployment", "gems"]
+
     def test_update(self):
         settings = ContextSettings(yaml.safe_load(self.context_settings))
         assert settings.context.name == "Acme Deployment"
@@ -92,13 +100,19 @@ class TestContextSettings:
         settings.update(name="replaced")
         assert settings.context.name == "replaced"
 
-    def test_available(self):
+    def test_add(self):
         settings = ContextSettings(yaml.safe_load(self.context_settings))
-        available = settings.available
-        print(available)
-        assert isinstance(available, list)
-        assert all([isinstance(item, str) for item in available])
-        assert available == ["acme_deployment", "gems"]
+        settings.add(
+            key="example",
+            name="Example",
+            subscription_name="Data Safe Haven (Example)",
+            admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+            location="uksouth",
+        )
+        settings.selected = "example"
+        assert settings.selected == "example"
+        assert settings.context.name == "Example"
+        assert settings.context.subscription_name == "Data Safe Haven (Example)"
 
     def test_from_file(self, tmp_path):
         config_file_path = tmp_path / "config.yaml"
