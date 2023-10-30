@@ -99,3 +99,23 @@ class TestContextSettings:
         assert isinstance(available, list)
         assert all([isinstance(item, str) for item in available])
         assert available == ["acme_deployment", "gems"]
+
+    def test_from_file(self, tmp_path):
+        config_file_path = tmp_path / "config.yaml"
+        with open(config_file_path, "w") as f:
+            f.write(self.context_settings)
+        settings = ContextSettings.from_file(config_file_path=config_file_path)
+        assert settings.context.name == "Acme Deployment"
+
+    def test_write(self, tmp_path):
+        config_file_path = tmp_path / "config.yaml"
+        with open(config_file_path, "w") as f:
+            f.write(self.context_settings)
+        settings = ContextSettings.from_file(config_file_path=config_file_path)
+        settings.selected = "gems"
+        settings.update(name="replaced")
+        settings.write(config_file_path)
+        with open(config_file_path, "r") as f:
+            context_dict = yaml.safe_load(f)
+        assert context_dict["selected"] == "gems"
+        assert context_dict["contexts"]["gems"]["name"] == "replaced"

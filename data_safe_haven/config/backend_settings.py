@@ -125,17 +125,6 @@ class ContextSettings:
             )
             context_dict["subscription_name"] = subscription_name
 
-    def write(self, config_file_path: str = config_file_path) -> None:
-        """Write settings to YAML file"""
-        # Create the parent directory if it does not exist then write YAML
-        config_file_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(config_file_path, "w", encoding="utf-8") as f_yaml:
-            yaml.dump(self.settings, f_yaml, indent=2)
-        self.logger.info(
-            f"Saved context settings to '[green]{config_file_path}[/]'."
-        )
-
     @classmethod
     def from_file(cls, config_file_path: str = config_file_path) -> None:
         logger = LoggingSingleton()
@@ -153,3 +142,14 @@ class ContextSettings:
         except ParserError as exc:
             msg = f"Could not load settings from {config_file_path}.\n{exc}"
             raise DataSafeHavenConfigError(msg) from exc
+
+    def write(self, config_file_path: str = config_file_path) -> None:
+        """Write settings to YAML file"""
+        # Create the parent directory if it does not exist then write YAML
+        config_file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(config_file_path, "w", encoding="utf-8") as f_yaml:
+            yaml.dump(self.settings, f_yaml, indent=2)
+        self.logger.info(
+            f"Saved context settings to '[green]{config_file_path}[/]'."
+        )
