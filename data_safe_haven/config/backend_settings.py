@@ -146,6 +146,12 @@ class ContextSettings:
             "subscription_name": subscription_name,
         }
 
+    def remove(self, key: str) -> None:
+        if key not in self.settings["contexts"].keys():
+            msg = f"No context with key '{key}'."
+            raise DataSafeHavenParameterError(msg)
+        del self.settings["contexts"][key]
+
     @classmethod
     def from_file(cls, config_file_path: str = config_file_path) -> None:
         logger = LoggingSingleton()

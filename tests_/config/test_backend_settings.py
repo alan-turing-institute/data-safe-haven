@@ -132,6 +132,17 @@ class TestContextSettings:
             )
             assert "A context with key 'acme' is already defined." in exc
 
+    def test_remove(self):
+        settings = ContextSettings(yaml.safe_load(self.context_settings))
+        settings.remove("acme_deployment")
+        assert "acme_deployment" not in settings.available
+
+    def test_invalid_remove(self):
+        settings = ContextSettings(yaml.safe_load(self.context_settings))
+        with pytest.raises(DataSafeHavenParameterError) as exc:
+            settings.remove("invalid")
+            assert "No context with key 'invalid'." in exc
+
     def test_from_file(self, tmp_path):
         config_file_path = tmp_path / "config.yaml"
         with open(config_file_path, "w") as f:
