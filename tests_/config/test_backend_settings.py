@@ -60,6 +60,12 @@ class TestContextSettings:
         settings.selected = "gems"
         assert settings.selected == "gems"
 
+    def test_invalid_selected(self):
+        settings = ContextSettings(yaml.safe_load(self.context_settings))
+        with pytest.raises(DataSafeHavenParameterError) as exc:
+            settings.selected = "invalid"
+            assert "Context invalid is not defined." in exc
+
     def test_context(self):
         yaml_settings = yaml.safe_load(self.context_settings)
         settings = ContextSettings(yaml_settings)
