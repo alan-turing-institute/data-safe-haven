@@ -59,3 +59,78 @@ class TestSwitch:
         assert result.exit_code == 1
         # Unable to check error as this is written outside of any Typer
         # assert "Context 'invalid' is not defined " in result.stdout
+
+
+class TestAdd:
+    def test_add(self, runner):
+        result = runner.invoke(
+            context_command_group,
+            [
+                "add",
+                "example",
+                "--name",
+                "Example",
+                "--admin-group",
+                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+                "--location",
+                "uksouth",
+                "--subscription",
+                "Data Safe Haven (Example)",
+            ]
+        )
+        assert result.exit_code == 0
+        result = runner.invoke(context_command_group, ["switch", "example"])
+        assert result.exit_code == 0
+
+    def test_add_duplicate(self, runner):
+        result = runner.invoke(
+            context_command_group,
+            [
+                "add",
+                "acme_deployment",
+                "--name",
+                "Acme Deployment",
+                "--admin-group",
+                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+                "--location",
+                "uksouth",
+                "--subscription",
+                "Data Safe Haven (Acme)",
+            ]
+        )
+        assert result.exit_code == 1
+        # Unable to check error as this is written outside of any Typer
+        # assert "A context with key 'acme_deployment' is already defined." in result.stdout
+
+    def test_add_invalid_uuid(self, runner):
+        result = runner.invoke(
+            context_command_group,
+            [
+                "add",
+                "example",
+                "--name",
+                "Example",
+                "--admin-group",
+                "not a uuid",
+                "--location",
+                "uksouth",
+                "--subscription",
+                "Data Safe Haven (Example)",
+            ]
+        )
+        assert result.exit_code == 2
+        # This works because the context_command_group Typer writes this error
+        assert "Invalid value for '--admin-group': Expected GUID" in result.stderr
+
+    def test_add_missing_ags(self, runner):
+        result = runner.invoke(
+            context_command_group,
+            [
+                "add",
+                "example",
+                "--name",
+                "Example",
+            ]
+        )
+        assert result.exit_code == 2
+        assert "Missing option" in result.stderr

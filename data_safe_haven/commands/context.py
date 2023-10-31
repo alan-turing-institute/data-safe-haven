@@ -1,5 +1,5 @@
 """Command group and entrypoints for managing a DSH context"""
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 from rich import print
@@ -43,47 +43,45 @@ def switch(
 
 @context_command_group.command()
 def add(
+    key: Annotated[
+        str,
+        typer.Argument(help="Name of the context to add.")
+    ],
     admin_group: Annotated[
-        Optional[str],  # noqa: UP007
+        str,
         typer.Option(
-            "--admin-group",
-            "-a",
             help="The ID of an Azure group containing all administrators.",
             callback=validate_aad_guid,
         ),
-    ] = None,
+    ],
     location: Annotated[
-        Optional[str],  # noqa: UP007
+        str,
         typer.Option(
-            "--location",
-            "-l",
             help="The Azure location to deploy resources into.",
         ),
-    ] = None,
+    ],
     name: Annotated[
-        Optional[str],  # noqa: UP007
+        str,
         typer.Option(
-            "--name",
-            "-n",
-            help="The name to give this Data Safe Haven deployment.",
+            help="The human friendly name to give this Data Safe Haven deployment.",
         ),
-    ] = None,
+    ],
     subscription: Annotated[
-        Optional[str],  # noqa: UP007
+        str,
         typer.Option(
-            "--subscription",
-            "-s",
             help="The name of an Azure subscription to deploy resources into.",
         ),
-    ] = None,
+    ],
 ) -> None:
-    settings = ContextSettings()
+    settings = ContextSettings.from_file()
     settings.add(
+        key=key,
         admin_group_id=admin_group,
         location=location,
         name=name,
         subscription_name=subscription,
     )
+    settings.write()
 
 
 @context_command_group.command()
