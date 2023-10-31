@@ -134,3 +134,18 @@ class TestAdd:
         )
         assert result.exit_code == 2
         assert "Missing option" in result.stderr
+
+
+class TestRemove:
+    def test_remove(self, runner):
+        result = runner.invoke(context_command_group, ["remove", "gems"])
+        assert result.exit_code == 0
+        result = runner.invoke(context_command_group, ["show"])
+        assert result.exit_code == 0
+        assert "gems" not in result.stdout
+
+    def test_remove_invalid(self, runner):
+        result = runner.invoke(context_command_group, ["remove", "invalid"])
+        assert result.exit_code == 1
+        # Unable to check error as this is written outside of any Typer
+        # assert "No context with key 'invalid'." in result.stdout

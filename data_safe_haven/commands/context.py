@@ -85,8 +85,15 @@ def add(
 
 
 @context_command_group.command()
-def remove() -> None:
-    pass
+def remove(
+    key: Annotated[
+        str,
+        typer.Argument(help="Name of the context to add.")
+    ],
+) -> None:
+    settings = ContextSettings.from_file()
+    settings.remove(key)
+    settings.write()
 
 
 @context_command_group.command()
