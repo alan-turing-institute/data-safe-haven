@@ -1,5 +1,5 @@
 """Command group and entrypoints for managing a DSH context"""
-from typing import Annotated
+from typing import Annotated, Optional
 
 import typer
 from rich import print
@@ -37,7 +37,7 @@ def available() -> None:
     available = settings.available
 
     available.remove(current_context_key)
-    available = [f"[green]{current_context_key}*[/]"]+available
+    available = [f"[green]{current_context_key}*[/]", *available]
 
     print("\n".join(available))
 
@@ -53,10 +53,7 @@ def switch(
 
 @context_command_group.command()
 def add(
-    key: Annotated[
-        str,
-        typer.Argument(help="Name of the context to add.")
-    ],
+    key: Annotated[str, typer.Argument(help="Name of the context to add.")],
     admin_group: Annotated[
         str,
         typer.Option(
@@ -97,26 +94,26 @@ def add(
 @context_command_group.command()
 def update(
     admin_group: Annotated[
-        str,
+        Optional[str],  # noqa: UP007
         typer.Option(
             help="The ID of an Azure group containing all administrators.",
             callback=validate_aad_guid,
         ),
     ] = None,
     location: Annotated[
-        str,
+        Optional[str],  # noqa: UP007
         typer.Option(
             help="The Azure location to deploy resources into.",
         ),
     ] = None,
     name: Annotated[
-        str,
+        Optional[str],  # noqa: UP007
         typer.Option(
             help="The human friendly name to give this Data Safe Haven deployment.",
         ),
     ] = None,
     subscription: Annotated[
-        str,
+        Optional[str],  # noqa: UP007
         typer.Option(
             help="The name of an Azure subscription to deploy resources into.",
         ),
@@ -135,10 +132,7 @@ def update(
 
 @context_command_group.command()
 def remove(
-    key: Annotated[
-        str,
-        typer.Argument(help="Name of the context to add.")
-    ],
+    key: Annotated[str, typer.Argument(help="Name of the context to add.")],
 ) -> None:
     settings = ContextSettings.from_file()
     settings.remove(key)

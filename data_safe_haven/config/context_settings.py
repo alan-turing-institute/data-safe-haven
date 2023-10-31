@@ -1,7 +1,7 @@
 """Load global and local settings from dotfiles"""
-from pathlib import Path
 from dataclasses import dataclass
 from os import getenv
+from pathlib import Path
 from typing import Any
 
 import appdirs
@@ -51,25 +51,31 @@ class ContextSettings:
     def __init__(self, settings_dict: dict[Any, Any]) -> None:
         self.logger = LoggingSingleton()
 
-        context_schema = Schema({
-            "name": str,
-            "admin_group_id": str,
-            "location": str,
-            "subscription_name": str,
-        })
+        context_schema = Schema(
+            {
+                "name": str,
+                "admin_group_id": str,
+                "location": str,
+                "subscription_name": str,
+            }
+        )
 
-        schema = Schema({
-            "selected": str,
-            "contexts": Schema({
-                str: context_schema,
-            }),
-        })
+        schema = Schema(
+            {
+                "selected": str,
+                "contexts": Schema(
+                    {
+                        str: context_schema,
+                    }
+                ),
+            }
+        )
 
         try:
             self._settings = schema.validate(settings_dict)
         except SchemaError as exc:
             msg = f"Invalid context configuration file.\n{exc}"
-            raise DataSafeHavenParameterError(msg)
+            raise DataSafeHavenParameterError(msg) from exc
 
     @property
     def settings(self) -> dict[Any, Any]:
@@ -138,7 +144,7 @@ class ContextSettings:
         name: str,
         admin_group_id: str,
         location: str,
-        subscription_name: str
+        subscription_name: str,
     ) -> None:
         # Ensure context is not already present
         if key in self.settings["contexts"].keys():
@@ -187,6 +193,4 @@ class ContextSettings:
 
         with open(config_file_path, "w", encoding="utf-8") as f_yaml:
             yaml.dump(self.settings, f_yaml, indent=2)
-        self.logger.info(
-            f"Saved context settings to '[green]{config_file_path}[/]'."
-        )
+        self.logger.info(f"Saved context settings to '[green]{config_file_path}[/]'.")

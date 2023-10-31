@@ -40,6 +40,8 @@ from data_safe_haven.utility import (
     SoftwarePackageCategory,
 )
 
+from .context_settings import ContextSettings
+
 
 class Validator:
     validation_functions: ClassVar[dict[str, Callable[[Any], Any]]] = {}
@@ -353,7 +355,7 @@ class Config:
         self.tags_: ConfigSectionTags | None = None
         self.sres: dict[str, ConfigSectionSRE] = defaultdict(ConfigSectionSRE)
         # Read backend settings
-        settings = BackendSettings()
+        settings = ContextSettings.from_file()
         # Check if backend exists and was loaded
         try:
             self.name = settings.name

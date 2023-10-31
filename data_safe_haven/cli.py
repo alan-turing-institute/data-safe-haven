@@ -70,9 +70,7 @@ def main() -> None:
         help="Perform administrative tasks for a Data Safe Haven deployment.",
     )
     application.add_typer(
-        context_command_group,
-        name="context",
-        help="Manage Data Safe Haven contexts."
+        context_command_group, name="context", help="Manage Data Safe Haven contexts."
     )
     application.add_typer(
         deploy_command_group,
