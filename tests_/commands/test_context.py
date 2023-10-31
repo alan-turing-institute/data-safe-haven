@@ -43,6 +43,15 @@ class TestShow:
         result = runner.invoke(context_command_group, ["show"])
         assert result.exit_code == 0
         assert "Current context: acme_deployment" in result.stdout
+        assert "Name: Acme Deployment" in result.stdout
+
+
+class TestAvailable:
+    def test_available(self, runner):
+        result = runner.invoke(context_command_group, ["available"])
+        assert result.exit_code == 0
+        assert "acme_deployment*" in result.stdout
+        assert "gems" in result.stdout
 
 
 class TestSwitch:
@@ -50,9 +59,9 @@ class TestSwitch:
         result = runner.invoke(context_command_group, ["switch", "gems"])
         assert result.exit_code == 0
         assert "Switched context to 'gems'." in result.stdout
-        result = runner.invoke(context_command_group, ["show"])
+        result = runner.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
-        assert "Current context: gems" in result.stdout
+        assert "gems*" in result.stdout
 
     def test_invalid_switch(self, runner):
         result = runner.invoke(context_command_group, ["switch", "invalid"])
@@ -140,7 +149,7 @@ class TestRemove:
     def test_remove(self, runner):
         result = runner.invoke(context_command_group, ["remove", "gems"])
         assert result.exit_code == 0
-        result = runner.invoke(context_command_group, ["show"])
+        result = runner.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
         assert "gems" not in result.stdout
 

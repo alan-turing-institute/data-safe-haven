@@ -21,14 +21,24 @@ def show() -> None:
 
     current_context_key = settings.selected
     current_context = settings.context
-    available = settings.available
 
     print(f"Current context: [green]{current_context_key}")
     print(f"\tName: {current_context.name}")
     print(f"\tAdmin Group ID: {current_context.admin_group_id}")
     print(f"\tSubscription name: {current_context.subscription_name}")
     print(f"\tLocation: {current_context.location}")
-    print("\nAvailable contexts:")
+
+
+@context_command_group.command()
+def available() -> None:
+    settings = ContextSettings.from_file()
+
+    current_context_key = settings.selected
+    available = settings.available
+
+    available.remove(current_context_key)
+    available = [f"[green]{current_context_key}*[/]"]+available
+
     print("\n".join(available))
 
 
