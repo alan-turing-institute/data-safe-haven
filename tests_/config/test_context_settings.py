@@ -1,4 +1,4 @@
-from data_safe_haven.config.backend_settings import Context, ContextSettings
+from data_safe_haven.config.context_settings import Context, ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenParameterError
 
 import pytest

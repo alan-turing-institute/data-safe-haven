@@ -2,9 +2,10 @@
 from typing import Annotated, Optional
 
 import typer
+from rich import print
 
 from data_safe_haven.backend import Backend
-from data_safe_haven.config import BackendSettings
+from data_safe_haven.config import ContextSettings
 from data_safe_haven.exceptions import (
     DataSafeHavenError,
     DataSafeHavenInputError,
@@ -12,6 +13,23 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.functions import validate_aad_guid
 
 context_command_group = typer.Typer()
+
+
+@context_command_group.command()
+def show() -> None:
+    settings = ContextSettings.from_file()
+
+    current_context_key = settings.selected
+    current_context = settings.context
+    available = settings.available
+
+    print(f"Current context: [green]{current_context_key}")
+    print(f"\tName: {current_context.name}")
+    print(f"\tAdmin Group ID: {current_context.admin_group_id}")
+    print(f"\tSubscription name: {current_context.subscription_name}")
+    print(f"\tLocation: {current_context.location}")
+    print("\nAvailable contexts:")
+    print("\n".join(available))
 
 
 @context_command_group.command()
@@ -50,7 +68,7 @@ def add(
         ),
     ] = None,
 ) -> None:
-    settings = BackendSettings()
+    settings = ContextSettings()
     settings.add(
         admin_group_id=admin_group,
         location=location,
@@ -62,20 +80,6 @@ def add(
 @context_command_group.command()
 def remove() -> None:
     pass
-
-
-@context_command_group.command()
-def show() -> None:
-    settings = BackendSettings()
-    settings.summarise()
-
-
-@context_command_group.command()
-def switch(
-    name: Annotated[str, typer.Argument(help="Name of the context to switch to.")]
-) -> None:
-    settings = BackendSettings()
-    settings.context = name
 
 
 @context_command_group.command()

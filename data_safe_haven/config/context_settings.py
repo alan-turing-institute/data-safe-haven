@@ -1,6 +1,7 @@
 """Load global and local settings from dotfiles"""
-import pathlib
+from pathlib import Path
 from dataclasses import dataclass
+from os import getenv
 from typing import Any
 
 import appdirs
@@ -15,10 +16,15 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.utility import LoggingSingleton
 
 
-config_directory = pathlib.Path(
-    appdirs.user_config_dir(appname="data_safe_haven")
-).resolve()
-config_file_path = config_directory / "config.yaml"
+def default_config_file_path() -> Path:
+    if config_directory_env := getenv("DSH_CONFIG_DIRECTORY"):
+        config_directory = Path(config_directory_env).resolve()
+    else:
+        config_directory = Path(
+            appdirs.user_config_dir(appname="data_safe_haven")
+        ).resolve()
+
+    return config_directory / "contexts.yaml"
 
 
 @dataclass
@@ -153,7 +159,9 @@ class ContextSettings:
         del self.settings["contexts"][key]
 
     @classmethod
-    def from_file(cls, config_file_path: str = config_file_path) -> None:
+    def from_file(cls, config_file_path: str | None = None) -> None:
+        if config_file_path is None:
+            config_file_path = default_config_file_path()
         logger = LoggingSingleton()
         try:
             with open(config_file_path, encoding="utf-8") as f_yaml:
@@ -170,8 +178,10 @@ class ContextSettings:
             msg = f"Could not load settings from {config_file_path}.\n{exc}"
             raise DataSafeHavenConfigError(msg) from exc
 
-    def write(self, config_file_path: str = config_file_path) -> None:
+    def write(self, config_file_path: str | None = None) -> None:
         """Write settings to YAML file"""
+        if config_file_path is None:
+            config_file_path = default_config_file_path()
         # Create the parent directory if it does not exist then write YAML
         config_file_path.parent.mkdir(parents=True, exist_ok=True)
 
