@@ -33,6 +33,15 @@ def show() -> None:
 
 
 @context_command_group.command()
+def switch(
+    name: Annotated[str, typer.Argument(help="Name of the context to switch to.")]
+) -> None:
+    settings = ContextSettings.from_file()
+    settings.selected = name
+    settings.write()
+
+
+@context_command_group.command()
 def add(
     admin_group: Annotated[
         Optional[str],  # noqa: UP007

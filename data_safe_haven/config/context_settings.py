@@ -87,9 +87,9 @@ class ContextSettings:
     def selected(self, context_name: str) -> None:
         if context_name in self.settings["contexts"].keys():
             self.settings["selected"] = context_name
-            self.logger.info(f"Switched context to {context_name}.")
+            self.logger.info(f"Switched context to '{context_name}'.")
         else:
-            msg = f"Context {context_name} is not defined."
+            msg = f"Context '{context_name}' is not defined."
             raise DataSafeHavenParameterError(msg)
 
     @property
