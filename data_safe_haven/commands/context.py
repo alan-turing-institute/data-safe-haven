@@ -95,6 +95,45 @@ def add(
 
 
 @context_command_group.command()
+def update(
+    admin_group: Annotated[
+        str,
+        typer.Option(
+            help="The ID of an Azure group containing all administrators.",
+            callback=validate_aad_guid,
+        ),
+    ] = None,
+    location: Annotated[
+        str,
+        typer.Option(
+            help="The Azure location to deploy resources into.",
+        ),
+    ] = None,
+    name: Annotated[
+        str,
+        typer.Option(
+            help="The human friendly name to give this Data Safe Haven deployment.",
+        ),
+    ] = None,
+    subscription: Annotated[
+        str,
+        typer.Option(
+            help="The name of an Azure subscription to deploy resources into.",
+        ),
+    ] = None,
+) -> None:
+    """Update the selected context."""
+    settings = ContextSettings.from_file()
+    settings.update(
+        admin_group_id=admin_group,
+        location=location,
+        name=name,
+        subscription_name=subscription,
+    )
+    settings.write()
+
+
+@context_command_group.command()
 def remove(
     key: Annotated[
         str,

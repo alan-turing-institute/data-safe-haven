@@ -145,6 +145,15 @@ class TestAdd:
         assert "Missing option" in result.stderr
 
 
+class TestUpdate:
+    def test_update(self, runner):
+        result = runner.invoke(context_command_group, ["update", "--name", "New Name"])
+        assert result.exit_code == 0
+        result = runner.invoke(context_command_group, ["show"])
+        assert result.exit_code == 0
+        assert "Name: New Name" in result.stdout
+
+
 class TestRemove:
     def test_remove(self, runner):
         result = runner.invoke(context_command_group, ["remove", "gems"])
