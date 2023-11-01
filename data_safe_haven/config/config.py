@@ -38,6 +38,7 @@ from data_safe_haven.utility import (
     DatabaseSystem,
     LoggingSingleton,
     SoftwarePackageCategory,
+    config_dir,
 )
 
 from .context_settings import ContextSettings
@@ -356,15 +357,16 @@ class Config:
         self.sres: dict[str, ConfigSectionSRE] = defaultdict(ConfigSectionSRE)
         # Read backend settings
         settings = ContextSettings.from_file()
+        context = settings.context
         # Check if backend exists and was loaded
         try:
-            self.name = settings.name
+            self.name = context.name
         except DataSafeHavenParameterError as exc:
             msg = "Data Safe Haven has not been initialised: run '[bright_cyan]dsh init[/]' before continuing."
             raise DataSafeHavenConfigError(msg) from exc
-        self.subscription_name = settings.subscription_name
-        self.azure.location = settings.location
-        self.azure.admin_group_id = settings.admin_group_id
+        self.subscription_name = context.subscription_name
+        self.azure.location = context.location
+        self.azure.admin_group_id = context.admin_group_id
         self.backend_storage_container_name = "config"
         # Set derived names
         self.shm_name_ = alphanumeric(self.name).lower()
@@ -373,7 +375,7 @@ class Config:
         self.backend_storage_account_name = (
             f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
         )
-        self.work_directory = settings.config_directory / self.shm_name_
+        self.work_directory = config_dir() / self.shm_name_
         self.azure_api = AzureApi(subscription_name=self.subscription_name)
         # Attempt to load YAML dictionary from blob storage
         yaml_input = {}

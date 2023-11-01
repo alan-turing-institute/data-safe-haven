@@ -1,10 +1,13 @@
 """Load global and local settings from dotfiles"""
+# For postponed evaluation of annotations https://peps.python.org/pep-0563
+from __future__ import (
+    annotations,
+)
+
 from dataclasses import dataclass
-from os import getenv
 from pathlib import Path
 from typing import Any
 
-import appdirs
 import yaml
 from schema import Schema, SchemaError
 from yaml.parser import ParserError
@@ -13,18 +16,11 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.utility import LoggingSingleton, config_dir
 
 
 def default_config_file_path() -> Path:
-    if config_directory_env := getenv("DSH_CONFIG_DIRECTORY"):
-        config_directory = Path(config_directory_env).resolve()
-    else:
-        config_directory = Path(
-            appdirs.user_config_dir(appname="data_safe_haven")
-        ).resolve()
-
-    return config_directory / "contexts.yaml"
+    return config_dir() / "contexts.yaml"
 
 
 @dataclass
@@ -72,7 +68,7 @@ class ContextSettings:
         )
 
         try:
-            self._settings = schema.validate(settings_dict)
+            self._settings: dict[Any, Any] = schema.validate(settings_dict)
         except SchemaError as exc:
             msg = f"Invalid context configuration file.\n{exc}"
             raise DataSafeHavenParameterError(msg) from exc
@@ -83,11 +79,7 @@ class ContextSettings:
 
     @property
     def selected(self) -> str:
-        if selected := self.settings.get("selected"):
-            return selected
-        else:
-            msg = "Selected context is not defined."
-            raise DataSafeHavenParameterError(msg)
+        return str(self.settings["selected"])
 
     @selected.setter
     def selected(self, context_name: str) -> None:
@@ -100,15 +92,11 @@ class ContextSettings:
 
     @property
     def context(self) -> Context:
-        if context_dict := self.settings.get("contexts").get(self.selected):
-            return Context(**context_dict)
-        else:
-            msg = f"Context {self.selected} is not defined."
-            raise DataSafeHavenParameterError(msg)
+        return Context(**self.settings["contexts"][self.selected])
 
     @property
     def available(self) -> list[str]:
-        return list(self.settings.get("contexts").keys())
+        return list(self.settings["contexts"].keys())
 
     def update(
         self,
@@ -118,7 +106,7 @@ class ContextSettings:
         name: str | None = None,
         subscription_name: str | None = None,
     ) -> None:
-        context_dict = self.settings.get("contexts").get(self.selected)
+        context_dict = self.settings["contexts"][self.selected]
 
         if admin_group_id:
             self.logger.debug(
@@ -165,7 +153,7 @@ class ContextSettings:
         del self.settings["contexts"][key]
 
     @classmethod
-    def from_file(cls, config_file_path: str | None = None) -> None:
+    def from_file(cls, config_file_path: Path | None = None) -> ContextSettings:
         if config_file_path is None:
             config_file_path = default_config_file_path()
         logger = LoggingSingleton()
@@ -177,6 +165,9 @@ class ContextSettings:
                     f"Reading project settings from '[green]{config_file_path}[/]'."
                 )
                 return cls(settings)
+            else:
+                msg = f"Unable to parse {config_file_path} as a dict."
+                raise DataSafeHavenConfigError(msg)
         except FileNotFoundError as exc:
             msg = f"Could not find file {config_file_path}.\n{exc}"
             raise DataSafeHavenConfigError(msg) from exc
@@ -184,7 +175,7 @@ class ContextSettings:
             msg = f"Could not load settings from {config_file_path}.\n{exc}"
             raise DataSafeHavenConfigError(msg) from exc
 
-    def write(self, config_file_path: str | None = None) -> None:
+    def write(self, config_file_path: Path | None = None) -> None:
         """Write settings to YAML file"""
         if config_file_path is None:
             config_file_path = default_config_file_path()

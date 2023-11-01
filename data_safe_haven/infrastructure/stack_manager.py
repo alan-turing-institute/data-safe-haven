@@ -68,7 +68,9 @@ class StackManager:
         self.program = program
         self.project_name = replace_separators(self.cfg.tags.project.lower(), "-")
         self.stack_name = self.program.stack_name
-        self.work_dir = config.work_directory / "pulumi" / self.program.short_name
+        self.work_dir: pathlib.Path = (
+            config.work_directory / "pulumi" / self.program.short_name
+        )
         self.work_dir.mkdir(parents=True, exist_ok=True)
         self.initialise_workdir()
         self.install_plugins()
