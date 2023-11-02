@@ -39,11 +39,11 @@ class PulumiAccount:
         if not self.env_:
             azure_api = AzureApi(self.cfg.subscription_name)
             backend_storage_account_keys = azure_api.get_storage_account_keys(
-                self.cfg.backend.resource_group_name,
-                self.cfg.backend.storage_account_name,
+                self.cfg.context.resource_group_name,
+                self.cfg.context.storage_account_name,
             )
             self.env_ = {
-                "AZURE_STORAGE_ACCOUNT": self.cfg.backend.storage_account_name,
+                "AZURE_STORAGE_ACCOUNT": self.cfg.context.storage_account_name,
                 "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
                 "PULUMI_BACKEND_URL": f"azblob://{self.cfg.pulumi.storage_container_name}",
@@ -100,7 +100,7 @@ class StackManager:
                     stack_name=self.stack_name,
                     program=self.program.run,
                     opts=automation.LocalWorkspaceOptions(
-                        secrets_provider=f"azurekeyvault://{self.cfg.backend.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi.encryption_key_version}",
+                        secrets_provider=f"azurekeyvault://{self.cfg.context.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi.encryption_key_version}",
                         work_dir=str(self.work_dir),
                         env_vars=self.account.env,
                     ),
@@ -213,8 +213,8 @@ class StackManager:
                 azure_api = AzureApi(self.cfg.subscription_name)
                 azure_api.remove_blob(
                     blob_name=f".pulumi/stacks/{self.project_name}/{stack_backup_name}",
-                    resource_group_name=self.cfg.backend.resource_group_name,
-                    storage_account_name=self.cfg.backend.storage_account_name,
+                    resource_group_name=self.cfg.context.resource_group_name,
+                    storage_account_name=self.cfg.context.storage_account_name,
                     storage_container_name=self.cfg.pulumi.storage_container_name,
                 )
             except DataSafeHavenAzureError as exc:
