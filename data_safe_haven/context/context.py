@@ -6,9 +6,9 @@ from data_safe_haven.external import AzureApi
 class Context:
     """Azure resources to support Data Safe Haven context"""
 
-    def __init__(self) -> None:
+    def __init__(self, config: Config) -> None:
         self.azure_api_: AzureApi | None = None
-        self.config = Config()
+        self.config = config
         self.tags = {"component": "context"} | self.config.tags.to_dict()
 
     @property

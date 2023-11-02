@@ -5,7 +5,7 @@ import typer
 from rich import print
 
 from data_safe_haven.context import Context
-from data_safe_haven.config import ContextSettings
+from data_safe_haven.config import Config, ContextSettings
 from data_safe_haven.functions import validate_aad_guid
 
 context_command_group = typer.Typer()
@@ -138,7 +138,8 @@ def remove(
 @context_command_group.command()
 def create() -> None:
     """Create Data Safe Haven context infrastructure"""
-    context = Context()
+    config = Config()
+    context = Context(config)
     context.create()
     context.config.upload()
 
@@ -146,5 +147,6 @@ def create() -> None:
 @context_command_group.command()
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure"""
-    context = Context()
+    config = Config()
+    context = Context(config)
     context.teardown()

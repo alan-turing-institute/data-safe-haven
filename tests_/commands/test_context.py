@@ -1,4 +1,6 @@
 from data_safe_haven.commands.context import context_command_group
+from data_safe_haven.config import Config
+from data_safe_haven.context import Context
 
 from pytest import fixture
 from typer.testing import CliRunner
@@ -167,3 +169,32 @@ class TestRemove:
         assert result.exit_code == 1
         # Unable to check error as this is written outside of any Typer
         # assert "No context with key 'invalid'." in result.stdout
+
+
+class TestCreate:
+    def test_create(self, runner, monkeypatch):
+        def mock_create(self):
+            print("mock create")
+
+        def mock_upload(self):
+            print("mock upload")
+
+        monkeypatch.setattr(Context, "create", mock_create)
+        monkeypatch.setattr(Config, "upload", mock_upload)
+
+        result = runner.invoke(context_command_group, ["create"])
+        assert "mock create" in result.stdout
+        assert "mock upload" in result.stdout
+        assert result.exit_code == 0
+
+
+class TestTeardown:
+    def test_teardown(self, runner, monkeypatch):
+        def mock_teardown(self):
+            print("mock teardown")
+
+        monkeypatch.setattr(Context, "teardown", mock_teardown)
+
+        result = runner.invoke(context_command_group, ["teardown"])
+        assert "mock teardown" in result.stdout
+        assert result.exit_code == 0
