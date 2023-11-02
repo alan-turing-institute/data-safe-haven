@@ -3,6 +3,7 @@ from data_safe_haven.exceptions import DataSafeHavenParameterError
 
 import pytest
 import yaml
+from pytest import fixture
 
 
 class TestContext:
@@ -20,8 +21,9 @@ class TestContext:
         ])
 
 
-class TestContextSettings:
-    context_settings = """\
+@fixture
+def context_yaml():
+    context_yaml = """\
         selected: acme_deployment
         contexts:
             acme_deployment:
@@ -34,96 +36,92 @@ class TestContextSettings:
                 admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
                 location: uksouth
                 subscription_name: Data Safe Haven (Gems)"""
+    return context_yaml
 
-    def test_constructor(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
+
+@fixture
+def context_settings(context_yaml):
+    return ContextSettings(yaml.safe_load(context_yaml))
+
+
+class TestContextSettings:
+    def test_constructor(self, context_yaml):
+        settings = ContextSettings(yaml.safe_load(context_yaml))
         assert isinstance(settings, ContextSettings)
 
-    def test_invalid(self):
-        context_settings = "\n".join(self.context_settings.splitlines()[1:])
+    def test_missing_selected(self, context_yaml):
+        context_yaml = "\n".join(context_yaml.splitlines()[1:])
 
         with pytest.raises(DataSafeHavenParameterError) as exc:
-            ContextSettings(yaml.safe_load(context_settings))
+            ContextSettings(yaml.safe_load(context_yaml))
             assert "Missing Key: 'selected'" in exc
 
-    def test_settings(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
-        assert isinstance(settings.settings, dict)
+    def test_settings(self, context_settings):
+        assert isinstance(context_settings.settings, dict)
 
-    def test_selected(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
-        assert settings.selected == "acme_deployment"
+    def test_selected(self, context_settings):
+        assert context_settings.selected == "acme_deployment"
 
-    def test_set_selected(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
-        assert settings.selected == "acme_deployment"
-        settings.selected = "gems"
-        assert settings.selected == "gems"
+    def test_set_selected(self, context_settings):
+        assert context_settings.selected == "acme_deployment"
+        context_settings.selected = "gems"
+        assert context_settings.selected == "gems"
 
-    def test_invalid_selected(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
+    def test_invalid_selected(self, context_settings):
         with pytest.raises(DataSafeHavenParameterError) as exc:
-            settings.selected = "invalid"
+            context_settings.selected = "invalid"
             assert "Context invalid is not defined." in exc
 
-    def test_context(self):
-        yaml_settings = yaml.safe_load(self.context_settings)
-        settings = ContextSettings(yaml_settings)
-        assert isinstance(settings.context, Context)
+    def test_context(self, context_yaml, context_settings):
+        yaml_dict = yaml.safe_load(context_yaml)
+        assert isinstance(context_settings.context, Context)
         assert all([
-            getattr(settings.context, item) == yaml_settings["contexts"]["acme_deployment"][item]
-            for item in yaml_settings["contexts"]["acme_deployment"].keys()
+            getattr(context_settings.context, item) == yaml_dict["contexts"]["acme_deployment"][item]
+            for item in yaml_dict["contexts"]["acme_deployment"].keys()
         ])
 
-    def test_set_context(self):
-        yaml_settings = yaml.safe_load(self.context_settings)
-        settings = ContextSettings(yaml_settings)
-        settings.selected = "gems"
-        assert isinstance(settings.context, Context)
+    def test_set_context(self, context_yaml, context_settings):
+        yaml_dict = yaml.safe_load(context_yaml)
+        context_settings.selected = "gems"
+        assert isinstance(context_settings.context, Context)
         assert all([
-            getattr(settings.context, item) == yaml_settings["contexts"]["gems"][item]
-            for item in yaml_settings["contexts"]["gems"].keys()
+            getattr(context_settings.context, item) == yaml_dict["contexts"]["gems"][item]
+            for item in yaml_dict["contexts"]["gems"].keys()
         ])
 
-    def test_available(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
-        available = settings.available
-        print(available)
+    def test_available(self, context_settings):
+        available = context_settings.available
         assert isinstance(available, list)
         assert all([isinstance(item, str) for item in available])
         assert available == ["acme_deployment", "gems"]
 
-    def test_update(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
-        assert settings.context.name == "Acme Deployment"
-        settings.update(name="replaced")
-        assert settings.context.name == "replaced"
+    def test_update(self, context_settings):
+        assert context_settings.context.name == "Acme Deployment"
+        context_settings.update(name="replaced")
+        assert context_settings.context.name == "replaced"
 
-    def test_set_update(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
-        settings.selected = "gems"
-        assert settings.context.name == "Gems"
-        settings.update(name="replaced")
-        assert settings.context.name == "replaced"
+    def test_set_update(self, context_settings):
+        context_settings.selected = "gems"
+        assert context_settings.context.name == "Gems"
+        context_settings.update(name="replaced")
+        assert context_settings.context.name == "replaced"
 
-    def test_add(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
-        settings.add(
+    def test_add(self, context_settings):
+        context_settings.add(
             key="example",
             name="Example",
             subscription_name="Data Safe Haven (Example)",
             admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             location="uksouth",
         )
-        settings.selected = "example"
-        assert settings.selected == "example"
-        assert settings.context.name == "Example"
-        assert settings.context.subscription_name == "Data Safe Haven (Example)"
+        context_settings.selected = "example"
+        assert context_settings.selected == "example"
+        assert context_settings.context.name == "Example"
+        assert context_settings.context.subscription_name == "Data Safe Haven (Example)"
 
-    def test_invalid_add(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
+    def test_invalid_add(self, context_settings):
         with pytest.raises(DataSafeHavenParameterError) as exc:
-            settings.add(
+            context_settings.add(
                 key="acme_deployment",
                 name="Acme Deployment",
                 subscription_name="Data Safe Haven (Acme)",
@@ -132,28 +130,26 @@ class TestContextSettings:
             )
             assert "A context with key 'acme' is already defined." in exc
 
-    def test_remove(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
-        settings.remove("acme_deployment")
-        assert "acme_deployment" not in settings.available
+    def test_remove(self, context_settings):
+        context_settings.remove("acme_deployment")
+        assert "acme_deployment" not in context_settings.available
 
-    def test_invalid_remove(self):
-        settings = ContextSettings(yaml.safe_load(self.context_settings))
+    def test_invalid_remove(self, context_settings):
         with pytest.raises(DataSafeHavenParameterError) as exc:
-            settings.remove("invalid")
+            context_settings.remove("invalid")
             assert "No context with key 'invalid'." in exc
 
-    def test_from_file(self, tmp_path):
+    def test_from_file(self, tmp_path, context_yaml):
         config_file_path = tmp_path / "config.yaml"
         with open(config_file_path, "w") as f:
-            f.write(self.context_settings)
+            f.write(context_yaml)
         settings = ContextSettings.from_file(config_file_path=config_file_path)
         assert settings.context.name == "Acme Deployment"
 
-    def test_write(self, tmp_path):
+    def test_write(self, tmp_path, context_yaml):
         config_file_path = tmp_path / "config.yaml"
         with open(config_file_path, "w") as f:
-            f.write(self.context_settings)
+            f.write(context_yaml)
         settings = ContextSettings.from_file(config_file_path=config_file_path)
         settings.selected = "gems"
         settings.update(name="replaced")
