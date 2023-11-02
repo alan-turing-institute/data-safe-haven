@@ -6,10 +6,6 @@ from rich import print
 
 from data_safe_haven.backend import Backend
 from data_safe_haven.config import ContextSettings
-from data_safe_haven.exceptions import (
-    DataSafeHavenError,
-    DataSafeHavenInputError,
-)
 from data_safe_haven.functions import validate_aad_guid
 
 context_command_group = typer.Typer()
@@ -141,22 +137,14 @@ def remove(
 
 @context_command_group.command()
 def create() -> None:
-    backend = Backend()  # How does this get the config!?!
+    """Create Data Safe Haven context infrastructure"""
+    backend = Backend()
     backend.create()
-
-    backend.config.upload()  # What does this do?
+    backend.config.upload()
 
 
 @context_command_group.command()
 def teardown() -> None:
-    """Tear down a Data Safe Haven context"""
-    try:
-        try:
-            backend = Backend()
-            backend.teardown()
-        except Exception as exc:
-            msg = f"Unable to teardown Pulumi backend.\n{exc}"
-            raise DataSafeHavenInputError(msg) from exc  # Input error? No input.
-    except DataSafeHavenError as exc:
-        msg = f"Could not teardown Data Safe Haven backend.\n{exc}"
-        raise DataSafeHavenError(msg) from exc
+    """Tear down Data Safe Haven context infrastructure"""
+    backend = Backend()
+    backend.teardown()
