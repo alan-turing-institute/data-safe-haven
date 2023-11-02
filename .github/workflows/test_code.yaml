@@ -20,7 +20,7 @@ jobs:
           python-version: 3.11
       - name: Install hatch
         run: pip install hatch
-      - name: Lint Python
+      - name: Test Python
         run: hatch run test:test
 
   test_markdown_links:
