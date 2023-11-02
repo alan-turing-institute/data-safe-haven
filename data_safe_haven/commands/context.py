@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.backend import Backend
+from data_safe_haven.context import Context
 from data_safe_haven.config import ContextSettings
 from data_safe_haven.functions import validate_aad_guid
 
@@ -138,13 +138,13 @@ def remove(
 @context_command_group.command()
 def create() -> None:
     """Create Data Safe Haven context infrastructure"""
-    backend = Backend()
-    backend.create()
-    backend.config.upload()
+    context = Context()
+    context.create()
+    context.config.upload()
 
 
 @context_command_group.command()
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure"""
-    backend = Backend()
-    backend.teardown()
+    context = Context()
+    context.teardown()

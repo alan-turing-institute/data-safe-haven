@@ -1,4 +1,3 @@
-"""Backend for a Data Safe Haven environment"""
 import datetime
 import pathlib
 import time
