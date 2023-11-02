@@ -83,7 +83,7 @@ class ContextSettings:
 
     @selected.setter
     def selected(self, context_name: str) -> None:
-        if context_name in self.settings["contexts"].keys():
+        if context_name in self.available:
             self.settings["selected"] = context_name
             self.logger.info(f"Switched context to '{context_name}'.")
         else:
@@ -135,7 +135,7 @@ class ContextSettings:
         subscription_name: str,
     ) -> None:
         # Ensure context is not already present
-        if key in self.settings["contexts"].keys():
+        if key in self.available:
             msg = f"A context with key '{key}' is already defined."
             raise DataSafeHavenParameterError(msg)
 
@@ -147,7 +147,7 @@ class ContextSettings:
         }
 
     def remove(self, key: str) -> None:
-        if key not in self.settings["contexts"].keys():
+        if key not in self.available:
             msg = f"No context with key '{key}'."
             raise DataSafeHavenParameterError(msg)
         del self.settings["contexts"][key]
