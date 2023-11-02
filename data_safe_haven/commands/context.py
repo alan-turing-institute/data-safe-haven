@@ -4,8 +4,8 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.context import Context
 from data_safe_haven.config import Config, ContextSettings
+from data_safe_haven.context import Context
 from data_safe_haven.functions import validate_aad_guid
 
 context_command_group = typer.Typer()
