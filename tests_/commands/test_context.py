@@ -147,6 +147,33 @@ class TestAdd:
         assert result.exit_code == 2
         assert "Missing option" in result.stderr
 
+    def test_add_bootstrap(self, tmp_contexts, runner):
+        (tmp_contexts / "contexts.yaml").unlink()
+        result = runner.invoke(
+            context_command_group,
+            [
+                "add",
+                "acme_deployment",
+                "--name",
+                "Acme Deployment",
+                "--admin-group",
+                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+                "--location",
+                "uksouth",
+                "--subscription",
+                "Data Safe Haven (Acme)",
+            ]
+        )
+        assert result.exit_code == 0
+        assert (tmp_contexts / "contexts.yaml").exists()
+        result = runner.invoke(context_command_group, ["show"])
+        assert result.exit_code == 0
+        assert "Name: Acme Deployment" in result.stdout
+        result = runner.invoke(context_command_group, ["available"])
+        assert result.exit_code == 0
+        assert "acme_deployment*" in result.stdout
+        assert "gems" not in result.stdout
+
 
 class TestUpdate:
     def test_update(self, runner):

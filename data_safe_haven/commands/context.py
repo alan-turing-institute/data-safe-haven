@@ -5,6 +5,7 @@ import typer
 from rich import print
 
 from data_safe_haven.config import Config, ContextSettings
+from data_safe_haven.config.context_settings import default_config_file_path
 from data_safe_haven.context import Context
 from data_safe_haven.functions import validate_aad_guid
 
@@ -76,14 +77,30 @@ def add(
         ),
     ],
 ) -> None:
-    settings = ContextSettings.from_file()
-    settings.add(
-        key=key,
-        admin_group_id=admin_group,
-        location=location,
-        name=name,
-        subscription_name=subscription,
-    )
+    if default_config_file_path().exists():
+        settings = ContextSettings.from_file()
+        settings.add(
+            key=key,
+            admin_group_id=admin_group,
+            location=location,
+            name=name,
+            subscription_name=subscription,
+        )
+    else:
+        # Bootstrap context settings file
+        settings = ContextSettings(
+            {
+                "selected": key,
+                "contexts": {
+                    key: {
+                        "admin_group_id": admin_group,
+                        "location": location,
+                        "name": name,
+                        "subscription_name": subscription,
+                    }
+                },
+            }
+        )
     settings.write()
 
 
