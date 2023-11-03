@@ -14,6 +14,7 @@ context_command_group = typer.Typer()
 
 @context_command_group.command()
 def show() -> None:
+    """Show information about the selected context."""
     settings = ContextSettings.from_file()
 
     current_context_key = settings.selected
@@ -28,6 +29,7 @@ def show() -> None:
 
 @context_command_group.command()
 def available() -> None:
+    """Show the available contexts."""
     settings = ContextSettings.from_file()
 
     current_context_key = settings.selected
@@ -43,6 +45,7 @@ def available() -> None:
 def switch(
     name: Annotated[str, typer.Argument(help="Name of the context to switch to.")]
 ) -> None:
+    """Switch the context."""
     settings = ContextSettings.from_file()
     settings.selected = name
     settings.write()
@@ -77,6 +80,7 @@ def add(
         ),
     ],
 ) -> None:
+    """Add a new context."""
     if default_config_file_path().exists():
         settings = ContextSettings.from_file()
         settings.add(
@@ -147,6 +151,7 @@ def update(
 def remove(
     key: Annotated[str, typer.Argument(help="Name of the context to add.")],
 ) -> None:
+    """Remove the selected context."""
     settings = ContextSettings.from_file()
     settings.remove(key)
     settings.write()
@@ -154,7 +159,7 @@ def remove(
 
 @context_command_group.command()
 def create() -> None:
-    """Create Data Safe Haven context infrastructure"""
+    """Create Data Safe Haven context infrastructure."""
     config = Config()
     context = Context(config)
     context.create()
@@ -163,7 +168,7 @@ def create() -> None:
 
 @context_command_group.command()
 def teardown() -> None:
-    """Tear down Data Safe Haven context infrastructure"""
+    """Tear down Data Safe Haven context infrastructure."""
     config = Config()
     context = Context(config)
     context.teardown()
