@@ -56,6 +56,9 @@ dsh = "data_safe_haven.cli:main"
 [tool.hatch.version]
 path = "data_safe_haven/version.py"
 
+[tool.hatch.envs.default]
+pre-install-commands = ["pip install -r requirements.txt"]
+
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
@@ -90,6 +93,7 @@ all = [
 dependencies = [
   "pytest~=7.4"
 ]
+pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.hatch.envs.test.scripts]
 test = "pytest {args:-vvv tests_}"
