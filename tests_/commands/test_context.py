@@ -33,7 +33,8 @@ def runner(tmp_contexts):
     runner = CliRunner(
         env={
             "DSH_CONFIG_DIRECTORY": str(tmp_contexts),
-            "COLUMNS": "500"  # Set large number of columns to avoid rich wrapping text
+            "COLUMNS": "500",  # Set large number of columns to avoid rich wrapping text
+            "TERM": "dumb",  # Disable colours, style and interactive rich features
         },
         mix_stderr=False,
     )
