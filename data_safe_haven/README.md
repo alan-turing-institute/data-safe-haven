@@ -14,9 +14,6 @@ Install the following requirements before starting
 > dsh context create
 ```
 
-You will be prompted for various project settings.
-If you prefer to enter these at the command line, run `dsh init -h` to see the necessary command line flags.
-
 - Next deploy the Safe Haven Management (SHM) infrastructure [approx 30 minutes]:
 
 ```console
