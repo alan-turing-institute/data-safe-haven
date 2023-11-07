@@ -149,7 +149,7 @@ def update(
 
 @context_command_group.command()
 def remove(
-    key: Annotated[str, typer.Argument(help="Name of the context to add.")],
+    key: Annotated[str, typer.Argument(help="Name of the context to remove.")],
 ) -> None:
     """Remove the selected context."""
     settings = ContextSettings.from_file()
