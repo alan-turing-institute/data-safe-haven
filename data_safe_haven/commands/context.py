@@ -5,8 +5,9 @@ import typer
 from rich import print
 
 from data_safe_haven.config import Config, ContextSettings
+from data_safe_haven.config.context_settings import Context
 from data_safe_haven.config.context_settings import default_config_file_path
-from data_safe_haven.context import Context
+from data_safe_haven.context import Context as ContextInfra
 from data_safe_haven.functions import validate_aad_guid
 
 context_command_group = typer.Typer()
@@ -93,17 +94,15 @@ def add(
     else:
         # Bootstrap context settings file
         settings = ContextSettings(
-            {
-                "selected": key,
-                "contexts": {
-                    key: {
-                        "admin_group_id": admin_group,
-                        "location": location,
-                        "name": name,
-                        "subscription_name": subscription,
-                    }
-                },
-            }
+            selected=key,
+            contexts={
+                key: Context(
+                    admin_group_id=admin_group,
+                    location=location,
+                    name=name,
+                    subscription_name=subscription,
+                )
+            },
         )
     settings.write()
 
@@ -161,7 +160,7 @@ def remove(
 def create() -> None:
     """Create Data Safe Haven context infrastructure."""
     config = Config()
-    context = Context(config)
+    context = ContextInfra(config)
     context.create()
     context.config.upload()
 
@@ -170,5 +169,5 @@ def create() -> None:
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure."""
     config = Config()
-    context = Context(config)
+    context = ContextInfra(config)
     context.teardown()
