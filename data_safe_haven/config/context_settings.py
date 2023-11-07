@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import ClassVar
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError, model_validator
 from yaml.parser import ParserError
 
 from data_safe_haven.exceptions import (
@@ -45,6 +45,12 @@ class ContextSettings(BaseModel):
     selected_: str = Field(..., alias="selected")
     contexts: dict[str, Context]
     logger: ClassVar[LoggingSingleton] = LoggingSingleton()
+
+    @model_validator(mode="after")
+    def ensure_selected_is_valid(self) -> ContextSettings:
+        if self.selected not in self.available:
+            raise ValueError(f"Selected context '{self.selected}' is not defined.")
+        return self
 
     @property
     def selected(self) -> str:

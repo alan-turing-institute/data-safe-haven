@@ -45,7 +45,7 @@ def context_settings(context_yaml):
 
 
 class TestContextSettings:
-    def test_constructor(self, context_yaml):
+    def test_constructor(self):
         settings = ContextSettings(
             selected="acme_deployment",
             contexts={
@@ -68,6 +68,13 @@ class TestContextSettings:
             assert "1 validation error for ContextSettings" in exc
             assert "selected" in exc
             assert "Field required" in exc
+
+    def test_invalid_selected_input(self, context_yaml):
+        context_yaml = context_yaml.replace("selected: acme_deployment", "selected: invalid")
+
+        with pytest.raises(DataSafeHavenParameterError) as exc:
+            ContextSettings.from_yaml(context_yaml)
+            assert "Selected context 'invalid' is not defined." in exc
 
     def test_selected(self, context_settings):
         assert context_settings.selected == "acme_deployment"
