@@ -5,7 +5,7 @@ from __future__ import (
 )
 
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import ClassVar
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError
@@ -136,11 +136,8 @@ class ContextSettings(BaseModel):
         try:
             return ContextSettings.model_validate(settings_dict)
         except ValidationError as exc:
-            cls.logger.error(f"{exc.error_count()} errors found in context settings:")
-            for error in exc.errors():
-                cls.logger.error(f"{error['msg']} at '{'->'.join(error['loc'])}'")
             msg = f"Could not load context settings.\n{exc}"
-            raise DataSafeHavenConfigError(msg) from exc
+            raise DataSafeHavenParameterError(msg) from exc
 
     @classmethod
     def from_file(cls, config_file_path: Path | None = None) -> ContextSettings:
@@ -165,5 +162,5 @@ class ContextSettings(BaseModel):
         config_file_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(config_file_path, "w", encoding="utf-8") as f_yaml:
-            yaml.dump(self.model_dump(), f_yaml, indent=2)
+            yaml.dump(self.model_dump(by_alias=True), f_yaml, indent=2)
         self.logger.info(f"Saved context settings to '[green]{config_file_path}[/]'.")

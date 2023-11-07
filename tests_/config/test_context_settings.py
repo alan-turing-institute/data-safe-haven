@@ -41,23 +41,33 @@ def context_yaml():
 
 @fixture
 def context_settings(context_yaml):
-    return ContextSettings(yaml.safe_load(context_yaml))
+    return ContextSettings.from_yaml(context_yaml)
 
 
 class TestContextSettings:
     def test_constructor(self, context_yaml):
-        settings = ContextSettings(yaml.safe_load(context_yaml))
+        settings = ContextSettings(
+            selected="acme_deployment",
+            contexts={
+                "acme_deployment": Context(
+                    name="Acme Deployment",
+                    admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+                    location="uksouth",
+                    subscription_name="Data Safe Haven (Acme)",
+                )
+            },
+        )
         assert isinstance(settings, ContextSettings)
 
     def test_missing_selected(self, context_yaml):
         context_yaml = "\n".join(context_yaml.splitlines()[1:])
 
         with pytest.raises(DataSafeHavenParameterError) as exc:
-            ContextSettings(yaml.safe_load(context_yaml))
-            assert "Missing Key: 'selected'" in exc
-
-    def test_settings(self, context_settings):
-        assert isinstance(context_settings.settings, dict)
+            ContextSettings.from_yaml(context_yaml)
+            assert "Could not load context settings" in exc
+            assert "1 validation error for ContextSettings" in exc
+            assert "selected" in exc
+            assert "Field required" in exc
 
     def test_selected(self, context_settings):
         assert context_settings.selected == "acme_deployment"
