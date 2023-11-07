@@ -43,17 +43,17 @@ def available() -> None:
 
 @context_command_group.command()
 def switch(
-    name: Annotated[str, typer.Argument(help="Name of the context to switch to.")]
+    key: Annotated[str, typer.Argument(help="Key of the context to switch to.")]
 ) -> None:
-    """Switch the context."""
+    """Switch the selected context."""
     settings = ContextSettings.from_file()
-    settings.selected = name
+    settings.selected = key
     settings.write()
 
 
 @context_command_group.command()
 def add(
-    key: Annotated[str, typer.Argument(help="Name of the context to add.")],
+    key: Annotated[str, typer.Argument(help="Key of the context to add.")],
     admin_group: Annotated[
         str,
         typer.Option(
@@ -80,7 +80,7 @@ def add(
         ),
     ],
 ) -> None:
-    """Add a new context."""
+    """Add a new context to the context list."""
     if default_config_file_path().exists():
         settings = ContextSettings.from_file()
         settings.add(
@@ -136,7 +136,7 @@ def update(
         ),
     ] = None,
 ) -> None:
-    """Update the selected context."""
+    """Update the selected context settings."""
     settings = ContextSettings.from_file()
     settings.update(
         admin_group_id=admin_group,
