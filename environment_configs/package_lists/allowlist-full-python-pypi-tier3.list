@@ -528,7 +528,6 @@ regex
 reportlab
 repoze.lru
 repro-catalogue
-requestes
 requests
 requests-file
 requests-ftp
