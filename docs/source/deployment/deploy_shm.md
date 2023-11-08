@@ -19,7 +19,7 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
 
   ```{tip}
   - Ensure that the **Owner** of the subscription is an `Azure Security group` that contains all administrators and no-one else.
-  - We recommend using separate `Azure Active Directories` for users and administrators
+  - We recommend using separate `Microsoft Entra IDs` for users and administrators
   ```
 
 - `PowerShell`
@@ -94,7 +94,7 @@ The following core SHM properties are required - look in the `environment_config
   "timezone": "[Optional] Timezone in IANA format (e.g. 'Europe/London').",
   "azure": {
     "adminGroupName": "Azure Security Group that admins of this Safe Haven will belong to (see below for details).",
-    "activeDirectoryTenantId": "Tenant ID for the Azure Active Directory containing users (see below for details on how to obtain this).",
+    "microsoftEntraTenantId": "Tenant ID for the Microsoft Entra containing users (see below for details on how to obtain this).",
     "location": "Azure location to deploy the management environment into (e.g. 'uksouth').",
     "subscriptionName": "Azure subscription to deploy the management environment into."
   },
@@ -126,7 +126,7 @@ The following core SHM properties are required - look in the `environment_config
 - This configuration file is also used when deploying an SRE environment.
 - We recommend that you set the fully qualified domain name to `<SHM ID>.<some domain that you control>`.
 - This may require purchasing a dedicated domain so follow your organisation's guidance.
-- You must ensure that the group specifed in `azure.adminGroupName` exists in the AzureAD for the tenant that you will be deploying into. Depending on your setup, this may be different from the AzureAD where your users are created.
+- You must ensure that the group specifed in `azure.adminGroupName` exists in the Microsoft Entra for the tenant that you will be deploying into. Depending on your setup, this may be different from the Microsoft Entra where your users are created.
 ```
 
 ```{admonition} Alan Turing Institute default
@@ -160,13 +160,13 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 
-(roles_deployer_setup_meid)=
+(roles_deployer_setup_me_id)=
 
-## 3. {{file_folder}} Setup Microsoft Entra ID (MEID)
+## 3. {{file_folder}} Setup Microsoft Entra ID (ME-ID)
 
 ```{warning}
 If you wish to reuse an existing Microsoft Entra ID directory please make sure you remove any existing `Conditional Access Policies` by going to `Security > Conditional Access > Policies` and manually removing the `Restrict Microsoft Entra ID access` and `Require MFA` policies.
-You can then continue to the next step: {ref}`getting the Entra ID tenant ID <roles_deployer_meid_tenant_id>`.
+You can then continue to the next step: {ref}`getting the Entra ID tenant ID <roles_deployer_me_id_tenant_id>`.
 ```
 
 ### Create a new Azure Active Directory
@@ -191,7 +191,7 @@ You can then continue to the next step: {ref}`getting the Entra ID tenant ID <ro
   <details><summary><b>Screenshots</b></summary>
 
   ```{image} deploy_shm/aad_creation.png
-  :alt: Azure Active Directory creation
+  :alt: Microsoft Entra ID creation
   :align: center
   ```
 
@@ -204,18 +204,18 @@ You can then continue to the next step: {ref}`getting the Entra ID tenant ID <ro
 
 ### Get the Entra ID Tenant ID
 
-![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
+![Microsoft Entra ID: one minute](https://img.shields.io/badge/Microsoft_Entra_ID-One_minute-blue?logo=microsoft-academic)
 
 - From the Azure portal, navigate to the ME-ID you have created.
   You can do this by:
     - Clicking the link displayed at the end of the initial ME-ID deployment.
     - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the AAD you have just created from the `All Directories` section of the `Directory + Subscription` panel that then displays.
-- If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
-- Click `Overview` in the left panel and copy the `Tenant ID` displayed under the AAD name and initial `something.onmicrosoft.com` domain.
+- If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Microsoft Entra ID`
+- Click `Overview` in the left panel and copy the `Tenant ID` displayed under the Entra ID name and initial `something.onmicrosoft.com` domain.
   <details><summary><b>Screenshots</b></summary>
 
   ```{image} deploy_shm/aad_tenant_id.png
-  :alt: AAD Tenant ID
+  :alt: ME-ID Tenant ID
   :align: center
   ```
 
@@ -298,7 +298,7 @@ In particular, it should not be used as a shared admin account for routine admin
 
 ### Create a new account for each administrator (including yourself)
 
-![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+![Microsoft Entra ID: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=a%20few%20minutes)
 
 - From the Azure portal, navigate to the AAD you have created.
 - Click `Users` in the left hand sidebar and click on the `+New user` icon in the top menu above the list of users.
@@ -369,7 +369,7 @@ The administrators you have just set up can activate their accounts by following
 Make sure you have activated your account and **successfully logged in** with the new **native** administrator account you have just created for yourself (`aad.admin.firstname.lastname@<SHM domain>`) before deleting the default external administrator account.
 ```
 
-![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+![Microsoft Entra ID: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=a%20few%20minutes)
 
 - Ensure you are logged in with the new **native** administrator account you have just created.
     - Click on your username at the top right corner of the screen, then `Sign in with a different user`.
@@ -673,6 +673,10 @@ You will need to configure your antivirus software to make an exception.
 
 ![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
 
+```{note}
+Azure Active Directory Connect is being renamed to Microsoft Entra Connect. At the present time, the available software still uses the Azure Active Directory Connect name.
+```
+
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
 - Navigate to `C:\Installation`
 - Run the `AzureADConnect` Windows Installer Package
@@ -759,8 +763,8 @@ If you get an error that the username/password is incorrect or that the domain/d
 ```
 
 ```{error}
-If you have recently torn down another SHM linked to the same Azure Active Directory you might see the error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again`.
-You need to wait for the `Azure Active Directory` to fully disconnect - this can take up to 72 hours but is typically sooner.
+If you have recently torn down another SHM linked to the same Microsoft Entra ID you might see the error `Directory synchronization is currently in a pending disabled state for this directory. Please wait until directory synchronization has been fully disabled before trying again`.
+You need to wait for the `Microsoft Entra ID` to fully disconnect - this can take up to 72 hours but is typically sooner.
 You do not need to close the installer window while waiting.
 If you need to, you can disconnect from the DC and VPN and reconnect later before clicking `Retry`.
 ```
@@ -773,7 +777,7 @@ If you get an error that the connection to Azure Active Directory could not be m
 
 #### Update Azure Active Directory Connect rules
 
-This step allows the locale (country code) to be pushed from the local AD to the Azure Active Directory.
+This step allows the locale (country code) to be pushed from the local AD to the Microsoft Entra ID.
 
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
 
@@ -788,7 +792,7 @@ PS> C:\Installation\UpdateAADSyncRule.ps1
 
 ### Validate Active Directory synchronisation
 
-This step validates that your local Active Directory users are correctly synchronised to Azure Active Directory.
+This step validates that your local Active Directory users are correctly synchronised to Microsoft Entra ID.
 Note that you can use the same script after deploying an SRE to add users in bulk.
 
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
@@ -806,10 +810,10 @@ Note that you can use the same script after deploying an SRE to add users in bul
 PS> C:\Installation\CreateUsers.ps1 <path_to_user_details_file>
 ```
 
-- This script will add the users and trigger a sync with Azure Active Directory
+- This script will add the users and trigger a sync with Microsoft Entra ID
 - Wait a few minutes for the changes to propagate
 
-![Azure AD: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20seconds)
+![Microsoft Entra ID: a few seconds](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=a%20few%20seconds)
 
 - Click `Users > All users` and confirm that the new user is shown in the user list.
 - The new user account should have the `On-premises sync enabled` field set to `Yes`
@@ -826,7 +830,7 @@ Once you're certain that you're adding a new user, make sure that the following 
 
 ### Configure AAD side of AD connect
 
-![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
+![Microsoft Entra ID: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=one%20minute)
 
 - From the Azure portal, navigate to the AAD you have created.
 - Select `Password reset` from the left hand menu
@@ -847,22 +851,22 @@ To enable self-service password reset (SSPR) and MFA-via-phone-call, you must ha
 
 ### Add licences that support self-service password reset
 
-![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+![Microsoft Entra ID: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=a%20few%20minutes)
 
 Click the heading that applies to you to expand the instructions for that scenario.
 
 <details><summary><b>Test deployments</b></summary>
 
-**For testing** you can enable a free trial of the P2 License (NB. it can take a while for these to appear on your AAD).
+**For testing** you can enable a free trial of the P2 License (NB. it can take a while for these to appear on your Microsoft Entra ID).
 You can activate the trial while logged in as your deafult guest administrator account.
 
-- From the Azure portal, navigate to the AAD you have created.
+- From the Azure portal, navigate to the Microsoft Entra ID you have created.
 - Click on `Licences` in the left hand sidebar
 - Click on `All products` in the left hand sidebar
 - Click on the `+Try/Buy` text above the empty product list and add a suitable licence product.
-  - Expand the `Free trial` arrow under `Azure AD Premium P2`
+  - Expand the `Free trial` arrow under `Microsoft Entra ID Premium P2`
   - Click the `Activate` button
-  - Wait for the `Azure Active Directory Premium P2` licence to appear on the list of `All Products` (this could take several minutes)
+  - Wait for the `Microsoft Entra ID Premium P2` licence to appear on the list of `All Products` (this could take several minutes)
 
 </details>
 
@@ -876,7 +880,7 @@ As activating self-service password reset requires active MFA licences, this is 
   - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
   - Enter `aad.admin.emergency.access@<SHM domain>` as the username
   - Open a new browser tab and go to the [Azure Portal](https://portal.azure.com/)
-  - Change to the Azure Active Directory associated with the Safe Haven SHM subscription (e.g. an existing corporate Azure AD).
+  - Change to the Microsoft Entra ID associated with the Safe Haven SHM subscription (e.g. an existing corporate Microsoft Entra ID).
     Do this by clicking on your username at the top right corner of the screen, then `Switch directory`, then selecting the directory you wish to switch to.
   - Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Subscriptions`
   - Click on the Safe Haven SHM subscription
@@ -894,7 +898,7 @@ As activating self-service password reset requires active MFA licences, this is 
 - In the "Microsoft 365 Admin Centre" portal that opens:
   - Expand the `Billing` section of the left hand side bar
   - Click on `Purchase services`
-  - Scroll down the list of products and select `Azure Active Directory Premium P1` and click `Buy`
+  - Scroll down the list of products and select `Microsoft Entra ID Premium P1` and click `Buy`
   - Select `Pay monthly`
   - Enter the number of licences required.
   - Leave `automatically assign all of your users with no licences` checked
@@ -903,17 +907,17 @@ As activating self-service password reset requires active MFA licences, this is 
   - Click next and enter payment details when requested
 - Switch back to your original administrator account
   - Click on your username at the top right corner of the screen, then click "Sign in with a different account"
-  - Log in as the user you used to create the Safe Haven Azure AD
+  - Log in as the user you used to create the Safe Haven Microsoft Entra ID
   </details>
 
 ### Enable self-service password reset
 
-![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
+![Microsoft Entra ID: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=one%20minute)
 
 - Ensure your Azure Portal session is using the new Safe Haven Management (SHM) AAD directory.
   The name of the current directory is under your username in the top right corner of the Azure portal screen.
   To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-- Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
+- Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Microsoft Entra ID`
 - Click `Password reset` in the left hand sidebar
 - Set the `Self service password reset enabled` toggle to `All`
 
@@ -928,9 +932,9 @@ As activating self-service password reset requires active MFA licences, this is 
 If you see a message about buying licences, you may need to refresh the page for the password reset option to show.
 ```
 
-### Configure MFA on Azure Active Directory
+### Configure MFA on Microsoft Entra ID
 
-![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+![Microsoft Entra ID: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=a%20few%20minutes)
 
 - From the Azure portal, navigate to the AAD you have created.
 - Click `Users` in the left hand sidebar
@@ -964,9 +968,9 @@ If you see a message about buying licences, you may need to refresh the page for
 Before completing this step, **make sure you have confirmed you are able to successfully log in as the emergency access admin**, as this account will be the only one excluded from the MFA requirement.
 ```
 
-![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+![Microsoft Entra ID: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=a%20few%20minutes)
 
-- From the Azure portal, navigate to the AAD you have created.
+- From the Azure portal, navigate to the Microsoft Entra ID you have created.
 - Click `Properties` in the left hand sidebar and **disable** security defaults as shown in the screenshot [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/concept-fundamentals-security-defaults)
   - Select `NO` from `Enable Security defaults`
   - Select `My organization is using Conditional Access` and hit the `Save` button
@@ -1002,14 +1006,14 @@ Before completing this step, **make sure you have confirmed you are able to succ
 Most users have no reason to access the Azure portal using the SHM tenant.
 Therefore we will block access for all users other than Global Administrators.
 
-![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+![Microsoft Entra ID: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=a%20few%20minutes)
 
-- From the Azure portal, navigate to the AAD you have created.
+- From the Azure portal, navigate to the Microsoft Entra ID you have created.
 - Click `Security` in the left hand sidebar
 - Click `Conditional Access` in the left hand sidebar
 - Click on `New Policy` at the top of the panel
 - Configure the policy as follows
-  - In the `Name` field enter `Restrict Azure Active Directory access`
+  - In the `Name` field enter `Restrict Microsoft Entra ID access`
   - Under `Users or workload identities` set the `Users and groups` condition to:
     - **Include**: Select `All users`
     - **Exclude**:
@@ -1042,16 +1046,16 @@ However, when you create non-admin users they will need to be assigned an Azure 
 
 ### Assigning MFA licences
 
-![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+![Microsoft Entra ID: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=a%20few%20minutes)
 
 - Ensure you are logged in to the Azure Portal in with the **native** administrator account you created.
-- Ensure your session is using the new Safe Haven Management (SHM) AAD directory.
+- Ensure your session is using the new Safe Haven Management (SHM) Microsoft Entra ID.
   The name of the current directory is under your username in the top right corner of the Azure portal screen.
   To change directories click on your username at the top right corner of the screen, then `Switch directory`, then the name of the new SHM directory.
-- Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Azure Active Directory`
+- Click the "hamburger" menu in the top left corner (three horizontal lines) and select `Microsoft Entra ID`
 - Click `Licences` in the left hand sidebar
 - Click `All products` in the left hand sidebar
-- Click the relevant licence product [`Azure Active Directory Premium P1` (production) or `Azure Active Directory Premium P2` (test)]
+- Click the relevant licence product [`Microsoft Entra ID Premium P1` (production) or `Microsoft Entra ID Premium P2` (test)]
 - Click `Licensed users` in the left hand sidebar
 - Click the `+Assign` icon in the top bar above the list of user licence assignments
 - Click `+ Add users and groups` under `Users and groups`
