@@ -160,13 +160,13 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 
-(roles_deployer_setup_me_id)=
+(roles_deployer_setup_aad)=
 
 ## 3. {{file_folder}} Setup Microsoft Entra ID (ME-ID)
 
 ```{warning}
 If you wish to reuse an existing Microsoft Entra ID directory please make sure you remove any existing `Conditional Access Policies` by going to `Security > Conditional Access > Policies` and manually removing the `Restrict Microsoft Entra ID access` and `Require MFA` policies.
-You can then continue to the next step: {ref}`getting the Entra ID tenant ID <roles_deployer_me_id_tenant_id>`.
+You can then continue to the next step: {ref}`getting the Entra ID tenant ID <roles_deployer_aad_tenant_id>`.
 ```
 
 ### Create a new Microsoft Entra ID
@@ -200,16 +200,16 @@ You can then continue to the next step: {ref}`getting the Entra ID tenant ID <ro
 - Click `Create`
 - Wait for Microsoft Entra ID to be created
 
-(roles_deployer_me-id_tenant_id)=
+(roles_deployer_aad_tenant_id)=
 
 ### Get the Entra Tenant ID
 
 ![Microsoft Entra ID: one minute](https://img.shields.io/badge/Microsoft_Entra_ID-One_minute-blue?logo=microsoft-academic)
 
-- From the Azure portal, navigate to the ME-ID you have created.
+- From the Azure portal, navigate to the Microsoft Entra ID you have created.
   You can do this by:
-    - Clicking the link displayed at the end of the initial ME-ID deployment.
-    - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the ME-ID you have just created from the `All Directories` section of the `Directory + Subscription` panel that then displays.
+    - Clicking the link displayed at the end of the initial Microsoft Entra ID  deployment.
+    - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the Microsoft Entra ID  you have just created from the `All Directories` section of the `Directory + Subscription` panel that then displays.
 - If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Microsoft Entra ID`
 - Click `Overview` in the left panel and copy the `Tenant ID` displayed under the Entra ID name and initial `something.onmicrosoft.com` domain.
   <details><summary><b>Screenshots</b></summary>
