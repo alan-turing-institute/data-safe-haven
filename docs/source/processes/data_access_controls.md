@@ -6,7 +6,7 @@ However, some manual configuration steps are required and each organisation is r
 
 ## Administrative access
 
-Access to all Data Safe Haven Azure resources is controlled via `Azure Active Directory` (Azure AD) and Role-Based Access Control (RBAC).
+Access to all Data Safe Haven Azure resources is controlled via `Microsoft Entra ID` and Role-Based Access Control (RBAC).
 By default, only members of a specific administrator security group have administrative access to any element of the Safe Haven.
 
 ```{important}
@@ -23,13 +23,13 @@ These comprise the software defined infrastructure of the Data Safe Haven, such 
 - virtual networks
 - network security groups
 - virtual machines
-- `Azure Active Directory`
+- `Microsoft Entra ID`
 
 Access to the underlying Azure resources requires administrators to log into Azure.
 
 ```{hint}
 Data Safe Haven administrator accounts should be separate from accounts used for any other purpose, including accessing the Data Safe Haven in any other role (e.g. as a {ref}`Researcher <role_researcher>`).
-At the Turing, Data Safe Haven administrator accounts are configured on a separate institutional `Azure Active Directory` to the Data Safe Haven `Azure Active Directory`.
+At the Turing, Data Safe Haven administrator accounts are configured on a separate institutional `Microsoft Entra ID` to the Data Safe Haven `Microsoft Entra ID`.
 Other organisations may wish to follow the same model.
 ```
 
