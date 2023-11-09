@@ -154,7 +154,7 @@ On your **deployment machine**.
     If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
     ```
 
-### {{unlock}} Disconnect from the Azure Active Directory
+### {{unlock}} Disconnect from the Microsoft Entra ID
 
 Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
 
@@ -166,8 +166,8 @@ Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over th
     - You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
 
 ```{attention}
-Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less.
-If you are planning to install a new SHM connected to the same Azure Active Directory you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
+Full disconnection of the Microsoft Entra ID can take up to 72 hours but is typically less.
+If you are planning to install a new SHM connected to the same Microsoft Entra ID you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
 ```
 
 ### {{bomb}} Tear down the SHM
