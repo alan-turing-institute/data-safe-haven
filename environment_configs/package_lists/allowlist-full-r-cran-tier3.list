@@ -4,22 +4,6 @@ actuar
 anytime
 arrow
 askpass
-assertive
-assertive.base
-assertive.code
-assertive.data
-assertive.data.uk
-assertive.data.us
-assertive.datetimes
-assertive.files
-assertive.matrices
-assertive.models
-assertive.numbers
-assertive.properties
-assertive.reflection
-assertive.sets
-assertive.strings
-assertive.types
 assertthat
 backports
 base64
@@ -27,6 +11,7 @@ base64enc
 bayesplot
 bibtex
 biganalytics
+bigD
 biglm
 bigmemory
 bigmemory.sri
@@ -234,6 +219,7 @@ jqr
 jquerylib
 jsonify
 jsonlite
+juicyjuice
 kdensity
 kernlab
 KernSmooth
@@ -276,7 +262,6 @@ manipulateWidget
 mapdeck
 mapproj
 maps
-maptools
 mapview
 markdown
 MASS
@@ -422,8 +407,6 @@ reshape
 reshape2
 reticulate
 rex
-rgdal
-rgeos
 rgexf
 rgl
 RgoogleMaps
@@ -438,6 +421,7 @@ rlecuyer
 rmapshaper
 RMariaDB
 rmarkdown
+Rmpi
 RMySQL
 RNetCDF
 rngtools

@@ -479,7 +479,10 @@ function Get-ShmConfig {
 
     # Storage config
     # --------------
-    $shmStoragePrefix = "shm$($shm.id)"
+    if ($shm.id.Contains("-")) {
+        Add-LogMessage -Level Warning "The hyphen character is not allowed in storage account names and will be removed."
+    }
+    $shmStoragePrefix = "shm$($shm.id)".Replace("-", "")
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
     $storageRg = "$($shm.rgPrefix)_STORAGE".ToUpper()
     $shm.storage = [ordered]@{
@@ -737,8 +740,11 @@ function Get-SreConfig {
 
     # Storage config
     # --------------
+    if ($config.sre.id.Contains("-")) {
+        Add-LogMessage -Level Warning "The hyphen character is not allowed in storage account names and will be removed."
+    }
     $storageRg = "$($config.sre.rgPrefix)_STORAGE".ToUpper()
-    $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)"
+    $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)".Replace("-", "")
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
         accessPolicies  = [ordered]@{
