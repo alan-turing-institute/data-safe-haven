@@ -186,7 +186,7 @@ function Deploy-LinuxVirtualMachine {
         $lun = 0
         foreach ($diskId in $DataDiskIds) {
             $vmConfig = Add-AzVMDataDisk -VM $vmConfig -ManagedDiskId $diskId -CreateOption Attach -Lun $lun
-            $lun += 1 
+            $lun += 1
         }
         # Copy public key to VM
         if ($AdminPublicSshKey) {
