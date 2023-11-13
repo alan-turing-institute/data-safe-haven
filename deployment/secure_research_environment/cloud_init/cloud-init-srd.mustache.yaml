@@ -4,19 +4,19 @@
 package_upgrade: false
 
 disk_setup:
-  /dev/disk/azure/scsi1/lun1:
+  /dev/disk/azure/scsi1/lun0:
     table_type: gpt
     layout: true
     overwrite: true
 
 fs_setup:
-  - device: /dev/disk/azure/scsi1/lun1
+  - device: /dev/disk/azure/scsi1/lun0
     filesystem: ext4
     partition: auto
 
 # Note that we do not include the blobfuse mounts here as these are controlled by systemd
 mounts:
-  - ["/dev/disk/azure/scsi1/lun1-part1", /scratch, ext4, "rw,user,exec"]
+  - ["/dev/disk/azure/scsi1/lun0-part1", /scratch, ext4, "rw,user,exec"]
   - ["{{sre.storage.userdata.account.name}}.file.core.windows.net:/{{sre.storage.userdata.account.name}}/shared", /shared, nfs, "_netdev,sec=sys"]
   - ["{{sre.storage.userdata.account.name}}.file.core.windows.net:/{{sre.storage.userdata.account.name}}/home", /home, nfs, "_netdev,sec=sys"]
 
