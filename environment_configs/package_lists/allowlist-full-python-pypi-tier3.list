@@ -223,11 +223,13 @@ hijri-converter
 holidays
 hotelling
 hpack
+hstspreload
 html5lib
 htmlmin
 httpcore
 httplib2
 httpstan
+httpx
 huggingface-hub
 hyperframe
 hyperlink
@@ -539,6 +541,7 @@ requirementslib
 responses
 retrying
 rfc3339-validator
+rfc3986
 rfc3986-validator
 rfc3987
 rich
