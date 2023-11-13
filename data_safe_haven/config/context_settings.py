@@ -49,7 +49,8 @@ class ContextSettings(BaseModel):
     @model_validator(mode="after")
     def ensure_selected_is_valid(self) -> ContextSettings:
         if self.selected not in self.available:
-            raise ValueError(f"Selected context '{self.selected}' is not defined.")
+            msg = f"Selected context '{self.selected}' is not defined."
+            raise ValueError(msg)
         return self
 
     @property

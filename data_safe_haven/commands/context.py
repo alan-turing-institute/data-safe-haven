@@ -5,8 +5,7 @@ import typer
 from rich import print
 
 from data_safe_haven.config import Config, ContextSettings
-from data_safe_haven.config.context_settings import Context
-from data_safe_haven.config.context_settings import default_config_file_path
+from data_safe_haven.config.context_settings import Context, default_config_file_path
 from data_safe_haven.context import Context as ContextInfra
 from data_safe_haven.functions import validate_aad_guid
 
