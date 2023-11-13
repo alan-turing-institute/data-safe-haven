@@ -82,6 +82,12 @@ class TestContextSettings:
             ContextSettings.from_yaml(invalid_yaml)
             assert "Could not parse context settings as YAML." in exc
 
+    def test_yaml_not_dict(self):
+        not_dict = "[1, 2, 3]"
+        with pytest.raises(DataSafeHavenConfigError) as exc:
+            ContextSettings.from_yaml(not_dict)
+            assert "Unable to parse context settings as a dict." in exc
+
     def test_selected(self, context_settings):
         assert context_settings.selected == "acme_deployment"
 
