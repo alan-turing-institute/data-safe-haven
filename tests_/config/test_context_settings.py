@@ -175,6 +175,12 @@ class TestContextSettings:
         settings = ContextSettings.from_file(config_file_path=config_file_path)
         assert settings.context.name == "Acme Deployment"
 
+    def test_file_not_found(self, tmp_path):
+        config_file_path = tmp_path / "config.yaml"
+        with pytest.raises(DataSafeHavenConfigError) as exc:
+            ContextSettings.from_file(config_file_path=config_file_path)
+            assert "Could not find file" in exc
+
     def test_write(self, tmp_path, context_yaml):
         config_file_path = tmp_path / "config.yaml"
         with open(config_file_path, "w") as f:
