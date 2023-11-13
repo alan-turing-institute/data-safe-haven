@@ -1,5 +1,5 @@
 from data_safe_haven.config.context_settings import Context, ContextSettings
-from data_safe_haven.exceptions import DataSafeHavenParameterError
+from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenParameterError
 
 import pytest
 import yaml
@@ -75,6 +75,12 @@ class TestContextSettings:
         with pytest.raises(DataSafeHavenParameterError) as exc:
             ContextSettings.from_yaml(context_yaml)
             assert "Selected context 'invalid' is not defined." in exc
+
+    def test_invalid_yaml(self):
+        invalid_yaml = "a: [1,2"
+        with pytest.raises(DataSafeHavenConfigError) as exc:
+            ContextSettings.from_yaml(invalid_yaml)
+            assert "Could not parse context settings as YAML." in exc
 
     def test_selected(self, context_settings):
         assert context_settings.selected == "acme_deployment"

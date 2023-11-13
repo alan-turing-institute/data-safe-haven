@@ -9,7 +9,7 @@ from typing import ClassVar
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError, model_validator
-from yaml.parser import ParserError
+from yaml import YAMLError
 
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
@@ -131,7 +131,7 @@ class ContextSettings(BaseModel):
     def from_yaml(cls, settings_yaml: str) -> ContextSettings:
         try:
             settings_dict = yaml.safe_load(settings_yaml)
-        except ParserError as exc:
+        except YAMLError as exc:
             msg = f"Could not parse context settings as YAML.\n{exc}"
             raise DataSafeHavenConfigError(msg) from exc
 
