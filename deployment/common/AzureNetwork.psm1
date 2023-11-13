@@ -150,10 +150,11 @@ function Deploy-Firewall {
     # Ensure Firewall public IP address exists
     $publicIp = Deploy-PublicIpAddress -Name "${Name}-PIP" -ResourceGroupName $ResourceGroupName -Location $Location -AllocationMethod Static -Sku "Standard"  # NB. Azure Firewall requires a 'Standard' public IP
     Add-LogMessage -Level Info "Ensuring that firewall '$Name' exists..."
+    $vnet = Get-AzVirtualNetwork -Name $VirtualNetworkName -ResourceGroupName $ResourceGroupName
     $firewall = Get-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -ErrorVariable notExists -ErrorAction SilentlyContinue
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating firewall '$Name'"
-        $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetworkName $VirtualNetworkName -PublicIpName $publicIp.Name -EnableDnsProxy
+        $firewall = New-AzFirewall -Name $Name -ResourceGroupName $ResourceGroupName -Location $Location -VirtualNetwork $vnet -PublicIpAddress @($publicIp) -EnableDnsProxy
         if ($?) {
             Add-LogMessage -Level Success "Created firewall '$Name'"
         } else {
