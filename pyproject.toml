@@ -64,6 +64,7 @@ detached = true
 dependencies = [
   "black>=23.1.0",
   "mypy>=1.0.0",
+  "pydantic>=2.4",
   "ruff>=0.0.243",
   "types-appdirs>=1.4.3.5",
   "types-chevron>=0.14.2.5",
