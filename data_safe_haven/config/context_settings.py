@@ -27,14 +27,14 @@ def default_config_file_path() -> Path:
     return config_dir() / "contexts.yaml"
 
 
-class Context(BaseModel):
+class Context(BaseModel, validate_assignment=True):
     admin_group_id: Guid
     location: AzureLocation
     name: str
     subscription_name: AzureLongName
 
 
-class ContextSettings(BaseModel):
+class ContextSettings(BaseModel, validate_assignment=True):
     """Load global and local settings from dotfiles with structure like the following
 
     selected: acme_deployment
