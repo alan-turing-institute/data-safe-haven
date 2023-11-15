@@ -592,6 +592,9 @@ runcmd:
   - systemctl enable data.automount
   - systemctl enable output.automount
 
+  - echo ">=== Configure tmpfs... ===<"
+  - echo "tmpfs /tmp tmpfs rw,nosuid,nodev,noexec" | tee -a /etc/fstab
+
   # List fstab and the volume mount order. Note that blobfuse mounts are not using fstab
   - echo ">=== Checking disk mounts... ===<"
   - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
