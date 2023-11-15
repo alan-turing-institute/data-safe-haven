@@ -38,9 +38,10 @@ from data_safe_haven.utility import (
     DatabaseSystem,
     LoggingSingleton,
     SoftwarePackageCategory,
+    config_dir,
 )
 
-from .backend_settings import BackendSettings
+from .context_settings import ContextSettings
 
 
 class Validator:
@@ -94,7 +95,7 @@ class ConfigSectionAzure(ConfigSection):
 
 
 @dataclass
-class ConfigSectionBackend(ConfigSection):
+class ConfigSectionContext(ConfigSection):
     key_vault_name: str = ""
     managed_identity_name: str = ""
     resource_group_name: str = ""
@@ -349,31 +350,32 @@ class Config:
     def __init__(self) -> None:
         # Initialise config sections
         self.azure_: ConfigSectionAzure | None = None
-        self.backend_: ConfigSectionBackend | None = None
+        self.context_: ConfigSectionContext | None = None
         self.pulumi_: ConfigSectionPulumi | None = None
         self.shm_: ConfigSectionSHM | None = None
         self.tags_: ConfigSectionTags | None = None
         self.sres: dict[str, ConfigSectionSRE] = defaultdict(ConfigSectionSRE)
-        # Read backend settings
-        settings = BackendSettings()
+        # Read context settings
+        settings = ContextSettings.from_file()
+        context = settings.context
         # Check if backend exists and was loaded
         try:
-            self.name = settings.name
+            self.name = context.name
         except DataSafeHavenParameterError as exc:
             msg = "Data Safe Haven has not been initialised: run '[bright_cyan]dsh init[/]' before continuing."
             raise DataSafeHavenConfigError(msg) from exc
-        self.subscription_name = settings.subscription_name
-        self.azure.location = settings.location
-        self.azure.admin_group_id = settings.admin_group_id
-        self.backend_storage_container_name = "config"
+        self.subscription_name = context.subscription_name
+        self.azure.location = context.location
+        self.azure.admin_group_id = context.admin_group_id
+        self.context_storage_container_name = "config"
         # Set derived names
         self.shm_name_ = alphanumeric(self.name).lower()
         self.filename = f"config-{self.shm_name_}.yaml"
-        self.backend_resource_group_name = f"shm-{self.shm_name_}-rg-backend"
-        self.backend_storage_account_name = (
-            f"shm{self.shm_name_[:14]}backend"  # maximum of 24 characters allowed
+        self.context_resource_group_name = f"shm-{self.shm_name_}-rg-context"
+        self.context_storage_account_name = (
+            f"shm{self.shm_name_[:14]}context"  # maximum of 24 characters allowed
         )
-        self.work_directory = settings.config_directory / self.shm_name_
+        self.work_directory = config_dir() / self.shm_name_
         self.azure_api = AzureApi(subscription_name=self.subscription_name)
         # Attempt to load YAML dictionary from blob storage
         yaml_input = {}
@@ -381,18 +383,18 @@ class Config:
             yaml_input = yaml.safe_load(
                 self.azure_api.download_blob(
                     self.filename,
-                    self.backend_resource_group_name,
-                    self.backend_storage_account_name,
-                    self.backend_storage_container_name,
+                    self.context_resource_group_name,
+                    self.context_storage_account_name,
+                    self.context_storage_container_name,
                 )
             )
         # Attempt to decode each config section
         if yaml_input:
             if "azure" in yaml_input:
                 self.azure_ = chili.decode(yaml_input["azure"], ConfigSectionAzure)
-            if "backend" in yaml_input:
-                self.backend_ = chili.decode(
-                    yaml_input["backend"], ConfigSectionBackend
+            if "context" in yaml_input:
+                self.context_ = chili.decode(
+                    yaml_input["context"], ConfigSectionContext
                 )
             if "pulumi" in yaml_input:
                 self.pulumi_ = chili.decode(yaml_input["pulumi"], ConfigSectionPulumi)
@@ -409,16 +411,16 @@ class Config:
         return self.azure_
 
     @property
-    def backend(self) -> ConfigSectionBackend:
-        if not self.backend_:
-            self.backend_ = ConfigSectionBackend(
-                key_vault_name=f"shm-{self.shm_name_[:9]}-kv-backend",
-                managed_identity_name=f"shm-{self.shm_name_}-identity-reader-backend",
-                resource_group_name=self.backend_resource_group_name,
-                storage_account_name=self.backend_storage_account_name,
-                storage_container_name=self.backend_storage_container_name,
+    def context(self) -> ConfigSectionContext:
+        if not self.context_:
+            self.context_ = ConfigSectionContext(
+                key_vault_name=f"shm-{self.shm_name_[:9]}-kv-context",
+                managed_identity_name=f"shm-{self.shm_name_}-identity-reader-context",
+                resource_group_name=self.context_resource_group_name,
+                storage_account_name=self.context_storage_account_name,
+                storage_container_name=self.context_storage_container_name,
             )
-        return self.backend_
+        return self.context_
 
     @property
     def pulumi(self) -> ConfigSectionPulumi:
@@ -443,8 +445,8 @@ class Config:
         contents: dict[str, Any] = {}
         if self.azure_:
             contents["azure"] = self.azure.to_dict()
-        if self.backend_:
-            contents["backend"] = self.backend.to_dict()
+        if self.context_:
+            contents["context"] = self.context.to_dict()
         if self.pulumi_:
             contents["pulumi"] = self.pulumi.to_dict()
         if self.shm_:
@@ -483,9 +485,9 @@ class Config:
         self.azure_api.upload_blob(
             str(self),
             self.filename,
-            self.backend_resource_group_name,
-            self.backend_storage_account_name,
-            self.backend_storage_container_name,
+            self.context_resource_group_name,
+            self.context_storage_account_name,
+            self.context_storage_container_name,
         )
 
     def write_stack(self, name: str, path: pathlib.Path) -> None:

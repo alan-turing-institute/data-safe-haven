@@ -9,16 +9,14 @@ Install the following requirements before starting
 
 - Run the following to initialise the deployment [approx 5 minutes]:
 
-```bash
-> dsh init
+```console
+> dsh context add ...
+> dsh context create
 ```
-
-You will be prompted for various project settings.
-If you prefer to enter these at the command line, run `dsh init -h` to see the necessary command line flags.
 
 - Next deploy the Safe Haven Management (SHM) infrastructure [approx 30 minutes]:
 
-```bash
+```console
 > dsh deploy shm
 ```
 
@@ -29,13 +27,13 @@ Run `dsh deploy shm -h` to see the necessary command line flags and provide them
   Note that the phone number must be in full international format.
   Note that the country code is the two letter `ISO 3166-1 Alpha-2` code.
 
-```bash
+```console
 > dsh admin add-users <my CSV users file>
 ```
 
 - Next deploy the infrastructure for one or more Secure Research Environments (SREs) [approx 30 minutes]:
 
-```bash
+```console
 > dsh deploy sre <SRE name>
 ```
 
@@ -44,7 +42,7 @@ Run `dsh deploy sre -h` to see the necessary command line flags and provide them
 
 - Next add one or more existing users to your SRE
 
-```bash
+```console
 > dsh admin register-users -s <SRE name> <username1> <username2>
 ```
 
@@ -54,7 +52,7 @@ where you must specify the usernames for each user you want to add to this SRE
 
 - Run the following to list the currently available users
 
-```bash
+```console
 > dsh admin list-users
 ```
 
@@ -62,20 +60,20 @@ where you must specify the usernames for each user you want to add to this SRE
 
 - Run the following if you want to teardown a deployed SRE:
 
-```bash
+```console
 > dsh teardown sre <SRE name>
 ```
 
 - Run the following if you want to teardown the deployed SHM:
 
-```bash
+```console
 > dsh teardown shm
 ```
 
-- Run the following if you want to teardown the deployed Data Safe Haven backend:
+- Run the following if you want to teardown the deployed Data Safe Haven context:
 
-```bash
-> dsh teardown backend
+```console
+> dsh context teardown
 ```
 
 ## Code structure
@@ -83,15 +81,16 @@ where you must specify the usernames for each user you want to add to this SRE
 - administration
     - this is where we keep utility commands for adminstrators of a deployed DSH
     - eg. "add a user"; "remove a user from an SRE"
-- backend
+- context
     - in order to use the Pulumi Azure backend we need a KeyVault, Identity and Storage Account
     - this code deploys those resources to bootstrap the rest of the Pulumi-based code
+    - the storage account is also used to store configuration, so that it can be shared by admins
 - commands
     - the main `dsh` command line entrypoint lives in `cli.py`
     - the subsidiary `typer` command line entrypoints (eg. `dsh deploy shm`) live here
 - config
     - serialises and deserialises a config file from Azure
-    - `backend_settings` manages basic settings related to the Azure backend: arguably this could/should live in `backend`
+    - `context_settings` manages basic settings related to the context: arguably this could/should live in `context`
 - exceptions
     - definitions of a Python exception hierarchy
 - external

@@ -7,8 +7,8 @@ import typer
 from data_safe_haven import __version__
 from data_safe_haven.commands import (
     admin_command_group,
+    context_command_group,
     deploy_command_group,
-    initialise_command,
     teardown_command_group,
 )
 from data_safe_haven.exceptions import DataSafeHavenError
@@ -70,6 +70,9 @@ def main() -> None:
         help="Perform administrative tasks for a Data Safe Haven deployment.",
     )
     application.add_typer(
+        context_command_group, name="context", help="Manage Data Safe Haven contexts."
+    )
+    application.add_typer(
         deploy_command_group,
         name="deploy",
         help="Deploy a Data Safe Haven component.",
@@ -78,11 +81,6 @@ def main() -> None:
         teardown_command_group,
         name="teardown",
         help="Tear down a Data Safe Haven component.",
-    )
-
-    # Register direct subcommands
-    application.command(name="init", help="Initialise a Data Safe Haven deployment.")(
-        initialise_command
     )
 
     # Start the application
