@@ -3,22 +3,45 @@ from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenPa
 
 import pytest
 import yaml
+from pydantic import ValidationError
 from pytest import fixture
 
 
+@fixture
+def context_dict():
+    return {
+        "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        "location": "uksouth",
+        "name": "Acme Deployment",
+        "subscription_name": "Data Safe Haven (Acme)"
+    }
+
+
 class TestContext:
-    def test_constructor(self):
-        context_dict = {
-            "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-            "location": "uksouth",
-            "name": "Acme Deployment",
-            "subscription_name": "Data Safe Haven (Acme)"
-        }
+    def test_constructor(self, context_dict):
         context = Context(**context_dict)
         assert isinstance(context, Context)
         assert all([
             getattr(context, item) == context_dict[item] for item in context_dict.keys()
         ])
+
+    def test_invalid_guid(self, context_dict):
+        context_dict["admin_group_id"] = "not a guid"
+        with pytest.raises(ValidationError) as exc:
+            Context(**context_dict)
+            assert "Value error, Expected GUID, for example" in exc
+
+    def test_invalid_location(self, context_dict):
+        context_dict["location"] = "not_a_location"
+        with pytest.raises(ValidationError) as exc:
+            Context(**context_dict)
+            assert "Value error, Expected valid Azure location" in exc
+
+    def test_invalid_subscription_name(self, context_dict):
+        context_dict["subscription_name"] = "very "*12 + "long name"
+        with pytest.raises(ValidationError) as exc:
+            Context(**context_dict)
+            assert "String should have at most 64 characters" in exc
 
 
 @fixture

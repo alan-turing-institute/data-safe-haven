@@ -16,6 +16,11 @@ from data_safe_haven.exceptions import (
     DataSafeHavenParameterError,
 )
 from data_safe_haven.utility import LoggingSingleton, config_dir
+from data_safe_haven.utility.annotated_types import (
+    AzureLocation,
+    AzureLongName,
+    Guid,
+)
 
 
 def default_config_file_path() -> Path:
@@ -23,10 +28,10 @@ def default_config_file_path() -> Path:
 
 
 class Context(BaseModel):
-    admin_group_id: str
-    location: str
+    admin_group_id: Guid
+    location: AzureLocation
     name: str
-    subscription_name: str
+    subscription_name: AzureLongName
 
 
 class ContextSettings(BaseModel):
