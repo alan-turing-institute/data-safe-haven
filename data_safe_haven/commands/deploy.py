@@ -3,12 +3,12 @@ from typing import Annotated, Optional
 
 import typer
 
-from data_safe_haven.functions import (
-    validate_aad_guid,
-    validate_azure_vm_sku,
-    validate_email_address,
-    validate_ip_address,
-    validate_timezone,
+from data_safe_haven.functions.typer_validators import (
+    typer_validate_aad_guid,
+    typer_validate_azure_vm_sku,
+    typer_validate_email_address,
+    typer_validate_ip_address,
+    typer_validate_timezone,
 )
 from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
 
@@ -29,7 +29,7 @@ def shm(
                 "The tenant ID for the AzureAD where users will be created,"
                 " for example '10de18e7-b238-6f1e-a4ad-772708929203'."
             ),
-            callback=validate_aad_guid,
+            callback=typer_validate_aad_guid,
         ),
     ] = None,
     admin_email_address: Annotated[
@@ -38,7 +38,7 @@ def shm(
             "--email",
             "-e",
             help="The email address where your system deployers and administrators can be contacted.",
-            callback=validate_email_address,
+            callback=typer_validate_email_address,
         ),
     ] = None,
     admin_ip_addresses: Annotated[
@@ -50,7 +50,7 @@ def shm(
                 "An IP address or range used by your system deployers and administrators."
                 " [*may be specified several times*]"
             ),
-            callback=lambda ips: [validate_ip_address(ip) for ip in ips],
+            callback=lambda ips: [typer_validate_ip_address(ip) for ip in ips],
         ),
     ] = None,
     domain: Annotated[
@@ -75,7 +75,7 @@ def shm(
             "--timezone",
             "-t",
             help="The timezone that this Data Safe Haven deployment will use.",
-            callback=validate_timezone,
+            callback=typer_validate_timezone,
         ),
     ] = None,
 ) -> None:
@@ -115,7 +115,7 @@ def sre(
             "--data-provider-ip-address",
             "-d",
             help="An IP address or range used by your data providers. [*may be specified several times*]",
-            callback=lambda vms: [validate_ip_address(vm) for vm in vms],
+            callback=lambda vms: [typer_validate_ip_address(vm) for vm in vms],
         ),
     ] = None,
     databases: Annotated[
@@ -148,7 +148,7 @@ def sre(
             "--user-ip-address",
             "-u",
             help="An IP address or range used by your users. [*may be specified several times*]",
-            callback=lambda ips: [validate_ip_address(ip) for ip in ips],
+            callback=lambda ips: [typer_validate_ip_address(ip) for ip in ips],
         ),
     ] = None,
     workspace_skus: Annotated[
@@ -160,7 +160,7 @@ def sre(
                 "A virtual machine SKU to make available to your users as a workspace."
                 " [*may be specified several times*]"
             ),
-            callback=lambda ips: [validate_azure_vm_sku(ip) for ip in ips],
+            callback=lambda ips: [typer_validate_azure_vm_sku(ip) for ip in ips],
         ),
     ] = None,
 ) -> None:

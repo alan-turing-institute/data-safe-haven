@@ -7,7 +7,7 @@ from rich import print
 from data_safe_haven.config import Config, ContextSettings
 from data_safe_haven.config.context_settings import Context, default_config_file_path
 from data_safe_haven.context import Context as ContextInfra
-from data_safe_haven.functions import validate_aad_guid
+from data_safe_haven.functions.typer_validators import typer_validate_aad_guid
 
 context_command_group = typer.Typer()
 
@@ -58,7 +58,7 @@ def add(
         str,
         typer.Option(
             help="The ID of an Azure group containing all administrators.",
-            callback=validate_aad_guid,
+            callback=typer_validate_aad_guid,
         ),
     ],
     location: Annotated[
@@ -112,7 +112,7 @@ def update(
         Optional[str],  # noqa: UP007
         typer.Option(
             help="The ID of an Azure group containing all administrators.",
-            callback=validate_aad_guid,
+            callback=typer_validate_aad_guid,
         ),
     ] = None,
     location: Annotated[
