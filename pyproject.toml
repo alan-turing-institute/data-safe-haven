@@ -12,42 +12,42 @@ authors = [
 requires-python = ">=3.10"
 license = "BSD-3-Clause"
 dependencies = [
-  "appdirs~=1.4.4",
-  "azure-core~=1.26.0",
-  "azure-identity~=1.12.0",
-  "azure-keyvault-certificates~=4.6.0",
-  "azure-keyvault-keys~=4.6.0",
-  "azure-keyvault-secrets~=4.6.0",
-  "azure-mgmt-automation~=1.0.0",
-  "azure-mgmt-compute~=29.1.0",
-  "azure-mgmt-containerinstance~=9.2.0",
-  "azure-mgmt-dns~=8.0.0",
-  "azure-mgmt-keyvault~=9.3.0",
-  "azure-mgmt-msi~=6.1.0",
-  "azure-mgmt-network~=20.0.0",
-  "azure-mgmt-rdbms~=10.1.0",
-  "azure-mgmt-resource~=20.1.0",
-  "azure-mgmt-storage~=19.1.0",
-  "azure-storage-blob~=12.15.0",
-  "azure-storage-file-datalake~=12.10.0",
-  "azure-storage-file-share~=12.10.0",
-  "bcrypt~=4.0.0",
-  "chevron~=0.14.0",
-  "chili~=2.1.0",
-  "cryptography~=3.4.0",
-  "dnspython~=2.3.0",
-  "msal~=1.21.0",
-  "psycopg~=3.1.10",
-  "pulumi~=3.80.0",
-  "pulumi-azure-native~=1.104.0",
-  "pulumi-random~=4.14.0",
-  "pytz~=2022.7.0",
+  "appdirs~=1.4",
+  "azure-core~=1.26",
+  "azure-identity~=1.12",
+  "azure-keyvault-certificates~=4.6",
+  "azure-keyvault-keys~=4.6",
+  "azure-keyvault-secrets~=4.6",
+  "azure-mgmt-automation~=1.0",
+  "azure-mgmt-compute~=30.3",
+  "azure-mgmt-containerinstance~=10.1",
+  "azure-mgmt-dns~=8.0",
+  "azure-mgmt-keyvault~=10.3",
+  "azure-mgmt-msi~=7.0",
+  "azure-mgmt-network~=25.0",
+  "azure-mgmt-rdbms~=10.1",
+  "azure-mgmt-resource~=23.0",
+  "azure-mgmt-storage~=21.1",
+  "azure-storage-blob~=12.15",
+  "azure-storage-file-datalake~=12.10",
+  "azure-storage-file-share~=12.10",
+  "bcrypt~=4.0",
+  "chevron~=0.14",
+  "chili~=2.1",
+  "cryptography~=41.0",
+  "dnspython~=2.3",
+  "msal~=1.21",
+  "psycopg~=3.1",
+  "pulumi~=3.80",
+  "pulumi-azure-native~=2.14",
+  "pulumi-random~=4.14",
+  "pytz~=2023.3",
   "PyYAML~=6.0",
-  "rich~=13.4.2",
-  "schema~=0.7.0",
-  "simple-acme-dns~=1.2.0",
-  "typer~=0.9.0",
-  "websocket-client~=1.5.0",
+  "rich~=13.4",
+  "schema~=0.7",
+  "simple-acme-dns~=3.0",
+  "typer~=0.9",
+  "websocket-client~=1.5",
 ]
 
 [project.scripts]
@@ -55,6 +55,9 @@ dsh = "data_safe_haven.cli:main"
 
 [tool.hatch.version]
 path = "data_safe_haven/version.py"
+
+[tool.hatch.envs.default]
+pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.hatch.envs.lint]
 detached = true
@@ -88,8 +91,9 @@ all = [
 
 [tool.hatch.envs.test]
 dependencies = [
-  "pytest~=7.4.3"
+  "pytest~=7.4"
 ]
+pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.hatch.envs.test.scripts]
 test = "pytest {args:-vvv tests_}"
