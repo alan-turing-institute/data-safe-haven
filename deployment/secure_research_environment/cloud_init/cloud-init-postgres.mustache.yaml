@@ -16,20 +16,20 @@ apt:
       source: "deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main"
       keyid: 7FCC7D46ACCC4CF8
 
-# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+# We know that exactly one data disk will be attached to this VM and it will therefore use lun0
 disk_setup:
-  /dev/disk/azure/scsi1/lun1:
+  /dev/disk/azure/scsi1/lun0:
     table_type: gpt
     layout: true
     overwrite: true
 
 fs_setup:
-  - device: /dev/disk/azure/scsi1/lun1
+  - device: /dev/disk/azure/scsi1/lun0
     partition: auto
     filesystem: ext4
 
 mounts:
-  - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
+  - [/dev/disk/azure/scsi1/lun0-part1, /data, ext4, "defaults,nofail"]
 
 write_files:
   - path: "/etc/apt/apt.conf.d/00proxy"

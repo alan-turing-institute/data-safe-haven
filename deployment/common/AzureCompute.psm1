@@ -185,8 +185,8 @@ function Deploy-LinuxVirtualMachine {
         # Add optional data disks
         $lun = 0
         foreach ($diskId in $DataDiskIds) {
-            $lun += 1 # NB. this line means that our first disk gets deployed at lun1 and we do not use lun0. Consider changing this.
             $vmConfig = Add-AzVMDataDisk -VM $vmConfig -ManagedDiskId $diskId -CreateOption Attach -Lun $lun
+            $lun += 1
         }
         # Copy public key to VM
         if ($AdminPublicSshKey) {
