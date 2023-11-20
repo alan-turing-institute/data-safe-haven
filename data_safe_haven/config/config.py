@@ -1,156 +1,69 @@
 """Configuration file backed by blob storage"""
-import pathlib
-from collections import defaultdict
-from collections.abc import Callable
-from contextlib import suppress
-from dataclasses import dataclass, field
-from functools import partial
-from typing import Any, ClassVar
+from __future__ import annotations
 
-import chili
+import pathlib
+
 import yaml
-from yaml.parser import ParserError
+from pydantic import BaseModel, Field, ValidationError, computed_field
+from yaml import YAMLError
 
 from data_safe_haven import __version__
+from data_safe_haven.config.context_settings import Context
 from data_safe_haven.exceptions import (
-    DataSafeHavenAzureError,
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
-    alphanumeric,
-    as_dict,
     b64decode,
     b64encode,
-    validate_aad_guid,
-    validate_azure_location,
-    validate_azure_vm_sku,
-    validate_email_address,
-    validate_ip_address,
-    validate_list,
-    validate_non_empty_string,
-    validate_string_length,
-    validate_timezone,
-    validate_type,
 )
 from data_safe_haven.utility import (
     DatabaseSystem,
     LoggingSingleton,
     SoftwarePackageCategory,
-    config_dir,
+)
+from data_safe_haven.utility.annotated_types import (
+    AzureLocation,
+    AzureLongName,
+    AzureShortName,
+    AzureVmSku,
+    EmailAdress,
+    Guid,
+    IpAddress,
+    TimeZone,
 )
 
-from .context_settings import ContextSettings
+
+class ConfigSectionAzure(BaseModel, validate_assignment=True):
+    admin_group_id: Guid
+    location: AzureLocation
+    subscription_id: Guid
+    tenant_id: Guid
 
 
-class Validator:
-    validation_functions: ClassVar[dict[str, Callable[[Any], Any]]] = {}
-
-    def validate(self) -> None:
-        """Validate instance attributes.
-
-        Validation fails if the provided validation function raises an exception.
-        """
-        try:
-            for attr_name in self.validation_functions.keys():
-                self.validate_attribute(attr_name)
-        except Exception as exc:
-            msg = f"Failed to validate command line arguments.\n{exc}"
-            raise DataSafeHavenConfigError(msg) from exc
-
-    def validate_attribute(self, attribute_name: str) -> None:
-        """Validate single instance attribute.
-
-        Validation fails if the provided validation function raises an exception.
-        """
-        try:
-            validator = self.validation_functions[attribute_name]
-            validator(getattr(self, attribute_name))
-        except Exception as exc:
-            msg = f"Invalid value for '{attribute_name}': '{getattr(self, attribute_name)}'.\n{exc}"
-            raise DataSafeHavenConfigError(msg) from exc
+class ConfigSectionContext(BaseModel, validate_assignment=True):
+    key_vault_name: AzureShortName
+    managed_identity_name: AzureLongName
+    resource_group_name: AzureLongName
+    storage_account_name: AzureShortName
+    storage_container_name: AzureLongName
 
 
-class ConfigSection(Validator):
-    def to_dict(self) -> dict[str, Any]:
-        """Dictionary representation of this object."""
-        self.validate()
-        return as_dict(chili.encode(self))
-
-
-@dataclass
-class ConfigSectionAzure(ConfigSection):
-    admin_group_id: str = ""
-    location: str = ""
-    subscription_id: str = ""
-    tenant_id: str = ""
-
-    validation_functions = {  # noqa: RUF012
-        "admin_group_id": validate_aad_guid,
-        "location": validate_azure_location,
-        "subscription_id": validate_aad_guid,
-        "tenant_id": validate_aad_guid,
-    }
-
-
-@dataclass
-class ConfigSectionContext(ConfigSection):
-    key_vault_name: str = ""
-    managed_identity_name: str = ""
-    resource_group_name: str = ""
-    storage_account_name: str = ""
-    storage_container_name: str = ""
-
-    validation_functions = {  # noqa: RUF012
-        "key_vault_name": partial(validate_string_length, min_length=3, max_length=24),
-        "managed_identity_name": partial(
-            validate_string_length, min_length=1, max_length=64
-        ),
-        "resource_group_name": partial(
-            validate_string_length, min_length=1, max_length=64
-        ),
-        "storage_account_name": partial(
-            validate_string_length, min_length=1, max_length=24
-        ),
-        "storage_container_name": partial(
-            validate_string_length, min_length=1, max_length=64
-        ),
-    }
-
-
-@dataclass
-class ConfigSectionPulumi(ConfigSection):
+class ConfigSectionPulumi(BaseModel, validate_assignment=True):
     encryption_key_name: str = "pulumi-encryption-key"
-    encryption_key_version: str = ""
-    stacks: dict[str, str] = field(default_factory=dict)
+    encryption_key_version: str
+    stacks: dict[str, str] = Field(default_factory=dict)
     storage_container_name: str = "pulumi"
 
-    validation_functions = {  # noqa: RUF012
-        "encryption_key_name": validate_non_empty_string,
-        "encryption_key_version": validate_non_empty_string,
-        "stacks": lambda stacks: isinstance(stacks, dict),
-        "storage_container_name": validate_non_empty_string,
-    }
 
-
-@dataclass
-class ConfigSectionSHM(ConfigSection):
-    aad_tenant_id: str = ""
-    admin_email_address: str = ""
-    admin_ip_addresses: list[str] = field(default_factory=list)
-    fqdn: str = ""
-    name: str = ""
-    timezone: str = ""
-
-    validation_functions = {  # noqa: RUF012
-        "aad_tenant_id": validate_aad_guid,
-        "admin_email_address": validate_email_address,
-        "admin_ip_addresses": partial(validate_list, validator=validate_ip_address),
-        "fqdn": validate_non_empty_string,
-        "name": validate_non_empty_string,
-        "timezone": validate_timezone,
-    }
+class ConfigSectionSHM(BaseModel, validate_assignment=True):
+    aad_tenant_id: Guid
+    admin_email_address: EmailAdress
+    admin_ip_addresses: list[IpAddress]
+    fqdn: str
+    name: str
+    timezone: TimeZone
 
     def update(
         self,
@@ -177,96 +90,65 @@ class ConfigSectionSHM(ConfigSection):
         logger.info(
             f"[bold]AzureAD tenant ID[/] will be [green]{self.aad_tenant_id}[/]."
         )
-        self.validate_attribute("aad_tenant_id")
         # Set admin email address
         if admin_email_address:
             self.admin_email_address = admin_email_address
         logger.info(
             f"[bold]Admin email address[/] will be [green]{self.admin_email_address}[/]."
         )
-        self.validate_attribute("admin_email_address")
         # Set admin IP addresses
         if admin_ip_addresses:
             self.admin_ip_addresses = admin_ip_addresses
         logger.info(
             f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
         )
-        self.validate_attribute("admin_ip_addresses")
         # Set fully-qualified domain name
         if fqdn:
             self.fqdn = fqdn
         logger.info(
             f"[bold]Fully-qualified domain name[/] will be [green]{self.fqdn}[/]."
         )
-        self.validate_attribute("fqdn")
         # Set timezone
         if timezone:
             self.timezone = timezone
         logger.info(f"[bold]Timezone[/] will be [green]{self.timezone}[/].")
-        self.validate_attribute("timezone")
 
 
-@dataclass
-class ConfigSectionSRE(ConfigSection):
-    @dataclass
-    class ConfigSubsectionRemoteDesktopOpts(Validator):
-        allow_copy: bool = False
-        allow_paste: bool = False
+class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
+    allow_copy: bool = False
+    allow_paste: bool = False
 
-        validation_functions = {  # noqa: RUF012
-            "allow_copy": partial(validate_type, type_=bool),
-            "allow_paste": partial(validate_type, type_=bool),
-        }
+    def update(
+        self, *, allow_copy: bool | None = None, allow_paste: bool | None = None
+    ) -> None:
+        """Update SRE remote desktop settings
 
-        def update(
-            self, *, allow_copy: bool | None = None, allow_paste: bool | None = None
-        ) -> None:
-            """Update SRE remote desktop settings
+        Args:
+            allow_copy: Allow/deny copying text out of the SRE
+            allow_paste: Allow/deny pasting text into the SRE
+        """
+        # Set whether copying text out of the SRE is allowed
+        if allow_copy:
+            self.allow_copy = allow_copy
+        LoggingSingleton().info(
+            f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
+        )
+        # Set whether pasting text into the SRE is allowed
+        if allow_paste:
+            self.allow_paste = allow_paste
+        LoggingSingleton().info(
+            f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
+        )
 
-            Args:
-                allow_copy: Allow/deny copying text out of the SRE
-                allow_paste: Allow/deny pasting text into the SRE
-            """
-            # Set whether copying text out of the SRE is allowed
-            if allow_copy:
-                self.allow_copy = allow_copy
-            LoggingSingleton().info(
-                f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
-            )
-            # Set whether pasting text into the SRE is allowed
-            if allow_paste:
-                self.allow_paste = allow_paste
-            LoggingSingleton().info(
-                f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
-            )
 
-    databases: list[DatabaseSystem] = field(default_factory=list)
-    data_provider_ip_addresses: list[str] = field(default_factory=list)
-    index: int = 0
-    remote_desktop: ConfigSubsectionRemoteDesktopOpts = field(
-        default_factory=ConfigSubsectionRemoteDesktopOpts
-    )
-    workspace_skus: list[str] = field(default_factory=list)
-    research_user_ip_addresses: list[str] = field(default_factory=list)
+class ConfigSectionSRE(BaseModel, validate_assignment=True):
+    databases: list[DatabaseSystem]
+    data_provider_ip_addresses: list[IpAddress]
+    index: int = Field(ge=0)
+    remote_desktop: ConfigSubsectionRemoteDesktopOpts
+    workspace_skus: list[AzureVmSku]
+    research_user_ip_addresses: list[IpAddress]
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
-
-    validation_functions = {  # noqa: RUF012
-        "data_provider_ip_addresses": partial(
-            validate_list, validator=validate_ip_address
-        ),
-        "databases": partial(
-            validate_list,
-            validator=lambda pkg: isinstance(pkg, DatabaseSystem),
-            allow_empty=True,
-        ),
-        "index": lambda idx: isinstance(idx, int) and idx >= 0,
-        "remote_desktop": lambda dsktop: dsktop.validate(),
-        "workspace_skus": partial(validate_list, validator=validate_azure_vm_sku),
-        "research_user_ip_addresses": partial(
-            validate_list, validator=validate_ip_address
-        ),
-        "software_packages": lambda pkg: isinstance(pkg, SoftwarePackageCategory),
-    }
 
     def update(
         self,
@@ -297,7 +179,6 @@ class ConfigSectionSRE(ConfigSection):
         logger.info(
             f"[bold]IP addresses used by data providers[/] will be [green]{self.data_provider_ip_addresses}[/]."
         )
-        self.validate_attribute("data_provider_ip_addresses")
         # Set which databases to deploy
         if databases:
             self.databases = sorted(set(databases))
@@ -306,156 +187,44 @@ class ConfigSectionSRE(ConfigSection):
         logger.info(
             f"[bold]Databases available to users[/] will be [green]{[database.value for database in self.databases]}[/]."
         )
-        self.validate_attribute("databases")
         # Pass allow_copy and allow_paste to remote desktop
         self.remote_desktop.update(allow_copy=allow_copy, allow_paste=allow_paste)
-        self.validate_attribute("remote_desktop")
         # Set research desktop SKUs
         if workspace_skus:
             self.workspace_skus = workspace_skus
         logger.info(f"[bold]Workspace SKUs[/] will be [green]{self.workspace_skus}[/].")
-        self.validate_attribute("remote_desktop")
         # Select which software packages can be installed by users
         if software_packages:
             self.software_packages = software_packages
         logger.info(
             f"[bold]Software packages[/] from [green]{self.software_packages.value}[/] sources will be installable."
         )
-        self.validate_attribute("software_packages")
         # Set user IP addresses
         if user_ip_addresses:
             self.research_user_ip_addresses = user_ip_addresses
         logger.info(
             f"[bold]IP addresses used by users[/] will be [green]{self.research_user_ip_addresses}[/]."
         )
-        self.validate_attribute("research_user_ip_addresses")
 
 
-@dataclass
-class ConfigSectionTags(ConfigSection):
-    deployment: str = ""
+class ConfigSectionTags(BaseModel, validate_assignment=True):
+    deployment: str
     deployed_by: str = "Python"
     project: str = "Data Safe Haven"
     version: str = __version__
 
-    validation_functions = {  # noqa: RUF012
-        "deployment": validate_non_empty_string,
-        "deployed_by": validate_non_empty_string,
-        "project": validate_non_empty_string,
-        "version": validate_non_empty_string,
-    }
 
+class Config(BaseModel, validate_assignment=True):
+    azure: ConfigSectionAzure | None = None
+    context: Context
+    pulumi: ConfigSectionPulumi | None = None
+    shm: ConfigSectionSHM | None = None
+    tags: ConfigSectionTags | None = None
+    sres: dict[str, ConfigSectionSRE] | None = None
 
-class Config:
-    def __init__(self) -> None:
-        # Initialise config sections
-        self.azure_: ConfigSectionAzure | None = None
-        self.context_: ConfigSectionContext | None = None
-        self.pulumi_: ConfigSectionPulumi | None = None
-        self.shm_: ConfigSectionSHM | None = None
-        self.tags_: ConfigSectionTags | None = None
-        self.sres: dict[str, ConfigSectionSRE] = defaultdict(ConfigSectionSRE)
-        # Read context settings
-        settings = ContextSettings.from_file()
-        context = settings.context
-        # Check if backend exists and was loaded
-        try:
-            self.name = context.name
-        except DataSafeHavenParameterError as exc:
-            msg = "Data Safe Haven has not been initialised: run '[bright_cyan]dsh init[/]' before continuing."
-            raise DataSafeHavenConfigError(msg) from exc
-        self.subscription_name = context.subscription_name
-        self.azure.location = context.location
-        self.azure.admin_group_id = context.admin_group_id
-        self.context_storage_container_name = "config"
-        # Set derived names
-        self.shm_name_ = alphanumeric(self.name).lower()
-        self.filename = f"config-{self.shm_name_}.yaml"
-        self.context_resource_group_name = f"shm-{self.shm_name_}-rg-context"
-        self.context_storage_account_name = (
-            f"shm{self.shm_name_[:14]}context"  # maximum of 24 characters allowed
-        )
-        self.work_directory = config_dir() / self.shm_name_
-        self.azure_api = AzureApi(subscription_name=self.subscription_name)
-        # Attempt to load YAML dictionary from blob storage
-        yaml_input = {}
-        with suppress(DataSafeHavenAzureError, ParserError):
-            yaml_input = yaml.safe_load(
-                self.azure_api.download_blob(
-                    self.filename,
-                    self.context_resource_group_name,
-                    self.context_storage_account_name,
-                    self.context_storage_container_name,
-                )
-            )
-        # Attempt to decode each config section
-        if yaml_input:
-            if "azure" in yaml_input:
-                self.azure_ = chili.decode(yaml_input["azure"], ConfigSectionAzure)
-            if "context" in yaml_input:
-                self.context_ = chili.decode(
-                    yaml_input["context"], ConfigSectionContext
-                )
-            if "pulumi" in yaml_input:
-                self.pulumi_ = chili.decode(yaml_input["pulumi"], ConfigSectionPulumi)
-            if "shm" in yaml_input:
-                self.shm_ = chili.decode(yaml_input["shm"], ConfigSectionSHM)
-            if "sre" in yaml_input:
-                for sre_name, sre_details in dict(yaml_input["sre"]).items():
-                    self.sres[sre_name] = chili.decode(sre_details, ConfigSectionSRE)
-
-    @property
-    def azure(self) -> ConfigSectionAzure:
-        if not self.azure_:
-            self.azure_ = ConfigSectionAzure()
-        return self.azure_
-
-    @property
-    def context(self) -> ConfigSectionContext:
-        if not self.context_:
-            self.context_ = ConfigSectionContext(
-                key_vault_name=f"shm-{self.shm_name_[:9]}-kv-context",
-                managed_identity_name=f"shm-{self.shm_name_}-identity-reader-context",
-                resource_group_name=self.context_resource_group_name,
-                storage_account_name=self.context_storage_account_name,
-                storage_container_name=self.context_storage_container_name,
-            )
-        return self.context_
-
-    @property
-    def pulumi(self) -> ConfigSectionPulumi:
-        if not self.pulumi_:
-            self.pulumi_ = ConfigSectionPulumi()
-        return self.pulumi_
-
-    @property
-    def shm(self) -> ConfigSectionSHM:
-        if not self.shm_:
-            self.shm_ = ConfigSectionSHM(name=self.shm_name_)
-        return self.shm_
-
-    @property
-    def tags(self) -> ConfigSectionTags:
-        if not self.tags_:
-            self.tags_ = ConfigSectionTags(deployment=self.name)
-        return self.tags_
-
-    def __str__(self) -> str:
-        """String representation of the Config object"""
-        contents: dict[str, Any] = {}
-        if self.azure_:
-            contents["azure"] = self.azure.to_dict()
-        if self.context_:
-            contents["context"] = self.context.to_dict()
-        if self.pulumi_:
-            contents["pulumi"] = self.pulumi.to_dict()
-        if self.shm_:
-            contents["shm"] = self.shm.to_dict()
-        if self.sres:
-            contents["sre"] = {k: v.to_dict() for k, v in self.sres.items()}
-        if self.tags:
-            contents["tags"] = self.tags.to_dict()
-        return str(yaml.dump(contents, indent=2))
+    @computed_field
+    def work_directory(self) -> str:
+        return self.context.work_directory
 
     def read_stack(self, name: str, path: pathlib.Path) -> None:
         """Add a Pulumi stack file to config"""
@@ -480,14 +249,43 @@ class Config:
             self.sres[name].index = highest_index + 1
         return self.sres[name]
 
+    @classmethod
+    def from_yaml(cls, config_yaml: str) -> Config:
+        try:
+            config_dict = yaml.safe_load(config_yaml)
+        except YAMLError as exc:
+            msg = f"Could not parse configuration as YAML.\n{exc}"
+            raise DataSafeHavenConfigError(msg) from exc
+
+        if not isinstance(config_dict, dict):
+            msg = "Unable to parse configuration as a dict."
+            raise DataSafeHavenConfigError(msg)
+
+        try:
+            return Config.model_validate(config_dict)
+        except ValidationError as exc:
+            msg = f"Could not load configuration.\n{exc}"
+            raise DataSafeHavenParameterError(msg) from exc
+
+    @classmethod
+    def from_remote(cls, context: Context) -> Config:
+        azure_api = AzureApi(subscription_name=context.subscription_name)
+        config_yaml = azure_api.download_blob(
+            context.config_filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
+        return Config.from_yaml(config_yaml)
+
     def upload(self) -> None:
         """Upload config to Azure storage"""
         self.azure_api.upload_blob(
-            str(self),
-            self.filename,
-            self.context_resource_group_name,
-            self.context_storage_account_name,
-            self.context_storage_container_name,
+            yaml.dump(self.model_dump, indent=2),
+            self.context.config_filename,
+            self.context.resource_group_name,
+            self.context.storage_account_name,
+            self.context.storage_container_name,
         )
 
     def write_stack(self, name: str, path: pathlib.Path) -> None:

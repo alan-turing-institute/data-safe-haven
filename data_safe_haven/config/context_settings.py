@@ -8,13 +8,14 @@ from pathlib import Path
 from typing import ClassVar
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError, model_validator
+from pydantic import BaseModel, Field, ValidationError, computed_field, model_validator
 from yaml import YAMLError
 
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
+from data_safe_haven.functions import alphanumeric
 from data_safe_haven.utility import LoggingSingleton, config_dir
 from data_safe_haven.utility.annotated_types import (
     AzureLocation,
@@ -32,6 +33,28 @@ class Context(BaseModel, validate_assignment=True):
     location: AzureLocation
     name: str
     subscription_name: AzureLongName
+    storage_container_name: ClassVar[str] = "config"
+
+    @computed_field
+    def shm_name(self) -> str:
+        return alphanumeric(self.name).lower()
+
+    @computed_field
+    def work_directory(self) -> Path:
+        return config_dir() / self.shm_name
+
+    @computed_field
+    def config_filename(self) -> str:
+        return f"config-{self.shm_name}.yaml"
+
+    @computed_field
+    def resource_group_name(self) -> str:
+        return f"shm-{self.shm_name}-rg-context"
+
+    @computed_field
+    def storage_account_name(self) -> str:
+        # maximum of 24 characters allowed
+        return f"shm{self.shm_name[:14]}context"
 
 
 class ContextSettings(BaseModel, validate_assignment=True):

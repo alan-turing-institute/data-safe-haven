@@ -1,6 +1,5 @@
 from .miscellaneous import (
     allowed_dns_lookups,
-    as_dict,
     ordered_private_dns_zones,
     time_as_string,
 )
