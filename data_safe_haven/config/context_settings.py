@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import ClassVar
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError, computed_field, model_validator
+from pydantic import BaseModel, Field, ValidationError, model_validator
 from yaml import YAMLError
 
 from data_safe_haven.exceptions import (
@@ -35,23 +35,23 @@ class Context(BaseModel, validate_assignment=True):
     subscription_name: AzureLongName
     storage_container_name: ClassVar[str] = "config"
 
-    @computed_field
+    @property
     def shm_name(self) -> str:
         return alphanumeric(self.name).lower()
 
-    @computed_field
+    @property
     def work_directory(self) -> Path:
         return config_dir() / self.shm_name
 
-    @computed_field
+    @property
     def config_filename(self) -> str:
         return f"config-{self.shm_name}.yaml"
 
-    @computed_field
+    @property
     def resource_group_name(self) -> str:
         return f"shm-{self.shm_name}-rg-context"
 
-    @computed_field
+    @property
     def storage_account_name(self) -> str:
         # maximum of 24 characters allowed
         return f"shm{self.shm_name[:14]}context"

@@ -17,6 +17,11 @@ def context_dict():
     }
 
 
+@fixture
+def context(context_dict):
+    return Context(**context_dict)
+
+
 class TestContext:
     def test_constructor(self, context_dict):
         context = Context(**context_dict)
@@ -24,6 +29,7 @@ class TestContext:
         assert all([
             getattr(context, item) == context_dict[item] for item in context_dict.keys()
         ])
+        assert context.storage_container_name == "config"
 
     def test_invalid_guid(self, context_dict):
         context_dict["admin_group_id"] = "not a guid"
@@ -42,6 +48,26 @@ class TestContext:
         with pytest.raises(ValidationError) as exc:
             Context(**context_dict)
             assert "String should have at most 64 characters" in exc
+
+    def test_shm_name(self, context):
+        assert context.shm_name == "acmedeployment"
+
+    def test_work_directory(self, context):
+        assert "data_safe_haven/acmedeployment" in str(context.work_directory)
+
+    def test_config_filename(self, context):
+        assert context.config_filename == "config-acmedeployment.yaml"
+
+    def test_resource_group_name(self, context):
+        assert context.resource_group_name == "shm-acmedeployment-rg-context"
+
+    def test_storage_account_name(self, context):
+        assert context.storage_account_name == "shmacmedeploymentcontext"
+
+    def test_long_storage_account_name(self, context_dict):
+        context_dict["name"] = "very "*5 + "long name"
+        context = Context(**context_dict)
+        assert context.storage_account_name == "shmveryveryveryvecontext"
 
 
 @fixture
