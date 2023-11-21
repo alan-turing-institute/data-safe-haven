@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import pathlib
+from typing import ClassVar
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError, computed_field
+from pydantic import BaseModel, Field, ValidationError, computed_field, field_validator
 from yaml import YAMLError
 
 from data_safe_haven import __version__
@@ -39,6 +40,17 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
     subscription_id: Guid
     tenant_id: Guid
 
+    @classmethod
+    def from_context(
+        cls, context: Context, subscription_id: Guid, tenant_id: Guid
+    ) -> ConfigSectionAzure:
+        return ConfigSectionAzure(
+            admin_group_id=context.admin_group_id,
+            location=context.location,
+            subscription_id=subscription_id,
+            tenant_id=tenant_id,
+        )
+
 
 class ConfigSectionPulumi(BaseModel, validate_assignment=True):
     encryption_key_name: str = "pulumi-encryption-key"
@@ -55,6 +67,25 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
     name: str
     timezone: TimeZone
 
+    @classmethod
+    def from_context(
+        cls,
+        context: Context,
+        aad_tenant_id: Guid,
+        admin_email_address: EmailAdress,
+        admin_ip_addresses: list[IpAddress],
+        fqdn: str,
+        timezone: TimeZone,
+    ) -> ConfigSectionSHM:
+        return ConfigSectionSHM(
+            aad_tenant_id=aad_tenant_id,
+            admin_email_address=admin_email_address,
+            admin_ip_addresses=admin_ip_addresses,
+            fqdn=fqdn,
+            name=context.shm_name,
+            timezone=timezone,
+        )
+
     def update(
         self,
         *,
@@ -62,7 +93,7 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
         admin_email_address: str | None = None,
         admin_ip_addresses: list[str] | None = None,
         fqdn: str | None = None,
-        timezone: str | None = None,
+        timezone: TimeZone | None = None,
     ) -> None:
         """Update SHM settings
 
@@ -132,30 +163,38 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
-    databases: list[DatabaseSystem]
-    data_provider_ip_addresses: list[IpAddress]
+    databases: list[DatabaseSystem] = Field(default_factory=list[DatabaseSystem])
+    data_provider_ip_addresses: list[IpAddress] = Field(default_factory=list[IpAddress])
     index: int = Field(ge=0)
-    remote_desktop: ConfigSubsectionRemoteDesktopOpts
-    workspace_skus: list[AzureVmSku]
-    research_user_ip_addresses: list[IpAddress]
+    remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
+        default_factory=ConfigSubsectionRemoteDesktopOpts
+    )
+    workspace_skus: list[AzureVmSku] = Field(default_factory=list[AzureVmSku])
+    research_user_ip_addresses: list[IpAddress] = Field(default_factory=list[IpAddress])
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
+
+    @field_validator("databases")
+    @classmethod
+    def all_databases_must_be_unique(
+        cls, v: list[DatabaseSystem]
+    ) -> list[DatabaseSystem]:
+        if len(v) != len(set(v)):
+            msg = "all databases must be unique"
+            raise ValueError(msg)
+        return v
 
     def update(
         self,
         *,
-        allow_copy: bool | None = None,
-        allow_paste: bool | None = None,
-        data_provider_ip_addresses: list[str] | None = None,
+        data_provider_ip_addresses: list[IpAddress] | None = None,
         databases: list[DatabaseSystem] | None = None,
-        workspace_skus: list[str] | None = None,
+        workspace_skus: list[AzureVmSku] | None = None,
         software_packages: SoftwarePackageCategory | None = None,
-        user_ip_addresses: list[str] | None = None,
+        user_ip_addresses: list[IpAddress] | None = None,
     ) -> None:
         """Update SRE settings
 
         Args:
-            allow_copy: Allow/deny copying text out of the SRE
-            allow_paste: Allow/deny pasting text into the SRE
             databases: List of database systems to deploy
             data_provider_ip_addresses: List of IP addresses belonging to data providers
             workspace_skus: List of VM SKUs for workspaces
@@ -177,8 +216,6 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         logger.info(
             f"[bold]Databases available to users[/] will be [green]{[database.value for database in self.databases]}[/]."
         )
-        # Pass allow_copy and allow_paste to remote desktop
-        self.remote_desktop.update(allow_copy=allow_copy, allow_paste=allow_paste)
         # Set research desktop SKUs
         if workspace_skus:
             self.workspace_skus = workspace_skus
@@ -199,9 +236,13 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
 
 class ConfigSectionTags(BaseModel, validate_assignment=True):
     deployment: str
-    deployed_by: str = "Python"
-    project: str = "Data Safe Haven"
-    version: str = __version__
+    deployed_by: ClassVar[str] = "Python"
+    project: ClassVar[str] = "Data Safe Haven"
+    version: ClassVar[str] = __version__
+
+    @classmethod
+    def from_context(cls, context: Context) -> ConfigSectionTags:
+        return ConfigSectionTags(deployment=context.name)
 
 
 class Config(BaseModel, validate_assignment=True):

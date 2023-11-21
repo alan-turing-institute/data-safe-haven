@@ -77,12 +77,12 @@ dependencies = [
 typing = "mypy {args:data_safe_haven}"
 
 style = [
-  "ruff {args:data_safe_haven}",
-  "black --check --diff {args:data_safe_haven}",
+  "ruff {args:data_safe_haven tests_}",
+  "black --check --diff {args:data_safe_haven tests_}",
 ]
 fmt = [
-  "black {args:data_safe_haven}",
-  "ruff --fix {args:data_safe_haven}",
+  "black {args:data_safe_haven tests_}",
+  "ruff --fix {args:data_safe_haven tests_}",
   "style",
 ]
 all = [
@@ -147,6 +147,10 @@ known-first-party = ["data_safe_haven"]
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "parents"
+
+[tool.ruff.per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests_/**/*" = ["PLR2004", "S101", "TID252"]
 
 [tool.mypy]
 disallow_subclassing_any = false  # allow subclassing of types from third-party libraries

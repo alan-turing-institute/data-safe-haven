@@ -1,9 +1,9 @@
+from pytest import fixture
+from typer.testing import CliRunner
+
 from data_safe_haven.commands.context import context_command_group
 from data_safe_haven.config import Config
 from data_safe_haven.context import Context
-
-from pytest import fixture
-from typer.testing import CliRunner
 
 context_settings = """\
     selected: acme_deployment
@@ -88,7 +88,7 @@ class TestAdd:
                 "uksouth",
                 "--subscription",
                 "Data Safe Haven (Example)",
-            ]
+            ],
         )
         assert result.exit_code == 0
         result = runner.invoke(context_command_group, ["switch", "example"])
@@ -108,7 +108,7 @@ class TestAdd:
                 "uksouth",
                 "--subscription",
                 "Data Safe Haven (Acme)",
-            ]
+            ],
         )
         assert result.exit_code == 1
         # Unable to check error as this is written outside of any Typer
@@ -128,7 +128,7 @@ class TestAdd:
                 "uksouth",
                 "--subscription",
                 "Data Safe Haven (Example)",
-            ]
+            ],
         )
         assert result.exit_code == 2
         # This works because the context_command_group Typer writes this error
@@ -142,7 +142,7 @@ class TestAdd:
                 "example",
                 "--name",
                 "Example",
-            ]
+            ],
         )
         assert result.exit_code == 2
         assert "Missing option" in result.stderr
@@ -162,7 +162,7 @@ class TestAdd:
                 "uksouth",
                 "--subscription",
                 "Data Safe Haven (Acme)",
-            ]
+            ],
         )
         assert result.exit_code == 0
         assert (tmp_contexts / "contexts.yaml").exists()
@@ -201,11 +201,11 @@ class TestRemove:
 
 class TestCreate:
     def test_create(self, runner, monkeypatch):
-        def mock_create(self):
-            print("mock create")
+        def mock_create():
+            print("mock create")  # noqa: T201
 
-        def mock_upload(self):
-            print("mock upload")
+        def mock_upload():
+            print("mock upload")  # noqa: T201
 
         monkeypatch.setattr(Context, "create", mock_create)
         monkeypatch.setattr(Config, "upload", mock_upload)
@@ -218,8 +218,8 @@ class TestCreate:
 
 class TestTeardown:
     def test_teardown(self, runner, monkeypatch):
-        def mock_teardown(self):
-            print("mock teardown")
+        def mock_teardown():
+            print("mock teardown")  # noqa: T201
 
         monkeypatch.setattr(Context, "teardown", mock_teardown)
 

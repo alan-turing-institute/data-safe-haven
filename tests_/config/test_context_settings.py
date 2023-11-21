@@ -1,34 +1,22 @@
-from data_safe_haven.config.context_settings import Context, ContextSettings
-from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenParameterError
-
 import pytest
 import yaml
 from pydantic import ValidationError
 from pytest import fixture
 
-
-@fixture
-def context_dict():
-    return {
-        "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        "location": "uksouth",
-        "name": "Acme Deployment",
-        "subscription_name": "Data Safe Haven (Acme)"
-    }
-
-
-@fixture
-def context(context_dict):
-    return Context(**context_dict)
+from data_safe_haven.config.context_settings import Context, ContextSettings
+from data_safe_haven.exceptions import (
+    DataSafeHavenConfigError,
+    DataSafeHavenParameterError,
+)
 
 
 class TestContext:
     def test_constructor(self, context_dict):
         context = Context(**context_dict)
         assert isinstance(context, Context)
-        assert all([
+        assert all(
             getattr(context, item) == context_dict[item] for item in context_dict.keys()
-        ])
+        )
         assert context.storage_container_name == "config"
 
     def test_invalid_guid(self, context_dict):
@@ -44,7 +32,7 @@ class TestContext:
             assert "Value error, Expected valid Azure location" in exc
 
     def test_invalid_subscription_name(self, context_dict):
-        context_dict["subscription_name"] = "very "*12 + "long name"
+        context_dict["subscription_name"] = "very " * 12 + "long name"
         with pytest.raises(ValidationError) as exc:
             Context(**context_dict)
             assert "String should have at most 64 characters" in exc
@@ -65,7 +53,7 @@ class TestContext:
         assert context.storage_account_name == "shmacmedeploymentcontext"
 
     def test_long_storage_account_name(self, context_dict):
-        context_dict["name"] = "very "*5 + "long name"
+        context_dict["name"] = "very " * 5 + "long name"
         context = Context(**context_dict)
         assert context.storage_account_name == "shmveryveryveryvecontext"
 
@@ -119,7 +107,9 @@ class TestContextSettings:
             assert "Field required" in exc
 
     def test_invalid_selected_input(self, context_yaml):
-        context_yaml = context_yaml.replace("selected: acme_deployment", "selected: invalid")
+        context_yaml = context_yaml.replace(
+            "selected: acme_deployment", "selected: invalid"
+        )
 
         with pytest.raises(DataSafeHavenParameterError) as exc:
             ContextSettings.from_yaml(context_yaml)
@@ -153,24 +143,26 @@ class TestContextSettings:
     def test_context(self, context_yaml, context_settings):
         yaml_dict = yaml.safe_load(context_yaml)
         assert isinstance(context_settings.context, Context)
-        assert all([
-            getattr(context_settings.context, item) == yaml_dict["contexts"]["acme_deployment"][item]
+        assert all(
+            getattr(context_settings.context, item)
+            == yaml_dict["contexts"]["acme_deployment"][item]
             for item in yaml_dict["contexts"]["acme_deployment"].keys()
-        ])
+        )
 
     def test_set_context(self, context_yaml, context_settings):
         yaml_dict = yaml.safe_load(context_yaml)
         context_settings.selected = "gems"
         assert isinstance(context_settings.context, Context)
-        assert all([
-            getattr(context_settings.context, item) == yaml_dict["contexts"]["gems"][item]
+        assert all(
+            getattr(context_settings.context, item)
+            == yaml_dict["contexts"]["gems"][item]
             for item in yaml_dict["contexts"]["gems"].keys()
-        ])
+        )
 
     def test_available(self, context_settings):
         available = context_settings.available
         assert isinstance(available, list)
-        assert all([isinstance(item, str) for item in available])
+        assert all(isinstance(item, str) for item in available)
         assert available == ["acme_deployment", "gems"]
 
     def test_update(self, context_settings):
@@ -238,7 +230,7 @@ class TestContextSettings:
         settings.selected = "gems"
         settings.update(name="replaced")
         settings.write(config_file_path)
-        with open(config_file_path, "r") as f:
+        with open(config_file_path) as f:
             context_dict = yaml.safe_load(f)
         assert context_dict["selected"] == "gems"
         assert context_dict["contexts"]["gems"]["name"] == "replaced"
