@@ -25,8 +25,6 @@ from data_safe_haven.utility import (
 )
 from data_safe_haven.utility.annotated_types import (
     AzureLocation,
-    AzureLongName,
-    AzureShortName,
     AzureVmSku,
     EmailAdress,
     Guid,
@@ -40,14 +38,6 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
     location: AzureLocation
     subscription_id: Guid
     tenant_id: Guid
-
-
-class ConfigSectionContext(BaseModel, validate_assignment=True):
-    key_vault_name: AzureShortName
-    managed_identity_name: AzureLongName
-    resource_group_name: AzureLongName
-    storage_account_name: AzureShortName
-    storage_container_name: AzureLongName
 
 
 class ConfigSectionPulumi(BaseModel, validate_assignment=True):
