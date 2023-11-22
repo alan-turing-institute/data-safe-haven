@@ -3,6 +3,7 @@ from pydantic import ValidationError
 from pytest import fixture
 
 from data_safe_haven.config.config import (
+    Config,
     ConfigSectionAzure,
     ConfigSectionPulumi,
     ConfigSectionSHM,
@@ -12,6 +13,15 @@ from data_safe_haven.config.config import (
 )
 from data_safe_haven.utility.enums import DatabaseSystem, SoftwarePackageCategory
 from data_safe_haven.version import __version__
+
+
+@fixture
+def azure_config(context):
+    return ConfigSectionAzure.from_context(
+        context=context,
+        subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+    )
 
 
 class TestConfigSectionAzure:
@@ -32,6 +42,11 @@ class TestConfigSectionAzure:
         assert azure_config.location == context.location
 
 
+@fixture
+def pulumi_config():
+    return ConfigSectionPulumi(encryption_key_version="lorem")
+
+
 class TestConfigSectionPulumi:
     def test_constructor_defaults(self):
         pulumi_config = ConfigSectionPulumi(encryption_key_version="lorem")
@@ -41,13 +56,13 @@ class TestConfigSectionPulumi:
 
 
 @fixture
-def shm_config():
-    return ConfigSectionSHM(
+def shm_config(context):
+    return ConfigSectionSHM.from_context(
+        context=context,
         aad_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         admin_email_address="admin@example.com",
         admin_ip_addresses=["0.0.0.0"],  # noqa: S104
         fqdn="shm.acme.com",
-        name="ACME SHM",
         timezone="UTC",
     )
 
@@ -98,16 +113,16 @@ class TestConfigSubsectionRemoteDesktopOpts:
     def test_constructor_defaults(self):
         remote_desktop_config = ConfigSubsectionRemoteDesktopOpts()
         assert not all(
-            [remote_desktop_config.allow_copy, remote_desktop_config.allow_paste]
+            (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
         )
 
     def test_update(self, remote_desktop_config):
         assert not all(
-            [remote_desktop_config.allow_copy, remote_desktop_config.allow_paste]
+            (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
         )
         remote_desktop_config.update(allow_copy=True, allow_paste=True)
         assert all(
-            [remote_desktop_config.allow_copy, remote_desktop_config.allow_paste]
+            (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
         )
 
 
@@ -162,6 +177,11 @@ class TestConfigSectionSRE:
         assert sre_config.software_packages == SoftwarePackageCategory.ANY
 
 
+@fixture
+def tags_config(context):
+    return ConfigSectionTags.from_context(context)
+
+
 class TestConfigSectionTags:
     def test_constructor(self):
         tags_config = ConfigSectionTags(deployment="Test Deployment")
@@ -176,3 +196,63 @@ class TestConfigSectionTags:
         assert tags_config.deployed_by == "Python"
         assert tags_config.project == "Data Safe Haven"
         assert tags_config.version == __version__
+
+
+@fixture
+def config_no_sres(context, azure_config, pulumi_config, shm_config, tags_config):
+    return Config(
+        context=context,
+        azure=azure_config,
+        pulumi=pulumi_config,
+        shm=shm_config,
+        tags=tags_config
+    )
+
+
+@fixture
+def config_sres(context, azure_config, pulumi_config, shm_config, tags_config):
+    sre_config_1 = ConfigSectionSRE(index=0)
+    sre_config_2 = ConfigSectionSRE(index=1)
+    return Config(
+        context=context,
+        azure=azure_config,
+        pulumi=pulumi_config,
+        shm=shm_config,
+        sres={
+            "sre1": sre_config_1,
+            "sre2": sre_config_2,
+        },
+        tags=tags_config
+    )
+
+
+class TestConfig:
+    def test_constructor_defaults(self, context):
+        config = Config(context=context)
+        assert config.context == context
+        assert not any(
+            (config.azure, config.pulumi, config.shm, config.tags, config.sres)
+        )
+
+    @pytest.mark.parametrize("require_sres", [False, True])
+    def test_is_complete_bare(self, context, require_sres):
+        config = Config(context=context)
+        assert config.is_complete(require_sres=require_sres) is False
+
+    def test_constructor(self, context, azure_config, pulumi_config, shm_config, tags_config):
+        config = Config(
+            context=context,
+            azure=azure_config,
+            pulumi=pulumi_config,
+            shm=shm_config,
+            tags=tags_config
+        )
+        assert not config.sres
+
+    @pytest.mark.parametrize("require_sres,expected", [(False, True), (True, False)])
+    def test_is_complete_no_sres(self, config_no_sres, require_sres, expected):
+        assert config_no_sres.is_complete(require_sres=require_sres) is expected
+
+    @pytest.mark.parametrize("require_sres", [False, True])
+    def test_is_complete_sres(self, config_sres, require_sres):
+        assert config_sres.is_complete(require_sres=require_sres)

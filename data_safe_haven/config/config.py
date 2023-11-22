@@ -5,7 +5,7 @@ import pathlib
 from typing import ClassVar
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError, computed_field, field_validator
+from pydantic import BaseModel, Field, ValidationError, field_validator
 from yaml import YAMLError
 
 from data_safe_haven import __version__
@@ -251,11 +251,21 @@ class Config(BaseModel, validate_assignment=True):
     pulumi: ConfigSectionPulumi | None = None
     shm: ConfigSectionSHM | None = None
     tags: ConfigSectionTags | None = None
-    sres: dict[str, ConfigSectionSRE] | None = None
+    sres: dict[str, ConfigSectionSRE] = Field(
+        default_factory=dict[str, ConfigSectionSRE]
+    )
 
-    @computed_field
+    @property
     def work_directory(self) -> str:
         return self.context.work_directory
+
+    def is_complete(self, *, require_sres: bool) -> bool:
+        if require_sres:
+            if not self.sres:
+                return False
+        if not all((self.azure, self.pulumi, self.shm, self.tags)):
+            return False
+        return True
 
     def read_stack(self, name: str, path: pathlib.Path) -> None:
         """Add a Pulumi stack file to config"""
