@@ -315,6 +315,27 @@ class TestConfig:
     def test_is_complete_sres(self, config_sres, require_sres):
         assert config_sres.is_complete(require_sres=require_sres)
 
+    def test_sre(self, config_sres):
+        sre1, sre2 = config_sres.sre("sre1"), config_sres.sre("sre2")
+        assert sre1.index == 0
+        assert sre2.index == 1
+        assert sre1 != sre2
+
+    def test_sre_create(self, config_sres):
+        sre1 = config_sres.sre("sre1")
+        sre3 = config_sres.sre("sre3")
+        assert isinstance(sre3, ConfigSectionSRE)
+        assert sre3.index == 2
+        assert sre3 != sre1
+        assert len(config_sres.sres) == 3
+
+    def test_remove_sre(self, config_sres):
+        assert len(config_sres.sres) == 2
+        config_sres.remove_sre("sre1")
+        assert len(config_sres.sres) == 1
+        assert "sre2" in config_sres.sres.keys()
+        assert "sre1" not in config_sres.sres.keys()
+
     def test_from_yaml(self, config_sres, config_yaml):
         config = Config.from_yaml(config_yaml)
         assert config == config_sres

@@ -286,7 +286,7 @@ class Config(BaseModel, validate_assignment=True):
         """Return the config entry for this SRE creating it if it does not exist"""
         if name not in self.sres.keys():
             highest_index = max(0 + sre.index for sre in self.sres.values())
-            self.sres[name].index = highest_index + 1
+            self.sres[name] = ConfigSectionSRE(index=highest_index+1)
         return self.sres[name]
 
     def remove_sre(self, name: str) -> None:
