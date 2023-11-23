@@ -339,7 +339,8 @@ class Config(BaseModel, validate_assignment=True):
 
     def upload(self) -> None:
         """Upload config to Azure storage"""
-        self.azure_api.upload_blob(
+        azure_api = AzureApi(subscription_name=self.context.subscription_name)
+        azure_api.upload_blob(
             self.to_yaml(),
             self.context.config_filename,
             self.context.resource_group_name,

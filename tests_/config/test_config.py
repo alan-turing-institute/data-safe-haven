@@ -11,6 +11,7 @@ from data_safe_haven.config.config import (
     ConfigSectionTags,
     ConfigSubsectionRemoteDesktopOpts,
 )
+from data_safe_haven.external import AzureApi
 from data_safe_haven.utility.enums import DatabaseSystem, SoftwarePackageCategory
 from data_safe_haven.version import __version__
 
@@ -319,3 +320,35 @@ class TestConfig:
         config = Config.from_yaml(config_yaml)
         assert config == config_sres
         assert isinstance(config.sres["sre1"].software_packages, SoftwarePackageCategory)
+
+    def test_upload(self, config_sres, monkeypatch):
+        def mock_upload_blob(
+            self,
+            blob_data: bytes | str,
+            blob_name: str,
+            resource_group_name: str,
+            storage_account_name: str,
+            storage_container_name: str,
+        ):
+            pass
+
+        monkeypatch.setattr(AzureApi, "upload_blob", mock_upload_blob)
+        config_sres.upload()
+
+    def test_from_remote(self, context, config_sres, config_yaml, monkeypatch):
+        def mock_download_blob(
+            self,
+            blob_name: str,
+            resource_group_name: str,
+            storage_account_name: str,
+            storage_container_name: str,
+        ):
+            assert blob_name == context.config_filename
+            assert resource_group_name == context.resource_group_name
+            assert storage_account_name == context.storage_account_name
+            assert storage_container_name == context.storage_container_name
+            return config_yaml
+
+        monkeypatch.setattr(AzureApi, "download_blob", mock_download_blob)
+        config = Config.from_remote(context)
+        assert config == config_sres
