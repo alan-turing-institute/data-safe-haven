@@ -286,11 +286,6 @@ class TestConfig:
             (config.azure, config.pulumi, config.shm, config.tags, config.sres)
         )
 
-    @pytest.mark.parametrize("require_sres", [False, True])
-    def test_is_complete_bare(self, context, require_sres):
-        config = Config(context=context)
-        assert config.is_complete(require_sres=require_sres) is False
-
     def test_constructor(
         self, context, azure_config, pulumi_config, shm_config, tags_config
     ):
@@ -303,6 +298,15 @@ class TestConfig:
         )
         assert not config.sres
 
+    def test_work_directory(self, config_sres):
+        config = config_sres
+        assert config.work_directory == config.context.work_directory
+
+    @pytest.mark.parametrize("require_sres", [False, True])
+    def test_is_complete_bare(self, context, require_sres):
+        config = Config(context=context)
+        assert config.is_complete(require_sres=require_sres) is False
+
     @pytest.mark.parametrize("require_sres,expected", [(False, True), (True, False)])
     def test_is_complete_no_sres(self, config_no_sres, require_sres, expected):
         assert config_no_sres.is_complete(require_sres=require_sres) is expected
@@ -311,33 +315,12 @@ class TestConfig:
     def test_is_complete_sres(self, config_sres, require_sres):
         assert config_sres.is_complete(require_sres=require_sres)
 
-    def test_work_directory(self, config_sres):
-        config = config_sres
-        assert config.work_directory == config.context.work_directory
-
-    def test_to_yaml(self, config_sres, config_yaml):
-        assert config_sres.to_yaml() == config_yaml
-
     def test_from_yaml(self, config_sres, config_yaml):
         config = Config.from_yaml(config_yaml)
         assert config == config_sres
         assert isinstance(
             config.sres["sre1"].software_packages, SoftwarePackageCategory
         )
-
-    def test_upload(self, config_sres, monkeypatch):
-        def mock_upload_blob(
-            self,  # noqa: ARG001
-            blob_data: bytes | str,  # noqa: ARG001
-            blob_name: str,  # noqa: ARG001
-            resource_group_name: str,  # noqa: ARG001
-            storage_account_name: str,  # noqa: ARG001
-            storage_container_name: str,  # noqa: ARG001
-        ):
-            pass
-
-        monkeypatch.setattr(AzureApi, "upload_blob", mock_upload_blob)
-        config_sres.upload()
 
     def test_from_remote(self, context, config_sres, config_yaml, monkeypatch):
         def mock_download_blob(
@@ -356,3 +339,20 @@ class TestConfig:
         monkeypatch.setattr(AzureApi, "download_blob", mock_download_blob)
         config = Config.from_remote(context)
         assert config == config_sres
+
+    def test_to_yaml(self, config_sres, config_yaml):
+        assert config_sres.to_yaml() == config_yaml
+
+    def test_upload(self, config_sres, monkeypatch):
+        def mock_upload_blob(
+            self,  # noqa: ARG001
+            blob_data: bytes | str,  # noqa: ARG001
+            blob_name: str,  # noqa: ARG001
+            resource_group_name: str,  # noqa: ARG001
+            storage_account_name: str,  # noqa: ARG001
+            storage_container_name: str,  # noqa: ARG001
+        ):
+            pass
+
+        monkeypatch.setattr(AzureApi, "upload_blob", mock_upload_blob)
+        config_sres.upload()

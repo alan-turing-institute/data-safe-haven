@@ -1,7 +1,7 @@
 """Configuration file backed by blob storage"""
 from __future__ import annotations
 
-import pathlib
+from pathlib import Path
 from typing import ClassVar
 
 import yaml
@@ -282,28 +282,34 @@ class Config(BaseModel, validate_assignment=True):
             return False
         return True
 
-    def read_stack(self, name: str, path: pathlib.Path) -> None:
-        """Add a Pulumi stack file to config"""
-        with open(path, encoding="utf-8") as f_stack:
-            pulumi_cfg = f_stack.read()
-        self.pulumi.stacks[name] = b64encode(pulumi_cfg)
+    def sre(self, name: str) -> ConfigSectionSRE:
+        """Return the config entry for this SRE creating it if it does not exist"""
+        if name not in self.sres.keys():
+            highest_index = max(0 + sre.index for sre in self.sres.values())
+            self.sres[name].index = highest_index + 1
+        return self.sres[name]
 
     def remove_sre(self, name: str) -> None:
         """Remove SRE config section by name"""
         if name in self.sres.keys():
             del self.sres[name]
 
+    def add_stack(self, name: str, path: Path) -> None:
+        """Add a Pulumi stack file to config"""
+        with open(path, encoding="utf-8") as f_stack:
+            pulumi_cfg = f_stack.read()
+        self.pulumi.stacks[name] = b64encode(pulumi_cfg)
+
     def remove_stack(self, name: str) -> None:
         """Remove Pulumi stack section by name"""
         if name in self.pulumi.stacks.keys():
             del self.pulumi.stacks[name]
 
-    def sre(self, name: str) -> ConfigSectionSRE:
-        """Return the config entry for this SRE creating it if it does not exist"""
-        if name not in self.sres.keys():
-            highest_index = max([0] + [sre.index for sre in self.sres.values()])
-            self.sres[name].index = highest_index + 1
-        return self.sres[name]
+    def write_stack(self, name: str, path: Path) -> None:
+        """Write a Pulumi stack file from config"""
+        pulumi_cfg = b64decode(self.pulumi.stacks[name])
+        with open(path, "w", encoding="utf-8") as f_stack:
+            f_stack.write(pulumi_cfg)
 
     @classmethod
     def from_yaml(cls, config_yaml: str) -> Config:
@@ -347,9 +353,3 @@ class Config(BaseModel, validate_assignment=True):
             self.context.storage_account_name,
             self.context.storage_container_name,
         )
-
-    def write_stack(self, name: str, path: pathlib.Path) -> None:
-        """Write a Pulumi stack file from config"""
-        pulumi_cfg = b64decode(self.pulumi.stacks[name])
-        with open(path, "w", encoding="utf-8") as f_stack:
-            f_stack.write(pulumi_cfg)
