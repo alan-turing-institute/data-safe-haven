@@ -206,7 +206,7 @@ def config_no_sres(context, azure_config, pulumi_config, shm_config, tags_config
         azure=azure_config,
         pulumi=pulumi_config,
         shm=shm_config,
-        tags=tags_config
+        tags=tags_config,
     )
 
 
@@ -223,7 +223,7 @@ def config_sres(context, azure_config, pulumi_config, shm_config, tags_config):
             "sre1": sre_config_1,
             "sre2": sre_config_2,
         },
-        tags=tags_config
+        tags=tags_config,
     )
 
 
@@ -291,13 +291,15 @@ class TestConfig:
         config = Config(context=context)
         assert config.is_complete(require_sres=require_sres) is False
 
-    def test_constructor(self, context, azure_config, pulumi_config, shm_config, tags_config):
+    def test_constructor(
+        self, context, azure_config, pulumi_config, shm_config, tags_config
+    ):
         config = Config(
             context=context,
             azure=azure_config,
             pulumi=pulumi_config,
             shm=shm_config,
-            tags=tags_config
+            tags=tags_config,
         )
         assert not config.sres
 
@@ -319,16 +321,18 @@ class TestConfig:
     def test_from_yaml(self, config_sres, config_yaml):
         config = Config.from_yaml(config_yaml)
         assert config == config_sres
-        assert isinstance(config.sres["sre1"].software_packages, SoftwarePackageCategory)
+        assert isinstance(
+            config.sres["sre1"].software_packages, SoftwarePackageCategory
+        )
 
     def test_upload(self, config_sres, monkeypatch):
         def mock_upload_blob(
-            self,
-            blob_data: bytes | str,
-            blob_name: str,
-            resource_group_name: str,
-            storage_account_name: str,
-            storage_container_name: str,
+            self,  # noqa: ARG001
+            blob_data: bytes | str,  # noqa: ARG001
+            blob_name: str,  # noqa: ARG001
+            resource_group_name: str,  # noqa: ARG001
+            storage_account_name: str,  # noqa: ARG001
+            storage_container_name: str,  # noqa: ARG001
         ):
             pass
 
@@ -337,7 +341,7 @@ class TestConfig:
 
     def test_from_remote(self, context, config_sres, config_yaml, monkeypatch):
         def mock_download_blob(
-            self,
+            self,  # noqa: ARG001
             blob_name: str,
             resource_group_name: str,
             storage_account_name: str,
