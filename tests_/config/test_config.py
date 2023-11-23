@@ -226,6 +226,57 @@ def config_sres(context, azure_config, pulumi_config, shm_config, tags_config):
     )
 
 
+@fixture
+def config_yaml():
+    return """azure:
+  admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+  location: uksouth
+  subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+  tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+context:
+  admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+  location: uksouth
+  name: Acme Deployment
+  subscription_name: Data Safe Haven (Acme)
+pulumi:
+  encryption_key_name: pulumi-encryption-key
+  encryption_key_version: lorem
+  stacks: {}
+  storage_container_name: pulumi
+shm:
+  aad_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+  admin_email_address: admin@example.com
+  admin_ip_addresses:
+  - 0.0.0.0/32
+  fqdn: shm.acme.com
+  name: acmedeployment
+  timezone: UTC
+sres:
+  sre1:
+    data_provider_ip_addresses: []
+    databases: []
+    index: 0
+    remote_desktop:
+      allow_copy: false
+      allow_paste: false
+    research_user_ip_addresses: []
+    software_packages: none
+    workspace_skus: []
+  sre2:
+    data_provider_ip_addresses: []
+    databases: []
+    index: 1
+    remote_desktop:
+      allow_copy: false
+      allow_paste: false
+    research_user_ip_addresses: []
+    software_packages: none
+    workspace_skus: []
+tags:
+  deployment: Acme Deployment
+"""
+
+
 class TestConfig:
     def test_constructor_defaults(self, context):
         config = Config(context=context)
@@ -256,3 +307,15 @@ class TestConfig:
     @pytest.mark.parametrize("require_sres", [False, True])
     def test_is_complete_sres(self, config_sres, require_sres):
         assert config_sres.is_complete(require_sres=require_sres)
+
+    def test_work_directory(self, config_sres):
+        config = config_sres
+        assert config.work_directory == config.context.work_directory
+
+    def test_to_yaml(self, config_sres, config_yaml):
+        assert config_sres.to_yaml() == config_yaml
+
+    def test_from_yaml(self, config_sres, config_yaml):
+        config = Config.from_yaml(config_yaml)
+        assert config == config_sres
+        assert isinstance(config.sres["sre1"].software_packages, SoftwarePackageCategory)

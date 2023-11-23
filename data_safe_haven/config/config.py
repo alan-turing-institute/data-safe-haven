@@ -5,7 +5,14 @@ import pathlib
 from typing import ClassVar
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    FieldSerializationInfo,
+    ValidationError,
+    field_serializer,
+    field_validator,
+)
 from yaml import YAMLError
 
 from data_safe_haven import __version__
@@ -55,7 +62,7 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 class ConfigSectionPulumi(BaseModel, validate_assignment=True):
     encryption_key_name: str = "pulumi-encryption-key"
     encryption_key_version: str
-    stacks: dict[str, str] = Field(default_factory=dict)
+    stacks: dict[str, str] = Field(default_factory=dict[str, str])
     storage_container_name: str = "pulumi"
 
 
@@ -182,6 +189,14 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
             msg = "all databases must be unique"
             raise ValueError(msg)
         return v
+
+    @field_serializer("software_packages")
+    def software_packages_serializer(
+        self,
+        packages: SoftwarePackageCategory,
+        info: FieldSerializationInfo,  # noqa: ARG002
+    ) -> str:
+        return packages.value
 
     def update(
         self,
@@ -319,10 +334,13 @@ class Config(BaseModel, validate_assignment=True):
         )
         return Config.from_yaml(config_yaml)
 
+    def to_yaml(self) -> str:
+        return yaml.dump(self.model_dump(), indent=2)
+
     def upload(self) -> None:
         """Upload config to Azure storage"""
         self.azure_api.upload_blob(
-            yaml.dump(self.model_dump, indent=2),
+            self.to_yaml(),
             self.context.config_filename,
             self.context.resource_group_name,
             self.context.storage_account_name,
