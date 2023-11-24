@@ -245,10 +245,14 @@ class Config(BaseModel, validate_assignment=True):
     sres: dict[str, ConfigSectionSRE] = Field(
         default_factory=dict[str, ConfigSectionSRE]
     )
-    tags: ConfigSectionTags | None = Field(exclude=True, default=None)
+    tags: ConfigSectionTags = Field(exclude=True)
+
+    def __init__(self, context, **kwargs: dict[Any, Any]):
+        tags = ConfigSectionTags(context)
+        super().__init__(context=context, tags=tags, **kwargs)
 
     @property
-    def work_directory(self) -> str:
+    def work_directory(self) -> Path:
         return self.context.work_directory
 
     def is_complete(self, *, require_sres: bool) -> bool:
@@ -273,20 +277,24 @@ class Config(BaseModel, validate_assignment=True):
 
     def add_stack(self, name: str, path: Path) -> None:
         """Add a Pulumi stack file to config"""
-        with open(path, encoding="utf-8") as f_stack:
-            pulumi_cfg = f_stack.read()
-        self.pulumi.stacks[name] = b64encode(pulumi_cfg)
+        if self.pulumi:
+            with open(path, encoding="utf-8") as f_stack:
+                pulumi_cfg = f_stack.read()
+            self.pulumi.stacks[name] = b64encode(pulumi_cfg)
 
     def remove_stack(self, name: str) -> None:
         """Remove Pulumi stack section by name"""
-        if name in self.pulumi.stacks.keys():
-            del self.pulumi.stacks[name]
+        if self.pulumi:
+            stacks = self.pulumi.stacks
+            if name in stacks.keys():
+                del stacks[name]
 
     def write_stack(self, name: str, path: Path) -> None:
         """Write a Pulumi stack file from config"""
-        pulumi_cfg = b64decode(self.pulumi.stacks[name])
-        with open(path, "w", encoding="utf-8") as f_stack:
-            f_stack.write(pulumi_cfg)
+        if self.pulumi:
+            pulumi_cfg = b64decode(self.pulumi.stacks[name])
+            with open(path, "w", encoding="utf-8") as f_stack:
+                f_stack.write(pulumi_cfg)
 
     @classmethod
     def from_yaml(cls, context: Context, config_yaml: str) -> Config:
@@ -303,8 +311,7 @@ class Config(BaseModel, validate_assignment=True):
         # Add context for constructors that require it
         # context_dict = context.model_dump()
         config_dict["context"] = context
-        config_dict["tags"] = {}
-        for section in ["azure", "shm", "tags"]:
+        for section in ["azure", "shm"]:
             config_dict[section]["context"] = context
 
         try:

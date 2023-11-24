@@ -175,18 +175,17 @@ class TestConfigSectionTags:
 
 
 @fixture
-def config_no_sres(context, azure_config, pulumi_config, shm_config, tags_config):
+def config_no_sres(context, azure_config, pulumi_config, shm_config):
     return Config(
         context=context,
         azure=azure_config,
         pulumi=pulumi_config,
         shm=shm_config,
-        tags=tags_config,
     )
 
 
 @fixture
-def config_sres(context, azure_config, pulumi_config, shm_config, tags_config):
+def config_sres(context, azure_config, pulumi_config, shm_config):
     sre_config_1 = ConfigSectionSRE(index=0)
     sre_config_2 = ConfigSectionSRE(index=1)
     return Config(
@@ -198,7 +197,6 @@ def config_sres(context, azure_config, pulumi_config, shm_config, tags_config):
             "sre1": sre_config_1,
             "sre2": sre_config_2,
         },
-        tags=tags_config,
     )
 
 
@@ -248,18 +246,17 @@ class TestConfig:
         config = Config(context=context)
         assert config.context == context
         assert not any(
-            (config.azure, config.pulumi, config.shm, config.tags, config.sres)
+            (config.azure, config.pulumi, config.shm,  config.sres)
         )
 
     def test_constructor(
-        self, context, azure_config, pulumi_config, shm_config, tags_config
+        self, context, azure_config, pulumi_config, shm_config
     ):
         config = Config(
             context=context,
             azure=azure_config,
             pulumi=pulumi_config,
             shm=shm_config,
-            tags=tags_config,
         )
         assert not config.sres
 
