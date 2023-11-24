@@ -9,7 +9,7 @@ class Context:
     def __init__(self, config: Config) -> None:
         self.azure_api_: AzureApi | None = None
         self.config = config
-        self.tags = {"component": "context"} | self.config.tags.to_dict()
+        self.tags = {"component": "context"} | self.config.tags.model_dump()
 
     @property
     def azure_api(self) -> AzureApi:

@@ -173,6 +173,14 @@ class TestConfigSectionTags:
         assert tags_config.project == "Data Safe Haven"
         assert tags_config.version == __version__
 
+    def test_model_dump(self, tags_config):
+        tags_dict = tags_config.model_dump()
+        assert all(
+            ("deployment", "deployed_by", "project", "version" in tags_dict.keys())
+        )
+        assert tags_dict["deployment"] == "Acme Deployment"
+        assert tags_dict["version"] == __version__
+
 
 @fixture
 def config_no_sres(context, azure_config, pulumi_config, shm_config):
@@ -245,13 +253,9 @@ class TestConfig:
     def test_constructor_defaults(self, context):
         config = Config(context=context)
         assert config.context == context
-        assert not any(
-            (config.azure, config.pulumi, config.shm,  config.sres)
-        )
+        assert not any((config.azure, config.pulumi, config.shm, config.sres))
 
-    def test_constructor(
-        self, context, azure_config, pulumi_config, shm_config
-    ):
+    def test_constructor(self, context, azure_config, pulumi_config, shm_config):
         config = Config(
             context=context,
             azure=azure_config,

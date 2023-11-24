@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any
 
 import yaml
 from pydantic import (
@@ -42,8 +42,8 @@ from data_safe_haven.utility.annotated_types import (
 
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):
-    admin_group_id: Guid = Field(exclude=True)
-    location: AzureLocation = Field(exclude=True)
+    admin_group_id: Guid = Field(..., exclude=True)
+    location: AzureLocation = Field(..., exclude=True)
     subscription_id: Guid
     tenant_id: Guid
 
@@ -56,7 +56,7 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 class ConfigSectionPulumi(BaseModel, validate_assignment=True):
     encryption_key_name: str = "pulumi-encryption-key"
     encryption_key_version: str
-    stacks: dict[str, str] = Field(default_factory=dict[str, str])
+    stacks: dict[str, str] = Field(..., default_factory=dict[str, str])
     storage_container_name: str = "pulumi"
 
 
@@ -65,7 +65,7 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
     admin_email_address: EmailAdress
     admin_ip_addresses: list[IpAddress]
     fqdn: str
-    name: str = Field(exclude=True)
+    name: str = Field(..., exclude=True)
     timezone: TimeZone
 
     def __init__(self, context: Context, **kwargs: dict[Any, Any]):
@@ -148,14 +148,18 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
-    databases: list[DatabaseSystem] = Field(default_factory=list[DatabaseSystem])
-    data_provider_ip_addresses: list[IpAddress] = Field(default_factory=list[IpAddress])
-    index: int = Field(ge=0)
-    remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
-        default_factory=ConfigSubsectionRemoteDesktopOpts
+    databases: list[DatabaseSystem] = Field(..., default_factory=list[DatabaseSystem])
+    data_provider_ip_addresses: list[IpAddress] = Field(
+        ..., default_factory=list[IpAddress]
     )
-    workspace_skus: list[AzureVmSku] = Field(default_factory=list[AzureVmSku])
-    research_user_ip_addresses: list[IpAddress] = Field(default_factory=list[IpAddress])
+    index: int = Field(..., ge=0)
+    remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
+        ..., default_factory=ConfigSubsectionRemoteDesktopOpts
+    )
+    workspace_skus: list[AzureVmSku] = Field(..., default_factory=list[AzureVmSku])
+    research_user_ip_addresses: list[IpAddress] = Field(
+        ..., default_factory=list[IpAddress]
+    )
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
     @field_validator("databases")
@@ -228,10 +232,10 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionTags(BaseModel, validate_assignment=True):
-    deployment: str = Field(exclude=True)
-    deployed_by: ClassVar[str] = "Python"
-    project: ClassVar[str] = "Data Safe Haven"
-    version: ClassVar[str] = __version__
+    deployment: str
+    deployed_by: str = "Python"
+    project: str = "Data Safe Haven"
+    version: str = __version__
 
     def __init__(self, context: Context, **kwargs: dict[Any, Any]):
         super().__init__(deployment=context.name, **kwargs)
@@ -239,13 +243,13 @@ class ConfigSectionTags(BaseModel, validate_assignment=True):
 
 class Config(BaseModel, validate_assignment=True):
     azure: ConfigSectionAzure | None = None
-    context: Context = Field(exclude=True)
+    context: Context = Field(..., exclude=True)
     pulumi: ConfigSectionPulumi | None = None
     shm: ConfigSectionSHM | None = None
     sres: dict[str, ConfigSectionSRE] = Field(
-        default_factory=dict[str, ConfigSectionSRE]
+        ..., default_factory=dict[str, ConfigSectionSRE]
     )
-    tags: ConfigSectionTags = Field(exclude=True)
+    tags: ConfigSectionTags = Field(..., exclude=True)
 
     def __init__(self, context, **kwargs: dict[Any, Any]):
         tags = ConfigSectionTags(context)
