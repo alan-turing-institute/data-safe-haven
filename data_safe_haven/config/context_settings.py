@@ -56,6 +56,9 @@ class Context(BaseModel, validate_assignment=True):
         # maximum of 24 characters allowed
         return f"shm{self.shm_name[:14]}context"
 
+    def to_yaml(self) -> str:
+        return yaml.dump(self.model_dump(), indent=2)
+
 
 class ContextSettings(BaseModel, validate_assignment=True):
     """Load global and local settings from dotfiles with structure like the following
@@ -189,6 +192,9 @@ class ContextSettings(BaseModel, validate_assignment=True):
             msg = f"Could not find file {config_file_path}.\n{exc}"
             raise DataSafeHavenConfigError(msg) from exc
 
+    def to_yaml(self) -> str:
+        return yaml.dump(self.model_dump(by_alias=True), indent=2)
+
     def write(self, config_file_path: Path | None = None) -> None:
         """Write settings to YAML file"""
         if config_file_path is None:
@@ -197,5 +203,5 @@ class ContextSettings(BaseModel, validate_assignment=True):
         config_file_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(config_file_path, "w", encoding="utf-8") as f_yaml:
-            yaml.dump(self.model_dump(by_alias=True), f_yaml, indent=2)
+            f_yaml.write(self.to_yaml())
         self.logger.info(f"Saved context settings to '[green]{config_file_path}[/]'.")

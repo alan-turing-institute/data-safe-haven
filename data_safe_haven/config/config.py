@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import yaml
 from pydantic import (
@@ -42,20 +42,14 @@ from data_safe_haven.utility.annotated_types import (
 
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):
-    admin_group_id: Guid
-    location: AzureLocation
+    admin_group_id: Guid = Field(exclude=True)
+    location: AzureLocation = Field(exclude=True)
     subscription_id: Guid
     tenant_id: Guid
 
-    @classmethod
-    def from_context(
-        cls, context: Context, subscription_id: Guid, tenant_id: Guid
-    ) -> ConfigSectionAzure:
-        return ConfigSectionAzure(
-            admin_group_id=context.admin_group_id,
-            location=context.location,
-            subscription_id=subscription_id,
-            tenant_id=tenant_id,
+    def __init__(self, context: Context, **kwargs: dict[Any, Any]):
+        super().__init__(
+            admin_group_id=context.admin_group_id, location=context.location, **kwargs
         )
 
 
@@ -71,27 +65,11 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
     admin_email_address: EmailAdress
     admin_ip_addresses: list[IpAddress]
     fqdn: str
-    name: str
+    name: str = Field(exclude=True)
     timezone: TimeZone
 
-    @classmethod
-    def from_context(
-        cls,
-        context: Context,
-        aad_tenant_id: Guid,
-        admin_email_address: EmailAdress,
-        admin_ip_addresses: list[IpAddress],
-        fqdn: str,
-        timezone: TimeZone,
-    ) -> ConfigSectionSHM:
-        return ConfigSectionSHM(
-            aad_tenant_id=aad_tenant_id,
-            admin_email_address=admin_email_address,
-            admin_ip_addresses=admin_ip_addresses,
-            fqdn=fqdn,
-            name=context.shm_name,
-            timezone=timezone,
-        )
+    def __init__(self, context: Context, **kwargs: dict[Any, Any]):
+        super().__init__(name=context.shm_name, **kwargs)
 
     def update(
         self,
@@ -250,25 +228,24 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionTags(BaseModel, validate_assignment=True):
-    deployment: str
+    deployment: str = Field(exclude=True)
     deployed_by: ClassVar[str] = "Python"
     project: ClassVar[str] = "Data Safe Haven"
     version: ClassVar[str] = __version__
 
-    @classmethod
-    def from_context(cls, context: Context) -> ConfigSectionTags:
-        return ConfigSectionTags(deployment=context.name)
+    def __init__(self, context: Context, **kwargs: dict[Any, Any]):
+        super().__init__(deployment=context.name, **kwargs)
 
 
 class Config(BaseModel, validate_assignment=True):
     azure: ConfigSectionAzure | None = None
-    context: Context
+    context: Context = Field(exclude=True)
     pulumi: ConfigSectionPulumi | None = None
     shm: ConfigSectionSHM | None = None
-    tags: ConfigSectionTags | None = None
     sres: dict[str, ConfigSectionSRE] = Field(
         default_factory=dict[str, ConfigSectionSRE]
     )
+    tags: ConfigSectionTags | None = Field(exclude=True, default=None)
 
     @property
     def work_directory(self) -> str:
@@ -286,7 +263,7 @@ class Config(BaseModel, validate_assignment=True):
         """Return the config entry for this SRE creating it if it does not exist"""
         if name not in self.sres.keys():
             highest_index = max(0 + sre.index for sre in self.sres.values())
-            self.sres[name] = ConfigSectionSRE(index=highest_index+1)
+            self.sres[name] = ConfigSectionSRE(index=highest_index + 1)
         return self.sres[name]
 
     def remove_sre(self, name: str) -> None:
@@ -312,7 +289,7 @@ class Config(BaseModel, validate_assignment=True):
             f_stack.write(pulumi_cfg)
 
     @classmethod
-    def from_yaml(cls, config_yaml: str) -> Config:
+    def from_yaml(cls, context: Context, config_yaml: str) -> Config:
         try:
             config_dict = yaml.safe_load(config_yaml)
         except YAMLError as exc:
@@ -322,6 +299,13 @@ class Config(BaseModel, validate_assignment=True):
         if not isinstance(config_dict, dict):
             msg = "Unable to parse configuration as a dict."
             raise DataSafeHavenConfigError(msg)
+
+        # Add context for constructors that require it
+        # context_dict = context.model_dump()
+        config_dict["context"] = context
+        config_dict["tags"] = {}
+        for section in ["azure", "shm", "tags"]:
+            config_dict[section]["context"] = context
 
         try:
             return Config.model_validate(config_dict)
@@ -338,7 +322,7 @@ class Config(BaseModel, validate_assignment=True):
             context.storage_account_name,
             context.storage_container_name,
         )
-        return Config.from_yaml(config_yaml)
+        return Config.from_yaml(context, config_yaml)
 
     def to_yaml(self) -> str:
         return yaml.dump(self.model_dump(), indent=2)

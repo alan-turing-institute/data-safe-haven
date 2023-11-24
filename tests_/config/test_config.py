@@ -18,7 +18,7 @@ from data_safe_haven.version import __version__
 
 @fixture
 def azure_config(context):
-    return ConfigSectionAzure.from_context(
+    return ConfigSectionAzure(
         context=context,
         subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
@@ -26,16 +26,8 @@ def azure_config(context):
 
 
 class TestConfigSectionAzure:
-    def test_constructor(self):
-        ConfigSectionAzure(
-            admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-            location="uksouth",
-            subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-            tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        )
-
-    def test_from_context(self, context):
-        azure_config = ConfigSectionAzure.from_context(
+    def test_constructor(self, context):
+        azure_config = ConfigSectionAzure(
             context=context,
             subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
@@ -58,7 +50,7 @@ class TestConfigSectionPulumi:
 
 @fixture
 def shm_config(context):
-    return ConfigSectionSHM.from_context(
+    return ConfigSectionSHM(
         context=context,
         aad_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         admin_email_address="admin@example.com",
@@ -69,18 +61,8 @@ def shm_config(context):
 
 
 class TestConfigSectionSHM:
-    def test_constructor(self):
-        ConfigSectionSHM(
-            aad_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-            admin_email_address="admin@example.com",
-            admin_ip_addresses=["0.0.0.0"],  # noqa: S104
-            fqdn="shm.acme.com",
-            name="ACME SHM",
-            timezone="UTC",
-        )
-
-    def test_from_context(self, context):
-        shm_config = ConfigSectionSHM.from_context(
+    def test_constructor(self, context):
+        shm_config = ConfigSectionSHM(
             context=context,
             aad_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             admin_email_address="admin@example.com",
@@ -180,19 +162,12 @@ class TestConfigSectionSRE:
 
 @fixture
 def tags_config(context):
-    return ConfigSectionTags.from_context(context)
+    return ConfigSectionTags(context)
 
 
 class TestConfigSectionTags:
-    def test_constructor(self):
-        tags_config = ConfigSectionTags(deployment="Test Deployment")
-        assert tags_config.deployment == "Test Deployment"
-        assert tags_config.deployed_by == "Python"
-        assert tags_config.project == "Data Safe Haven"
-        assert tags_config.version == __version__
-
-    def test_from_context(self, context):
-        tags_config = ConfigSectionTags.from_context(context)
+    def test_constructor(self, context):
+        tags_config = ConfigSectionTags(context)
         assert tags_config.deployment == "Acme Deployment"
         assert tags_config.deployed_by == "Python"
         assert tags_config.project == "Data Safe Haven"
@@ -230,15 +205,8 @@ def config_sres(context, azure_config, pulumi_config, shm_config, tags_config):
 @fixture
 def config_yaml():
     return """azure:
-  admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-  location: uksouth
   subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
   tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-context:
-  admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-  location: uksouth
-  name: Acme Deployment
-  subscription_name: Data Safe Haven (Acme)
 pulumi:
   encryption_key_name: pulumi-encryption-key
   encryption_key_version: lorem
@@ -250,7 +218,6 @@ shm:
   admin_ip_addresses:
   - 0.0.0.0/32
   fqdn: shm.acme.com
-  name: acmedeployment
   timezone: UTC
 sres:
   sre1:
@@ -273,8 +240,6 @@ sres:
     research_user_ip_addresses: []
     software_packages: none
     workspace_skus: []
-tags:
-  deployment: Acme Deployment
 """
 
 
@@ -336,8 +301,8 @@ class TestConfig:
         assert "sre2" in config_sres.sres.keys()
         assert "sre1" not in config_sres.sres.keys()
 
-    def test_from_yaml(self, config_sres, config_yaml):
-        config = Config.from_yaml(config_yaml)
+    def test_from_yaml(self, config_sres, context, config_yaml):
+        config = Config.from_yaml(context, config_yaml)
         assert config == config_sres
         assert isinstance(
             config.sres["sre1"].software_packages, SoftwarePackageCategory
