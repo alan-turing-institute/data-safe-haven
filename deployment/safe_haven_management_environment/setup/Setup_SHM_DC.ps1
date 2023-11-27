@@ -64,7 +64,7 @@ foreach ($filePath in $(Get-ChildItem -File (Join-Path $dscPath "dc1Artifacts"))
         $null = Set-AzStorageBlobContent -Container $config.storage.artifacts.containers.shmArtifactsDC -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
         $null = Remove-Item $adScriptLocalFilePath
     } else {
-        $null = Set-AzStorageBlobContent -Container $config.storage.artifacts.containers.shmArtifactsDC -Context $storageAccount.Context  -File $filePath -Force
+        $null = Set-AzStorageBlobContent -Container $config.storage.artifacts.containers.shmArtifactsDC -Context $storageAccount.Context -File $filePath -Force
     }
     $success = $success -and $?
 }
