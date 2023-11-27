@@ -24,28 +24,7 @@ Import-Module $PSScriptRoot/../../common/Templates -Force -ErrorAction Stop
 $config = Get-ShmConfig -shmId $shmId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.subscriptionName -ErrorAction Stop
-
-
-# Ensure that boot diagnostics resource group and storage account exist
-# ---------------------------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.storage.bootdiagnostics.rg -Location $config.location
-$null = Deploy-StorageAccount -Name $config.storage.bootdiagnostics.accountName -ResourceGroupName $config.storage.bootdiagnostics.rg -Location $config.location
-
-
-# Ensure that artifacts resource group and storage account exist
-# --------------------------------------------------------------
-$null = Deploy-ResourceGroup -Name $config.storage.artifacts.rg -Location $config.location
-$storageAccount = Deploy-StorageAccount -Name $config.storage.artifacts.accountName -ResourceGroupName $config.storage.artifacts.rg -Location $config.location
-
-
-# Create blob storage containers
-# ------------------------------
-Add-LogMessage -Level Info "Ensuring that blob storage containers exist..."
-foreach ($containerName in $config.storage.artifacts.containers.Values) {
-    $null = Deploy-StorageContainer -Name $containerName -StorageAccount $storageAccount
-    $null = Clear-StorageContainer -Name $containerName -StorageAccount $storageAccount
-}
-
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $config.storage.artifacts.rg -Name $config.storage.artifacts.accountName
 
 # Upload DSC scripts
 # ------------------
@@ -85,7 +64,7 @@ foreach ($filePath in $(Get-ChildItem -File (Join-Path $dscPath "dc1Artifacts"))
         $null = Set-AzStorageBlobContent -Container $config.storage.artifacts.containers.shmArtifactsDC -Context $storageAccount.Context -Blob "Disconnect_AD.ps1" -File $adScriptLocalFilePath -Force
         $null = Remove-Item $adScriptLocalFilePath
     } else {
-        $null = Set-AzStorageBlobContent -Container $config.storage.artifacts.containers.shmArtifactsDC -Context $storageAccount.Context -File $filePath -Force
+        $null = Set-AzStorageBlobContent -Container $config.storage.artifacts.containers.shmArtifactsDC -Context $storageAccount.Context  -File $filePath -Force
     }
     $success = $success -and $?
 }
@@ -101,7 +80,7 @@ if ($success) {
 Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($storageAccount.StorageAccountName)'..."
 try {
     # AzureADConnect
-    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -StorageContainer $config.storage.artifacts.containers.shmArtifactsDC -StorageContext $storageAccount.Context
+    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -StorageContainer $config.storage.artifacts.containers.shmArtifactsDC -StorageContext $storageAccount.Context 
     Add-LogMessage -Level Success "Uploaded Windows package installers"
 } catch {
     Add-LogMessage -Level Fatal "Failed to upload Windows package installers!" -Exception $_.Exception
