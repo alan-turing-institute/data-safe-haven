@@ -251,7 +251,7 @@ class Config(BaseModel, validate_assignment=True):
     )
     tags: ConfigSectionTags = Field(..., exclude=True)
 
-    def __init__(self, context, **kwargs: dict[Any, Any]):
+    def __init__(self, context: Context, **kwargs: dict[Any, Any]):
         tags = ConfigSectionTags(context)
         super().__init__(context=context, tags=tags, **kwargs)
 
