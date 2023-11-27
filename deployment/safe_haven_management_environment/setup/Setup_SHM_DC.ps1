@@ -80,7 +80,7 @@ if ($success) {
 Add-LogMessage -Level Info "[ ] Uploading Windows package installers to storage account '$($storageAccount.StorageAccountName)'..."
 try {
     # AzureADConnect
-    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -StorageContainer $config.storage.artifacts.containers.shmArtifactsDC -StorageContext $storageAccount.Context 
+    $null = Set-AzureStorageBlobFromUri -FileUri "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi" -StorageContainer $config.storage.artifacts.containers.shmArtifactsDC -StorageContext $storageAccount.Context
     Add-LogMessage -Level Success "Uploaded Windows package installers"
 } catch {
     Add-LogMessage -Level Fatal "Failed to upload Windows package installers!" -Exception $_.Exception
