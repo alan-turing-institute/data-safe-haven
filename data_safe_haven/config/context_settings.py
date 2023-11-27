@@ -56,6 +56,14 @@ class Context(BaseModel, validate_assignment=True):
         # maximum of 24 characters allowed
         return f"shm{self.shm_name[:14]}context"
 
+    @property
+    def key_vault_name(self) -> str:
+        return f"shm-{self.shm_name[:9]}-kv-context"
+
+    @property
+    def managed_identity_name(self) -> str:
+        return f"shm-{self.shm_name}-identity-reader-context"
+
     def to_yaml(self) -> str:
         return yaml.dump(self.model_dump(), indent=2)
 
