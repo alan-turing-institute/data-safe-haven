@@ -20,7 +20,7 @@ def admin_unregister_users(
 
         # Load config file
         config = Config()
-        shm_name = config.name
+        shm_name = config.context.name
 
         # Check that SRE option has been provided
         if not sre_name:

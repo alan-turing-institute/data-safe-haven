@@ -62,7 +62,7 @@ def deploy_shm(
             stack.deploy(force=force)
 
         # Add Pulumi infrastructure information to the config file
-        config.read_stack(stack.stack_name, stack.local_stack_path)
+        config.add_stack(stack.stack_name, stack.local_stack_path)
 
         # Upload config to blob storage
         config.upload()
@@ -75,7 +75,7 @@ def deploy_shm(
 
         # Provision SHM with anything that could not be done in Pulumi
         manager = SHMProvisioningManager(
-            subscription_name=config.subscription_name,
+            subscription_name=config.context.subscription_name,
             stack=stack,
         )
         manager.run()

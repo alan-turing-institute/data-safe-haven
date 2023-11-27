@@ -24,7 +24,7 @@ class ActiveDirectoryUsers:
     ) -> None:
         super().__init__(*args, **kwargs)
         shm_stack = SHMStackManager(config)
-        self.azure_api = AzureApi(config.subscription_name)
+        self.azure_api = AzureApi(config.context.subscription_name)
         self.logger = LoggingSingleton()
         self.resource_group_name = shm_stack.output("domain_controllers")[
             "resource_group_name"

@@ -31,13 +31,15 @@ def deploy_sre(
         # Load and validate config file
         config = Config()
         config.sre(sre_name).update(
-            allow_copy=allow_copy,
-            allow_paste=allow_paste,
             data_provider_ip_addresses=data_provider_ip_addresses,
             databases=databases,
             workspace_skus=workspace_skus,
             software_packages=software_packages,
             user_ip_addresses=user_ip_addresses,
+        )
+        config.sre(sre_name).remote_desktop.update(
+            allow_copy=allow_copy,
+            allow_paste=allow_paste,
         )
 
         # Load GraphAPI as this may require user-interaction that is not possible as
@@ -150,7 +152,7 @@ def deploy_sre(
             stack.deploy(force=force)
 
         # Add Pulumi infrastructure information to the config file
-        config.read_stack(stack.stack_name, stack.local_stack_path)
+        config.add_stack(stack.stack_name, stack.local_stack_path)
 
         # Upload config to blob storage
         config.upload()
@@ -160,7 +162,7 @@ def deploy_sre(
             shm_stack=shm_stack,
             sre_name=sre_name,
             sre_stack=stack,
-            subscription_name=config.subscription_name,
+            subscription_name=config.context.subscription_name,
             timezone=config.shm.timezone,
         )
         manager.run()

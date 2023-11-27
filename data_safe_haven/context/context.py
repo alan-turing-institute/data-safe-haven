@@ -20,7 +20,7 @@ class Context:
         """
         if not self.azure_api_:
             self.azure_api_ = AzureApi(
-                subscription_name=self.config.subscription_name,
+                subscription_name=self.config.context.subscription_name,
             )
         return self.azure_api_
 

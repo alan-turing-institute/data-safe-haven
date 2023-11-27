@@ -133,7 +133,7 @@ class DeclarativeSHM:
                 password_domain_searcher=data.password_domain_searcher,
                 private_ip_address=networking.domain_controller_private_ip,
                 subnet_identity_servers=networking.subnet_identity_servers,
-                subscription_name=self.cfg.subscription_name,
+                subscription_name=self.cfg.context.subscription_name,
                 virtual_network_name=networking.virtual_network.name,
                 virtual_network_resource_group_name=networking.resource_group_name,
             ),

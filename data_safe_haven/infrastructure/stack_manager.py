@@ -37,7 +37,7 @@ class PulumiAccount:
     def env(self) -> dict[str, Any]:
         """Get necessary Pulumi environment variables"""
         if not self.env_:
-            azure_api = AzureApi(self.cfg.subscription_name)
+            azure_api = AzureApi(self.cfg.context.subscription_name)
             backend_storage_account_keys = azure_api.get_storage_account_keys(
                 self.cfg.context.resource_group_name,
                 self.cfg.context.storage_account_name,
@@ -210,7 +210,7 @@ class StackManager:
                 self.logger.info(
                     f"Removing Pulumi stack backup [green]{stack_backup_name}[/]."
                 )
-                azure_api = AzureApi(self.cfg.subscription_name)
+                azure_api = AzureApi(self.cfg.context.subscription_name)
                 azure_api.remove_blob(
                     blob_name=f".pulumi/stacks/{self.project_name}/{stack_backup_name}",
                     resource_group_name=self.cfg.context.resource_group_name,

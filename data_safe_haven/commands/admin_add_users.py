@@ -13,7 +13,7 @@ def admin_add_users(csv_path: pathlib.Path) -> None:
     try:
         # Load config file
         config = Config()
-        shm_name = config.name
+        shm_name = config.context.name
 
         # Load GraphAPI as this may require user-interaction that is not
         # possible as part of a Pulumi declarative command

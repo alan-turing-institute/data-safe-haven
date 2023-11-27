@@ -18,7 +18,7 @@ class GuacamoleUsers:
             sre_stack.secret("password-user-database-admin"),
             sre_stack.output("remote_desktop")["connection_db_server_name"],
             sre_stack.output("remote_desktop")["resource_group_name"],
-            config.subscription_name,
+            config.context.subscription_name,
         )
         self.users_: Sequence[ResearchUser] | None = None
         self.postgres_script_path: pathlib.Path = (
