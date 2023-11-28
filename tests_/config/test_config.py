@@ -11,6 +11,7 @@ from data_safe_haven.config.config import (
     ConfigSectionTags,
     ConfigSubsectionRemoteDesktopOpts,
 )
+from data_safe_haven.exceptions import DataSafeHavenParameterError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.utility.enums import DatabaseSystem, SoftwarePackageCategory
 from data_safe_haven.version import __version__
@@ -261,11 +262,6 @@ def mock_key_vault_key(monkeypatch):
 
 
 class TestConfig:
-    def test_constructor_defaults(self, context):
-        config = Config(context=context)
-        assert config.context == context
-        assert not any((config.azure, config.pulumi, config.shm, config.sres))
-
     def test_constructor(self, context, azure_config, pulumi_config, shm_config):
         config = Config(
             context=context,
@@ -291,11 +287,6 @@ class TestConfig:
     ):
         version = config_sres.pulumi_encryption_key_version
         assert version == "version"
-
-    @pytest.mark.parametrize("require_sres", [False, True])
-    def test_is_complete_bare(self, context, require_sres):
-        config = Config(context=context)
-        assert config.is_complete(require_sres=require_sres) is False
 
     @pytest.mark.parametrize("require_sres,expected", [(False, True), (True, False)])
     def test_is_complete_no_sres(self, config_no_sres, require_sres, expected):
@@ -325,6 +316,16 @@ class TestConfig:
         assert len(config_sres.sres) == 1
         assert "sre2" in config_sres.sres.keys()
         assert "sre1" not in config_sres.sres.keys()
+
+    def test_template(self, context):
+        config = Config.template(context)
+        assert isinstance(config, Config)
+        assert config.azure.subscription_id == "Azure subscription ID"
+
+    def test_template_validation(self, context):
+        config = Config.template(context)
+        with pytest.raises(DataSafeHavenParameterError):
+            Config.from_yaml(context, config.to_yaml())
 
     def test_from_yaml(self, config_sres, context, config_yaml):
         config = Config.from_yaml(context, config_yaml)

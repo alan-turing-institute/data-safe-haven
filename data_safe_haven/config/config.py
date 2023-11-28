@@ -242,10 +242,10 @@ class ConfigSectionTags(BaseModel, validate_assignment=True):
 
 
 class Config(BaseModel, validate_assignment=True):
-    azure: ConfigSectionAzure | None = None
+    azure: ConfigSectionAzure
     context: Context = Field(..., exclude=True)
-    pulumi: ConfigSectionPulumi | None = None
-    shm: ConfigSectionSHM | None = None
+    pulumi: ConfigSectionPulumi
+    shm: ConfigSectionSHM
     sres: dict[str, ConfigSectionSRE] = Field(
         ..., default_factory=dict[str, ConfigSectionSRE]
     )
@@ -315,6 +315,25 @@ class Config(BaseModel, validate_assignment=True):
             pulumi_cfg = b64decode(self.pulumi.stacks[name])
             with open(path, "w", encoding="utf-8") as f_stack:
                 f_stack.write(pulumi_cfg)
+
+    @classmethod
+    def template(cls, context: Context) -> Config:
+        # Create object without validation to allow "replace me" prompts
+        return Config.model_construct(
+            context=context,
+            azure=ConfigSectionAzure.model_construct(
+                subscription_id="Azure subscription ID",
+                tenant_id="Azure tenant ID",
+            ),
+            pulumi=ConfigSectionPulumi(),
+            shm=ConfigSectionSHM.model_construct(
+                aad_tenant_id="Azure Active Directory tenant ID",
+                admin_email_address="Admin email address",
+                admin_ip_addresses=["Admin IP addresses"],
+                fqdn="TRE domain name",
+                timezone="Timezone",
+            ),
+        )
 
     @classmethod
     def from_yaml(cls, context: Context, config_yaml: str) -> Config:
