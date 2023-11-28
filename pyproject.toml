@@ -9,7 +9,7 @@ description = "An open-source framework for creating secure environments to anal
 authors = [
   { name = "Data Safe Haven development team", email = "safehavendevs@turing.ac.uk" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "BSD-3-Clause"
 dependencies = [
   "appdirs~=1.4",
@@ -100,7 +100,7 @@ pre-install-commands = ["pip install -r requirements.txt"]
 test = "pytest {args:-vvv tests_}"
 
 [tool.black]
-target-version = ["py310", "py311"]
+target-version = ["py311", "py312"]
 
 [tool.ruff]
 select = [

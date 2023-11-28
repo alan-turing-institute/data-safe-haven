@@ -41,7 +41,7 @@ def ordered_private_dns_zones(resource_type: str | None = None) -> list[str]:
 
 def time_as_string(hour: int, minute: int, timezone: str) -> str:
     """Get the next occurence of a repeating daily time as a string"""
-    dt = datetime.datetime.now(datetime.timezone.utc).replace(
+    dt = datetime.datetime.now(datetime.UTC).replace(
         hour=hour,
         minute=minute,
         second=0,

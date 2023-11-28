@@ -290,7 +290,7 @@ class GraphApi:
                 "passwordCredential": {
                     "displayName": application_secret_name,
                     "endDateTime": (
-                        datetime.datetime.now(datetime.timezone.utc)
+                        datetime.datetime.now(datetime.UTC)
                         + datetime.timedelta(weeks=520)
                     ).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 }

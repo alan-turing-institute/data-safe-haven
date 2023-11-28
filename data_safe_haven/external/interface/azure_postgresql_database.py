@@ -54,7 +54,7 @@ class AzurePostgreSQLDatabase:
         self.port = 5432
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
-        self.rule_suffix = datetime.datetime.now(tz=datetime.timezone.utc).strftime(
+        self.rule_suffix = datetime.datetime.now(tz=datetime.UTC).strftime(
             r"%Y%m%d-%H%M%S"
         )
 
