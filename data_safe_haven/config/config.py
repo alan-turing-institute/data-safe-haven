@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 import yaml
+from azure.keyvault.keys import KeyVaultKey
 from pydantic import (
     BaseModel,
     Field,
@@ -54,10 +55,9 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionPulumi(BaseModel, validate_assignment=True):
-    encryption_key_name: str = "pulumi-encryption-key"
-    encryption_key_version: str
+    storage_container_name: ClassVar[str] = "pulumi"
+    encryption_key_name: ClassVar[str] = "pulumi-encryption-key"
     stacks: dict[str, str] = Field(..., default_factory=dict[str, str])
-    storage_container_name: str = "pulumi"
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
@@ -251,6 +251,8 @@ class Config(BaseModel, validate_assignment=True):
     )
     tags: ConfigSectionTags = Field(..., exclude=True)
 
+    _pulumi_encryption_key = None
+
     def __init__(self, context: Context, **kwargs: dict[Any, Any]):
         tags = ConfigSectionTags(context)
         super().__init__(context=context, tags=tags, **kwargs)
@@ -258,6 +260,20 @@ class Config(BaseModel, validate_assignment=True):
     @property
     def work_directory(self) -> Path:
         return self.context.work_directory
+
+    @property
+    def pulumi_encryption_key(self) -> KeyVaultKey:
+        if not self._pulumi_encryption_key:
+            azure_api = AzureApi(subscription_name=self.context.subscription_name)
+            self._pulumi_encryption_key = azure_api.get_keyvault_key(
+                key_name=self.pulumi.encryption_key_name,
+                key_vault_name=self.context.key_vault_name,
+            )
+        return self._pulumi_encryption_key
+
+    @property
+    def pulumi_encryption_key_version(self) -> str:
+        return self.pulumi_encryption_key.id.split("/")[-1]
 
     def is_complete(self, *, require_sres: bool) -> bool:
         if require_sres:

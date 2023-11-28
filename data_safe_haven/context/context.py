@@ -78,12 +78,10 @@ class Context:
                     f"Keyvault '{self.config.context.key_vault_name}' was not created."
                 )
                 raise DataSafeHavenAzureError(msg)
-            pulumi_encryption_key = self.azure_api.ensure_keyvault_key(
+            self.azure_api.ensure_keyvault_key(
                 key_name=self.config.pulumi.encryption_key_name,
                 key_vault_name=keyvault.name,
             )
-            key_version = pulumi_encryption_key.id.split("/")[-1]
-            self.config.pulumi.encryption_key_version = key_version
         except Exception as exc:
             msg = f"Failed to create context resources.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc

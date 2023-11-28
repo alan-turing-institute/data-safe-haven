@@ -37,12 +37,12 @@ class TestConfigSectionAzure:
 
 @fixture
 def pulumi_config():
-    return ConfigSectionPulumi(encryption_key_version="lorem")
+    return ConfigSectionPulumi()
 
 
 class TestConfigSectionPulumi:
     def test_constructor_defaults(self):
-        pulumi_config = ConfigSectionPulumi(encryption_key_version="lorem")
+        pulumi_config = ConfigSectionPulumi()
         assert pulumi_config.encryption_key_name == "pulumi-encryption-key"
         assert pulumi_config.stacks == {}
         assert pulumi_config.storage_container_name == "pulumi"
@@ -214,10 +214,7 @@ def config_yaml():
   subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
   tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
 pulumi:
-  encryption_key_name: pulumi-encryption-key
-  encryption_key_version: lorem
   stacks: {}
-  storage_container_name: pulumi
 shm:
   aad_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
   admin_email_address: admin@example.com
@@ -249,6 +246,20 @@ sres:
 """
 
 
+@fixture
+def mock_key_vault_key(monkeypatch):
+    class MockKeyVaultKey:
+        def __init__(self, key_name, key_vault_name):
+            self.key_name = key_name
+            self.key_vault_name = key_vault_name
+            self.id = "mock_key/version"
+
+    def mock_get_keyvault_key(self, key_name, key_vault_name):  # noqa: ARG001
+        return MockKeyVaultKey(key_name, key_vault_name)
+
+    monkeypatch.setattr(AzureApi, "get_keyvault_key", mock_get_keyvault_key)
+
+
 class TestConfig:
     def test_constructor_defaults(self, context):
         config = Config(context=context)
@@ -267,6 +278,19 @@ class TestConfig:
     def test_work_directory(self, config_sres):
         config = config_sres
         assert config.work_directory == config.context.work_directory
+
+    def test_pulumi_encryption_key(
+        self, config_sres, mock_key_vault_key  # noqa: ARG002
+    ):
+        key = config_sres.pulumi_encryption_key
+        assert key.key_name == config_sres.pulumi.encryption_key_name
+        assert key.key_vault_name == config_sres.context.key_vault_name
+
+    def test_pulumi_encryption_key_version(
+        self, config_sres, mock_key_vault_key  # noqa: ARG002
+    ):
+        version = config_sres.pulumi_encryption_key_version
+        assert version == "version"
 
     @pytest.mark.parametrize("require_sres", [False, True])
     def test_is_complete_bare(self, context, require_sres):

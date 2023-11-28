@@ -100,7 +100,7 @@ class StackManager:
                     stack_name=self.stack_name,
                     program=self.program.run,
                     opts=automation.LocalWorkspaceOptions(
-                        secrets_provider=f"azurekeyvault://{self.cfg.context.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi.encryption_key_version}",
+                        secrets_provider=f"azurekeyvault://{self.cfg.context.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.encryption_key_version}",
                         work_dir=str(self.work_dir),
                         env_vars=self.account.env,
                     ),
