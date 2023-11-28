@@ -7,6 +7,7 @@ import typer
 from data_safe_haven import __version__
 from data_safe_haven.commands import (
     admin_command_group,
+    config_command_group,
     context_command_group,
     deploy_command_group,
     teardown_command_group,
@@ -68,6 +69,11 @@ def main() -> None:
         admin_command_group,
         name="admin",
         help="Perform administrative tasks for a Data Safe Haven deployment.",
+    )
+    application.add_typer(
+        config_command_group,
+        name="config",
+        help="Manage Data Safe Haven configuration.",
     )
     application.add_typer(
         context_command_group, name="context", help="Manage Data Safe Haven contexts."
