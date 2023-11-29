@@ -26,3 +26,6 @@ class TestTyperValidateAadGuid:
         with pytest.raises(BadParameter) as exc:
             typer_validate_aad_guid(guid)
             assert "Expected GUID" in exc
+
+    def test_typer_validate_aad_guid_nonae(self):
+        assert typer_validate_aad_guid(None) is None
