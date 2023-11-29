@@ -296,12 +296,14 @@ class TestConfig:
             config.sres["sre1"].software_packages, SoftwarePackageCategory
         )
 
-    def test_from_remote(self, context, config_sres, mock_download_blob):
+    def test_from_remote(
+        self, context, config_sres, mock_download_blob  # noqa: ARG002
+    ):
         config = Config.from_remote(context)
         assert config == config_sres
 
     def test_to_yaml(self, config_sres, config_yaml):
         assert config_sres.to_yaml() == config_yaml
 
-    def test_upload(self, config_sres, mock_upload_blob):
+    def test_upload(self, config_sres, mock_upload_blob):  # noqa: ARG002
         config_sres.upload()

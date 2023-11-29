@@ -10,7 +10,9 @@ class TestTemplate:
 
     def test_template_file(self, runner, tmp_path):
         template_file = (tmp_path / "template.yaml").absolute()
-        result = runner.invoke(config_command_group, ["template", "--file", str(template_file)])
+        result = runner.invoke(
+            config_command_group, ["template", "--file", str(template_file)]
+        )
         assert result.exit_code == 0
         with open(template_file) as f:
             template_text = f.read()
@@ -19,14 +21,14 @@ class TestTemplate:
 
 
 class TestUpload:
-    def test_upload(self, runner, config_file, mock_upload_blob):
+    def test_upload(self, runner, config_file, mock_upload_blob):  # noqa: ARG002
         result = runner.invoke(
             config_command_group,
             ["upload", str(config_file)],
         )
         assert result.exit_code == 0
 
-    def test_upload_no_file(self, runner, mock_upload_blob):
+    def test_upload_no_file(self, runner, mock_upload_blob):  # noqa: ARG002
         result = runner.invoke(
             config_command_group,
             ["upload"],
@@ -35,10 +37,7 @@ class TestUpload:
 
 
 class TestShow:
-    def test_show(self, runner, config_yaml, mock_download_blob):
-        result = runner.invoke(
-            config_command_group,
-            ["show"]
-        )
+    def test_show(self, runner, config_yaml, mock_download_blob):  # noqa: ARG002
+        result = runner.invoke(config_command_group, ["show"])
         assert result.exit_code == 0
         assert config_yaml in result.stdout

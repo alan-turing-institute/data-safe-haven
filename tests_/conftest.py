@@ -88,10 +88,10 @@ def mock_upload_blob(monkeypatch, context):
     def mock_upload_blob(
         self,  # noqa: ARG001
         blob_data: bytes | str,  # noqa: ARG001
-        blob_name: str,  # noqa: ARG001
-        resource_group_name: str,  # noqa: ARG001
-        storage_account_name: str,  # noqa: ARG001
-        storage_container_name: str,  # noqa: ARG001
+        blob_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        storage_container_name: str,
     ):
         assert blob_name == context.config_filename
         assert resource_group_name == context.resource_group_name

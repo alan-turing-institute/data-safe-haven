@@ -1,7 +1,6 @@
 from pytest import fixture
 from typer.testing import CliRunner
 
-
 context_settings = """\
     selected: acme_deployment
     contexts:

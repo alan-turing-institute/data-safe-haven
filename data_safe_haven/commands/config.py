@@ -13,8 +13,8 @@ config_command_group = typer.Typer()
 @config_command_group.command()
 def template(
     file: Annotated[
-        Optional[Path],
-        typer.Option(help="File path to write configuration template to.")
+        Optional[Path],  # noqa: UP007
+        typer.Option(help="File path to write configuration template to."),
     ] = None
 ) -> None:
     """Write a template Data Safe Haven configuration."""
