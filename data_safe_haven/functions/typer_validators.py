@@ -16,6 +16,7 @@ def typer_validator_factory(validator: Callable[[Any], Any]) -> Callable[[Any], 
     def typer_validator(x: Any) -> Any:
         try:
             validator(x)
+            return x
         except ValueError as exc:
             raise BadParameter(str(exc)) from exc
 
