@@ -296,21 +296,7 @@ class TestConfig:
             config.sres["sre1"].software_packages, SoftwarePackageCategory
         )
 
-    def test_from_remote(self, context, config_sres, config_yaml, monkeypatch):
-        def mock_download_blob(
-            self,  # noqa: ARG001
-            blob_name: str,
-            resource_group_name: str,
-            storage_account_name: str,
-            storage_container_name: str,
-        ):
-            assert blob_name == context.config_filename
-            assert resource_group_name == context.resource_group_name
-            assert storage_account_name == context.storage_account_name
-            assert storage_container_name == context.storage_container_name
-            return config_yaml
-
-        monkeypatch.setattr(AzureApi, "download_blob", mock_download_blob)
+    def test_from_remote(self, context, config_sres, mock_download_blob):
         config = Config.from_remote(context)
         assert config == config_sres
 

@@ -37,3 +37,10 @@ def upload(
         config_yaml = config_file.read()
     config = Config.from_yaml(context, config_yaml)
     config.upload()
+
+
+@config_command_group.command()
+def show() -> None:
+    context = ContextSettings.from_file().context
+    config = Config.from_remote(context)
+    print(config.to_yaml())

@@ -32,3 +32,13 @@ class TestUpload:
             ["upload"],
         )
         assert result.exit_code == 2
+
+
+class TestShow:
+    def test_show(self, runner, config_yaml, mock_download_blob):
+        result = runner.invoke(
+            config_command_group,
+            ["show"]
+        )
+        assert result.exit_code == 0
+        assert config_yaml in result.stdout
