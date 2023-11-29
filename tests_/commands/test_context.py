@@ -1,5 +1,4 @@
 from data_safe_haven.commands.context import context_command_group
-from data_safe_haven.config import Config
 from data_safe_haven.context import Context
 
 
@@ -163,24 +162,19 @@ class TestRemove:
 
 class TestCreate:
     def test_create(self, runner, monkeypatch):
-        def mock_create():
+        def mock_create(self):  # noqa: ARG001
             print("mock create")  # noqa: T201
 
-        def mock_upload():
-            print("mock upload")  # noqa: T201
-
         monkeypatch.setattr(Context, "create", mock_create)
-        monkeypatch.setattr(Config, "upload", mock_upload)
 
         result = runner.invoke(context_command_group, ["create"])
         assert "mock create" in result.stdout
-        assert "mock upload" in result.stdout
         assert result.exit_code == 0
 
 
 class TestTeardown:
     def test_teardown(self, runner, monkeypatch):
-        def mock_teardown():
+        def mock_teardown(self):  # noqa: ARG001
             print("mock teardown")  # noqa: T201
 
         monkeypatch.setattr(Context, "teardown", mock_teardown)

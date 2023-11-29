@@ -14,6 +14,7 @@ from data_safe_haven.functions.validators import (
 
 def typer_validator_factory(validator: Callable[[Any], Any]) -> Callable[[Any], Any]:
     """Factory to create validation functions for Typer from Pydantic validators"""
+
     def typer_validator(x: Any) -> Any:
         # Return unused optional arguments
         if x is None:

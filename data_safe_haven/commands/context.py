@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.config import Config, ContextSettings
+from data_safe_haven.config import ContextSettings
 from data_safe_haven.config.context_settings import Context, default_config_file_path
 from data_safe_haven.context import Context as ContextInfra
 from data_safe_haven.functions.typer_validators import typer_validate_aad_guid
@@ -149,7 +149,7 @@ def update(
 def remove(
     key: Annotated[str, typer.Argument(help="Name of the context to remove.")],
 ) -> None:
-    """Remove the selected context."""
+    """Removes a context."""
     settings = ContextSettings.from_file()
     settings.remove(key)
     settings.write()
@@ -158,15 +158,14 @@ def remove(
 @context_command_group.command()
 def create() -> None:
     """Create Data Safe Haven context infrastructure."""
-    config = Config()
-    context = ContextInfra(config)
-    context.create()
-    context.config.upload()
+    context = ContextSettings.from_file().context
+    context_infra = ContextInfra(context)
+    context_infra.create()
 
 
 @context_command_group.command()
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure."""
-    config = Config()
-    context = ContextInfra(config)
-    context.teardown()
+    context = ContextSettings.from_file().context
+    context_infra = ContextInfra(context)
+    context_infra.teardown()
