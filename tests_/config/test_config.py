@@ -210,44 +210,6 @@ def config_sres(context, azure_config, pulumi_config, shm_config):
 
 
 @fixture
-def config_yaml():
-    return """azure:
-  subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-  tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-pulumi:
-  stacks: {}
-shm:
-  aad_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-  admin_email_address: admin@example.com
-  admin_ip_addresses:
-  - 0.0.0.0/32
-  fqdn: shm.acme.com
-  timezone: UTC
-sres:
-  sre1:
-    data_provider_ip_addresses: []
-    databases: []
-    index: 0
-    remote_desktop:
-      allow_copy: false
-      allow_paste: false
-    research_user_ip_addresses: []
-    software_packages: none
-    workspace_skus: []
-  sre2:
-    data_provider_ip_addresses: []
-    databases: []
-    index: 1
-    remote_desktop:
-      allow_copy: false
-      allow_paste: false
-    research_user_ip_addresses: []
-    software_packages: none
-    workspace_skus: []
-"""
-
-
-@fixture
 def mock_key_vault_key(monkeypatch):
     class MockKeyVaultKey:
         def __init__(self, key_name, key_vault_name):
@@ -355,16 +317,5 @@ class TestConfig:
     def test_to_yaml(self, config_sres, config_yaml):
         assert config_sres.to_yaml() == config_yaml
 
-    def test_upload(self, config_sres, monkeypatch):
-        def mock_upload_blob(
-            self,  # noqa: ARG001
-            blob_data: bytes | str,  # noqa: ARG001
-            blob_name: str,  # noqa: ARG001
-            resource_group_name: str,  # noqa: ARG001
-            storage_account_name: str,  # noqa: ARG001
-            storage_container_name: str,  # noqa: ARG001
-        ):
-            pass
-
-        monkeypatch.setattr(AzureApi, "upload_blob", mock_upload_blob)
+    def test_upload(self, config_sres, mock_upload_blob):
         config_sres.upload()

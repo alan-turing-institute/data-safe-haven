@@ -348,7 +348,6 @@ class Config(BaseModel, validate_assignment=True):
             raise DataSafeHavenConfigError(msg)
 
         # Add context for constructors that require it
-        # context_dict = context.model_dump()
         config_dict["context"] = context
         for section in ["azure", "shm"]:
             config_dict[section]["context"] = context

@@ -16,3 +16,19 @@ class TestTemplate:
             template_text = f.read()
         assert "subscription_id: Azure subscription ID" in template_text
         assert "sres: {}" in template_text
+
+
+class TestUpload:
+    def test_upload(self, runner, config_file, mock_upload_blob):
+        result = runner.invoke(
+            config_command_group,
+            ["upload", str(config_file)],
+        )
+        assert result.exit_code == 0
+
+    def test_upload_no_file(self, runner, mock_upload_blob):
+        result = runner.invoke(
+            config_command_group,
+            ["upload"],
+        )
+        assert result.exit_code == 2
