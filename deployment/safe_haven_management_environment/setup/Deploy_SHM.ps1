@@ -75,6 +75,11 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Monitoring
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Firewall.ps1')" -shmId $shmId }
 
 
+# Setup SHM storage accounts
+# --------------------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Storage_Accounts.ps1')" -shmId $shmId }
+
+
 # Setup SHM domain controllers
 # ----------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_DC.ps1')" -shmId $shmId }
