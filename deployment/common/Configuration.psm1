@@ -24,7 +24,7 @@ function Get-CoreConfig {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
         [string]$shmId,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
         [string]$sreId = $null
     )
     # Construct filename for this config file
@@ -609,7 +609,7 @@ function Get-SreConfig {
     param(
         [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
         [string]$shmId,
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
         [string]$sreId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
