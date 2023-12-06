@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project'; maximum of seven alphanumeric characters)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project'. Maximum of seven alphanumeric characters)")]
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Use device authentication for connecting to Azure and Microsoft Graph")]
     [switch]$UseDeviceAuthentication
