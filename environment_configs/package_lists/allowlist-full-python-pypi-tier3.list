@@ -11,6 +11,7 @@ aiosignal
 aiosqlite
 alabaster
 altair
+altgraph
 annotated-types
 annoy
 ansi2html
@@ -98,9 +99,11 @@ click
 click-plugins
 cligj
 clikit
+clint
 cloudpathlib
 cloudpickle
 cmake
+cmarkgfm
 cmdstanpy
 colorama
 comm
@@ -318,6 +321,7 @@ loguru
 LunarCalendar
 lxml
 lz4
+macholib
 mapclassify
 Markdown
 markdown-it-py
@@ -364,6 +368,7 @@ ndindex
 nest-asyncio
 netCDF4
 networkx
+nh3
 nltk
 nose
 notebook
@@ -429,6 +434,7 @@ pathy
 patsy
 pbr
 pdfminer
+pefile
 pep517
 pep8
 pexpect
@@ -491,6 +497,8 @@ pygrib
 PyHamcrest
 pyHanko
 pyhanko-certvalidator
+pyinstaller
+pyinstaller-hooks-contrib
 pyLDAvis
 pylev
 pylint
@@ -538,6 +546,7 @@ qdldl
 qrcode
 rapidfuzz
 rasterio
+readme-renderer
 referencing
 regex
 reportlab
@@ -636,6 +645,7 @@ syntok
 tables
 tabulate
 tangled-up-in-unicode
+tb-nightly
 tblib
 tdda
 tempora
@@ -644,9 +654,11 @@ tensorboard
 tensorboard-data-server
 tensorboard-plugin-wit
 tensorflow
+tensorflow-cpu-aws
 tensorflow-estimator
 tensorflow-gpu
 tensorflow-gpu-estimator
+tensorflow-intel
 tensorflow-io-gcs-filesystem
 tensorflow-tensorboard
 termcolor
@@ -654,6 +666,7 @@ termcolor-whl
 terminado
 testpath
 tf-estimator-nightly
+tf-keras-nightly
 Theano
 Theano-PyMC
 thinc
@@ -678,6 +691,7 @@ transformers
 triton
 trove-classifiers
 tsfresh
+twine
 Twisted
 twisted-iocpsupport
 typed-ast
