@@ -571,6 +571,15 @@
         "promotion",
         "talk"
       ]
+    },
+    {
+      "login": "cptanalatriste",
+      "name": "Carlos Gavidia-Calderon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1616531?v=4",
+      "profile": "https://carlos.gavidia.me/",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
