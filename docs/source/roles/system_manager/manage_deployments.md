@@ -129,6 +129,7 @@ On your **deployment machine**.
 
 The `SRE_Teardown.ps1` script *does not* remove the SRE data storage account stored in the SHM. Thus, the `ingress`, `egress`, and `backup` data folders still exist.
 This allows the data to be used for the project associated with the SRE to exist before and after the project starts and ends, without requiring the full SRE to be running.
+
 ```{attention}
 To avoid accidental deletion, the storage account must be deleted manually through the Azure Portal.
 The storage account can be found under `RG_SHM_<SHM ID>_PERSISTENT_DATA`, with a name similar to `<SHM ID><SRE ID>data<random letters>`.
@@ -164,6 +165,7 @@ On your **deployment machine**.
 
 The `SRE_Teardown.ps1` script *does not* remove the SRE data storage account stored in the SHM. Thus, the `ingress`, `egress`, and `backup` data folders still exist.
 This allows the data to be used for the project associated with the SRE to exist before and after the project starts and ends, without requiring the full SRE to be running.
+
 ```{attention}
 To avoid accidental deletion, the storage account must be deleted manually through the Azure Portal.
 The storage account can be found under `RG_SHM_<SHM ID>_PERSISTENT_DATA`, with a name similar to `<SHM ID><SRE ID>data<random letters>`.
