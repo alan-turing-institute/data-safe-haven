@@ -127,6 +127,14 @@ On your **deployment machine**.
 
 - If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 
+```{attention}
+The `SRE_Teardown.ps1` script *does not* remove the SRE data storage account stored in the SHM. Thus, the `ingress`, `egress`, and `backup` data folders still exist and must be deleted manually through the Azure Portal if desired. 
+
+This allows the data to be used for the project associated with the SRE to exist before and after the project starts and ends, without requiring the full SRE to be running.
+
+The storage account can be found under `RG_SHM_<SHM ID>_PERSISTENT_DATA`, with a name similar to `<SHM ID><SRE ID>data<random letters>`.
+```
+
 ## {{end}} Remove a complete Safe Haven
 
 ### {{collision}} Tear down any attached SREs
@@ -153,6 +161,14 @@ On your **deployment machine**.
     ```{note}
     If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
     ```
+
+```{attention}
+The `SRE_Teardown.ps1` script *does not* remove the SRE data storage account stored in the SHM. Thus, the `ingress`, `egress`, and `backup` data folders still exist and must be deleted manually through the Azure Portal if desired. 
+
+This allows the data to be used for the project associated with the SRE to exist before and after the project starts and ends, without requiring the full SRE to be running.
+
+The storage account can be found under `RG_SHM_<SHM ID>_PERSISTENT_DATA`, with a name similar to `<SHM ID><SRE ID>data<random letters>`.
+```
 
 ### {{unlock}} Disconnect from the Azure Active Directory
 
