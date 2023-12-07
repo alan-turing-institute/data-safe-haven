@@ -571,6 +571,24 @@
         "promotion",
         "talk"
       ]
+    },
+    {
+      "login": "cptanalatriste",
+      "name": "Carlos Gavidia-Calderon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1616531?v=4",
+      "profile": "https://carlos.gavidia.me/",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "helendduncan",
+      "name": "Helen D Little",
+      "avatar_url": "https://avatars.githubusercontent.com/u/46891265?v=4",
+      "profile": "https://github.com/helendduncan",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
