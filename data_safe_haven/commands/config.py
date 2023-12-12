@@ -18,7 +18,7 @@ def template(
     ] = None
 ) -> None:
     """Write a template Data Safe Haven configuration."""
-    context = ContextSettings.from_file()
+    context = ContextSettings.from_file().context
     config = Config.template(context)
     if file:
         with open(file, "w") as outfile:

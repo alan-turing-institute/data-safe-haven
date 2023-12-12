@@ -60,7 +60,7 @@ class ContextInfra:
                 storage_account_name=storage_account.name,
             )
             _ = self.azure_api.ensure_storage_blob_container(
-                container_name=self.pulumi.storage_container_name,
+                container_name=self.context.storage_container_name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account.name,
             )
