@@ -273,7 +273,8 @@ class Config(BaseModel, validate_assignment=True):
 
     @property
     def pulumi_encryption_key_version(self) -> str:
-        return self.pulumi_encryption_key.id.split("/")[-1]
+        key_id: str = self.pulumi_encryption_key.id
+        return key_id.split("/")[-1]
 
     def is_complete(self, *, require_sres: bool) -> bool:
         if require_sres:
