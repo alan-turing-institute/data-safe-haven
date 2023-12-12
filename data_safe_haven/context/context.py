@@ -4,7 +4,7 @@ from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 
 
-class Context:
+class ContextInfra:
     """Azure resources to support Data Safe Haven context"""
 
     def __init__(self, context: Context) -> None:

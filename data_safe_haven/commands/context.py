@@ -6,7 +6,7 @@ from rich import print
 
 from data_safe_haven.config import ContextSettings
 from data_safe_haven.config.context_settings import Context, default_config_file_path
-from data_safe_haven.context import Context as ContextInfra
+from data_safe_haven.context import ContextInfra
 from data_safe_haven.functions.typer_validators import typer_validate_aad_guid
 
 context_command_group = typer.Typer()
