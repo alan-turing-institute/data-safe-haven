@@ -444,9 +444,11 @@ pickleshare
 Pillow
 Pint
 pip
+pip-api
 pip-shims
 pip-tools
 pipenv
+pipreqs
 pkgconfig
 pkginfo
 pkgutil_resolve_name
@@ -486,6 +488,7 @@ pycairo
 pycodestyle
 pycosat
 pycparser
+pycrdt
 pycurl
 pydantic
 pydantic-core
@@ -744,6 +747,7 @@ XlsxWriter
 xxhash
 xyzservices
 y-py
+yarg
 yarl
 yaspin
 ydata-profiling
