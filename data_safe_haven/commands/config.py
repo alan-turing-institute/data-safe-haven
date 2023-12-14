@@ -41,6 +41,7 @@ def upload(
 
 @config_command_group.command()
 def show() -> None:
+    """Print the configuration for the selected Data Safe Haven context"""
     context = ContextSettings.from_file().context
     config = Config.from_remote(context)
     print(config.to_yaml())
