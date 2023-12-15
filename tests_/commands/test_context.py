@@ -9,10 +9,8 @@ class TestShow:
         assert "Current context: acme_deployment" in result.stdout
         assert "Name: Acme Deployment" in result.stdout
 
-    def test_show_none(self, runner):
-        result = runner.invoke(context_command_group, ["remove", "acme_deployment"])
-        assert result.exit_code == 0
-        result = runner.invoke(context_command_group, ["show"])
+    def test_show_none(self, runner_none):
+        result = runner_none.invoke(context_command_group, ["show"])
         assert result.exit_code == 0
         assert "Current context: None" in result.stdout
 
@@ -22,6 +20,12 @@ class TestAvailable:
         result = runner.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
         assert "acme_deployment*" in result.stdout
+        assert "gems" in result.stdout
+
+    def test_available_none(self, runner_none):
+        result = runner_none.invoke(context_command_group, ["available"])
+        assert result.exit_code == 0
+        assert "acme_deployment" in result.stdout
         assert "gems" in result.stdout
 
 
