@@ -96,6 +96,16 @@ class TestContextSettings:
         )
         assert isinstance(settings, ContextSettings)
 
+    def test_null_selected(self, context_yaml):
+        context_yaml = context_yaml.replace("selected: acme_deployment", "selected: null")
+
+        settings = ContextSettings.from_yaml(context_yaml)
+        assert settings.selected is None
+        assert settings.context is None
+        with pytest.raises(DataSafeHavenConfigError) as exc:
+            settings.assert_context()
+            assert "No context selected" in exc
+
     def test_missing_selected(self, context_yaml):
         context_yaml = "\n".join(context_yaml.splitlines()[1:])
 
