@@ -169,6 +169,16 @@ class TestContextSettings:
             for item in yaml_dict["contexts"]["gems"].keys()
         )
 
+    def test_assert_context(self, context_settings):
+        context = context_settings.assert_context()
+        assert context.name == "Acme Deployment"
+
+    def test_assert_context_none(self, context_settings):
+        context_settings.selected = None
+        with pytest.raises(DataSafeHavenConfigError) as exc:
+            context_settings.assert_context()
+            assert "No context selected" in exc
+
     def test_available(self, context_settings):
         available = context_settings.available
         assert isinstance(available, list)
