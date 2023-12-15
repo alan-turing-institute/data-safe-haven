@@ -18,7 +18,7 @@ def show() -> None:
     settings = ContextSettings.from_file()
 
     current_context_key = settings.selected
-    current_context = settings.assert_context()
+    current_context = settings.context
 
     print(f"Current context: [green]{current_context_key}")
     if current_context is not None:
