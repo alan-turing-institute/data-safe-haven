@@ -201,6 +201,12 @@ class TestContextSettings:
         context_settings.update(name="replaced")
         assert context_settings.context.name == "replaced"
 
+    def test_update_none(self, context_settings):
+        context_settings.selected = None
+        with pytest.raises(DataSafeHavenConfigError) as exc:
+            context_settings.update(name="replaced")
+            assert "No context selected" in exc
+
     def test_add(self, context_settings):
         context_settings.add(
             key="example",
