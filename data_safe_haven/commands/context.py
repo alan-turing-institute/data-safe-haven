@@ -18,13 +18,14 @@ def show() -> None:
     settings = ContextSettings.from_file()
 
     current_context_key = settings.selected
-    current_context = settings.context
+    current_context = settings.assert_context()
 
     print(f"Current context: [green]{current_context_key}")
-    print(f"\tName: {current_context.name}")
-    print(f"\tAdmin Group ID: {current_context.admin_group_id}")
-    print(f"\tSubscription name: {current_context.subscription_name}")
-    print(f"\tLocation: {current_context.location}")
+    if current_context is not None:
+        print(f"\tName: {current_context.name}")
+        print(f"\tAdmin Group ID: {current_context.admin_group_id}")
+        print(f"\tSubscription name: {current_context.subscription_name}")
+        print(f"\tLocation: {current_context.location}")
 
 
 @context_command_group.command()
@@ -35,8 +36,9 @@ def available() -> None:
     current_context_key = settings.selected
     available = settings.available
 
-    available.remove(current_context_key)
-    available = [f"[green]{current_context_key}*[/]", *available]
+    if current_context_key is not None:
+        available.remove(current_context_key)
+        available = [f"[green]{current_context_key}*[/]", *available]
 
     print("\n".join(available))
 
@@ -158,7 +160,7 @@ def remove(
 @context_command_group.command()
 def create() -> None:
     """Create Data Safe Haven context infrastructure."""
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     context_infra = ContextInfra(context)
     context_infra.create()
 
@@ -166,6 +168,6 @@ def create() -> None:
 @context_command_group.command()
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure."""
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     context_infra = ContextInfra(context)
     context_infra.teardown()

@@ -25,7 +25,7 @@ def shm(
     ] = None,
 ) -> None:
     """Deploy a Safe Haven Management component"""
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
 
     try:
@@ -98,7 +98,7 @@ def sre(
     ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
 
     try:

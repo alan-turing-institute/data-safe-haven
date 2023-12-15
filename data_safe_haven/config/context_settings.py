@@ -81,24 +81,25 @@ class ContextSettings(BaseModel, validate_assignment=True):
         ...
     """
 
-    selected_: str = Field(..., alias="selected")
+    selected_: str | None = Field(..., alias="selected")
     contexts: dict[str, Context]
     logger: ClassVar[LoggingSingleton] = LoggingSingleton()
 
     @model_validator(mode="after")
     def ensure_selected_is_valid(self) -> ContextSettings:
-        if self.selected not in self.available:
-            msg = f"Selected context '{self.selected}' is not defined."
-            raise ValueError(msg)
+        if self.selected is not None:
+            if self.selected not in self.available:
+                msg = f"Selected context '{self.selected}' is not defined."
+                raise ValueError(msg)
         return self
 
     @property
-    def selected(self) -> str:
-        return str(self.selected_)
+    def selected(self) -> str | None:
+        return self.selected_
 
     @selected.setter
-    def selected(self, context_name: str) -> None:
-        if context_name in self.available:
+    def selected(self, context_name: str | None) -> None:
+        if context_name in self.available or context_name is None:
             self.selected_ = context_name
             self.logger.info(f"Switched context to '{context_name}'.")
         else:
@@ -106,8 +107,18 @@ class ContextSettings(BaseModel, validate_assignment=True):
             raise DataSafeHavenParameterError(msg)
 
     @property
-    def context(self) -> Context:
-        return self.contexts[self.selected]
+    def context(self) -> Context | None:
+        if self.selected is None:
+            return None
+        else:
+            return self.contexts[self.selected]
+
+    def assert_context(self) -> Context:
+        if context := self.context:
+            return context
+        else:
+            msg = "No context selected"
+            raise DataSafeHavenConfigError(msg)
 
     @property
     def available(self) -> list[str]:
@@ -121,7 +132,7 @@ class ContextSettings(BaseModel, validate_assignment=True):
         name: str | None = None,
         subscription_name: str | None = None,
     ) -> None:
-        context = self.contexts[self.selected]
+        context = self.assert_context()
 
         if admin_group_id:
             self.logger.debug(
@@ -165,7 +176,12 @@ class ContextSettings(BaseModel, validate_assignment=True):
         if key not in self.available:
             msg = f"No context with key '{key}'."
             raise DataSafeHavenParameterError(msg)
+
         del self.contexts[key]
+
+        # Prevent having a deleted context selected
+        if key == self.selected:
+            self.selected = None
 
     @classmethod
     def from_yaml(cls, settings_yaml: str) -> ContextSettings:
