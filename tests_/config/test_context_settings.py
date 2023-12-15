@@ -169,6 +169,11 @@ class TestContextSettings:
             for item in yaml_dict["contexts"]["gems"].keys()
         )
 
+    def test_set_context_none(self, context_settings):
+        context_settings.selected = None
+        assert context_settings.selected is None
+        assert context_settings.context is None
+
     def test_assert_context(self, context_settings):
         context = context_settings.assert_context()
         assert context.name == "Acme Deployment"
