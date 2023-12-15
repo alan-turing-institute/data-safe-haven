@@ -232,13 +232,19 @@ class TestContextSettings:
             assert "A context with key 'acme' is already defined." in exc
 
     def test_remove(self, context_settings):
-        context_settings.remove("acme_deployment")
-        assert "acme_deployment" not in context_settings.available
+        context_settings.remove("gems")
+        assert "gems" not in context_settings.available
+        assert context_settings.selected == "acme_deployment"
 
     def test_invalid_remove(self, context_settings):
         with pytest.raises(DataSafeHavenParameterError) as exc:
             context_settings.remove("invalid")
             assert "No context with key 'invalid'." in exc
+
+    def test_remove_selected(self, context_settings):
+        context_settings.remove("acme_deployment")
+        assert "acme_deployment" not in context_settings.available
+        assert context_settings.selected is None
 
     def test_from_file(self, tmp_path, context_yaml):
         config_file_path = tmp_path / "config.yaml"
