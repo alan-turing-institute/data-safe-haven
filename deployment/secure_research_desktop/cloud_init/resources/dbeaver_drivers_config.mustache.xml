@@ -9,8 +9,8 @@
     </provider>
     <provider id="postgresql">
         <driver id="postgres-jdbc" categories="sql" custom="false" embedded="false" name="PostgreSQL" class="org.postgresql.Driver" url="jdbc:postgresql://{host}[:{port}]/[{database}]" port="5432" description="PostgreSQL standard driver">
-            <library type="jar" path="maven:/org.postgresql:postgresql:RELEASE" custom="false" version="{{dbeaver.drivers.postgresl}}">
-                <file id="org.postgresql:postgresql" version="{{dbeaver.drivers.postgresl}}" path="/usr/share/dbeaver/drivers/maven/maven-central/org.postgresql/postgresql-{{dbeaver.drivers.postgresl}}.jar"/>
+            <library type="jar" path="maven:/org.postgresql:postgresql:RELEASE" custom="false" version="{{dbeaver.drivers.postgresql}}">
+                <file id="org.postgresql:postgresql" version="{{dbeaver.drivers.postgresql}}" path="/usr/share/dbeaver/drivers/maven/maven-central/org.postgresql/postgresql-{{dbeaver.drivers.postgresql}}.jar"/>
             </library>
             <library type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE" custom="false" version="{{dbeaver.drivers.postgis_jdbc}}">
                 <file id="net.postgis:postgis-jdbc" version="{{dbeaver.drivers.postgis_jdbc}}" path="/usr/share/dbeaver/drivers/maven/maven-central/net.postgis/postgis-jdbc-{{dbeaver.drivers.postgis_jdbc}}.jar"/>
