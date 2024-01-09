@@ -1,7 +1,7 @@
 {
-    "mssql_jdbc": "9.4.1.jre8",
+    "mssql_jdbc": "12.4.2.jre8",
     "pgjdbc": "1.1.6",
-    "postgis_geometry": "2021.1.0",
-    "postgis_jdbc": "2021.1.0",
-    "postgresql": "42.3.1"
+    "postgis_geometry": "2023.1.0",
+    "postgis_jdbc": "2023.1.0",
+    "postgresql": "42.7.1"
 }
