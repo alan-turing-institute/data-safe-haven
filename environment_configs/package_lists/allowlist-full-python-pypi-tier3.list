@@ -442,7 +442,7 @@ pexpect
 pg8000
 phik
 pickleshare
-Pillow
+pillow
 Pint
 pip
 pip-api
