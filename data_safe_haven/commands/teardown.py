@@ -9,7 +9,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
 )
 from data_safe_haven.external import GraphApi
-from data_safe_haven.functions import alphanumeric
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 
 teardown_command_group = typer.Typer()
@@ -51,7 +50,7 @@ def sre(
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
 
-    sre_name = alphanumeric(name).lower()
+    sre_name = config.sanitise_sre_name(name)
     try:
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command

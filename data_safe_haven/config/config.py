@@ -24,6 +24,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
+    alphanumeric,
     b64decode,
     b64encode,
 )
@@ -283,6 +284,10 @@ class Config(BaseModel, validate_assignment=True):
         if not all((self.azure, self.pulumi, self.shm, self.tags)):
             return False
         return True
+
+    @staticmethod
+    def sanitise_sre_name(name: str) -> str:
+        return alphanumeric(name).lower()
 
     def sre(self, name: str) -> ConfigSectionSRE:
         """Return the config entry for this SRE creating it if it does not exist"""

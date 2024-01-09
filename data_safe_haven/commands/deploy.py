@@ -6,7 +6,7 @@ import typer
 from data_safe_haven.config import Config, ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.functions import alphanumeric, bcrypt_salt, password
+from data_safe_haven.functions import bcrypt_salt, password
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 from data_safe_haven.provisioning import SHMProvisioningManager, SREProvisioningManager
 
@@ -101,10 +101,9 @@ def sre(
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
 
-    try:
-        # Use a JSON-safe SRE name
-        sre_name = alphanumeric(name).lower()
+    sre_name = config.sanitise_sre_name(name)
 
+    try:
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(
