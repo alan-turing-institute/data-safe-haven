@@ -258,6 +258,12 @@ class TestConfig:
     def test_is_complete_sres(self, config_sres, require_sres):
         assert config_sres.is_complete(require_sres=require_sres)
 
+    @pytest.mark.parametrize(
+        "value,expected", [("Test SRE", "testsre"), ("%*aBc", "abc"), ("MY_SRE", "mysre")]
+    )
+    def test_sanitise_sre_name(self, value, expected):
+        assert Config.sanitise_sre_name(value) == expected
+
     def test_sre(self, config_sres):
         sre1, sre2 = config_sres.sre("sre1"), config_sres.sre("sre2")
         assert sre1.index == 0
