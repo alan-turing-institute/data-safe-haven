@@ -292,14 +292,9 @@ class Config(BaseModel, validate_assignment=True):
     def sre(self, name: str) -> ConfigSectionSRE:
         """Return the config entry for this SRE creating it if it does not exist"""
         if name not in self.sres.keys():
-            highest_index = max(0 + sre.index for sre in self.sres.values())
-            self.sres[name] = ConfigSectionSRE(index=highest_index + 1)
+            msg = f"SRE {name} does not exist"
+            raise DataSafeHavenConfigError(msg)
         return self.sres[name]
-
-    def remove_sre(self, name: str) -> None:
-        """Remove SRE config section by name"""
-        if name in self.sres.keys():
-            del self.sres[name]
 
     def add_stack(self, name: str, path: Path) -> None:
         """Add a Pulumi stack file to config"""

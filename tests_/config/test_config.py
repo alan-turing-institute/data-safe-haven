@@ -11,7 +11,10 @@ from data_safe_haven.config.config import (
     ConfigSectionTags,
     ConfigSubsectionRemoteDesktopOpts,
 )
-from data_safe_haven.exceptions import DataSafeHavenParameterError
+from data_safe_haven.exceptions import (
+    DataSafeHavenConfigError,
+    DataSafeHavenParameterError,
+)
 from data_safe_haven.external import AzureApi
 from data_safe_haven.utility.enums import DatabaseSystem, SoftwarePackageCategory
 from data_safe_haven.version import __version__
@@ -259,7 +262,8 @@ class TestConfig:
         assert config_sres.is_complete(require_sres=require_sres)
 
     @pytest.mark.parametrize(
-        "value,expected", [("Test SRE", "testsre"), ("%*aBc", "abc"), ("MY_SRE", "mysre")]
+        "value,expected",
+        [("Test SRE", "testsre"), ("%*aBc", "abc"), ("MY_SRE", "mysre")],
     )
     def test_sanitise_sre_name(self, value, expected):
         assert Config.sanitise_sre_name(value) == expected
@@ -270,20 +274,10 @@ class TestConfig:
         assert sre2.index == 1
         assert sre1 != sre2
 
-    def test_sre_create(self, config_sres):
-        sre1 = config_sres.sre("sre1")
-        sre3 = config_sres.sre("sre3")
-        assert isinstance(sre3, ConfigSectionSRE)
-        assert sre3.index == 2
-        assert sre3 != sre1
-        assert len(config_sres.sres) == 3
-
-    def test_remove_sre(self, config_sres):
-        assert len(config_sres.sres) == 2
-        config_sres.remove_sre("sre1")
-        assert len(config_sres.sres) == 1
-        assert "sre2" in config_sres.sres.keys()
-        assert "sre1" not in config_sres.sres.keys()
+    def test_sre_invalid(self, config_sres):
+        with pytest.raises(DataSafeHavenConfigError) as exc:
+            config_sres.sre("sre3")
+            assert "SRE sre3 does not exist" in exc
 
     def test_template(self, context):
         config = Config.template(context)
