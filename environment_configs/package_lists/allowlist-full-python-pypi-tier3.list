@@ -428,6 +428,7 @@ pastel
 path
 path.py
 pathlib
+pathlib-abc
 pathlib2
 pathos
 pathspec
