@@ -38,6 +38,7 @@ asyncio
 asynctest
 atomicwrites
 attrs
+Authlib
 autocommand
 autograd
 autograd-gamma
@@ -297,6 +298,7 @@ jupyterlab
 jupyterlab-launcher
 jupyterlab-pygments
 jupyterlab-server
+jwt
 keras
 Keras-Applications
 keras-nightly
@@ -586,6 +588,7 @@ s3transfer
 sacremoses
 safetensors
 safety
+safety-schemas
 scandir
 scikit-image
 scikit-learn
