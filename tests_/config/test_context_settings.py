@@ -40,7 +40,8 @@ class TestContext:
     def test_shm_name(self, context):
         assert context.shm_name == "acmedeployment"
 
-    def test_work_directory(self, context):
+    def test_work_directory(self, context, monkeypatch):
+        monkeypatch.delenv("DSH_CONFIG_DIRECTORY", raising=False)
         assert "data_safe_haven/acmedeployment" in str(context.work_directory)
 
     def test_config_filename(self, context):
