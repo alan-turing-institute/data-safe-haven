@@ -60,7 +60,7 @@ jobs:
       - name: Install hatch
         run: pip install hatch
       - name: Print Ruff version
-        run: ruff --version
+        run: hatch run lint:ruff --version
       - name: Lint Python
         run: hatch run lint:all
 
