@@ -98,7 +98,9 @@ class TestContextSettings:
         assert isinstance(settings, ContextSettings)
 
     def test_null_selected(self, context_yaml):
-        context_yaml = context_yaml.replace("selected: acme_deployment", "selected: null")
+        context_yaml = context_yaml.replace(
+            "selected: acme_deployment", "selected: null"
+        )
 
         settings = ContextSettings.from_yaml(context_yaml)
         assert settings.selected is None
