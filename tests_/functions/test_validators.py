@@ -1,6 +1,6 @@
 import pytest
 
-from data_safe_haven.functions.validators import validate_aad_guid
+from data_safe_haven.functions.validators import validate_aad_guid, validate_fqdn
 
 
 class TestValidateAadGuid:
@@ -25,3 +25,31 @@ class TestValidateAadGuid:
         with pytest.raises(ValueError) as exc:
             validate_aad_guid(guid)
             assert "Expected GUID" in exc
+
+
+class TestValidateFqdn:
+    @pytest.mark.parametrize(
+        "fqdn",
+        [
+            "shm.acme.com",
+            "example.com",
+            "a.b.c.com.",
+            "a-b-c.com",
+        ],
+    )
+    def test_validate_fqdn(self, fqdn):
+        assert validate_fqdn(fqdn) == fqdn
+
+    @pytest.mark.parametrize(
+        "fqdn",
+        [
+            "invalid",
+            "%example.com",
+            "a b c.com",
+            "a_b_c.com",
+        ],
+    )
+    def test_validate_fqdn_fail(self, fqdn):
+        with pytest.raises(ValueError) as exc:
+            validate_fqdn(fqdn)
+            assert "Expected valid fully qualified domain name" in exc
