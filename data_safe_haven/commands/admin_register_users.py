@@ -1,6 +1,6 @@
 """Register existing users with a deployed SRE"""
 from data_safe_haven.administration.users import UserHandler
-from data_safe_haven.config import Config
+from data_safe_haven.config import Config, ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import alphanumeric
@@ -12,16 +12,14 @@ def admin_register_users(
     sre: str,
 ) -> None:
     """Register existing users with a deployed SRE"""
-    shm_name = "UNKNOWN"
-    sre_name = "UNKNOWN"
+    context = ContextSettings.from_file().assert_context()
+    config = Config.from_remote(context)
+
+    shm_name = context.shm_name
+    # Use a JSON-safe SRE name
+    sre_name = alphanumeric(sre).lower()
+
     try:
-        # Use a JSON-safe SRE name
-        sre_name = alphanumeric(sre).lower()
-
-        # Load config file
-        config = Config()
-        shm_name = config.context.name
-
         # Check that SRE option has been provided
         if not sre_name:
             msg = "SRE name must be specified."

@@ -615,6 +615,27 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to retrieve certificate {certificate_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
+    def get_keyvault_key(self, key_name: str, key_vault_name: str) -> KeyVaultKey:
+        """Read a key from the KeyVault
+
+        Returns:
+            KeyVaultKey: The key
+
+        Raises:
+            DataSafeHavenAzureError if the secret could not be read
+        """
+        # Connect to Azure clients
+        key_client = KeyClient(
+            vault_url=f"https://{key_vault_name}.vault.azure.net",
+            credential=self.credential,
+        )
+        # Ensure that certificate exists
+        try:
+            return key_client.get_key(key_name)
+        except Exception as exc:
+            msg = f"Failed to retrieve key {key_name}.\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc
+
     def get_keyvault_secret(self, key_vault_name: str, secret_name: str) -> str:
         """Read a secret from the KeyVault
 

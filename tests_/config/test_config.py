@@ -11,6 +11,7 @@ from data_safe_haven.config.config import (
     ConfigSectionTags,
     ConfigSubsectionRemoteDesktopOpts,
 )
+from data_safe_haven.exceptions import DataSafeHavenParameterError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.utility.enums import DatabaseSystem, SoftwarePackageCategory
 from data_safe_haven.version import __version__
@@ -37,12 +38,12 @@ class TestConfigSectionAzure:
 
 @fixture
 def pulumi_config():
-    return ConfigSectionPulumi(encryption_key_version="lorem")
+    return ConfigSectionPulumi()
 
 
 class TestConfigSectionPulumi:
     def test_constructor_defaults(self):
-        pulumi_config = ConfigSectionPulumi(encryption_key_version="lorem")
+        pulumi_config = ConfigSectionPulumi()
         assert pulumi_config.encryption_key_name == "pulumi-encryption-key"
         assert pulumi_config.stacks == {}
         assert pulumi_config.storage_container_name == "pulumi"
@@ -74,8 +75,8 @@ class TestConfigSectionSHM:
 
     def test_update(self, shm_config):
         assert shm_config.fqdn == "shm.acme.com"
-        shm_config.update(fqdn="modified")
-        assert shm_config.fqdn == "modified"
+        shm_config.update(fqdn="shm.example.com")
+        assert shm_config.fqdn == "shm.example.com"
 
     def test_update_validation(self, shm_config):
         with pytest.raises(ValidationError) as exc:
@@ -209,52 +210,20 @@ def config_sres(context, azure_config, pulumi_config, shm_config):
 
 
 @fixture
-def config_yaml():
-    return """azure:
-  subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-  tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-pulumi:
-  encryption_key_name: pulumi-encryption-key
-  encryption_key_version: lorem
-  stacks: {}
-  storage_container_name: pulumi
-shm:
-  aad_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-  admin_email_address: admin@example.com
-  admin_ip_addresses:
-  - 0.0.0.0/32
-  fqdn: shm.acme.com
-  timezone: UTC
-sres:
-  sre1:
-    data_provider_ip_addresses: []
-    databases: []
-    index: 0
-    remote_desktop:
-      allow_copy: false
-      allow_paste: false
-    research_user_ip_addresses: []
-    software_packages: none
-    workspace_skus: []
-  sre2:
-    data_provider_ip_addresses: []
-    databases: []
-    index: 1
-    remote_desktop:
-      allow_copy: false
-      allow_paste: false
-    research_user_ip_addresses: []
-    software_packages: none
-    workspace_skus: []
-"""
+def mock_key_vault_key(monkeypatch):
+    class MockKeyVaultKey:
+        def __init__(self, key_name, key_vault_name):
+            self.key_name = key_name
+            self.key_vault_name = key_vault_name
+            self.id = "mock_key/version"
+
+    def mock_get_keyvault_key(self, key_name, key_vault_name):  # noqa: ARG001
+        return MockKeyVaultKey(key_name, key_vault_name)
+
+    monkeypatch.setattr(AzureApi, "get_keyvault_key", mock_get_keyvault_key)
 
 
 class TestConfig:
-    def test_constructor_defaults(self, context):
-        config = Config(context=context)
-        assert config.context == context
-        assert not any((config.azure, config.pulumi, config.shm, config.sres))
-
     def test_constructor(self, context, azure_config, pulumi_config, shm_config):
         config = Config(
             context=context,
@@ -268,10 +237,18 @@ class TestConfig:
         config = config_sres
         assert config.work_directory == config.context.work_directory
 
-    @pytest.mark.parametrize("require_sres", [False, True])
-    def test_is_complete_bare(self, context, require_sres):
-        config = Config(context=context)
-        assert config.is_complete(require_sres=require_sres) is False
+    def test_pulumi_encryption_key(
+        self, config_sres, mock_key_vault_key  # noqa: ARG002
+    ):
+        key = config_sres.pulumi_encryption_key
+        assert key.key_name == config_sres.pulumi.encryption_key_name
+        assert key.key_vault_name == config_sres.context.key_vault_name
+
+    def test_pulumi_encryption_key_version(
+        self, config_sres, mock_key_vault_key  # noqa: ARG002
+    ):
+        version = config_sres.pulumi_encryption_key_version
+        assert version == "version"
 
     @pytest.mark.parametrize("require_sres,expected", [(False, True), (True, False)])
     def test_is_complete_no_sres(self, config_no_sres, require_sres, expected):
@@ -302,6 +279,16 @@ class TestConfig:
         assert "sre2" in config_sres.sres.keys()
         assert "sre1" not in config_sres.sres.keys()
 
+    def test_template(self, context):
+        config = Config.template(context)
+        assert isinstance(config, Config)
+        assert config.azure.subscription_id == "Azure subscription ID"
+
+    def test_template_validation(self, context):
+        config = Config.template(context)
+        with pytest.raises(DataSafeHavenParameterError):
+            Config.from_yaml(context, config.to_yaml())
+
     def test_from_yaml(self, config_sres, context, config_yaml):
         config = Config.from_yaml(context, config_yaml)
         assert config == config_sres
@@ -309,37 +296,14 @@ class TestConfig:
             config.sres["sre1"].software_packages, SoftwarePackageCategory
         )
 
-    def test_from_remote(self, context, config_sres, config_yaml, monkeypatch):
-        def mock_download_blob(
-            self,  # noqa: ARG001
-            blob_name: str,
-            resource_group_name: str,
-            storage_account_name: str,
-            storage_container_name: str,
-        ):
-            assert blob_name == context.config_filename
-            assert resource_group_name == context.resource_group_name
-            assert storage_account_name == context.storage_account_name
-            assert storage_container_name == context.storage_container_name
-            return config_yaml
-
-        monkeypatch.setattr(AzureApi, "download_blob", mock_download_blob)
+    def test_from_remote(
+        self, context, config_sres, mock_download_blob  # noqa: ARG002
+    ):
         config = Config.from_remote(context)
         assert config == config_sres
 
     def test_to_yaml(self, config_sres, config_yaml):
         assert config_sres.to_yaml() == config_yaml
 
-    def test_upload(self, config_sres, monkeypatch):
-        def mock_upload_blob(
-            self,  # noqa: ARG001
-            blob_data: bytes | str,  # noqa: ARG001
-            blob_name: str,  # noqa: ARG001
-            resource_group_name: str,  # noqa: ARG001
-            storage_account_name: str,  # noqa: ARG001
-            storage_container_name: str,  # noqa: ARG001
-        ):
-            pass
-
-        monkeypatch.setattr(AzureApi, "upload_blob", mock_upload_blob)
+    def test_upload(self, config_sres, mock_upload_blob):  # noqa: ARG002
         config_sres.upload()

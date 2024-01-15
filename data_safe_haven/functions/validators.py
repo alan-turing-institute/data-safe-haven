@@ -1,6 +1,7 @@
 import ipaddress
 import re
 
+import fqdn
 import pytz
 
 
@@ -26,6 +27,14 @@ def validate_azure_vm_sku(azure_vm_sku: str) -> str:
         msg = "Expected valid Azure VM SKU, for example 'Standard_D2s_v4'."
         raise ValueError(msg)
     return azure_vm_sku
+
+
+def validate_fqdn(domain: str) -> str:
+    trial_fqdn = fqdn.FQDN(domain)
+    if not trial_fqdn.is_valid:
+        msg = "Expected valid fully qualified domain name, for example 'example.com'."
+        raise ValueError(msg)
+    return domain
 
 
 def validate_email_address(email_address: str) -> str:

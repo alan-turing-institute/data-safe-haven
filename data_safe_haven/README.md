@@ -14,6 +14,14 @@ Install the following requirements before starting
 > dsh context create
 ```
 
+- Create the configuration
+
+```console
+> dsh config template --file config.yaml
+> vim config.yaml
+> dsh config upload config.yaml
+```
+
 - Next deploy the Safe Haven Management (SHM) infrastructure [approx 30 minutes]:
 
 ```console

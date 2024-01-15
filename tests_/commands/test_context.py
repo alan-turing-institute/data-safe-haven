@@ -1,44 +1,5 @@
-from pytest import fixture
-from typer.testing import CliRunner
-
 from data_safe_haven.commands.context import context_command_group
-from data_safe_haven.config import Config
-from data_safe_haven.context import Context
-
-context_settings = """\
-    selected: acme_deployment
-    contexts:
-        acme_deployment:
-            name: Acme Deployment
-            admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-            location: uksouth
-            subscription_name: Data Safe Haven (Acme)
-        gems:
-            name: Gems
-            admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-            location: uksouth
-            subscription_name: Data Safe Haven (Gems)"""
-
-
-@fixture
-def tmp_contexts(tmp_path):
-    config_file_path = tmp_path / "contexts.yaml"
-    with open(config_file_path, "w") as f:
-        f.write(context_settings)
-    return tmp_path
-
-
-@fixture
-def runner(tmp_contexts):
-    runner = CliRunner(
-        env={
-            "DSH_CONFIG_DIRECTORY": str(tmp_contexts),
-            "COLUMNS": "500",  # Set large number of columns to avoid rich wrapping text
-            "TERM": "dumb",  # Disable colours, style and interactive rich features
-        },
-        mix_stderr=False,
-    )
-    return runner
+from data_safe_haven.context import ContextInfra
 
 
 class TestShow:
@@ -48,12 +9,23 @@ class TestShow:
         assert "Current context: acme_deployment" in result.stdout
         assert "Name: Acme Deployment" in result.stdout
 
+    def test_show_none(self, runner_none):
+        result = runner_none.invoke(context_command_group, ["show"])
+        assert result.exit_code == 0
+        assert "Current context: None" in result.stdout
+
 
 class TestAvailable:
     def test_available(self, runner):
         result = runner.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
         assert "acme_deployment*" in result.stdout
+        assert "gems" in result.stdout
+
+    def test_available_none(self, runner_none):
+        result = runner_none.invoke(context_command_group, ["available"])
+        assert result.exit_code == 0
+        assert "acme_deployment" in result.stdout
         assert "gems" in result.stdout
 
 
@@ -201,27 +173,22 @@ class TestRemove:
 
 class TestCreate:
     def test_create(self, runner, monkeypatch):
-        def mock_create():
+        def mock_create(self):  # noqa: ARG001
             print("mock create")  # noqa: T201
 
-        def mock_upload():
-            print("mock upload")  # noqa: T201
-
-        monkeypatch.setattr(Context, "create", mock_create)
-        monkeypatch.setattr(Config, "upload", mock_upload)
+        monkeypatch.setattr(ContextInfra, "create", mock_create)
 
         result = runner.invoke(context_command_group, ["create"])
         assert "mock create" in result.stdout
-        assert "mock upload" in result.stdout
         assert result.exit_code == 0
 
 
 class TestTeardown:
     def test_teardown(self, runner, monkeypatch):
-        def mock_teardown():
+        def mock_teardown(self):  # noqa: ARG001
             print("mock teardown")  # noqa: T201
 
-        monkeypatch.setattr(Context, "teardown", mock_teardown)
+        monkeypatch.setattr(ContextInfra, "teardown", mock_teardown)
 
         result = runner.invoke(context_command_group, ["teardown"])
         assert "mock teardown" in result.stdout

@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 import yaml
+from azure.keyvault.keys import KeyVaultKey
 from pydantic import (
     BaseModel,
     Field,
@@ -35,6 +36,7 @@ from data_safe_haven.utility.annotated_types import (
     AzureLocation,
     AzureVmSku,
     EmailAdress,
+    Fqdn,
     Guid,
     IpAddress,
     TimeZone,
@@ -54,17 +56,16 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionPulumi(BaseModel, validate_assignment=True):
-    encryption_key_name: str = "pulumi-encryption-key"
-    encryption_key_version: str
+    storage_container_name: ClassVar[str] = "pulumi"
+    encryption_key_name: ClassVar[str] = "pulumi-encryption-key"
     stacks: dict[str, str] = Field(..., default_factory=dict[str, str])
-    storage_container_name: str = "pulumi"
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
     aad_tenant_id: Guid
     admin_email_address: EmailAdress
     admin_ip_addresses: list[IpAddress]
-    fqdn: str
+    fqdn: Fqdn
     name: str = Field(..., exclude=True)
     timezone: TimeZone
 
@@ -242,14 +243,16 @@ class ConfigSectionTags(BaseModel, validate_assignment=True):
 
 
 class Config(BaseModel, validate_assignment=True):
-    azure: ConfigSectionAzure | None = None
+    azure: ConfigSectionAzure
     context: Context = Field(..., exclude=True)
-    pulumi: ConfigSectionPulumi | None = None
-    shm: ConfigSectionSHM | None = None
+    pulumi: ConfigSectionPulumi
+    shm: ConfigSectionSHM
     sres: dict[str, ConfigSectionSRE] = Field(
         ..., default_factory=dict[str, ConfigSectionSRE]
     )
     tags: ConfigSectionTags = Field(..., exclude=True)
+
+    _pulumi_encryption_key = None
 
     def __init__(self, context: Context, **kwargs: dict[Any, Any]):
         tags = ConfigSectionTags(context)
@@ -258,6 +261,21 @@ class Config(BaseModel, validate_assignment=True):
     @property
     def work_directory(self) -> Path:
         return self.context.work_directory
+
+    @property
+    def pulumi_encryption_key(self) -> KeyVaultKey:
+        if not self._pulumi_encryption_key:
+            azure_api = AzureApi(subscription_name=self.context.subscription_name)
+            self._pulumi_encryption_key = azure_api.get_keyvault_key(
+                key_name=self.pulumi.encryption_key_name,
+                key_vault_name=self.context.key_vault_name,
+            )
+        return self._pulumi_encryption_key
+
+    @property
+    def pulumi_encryption_key_version(self) -> str:
+        key_id: str = self.pulumi_encryption_key.id
+        return key_id.split("/")[-1]
 
     def is_complete(self, *, require_sres: bool) -> bool:
         if require_sres:
@@ -301,6 +319,25 @@ class Config(BaseModel, validate_assignment=True):
                 f_stack.write(pulumi_cfg)
 
     @classmethod
+    def template(cls, context: Context) -> Config:
+        # Create object without validation to allow "replace me" prompts
+        return Config.model_construct(
+            context=context,
+            azure=ConfigSectionAzure.model_construct(
+                subscription_id="Azure subscription ID",
+                tenant_id="Azure tenant ID",
+            ),
+            pulumi=ConfigSectionPulumi(),
+            shm=ConfigSectionSHM.model_construct(
+                aad_tenant_id="Azure Active Directory tenant ID",
+                admin_email_address="Admin email address",
+                admin_ip_addresses=["Admin IP addresses"],
+                fqdn="TRE domain name",
+                timezone="Timezone",
+            ),
+        )
+
+    @classmethod
     def from_yaml(cls, context: Context, config_yaml: str) -> Config:
         try:
             config_dict = yaml.safe_load(config_yaml)
@@ -313,7 +350,6 @@ class Config(BaseModel, validate_assignment=True):
             raise DataSafeHavenConfigError(msg)
 
         # Add context for constructors that require it
-        # context_dict = context.model_dump()
         config_dict["context"] = context
         for section in ["azure", "shm"]:
             config_dict[section]["context"] = context
