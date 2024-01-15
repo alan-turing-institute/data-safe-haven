@@ -29,5 +29,9 @@ postgis = natsorted(set(postgis_jdbc_versions).intersection(set(postgis_geometry
 output["postgis_geometry"] = postgis
 output["postgis_jdbc"] = postgis
 
+remote_page = requests.get("https://repo1.maven.org/maven2/com/github/waffle/waffle-jna/", allow_redirects=True)
+root = html.fromstring(remote_page.content)
+output["waffle_jna"]= natsorted([v for v in root.xpath("//a[contains(text(), '/')]/@href") if v != "../"])[-1].replace("/", "")
+
 with open("deployment/secure_research_desktop/packages/dbeaver-driver-versions.json", "w") as f_out:
     f_out.writelines(json.dumps(output, indent=4, sort_keys=True))

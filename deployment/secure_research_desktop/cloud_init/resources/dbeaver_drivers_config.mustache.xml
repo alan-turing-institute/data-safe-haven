@@ -18,6 +18,9 @@
             <library type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE" custom="false" version="{{dbeaver.drivers.postgis_geometry}}">
                 <file id="net.postgis:postgis-geometry" version="{{dbeaver.drivers.postgis_geometry}}" path="/usr/share/dbeaver-ce/drivers/maven/maven-central/net.postgis/postgis-geometry-{{dbeaver.drivers.postgis_geometry}}.jar"/>
             </library>
+            <library type="jar" path="maven:/com.github.waffle:waffle-jna:RELEASE" custom="false" version="{{dbeaver.drivers.waffle_jna}}">
+                <file id="com.github.waffle:waffle-jna" version="{{dbeaver.drivers.waffle_jna}}" path="/usr/share/dbeaver-ce/drivers/maven/maven-central/com.github.waffle/waffle-jna-{{dbeaver.drivers.waffle_jna}}.jar"/>
+            </library>
         </driver>
     </provider>
 </drivers>
