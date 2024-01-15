@@ -9,7 +9,7 @@ from data_safe_haven.external import GraphApi
 
 def admin_add_users(csv_path: pathlib.Path) -> None:
     """Add users to a deployed Data Safe Haven"""
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
 
     shm_name = context.shm_name

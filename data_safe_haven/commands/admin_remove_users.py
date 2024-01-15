@@ -9,7 +9,7 @@ def admin_remove_users(
     usernames: list[str],
 ) -> None:
     """Remove existing users from a deployed Data Safe Haven"""
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
 
     shm_name = context.shm_name

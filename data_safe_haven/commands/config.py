@@ -18,7 +18,7 @@ def template(
     ] = None
 ) -> None:
     """Write a template Data Safe Haven configuration."""
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     config = Config.template(context)
     if file:
         with open(file, "w") as outfile:
@@ -32,7 +32,7 @@ def upload(
     file: Annotated[Path, typer.Argument(help="Path to configuration file")]
 ) -> None:
     """Upload a configuration to the Data Safe Haven context"""
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     with open(file) as config_file:
         config_yaml = config_file.read()
     config = Config.from_yaml(context, config_yaml)
@@ -42,6 +42,6 @@ def upload(
 @config_command_group.command()
 def show() -> None:
     """Print the configuration for the selected Data Safe Haven context"""
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     print(config.to_yaml())

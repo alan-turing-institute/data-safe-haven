@@ -12,7 +12,7 @@ def admin_unregister_users(
     sre: str,
 ) -> None:
     """Unregister existing users from a deployed SRE"""
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
 
     shm_name = context.shm_name

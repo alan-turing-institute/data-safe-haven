@@ -19,7 +19,7 @@ teardown_command_group = typer.Typer()
     help="Tear down a deployed a Safe Haven Management component."
 )
 def shm() -> None:
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
 
     try:
@@ -48,7 +48,7 @@ def shm() -> None:
 def sre(
     name: Annotated[str, typer.Argument(help="Name of SRE to teardown.")],
 ) -> None:
-    context = ContextSettings.from_file().context
+    context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
 
     sre_name = alphanumeric(name).lower()
