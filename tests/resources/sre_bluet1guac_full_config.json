@@ -1291,7 +1291,7 @@
       "rg": "RG_SHM_BLUE_SRE_T1GUAC_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2023082900"
+        "version": "20.04.2024011200"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
