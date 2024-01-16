@@ -4,6 +4,7 @@ from lxml import html
 from natsort import natsorted
 import requests
 
+
 def get_latest_version(url, search_text):
     """
     Get latest version number of a database driver from the Maven repository.
@@ -16,7 +17,7 @@ def get_latest_version(url, search_text):
         The URL of the Maven repository containing the driver
     search_text : str
         Text to search for in the repository, to distinguish the driver from other files
-    
+
     Returns
     -------
     list
@@ -26,6 +27,7 @@ def get_latest_version(url, search_text):
     remote_page = requests.get(url, allow_redirects=True)
     root = html.fromstring(remote_page.content)
     return natsorted([v for v in root.xpath("//a[contains(text(), '" + search_text + "')]/@href") if v != "../"])[-1].replace("/", "")
+
 
 drivers = [
     {
