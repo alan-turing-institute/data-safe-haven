@@ -11,6 +11,7 @@ aiosignal
 aiosqlite
 alabaster
 altair
+altgraph
 annotated-types
 annoy
 ansi2html
@@ -37,6 +38,7 @@ asyncio
 asynctest
 atomicwrites
 attrs
+Authlib
 autocommand
 autograd
 autograd-gamma
@@ -98,9 +100,11 @@ click
 click-plugins
 cligj
 clikit
+clint
 cloudpathlib
 cloudpickle
 cmake
+cmarkgfm
 cmdstanpy
 colorama
 comm
@@ -212,6 +216,7 @@ GPy
 GPyOpt
 graphlib-backport
 graphviz
+greenlet
 grpcio
 gym
 h11
@@ -293,6 +298,7 @@ jupyterlab
 jupyterlab-launcher
 jupyterlab-pygments
 jupyterlab-server
+jwt
 keras
 Keras-Applications
 keras-nightly
@@ -318,6 +324,7 @@ loguru
 LunarCalendar
 lxml
 lz4
+macholib
 mapclassify
 Markdown
 markdown-it-py
@@ -364,6 +371,7 @@ ndindex
 nest-asyncio
 netCDF4
 networkx
+nh3
 nltk
 nose
 notebook
@@ -422,6 +430,7 @@ pastel
 path
 path.py
 pathlib
+pathlib-abc
 pathlib2
 pathos
 pathspec
@@ -429,18 +438,21 @@ pathy
 patsy
 pbr
 pdfminer
+pefile
 pep517
 pep8
 pexpect
 pg8000
 phik
 pickleshare
-Pillow
+pillow
 Pint
 pip
+pip-api
 pip-shims
 pip-tools
 pipenv
+pipreqs
 pkgconfig
 pkginfo
 pkgutil_resolve_name
@@ -480,6 +492,7 @@ pycairo
 pycodestyle
 pycosat
 pycparser
+pycrdt
 pycurl
 pydantic
 pydantic-core
@@ -491,6 +504,8 @@ pygrib
 PyHamcrest
 pyHanko
 pyhanko-certvalidator
+pyinstaller
+pyinstaller-hooks-contrib
 pyLDAvis
 pylev
 pylint
@@ -538,6 +553,7 @@ qdldl
 qrcode
 rapidfuzz
 rasterio
+readme-renderer
 referencing
 regex
 reportlab
@@ -572,13 +588,14 @@ s3transfer
 sacremoses
 safetensors
 safety
+safety-schemas
 scandir
 scikit-image
 scikit-learn
 scikit-multilearn
 scikit-survival
 scikit-validate
-scipy
+SciPy
 scramp
 seaborn
 SecretStorage
@@ -636,6 +653,7 @@ syntok
 tables
 tabulate
 tangled-up-in-unicode
+tb-nightly
 tblib
 tdda
 tempora
@@ -644,9 +662,11 @@ tensorboard
 tensorboard-data-server
 tensorboard-plugin-wit
 tensorflow
+tensorflow-cpu-aws
 tensorflow-estimator
 tensorflow-gpu
 tensorflow-gpu-estimator
+tensorflow-intel
 tensorflow-io-gcs-filesystem
 tensorflow-tensorboard
 termcolor
@@ -654,6 +674,7 @@ termcolor-whl
 terminado
 testpath
 tf-estimator-nightly
+tf-keras-nightly
 Theano
 Theano-PyMC
 thinc
@@ -678,6 +699,7 @@ transformers
 triton
 trove-classifiers
 tsfresh
+twine
 Twisted
 twisted-iocpsupport
 typed-ast
@@ -730,6 +752,7 @@ XlsxWriter
 xxhash
 xyzservices
 y-py
+yarg
 yarl
 yaspin
 ydata-profiling

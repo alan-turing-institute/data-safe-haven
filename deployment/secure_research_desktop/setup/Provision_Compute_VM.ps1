@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Source image (one of 'Ubuntu1804', 'Ubuntu2004' or 'Ubuntu2204' [default]")]
     [ValidateSet("Ubuntu1804", "Ubuntu2004", "Ubuntu2204")]
