@@ -10,7 +10,7 @@ def get_latest_version(url, search_text):
     Get latest version number of a database driver from the Maven repository.
 
     Fetches the HTML page at the given URL, then converts it to an lxml tree.
-    Numeric strings are then extracted. 
+    Numeric strings are then extracted.
     Note that mostly numeric strings for some drivers contain non-numeric text,
     as different driver types exist for those drivers, even where the version number is the same.
     The largest (latest) version number of the driver is then returned.
