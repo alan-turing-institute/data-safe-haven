@@ -712,7 +712,7 @@ class AzureApi(AzureAuthenticator):
             if not isinstance(storage_keys, StorageAccountListKeysResult):
                 msg = f"Could not connect to {msg_sa} in {msg_rg}."
                 raise DataSafeHavenAzureError(msg)
-            keys = storage_keys.keys
+            keys: list[StorageAccountKey] = storage_keys.keys
             if not keys or not isinstance(keys, list) or len(keys) == 0:
                 msg = f"No keys were retrieved for {msg_sa} in {msg_rg}."
                 raise DataSafeHavenAzureError(msg)
