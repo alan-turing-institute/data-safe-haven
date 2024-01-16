@@ -233,6 +233,9 @@ runcmd:
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/{{dbeaver.drivers.postgis_jdbc}}/postgis-jdbc-{{dbeaver.drivers.postgis_jdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/net.postgis/
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-geometry/{{dbeaver.drivers.postgis_geometry}}/postgis-geometry-{{dbeaver.drivers.postgis_geometry}}.jar -P ${DBEAVER_DRIVER_DIR}/net.postgis/
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-geometry/{{dbeaver.drivers.postgis_geometry}}/postgis-geometry-{{dbeaver.drivers.postgis_geometry}}.pom -P ${DBEAVER_DRIVER_DIR}/net.postgis/
+  - mkdir -p ${DBEAVER_DRIVER_DIR}/com.github.waffle/
+  - wget -nv https://repo1.maven.org/maven2/com/github/waffle/waffle-jna/{{dbeaver.drivers.waffle_jna}}/waffle-jna-{{dbeaver.drivers.waffle_jna}}.jar -P ${DBEAVER_DRIVER_DIR}/com.github.waffle/
+  - wget -nv https://repo1.maven.org/maven2/com/github/waffle/waffle-jna/{{dbeaver.drivers.waffle_jna}}/waffle-jna-{{dbeaver.drivers.waffle_jna}}.pom -P ${DBEAVER_DRIVER_DIR}/com.github.waffle/
   - mv /opt/build/dbeaver_drivers_config.xml /usr/share/dbeaver-ce/drivers-config.xml
   - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver-ce/drivers-config.xml" >> /usr/share/dbeaver-ce/dbeaver.ini
   - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver-ce/dbeaver.ini
