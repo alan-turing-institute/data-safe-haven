@@ -159,7 +159,7 @@ In some situations, such as at the end of a project after an SRE has been torn d
 - Click `Assign` to complete the process
 
 ```{note}
-`Azure Active Directory Premium P1`` is being renamed to `Microsoft Entra ID P1` and may appear as such when performing the assignment process in future.
+`Azure Active Directory Premium P1` is being renamed to `Microsoft Entra ID P1` and may appear as such when performing the assignment process in future.
 ```
 
 ### {{car}} Automatically assign licences to users
