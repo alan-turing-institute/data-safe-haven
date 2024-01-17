@@ -1002,6 +1002,18 @@ Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.tur
 Be sure to select `Kerberos authentication` so that your username and password will be passed through to the database
 ```
 
+````{note}
+After clicking finish, you may be prompted to download missing driver files.
+Drivers have already been provided on the SRD for Microsoft SQL databases.
+Clicking `Download` will make DBeaver use these pre-downloaded drivers without requiring internet access.
+Thus, even on SRDs with no external internet access (Tier 2 or above), click `Download`.
+Note that the prompt may appear multiple times.
+```{image} user_guide/db_dbeaver_mssql_download.png
+:alt: DBeaver driver download for Microsoft SQL
+:align: center
+```
+````
+
 #### PostgreSQL
 
 - Select `PostgreSQL` as the database type
@@ -1024,6 +1036,18 @@ Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.tur
 If you are prompted for `Username` or `Password` when connecting, you can leave these blank and the correct username and password will be automatically passed through to the database
 ```{image} user_guide/db_dbeaver_postgres_ignore.png
 :alt: DBeaver username/password prompt
+:align: center
+```
+````
+
+````{note}
+After clicking finish, you may be prompted to download missing driver files.
+Drivers have already been provided on the SRD for PostgreSQL databases.
+Clicking `Download` will make DBeaver use these pre-downloaded drivers without requiring internet access.
+Thus, even on SRDs with no external internet access (Tier 2 or above), click `Download`.
+Note that the prompt may appear multiple times.
+```{image} user_guide/db_dbeaver_pstgrs_download.png
+:alt: DBeaver driver download for Microsoft SQL
 :align: center
 ```
 ````
