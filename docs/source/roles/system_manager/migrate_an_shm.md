@@ -151,14 +151,18 @@ foreach ($user in $users) {
 All research users in this SHM will have to go to `https://aka.ms/sspr` to reset their passwords although their MFA configuration will stay the same.
 ```
 
-### {{train}} Install Azure Active Directory Connect
+### {{train}} Install Microsoft Entra Connect
 
 ![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
 
 See the {ref}`Safe Haven Management documentation <roles_deployer_shm_aad_connect>` for more details.
 
+````{note}
+Microsoft Entra Connect is the new name for Azure AD Connect. However, while all Microsoft documentation and entries in the Azure portal now refer to Microsoft Entra Connect, as of the release of `v4.2.0` of the Data Safe Haven, the software itself is still named `Azure Active Directory Connect`, and will appear as such on your Domain Controller. 
+````
+
 ````{error}
-Since you are trying to connect the new SHM to an `Azure` Active Directory that was already synchronised, you may find the `AzureADConnect` installation fails due to a `Directory synchronisation failure`.
+Since you are trying to connect the new SHM to an Microsoft Entra ID that was already synchronised, you may find the `AzureADConnect` installation fails due to a `Directory synchronisation failure`.
 
 ```{image} migrate_shm/aad_connection_failure.png
 :alt: AAD connection failure
@@ -168,22 +172,23 @@ Since you are trying to connect the new SHM to an `Azure` Active Directory that 
 If this happens then you will need to wait for the previous disconnection to complete, which may take up to 72 hours.
 ````
 
-### {{recycle}} Update Azure Active Directory Connect rules
+### {{recycle}} Update Microsoft Entra Connect rules
 
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
 
 See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_aad_connect_rules>` for more details.
 
-### {{put_litter_in_its_place}} Unregister the old domain controller in `Azure` Active Directory
+### {{put_litter_in_its_place}} Unregister the old domain controller in Microsoft Entra
 
 ![Microsoft Entra ID: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=one%20minute)
 
-- From the `Azure` portal, navigate to the Microsoft Entra you have created.
-- Select `Azure AD Connect` from the left hand menu
-- Under `Health And Analytics` click `Azure AD Connect Health`
+- From the `Azure` portal, navigate to the Microsoft Entra ID you have created.
+- Select `Microsoft Entra Connect` from the left hand menu
+- Select `Connect Sync` from the left hand menu
+- Under `Health And Analytics` click `Microsoft Entra Connect Health`
 - Select `Sync services` from the left hand menu
 - Click on `<Safe Haven identifier>.onmicrosoft.com`
-- Click on the `Azure Active Directory Connect Server` that corresponds to the **old** DC (marked as `Unhealthy`)
+- Click on the `Microsoft Entra Connect Server` that corresponds to the **old** DC (marked as `Unhealthy`)
 - Click `Delete` in the top bar, type the server name when prompted then click `Delete`
 
 ### {{ballot_box_with_check}} Validate Active Directory synchronisation
