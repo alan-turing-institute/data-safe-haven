@@ -165,7 +165,7 @@ In some situations, such as at the end of a project after an SRE has been torn d
 
 ### {{car}} Automatically assign licences to users
 
-To automatically assign licences to all local `Active Directory` users that do not currently have a licence in `Microsoft Entra ID`.
+To automatically assign licences to all local `Active Directory` users that do not currently have a licence in `Microsoft Entra ID`:
 
 - Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
 - Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository
