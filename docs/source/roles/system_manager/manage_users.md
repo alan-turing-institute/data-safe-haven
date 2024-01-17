@@ -162,7 +162,6 @@ In some situations, such as at the end of a project after an SRE has been torn d
 `Azure Active Directory Premium P1`` is being renamed to `Microsoft Entra ID P1` and may appear as such when performing the assignment process in future.
 ```
 
-
 ### {{car}} Automatically assign licences to users
 
 To automatically assign licences to all local `Active Directory` users that do not currently have a licence in `Microsoft Entra ID`:
