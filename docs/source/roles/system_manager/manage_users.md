@@ -158,7 +158,7 @@ In some situations, such as at the end of a project after an SRE has been torn d
 - Select the users you have recently created and click `Select`
 - Click `Assign` to complete the process
 
-```note
+```{note}
 `Azure Active Directory Premium P1`` is being renamed to `Microsoft Entra ID P1` and may appear as such when performing the assignment process in future.
 ```
 
