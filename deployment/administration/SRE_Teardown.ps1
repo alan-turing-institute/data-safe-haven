@@ -83,7 +83,7 @@ $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "setup"
 if ($dryRun.IsPresent) {
     Add-LogMessage -Level Info "SRE data would be removed from the SHM by running: $scriptPath -shmId $shmId -sreId $sreId"
 } else {
-    Invoke-Expression -Command "$scriptPath -shmId $shmId -sreId $sreId"
+    & $scriptPath -shmId $shmId -sreId $sreId
 }
 
 
