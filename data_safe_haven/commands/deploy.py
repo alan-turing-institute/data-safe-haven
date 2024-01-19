@@ -3,64 +3,18 @@ from typing import Annotated, Optional
 
 import typer
 
-from data_safe_haven.functions import (
-    validate_aad_guid,
-    validate_azure_vm_sku,
-    validate_email_address,
-    validate_ip_address,
-    validate_timezone,
-)
-from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
-
-from .deploy_shm import deploy_shm
-from .deploy_sre import deploy_sre
+from data_safe_haven.config import Config, ContextSettings
+from data_safe_haven.exceptions import DataSafeHavenError
+from data_safe_haven.external import GraphApi
+from data_safe_haven.functions import alphanumeric, bcrypt_salt, password
+from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
+from data_safe_haven.provisioning import SHMProvisioningManager, SREProvisioningManager
 
 deploy_command_group = typer.Typer()
 
 
 @deploy_command_group.command()
 def shm(
-    aad_tenant_id: Annotated[
-        Optional[str],  # noqa: UP007
-        typer.Option(
-            "--aad-tenant-id",
-            "-a",
-            help=(
-                "The tenant ID for the AzureAD where users will be created,"
-                " for example '10de18e7-b238-6f1e-a4ad-772708929203'."
-            ),
-            callback=validate_aad_guid,
-        ),
-    ] = None,
-    admin_email_address: Annotated[
-        Optional[str],  # noqa: UP007
-        typer.Option(
-            "--email",
-            "-e",
-            help="The email address where your system deployers and administrators can be contacted.",
-            callback=validate_email_address,
-        ),
-    ] = None,
-    admin_ip_addresses: Annotated[
-        Optional[list[str]],  # noqa: UP007
-        typer.Option(
-            "--ip-address",
-            "-i",
-            help=(
-                "An IP address or range used by your system deployers and administrators."
-                " [*may be specified several times*]"
-            ),
-            callback=lambda ips: [validate_ip_address(ip) for ip in ips],
-        ),
-    ] = None,
-    domain: Annotated[
-        Optional[str],  # noqa: UP007
-        typer.Option(
-            "--domain",
-            "-d",
-            help="The domain that SHM users will belong to.",
-        ),
-    ] = None,
     force: Annotated[
         Optional[bool],  # noqa: UP007
         typer.Option(
@@ -69,63 +23,71 @@ def shm(
             help="Force this operation, cancelling any others that are in progress.",
         ),
     ] = None,
-    timezone: Annotated[
-        Optional[str],  # noqa: UP007
-        typer.Option(
-            "--timezone",
-            "-t",
-            help="The timezone that this Data Safe Haven deployment will use.",
-            callback=validate_timezone,
-        ),
-    ] = None,
 ) -> None:
     """Deploy a Safe Haven Management component"""
-    deploy_shm(
-        aad_tenant_id=aad_tenant_id,
-        admin_email_address=admin_email_address,
-        admin_ip_addresses=admin_ip_addresses,
-        force=force,
-        fqdn=domain,
-        timezone=timezone,
-    )
+    context = ContextSettings.from_file().assert_context()
+    config = Config.from_remote(context)
+
+    try:
+        # Add the SHM domain to AzureAD as a custom domain
+        graph_api = GraphApi(
+            tenant_id=config.shm.aad_tenant_id,
+            default_scopes=[
+                "Application.ReadWrite.All",
+                "Domain.ReadWrite.All",
+                "Group.ReadWrite.All",
+            ],
+        )
+        verification_record = graph_api.add_custom_domain(config.shm.fqdn)
+
+        # Initialise Pulumi stack
+        stack = SHMStackManager(config)
+        # Set Azure options
+        stack.add_option("azure-native:location", config.azure.location, replace=False)
+        stack.add_option(
+            "azure-native:subscriptionId",
+            config.azure.subscription_id,
+            replace=False,
+        )
+        stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
+        # Add necessary secrets
+        stack.add_secret("password-domain-ldap-searcher", password(20), replace=False)
+        stack.add_secret(
+            "verification-azuread-custom-domain", verification_record, replace=False
+        )
+
+        # Deploy Azure infrastructure with Pulumi
+        if force is None:
+            stack.deploy()
+        else:
+            stack.deploy(force=force)
+
+        # Add Pulumi infrastructure information to the config file
+        config.add_stack(stack.stack_name, stack.local_stack_path)
+
+        # Upload config to blob storage
+        config.upload()
+
+        # Add the SHM domain as a custom domain in AzureAD
+        graph_api.verify_custom_domain(
+            config.shm.fqdn,
+            stack.output("networking")["fqdn_nameservers"],
+        )
+
+        # Provision SHM with anything that could not be done in Pulumi
+        manager = SHMProvisioningManager(
+            subscription_name=config.context.subscription_name,
+            stack=stack,
+        )
+        manager.run()
+    except DataSafeHavenError as exc:
+        msg = f"Could not deploy Data Safe Haven Management environment.\n{exc}"
+        raise DataSafeHavenError(msg) from exc
 
 
 @deploy_command_group.command()
 def sre(
     name: Annotated[str, typer.Argument(help="Name of SRE to deploy")],
-    allow_copy: Annotated[
-        Optional[bool],  # noqa: UP007
-        typer.Option(
-            "--allow-copy",
-            "-c",
-            help="Whether to allow text to be copied out of the SRE.",
-        ),
-    ] = None,
-    allow_paste: Annotated[
-        Optional[bool],  # noqa: UP007
-        typer.Option(
-            "--allow-paste",
-            "-p",
-            help="Whether to allow text to be pasted into the SRE.",
-        ),
-    ] = None,
-    data_provider_ip_addresses: Annotated[
-        Optional[list[str]],  # noqa: UP007
-        typer.Option(
-            "--data-provider-ip-address",
-            "-d",
-            help="An IP address or range used by your data providers. [*may be specified several times*]",
-            callback=lambda vms: [validate_ip_address(vm) for vm in vms],
-        ),
-    ] = None,
-    databases: Annotated[
-        Optional[list[DatabaseSystem]],  # noqa: UP007
-        typer.Option(
-            "--database",
-            "-b",
-            help="Make a database of this system available to users of this SRE.",
-        ),
-    ] = None,
     force: Annotated[
         Optional[bool],  # noqa: UP007
         typer.Option(
@@ -134,45 +96,139 @@ def sre(
             help="Force this operation, cancelling any others that are in progress.",
         ),
     ] = None,
-    software_packages: Annotated[
-        Optional[SoftwarePackageCategory],  # noqa: UP007
-        typer.Option(
-            "--software-packages",
-            "-s",
-            help="The category of package to allow users to install from enabled software repositories.",
-        ),
-    ] = None,
-    user_ip_addresses: Annotated[
-        Optional[list[str]],  # noqa: UP007
-        typer.Option(
-            "--user-ip-address",
-            "-u",
-            help="An IP address or range used by your users. [*may be specified several times*]",
-            callback=lambda ips: [validate_ip_address(ip) for ip in ips],
-        ),
-    ] = None,
-    workspace_skus: Annotated[
-        Optional[list[str]],  # noqa: UP007
-        typer.Option(
-            "--workspace-sku",
-            "-w",
-            help=(
-                "A virtual machine SKU to make available to your users as a workspace."
-                " [*may be specified several times*]"
-            ),
-            callback=lambda ips: [validate_azure_vm_sku(ip) for ip in ips],
-        ),
-    ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
-    deploy_sre(
-        name,
-        allow_copy=allow_copy,
-        allow_paste=allow_paste,
-        data_provider_ip_addresses=data_provider_ip_addresses,
-        databases=databases,
-        force=force,
-        software_packages=software_packages,
-        user_ip_addresses=user_ip_addresses,
-        workspace_skus=workspace_skus,
-    )
+    context = ContextSettings.from_file().assert_context()
+    config = Config.from_remote(context)
+
+    try:
+        # Use a JSON-safe SRE name
+        sre_name = alphanumeric(name).lower()
+
+        # Load GraphAPI as this may require user-interaction that is not possible as
+        # part of a Pulumi declarative command
+        graph_api = GraphApi(
+            tenant_id=config.shm.aad_tenant_id,
+            default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
+        )
+
+        # Initialise Pulumi stack
+        shm_stack = SHMStackManager(config)
+        stack = SREStackManager(config, sre_name, graph_api_token=graph_api.token)
+        # Set Azure options
+        stack.add_option("azure-native:location", config.azure.location, replace=False)
+        stack.add_option(
+            "azure-native:subscriptionId",
+            config.azure.subscription_id,
+            replace=False,
+        )
+        stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
+        # Load SHM stack outputs
+        stack.add_option(
+            "shm-domain_controllers-domain_sid",
+            shm_stack.output("domain_controllers")["domain_sid"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-domain_controllers-ldap_root_dn",
+            shm_stack.output("domain_controllers")["ldap_root_dn"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-domain_controllers-ldap_server_ip",
+            shm_stack.output("domain_controllers")["ldap_server_ip"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-domain_controllers-netbios_name",
+            shm_stack.output("domain_controllers")["netbios_name"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-firewall-private-ip-address",
+            shm_stack.output("firewall")["private_ip_address"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-monitoring-automation_account_name",
+            shm_stack.output("monitoring")["automation_account_name"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-monitoring-log_analytics_workspace_id",
+            shm_stack.output("monitoring")["log_analytics_workspace_id"],
+            replace=True,
+        )
+        stack.add_secret(
+            "shm-monitoring-log_analytics_workspace_key",
+            shm_stack.output("monitoring")["log_analytics_workspace_key"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-monitoring-resource_group_name",
+            shm_stack.output("monitoring")["resource_group_name"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-networking-private_dns_zone_base_id",
+            shm_stack.output("networking")["private_dns_zone_base_id"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-networking-resource_group_name",
+            shm_stack.output("networking")["resource_group_name"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-networking-subnet_identity_servers_prefix",
+            shm_stack.output("networking")["subnet_identity_servers_prefix"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-networking-subnet_subnet_monitoring_prefix",
+            shm_stack.output("networking")["subnet_monitoring_prefix"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-networking-subnet_update_servers_prefix",
+            shm_stack.output("networking")["subnet_update_servers_prefix"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-networking-virtual_network_name",
+            shm_stack.output("networking")["virtual_network_name"],
+            replace=True,
+        )
+        stack.add_option(
+            "shm-update_servers-ip_address_linux",
+            shm_stack.output("update_servers")["ip_address_linux"],
+            replace=True,
+        )
+        # Add necessary secrets
+        stack.copy_secret("password-domain-ldap-searcher", shm_stack)
+        stack.add_secret("salt-dns-server-admin", bcrypt_salt(), replace=False)
+
+        # Deploy Azure infrastructure with Pulumi
+        if force is None:
+            stack.deploy()
+        else:
+            stack.deploy(force=force)
+
+        # Add Pulumi infrastructure information to the config file
+        config.add_stack(stack.stack_name, stack.local_stack_path)
+
+        # Upload config to blob storage
+        config.upload()
+
+        # Provision SRE with anything that could not be done in Pulumi
+        manager = SREProvisioningManager(
+            shm_stack=shm_stack,
+            sre_name=sre_name,
+            sre_stack=stack,
+            subscription_name=config.context.subscription_name,
+            timezone=config.shm.timezone,
+        )
+        manager.run()
+    except DataSafeHavenError as exc:
+        msg = f"Could not deploy Secure Research Environment {sre_name}.\n{exc}"
+        raise DataSafeHavenError(msg) from exc

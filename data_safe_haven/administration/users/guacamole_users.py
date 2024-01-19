@@ -18,7 +18,7 @@ class GuacamoleUsers:
             sre_stack.secret("password-user-database-admin"),
             sre_stack.output("remote_desktop")["connection_db_server_name"],
             sre_stack.output("remote_desktop")["resource_group_name"],
-            config.subscription_name,
+            config.context.subscription_name,
         )
         self.users_: Sequence[ResearchUser] | None = None
         self.postgres_script_path: pathlib.Path = (
@@ -30,7 +30,7 @@ class GuacamoleUsers:
         self.sre_name = sre_name
         self.group_name = f"Data Safe Haven SRE {sre_name} Users"
 
-    def list(self) -> Sequence[ResearchUser]:  # noqa: A003
+    def list(self) -> Sequence[ResearchUser]:
         """List all Guacamole users"""
         if self.users_ is None:  # Allow for the possibility of an empty list of users
             postgres_output = self.postgres_provisioner.execute_scripts(

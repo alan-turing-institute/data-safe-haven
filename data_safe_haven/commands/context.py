@@ -4,10 +4,10 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.config import Config, ContextSettings
-from data_safe_haven.config.context_settings import default_config_file_path
-from data_safe_haven.context import Context
-from data_safe_haven.functions import validate_aad_guid
+from data_safe_haven.config import ContextSettings
+from data_safe_haven.config.context_settings import Context, default_config_file_path
+from data_safe_haven.context import ContextInfra
+from data_safe_haven.functions.typer_validators import typer_validate_aad_guid
 
 context_command_group = typer.Typer()
 
@@ -21,10 +21,11 @@ def show() -> None:
     current_context = settings.context
 
     print(f"Current context: [green]{current_context_key}")
-    print(f"\tName: {current_context.name}")
-    print(f"\tAdmin Group ID: {current_context.admin_group_id}")
-    print(f"\tSubscription name: {current_context.subscription_name}")
-    print(f"\tLocation: {current_context.location}")
+    if current_context is not None:
+        print(f"\tName: {current_context.name}")
+        print(f"\tAdmin Group ID: {current_context.admin_group_id}")
+        print(f"\tSubscription name: {current_context.subscription_name}")
+        print(f"\tLocation: {current_context.location}")
 
 
 @context_command_group.command()
@@ -35,8 +36,9 @@ def available() -> None:
     current_context_key = settings.selected
     available = settings.available
 
-    available.remove(current_context_key)
-    available = [f"[green]{current_context_key}*[/]", *available]
+    if current_context_key is not None:
+        available.remove(current_context_key)
+        available = [f"[green]{current_context_key}*[/]", *available]
 
     print("\n".join(available))
 
@@ -58,7 +60,7 @@ def add(
         str,
         typer.Option(
             help="The ID of an Azure group containing all administrators.",
-            callback=validate_aad_guid,
+            callback=typer_validate_aad_guid,
         ),
     ],
     location: Annotated[
@@ -93,17 +95,15 @@ def add(
     else:
         # Bootstrap context settings file
         settings = ContextSettings(
-            {
-                "selected": key,
-                "contexts": {
-                    key: {
-                        "admin_group_id": admin_group,
-                        "location": location,
-                        "name": name,
-                        "subscription_name": subscription,
-                    }
-                },
-            }
+            selected=key,
+            contexts={
+                key: Context(
+                    admin_group_id=admin_group,
+                    location=location,
+                    name=name,
+                    subscription_name=subscription,
+                )
+            },
         )
     settings.write()
 
@@ -114,7 +114,7 @@ def update(
         Optional[str],  # noqa: UP007
         typer.Option(
             help="The ID of an Azure group containing all administrators.",
-            callback=validate_aad_guid,
+            callback=typer_validate_aad_guid,
         ),
     ] = None,
     location: Annotated[
@@ -151,7 +151,7 @@ def update(
 def remove(
     key: Annotated[str, typer.Argument(help="Name of the context to remove.")],
 ) -> None:
-    """Remove the selected context."""
+    """Removes a context."""
     settings = ContextSettings.from_file()
     settings.remove(key)
     settings.write()
@@ -160,15 +160,14 @@ def remove(
 @context_command_group.command()
 def create() -> None:
     """Create Data Safe Haven context infrastructure."""
-    config = Config()
-    context = Context(config)
-    context.create()
-    context.config.upload()
+    context = ContextSettings.from_file().assert_context()
+    context_infra = ContextInfra(context)
+    context_infra.create()
 
 
 @context_command_group.command()
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure."""
-    config = Config()
-    context = Context(config)
-    context.teardown()
+    context = ContextSettings.from_file().assert_context()
+    context_infra = ContextInfra(context)
+    context_infra.teardown()

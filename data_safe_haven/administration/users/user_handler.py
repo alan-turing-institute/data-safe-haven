@@ -97,7 +97,7 @@ class UserHandler:
             self.logger.error(f"Could not load users for SRE '{sre_name}'.")
             return []
 
-    def list(self) -> None:  # noqa: A003
+    def list(self) -> None:
         """List Active Directory, AzureAD and Guacamole users
 
         Raises:
@@ -157,7 +157,7 @@ class UserHandler:
             msg = f"Could not remove users: {user_names}.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
 
-    def set(self, users_csv_path: str) -> None:  # noqa: A003
+    def set(self, users_csv_path: str) -> None:
         """Set AzureAD and Guacamole users
 
         Raises:

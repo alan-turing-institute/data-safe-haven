@@ -40,7 +40,7 @@ class DeclarativeSHM:
                     "verification-azuread-custom-domain"
                 ),
             ),
-            tags=self.cfg.tags.to_dict(),
+            tags=self.cfg.tags.model_dump(),
         )
 
         # Deploy firewall and routing
@@ -57,7 +57,7 @@ class DeclarativeSHM:
                 subnet_identity_servers=networking.subnet_identity_servers,
                 subnet_update_servers=networking.subnet_update_servers,
             ),
-            tags=self.cfg.tags.to_dict(),
+            tags=self.cfg.tags.model_dump(),
         )
 
         # Deploy firewall and routing
@@ -69,7 +69,7 @@ class DeclarativeSHM:
                 resource_group_name=networking.resource_group_name,
                 subnet=networking.subnet_bastion,
             ),
-            tags=self.cfg.tags.to_dict(),
+            tags=self.cfg.tags.model_dump(),
         )
 
         # Deploy data storage
@@ -83,7 +83,7 @@ class DeclarativeSHM:
                 pulumi_opts=self.pulumi_opts,
                 tenant_id=self.cfg.azure.tenant_id,
             ),
-            tags=self.cfg.tags.to_dict(),
+            tags=self.cfg.tags.model_dump(),
         )
 
         # Deploy automated monitoring
@@ -97,7 +97,7 @@ class DeclarativeSHM:
                 subnet_monitoring=networking.subnet_monitoring,
                 timezone=self.cfg.shm.timezone,
             ),
-            tags=self.cfg.tags.to_dict(),
+            tags=self.cfg.tags.model_dump(),
         )
 
         # Deploy update servers
@@ -113,7 +113,7 @@ class DeclarativeSHM:
                 virtual_network_name=networking.virtual_network.name,
                 virtual_network_resource_group_name=networking.resource_group_name,
             ),
-            tags=self.cfg.tags.to_dict(),
+            tags=self.cfg.tags.model_dump(),
         )
 
         # Deploy domain controllers
@@ -133,11 +133,11 @@ class DeclarativeSHM:
                 password_domain_searcher=data.password_domain_searcher,
                 private_ip_address=networking.domain_controller_private_ip,
                 subnet_identity_servers=networking.subnet_identity_servers,
-                subscription_name=self.cfg.subscription_name,
+                subscription_name=self.cfg.context.subscription_name,
                 virtual_network_name=networking.virtual_network.name,
                 virtual_network_resource_group_name=networking.resource_group_name,
             ),
-            tags=self.cfg.tags.to_dict(),
+            tags=self.cfg.tags.model_dump(),
         )
 
         # Export values for later use

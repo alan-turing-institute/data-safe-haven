@@ -1,5 +1,4 @@
 import datetime
-from typing import Any
 
 import pytz
 
@@ -17,17 +16,6 @@ def allowed_dns_lookups() -> list[str]:
         "ubuntu_setup": ["keyserver.ubuntu.com"],
     }
     return sorted({zone for zones in dns_lookups.values() for zone in zones})
-
-
-def as_dict(container: Any) -> dict[str, Any]:
-    if (
-        not isinstance(container, dict)
-        and hasattr(container, "keys")
-        and all(isinstance(x, str) for x in container.keys())
-    ):
-        msg = f"{container} {type(container)} is not a valid dict[str, Any]"
-        raise TypeError(msg)
-    return {str(k): v for k, v in container.items()}
 
 
 def ordered_private_dns_zones(resource_type: str | None = None) -> list[str]:
@@ -53,7 +41,7 @@ def ordered_private_dns_zones(resource_type: str | None = None) -> list[str]:
 
 def time_as_string(hour: int, minute: int, timezone: str) -> str:
     """Get the next occurence of a repeating daily time as a string"""
-    dt = datetime.datetime.now(datetime.timezone.utc).replace(
+    dt = datetime.datetime.now(datetime.UTC).replace(
         hour=hour,
         minute=minute,
         second=0,
