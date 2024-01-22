@@ -38,7 +38,6 @@ Although they will not be able to access or download these files, a potential is
 If possible, data providers should avoid the use of any identifying information in the filenames or directory structure of the data that they upload.
 This is not always possible, since some data providers may require identifying information to be part of filenames or directory structures.
 
-
 ### Describe the data
 
 Explaining the structure and format of the data will help researchers be most effective.
