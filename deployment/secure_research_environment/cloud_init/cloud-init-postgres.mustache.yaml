@@ -158,7 +158,7 @@ write_files:
   - path: "/opt/configuration/create-postgres-triggers.sql"
     permissions: "0444"
     content: |
-      {{{postgres_create_postgres_triggers.mustache.sql}}}
+      {{postgres_create_postgres_triggers.mustache.sql}}
 
   - path: "/opt/configuration/install-postgres-extensions.sql"
     permissions: "0444"
