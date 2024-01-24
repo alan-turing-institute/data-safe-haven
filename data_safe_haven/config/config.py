@@ -9,6 +9,7 @@ import yaml
 from azure.keyvault.keys import KeyVaultKey
 from pydantic import (
     BaseModel,
+    ConfigDict,
     Field,
     FieldSerializationInfo,
     ValidationError,
@@ -151,6 +152,7 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
+    model_config = ConfigDict(use_enum_values=True)
     databases: list[DatabaseSystem] = Field(..., default_factory=list[DatabaseSystem])
     data_provider_ip_addresses: list[IpAddress] = Field(
         ..., default_factory=list[IpAddress]
@@ -178,9 +180,11 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     @field_serializer("software_packages")
     def software_packages_serializer(
         self,
-        packages: SoftwarePackageCategory,
+        packages: SoftwarePackageCategory | str,
         info: FieldSerializationInfo,  # noqa: ARG002
     ) -> str:
+        if isinstance(packages, str):
+            packages = SoftwarePackageCategory(packages)
         return packages.value
 
     def update(
