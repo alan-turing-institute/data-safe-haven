@@ -179,6 +179,10 @@ class SHMMonitoringComponent(ComponentResource):
         # Set up a private linkscope and endpoint for the log analytics workspace
         log_analytics_private_link_scope = insights.PrivateLinkScope(
             f"{self._name}_log_analytics_private_link_scope",
+            access_mode_settings=insights.AccessModeSettingsArgs(
+                ingestion_access_mode=insights.AccessMode.PRIVATE_ONLY,
+                query_access_mode=insights.AccessMode.PRIVATE_ONLY,
+            ),
             location="Global",
             resource_group_name=resource_group.name,
             scope_name=f"{stack_name}-ampls-log",
