@@ -90,7 +90,7 @@ class DeclarativeSRE:
                 shm_networking_resource_group_name=self.pulumi_opts.require(
                     "shm-networking-resource_group_name"
                 ),
-                sre_index=self.cfg.sres[self.sre_name].index,
+                sre_index=self.cfg.sre(self.sre_name).index,
             ),
             tags=self.cfg.tags.model_dump(),
         )
@@ -124,11 +124,11 @@ class DeclarativeSRE:
                     "shm-networking-virtual_network_name"
                 ),
                 shm_zone_name=self.cfg.shm.fqdn,
-                sre_index=self.cfg.sres[self.sre_name].index,
+                sre_index=self.cfg.sre(self.sre_name).index,
                 sre_name=self.sre_name,
-                user_public_ip_ranges=self.cfg.sres[
+                user_public_ip_ranges=self.cfg.sre(
                     self.sre_name
-                ].research_user_ip_addresses,
+                ).research_user_ip_addresses,
             ),
             tags=self.cfg.tags.model_dump(),
         )
@@ -148,7 +148,7 @@ class DeclarativeSRE:
                 resource_group_name=self.pulumi_opts.require(
                     "shm-monitoring-resource_group_name"
                 ),
-                sre_index=self.cfg.sres[self.sre_name].index,
+                sre_index=self.cfg.sre(self.sre_name).index,
                 timezone=self.cfg.shm.timezone,
             ),
             tags=self.cfg.tags.model_dump(),
@@ -162,9 +162,9 @@ class DeclarativeSRE:
                 admin_email_address=self.cfg.shm.admin_email_address,
                 admin_group_id=self.cfg.azure.admin_group_id,
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
-                data_provider_ip_addresses=self.cfg.sres[
+                data_provider_ip_addresses=self.cfg.sre(
                     self.sre_name
-                ].data_provider_ip_addresses,
+                ).data_provider_ip_addresses,
                 dns_record=networking.shm_ns_record,
                 dns_server_admin_password=dns.password_admin,
                 location=self.cfg.azure.location,
@@ -204,8 +204,8 @@ class DeclarativeSRE:
                 aad_application_fqdn=networking.sre_fqdn,
                 aad_auth_token=self.graph_api_token,
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
-                allow_copy=self.cfg.sres[self.sre_name].remote_desktop.allow_copy,
-                allow_paste=self.cfg.sres[self.sre_name].remote_desktop.allow_paste,
+                allow_copy=self.cfg.sre(self.sre_name).remote_desktop.allow_copy,
+                allow_paste=self.cfg.sre(self.sre_name).remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
                 dns_server_ip=dns.ip_address,
                 ldap_bind_dn=ldap_bind_dn,
@@ -260,7 +260,7 @@ class DeclarativeSRE:
                 subscription_name=self.cfg.context.subscription_name,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
-                vm_details=list(enumerate(self.cfg.sres[self.sre_name].workspace_skus)),
+                vm_details=list(enumerate(self.cfg.sre(self.sre_name).workspace_skus)),
             ),
             tags=self.cfg.tags.model_dump(),
         )
@@ -271,7 +271,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREUserServicesProps(
                 database_service_admin_password=data.password_database_service_admin,
-                databases=self.cfg.sres[self.sre_name].databases,
+                databases=self.cfg.sre(self.sre_name).databases,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 domain_netbios_name=self.pulumi_opts.require(
@@ -288,7 +288,7 @@ class DeclarativeSRE:
                 location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,
                 nexus_admin_password=data.password_nexus_admin,
-                software_packages=self.cfg.sres[self.sre_name].software_packages,
+                software_packages=self.cfg.sre(self.sre_name).software_packages,
                 sre_fqdn=networking.sre_fqdn,
                 sre_private_dns_zone_id=networking.sre_private_dns_zone_id,
                 storage_account_key=data.storage_account_data_configuration_key,
