@@ -276,8 +276,14 @@ class Config(BaseModel, validate_assignment=True):
 
     @property
     def pulumi_encryption_key_version(self) -> str:
+        """ID for the Pulumi encryption key"""
         key_id: str = self.pulumi_encryption_key.id
         return key_id.split("/")[-1]
+
+    @property
+    def sre_names(self) -> list[str]:
+        """Names of all SREs"""
+        return list(self.sres.keys())
 
     def is_complete(self, *, require_sres: bool) -> bool:
         if require_sres:
@@ -293,10 +299,15 @@ class Config(BaseModel, validate_assignment=True):
 
     def sre(self, name: str) -> ConfigSectionSRE:
         """Return the config entry for this SRE, raising an exception if it does not exist"""
-        if name not in self.sres.keys():
+        if name not in self.sre_names:
             msg = f"SRE {name} does not exist"
             raise DataSafeHavenConfigError(msg)
         return self.sres[name]
+
+    def remove_sre(self, name: str) -> None:
+        """Remove SRE config section by name"""
+        if name in self.sre_names:
+            del self.sres[name]
 
     def add_stack(self, name: str, path: Path) -> None:
         """Add a Pulumi stack file to config"""

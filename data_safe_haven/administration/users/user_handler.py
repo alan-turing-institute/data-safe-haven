@@ -71,7 +71,7 @@ class UserHandler:
         usernames = {}
         usernames["Azure AD"] = self.get_usernames_azure_ad()
         usernames["Domain controller"] = self.get_usernames_domain_controller()
-        for sre_name in self.config.sres.keys():
+        for sre_name in self.config.sre_names:
             usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(sre_name)
         return usernames
 
