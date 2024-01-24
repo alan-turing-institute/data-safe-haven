@@ -1,5 +1,4 @@
-from data_safe_haven.config.config import ConfigSectionPulumi, ConfigSectionTags
-from data_safe_haven.config.context_settings import Context
+from data_safe_haven.config import ConfigSectionPulumi, ConfigSectionTags, Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 
