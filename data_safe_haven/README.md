@@ -39,7 +39,7 @@ Run `dsh deploy shm -h` to see the necessary command line flags and provide them
 > dsh admin add-users <my CSV users file>
 ```
 
-- Create the configuration for one or more Secure Research Environments (SREs)
+- Create the configuration for one or more Secure Research Environments (SREs).
 
 ```console
 > dsh config show --file config.yaml

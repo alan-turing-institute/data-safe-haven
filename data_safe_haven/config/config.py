@@ -347,6 +347,19 @@ class Config(BaseModel, validate_assignment=True):
                 fqdn="TRE domain name",
                 timezone="Timezone",
             ),
+            sres={
+                "example": ConfigSectionSRE.model_construct(
+                    databases=["List of database systems to enable"],
+                    data_provider_ip_addresses=["Data provider IP addresses"],
+                    remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
+                        allow_copy="Whether to allow copying text out of the environment",
+                        allow_paste="Whether to allow pasting text into the environment",
+                    ),
+                    workspace_skus=["Azure VM SKUs"],
+                    research_user_ip_addresses=["Research user IP addresses"],
+                    software_packages=SoftwarePackageCategory.ANY,
+                )
+            }
         )
 
     @classmethod
