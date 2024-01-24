@@ -155,7 +155,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     data_provider_ip_addresses: list[IpAddress] = Field(
         ..., default_factory=list[IpAddress]
     )
-    index: int = Field(..., ge=0)
+    index: int = Field(..., ge=0, le=256)
     remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
         ..., default_factory=ConfigSubsectionRemoteDesktopOpts
     )
@@ -260,6 +260,17 @@ class Config(BaseModel, validate_assignment=True):
         tags = ConfigSectionTags(context)
         super().__init__(context=context, tags=tags, **kwargs)
 
+    @field_validator("sres")
+    @classmethod
+    def all_sre_indices_must_be_unique(
+        cls, v: dict[str, ConfigSectionSRE]
+    ) -> dict[str, ConfigSectionSRE]:
+        indices = [s.index for s in v.values()]
+        if len(indices) != len(set(indices)):
+            msg = "all SRE indices must be unique"
+            raise ValueError(msg)
+        return v
+
     @property
     def work_directory(self) -> Path:
         return self.context.work_directory
@@ -359,7 +370,7 @@ class Config(BaseModel, validate_assignment=True):
                     research_user_ip_addresses=["Research user IP addresses"],
                     software_packages=SoftwarePackageCategory.ANY,
                 )
-            }
+            },
         )
 
     @classmethod
