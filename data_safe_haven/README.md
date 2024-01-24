@@ -29,7 +29,6 @@ Install the following requirements before starting
 > dsh deploy shm
 ```
 
-You will be prompted for various settings.
 Run `dsh deploy shm -h` to see the necessary command line flags and provide them as arguments.
 
 - Add one or more users from a CSV file with columns named (`GivenName`, `Surname`, `Phone`, `Email`, `CountryCode`).
@@ -40,13 +39,20 @@ Run `dsh deploy shm -h` to see the necessary command line flags and provide them
 > dsh admin add-users <my CSV users file>
 ```
 
-- Next deploy the infrastructure for one or more Secure Research Environments (SREs) [approx 30 minutes]:
+- Create the configuration for one or more Secure Research Environments (SREs)
+
+```console
+> dsh config show --file config.yaml
+> vim config.yaml
+> dsh config upload config.yaml
+```
+
+- Next deploy the infrastructure  [approx 30 minutes]:
 
 ```console
 > dsh deploy sre <SRE name>
 ```
 
-You will be prompted for various settings.
 Run `dsh deploy sre -h` to see the necessary command line flags and provide them as arguments.
 
 - Next add one or more existing users to your SRE
