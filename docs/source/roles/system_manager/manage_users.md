@@ -20,7 +20,7 @@ A helper script for doing this is already uploaded to the domain controller - yo
 Each user should be assigned to one or more Active Directory "security groups", which give them access to a given SRE with appropriate privileges:
 
 - `SG <SRE ID> Research Users`: Default for most researchers. No special permissions.
-- `SG <SRE ID> Data Administrators`: Researchers who can create/modify/delete tables in the `data` schema on a `PostgreSQL` within `<SRE ID>``. Users outside this group can only read these tables. Restricting this access to most users prevents them creating/deleting arbitrary schemas, which is important because some SREs have their input data in database form.
+- `SG <SRE ID> Data Administrators`: Researchers who can create/modify/delete tables in the `data` schema on a `PostgreSQL` within `<SRE ID>``. Users outside this group can only read these tables. Restricting this access prevents most users from creating/deleting arbitrary tables, which is important because some SREs have their input data in database form.
 
 (generate_user_csv)=
 
