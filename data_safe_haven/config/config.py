@@ -290,7 +290,7 @@ class Config(BaseModel, validate_assignment=True):
         return alphanumeric(name).lower()
 
     def sre(self, name: str) -> ConfigSectionSRE:
-        """Return the config entry for this SRE creating it if it does not exist"""
+        """Return the config entry for this SRE, raising an exception if it does not exist"""
         if name not in self.sres.keys():
             msg = f"SRE {name} does not exist"
             raise DataSafeHavenConfigError(msg)
