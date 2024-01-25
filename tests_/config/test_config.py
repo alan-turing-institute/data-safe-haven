@@ -82,10 +82,11 @@ class TestConfigSectionSHM:
         assert shm_config.fqdn == "shm.example.com"
 
     def test_update_validation(self, shm_config):
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(
+            ValidationError,
+            match="Value error, Expected valid email address.*not an email address",
+        ):
             shm_config.update(admin_email_address="not an email address")
-            assert "Value error, Expected valid email address" in exc
-            assert "not an email address" in exc
 
 
 @fixture
@@ -136,12 +137,11 @@ class TestConfigSectionSRE:
         assert sre_config.software_packages == SoftwarePackageCategory.NONE
 
     def test_all_databases_must_be_unique(self):
-        with pytest.raises(ValueError) as exc:
+        with pytest.raises(ValueError, match="all databases must be unique"):
             ConfigSectionSRE(
                 index=0,
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
             )
-            assert "all databases must be unique" in exc
 
     def test_update(self):
         sre_config = ConfigSectionSRE(index=0)
