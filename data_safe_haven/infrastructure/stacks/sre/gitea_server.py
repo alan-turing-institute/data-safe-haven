@@ -23,6 +23,7 @@ class SREGiteaServerProps:
 
     def __init__(
         self,
+        containers_subnet_id: Input[str],
         database_password: Input[str],
         database_subnet_id: Input[str],
         dns_resource_group_name: Input[str],
@@ -35,7 +36,6 @@ class SREGiteaServerProps:
         ldap_user_security_group_name: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
-        network_profile_id: Input[str],
         sre_fqdn: Input[str],
         sre_private_dns_zone_id: Input[str],
         storage_account_key: Input[str],
@@ -46,6 +46,7 @@ class SREGiteaServerProps:
         virtual_network_resource_group_name: Input[str],
         database_username: Input[str] | None = None,
     ) -> None:
+        self.containers_subnet_id = containers_subnet_id
         self.database_password = database_password
         self.database_subnet_id = database_subnet_id
         self.database_username = (
@@ -61,7 +62,6 @@ class SREGiteaServerProps:
         self.ldap_user_security_group_name = ldap_user_security_group_name
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
-        self.network_profile_id = network_profile_id
         self.sre_fqdn = sre_fqdn
         self.sre_private_dns_zone_id = sre_private_dns_zone_id
         self.storage_account_key = storage_account_key
@@ -297,13 +297,15 @@ class SREGiteaServerComponent(ComponentResource):
                 ],
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
-            network_profile=containerinstance.ContainerGroupNetworkProfileArgs(
-                id=props.network_profile_id,
-            ),
             os_type=containerinstance.OperatingSystemTypes.LINUX,
             resource_group_name=props.user_services_resource_group_name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
+            subnet_ids=[
+                containerinstance.ContainerGroupSubnetIdArgs(
+                    id=props.containers_subnet_id
+                )
+            ],
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(

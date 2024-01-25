@@ -188,36 +188,6 @@ class SRERemoteDesktopComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Define a network profile
-        container_network_profile = network.NetworkProfile(
-            f"{self._name}_container_network_profile",
-            container_network_interface_configurations=[
-                network.ContainerNetworkInterfaceConfigurationArgs(
-                    ip_configurations=[
-                        network.IPConfigurationProfileArgs(
-                            name="ipconfigguacamole",
-                            subnet=network.SubnetArgs(
-                                id=props.subnet_guacamole_containers_id,
-                            ),
-                        )
-                    ],
-                    name="networkinterfaceconfigguacamole",
-                )
-            ],
-            network_profile_name=f"{stack_name}-np-guacamole",
-            resource_group_name=props.virtual_network_resource_group_name,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(
-                    depends_on=[props.virtual_network],
-                    ignore_changes=[
-                        "container_network_interface_configurations"
-                    ],  # allow container groups to be registered to this interface
-                ),
-            ),
-            tags=child_tags,
-        )
-
         # Define the container group with guacd, guacamole and caddy
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group_remote_desktop",
@@ -416,13 +386,15 @@ class SRERemoteDesktopComponent(ComponentResource):
                 ],
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
-            network_profile=containerinstance.ContainerGroupNetworkProfileArgs(
-                id=container_network_profile.id,
-            ),
             os_type=containerinstance.OperatingSystemTypes.LINUX,
             resource_group_name=resource_group.name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
+            subnet_ids=[
+                containerinstance.ContainerGroupSubnetIdArgs(
+                    id=props.subnet_guacamole_containers_id
+                )
+            ],
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
