@@ -236,6 +236,23 @@ class TestConfig:
         )
         assert not config.sres
 
+    def test_all_sre_indices_must_be_unique(
+        self, context, azure_config, pulumi_config, shm_config
+    ):
+        with pytest.raises(ValueError, match="all SRE indices must be unique"):
+            sre_config_1 = ConfigSectionSRE(index=0)
+            sre_config_2 = ConfigSectionSRE(index=0)
+            Config(
+                context=context,
+                azure=azure_config,
+                pulumi=pulumi_config,
+                shm=shm_config,
+                sres={
+                    "sre1": sre_config_1,
+                    "sre2": sre_config_2,
+                },
+            )
+
     def test_work_directory(self, config_sres):
         config = config_sres
         assert config.work_directory == config.context.work_directory
