@@ -24,6 +24,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
+    alphanumeric,
     b64decode,
     b64encode,
 )
@@ -285,17 +286,16 @@ class Config(BaseModel, validate_assignment=True):
             return False
         return True
 
-    def sre(self, name: str) -> ConfigSectionSRE:
-        """Return the config entry for this SRE creating it if it does not exist"""
-        if name not in self.sres.keys():
-            highest_index = max(0 + sre.index for sre in self.sres.values())
-            self.sres[name] = ConfigSectionSRE(index=highest_index + 1)
-        return self.sres[name]
+    @staticmethod
+    def sanitise_sre_name(name: str) -> str:
+        return alphanumeric(name).lower()
 
-    def remove_sre(self, name: str) -> None:
-        """Remove SRE config section by name"""
-        if name in self.sres.keys():
-            del self.sres[name]
+    def sre(self, name: str) -> ConfigSectionSRE:
+        """Return the config entry for this SRE, raising an exception if it does not exist"""
+        if name not in self.sres.keys():
+            msg = f"SRE {name} does not exist"
+            raise DataSafeHavenConfigError(msg)
+        return self.sres[name]
 
     def add_stack(self, name: str, path: Path) -> None:
         """Add a Pulumi stack file to config"""

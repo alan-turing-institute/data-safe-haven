@@ -3,7 +3,6 @@ from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config, ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.functions import alphanumeric
 from data_safe_haven.utility import LoggingSingleton
 
 
@@ -17,7 +16,7 @@ def admin_register_users(
 
     shm_name = context.shm_name
     # Use a JSON-safe SRE name
-    sre_name = alphanumeric(sre).lower()
+    sre_name = config.sanitise_sre_name(sre)
 
     try:
         # Check that SRE option has been provided
