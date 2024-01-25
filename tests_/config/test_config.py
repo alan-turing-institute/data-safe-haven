@@ -78,8 +78,8 @@ class TestConfigSectionSHM:
 
     def test_update(self, shm_config):
         assert shm_config.fqdn == "shm.acme.com"
-        shm_config.update(fqdn="modified")
-        assert shm_config.fqdn == "modified"
+        shm_config.update(fqdn="shm.example.com")
+        assert shm_config.fqdn == "shm.example.com"
 
     def test_update_validation(self, shm_config):
         with pytest.raises(ValidationError) as exc:

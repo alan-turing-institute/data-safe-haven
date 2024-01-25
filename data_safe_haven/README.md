@@ -11,6 +11,7 @@ Install the following requirements before starting
 
 ```console
 > dsh context add ...
+> dsh context switch ...
 > dsh context create
 ```
 

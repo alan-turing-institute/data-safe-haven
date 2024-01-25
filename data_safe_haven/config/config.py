@@ -37,6 +37,7 @@ from data_safe_haven.utility.annotated_types import (
     AzureLocation,
     AzureVmSku,
     EmailAdress,
+    Fqdn,
     Guid,
     IpAddress,
     TimeZone,
@@ -65,7 +66,7 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
     aad_tenant_id: Guid
     admin_email_address: EmailAdress
     admin_ip_addresses: list[IpAddress]
-    fqdn: str
+    fqdn: Fqdn
     name: str = Field(..., exclude=True)
     timezone: TimeZone
 

@@ -1,5 +1,4 @@
-from data_safe_haven.config.config import ConfigSectionPulumi, ConfigSectionTags
-from data_safe_haven.config.context_settings import Context
+from data_safe_haven.config import ConfigSectionPulumi, ConfigSectionTags, Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 
@@ -60,7 +59,7 @@ class ContextInfra:
                 storage_account_name=storage_account.name,
             )
             _ = self.azure_api.ensure_storage_blob_container(
-                container_name=self.context.storage_container_name,
+                container_name=ConfigSectionPulumi.storage_container_name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account.name,
             )
