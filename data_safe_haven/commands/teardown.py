@@ -71,9 +71,8 @@ def sre(
             msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
             raise DataSafeHavenInputError(msg) from exc
 
-        # Remove information from config file
+        # Remove stack from config file
         config.remove_stack(stack.stack_name)
-        config.remove_sre(sre_name)
 
         # Upload config to blob storage
         config.upload()
