@@ -154,7 +154,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     data_provider_ip_addresses: list[IpAddress] = Field(
         ..., default_factory=list[IpAddress]
     )
-    index: int = Field(..., ge=0, le=256)
+    index: int = Field(..., ge=1, le=256)
     remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
         ..., default_factory=ConfigSubsectionRemoteDesktopOpts
     )
