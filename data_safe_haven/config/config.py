@@ -9,17 +9,13 @@ import yaml
 from azure.keyvault.keys import KeyVaultKey
 from pydantic import (
     BaseModel,
-    ConfigDict,
     Field,
-    FieldSerializationInfo,
     ValidationError,
-    field_serializer,
     field_validator,
 )
 from yaml import YAMLError
 
 from data_safe_haven import __version__
-from data_safe_haven.config.context_settings import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
@@ -44,6 +40,8 @@ from data_safe_haven.utility.annotated_types import (
     IpAddress,
     TimeZone,
 )
+
+from .context_settings import Context
 
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):
@@ -152,7 +150,6 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
-    model_config = ConfigDict(use_enum_values=True)
     databases: list[DatabaseSystem] = Field(..., default_factory=list[DatabaseSystem])
     data_provider_ip_addresses: list[IpAddress] = Field(
         ..., default_factory=list[IpAddress]
@@ -170,22 +167,13 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     @field_validator("databases")
     @classmethod
     def all_databases_must_be_unique(
-        cls, v: list[DatabaseSystem]
+        cls, v: list[DatabaseSystem | str]
     ) -> list[DatabaseSystem]:
-        if len(v) != len(set(v)):
+        v_ = [DatabaseSystem(d) for d in v]
+        if len(v_) != len(set(v_)):
             msg = "all databases must be unique"
             raise ValueError(msg)
-        return v
-
-    @field_serializer("software_packages")
-    def software_packages_serializer(
-        self,
-        packages: SoftwarePackageCategory | str,
-        info: FieldSerializationInfo,  # noqa: ARG002
-    ) -> str:
-        if isinstance(packages, str):
-            packages = SoftwarePackageCategory(packages)
-        return packages.value
+        return v_
 
     def update(
         self,
@@ -395,7 +383,7 @@ class Config(BaseModel, validate_assignment=True):
             config_dict[section]["context"] = context
 
         try:
-            return Config.model_validate(config_dict)
+            return Config.model_validate(config_dict, strict=True)
         except ValidationError as exc:
             msg = f"Could not load configuration.\n{exc}"
             raise DataSafeHavenParameterError(msg) from exc
@@ -412,7 +400,7 @@ class Config(BaseModel, validate_assignment=True):
         return Config.from_yaml(context, config_yaml)
 
     def to_yaml(self) -> str:
-        return yaml.dump(self.model_dump(), indent=2)
+        return yaml.dump(self.model_dump(mode="json"), indent=2)
 
     def upload(self) -> None:
         """Upload config to Azure storage"""
