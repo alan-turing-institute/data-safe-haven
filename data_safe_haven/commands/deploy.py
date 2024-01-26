@@ -100,12 +100,10 @@ def sre(
     ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
-    sre_name = "UNKNOWN"
+    logger = LoggingSingleton()
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
-
     sre_name = config.sanitise_sre_name(name)
-    logger = LoggingSingleton()
 
     try:
         # Exit if SRE name is not recognised
