@@ -228,6 +228,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                         )
                     ),
                     name="GuacamoleHttpRouting",
+                    priority=200,
                     rule_type="Basic",
                 ),
                 network.ApplicationGatewayRequestRoutingRuleArgs(
@@ -250,6 +251,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                         )
                     ),
                     name="GuacamoleHttpsRouting",
+                    priority=100,
                     rule_type="Basic",
                 ),
             ],
