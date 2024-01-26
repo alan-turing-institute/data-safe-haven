@@ -1,4 +1,5 @@
 """Add users to a deployed Data Safe Haven"""
+
 import pathlib
 
 from data_safe_haven.administration.users import UserHandler

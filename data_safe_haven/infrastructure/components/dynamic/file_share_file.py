@@ -1,4 +1,5 @@
 """Pulumi dynamic component for files uploaded to an Azure FileShare."""
+
 from contextlib import suppress
 from typing import Any
 

@@ -1,4 +1,5 @@
 """Pulumi component for SHM state"""
+
 from collections.abc import Mapping, Sequence
 
 import pulumi_random

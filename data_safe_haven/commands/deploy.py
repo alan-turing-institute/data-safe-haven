@@ -1,4 +1,5 @@
 """Command-line application for deploying a Data Safe Haven component, delegating the details to a subcommand"""
+
 from typing import Annotated, Optional
 
 import typer

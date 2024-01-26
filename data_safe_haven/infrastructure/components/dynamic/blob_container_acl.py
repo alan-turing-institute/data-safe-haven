@@ -1,4 +1,5 @@
 """Pulumi dynamic component for setting ACLs on an Azure blob container."""
+
 from typing import Any
 
 from pulumi import Input, Output, ResourceOptions

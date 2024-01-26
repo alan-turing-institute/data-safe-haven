@@ -1,4 +1,5 @@
 """Pulumi dynamic component for compiled desired state configuration."""
+
 from collections.abc import Sequence
 from typing import Any
 

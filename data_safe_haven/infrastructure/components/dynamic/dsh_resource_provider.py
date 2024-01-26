@@ -1,4 +1,5 @@
 """Pulumi base dynamic component."""
+
 from collections.abc import Sequence
 from typing import Any
 

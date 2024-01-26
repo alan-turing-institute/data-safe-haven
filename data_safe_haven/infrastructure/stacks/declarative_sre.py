@@ -1,4 +1,5 @@
 """Pulumi declarative program"""
+
 import pulumi
 
 from data_safe_haven.config import Config

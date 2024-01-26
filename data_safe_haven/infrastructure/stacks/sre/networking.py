@@ -1,4 +1,5 @@
 """Pulumi component for SRE networking"""
+
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions

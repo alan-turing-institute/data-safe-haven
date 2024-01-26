@@ -1,4 +1,5 @@
 """Common transformations needed when manipulating Pulumi resources"""
+
 from pulumi import Output
 from pulumi_azure_native import containerinstance, network, resources
 
@@ -42,9 +43,9 @@ def get_ip_address_from_container_group(
 ) -> Output[str]:
     """Get the IP address of a container group"""
     return container_group.ip_address.apply(
-        lambda ip_address: (ip_address.ip if ip_address.ip else "")
-        if ip_address
-        else ""
+        lambda ip_address: (
+            (ip_address.ip if ip_address.ip else "") if ip_address else ""
+        )
     )
 
 
@@ -54,11 +55,17 @@ def get_ip_addresses_from_private_endpoint(
     """Get a list of IP addresses from a private endpoint"""
     if isinstance(endpoint.custom_dns_configs, Output):
         return endpoint.custom_dns_configs.apply(
-            lambda cfgs: sum(
-                [list(cfg.ip_addresses) if cfg.ip_addresses else [] for cfg in cfgs], []
+            lambda cfgs: (
+                sum(
+                    [
+                        list(cfg.ip_addresses) if cfg.ip_addresses else []
+                        for cfg in cfgs
+                    ],
+                    [],
+                )
+                if cfgs
+                else []
             )
-            if cfgs
-            else []
         )
     msg = f"Private endpoint '{endpoint.name}' has no IP addresses."
     raise DataSafeHavenPulumiError(msg)

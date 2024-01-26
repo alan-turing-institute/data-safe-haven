@@ -1,4 +1,5 @@
 """Interact with users in an Azure Active Directory"""
+
 from collections.abc import Sequence
 from typing import Any
 

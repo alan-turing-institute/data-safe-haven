@@ -1,4 +1,5 @@
 """Pulumi component for SRE application gateway"""
+
 from collections.abc import Mapping
 from typing import Any
 

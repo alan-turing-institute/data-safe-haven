@@ -1,4 +1,5 @@
 """Deploy Data Safe Haven Management environment with Pulumi"""
+
 import pulumi
 
 from data_safe_haven.config import Config

@@ -1,4 +1,5 @@
 """Standalone logging class implemented as a singleton"""
+
 import io
 import logging
 from typing import Any, ClassVar

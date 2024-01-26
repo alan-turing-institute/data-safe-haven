@@ -1,4 +1,5 @@
 """Pulumi component for SRE data"""
+
 from collections.abc import Mapping, Sequence
 from typing import ClassVar
 

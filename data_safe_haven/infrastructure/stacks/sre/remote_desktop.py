@@ -1,4 +1,5 @@
 """Pulumi component for SRE remote desktop"""
+
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -82,11 +83,14 @@ class SRERemoteDesktopProps:
         self.subnet_guacamole_containers_ip_addresses = Output.from_input(
             subnet_guacamole_containers
         ).apply(
-            lambda s: [
-                str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
-            ]
-            if s.address_prefix
-            else []
+            lambda s: (
+                [
+                    str(ip)
+                    for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
+                ]
+                if s.address_prefix
+                else []
+            )
         )
         self.subnet_guacamole_containers_support_id = Output.from_input(
             subnet_guacamole_containers_support
@@ -94,11 +98,14 @@ class SRERemoteDesktopProps:
         self.subnet_guacamole_containers_support_ip_addresses = Output.from_input(
             subnet_guacamole_containers_support
         ).apply(
-            lambda s: [
-                str(ip) for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
-            ]
-            if s.address_prefix
-            else []
+            lambda s: (
+                [
+                    str(ip)
+                    for ip in AzureIPv4Range.from_cidr(s.address_prefix).available()
+                ]
+                if s.address_prefix
+                else []
+            )
         )
         self.virtual_network = virtual_network
         self.virtual_network_resource_group_name = virtual_network_resource_group_name

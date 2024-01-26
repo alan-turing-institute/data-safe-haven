@@ -1,4 +1,5 @@
 """Wrapper for the Pulumi Log Analytics Workspace component"""
+
 from collections.abc import Mapping
 
 import pulumi
@@ -49,18 +50,16 @@ class WrappedLogAnalyticsWorkspace(operationalinsights.Workspace):
         """
         Gets the key for this workspace.
         """
-        workspace_keys: pulumi.Output[
-            operationalinsights.GetSharedKeysResult
-        ] = pulumi.Output.all(
-            resource_group_name=self.resource_group_name,
-            workspace_name=self.name,
-        ).apply(
-            lambda kwargs: operationalinsights.get_shared_keys_output(**kwargs)
+        workspace_keys: pulumi.Output[operationalinsights.GetSharedKeysResult] = (
+            pulumi.Output.all(
+                resource_group_name=self.resource_group_name,
+                workspace_name=self.name,
+            ).apply(lambda kwargs: operationalinsights.get_shared_keys_output(**kwargs))
         )
         return pulumi.Output.secret(
             workspace_keys.apply(
-                lambda keys: keys.primary_shared_key
-                if keys.primary_shared_key
-                else "UNKNOWN"
+                lambda keys: (
+                    keys.primary_shared_key if keys.primary_shared_key else "UNKNOWN"
+                )
             )
         )

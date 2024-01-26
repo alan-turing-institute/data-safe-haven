@@ -1,4 +1,5 @@
 """Unregister existing users from a deployed SRE"""
+
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config, ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError

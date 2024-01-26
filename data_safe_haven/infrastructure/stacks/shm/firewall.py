@@ -1,4 +1,5 @@
 """Pulumi component for SHM traffic routing"""
+
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -621,9 +622,11 @@ class SHMFirewallComponent(ComponentResource):
 
         # Route all connected traffic through the firewall
         private_ip_address = firewall.ip_configurations.apply(
-            lambda cfgs: ""
-            if not cfgs
-            else next(filter(lambda _: _, [cfg.private_ip_address for cfg in cfgs]))
+            lambda cfgs: (
+                ""
+                if not cfgs
+                else next(filter(lambda _: _, [cfg.private_ip_address for cfg in cfgs]))
+            )
         )
         network.Route(
             f"{self._name}_route_via_firewall",
