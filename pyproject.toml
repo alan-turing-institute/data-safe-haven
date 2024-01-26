@@ -63,7 +63,7 @@ pre-install-commands = ["pip install -r requirements.txt"]
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
-  "black>=23.1.0",
+  "black>=24.1.0",
   "mypy>=1.0.0",
   "pydantic>=2.4",
   "ruff>=0.1.0",
