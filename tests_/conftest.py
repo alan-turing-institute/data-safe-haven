@@ -37,7 +37,7 @@ sres:
   sre1:
     data_provider_ip_addresses: []
     databases: []
-    index: 0
+    index: 1
     remote_desktop:
       allow_copy: false
       allow_paste: false
@@ -47,7 +47,7 @@ sres:
   sre2:
     data_provider_ip_addresses: []
     databases: []
-    index: 1
+    index: 2
     remote_desktop:
       allow_copy: false
       allow_paste: false
