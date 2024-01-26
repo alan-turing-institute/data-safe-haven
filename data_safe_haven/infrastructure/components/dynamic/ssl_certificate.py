@@ -1,4 +1,5 @@
 """Pulumi dynamic component for SSL certificates uploaded to an Azure KeyVault."""
+
 from contextlib import suppress
 from typing import Any
 

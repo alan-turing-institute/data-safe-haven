@@ -1,4 +1,5 @@
 """Load global and local settings from dotfiles"""
+
 # For postponed evaluation of annotations https://peps.python.org/pep-0563
 from __future__ import (
     annotations,

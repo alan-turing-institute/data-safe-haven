@@ -1,4 +1,5 @@
 """Helper class for Azure fileshares"""
+
 from contextlib import suppress
 
 from azure.core.exceptions import ResourceNotFoundError

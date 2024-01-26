@@ -1,4 +1,5 @@
 """Interface to the Azure CLI"""
+
 import json
 import subprocess
 from dataclasses import dataclass

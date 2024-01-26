@@ -1,4 +1,5 @@
 """Provisioning manager for a deployed SRE."""
+
 import pathlib
 from typing import Any
 
@@ -39,9 +40,9 @@ class SREProvisioningManager:
 
         # Construct remote desktop parameters
         self.remote_desktop_params = sre_stack.output("remote_desktop")
-        self.remote_desktop_params[
-            "connection_db_server_password"
-        ] = connection_db_server_password
+        self.remote_desktop_params["connection_db_server_password"] = (
+            connection_db_server_password
+        )
         self.remote_desktop_params["timezone"] = timezone
 
         # Construct security group parameters

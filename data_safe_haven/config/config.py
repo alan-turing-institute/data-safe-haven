@@ -1,4 +1,5 @@
 """Configuration file backed by blob storage"""
+
 from __future__ import annotations
 
 from pathlib import Path

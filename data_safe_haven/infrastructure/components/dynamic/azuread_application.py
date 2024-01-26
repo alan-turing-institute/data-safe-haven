@@ -1,4 +1,5 @@
 """Pulumi dynamic component for AzureAD applications."""
+
 from contextlib import suppress
 from typing import Any
 

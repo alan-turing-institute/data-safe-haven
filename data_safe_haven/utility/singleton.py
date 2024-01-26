@@ -1,4 +1,5 @@
 """Definition of a Singleton metaclass"""
+
 from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")

@@ -1,4 +1,5 @@
 """Interface to the Azure Python SDK"""
+
 import time
 from collections.abc import Sequence
 from contextlib import suppress
@@ -425,10 +426,10 @@ class AzureApi(AzureAuthenticator):
                 enhanced_key_usage=["1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2"],
                 validity_in_months=12,
             )
-            poller: LROPoller[
-                KeyVaultCertificate
-            ] = certificate_client.begin_create_certificate(
-                certificate_name=certificate_name, policy=policy
+            poller: LROPoller[KeyVaultCertificate] = (
+                certificate_client.begin_create_certificate(
+                    certificate_name=certificate_name, policy=policy
+                )
             )
             certificate = poller.result()
             self.logger.info(

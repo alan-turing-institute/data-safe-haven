@@ -1,4 +1,5 @@
 """Read local files, handling template expansion if needed"""
+
 import pathlib
 from typing import Any
 

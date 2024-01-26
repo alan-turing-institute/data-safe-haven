@@ -1,4 +1,5 @@
 """Wrapper for the Pulumi AutomationAccount component"""
+
 from collections.abc import Mapping, Sequence
 
 import pulumi
@@ -36,11 +37,13 @@ class WrappedAutomationAccount(automation.AutomationAccount):
         Gets the URL of the agentsvc.
         """
         return self.automation_hybrid_service_url.apply(
-            lambda url: url.replace("jrds", "agentsvc").replace(
-                "/automationAccounts/", "/accounts/"
+            lambda url: (
+                url.replace("jrds", "agentsvc").replace(
+                    "/automationAccounts/", "/accounts/"
+                )
+                if url
+                else "UNKNOWN"
             )
-            if url
-            else "UNKNOWN"
         )
 
     @property

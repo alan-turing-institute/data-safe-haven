@@ -1,4 +1,5 @@
 """Command line entrypoint for Data Safe Haven application"""
+
 import pathlib
 from typing import Annotated, Optional
 

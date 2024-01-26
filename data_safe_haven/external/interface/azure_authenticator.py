@@ -1,4 +1,5 @@
 """Standalone utility class for anything that needs to authenticate against Azure"""
+
 from typing import cast
 
 from azure.core.exceptions import ClientAuthenticationError

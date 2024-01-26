@@ -1,4 +1,5 @@
 """Pulumi component for virtual machines"""
+
 from collections.abc import Mapping
 from typing import Any
 
@@ -183,9 +184,9 @@ class VMComponent(ComponentResource):
                 opts=child_opts,
                 tags=child_tags,
             )
-            network_interface_ip_params[
-                "public_ip_address"
-            ] = network.PublicIPAddressArgs(id=public_ip.id)
+            network_interface_ip_params["public_ip_address"] = (
+                network.PublicIPAddressArgs(id=public_ip.id)
+            )
 
         # Define network card
         network_interface = network.NetworkInterface(

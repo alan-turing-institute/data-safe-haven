@@ -1,4 +1,5 @@
 """Pulumi component for SHM networking"""
+
 from collections.abc import Mapping, Sequence
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions

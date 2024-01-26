@@ -1,4 +1,5 @@
 """Provisioning manager for a deployed SHM."""
+
 from data_safe_haven.external import AzureApi
 from data_safe_haven.infrastructure import SHMStackManager
 

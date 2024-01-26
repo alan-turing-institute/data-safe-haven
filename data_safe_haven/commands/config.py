@@ -1,4 +1,5 @@
 """Command group and entrypoints for managing DSH configuration"""
+
 from pathlib import Path
 from typing import Annotated, Optional
 

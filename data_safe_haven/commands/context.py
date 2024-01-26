@@ -1,4 +1,5 @@
 """Command group and entrypoints for managing a DSH context"""
+
 from typing import Annotated, Optional
 
 import typer

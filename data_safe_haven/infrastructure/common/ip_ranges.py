@@ -1,4 +1,5 @@
 """Calculate SRE IP address ranges for a given SRE index"""
+
 from data_safe_haven.external import AzureIPv4Range
 
 

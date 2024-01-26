@@ -1,4 +1,5 @@
 """Pulumi component for SRE DNS server"""
+
 from collections.abc import Mapping
 
 import pulumi_random

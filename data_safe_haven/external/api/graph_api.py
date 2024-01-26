@@ -1,4 +1,5 @@
 """Interface to the Microsoft Graph API"""
+
 import datetime
 import pathlib
 import time

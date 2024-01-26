@@ -1,4 +1,5 @@
 """Deploy with Pulumi"""
+
 import logging
 import pathlib
 import shutil

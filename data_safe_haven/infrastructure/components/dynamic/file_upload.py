@@ -1,4 +1,5 @@
 """Pulumi dynamic component for running remote scripts on an Azure VM."""
+
 from typing import Any
 
 from pulumi import Input, Output, ResourceOptions
