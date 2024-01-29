@@ -82,10 +82,11 @@ class TestConfigSectionSHM:
         assert shm_config.fqdn == "shm.example.com"
 
     def test_update_validation(self, shm_config):
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(
+            ValidationError,
+            match="Value error, Expected valid email address.*not an email address",
+        ):
             shm_config.update(admin_email_address="not an email address")
-            assert "Value error, Expected valid email address" in exc
-            assert "not an email address" in exc
 
 
 @fixture
@@ -118,7 +119,7 @@ class TestConfigSectionSRE:
         sre_config = ConfigSectionSRE(
             databases=[DatabaseSystem.POSTGRESQL],
             data_provider_ip_addresses=["0.0.0.0"],  # noqa: S104
-            index=0,
+            index=1,
             remote_desktop=remote_desktop_config,
             workspace_skus=["Standard_D2s_v4"],
             research_user_ip_addresses=["0.0.0.0"],  # noqa: S104
@@ -127,7 +128,7 @@ class TestConfigSectionSRE:
         assert sre_config.data_provider_ip_addresses[0] == "0.0.0.0/32"
 
     def test_constructor_defaults(self, remote_desktop_config):
-        sre_config = ConfigSectionSRE(index=0)
+        sre_config = ConfigSectionSRE(index=1)
         assert sre_config.databases == []
         assert sre_config.data_provider_ip_addresses == []
         assert sre_config.remote_desktop == remote_desktop_config
@@ -136,15 +137,14 @@ class TestConfigSectionSRE:
         assert sre_config.software_packages == SoftwarePackageCategory.NONE
 
     def test_all_databases_must_be_unique(self):
-        with pytest.raises(ValueError) as exc:
+        with pytest.raises(ValueError, match="all databases must be unique"):
             ConfigSectionSRE(
-                index=0,
+                index=1,
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
             )
-            assert "all databases must be unique" in exc
 
     def test_update(self):
-        sre_config = ConfigSectionSRE(index=0)
+        sre_config = ConfigSectionSRE(index=1)
         assert sre_config.databases == []
         assert sre_config.data_provider_ip_addresses == []
         assert sre_config.workspace_skus == []
@@ -198,8 +198,8 @@ def config_no_sres(context, azure_config, pulumi_config, shm_config):
 
 @fixture
 def config_sres(context, azure_config, pulumi_config, shm_config):
-    sre_config_1 = ConfigSectionSRE(index=0)
-    sre_config_2 = ConfigSectionSRE(index=1)
+    sre_config_1 = ConfigSectionSRE(index=1)
+    sre_config_2 = ConfigSectionSRE(index=2)
     return Config(
         context=context,
         azure=azure_config,
@@ -236,6 +236,23 @@ class TestConfig:
         )
         assert not config.sres
 
+    def test_all_sre_indices_must_be_unique(
+        self, context, azure_config, pulumi_config, shm_config
+    ):
+        with pytest.raises(ValueError, match="all SRE indices must be unique"):
+            sre_config_1 = ConfigSectionSRE(index=1)
+            sre_config_2 = ConfigSectionSRE(index=1)
+            Config(
+                context=context,
+                azure=azure_config,
+                pulumi=pulumi_config,
+                shm=shm_config,
+                sres={
+                    "sre1": sre_config_1,
+                    "sre2": sre_config_2,
+                },
+            )
+
     def test_work_directory(self, config_sres):
         config = config_sres
         assert config.work_directory == config.context.work_directory
@@ -270,8 +287,8 @@ class TestConfig:
 
     def test_sre(self, config_sres):
         sre1, sre2 = config_sres.sre("sre1"), config_sres.sre("sre2")
-        assert sre1.index == 0
-        assert sre2.index == 1
+        assert sre1.index == 1
+        assert sre2.index == 2
         assert sre1 != sre2
 
     def test_sre_invalid(self, config_sres):

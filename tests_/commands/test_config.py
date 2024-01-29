@@ -6,10 +6,11 @@ class TestTemplate:
         result = runner.invoke(config_command_group, ["template"])
         assert result.exit_code == 0
         assert "subscription_id: Azure subscription ID" in result.stdout
-        assert "sres: {}" in result.stdout
+        assert "shm:" in result.stdout
+        assert "sres:" in result.stdout
 
     def test_template_file(self, runner, tmp_path):
-        template_file = (tmp_path / "template.yaml").absolute()
+        template_file = (tmp_path / "template_create.yaml").absolute()
         result = runner.invoke(
             config_command_group, ["template", "--file", str(template_file)]
         )
@@ -17,7 +18,8 @@ class TestTemplate:
         with open(template_file) as f:
             template_text = f.read()
         assert "subscription_id: Azure subscription ID" in template_text
-        assert "sres: {}" in template_text
+        assert "shm:" in template_text
+        assert "sres:" in template_text
 
 
 class TestUpload:
@@ -41,3 +43,15 @@ class TestShow:
         result = runner.invoke(config_command_group, ["show"])
         assert result.exit_code == 0
         assert config_yaml in result.stdout
+
+    def test_show_file(
+        self, runner, config_yaml, mock_download_blob, tmp_path  # noqa: ARG002
+    ):
+        template_file = (tmp_path / "template_show.yaml").absolute()
+        result = runner.invoke(
+            config_command_group, ["show", "--file", str(template_file)]
+        )
+        assert result.exit_code == 0
+        with open(template_file) as f:
+            template_text = f.read()
+        assert config_yaml in template_text

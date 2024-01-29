@@ -32,6 +32,7 @@ class TestAzureApi:
 
     def test_get_keyvault_key_missing(self, mock_key_client):  # noqa: ARG002
         api = AzureApi("subscription name")
-        with pytest.raises(DataSafeHavenAzureError) as exc:
+        with pytest.raises(
+            DataSafeHavenAzureError, match="Failed to retrieve key does not exist"
+        ):
             api.get_keyvault_key("does not exist", "key vault name")
-            assert "Failed to retrieve key does not exist" in exc

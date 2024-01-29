@@ -22,9 +22,8 @@ class TestValidateAadGuid:
         ],
     )
     def test_validate_aad_guid_fail(self, guid):
-        with pytest.raises(ValueError) as exc:
+        with pytest.raises(ValueError, match="Expected GUID"):
             validate_aad_guid(guid)
-            assert "Expected GUID" in exc
 
 
 class TestValidateFqdn:
@@ -50,6 +49,7 @@ class TestValidateFqdn:
         ],
     )
     def test_validate_fqdn_fail(self, fqdn):
-        with pytest.raises(ValueError) as exc:
+        with pytest.raises(
+            ValueError, match="Expected valid fully qualified domain name"
+        ):
             validate_fqdn(fqdn)
-            assert "Expected valid fully qualified domain name" in exc

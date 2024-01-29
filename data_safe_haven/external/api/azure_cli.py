@@ -68,10 +68,11 @@ class AzureCliSingleton(metaclass=Singleton):
             return None
 
         account = self.account
-        self.logger.info(
-            f"name: {account.name} (id: {account.id_}\ntenant: {account.tenant_id})"
-        )
-        if not typer.confirm("Is this the Azure account you expect?\n"):
+        self.logger.info(f"Azure user: {account.name} ({account.id_})")
+        self.logger.info(f"Azure tenant ID: {account.tenant_id})")
+        if not self.logger.confirm(
+            "Is this the Azure account you expect?", default_to_yes=False
+        ):
             self.logger.error(
                 "Please use `az login` to connect to the correct Azure CLI account"
             )

@@ -59,8 +59,10 @@ jobs:
           python-version: 3.11
       - name: Install hatch
         run: pip install hatch
-      - name: Print Ruff version
-        run: hatch run lint:ruff --version
+      - name: Print package versions
+        run: |
+          hatch run lint:ruff --version
+          hatch run lint:black --version
       - name: Lint Python
         run: hatch run lint:all
 

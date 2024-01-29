@@ -41,8 +41,17 @@ def upload(
 
 
 @config_command_group.command()
-def show() -> None:
+def show(
+    file: Annotated[
+        Optional[Path],  # noqa: UP007
+        typer.Option(help="File path to write configuration template to."),
+    ] = None
+) -> None:
     """Print the configuration for the selected Data Safe Haven context"""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
-    print(config.to_yaml())
+    if file:
+        with open(file, "w") as outfile:
+            outfile.write(config.to_yaml())
+    else:
+        print(config.to_yaml())
