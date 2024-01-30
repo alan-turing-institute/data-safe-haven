@@ -60,6 +60,12 @@ write_files:
       # Run user synchronisation every 10 minutes
       */10 * * * * postgres /usr/local/bin/pg_ldap_sync -vvv -c /etc/postgresql/12/main/pg-ldap-sync.yaml 2>&1 | logger -t SafeHaven
 
+  - path: "/etc/cron.d/db-role-update"
+    permissions: "0644"
+    content: |
+      # Trigger role updates every 10 minutes by writing a comment to the data schema
+      */10 * * * * sudo -i -u postgres psql -q -c "comment on schema data is 'Data schema can only be modified by Data Admins or System Admins';"
+
   - path: "/etc/cron.d/runonce"
     permissions: "0644"
     content: |
