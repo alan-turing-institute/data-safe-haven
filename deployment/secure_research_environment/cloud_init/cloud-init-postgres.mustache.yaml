@@ -64,7 +64,8 @@ write_files:
     permissions: "0644"
     content: |
       # Trigger role updates every 10 minutes by writing a comment to the data schema
-      */10 * * * * postgres /usr/bin/psql -q -c "comment on schema data is 'Data schema can only be modified by Data Admins or System Admins';"
+      # Run at 1, 11, 21, 31, 41, 51 minutes past the hour so always after the user sync
+      1-59/10 * * * * postgres /usr/bin/psql -q -c "comment on schema data is 'Data schema can only be modified by Data Admins or System Admins';"
 
   - path: "/etc/cron.d/runonce"
     permissions: "0644"
