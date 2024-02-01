@@ -42,7 +42,7 @@ In some projects, there may be more than one data provider responsible for uploa
 
 If all data providers are uploading to the same storage container, then name clashes may occur. There is no protection against overwriting files during upload.
 Thus, if more than one data provider uploads files with the same path, then the earlier upload will be overwritten.
-This can be avoided by providing each data provider with their own subfolder on the storage container.
+This can be avoided by providing each data provider with their own subfolder on the storage container and ensuring that each uploads only to their subfolder.
 
 If all data providers are uploading to the same storage container, then they may be able to see the files uploaded by other data providers.
 Although they will not be able to access or download these files, a potential issue is that sensitive information may be visible in either the file names or directory structure of the uploaded data.
