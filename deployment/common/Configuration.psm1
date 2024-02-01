@@ -343,7 +343,7 @@ function Get-ShmConfig {
                 adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-linux-update-server".ToLower()
                 disks                   = [ordered]@{
                     os = [ordered]@{
-                        sizeGb = "32"
+                        sizeGb = "64"
                         type   = $shm.diskTypeDefault
                     }
                 }
