@@ -41,7 +41,7 @@ The following steps show how to generate a temporary write-only upload token tha
 In some projects, there may be more than one data provider responsible for uploading data. Two potential issues that may occur are _name clashes_ and _data leakage_.
 
 If all data providers are uploading to the same storage container, then name clashes may occur. There is no protection against overwriting files during upload.
-Thus, if that different data providers upload files with the same name, then the earlier upload will be overwritten.
+Thus, if more than one data provider uploads files with the same path, then the earlier upload will be overwritten.
 This can be avoided by providing each data provider with their own subfolder on the storage container.
 
 If all data providers are uploading to the same storage container, then they may be able to see the files uploaded by other data providers.
