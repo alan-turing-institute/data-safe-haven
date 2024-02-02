@@ -29,6 +29,15 @@ If data sets consist of multiple files, collect them in uniquely named directori
 
 If there are multiple data providers uploading data for a single work package, each provider should use a uniquely named directory, or prepend their files with a unique name.
 
+### Avoiding data leakage
+
+If all data providers are uploading to the same storage container, then they may be able to see the files uploaded by other data providers.
+
+Although they will not be able to access or download these files, a potential issue is that sensitive information may be visible in either the file names or directory structure of the uploaded data.
+
+If possible, data providers should avoid the use of any identifying information in the filenames or directory structure of the data that they upload.
+This is not always possible, since some data providers may require identifying information to be part of filenames or directory structures.
+
 ### Describe the data
 
 Explaining the structure and format of the data will help researchers be most effective.
