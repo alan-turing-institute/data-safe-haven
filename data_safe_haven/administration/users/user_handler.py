@@ -109,7 +109,9 @@ class UserHandler:
             # Fill user information as a table
             user_headers = ["username", *list(usernames.keys())]
             user_data = []
-            for username in sorted(set(sum(usernames.values(), []))):
+            for username in sorted(
+                {name for names in usernames.values() for name in names}
+            ):
                 user_memberships = [username]
                 for category in user_headers[1:]:
                     user_memberships.append(

@@ -56,12 +56,12 @@ def get_ip_addresses_from_private_endpoint(
     if isinstance(endpoint.custom_dns_configs, Output):
         return endpoint.custom_dns_configs.apply(
             lambda cfgs: (
-                sum(
-                    [
-                        list(cfg.ip_addresses) if cfg.ip_addresses else []
+                list(
+                    {
+                        ip_address
                         for cfg in cfgs
-                    ],
-                    [],
+                        for ip_address in list(cfg.ip_addresses if cfg.ips else [])
+                    }
                 )
                 if cfgs
                 else []
