@@ -946,6 +946,9 @@ The database server will use either `Microsoft SQL` or `PostgreSQL`.
 
 If you have access to one or more databases, you can access them using the following details, replacing `<SRE ID>` with the {ref}`SRE ID <user_guide_sre_id>` for your project.
 
+For guidance on how to use the databases, many resources are available on the internet.
+Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/tutorials-for-sql-server-2016?view=sql-server-ver16) and [PostgreSQL](https://www.postgresql.org/docs/current/tutorial.html) may be good starting points.
+
 ### {{bento_box}} Microsoft SQL
 
 - Server name: `MSSQL-<SRE ID>` (e.g. `MSSQL-SANDBOX` )
