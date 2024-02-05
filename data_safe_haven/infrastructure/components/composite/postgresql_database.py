@@ -45,31 +45,36 @@ class PostgresqlDatabaseComponent(ComponentResource):
         # Define a PostgreSQL server
         db_server = dbforpostgresql.Server(
             f"{self._name}_server",
-            location=props.location,
-            properties=dbforpostgresql.ServerPropertiesForDefaultCreateArgs(
-                administrator_login=props.database_username,
-                administrator_login_password=props.database_password,
-                create_mode="Default",
-                infrastructure_encryption=dbforpostgresql.InfrastructureEncryption.DISABLED,
-                minimal_tls_version=dbforpostgresql.MinimalTlsVersionEnum.TLS_ENFORCEMENT_DISABLED,
-                public_network_access=dbforpostgresql.PublicNetworkAccessEnum.DISABLED,
-                ssl_enforcement=dbforpostgresql.SslEnforcementEnum.ENABLED,
-                storage_profile=dbforpostgresql.StorageProfileArgs(
-                    backup_retention_days=7,
-                    geo_redundant_backup=dbforpostgresql.GeoRedundantBackup.DISABLED,
-                    storage_autogrow=dbforpostgresql.StorageAutogrow.ENABLED,
-                    storage_mb=5120,
-                ),
-                version=dbforpostgresql.ServerVersion.SERVER_VERSION_11,
+            administrator_login=props.database_username,
+            administrator_login_password=props.database_password,
+            auth_config=dbforpostgresql.AuthConfigArgs(
+                active_directory_auth=dbforpostgresql.ActiveDirectoryAuthEnum.DISABLED,
+                password_auth=dbforpostgresql.PasswordAuthEnum.ENABLED,
             ),
+            backup=dbforpostgresql.BackupArgs(
+                backup_retention_days=7,
+                geo_redundant_backup=dbforpostgresql.GeoRedundantBackupEnum.DISABLED,
+            ),
+            create_mode=dbforpostgresql.CreateMode.DEFAULT,
+            data_encryption=dbforpostgresql.DataEncryptionArgs(
+                type=dbforpostgresql.ArmServerKeyType.SYSTEM_MANAGED,
+            ),
+            high_availability=dbforpostgresql.HighAvailabilityArgs(
+                mode=dbforpostgresql.HighAvailabilityMode.DISABLED,
+            ),
+            location=props.location,
             resource_group_name=props.database_resource_group_name,
             server_name=props.database_server_name,
             sku=dbforpostgresql.SkuArgs(
-                capacity=2,
-                family="Gen5",
-                name="GP_Gen5_2",
-                tier=dbforpostgresql.SkuTier.GENERAL_PURPOSE,  # required to use private link
+                name="Standard_B2s",
+                tier=dbforpostgresql.SkuTier.BURSTABLE,
+                # name="Standard_D2s_v3",
+                # tier=dbforpostgresql.SkuTier.GENERAL_PURPOSE,  # required to use private link
             ),
+            storage=dbforpostgresql.StorageArgs(
+                storage_size_gb=32,
+            ),
+            version=dbforpostgresql.ServerVersion.SERVER_VERSION_14,
             opts=child_opts,
             tags=child_tags,
         )

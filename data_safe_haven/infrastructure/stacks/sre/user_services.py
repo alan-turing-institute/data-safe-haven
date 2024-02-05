@@ -46,8 +46,6 @@ class SREUserServicesProps:
         subnet_containers_support: Input[network.GetSubnetResult],
         subnet_databases: Input[network.GetSubnetResult],
         subnet_software_repositories: Input[network.GetSubnetResult],
-        virtual_network: Input[network.VirtualNetwork],
-        virtual_network_resource_group_name: Input[str],
     ) -> None:
         self.database_service_admin_password = database_service_admin_password
         self.databases = databases
@@ -83,8 +81,6 @@ class SREUserServicesProps:
         self.subnet_software_repositories_id = Output.from_input(
             subnet_software_repositories
         ).apply(get_id_from_subnet)
-        self.virtual_network = virtual_network
-        self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
 
 class SREUserServicesComponent(ComponentResource):
@@ -135,8 +131,6 @@ class SREUserServicesComponent(ComponentResource):
                 storage_account_name=props.storage_account_name,
                 storage_account_resource_group_name=props.storage_account_resource_group_name,
                 user_services_resource_group_name=resource_group.name,
-                virtual_network=props.virtual_network,
-                virtual_network_resource_group_name=props.virtual_network_resource_group_name,
             ),
             opts=child_opts,
             tags=child_tags,
@@ -167,8 +161,6 @@ class SREUserServicesComponent(ComponentResource):
                 storage_account_name=props.storage_account_name,
                 storage_account_resource_group_name=props.storage_account_resource_group_name,
                 user_services_resource_group_name=resource_group.name,
-                virtual_network=props.virtual_network,
-                virtual_network_resource_group_name=props.virtual_network_resource_group_name,
             ),
             opts=child_opts,
             tags=child_tags,
@@ -191,8 +183,6 @@ class SREUserServicesComponent(ComponentResource):
                 storage_account_resource_group_name=props.storage_account_resource_group_name,
                 subnet_id=props.subnet_software_repositories_id,
                 user_services_resource_group_name=resource_group.name,
-                virtual_network=props.virtual_network,
-                virtual_network_resource_group_name=props.virtual_network_resource_group_name,
             ),
             opts=child_opts,
             tags=child_tags,

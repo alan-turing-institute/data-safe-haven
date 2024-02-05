@@ -52,8 +52,6 @@ class SRERemoteDesktopProps:
         storage_account_resource_group_name: Input[str],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
         subnet_guacamole_containers_support: Input[network.GetSubnetResult],
-        virtual_network: Input[network.VirtualNetwork],
-        virtual_network_resource_group_name: Input[str],
         database_username: Input[str] | None = "postgresadmin",
     ) -> None:
         self.aad_application_name = aad_application_name
@@ -107,8 +105,6 @@ class SRERemoteDesktopProps:
                 else []
             )
         )
-        self.virtual_network = virtual_network
-        self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
 
 class SRERemoteDesktopComponent(ComponentResource):
@@ -252,16 +248,16 @@ class SRERemoteDesktopComponent(ComponentResource):
                             value="preferred_username",  # this is 'username@domain'
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_DATABASE", value=db_guacamole_connections
+                            name="POSTGRESQL_DATABASE", value=db_guacamole_connections
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_HOSTNAME",
+                            name="POSTGRESQL_HOSTNAME",
                             value=props.subnet_guacamole_containers_support_ip_addresses[
                                 0
                             ],
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_PASSWORD",
+                            name="POSTGRESQL_PASSWORD",
                             secure_value=props.database_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
@@ -271,12 +267,8 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="POSTGRESQL_SOCKET_TIMEOUT", value="5"
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_USER",
-                            value=Output.concat(
-                                props.database_username,
-                                "@",
-                                db_server_guacamole.db_server.name,
-                            ),
+                            name="POSTGRESQL_USER",
+                            value=props.database_username,
                         ),
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
@@ -355,11 +347,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRES_USERNAME",
-                            value=Output.concat(
-                                props.database_username,
-                                "@",
-                                db_server_guacamole.db_server.name,
-                            ),
+                            value=props.database_username,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="REPEAT_INTERVAL",

@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, network, storage
+from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
@@ -44,8 +44,6 @@ class SREHedgeDocServerProps:
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
         user_services_resource_group_name: Input[str],
-        virtual_network: Input[network.VirtualNetwork],
-        virtual_network_resource_group_name: Input[str],
         database_username: Input[str] | None = None,
     ) -> None:
         self.containers_subnet_id = containers_subnet_id
@@ -81,8 +79,6 @@ class SREHedgeDocServerProps:
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
         self.user_services_resource_group_name = user_services_resource_group_name
-        self.virtual_network = virtual_network
-        self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
 
 class SREHedgeDocServerComponent(ComponentResource):

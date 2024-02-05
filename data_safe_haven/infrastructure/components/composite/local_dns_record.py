@@ -21,7 +21,7 @@ class LocalDnsRecordProps:
 
 
 class LocalDnsRecordComponent(ComponentResource):
-    """Deploy Gitea server with Pulumi"""
+    """Deploy public and private DNS records with Pulumi"""
 
     def __init__(
         self,

@@ -47,6 +47,12 @@ Run `dsh deploy shm -h` to see the necessary command line flags and provide them
 > dsh config upload config.yaml
 ```
 
+- As private endpoints for flexible PostgreSQL are still in preview, the following command is currently needed:
+
+```console
+> az feature register --name "enablePrivateEndpoint" --namespace "Microsoft.DBforPostgreSQL"
+```
+
 - Next deploy the infrastructure  [approx 30 minutes]:
 
 ```console
