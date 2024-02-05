@@ -310,13 +310,13 @@ Configuration ConfigureActiveDirectory {
                     $AzureADSyncSID = (Get-ADUser -Identity $AzureADSyncUsername).SID
                     $DefaultNamingContext = $(Get-ADRootDSE).DefaultNamingContext
                     $ConfigurationNamingContext = $(Get-ADRootDSE).ConfigurationNamingContext
-                    $null = dsacls "$($DefaultNamingContext)" /G "${AzureADSyncSID}:CA;Replicating Directory Changes"
+                    $null = dsacls "$DefaultNamingContext" /G "${AzureADSyncSID}:CA;Replicating Directory Changes"
                     $success = $success -and $?
-                    $null = dsacls "$($ConfigurationNamingContext)" /G "${AzureADSyncSID}:CA;Replicating Directory Changes"
+                    $null = dsacls "$ConfigurationNamingContext" /G "${AzureADSyncSID}:CA;Replicating Directory Changes"
                     $success = $success -and $?
-                    $null = dsacls "$($DefaultNamingContext)" /G "${AzureADSyncSID}:CA;Replicating Directory Changes All"
+                    $null = dsacls "$DefaultNamingContext" /G "${AzureADSyncSID}:CA;Replicating Directory Changes All"
                     $success = $success -and $?
-                    $null = dsacls "$($ConfigurationNamingContext)" /G "${AzureADSyncSID}:CA;Replicating Directory Changes All"
+                    $null = dsacls "$ConfigurationNamingContext" /G "${AzureADSyncSID}:CA;Replicating Directory Changes All"
                     $success = $success -and $?
                     if ($success) {
                         Write-Verbose -Message "Successfully updated ACL permissions for AD Sync Service account '$AzureADSyncUsername'"
@@ -324,11 +324,26 @@ Configuration ConfigureActiveDirectory {
                         throw "Failed to update ACL permissions for AD Sync Service account '$AzureADSyncUsername'!"
                     }
                 } catch {
-                    Write-Error "SetAzureADSynchroniserPermissions: $($_.Exception)"
+                    Write-Error "SetAzureADSynchroniserPermissions::SetScript $($_.Exception)"
                 }
             }
             GetScript = { @{} }
-            TestScript = { $false }
+            TestScript = {
+                try {
+                    $success = $true
+                    $AzureADSyncUsername = $using:DataSafeHavenServiceAccounts.AzureADSynchroniser.Username
+                    $DefaultNamingContext = $(Get-ADRootDSE).DefaultNamingContext
+                    $ConfigurationNamingContext = $(Get-ADRootDSE).ConfigurationNamingContext
+                    $success = $success -and $($null -ne $(dsacls "$DefaultNamingContext" | Select-String "$AzureADSyncUsername" | Select-String "Replicating Directory Changes$"))
+                    $success = $success -and $($null -ne $(dsacls "$ConfigurationNamingContext" | Select-String "$AzureADSyncUsername" | Select-String "Replicating Directory Changes$"))
+                    $success = $success -and $($null -ne $(dsacls "$DefaultNamingContext" | Select-String "$AzureADSyncUsername" | Select-String "Replicating Directory Changes All"))
+                    $success = $success -and $($null -ne $(dsacls "$ConfigurationNamingContext" | Select-String "$AzureADSyncUsername" | Select-String "Replicating Directory Changes All"))
+                    $success
+                } catch {
+                    Write-Error "SetAzureADSynchroniserPermissions::TestScript $($_.Exception)"
+                    $false
+                }
+            }
             DependsOn = "[ADUser]AzureADSynchroniser"
         }
     }
@@ -407,6 +422,8 @@ Configuration PrimaryDomainController {
         [ValidateNotNullOrEmpty()]
         [String]$LDAPSearcherUsername
     )
+
+    Import-DscResource -ModuleName xPSDesiredStateConfiguration -ModuleVersion 9.1.0
 
     # Common parameters
     $DataSafeHavenBasePath = "C:\DataSafeHaven"
