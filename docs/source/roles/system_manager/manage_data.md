@@ -34,6 +34,28 @@ The following steps show how to generate a temporary write-only upload token tha
 - The data provider should now be able to upload data by following {ref}`these instructions <process_data_ingress>`
 - You can validate successful data ingress by logging into the SRD for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
 
+(roles_system_manager_multiple_providers)=
+
+## Multiple data providers
+
+In some projects, there may be more than one data provider responsible for uploading data. Two potential issues that may occur are _name clashes_ and _data leakage_.
+
+If all data providers are uploading to the same storage container, then name clashes may occur. There is no protection against overwriting files during upload.
+Thus, if more than one data provider uploads files with the same path, then the earlier upload will be overwritten.
+This can be avoided by providing each data provider with their own subfolder on the storage container and ensuring that each uploads only to their subfolder.
+
+If all data providers are uploading to the same storage container, then they may be able to see the files uploaded by other data providers.
+Although they will not be able to access or download these files, a potential issue is that sensitive information may be visible in either the file names or directory structure of the uploaded data.
+
+If possible, data providers should avoid using any identifying information in the filenames or directory structure of the data that they upload.
+This is not always possible, since some data providers may require identifying information to be part of filenames or directory structures.
+
+An alternative is to provide separate storage containers for upload for each data provider.
+These containers should have all the same access restrictions as used for a single ingress storage container.
+
+After the data has been uploaded, the {ref}`role_system_manager` can transfer the uploaded data to a single storage container accessible to {ref}`role_researcher`s from the relevant SRE, as per the normal data ingress process.
+The data-provider-specific containers should be deleted once the data has been transferred.
+
 (roles_system_manager_software_ingress)=
 
 ## Software Ingress
