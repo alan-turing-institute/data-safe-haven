@@ -410,13 +410,13 @@ runcmd:
   - sed -i "s|^export PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
   # Run installation tests
   - python3 /opt/build/check_installation.py || die "Installation check failed!";
-  
+
   # Remove Linux omsagent before generalising the image
   - echo ">=== $(date +%s) Removing Linux omsagent ===<"
   - wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh
   - sh onboard_agent.sh --purge || die "Could not remove Linux omsagent!";
   - rm onboard_agent.sh
-  
+
 final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 
 # Shutdown at the end of the job to save on running costs

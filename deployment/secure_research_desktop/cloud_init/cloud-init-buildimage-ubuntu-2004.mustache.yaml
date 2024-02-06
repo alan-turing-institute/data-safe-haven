@@ -404,7 +404,7 @@ runcmd:
   - sed -i "s|^export PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
   # Run installation tests
   - python3 /opt/build/check_installation.py || die "Installation check failed!";
-  
+
   # Remove Linux omsagent before generalising the image
   - echo ">=== $(date +%s) Removing Linux omsagent ===<"
   - wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh
