@@ -294,7 +294,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.1.0",
+                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.2.0",
                     name="guacamole-user-sync"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
@@ -311,7 +311,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_GROUP_FILTER",
-                            value=Output.concat("(objectClass=group)"),
+                            value="(objectClass=group)",
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_HOST",
@@ -332,21 +332,21 @@ class SRERemoteDesktopComponent(ComponentResource):
                             ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_DB_NAME",
+                            name="POSTGRESQL_DB_NAME",
                             value=db_guacamole_connections,
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_HOST",
+                            name="POSTGRESQL_HOST",
                             value=props.subnet_guacamole_containers_support_ip_addresses[
                                 0
                             ],
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_PASSWORD",
+                            name="POSTGRESQL_PASSWORD",
                             secure_value=props.database_password,
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="POSTGRES_USERNAME",
+                            name="POSTGRESQL_USERNAME",
                             value=props.database_username,
                         ),
                         containerinstance.EnvironmentVariableArgs(
