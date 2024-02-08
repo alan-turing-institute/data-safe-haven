@@ -1222,7 +1222,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_guacamole_containers_support.id
                     ),
-                    private_endpoint_network_policies="Disabled",
+                    private_endpoint_network_policies=network.VirtualNetworkPrivateEndpointNetworkPolicies.ENABLED,
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services containers

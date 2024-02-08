@@ -20,7 +20,7 @@ class PostgresqlDatabaseProps:
         location: Input[str],
     ) -> None:
         self.database_names = Output.from_input(database_names)
-        self.database_password = database_password
+        self.database_password = Output.secret(database_password)
         self.database_resource_group_name = database_resource_group_name
         self.database_server_name = database_server_name
         self.database_subnet_id = database_subnet_id
