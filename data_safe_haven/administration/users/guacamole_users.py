@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from data_safe_haven.config import Config
-from data_safe_haven.external import AzurePostgreSQLDatabase
+from data_safe_haven.external import AzureApi, AzurePostgreSQLDatabase
 from data_safe_haven.infrastructure import SREStackManager
 
 from .research_user import ResearchUser
@@ -13,9 +13,15 @@ class GuacamoleUsers:
     def __init__(self, config: Config, sre_name: str, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         sre_stack = SREStackManager(config, sre_name)
+        # Read the SRE database secret from key vault
+        azure_api = AzureApi(config.context.subscription_name)
+        connection_db_server_password = azure_api.get_keyvault_secret(
+            sre_stack.output("data")["key_vault_name"],
+            sre_stack.output("data")["password_user_database_admin_secret"],
+        )
         self.postgres_provisioner = AzurePostgreSQLDatabase(
             sre_stack.output("remote_desktop")["connection_db_name"],
-            sre_stack.secret("password-user-database-admin"),
+            connection_db_server_password,
             sre_stack.output("remote_desktop")["connection_db_server_name"],
             sre_stack.output("remote_desktop")["resource_group_name"],
             config.context.subscription_name,
