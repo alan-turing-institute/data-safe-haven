@@ -111,41 +111,12 @@ class SREUserServicesComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Define a network profile
-        container_network_profile = network.NetworkProfile(
-            f"{self._name}_container_network_profile",
-            container_network_interface_configurations=[
-                network.ContainerNetworkInterfaceConfigurationArgs(
-                    ip_configurations=[
-                        network.IPConfigurationProfileArgs(
-                            name="ipconfiguserservices",
-                            subnet=network.SubnetArgs(
-                                id=props.subnet_containers_id,
-                            ),
-                        )
-                    ],
-                    name="networkinterfaceconfiguserservices",
-                )
-            ],
-            network_profile_name=f"{stack_name}-np-user-services",
-            resource_group_name=props.virtual_network_resource_group_name,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(
-                    depends_on=[props.virtual_network],
-                    ignore_changes=[
-                        "container_network_interface_configurations"
-                    ],  # allow container groups to be registered to this interface
-                ),
-            ),
-            tags=child_tags,
-        )
-
         # Deploy the Gitea server
         SREGiteaServerComponent(
             "sre_gitea_server",
             stack_name,
             SREGiteaServerProps(
+                containers_subnet_id=props.subnet_containers_id,
                 database_subnet_id=props.subnet_containers_support_id,
                 database_password=props.gitea_database_password,
                 dns_resource_group_name=props.dns_resource_group_name,
@@ -158,7 +129,6 @@ class SREUserServicesComponent(ComponentResource):
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
-                network_profile_id=container_network_profile.id,
                 sre_fqdn=props.sre_fqdn,
                 sre_private_dns_zone_id=props.sre_private_dns_zone_id,
                 storage_account_key=props.storage_account_key,
@@ -177,6 +147,7 @@ class SREUserServicesComponent(ComponentResource):
             "sre_hedgedoc_server",
             stack_name,
             SREHedgeDocServerProps(
+                containers_subnet_id=props.subnet_containers_id,
                 database_subnet_id=props.subnet_containers_support_id,
                 database_password=props.hedgedoc_database_password,
                 dns_resource_group_name=props.dns_resource_group_name,
@@ -190,7 +161,6 @@ class SREUserServicesComponent(ComponentResource):
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
-                network_profile_id=container_network_profile.id,
                 sre_fqdn=props.sre_fqdn,
                 sre_private_dns_zone_id=props.sre_private_dns_zone_id,
                 storage_account_key=props.storage_account_key,

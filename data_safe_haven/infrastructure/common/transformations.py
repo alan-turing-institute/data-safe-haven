@@ -60,7 +60,7 @@ def get_ip_addresses_from_private_endpoint(
                     {
                         ip_address
                         for cfg in cfgs
-                        for ip_address in list(cfg.ip_addresses if cfg.ips else [])
+                        for ip_address in (cfg.ip_addresses if cfg.ip_addresses else [])
                     }
                 )
                 if cfgs

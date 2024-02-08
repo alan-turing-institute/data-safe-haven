@@ -154,36 +154,6 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             ),
         )
 
-        # Define a network profile
-        container_network_profile = network.NetworkProfile(
-            f"{self._name}_container_network_profile",
-            container_network_interface_configurations=[
-                network.ContainerNetworkInterfaceConfigurationArgs(
-                    ip_configurations=[
-                        network.IPConfigurationProfileArgs(
-                            name="ipconfigsoftwarerepositories",
-                            subnet=network.SubnetArgs(
-                                id=props.subnet_id,
-                            ),
-                        )
-                    ],
-                    name="networkinterfaceconfigsoftwarerepositories",
-                )
-            ],
-            network_profile_name=f"{stack_name}-np-software-repositories",
-            resource_group_name=props.virtual_network_resource_group_name,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(
-                    depends_on=[props.virtual_network],
-                    ignore_changes=[
-                        "container_network_interface_configurations"
-                    ],  # allow container groups to be registered to this interface
-                ),
-            ),
-            tags=child_tags,
-        )
-
         # Define the container group with nexus and caddy
         if props.nexus_packages:
             container_group = containerinstance.ContainerGroup(
@@ -292,13 +262,13 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     ],
                     type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
                 ),
-                network_profile=containerinstance.ContainerGroupNetworkProfileArgs(
-                    id=container_network_profile.id,
-                ),
                 os_type=containerinstance.OperatingSystemTypes.LINUX,
                 resource_group_name=props.user_services_resource_group_name,
                 restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
                 sku=containerinstance.ContainerGroupSku.STANDARD,
+                subnet_ids=[
+                    containerinstance.ContainerGroupSubnetIdArgs(id=props.subnet_id)
+                ],
                 volumes=[
                     containerinstance.VolumeArgs(
                         azure_file=containerinstance.AzureFileVolumeArgs(

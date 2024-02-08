@@ -78,10 +78,13 @@ class SSLCertificateProvider(DshResourceProvider):
             client.generate_csr()
             # Request DNS verification tokens and add them to the DNS record
             azure_api = AzureApi(props["subscription_name"], disable_logging=True)
-            for token in client.request_verification_tokens():
+            for (
+                record_name,
+                record_values,
+            ) in client.request_verification_tokens().items():
                 azure_api.ensure_dns_txt_record(
-                    record_name=token[0].replace(f".{props['domain_name']}", ""),
-                    record_value=token[1],
+                    record_name=record_name.replace(f".{props['domain_name']}", ""),
+                    record_value=record_values[0],
                     resource_group_name=props["networking_resource_group_name"],
                     zone_name=props["domain_name"],
                 )
