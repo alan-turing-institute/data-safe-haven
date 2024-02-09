@@ -759,7 +759,7 @@
           "adminPasswordSecretName": "shm-green-vm-admin-password-linux-update-server",
           "disks": {
             "os": {
-              "sizeGb": "32",
+              "sizeGb": "64",
               "type": "Standard_LRS"
             }
           },
