@@ -399,7 +399,7 @@ If you aren't sure about any of these then please return to the [**Set up your a
   ```
 
 - You should arrive at a login page that looks like the image below:
-  
+
   ````{note}
   Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.turingsafehaven.ac.uk` in the `Email address, phone number or Skype` box, then click Next
   ```{image} user_guide/guacamole_ms_login.png
