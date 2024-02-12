@@ -26,6 +26,16 @@ PS> ./Update_SRE_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID>
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
 
+(renew_sas)=
+
+## {{locked_with_key}} Renew SRE SAS tokens
+
+The [SRE storage containers](role_researcher_user_guide_shared_storage) for input data, backup and output are all provided by blob storage.
+The SRDs use [SAS tokens](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview) to authenticate and access the data.
+
+When the containers are deployed the SAS tokens are valid for one year.
+If a SRE is deployed for longer than this, the certificates will need to be renewed in order to maintain access to these containers.
+
 (resize_vm)=
 
 ## {{arrow_upper_right}} Resize the Virtual Machine (VM) of a Secure Research Desktop (SRD)
