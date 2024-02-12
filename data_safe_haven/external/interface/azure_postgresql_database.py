@@ -200,18 +200,26 @@ class AzurePostgreSQLDatabase:
                     self.resource_group_name, self.server_name
                 ),
             )
-            for rule in rules:
-                if rule.name:
-                    self.wait(
-                        self.db_client.firewall_rules.begin_delete(
-                            self.resource_group_name, self.server_name, rule.name
-                        )
+
+            # Delete all named firewall rules
+            rule_names = [str(rule.name) for rule in rules if rule.name]
+            for rule_name in rule_names:
+                self.wait(
+                    self.db_client.firewall_rules.begin_delete(
+                        self.resource_group_name, self.server_name, rule_name
                     )
+                )
+
             # NB. We would like to disable public_network_access at this point but this
             # is not currently supported by the flexibleServer API
-            self.logger.info(
-                f"Removed all firewall rule(s) from [green]{self.server_name}[/].",
-            )
+            if len(rule_names) == len(rules):
+                self.logger.info(
+                    f"Removed all firewall rule(s) from [green]{self.server_name}[/].",
+                )
+            else:
+                self.logger.warning(
+                    f"Unable to remove all firewall rule(s) from [green]{self.server_name}[/].",
+                )
         else:
             msg = f"Database access action {action} was not recognised."
             raise DataSafeHavenInputError(msg)
