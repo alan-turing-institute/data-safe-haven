@@ -398,22 +398,16 @@ If you aren't sure about any of these then please return to the [**Set up your a
   Don't forget the **https://** as you will not be able to login without it!
   ```
 
-- You should arrive at a login page that needs you to enter:
-
-    - your `username@<username domain>`
-    - your password
-
-  then click `Login`.
-
 - You should arrive at a login page that looks like the image below:
-
   ````{note}
-  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.turingsafehaven.ac.uk` in the `User name` box, enter her password and then click `Login`.
-  ```{image} user_guide/logon_environment_guacamole.png
+  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.turingsafehaven.ac.uk` in the `Email address, phone number or Skype` box, then click Next
+  ```{image} user_guide/guacamole_ms_login.png
   :alt: Research environment log in
   :align: center
   ```
   ````
+
+- After clicking `Next`, you will then be asked to provide your password.
 
 - You will now **receive a call or mobile app notification** to authenticate using multifactor authentication (MFA).
 
@@ -430,12 +424,17 @@ If you aren't sure about any of these then please return to the [**Set up your a
   If you don't respond to the MFA request quickly enough, or if it fails, you may get an error. If this happens, please retry
   ```
 
-- If you are successful, you'll see the a screen with icons for the available apps.
+- If you are successful, you'll see a screen similar to the one below.
 
   ```{image} user_guide/guacamole_dashboard.png
   :alt: Research environment dashboard
   :align: center
   ```
+
+This is the Guacamole remote desktop home screen.
+From there, you can access Secure Research Desktops.
+
+For more detailed information on how to use Guacamole, you can find guidance in the [Guacamole manual](https://guacamole.apache.org/doc/1.3.0/gug/using-guacamole.html).
 
   Welcome to the Data Safe Haven! {{wave}}
 
@@ -480,6 +479,12 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
   :alt: SRD initial desktop
   :align: center
   ```
+
+````{note}
+The Linux desktops within our SRDs use the [Ubuntu operating system](https://ubuntu.com/).
+The desktop environment used by our SRDs is called [Xfce](https://www.xfce.org/).
+For more detailed information on how to use Xfce, consult the official guidance on the [Xfce website](https://docs.xfce.org/xfce/getting-started)
+````
 
 You are now logged into the Data Safe Haven SRE!
 Welcome {{wave}}
@@ -1252,6 +1257,8 @@ Clear the shell window
 ```bash
 clear
 ```
+
+For a more detailed introduction, visit the official Ubuntu tutorial, [The Linux command line for beginners](https://ubuntu.com/tutorials/command-line-for-beginners)
 
 ## {{notebook}} Appendix B: Gitlab tutorial notes
 
