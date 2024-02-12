@@ -49,7 +49,7 @@ class MicrosoftSQLDatabaseComponent(ComponentResource):
             administrator_login_password=props.database_password,
             location=props.location,
             minimal_tls_version=None,
-            public_network_access=sql.ServerPublicNetworkAccess.DISABLED,
+            public_network_access=sql.ServerNetworkAccessFlag.DISABLED,
             resource_group_name=props.database_resource_group_name,
             server_name=props.database_server_name,
             version="12.0",
