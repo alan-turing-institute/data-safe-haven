@@ -26,14 +26,12 @@ class SREDnsServerProps:
 
     def __init__(
         self,
-        admin_password_salt: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
         sre_index: Input[int],
     ) -> None:
         subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
-        self.admin_password_salt = Output.secret(admin_password_salt)
         self.admin_username = "dshadmin"
         self.ip_range_prefix = str(SREDnsIpRanges().vnet)
         self.location = location

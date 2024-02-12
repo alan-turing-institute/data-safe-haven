@@ -7,7 +7,7 @@ import typer
 from data_safe_haven.config import Config, ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.functions import bcrypt_salt, password
+from data_safe_haven.functions import password
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 from data_safe_haven.provisioning import SHMProvisioningManager, SREProvisioningManager
 from data_safe_haven.utility import LoggingSingleton
@@ -212,7 +212,6 @@ def sre(
         )
         # Add necessary secrets
         stack.copy_secret("password-domain-ldap-searcher", shm_stack)
-        stack.add_secret("salt-dns-server-admin", bcrypt_salt(), replace=False)
 
         # Deploy Azure infrastructure with Pulumi
         if force is None:
