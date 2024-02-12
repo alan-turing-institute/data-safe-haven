@@ -68,8 +68,6 @@ class PostgresqlDatabaseComponent(ComponentResource):
             sku=dbforpostgresql.SkuArgs(
                 name="Standard_B2s",
                 tier=dbforpostgresql.SkuTier.BURSTABLE,
-                # name="Standard_D2s_v3",
-                # tier=dbforpostgresql.SkuTier.GENERAL_PURPOSE,  # required to use private link
             ),
             storage=dbforpostgresql.StorageArgs(
                 storage_size_gb=32,
