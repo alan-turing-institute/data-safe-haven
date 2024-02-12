@@ -220,8 +220,6 @@ class DeclarativeSRE:
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 storage_account_resource_group_name=data.resource_group_name,
-                virtual_network_resource_group_name=networking.resource_group.name,
-                virtual_network=networking.virtual_network,
             ),
             tags=self.cfg.tags.model_dump(),
         )
@@ -298,8 +296,6 @@ class DeclarativeSRE:
                 subnet_containers_support=networking.subnet_user_services_containers_support,
                 subnet_databases=networking.subnet_user_services_databases,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
-                virtual_network=networking.virtual_network,
-                virtual_network_resource_group_name=networking.resource_group.name,
             ),
             tags=self.cfg.tags.model_dump(),
         )

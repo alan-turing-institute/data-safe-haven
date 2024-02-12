@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, network, storage
+from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.infrastructure.common import (
     get_ip_address_from_container_group,
@@ -35,8 +35,6 @@ class SRESoftwareRepositoriesProps:
         storage_account_resource_group_name: Input[str],
         subnet_id: Input[str],
         user_services_resource_group_name: Input[str],
-        virtual_network: Input[network.VirtualNetwork],
-        virtual_network_resource_group_name: Input[str],
     ) -> None:
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
@@ -54,8 +52,6 @@ class SRESoftwareRepositoriesProps:
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_id = subnet_id
-        self.virtual_network = virtual_network
-        self.virtual_network_resource_group_name = virtual_network_resource_group_name
 
 
 class SRESoftwareRepositoriesComponent(ComponentResource):

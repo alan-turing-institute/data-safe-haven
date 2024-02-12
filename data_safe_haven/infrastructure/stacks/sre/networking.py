@@ -1222,7 +1222,7 @@ class SRENetworkingComponent(ComponentResource):
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_guacamole_containers_support.id
                     ),
-                    private_endpoint_network_policies="Disabled",
+                    private_endpoint_network_policies=network.VirtualNetworkPrivateEndpointNetworkPolicies.ENABLED,
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services containers
@@ -1443,10 +1443,10 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Link virtual network to SHM private DNS zones
-        # Note that although the DNS virtual network is already linked to these, Azure
-        # Container Instances do not have an IP address during deployment and so must
-        # use default Azure DNS when setting up file mounts. This means that we need to
-        # be able to resolve the "Storage Account" private DNS zones.
+        # Note that although the DNS virtual network is already linked to the SHM zones,
+        # Azure Container Instances do not have an IP address during deployment and so
+        # must use default Azure DNS when setting up file mounts. This means that we
+        # need to be able to resolve the "Storage Account" private DNS zones.
         for private_link_domain in ordered_private_dns_zones("Storage account"):
             network.VirtualNetworkLink(
                 f"{self._name}_private_zone_{private_link_domain}_vnet_link",

@@ -98,10 +98,11 @@ class SSLCertificateProvider(DshResourceProvider):
             try:
                 certificate_bytes = client.request_certificate()
             except ValidationError as exc:
-                raise DataSafeHavenSSLError(
-                    "ACME validation error:\n"
-                    + "\n".join([str(auth_error) for auth_error in exc.failed_authzrs])
-                ) from exc
+                msg = "\n".join(
+                    ["ACME validation error:"]
+                    + [str(auth_error) for auth_error in exc.failed_authzrs]
+                )
+                raise DataSafeHavenSSLError(msg) from exc
             # Although KeyVault will accept a PEM certificate (where we simply prepend
             # the private key) we need a PFX certificate for compatibility with
             # ApplicationGateway

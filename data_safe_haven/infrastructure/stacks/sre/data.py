@@ -775,7 +775,9 @@ class SREDataComponent(ComponentResource):
             password_database_service_admin.result
         )
         self.password_dns_server_admin = Output.secret(
-            props.password_dns_server_admin.result
+            Output.from_input(props.password_dns_server_admin).apply(
+                lambda password: password.result
+            )
         )
         self.password_gitea_database_admin = Output.secret(
             password_gitea_database_admin.result

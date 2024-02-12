@@ -2,16 +2,15 @@ import datetime
 import pathlib
 import time
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, cast
 
 import psycopg
 import requests
 from azure.core.polling import LROPoller
-from azure.mgmt.rdbms.postgresql import PostgreSQLManagementClient
-from azure.mgmt.rdbms.postgresql.models import (
+from azure.mgmt.rdbms.postgresql_flexibleservers import PostgreSQLManagementClient
+from azure.mgmt.rdbms.postgresql_flexibleservers.models import (
     FirewallRule,
     Server,
-    ServerUpdateParameters,
 )
 
 from data_safe_haven.exceptions import (
@@ -72,7 +71,7 @@ class AzurePostgreSQLDatabase:
                 f"host={self.db_server.fully_qualified_domain_name}",
                 f"password={self.db_server_admin_password}",
                 f"port={self.port}",
-                f"user={self.db_server.administrator_login}@{self.server_name}",
+                f"user={self.db_server.administrator_login}",
                 "sslmode=require",
             ]
         )
@@ -100,15 +99,17 @@ class AzurePostgreSQLDatabase:
         """Get the database connection."""
         while True:
             try:
-                connection = psycopg.connect(self.connection_string)
-                break
-            except psycopg.OperationalError as exc:
-                if n_retries > 0:
+                try:
+                    connection = psycopg.connect(self.connection_string)
+                    break
+                except psycopg.OperationalError as exc:
+                    if n_retries <= 0:
+                        raise exc
                     n_retries -= 1
                     time.sleep(10)
-                else:
-                    msg = f"Could not connect to database.\n{exc}"
-                    raise DataSafeHavenAzureError(msg) from exc
+            except Exception as exc:
+                msg = f"Could not connect to database.\n{exc}"
+                raise DataSafeHavenAzureError(msg) from exc
         return connection
 
     def load_sql(
@@ -169,24 +170,17 @@ class AzurePostgreSQLDatabase:
 
     def set_database_access(self, action: str) -> None:
         """Enable/disable database access to the PostgreSQL server."""
-        rule_name = f"AllowConfigurationUpdate-{self.rule_suffix}"
-
         if action == "enabled":
             self.logger.debug(
                 f"Adding temporary firewall rule for [green]{self.current_ip}[/]...",
             )
-            self.wait(
-                self.db_client.servers.begin_update(
-                    self.resource_group_name,
-                    self.server_name,
-                    ServerUpdateParameters(public_network_access="Enabled"),
-                )
-            )
+            # NB. We would like to enable public_network_access at this point but this
+            # is not currently supported by the flexibleServer API
             self.wait(
                 self.db_client.firewall_rules.begin_create_or_update(
                     self.resource_group_name,
                     self.server_name,
-                    rule_name,
+                    f"AllowConfigurationUpdate-{self.rule_suffix}",
                     FirewallRule(
                         start_ip_address=self.current_ip, end_ip_address=self.current_ip
                     ),
@@ -198,28 +192,44 @@ class AzurePostgreSQLDatabase:
             )
         elif action == "disabled":
             self.logger.debug(
-                f"Removing temporary firewall rule for [green]{self.current_ip}[/]...",
+                f"Removing all firewall rule(s) from [green]{self.server_name}[/]...",
             )
-            self.wait(
-                self.db_client.firewall_rules.begin_delete(
-                    self.resource_group_name, self.server_name, rule_name
+            rules = cast(
+                list[FirewallRule],
+                self.db_client.firewall_rules.list_by_server(
+                    self.resource_group_name, self.server_name
+                ),
+            )
+
+            # Delete all named firewall rules
+            rule_names = [str(rule.name) for rule in rules if rule.name]
+            for rule_name in rule_names:
+                self.wait(
+                    self.db_client.firewall_rules.begin_delete(
+                        self.resource_group_name, self.server_name, rule_name
+                    )
                 )
-            )
-            self.wait(
-                self.db_client.servers.begin_update(
-                    self.resource_group_name,
-                    self.server_name,
-                    ServerUpdateParameters(public_network_access="Disabled"),
+
+            # NB. We would like to disable public_network_access at this point but this
+            # is not currently supported by the flexibleServer API
+            if len(rule_names) == len(rules):
+                self.logger.info(
+                    f"Removed all firewall rule(s) from [green]{self.server_name}[/].",
                 )
-            )
-            self.logger.info(
-                f"Removed temporary firewall rule for [green]{self.current_ip}[/].",
-            )
+            else:
+                self.logger.warning(
+                    f"Unable to remove all firewall rule(s) from [green]{self.server_name}[/].",
+                )
         else:
             msg = f"Database access action {action} was not recognised."
             raise DataSafeHavenInputError(msg)
         self.db_server_ = None  # Force refresh of self.db_server
-        self.logger.info(
+        public_network_access = (
+            self.db_server.network.public_network_access
+            if self.db_server.network
+            else "UNKNOWN"
+        )
+        self.logger.debug(
             f"Public network access to [green]{self.server_name}[/]"
-            f" is [green]{self.db_server.public_network_access}[/]."
+            f" is [green]{public_network_access}[/]."
         )
