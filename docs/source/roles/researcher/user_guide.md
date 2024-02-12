@@ -543,21 +543,21 @@ You may find that the keyboard mapping on your computer is not the same as the o
 Click on `Desktop` and `Applications > Settings > Keyboard` to change the layout.
 
 ```{tip}
-We recommend opening a text editor (such as `Atom` , see [Access applications](#access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
+We recommend opening an application that allows text entry (such as `Libre Office Writer` , see [Access applications](#access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
 ```
 
 ### {{unlock}} Access applications
 
-You can access applications from the desktop in two ways: the terminal or via a drop down menu.
+You can access applications from the desktop using either the terminal or via a drop down menu.
 
 Applications can be accessed from the dropdown menu.
 For example:
 
-- `Applications > Development > Atom`
 - `Applications > Development > Jupyter Notebook`
 - `Applications > Development > PyCharm`
 - `Applications > Development > RStudio`
 - `Applications > Education > QGIS Desktop`
+- `Applications > Office > Libre Office Writer`
 
 Applications can be accessed from a terminal.
 For example:
