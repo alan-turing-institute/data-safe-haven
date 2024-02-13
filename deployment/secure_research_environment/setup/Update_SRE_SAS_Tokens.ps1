@@ -23,11 +23,12 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Generate a new SAS token for each persistent data container
 # -----------------------------------------------------------
+$sasTokens = @{}
 foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) {
     # Create token
     $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -PolicyName $sasPolicy.Policy -StorageAccount $persistentStorageAccount
     # Write to KeyVault
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken -AsPlaintext -ForceOverwrite
+    $sasTokens[$receptacleName] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken -AsPlaintext -ForceOverwrite
 }
 
 # Get list of SRDs
@@ -38,8 +39,9 @@ $VMs = Get-AzVM -ResourceGroupName $config.sre.srd.rg | `
 
 # Update blobfuse credentials on each SRD
 # ---------------------------------------
+$scriptPath = Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "scripts" "write_sas_tokens.sh"
 for $VM in $Vms {
-    $null = Invoke-RemoteScript -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Shell "UnixShell" -Script ...
+    $null = Invoke-RemoteScript -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Shell "UnixShell" -ScriptPath $scriptPath -Parameter $sasTokens
 }
 
 
