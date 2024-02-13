@@ -21,6 +21,10 @@ from .sre.dns_server import (
     SREDnsServerComponent,
     SREDnsServerProps,
 )
+from .sre.identity import (
+    SREIdentityComponent,
+    SREIdentityProps,
+)
 from .sre.monitoring import (
     SREMonitoringComponent,
     SREMonitoringProps,
@@ -130,6 +134,15 @@ class DeclarativeSRE:
                 ).research_user_ip_addresses,
             ),
             tags=self.cfg.tags.model_dump(),
+        )
+
+        # Deploy identity server
+        SREIdentityComponent(
+            "sre_identity",
+            self.stack_name,
+            SREIdentityProps(
+                location=self.cfg.azure.location,
+            ),
         )
 
         # Deploy automated monitoring
