@@ -65,7 +65,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         opts: ResourceOptions | None = None,
         tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
-        super().__init__("dsh:sre:SRESoftwareRepositoriesComponent", name, {}, opts)
+        super().__init__("dsh:sre:SoftwareRepositoriesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
