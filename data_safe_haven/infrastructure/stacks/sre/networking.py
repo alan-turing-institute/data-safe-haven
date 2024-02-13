@@ -53,6 +53,12 @@ class SRENetworkingProps:
         self.subnet_guacamole_containers_support_iprange = subnet_ranges.apply(
             lambda s: s.guacamole_containers_support
         )
+        self.subnet_identity_containers_iprange = subnet_ranges.apply(
+            lambda s: s.identity_containers
+        )
+        self.subnet_identity_containers_support_iprange = subnet_ranges.apply(
+            lambda s: s.identity_containers_support
+        )
         self.subnet_user_services_containers_iprange = subnet_ranges.apply(
             lambda s: s.user_services_containers
         )
@@ -146,6 +152,12 @@ class SRENetworkingComponent(ComponentResource):
         )
         subnet_guacamole_containers_support_prefix = (
             props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
+        )
+        subnet_identity_containers_prefix = (
+            props.subnet_identity_containers_iprange.apply(lambda r: str(r))
+        )
+        subnet_identity_containers_support_prefix = (
+            props.subnet_identity_containers_support_iprange.apply(lambda r: str(r))
         )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
@@ -605,6 +617,28 @@ class SRENetworkingComponent(ComponentResource):
                     source_address_prefix="*",
                     source_port_range="*",
                 ),
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
+        nsg_identity_containers = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_identity_containers",
+            network_security_group_name=f"{stack_name}-nsg-identity-containers",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                # Outbound
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
+        nsg_identity_containers_support = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_identity_containers_support",
+            network_security_group_name=f"{stack_name}-nsg-identity-containers-support",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                # Outbound
             ],
             opts=child_opts,
             tags=child_tags,
@@ -1142,6 +1176,8 @@ class SRENetworkingComponent(ComponentResource):
         subnet_data_private_name = "DataPrivateSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
+        subnet_identity_containers_name = "IdentityContainersSubnet"
+        subnet_identity_containers_support_name = "IdentityContainersSupportSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
         subnet_user_services_containers_support_name = (
             "UserServicesContainersSupportSubnet"
@@ -1221,6 +1257,32 @@ class SRENetworkingComponent(ComponentResource):
                     name=subnet_guacamole_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_guacamole_containers_support.id
+                    ),
+                    private_endpoint_network_policies=network.VirtualNetworkPrivateEndpointNetworkPolicies.ENABLED,
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),
+                # Identity containers
+                network.SubnetArgs(
+                    address_prefix=subnet_identity_containers_prefix,
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
+                    name=subnet_identity_containers_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_identity_containers.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),
+                # Identity containers support
+                network.SubnetArgs(
+                    address_prefix=subnet_identity_containers_support_prefix,
+                    name=subnet_identity_containers_support_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_identity_containers_support.id
                     ),
                     private_endpoint_network_policies=network.VirtualNetworkPrivateEndpointNetworkPolicies.ENABLED,
                     route_table=network.RouteTableArgs(id=route_table.id),
@@ -1487,6 +1549,16 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_guacamole_containers_support = network.get_subnet_output(
             subnet_name=subnet_guacamole_containers_support_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_identity_containers = network.get_subnet_output(
+            subnet_name=subnet_identity_containers_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_identity_containers_support = network.get_subnet_output(
+            subnet_name=subnet_identity_containers_support_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

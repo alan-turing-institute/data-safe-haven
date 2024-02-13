@@ -142,6 +142,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREIdentityProps(
                 location=self.cfg.azure.location,
+                subnet_containers=networking.subnet_identity_containers
             ),
         )
 
