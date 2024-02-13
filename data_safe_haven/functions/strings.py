@@ -6,8 +6,6 @@ import string
 import uuid
 from collections.abc import Sequence
 
-import bcrypt
-
 
 def alphanumeric(input_string: str) -> str:
     """Strip any characters that are not letters or numbers from a string."""
@@ -24,24 +22,6 @@ def b64decode(input_string: str) -> str:
 def b64encode(input_string: str) -> str:
     """Encode a normal string into a Base64 string."""
     return base64.b64encode(input_string.encode("utf-8")).decode()
-
-
-def bcrypt_encode(input_string: str, salt: str) -> str:
-    """
-    Use bcrypt to encrypt an input string.
-    See https://en.wikipedia.org/wiki/Bcrypt#Description for structure.
-    """
-    encrypted_bytes = bcrypt.hashpw(input_string.encode(), salt.encode())
-    return encrypted_bytes.decode(encoding="utf-8")
-
-
-def bcrypt_salt() -> str:
-    """Generate a bcrypt salt as a string.
-
-    Returns:
-      $algorithm$cost$salt: str
-    """
-    return bcrypt.gensalt().decode()
 
 
 def hex_string(length: int) -> str:
