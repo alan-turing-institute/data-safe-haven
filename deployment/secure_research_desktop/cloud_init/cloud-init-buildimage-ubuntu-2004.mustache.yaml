@@ -407,7 +407,7 @@ runcmd:
 
   # Remove Linux omsagent before generalising the image
   - echo ">=== $(date +%s) Removing Linux omsagent ===<"
-  - wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh
+  - wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/c7e1a8f923844f989c8aa7957cee0e89708d821f/installer/scripts/onboard_agent.sh
   - sh onboard_agent.sh --purge || die "Could not remove Linux omsagent!";
   - rm onboard_agent.sh
 
