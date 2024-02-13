@@ -435,7 +435,7 @@ If you aren't sure about any of these then please return to the [**Set up your a
 This is the Guacamole remote desktop home screen.
 From there, you can access Secure Research Desktops.
 
-For more detailed information on how to use Guacamole, you can find guidance in the [Guacamole manual](https://guacamole.apache.org/doc/1.3.0/gug/using-guacamole.html).
+For more detailed information on how to use Guacamole, you can find guidance in the [Guacamole manual](https://guacamole.apache.org/doc/1.5.4/gug/using-guacamole.html).
 
   Welcome to the Data Safe Haven! {{wave}}
 
