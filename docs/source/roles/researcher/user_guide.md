@@ -484,7 +484,8 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
 ````{note}
 The Linux desktops within our SRDs use the [Ubuntu operating system](https://ubuntu.com/).
 The desktop environment used by our SRDs is called [Xfce](https://www.xfce.org/).
-For more detailed information on how to use Xfce, consult the official guidance on the [Xfce website](https://docs.xfce.org/xfce/getting-started)
+More detailed information on how to use the Xfce desktop can be found on the [Xfce website](https://docs.xfce.org/xfce/getting-started#the_desktop_environment).
+Particularly relevant documentation can be found for the [desktop manager](https://docs.xfce.org/xfce/xfdesktop/usage) and [window manager](https://docs.xfce.org/xfce/xfwm4/getting-started)
 ````
 
 You are now logged into the Data Safe Haven SRE!
