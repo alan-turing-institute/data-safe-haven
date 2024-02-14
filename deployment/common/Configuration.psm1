@@ -944,11 +944,11 @@ function Get-SreConfig {
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
             osVersion               = "Ubuntu-latest"
             codimd                  = [ordered]@{
-                dockerVersion = "2.4.1-cjk"
+                dockerVersion = "2.5.3"
             }
             postgres                = [ordered]@{
                 passwordSecretName = "$($config.sre.shortName)-other-codimd-password-postgresdb"
-                dockerVersion      = "13.4-alpine"
+                dockerVersion      = "16-alpine"
             }
             disks                   = [ordered]@{
                 data = [ordered]@{
