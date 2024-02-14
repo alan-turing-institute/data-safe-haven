@@ -9,7 +9,6 @@ from pulumi_azure_native import containerinstance, network, resources
 from data_safe_haven.functions import (
     allowed_dns_lookups,
     b64encode,
-    bcrypt_encode,
     ordered_private_dns_zones,
 )
 from data_safe_haven.infrastructure.common import (
@@ -27,14 +26,12 @@ class SREDnsServerProps:
 
     def __init__(
         self,
-        admin_password_salt: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
         sre_index: Input[int],
     ) -> None:
         subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
-        self.admin_password_salt = Output.secret(admin_password_salt)
         self.admin_username = "dshadmin"
         self.ip_range_prefix = str(SREDnsIpRanges().vnet)
         self.location = location
@@ -83,9 +80,9 @@ class SREDnsServerComponent(ComponentResource):
         # Expand AdGuardHome YAML configuration
         adguard_adguardhome_yaml_contents = Output.all(
             admin_username=props.admin_username,
-            admin_password_encrypted=Output.all(
-                password=password_admin.result, salt=props.admin_password_salt
-            ).apply(lambda kwargs: bcrypt_encode(kwargs["password"], kwargs["salt"])),
+            # Only the first 72 bytes of the generated random string will be used but a
+            # 20 character UTF-8 string (alphanumeric + special) will not exceed that.
+            admin_password_encrypted=password_admin.bcrypt_hash,
             # Use Azure virtual DNS server as upstream
             # https://learn.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
             # This server is aware of private DNS zones

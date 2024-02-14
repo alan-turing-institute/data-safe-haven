@@ -194,12 +194,14 @@ class AzurePostgreSQLDatabase:
             self.logger.debug(
                 f"Removing all firewall rule(s) from [green]{self.server_name}[/]...",
             )
-            rules = cast(
-                list[FirewallRule],
-                self.db_client.firewall_rules.list_by_server(
+            rules = [
+                # N.B. `list_by_server` returns FirewallRule, not FirewallRuleResult as
+                # its typehint currently suggests - we cast to the correct type.
+                cast(FirewallRule, rule)
+                for rule in self.db_client.firewall_rules.list_by_server(
                     self.resource_group_name, self.server_name
-                ),
-            )
+                )
+            ]
 
             # Delete all named firewall rules
             rule_names = [str(rule.name) for rule in rules if rule.name]
