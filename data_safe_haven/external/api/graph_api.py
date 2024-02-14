@@ -261,7 +261,7 @@ class GraphApi:
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_application_secret(
-        self, application_secret_name: str, application_name: str
+        self, application_name: str, application_secret_name: str
     ) -> str:
         """Add a secret to an existing AzureAD application
 
