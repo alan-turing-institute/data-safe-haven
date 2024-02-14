@@ -5,17 +5,32 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources
 
+from data_safe_haven.infrastructure.components import (
+    AzureADApplication,
+    AzureADApplicationProps,
+)
+
 
 class SREIdentityProps:
     """Properties for SREIdentityComponent"""
 
     def __init__(
         self,
+        aad_application_name: Input[str],
+        aad_auth_token: Input[str],
+        aad_tenant_id: Input[str],
         location: Input[str],
-        subnet_containers: Input[network.GetSubnetResult]
+        shm_fqdn: Input[str],
+        subnet_containers: Input[network.GetSubnetResult],
     ) -> None:
+        self.aad_application_name = aad_application_name
+        self.aad_auth_token = aad_auth_token
+        self.aad_tenant_id = aad_tenant_id
         self.location = location
-        self.subnet_containers_id = Output.from_input(subnet_containers).apply(lambda s: str(s.id))
+        self.shm_fqdn = shm_fqdn
+        self.subnet_containers_id = Output.from_input(subnet_containers).apply(
+            lambda s: str(s.id)
+        )
 
 
 class SREIdentityComponent(ComponentResource):
@@ -42,6 +57,19 @@ class SREIdentityComponent(ComponentResource):
             tags=child_tags,
         )
 
+        # Define AzureAD application
+        aad_application = AzureADApplication(
+            f"{self._name}_aad_application",
+            AzureADApplicationProps(
+                application_name=props.aad_application_name,
+                application_role_assignments=["User.Read.All", "GroupMember.Read.All"],
+                application_secret_name="Apricot Authentication Secret",
+                auth_token=props.aad_auth_token,
+                public_client_redirect_uri="urn:ietf:wg:oauth:2.0:oob",
+            ),
+            opts=child_opts,
+        )
+
         # Define the LDAP server container group with Apricot
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
@@ -57,19 +85,19 @@ class SREIdentityComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CLIENT_ID",
-                            value="MicrosoftEntra",
+                            value=aad_application.application_id,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CLIENT_SECRET",
-                            value="MicrosoftEntra",
+                            secure_value=aad_application.application_secret,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="DOMAIN",
-                            value="MicrosoftEntra",
+                            value=props.shm_fqdn,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="ENTRA_TENANT_ID",
-                            value="MicrosoftEntra",
+                            value=props.aad_tenant_id,
                         ),
                     ],
                     # All Azure Container Instances need to expose port 80 on at least
@@ -112,7 +140,11 @@ class SREIdentityComponent(ComponentResource):
             resource_group_name=resource_group.name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
-            subnet_ids=[containerinstance.ContainerGroupSubnetIdArgs(id=props.subnet_containers_id)],
+            subnet_ids=[
+                containerinstance.ContainerGroupSubnetIdArgs(
+                    id=props.subnet_containers_id
+                )
+            ],
             volumes=[],
             opts=ResourceOptions.merge(
                 child_opts,

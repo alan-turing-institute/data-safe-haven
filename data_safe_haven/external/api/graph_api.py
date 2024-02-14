@@ -682,7 +682,7 @@ class GraphApi:
                 "resourceId": microsoft_graph_sp["id"],
                 "appRoleId": app_role_id,
             }
-            response = self.http_post(
+            self.http_post(
                 f"{self.base_endpoint}/servicePrincipals/{microsoft_graph_sp['id']}/appRoleAssignments",
                 json=request_json,
             )

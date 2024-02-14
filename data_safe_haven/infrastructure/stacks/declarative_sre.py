@@ -141,8 +141,12 @@ class DeclarativeSRE:
             "sre_identity",
             self.stack_name,
             SREIdentityProps(
+                aad_application_name=f"sre-{self.sre_name}-apricot",
+                aad_auth_token=self.graph_api_token,
+                aad_tenant_id=self.cfg.shm.aad_tenant_id,
                 location=self.cfg.azure.location,
-                subnet_containers=networking.subnet_identity_containers
+                shm_fqdn=self.cfg.shm.fqdn,
+                subnet_containers=networking.subnet_identity_containers,
             ),
         )
 
@@ -213,7 +217,7 @@ class DeclarativeSRE:
             "sre_remote_desktop",
             self.stack_name,
             SRERemoteDesktopProps(
-                aad_application_name=f"sre-{self.sre_name}-azuread-guacamole",
+                aad_application_name=f"sre-{self.sre_name}-guacamole",
                 aad_application_fqdn=networking.sre_fqdn,
                 aad_auth_token=self.graph_api_token,
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
