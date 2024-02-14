@@ -46,6 +46,7 @@ libffi-dev
 libfftw3-dev
 libfribidi-dev
 libgdal-dev
+libglpk-dev
 libgmp-dev
 libgsl-dev
 libgtk2.0-dev
