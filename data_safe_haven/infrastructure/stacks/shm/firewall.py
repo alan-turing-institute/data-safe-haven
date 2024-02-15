@@ -69,6 +69,10 @@ class SHMFirewallComponent(ComponentResource):
             "time3.google.com",
             "time4.google.com",
         ]
+        sre_identity_server_subnets = [
+            str(SREIpRanges(idx).identity_containers)
+            for idx in range(1, SREIpRanges.max_index)
+        ]
         sre_package_repositories_subnets = [
             str(SREIpRanges(idx).user_services_software_repositories)
             for idx in range(1, SREIpRanges.max_index)
@@ -375,8 +379,30 @@ class SHMFirewallComponent(ComponentResource):
                 ),
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
-                    name=f"{stack_name}-sre-package-repositories",
+                    name=f"{stack_name}-sre-identity-servers",
                     priority=1100,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external OAuth login requests",
+                            name="AllowExternalOAuthLogin",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type="Https",
+                                )
+                            ],
+                            source_addresses=sre_identity_server_subnets,
+                            target_fqdns=[
+                                "graph.microsoft.com",
+                                "login.microsoftonline.com",
+                            ],
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(type="Allow"),
+                    name=f"{stack_name}-sre-package-repositories",
+                    priority=1110,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external CRAN package requests",
@@ -407,7 +433,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-sre-remote-desktop-gateways",
-                    priority=1110,
+                    priority=1120,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external OAuth login requests",
@@ -426,7 +452,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-sre-workspaces",
-                    priority=1120,
+                    priority=1130,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Linux ClamAV update requests",
