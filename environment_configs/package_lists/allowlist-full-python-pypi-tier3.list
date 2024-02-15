@@ -121,6 +121,7 @@ contoml
 contourpy
 convertdate
 cookies
+cramjam
 crashtest
 crcmod
 cryptography
@@ -674,7 +675,12 @@ termcolor-whl
 terminado
 testpath
 tf-estimator-nightly
+tf-keras
 tf-keras-nightly
+tf-nightly
+tf-nightly-cpu-aws
+tf-nightly-intel
+tf-nightly-macos
 Theano
 Theano-PyMC
 thinc
