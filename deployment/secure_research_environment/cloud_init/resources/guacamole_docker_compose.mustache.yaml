@@ -11,7 +11,7 @@ networks:
 services:
     postgres:
         container_name: postgres_guacamole_compose
-        image: postgres:12.2
+        image: postgres:16.2
         networks:
             - network_private
         ports:
@@ -26,11 +26,16 @@ services:
             POSTGRES_DB: guacamole
             POSTGRES_USER: guacamole
             POSTGRES_PASSWORD: {{{guacamole.internalDbPassword}}}
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
         restart: always
 
     guacd:
         container_name: guacd_guacamole_compose
-        image: guacamole/guacd:1.3.0
+        image: guacamole/guacd:1.5.4
         networks:
             - network_private
         volumes:
@@ -42,10 +47,12 @@ services:
 
     guacamole:
         container_name: guacamole_guacamole_compose
-        image: guacamole/guacamole:1.3.0
+        image: guacamole/guacamole:1.5.4
         depends_on:
-            - guacd
-            - postgres
+            guacd:
+                condition: service_started
+            postgres:
+                condition: service_healthy
         networks:
             - network_private
         volumes:
@@ -69,7 +76,7 @@ services:
 
     nginx:
         container_name: nginx_guacamole_compose
-        image: nginx:1.21.6
+        image: nginx:1.25.3
         links:
             - guacamole
         networks:
