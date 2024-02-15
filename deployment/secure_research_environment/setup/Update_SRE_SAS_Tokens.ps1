@@ -49,9 +49,7 @@ $VMs = Get-AzVM -ResourceGroupName $config.sre.srd.rg | `
 # ---------------------------------------
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "scripts" "write_sas_tokens.sh"
 foreach ($VM in $Vms) {
-    foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) {
-        $null = Invoke-RemoteScript -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Shell "UnixShell" -ScriptPath $scriptPath -Parameter $sasTokens[$receptacleName]
-    }
+    $null = Invoke-RemoteScript -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Shell "UnixShell" -ScriptPath $scriptPath -Parameter $sasTokens
 }
 
 
