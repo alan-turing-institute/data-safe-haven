@@ -44,6 +44,9 @@ class GraphApi:
     """Interface to the Microsoft Graph REST API"""
 
     linux_schema = "extj8xolrvw_linux"  # this is the "Extension with Properties for Linux User and Groups" extension
+    application_ids: ClassVar[dict[str, str]] = {
+        "Microsoft Graph": "00000003-0000-0000-c000-000000000000",
+    }
     role_template_ids: ClassVar[dict[str, str]] = {
         "Global Administrator": "62e90394-69f5-4237-9190-012177145e10"
     }
@@ -52,6 +55,7 @@ class GraphApi:
         "Domain.Read.All": "dbb9058a-0e50-45d7-ae91-66909b5d4664",
         "Group.Read.All": "5b567255-7703-4780-807c-7be8301ae99b",
         "Group.ReadWrite.All": "62a82d76-70ea-41e2-9197-370581804d09",
+        "GroupMember.Read.All": "98830695-27a2-44f7-8c18-0c3ebc9698f6",
         "User.Read.All": "df021288-bdef-4463-88db-98f22de89214",
         "User.ReadWrite.All": "741f803b-c850-494e-b5df-cde7c675a1ca",
         "UserAuthenticationMethod.ReadWrite.All": "50483e42-d915-4231-9639-7fdb7fd190e5",
@@ -213,7 +217,7 @@ class GraphApi:
                 if scopes:
                     request_json["requiredResourceAccess"] = [
                         {
-                            "resourceAppId": "00000003-0000-0000-c000-000000000000",  # Microsoft Graph: https://graph.microsoft.com
+                            "resourceAppId": self.application_ids["Microsoft Graph"],
                             "resourceAccess": scopes,
                         }
                     ]
@@ -567,6 +571,45 @@ class GraphApi:
             )
         except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
+
+    def grant_application_role_permissions(
+        self, application_name: str, application_role_name: str
+    ) -> None:
+        """
+        Grant permissions for a particular role to an application.
+        See https://learn.microsoft.com/en-us/graph/permissions-grant-via-msgraph
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if the secret could not be created or already exists
+        """
+        try:
+            microsoft_graph_sp = self.get_service_principal_by_name("Microsoft Graph")
+            if not microsoft_graph_sp:
+                msg = f"Could not find Microsoft Graph service principal."
+                raise DataSafeHavenMicrosoftGraphError(msg)
+            application_sp = self.get_service_principal_by_name(application_name)
+            if not application_sp:
+                msg = f"Could not find application service principal."
+                raise DataSafeHavenMicrosoftGraphError(msg)
+            # Create the application secret if it does not exist
+            self.logger.debug(
+                f"Assigning application role '[green]{application_role_name}[/]' to '{application_name}'...",
+            )
+            request_json = {
+                "principalId": application_sp["id"],
+                "resourceId": microsoft_graph_sp["id"],
+                "appRoleId": self.uuid_application[application_role_name],
+            }
+            self.http_post(
+                f"{self.base_endpoint}/servicePrincipals/{microsoft_graph_sp['id']}/appRoleAssignments",
+                json=request_json,
+            )
+            self.logger.info(
+                f"Assigned application role '[green]{application_role_name}[/]' to '{application_name}'.",
+            )
+        except Exception as exc:
+            msg = f"Could not assign application role '{application_role_name}'.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_delete(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP DELETE request
