@@ -13,7 +13,7 @@ services:
     restart: always
   nginx:
     container_name: nginx_nexus_compose
-    image: nginx:1.21.6
+    image: nginx:1.25.3
     ports:
       - 80:80
     volumes:
