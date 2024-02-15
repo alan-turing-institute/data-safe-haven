@@ -23,8 +23,16 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Generate a new SAS token for each persistent data container
 # -----------------------------------------------------------
+$persistentStorageAccount = Get-StorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name
 $sasTokens = @{}
 foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) {
+    # Create SAS policy
+    $accessPolicyName = $config.sre.storage.persistentdata.containers[$receptacleName].accessPolicyName
+    $sasPolicy = Deploy-SasAccessPolicy -Name $accessPolicyName `
+                                        -Permission $config.sre.storage.accessPolicies[$accessPolicyName].permissions `
+                                        -StorageAccount $persistentStorageAccount `
+                                        -ContainerName $receptacleName `
+                                        -ValidityYears 1
     # Create token
     $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -PolicyName $sasPolicy.Policy -StorageAccount $persistentStorageAccount
     # Write to KeyVault
