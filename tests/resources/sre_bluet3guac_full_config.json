@@ -1397,7 +1397,7 @@
       "codimd": {
         "adminPasswordSecretName": "sre-t3guac-vm-admin-password-codimd",
         "codimd": {
-          "dockerVersion": "2.4.1-cjk"
+          "dockerVersion": "2.5.3"
         },
         "disks": {
           "data": {
@@ -1414,7 +1414,7 @@
         "ip": "10.153.5.6",
         "osVersion": "Ubuntu-latest",
         "postgres": {
-          "dockerVersion": "13.4-alpine",
+          "dockerVersion": "16-alpine",
           "passwordSecretName": "sre-t3guac-other-codimd-password-postgresdb"
         },
         "vmName": "CODIMD-SRE-T3GUAC",
