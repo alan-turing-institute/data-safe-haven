@@ -25,6 +25,19 @@
                 },
                 "rules": [
                     {
+                        "name": "AllowExternalAzureAutomationOperations",
+                        "protocols": [
+                            "HTTPS:443"
+                        ],
+                        "targetAddresses": [
+                            "GuestAndHybridManagement",
+                            "AzureMonitor"
+                        ],
+                        "sourceAddresses": [
+                            "*"
+                        ]
+                    },
+                    {
                         "name": "AllowExternalNTP",
                         "protocols": [
                             "UDP:123"
@@ -237,34 +250,6 @@
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
-                        ]
-                    },
-                    {
-                        "name": "AllowExternalAzureAutomationOperations",
-                        "protocols": [
-                            "HTTPS:443"
-                        ],
-                        "fqdnTags": [],
-                        "targetFqdns": [
-                            "ac-jobruntimedata-prod-su1.azure-automation.net",
-                            "ae-jobruntimedata-prod-su1.azure-automation.net",
-                            "ase-jobruntimedata-prod-su1.azure-automation.net",
-                            "cc-jobruntimedata-prod-su1.azure-automation.net",
-                            "cid-jobruntimedata-prod-su1.azure-automation.net",
-                            "eus2-jobruntimedata-prod-su1.azure-automation.net",
-                            "jpe-jobruntimedata-prod-su1.azure-automation.net",
-                            "ne-jobruntimedata-prod-su1.azure-automation.net",
-                            "scus-jobruntimedata-prod-su1.azure-automation.net",
-                            "sea-jobruntimedata-prod-su1.azure-automation.net",
-                            "stzn-jobruntimedata-prod-su1.azure-automation.net",
-                            "uks-jobruntimedata-prod-su1.azure-automation.net",
-                            "usge-jobruntimedata-prod-su1.azure-automation.us",
-                            "wcus-jobruntimedata-prod-su1.azure-automation.net",
-                            "we-jobruntimedata-prod-su1.azure-automation.net",
-                            "wus2-jobruntimedata-prod-su1.azure-automation.net"
-                        ],
-                        "sourceAddresses": [
-                            "*"
                         ]
                     },
                     {
