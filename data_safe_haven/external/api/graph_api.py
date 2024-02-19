@@ -583,24 +583,38 @@ class GraphApi:
             DataSafeHavenMicrosoftGraphError if the secret could not be created or already exists
         """
         try:
+            # Get service principals for Microsoft Graph and this application
             microsoft_graph_sp = self.get_service_principal_by_name("Microsoft Graph")
             if not microsoft_graph_sp:
-                msg = f"Could not find Microsoft Graph service principal."
+                msg = "Could not find Microsoft Graph service principal."
                 raise DataSafeHavenMicrosoftGraphError(msg)
             application_sp = self.get_service_principal_by_name(application_name)
             if not application_sp:
-                msg = f"Could not find application service principal."
+                msg = "Could not find application service principal."
                 raise DataSafeHavenMicrosoftGraphError(msg)
-            # Create the application secret if it does not exist
+            # Check whether permission is already granted
+            app_role_id = self.uuid_application[application_role_name]
+            response = self.http_get(
+                f"{self.base_endpoint}/servicePrincipals/{microsoft_graph_sp['id']}/appRoleAssignedTo",
+            )
+            for application in response.json().get("value", []):
+                if (application["appRoleId"] == app_role_id) and (
+                    application["principalDisplayName"] == application_name
+                ):
+                    self.logger.debug(
+                        f"Application role '[green]{application_role_name}[/]' already assigned to '{application_name}'.",
+                    )
+                    return
+            # Otherwise grant permissions for this role to the application
             self.logger.debug(
                 f"Assigning application role '[green]{application_role_name}[/]' to '{application_name}'...",
             )
             request_json = {
                 "principalId": application_sp["id"],
                 "resourceId": microsoft_graph_sp["id"],
-                "appRoleId": self.uuid_application[application_role_name],
+                "appRoleId": app_role_id,
             }
-            self.http_post(
+            response = self.http_post(
                 f"{self.base_endpoint}/servicePrincipals/{microsoft_graph_sp['id']}/appRoleAssignments",
                 json=request_json,
             )
@@ -608,7 +622,60 @@ class GraphApi:
                 f"Assigned application role '[green]{application_role_name}[/]' to '{application_name}'.",
             )
         except Exception as exc:
-            msg = f"Could not assign application role '{application_role_name}'.\n{exc}"
+            msg = f"Could not assign application role '{application_role_name}' to application '{application_name}'.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
+
+    def grant_delegated_role_permissions(
+        self, application_name: str, application_role_name: str
+    ) -> None:
+        """
+        Grant permissions for a particular role to an application.
+        See https://learn.microsoft.com/en-us/graph/permissions-grant-via-msgraph
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if the secret could not be created or already exists
+        """
+        try:
+            # Get service principals for Microsoft Graph and this application
+            microsoft_graph_sp = self.get_service_principal_by_name("Microsoft Graph")
+            if not microsoft_graph_sp:
+                msg = "Could not find Microsoft Graph service principal."
+                raise DataSafeHavenMicrosoftGraphError(msg)
+            application_sp = self.get_service_principal_by_name(application_name)
+            if not application_sp:
+                msg = "Could not find application service principal."
+                raise DataSafeHavenMicrosoftGraphError(msg)
+            # Check whether permission is already granted
+            response = self.http_get(
+                f"{self.base_endpoint}/oauth2PermissionGrants",
+            )
+            for application in response.json().get("value", []):
+                if (application["clientId"] == application_sp["id"]) and (
+                    application_role_name.lower() in application["scope"].lower()
+                ):
+                    self.logger.debug(
+                        f"Delegated permission '[green]{application_role_name}[/]' already assigned to '{application_name}'.",
+                    )
+                    return
+            # Otherwise grant delegated permissions for this role to the application
+            self.logger.debug(
+                f"Assigning delegated role '[green]{application_role_name}[/]' to '{application_name}'...",
+            )
+            request_json = {
+                "clientId": application_sp["id"],
+                "consentType": "AllPrincipals",
+                "resourceId": microsoft_graph_sp["id"],
+                "scope": application_role_name,
+            }
+            response = self.http_post(
+                f"{self.base_endpoint}/oauth2PermissionGrants",
+                json=request_json,
+            )
+            self.logger.info(
+                f"Assigned delegated role '[green]{application_role_name}[/]' to '{application_name}'.",
+            )
+        except Exception as exc:
+            msg = f"Could not assign delegated role '{application_role_name}' to application '{application_name}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_delete(self, url: str, **kwargs: Any) -> requests.Response:
