@@ -81,7 +81,9 @@ class AzureADApplicationProvider(DshResourceProvider):
 
             # Grant any requested application role permissions
             for role_name in props.get("application_role_assignments", []):
-                graph_api.grant_application_role_permissions(outs["application_name"], role_name)
+                graph_api.grant_application_role_permissions(
+                    outs["application_name"], role_name
+                )
 
             # Attach an application secret if requested
             outs["application_secret"] = (

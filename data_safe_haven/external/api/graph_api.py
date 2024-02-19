@@ -316,7 +316,6 @@ class GraphApi:
             self.logger.debug(
                 f"Creating AzureAD group '[green]{group_name}[/]'...",
             )
-            endpoint = f"{self.base_endpoint}/groups"
             request_json = {
                 "displayName": group_name,
                 "groupTypes": [],
@@ -325,7 +324,7 @@ class GraphApi:
                 "securityEnabled": True,
             }
             json_response = self.http_post(
-                endpoint,
+                f"{self.base_endpoint}/groups",
                 json=request_json,
             ).json()
             # Add Linux group name and ID
@@ -344,6 +343,43 @@ class GraphApi:
             )
         except Exception as exc:
             msg = f"Could not create AzureAD group '{group_name}'.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
+
+    def ensure_application_service_principal(
+        self, application_name: str
+    ) -> dict[str, Any]:
+        """Create a service principal for an AzureAD application if it does not already exist
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if the service principal could not be created
+        """
+        try:
+            # Return existing service principal if there is one
+            application_sp = self.get_service_principal_by_name(application_name)
+            if not application_sp:
+                # Otherwise we need to try
+                self.logger.debug(
+                    f"Creating service principal for application '[green]{application_name}[/]'...",
+                )
+                application_json = self.get_application_by_name(application_name)
+                if not application_json:
+                    msg = f"Could not retrieve application '{application_name}'"
+                    raise DataSafeHavenMicrosoftGraphError(msg)
+                self.http_post(
+                    f"{self.base_endpoint}/servicePrincipals",
+                    json={"appId": application_json["appId"]},
+                ).json()
+                self.logger.info(
+                    f"Created service principal for application '[green]{application_name}[/]'.",
+                )
+                application_sp = self.get_service_principal_by_name(application_name)
+                if not application_sp:
+                    raise DataSafeHavenMicrosoftGraphError(
+                        f"service principal for application '[green]{application_name}[/]' not found."
+                    )
+            return application_sp
+        except Exception as exc:
+            msg = f"Could not create service principal for application '[green]{application_name}[/]'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_token_administrator(self) -> str:
