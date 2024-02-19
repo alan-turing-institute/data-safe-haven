@@ -225,35 +225,24 @@ class GraphApi:
                 self.logger.info(
                     f"Created new application '[green]{json_response['displayName']}[/]'.",
                 )
+
+            # Ensure that the application service principal exists
+            application_sp = self.ensure_application_service_principal(application_name)
+
             # Grant admin consent for the requested scopes
             if application_scopes or delegated_scopes:
-                application_id = self.get_id_from_application_name(application_name)
-                application_sp = self.get_service_principal_by_name(application_name)
-                if not (
-                    application_sp
-                    and self.read_application_permissions(application_sp["id"])
-                ):
-                    self.logger.info(
-                        f"Application [green]{application_name}[/] has requested permissions"
-                        " that need administrator approval."
-                    )
-                    self.logger.info(
-                        "Please sign-in with [bold]global administrator[/] credentials for the"
-                        " Azure Active Directory where your users are stored."
-                    )
-                    self.logger.info(
-                        "To sign in, use a web browser to open the page"
-                        f" [green]https://login.microsoftonline.com/{self.tenant_id}/adminconsent?client_id="
-                        f"{application_id}&redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient[/]"
-                        " and follow the instructions."
-                    )
-                    while True:
-                        if application_sp := self.get_service_principal_by_name(
-                            application_name
-                        ):
-                            if self.read_application_permissions(application_sp["id"]):
-                                break
-                        time.sleep(10)
+                for scope in application_scopes:
+                    self.grant_application_role_permissions(application_name, scope)
+                for scope in delegated_scopes:
+                    self.grant_delegated_role_permissions(application_name, scope)
+                while True:
+                    if application_sp := self.get_service_principal_by_name(
+                        application_name
+                    ):
+                        if self.read_application_permissions(application_sp["id"]):
+                            break
+                    time.sleep(10)
+
             # Return JSON representation of the AzureAD application
             return json_response
         except Exception as exc:
