@@ -211,7 +211,7 @@ runcmd:
   - if [ "$(which azuredatastudio)" = "" ]; then echo "Could not install Azure Data Studio!"; exit 1; else echo "... successfully installed Azure Data Studio"; fi
   # Install drivers from maven
   - echo "Installing DBeaver drivers..."
-  - DBEAVER_DRIVER_DIR="/usr/share/dbeaver/drivers/maven/maven-central"
+  - DBEAVER_DRIVER_DIR="/usr/share/dbeaver-ce/drivers/maven/maven-central"
   # Note that the filenames specified here have to be kept synchronised with the names in the dbeaver_drivers_config.xml file.
   # Adding new drivers therefore involves changing both this file and the XML file.
   - mkdir -p ${DBEAVER_DRIVER_DIR}/com.microsoft.sqlserver/
@@ -227,9 +227,12 @@ runcmd:
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-jdbc/{{dbeaver.drivers.postgis_jdbc}}/postgis-jdbc-{{dbeaver.drivers.postgis_jdbc}}.pom -P ${DBEAVER_DRIVER_DIR}/net.postgis/
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-geometry/{{dbeaver.drivers.postgis_geometry}}/postgis-geometry-{{dbeaver.drivers.postgis_geometry}}.jar -P ${DBEAVER_DRIVER_DIR}/net.postgis/
   - wget -nv https://repo1.maven.org/maven2/net/postgis/postgis-geometry/{{dbeaver.drivers.postgis_geometry}}/postgis-geometry-{{dbeaver.drivers.postgis_geometry}}.pom -P ${DBEAVER_DRIVER_DIR}/net.postgis/
-  - mv /opt/build/dbeaver_drivers_config.xml /usr/share/dbeaver/drivers-config.xml
-  - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver/drivers-config.xml" >> /usr/share/dbeaver/dbeaver.ini
-  - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver/dbeaver.ini
+  - mkdir -p ${DBEAVER_DRIVER_DIR}/com.github.waffle/
+  - wget -nv https://repo1.maven.org/maven2/com/github/waffle/waffle-jna/{{dbeaver.drivers.waffle_jna}}/waffle-jna-{{dbeaver.drivers.waffle_jna}}.jar -P ${DBEAVER_DRIVER_DIR}/com.github.waffle/
+  - wget -nv https://repo1.maven.org/maven2/com/github/waffle/waffle-jna/{{dbeaver.drivers.waffle_jna}}/waffle-jna-{{dbeaver.drivers.waffle_jna}}.pom -P ${DBEAVER_DRIVER_DIR}/com.github.waffle/
+  - mv /opt/build/dbeaver_drivers_config.xml /usr/share/dbeaver-ce/drivers-config.xml
+  - echo "-Ddbeaver.drivers.configuration-file=/usr/share/dbeaver-ce/drivers-config.xml" >> /usr/share/dbeaver-ce/dbeaver.ini
+  - echo "-Djava.security.auth.login.config=/etc/jaas.conf" >> /usr/share/dbeaver-ce/dbeaver.ini
   - ls -alh ${DBEAVER_DRIVER_DIR}/*
   - echo "... successfully installed DBeaver drivers";
   # Install RStudio
@@ -401,6 +404,13 @@ runcmd:
   - sed -i "s|^export PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
   # Run installation tests
   - python3 /opt/build/check_installation.py || die "Installation check failed!";
+
+  # Remove Linux omsagent before generalising the image
+  - echo ">=== $(date +%s) Removing Linux omsagent ===<"
+  # We use the commit corresponding to a particular tag (currently 1.17.2-0) so that we can audit what the script is doing
+  - wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/c7e1a8f923844f989c8aa7957cee0e89708d821f/installer/scripts/onboard_agent.sh
+  - sh onboard_agent.sh --purge || die "Could not remove Linux omsagent!";
+  - rm onboard_agent.sh
 
 final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 

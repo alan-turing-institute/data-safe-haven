@@ -398,22 +398,17 @@ If you aren't sure about any of these then please return to the [**Set up your a
   Don't forget the **https://** as you will not be able to login without it!
   ```
 
-- You should arrive at a login page that needs you to enter:
-
-    - your `username@<username domain>`
-    - your password
-
-  then click `Login`.
-
 - You should arrive at a login page that looks like the image below:
 
   ````{note}
-  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.turingsafehaven.ac.uk` in the `User name` box, enter her password and then click `Login`.
-  ```{image} user_guide/logon_environment_guacamole.png
+  Our example user, Ada Lovelace, participating in the `sandbox` project at a Turing Data Study Group, would enter `ada.lovelace@projects.turingsafehaven.ac.uk` in the `Email address, phone number or Skype` box, then click Next
+  ```{image} user_guide/guacamole_ms_login.png
   :alt: Research environment log in
   :align: center
   ```
   ````
+
+- After clicking `Next`, you will then be asked to provide your password.
 
 - You will now **receive a call or mobile app notification** to authenticate using multifactor authentication (MFA).
 
@@ -430,12 +425,17 @@ If you aren't sure about any of these then please return to the [**Set up your a
   If you don't respond to the MFA request quickly enough, or if it fails, you may get an error. If this happens, please retry
   ```
 
-- If you are successful, you'll see the a screen with icons for the available apps.
+- If you are successful, you'll see a screen similar to the one below.
 
   ```{image} user_guide/guacamole_dashboard.png
   :alt: Research environment dashboard
   :align: center
   ```
+
+This is the Guacamole remote desktop home screen.
+From there, you can access Secure Research Desktops.
+
+For more detailed information on how to use Guacamole, you can find guidance in the [Guacamole manual](https://guacamole.apache.org/doc/1.5.4/gug/using-guacamole.html).
 
   Welcome to the Data Safe Haven! {{wave}}
 
@@ -480,6 +480,13 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
   :alt: SRD initial desktop
   :align: center
   ```
+
+````{note}
+The Linux desktops within our SRDs use the [Ubuntu operating system](https://ubuntu.com/).
+The desktop environment used by our SRDs is called [Xfce](https://www.xfce.org/).
+More detailed information on how to use the Xfce desktop can be found on the [Xfce website](https://docs.xfce.org/xfce/getting-started#the_desktop_environment).
+Particularly relevant documentation can be found for the [desktop manager](https://docs.xfce.org/xfce/xfdesktop/usage) and [window manager](https://docs.xfce.org/xfce/xfwm4/getting-started)
+````
 
 You are now logged into the Data Safe Haven SRE!
 Welcome {{wave}}
@@ -538,21 +545,21 @@ You may find that the keyboard mapping on your computer is not the same as the o
 Click on `Desktop` and `Applications > Settings > Keyboard` to change the layout.
 
 ```{tip}
-We recommend opening a text editor (such as `Atom` , see [Access applications](#access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
+We recommend opening an application that allows text entry (such as `Libre Office Writer` , see [Access applications](#access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
 ```
 
 ### {{unlock}} Access applications
 
-You can access applications from the desktop in two ways: the terminal or via a drop down menu.
+You can access applications from the desktop using either the terminal or via a drop down menu.
 
 Applications can be accessed from the dropdown menu.
 For example:
 
-- `Applications > Development > Atom`
 - `Applications > Development > Jupyter Notebook`
 - `Applications > Development > PyCharm`
 - `Applications > Development > RStudio`
 - `Applications > Education > QGIS Desktop`
+- `Applications > Office > Libre Office Writer`
 
 Applications can be accessed from a terminal.
 For example:
@@ -946,6 +953,9 @@ The database server will use either `Microsoft SQL` or `PostgreSQL`.
 
 If you have access to one or more databases, you can access them using the following details, replacing `<SRE ID>` with the {ref}`SRE ID <user_guide_sre_id>` for your project.
 
+For guidance on how to use the databases, many resources are available on the internet.
+Official tutorials for [MSSQL](https://learn.microsoft.com/en-us/sql/sql-server/tutorials-for-sql-server-2016?view=sql-server-ver16) and [PostgreSQL](https://www.postgresql.org/docs/current/tutorial.html) may be good starting points.
+
 ### {{bento_box}} Microsoft SQL
 
 - Server name: `MSSQL-<SRE ID>` (e.g. `MSSQL-SANDBOX` )
@@ -1002,6 +1012,18 @@ Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.tur
 Be sure to select `Kerberos authentication` so that your username and password will be passed through to the database
 ```
 
+````{note}
+After clicking finish, you may be prompted to download missing driver files.
+Drivers have already been provided on the SRD for Microsoft SQL databases.
+Clicking `Download` will make DBeaver use these pre-downloaded drivers without requiring internet access.
+Thus, even on SRDs with no external internet access (Tier 2 or above), click `Download`.
+Note that the prompt may appear multiple times.
+```{image} user_guide/db_dbeaver_mssql_download.png
+:alt: DBeaver driver download for Microsoft SQL
+:align: center
+```
+````
+
 #### PostgreSQL
 
 - Select `PostgreSQL` as the database type
@@ -1024,6 +1046,18 @@ Our example user Ada Lovelace, working in the `sandbox` SRE on the `projects.tur
 If you are prompted for `Username` or `Password` when connecting, you can leave these blank and the correct username and password will be automatically passed through to the database
 ```{image} user_guide/db_dbeaver_postgres_ignore.png
 :alt: DBeaver username/password prompt
+:align: center
+```
+````
+
+````{note}
+After clicking finish, you may be prompted to download missing driver files.
+Drivers have already been provided on the SRD for PostgreSQL databases.
+Clicking `Download` will make DBeaver use these pre-downloaded drivers without requiring internet access.
+Thus, even on SRDs with no external internet access (Tier 2 or above), click `Download`.
+Note that the prompt may appear multiple times.
+```{image} user_guide/db_dbeaver_pstgrs_download.png
+:alt: DBeaver driver download for Microsoft SQL
 :align: center
 ```
 ````
@@ -1225,6 +1259,8 @@ Clear the shell window
 ```bash
 clear
 ```
+
+For a more detailed introduction, visit the official Ubuntu tutorial, [The Linux command line for beginners](https://ubuntu.com/tutorials/command-line-for-beginners)
 
 ## {{notebook}} Appendix B: Gitlab tutorial notes
 

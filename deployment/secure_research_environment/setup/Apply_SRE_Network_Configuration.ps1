@@ -110,7 +110,7 @@ foreach ($nsgName in $nsgs.Keys) {
 # Ensure SRE is peered to correct mirror/proxy set
 # ------------------------------------------------
 # Unpeer any existing networks before (re-)establishing correct peering for SRE
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_SRE_Package_Repositories.ps1) -shmId $shmId -sreId $sreId"
+& $(Join-Path $PSScriptRoot "Unpeer_SRE_Package_Repositories.ps1") -shmId $shmID -sreId $sreId
 # Peer this SRE to the repository network
 Add-LogMessage -Level Info "Ensuring SRE is peered to correct package repository..."
 if (-not $config.sre.repositories.network.name) {
@@ -146,8 +146,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Block external DNS queries
 # --------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot "Configure_External_DNS_Queries.ps1") -shmId $shmId -sreId $sreId"
-
+& $(Join-Path $PSScriptRoot "Configure_External_DNS_Queries.ps1") -shmId $shmId -sreId $sreId
 
 # Switch back to original subscription
 # ------------------------------------
