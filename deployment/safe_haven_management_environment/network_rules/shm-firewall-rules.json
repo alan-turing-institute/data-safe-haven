@@ -204,16 +204,8 @@
                         "fqdnTags": [],
                         "targetFqdns": [
                             "*-sb.servicebus.windows.net",
-                            "passwordreset.microsoftonline.com",
-                            "ssprdedicatedsbprodeus2-1.servicebus.windows.net",
-                            "ssprdedicatedsbprodfra-1.servicebus.windows.net",
-                            "ssprdedicatedsbprodncu-2.servicebus.windows.net",
-                            "ssprdedicatedsbprodncu.servicebus.windows.net",
-                            "ssprdedicatedsbprodneu.servicebus.windows.net",
-                            "ssprdedicatedsbprodscu-2.servicebus.windows.net",
-                            "ssprdedicatedsbprodscu.servicebus.windows.net",
-                            "ssprdedicatedsbprodsea-1.servicebus.windows.net",
-                            "ssprdedicatedsbprodweu.servicebus.windows.net"
+                            "*.servicebus.windows.net",
+                            "passwordreset.microsoftonline.com"
                         ],
                         "sourceAddresses": [
                             "{{network.vnet.subnets.identity.cidr}}"
