@@ -91,6 +91,7 @@ class SREGiteaServerComponent(ComponentResource):
             resource_group_name=props.storage_account_resource_group_name,
             share_name="gitea-caddy",
             share_quota=1,
+            signed_identifiers=[],
             opts=child_opts,
         )
         file_share_gitea_gitea = storage.FileShare(
@@ -100,6 +101,7 @@ class SREGiteaServerComponent(ComponentResource):
             resource_group_name=props.storage_account_resource_group_name,
             share_name="gitea-gitea",
             share_quota=1,
+            signed_identifiers=[],
             opts=child_opts,
         )
 
