@@ -21,13 +21,15 @@ class AzureADApplicationProps:
         auth_token: Input[str],
         application_role_assignments: Input[list[str]] | None = None,
         application_secret_name: Input[str] | None = None,
+        delegated_role_assignments: Input[list[str]] | None = None,
         public_client_redirect_uri: Input[str] | None = None,
         web_redirect_url: Input[str] | None = None,
     ) -> None:
         self.application_name = application_name
         self.application_role_assignments = application_role_assignments
         self.application_secret_name = application_secret_name
-        self.auth_token = auth_token
+        self.auth_token = Output.secret(auth_token)
+        self.delegated_role_assignments = delegated_role_assignments
         self.public_client_redirect_uri = public_client_redirect_uri
         self.web_redirect_url = web_redirect_url
 
@@ -74,6 +76,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             json_response = graph_api.create_application(
                 props["application_name"],
                 application_scopes=props.get("application_role_assignments", []),
+                delegated_scopes=props.get("delegated_role_assignments", []),
                 request_json=request_json,
             )
             outs["object_id"] = json_response["id"]
@@ -82,6 +85,12 @@ class AzureADApplicationProvider(DshResourceProvider):
             # Grant any requested application role permissions
             for role_name in props.get("application_role_assignments", []):
                 graph_api.grant_application_role_permissions(
+                    outs["application_name"], role_name
+                )
+
+            # Grant any requested delegated role permissions
+            for role_name in props.get("delegated_role_assignments", []):
+                graph_api.grant_delegated_role_permissions(
                     outs["application_name"], role_name
                 )
 

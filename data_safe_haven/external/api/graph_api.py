@@ -374,9 +374,8 @@ class GraphApi:
                 )
                 application_sp = self.get_service_principal_by_name(application_name)
                 if not application_sp:
-                    raise DataSafeHavenMicrosoftGraphError(
-                        f"service principal for application '[green]{application_name}[/]' not found."
-                    )
+                    msg = f"service principal for application '[green]{application_name}[/]' not found."
+                    raise DataSafeHavenMicrosoftGraphError(msg)
             return application_sp
         except Exception as exc:
             msg = f"Could not create service principal for application '[green]{application_name}[/]'.\n{exc}"
@@ -681,32 +680,40 @@ class GraphApi:
             if not application_sp:
                 msg = "Could not find application service principal."
                 raise DataSafeHavenMicrosoftGraphError(msg)
-            # Check whether permission is already granted
-            response = self.http_get(
-                f"{self.base_endpoint}/oauth2PermissionGrants",
-            )
-            for application in response.json().get("value", []):
-                if (application["clientId"] == application_sp["id"]) and (
-                    application_role_name.lower() in application["scope"].lower()
-                ):
-                    self.logger.debug(
-                        f"Delegated permission '[green]{application_role_name}[/]' already assigned to '{application_name}'.",
-                    )
-                    return
-            # Otherwise grant delegated permissions for this role to the application
+            # Check existing permissions
+            response = self.http_get(f"{self.base_endpoint}/oauth2PermissionGrants")
             self.logger.debug(
                 f"Assigning delegated role '[green]{application_role_name}[/]' to '{application_name}'...",
             )
-            request_json = {
-                "clientId": application_sp["id"],
-                "consentType": "AllPrincipals",
-                "resourceId": microsoft_graph_sp["id"],
-                "scope": application_role_name,
-            }
-            response = self.http_post(
-                f"{self.base_endpoint}/oauth2PermissionGrants",
-                json=request_json,
+            # If there are existing permissions then we need to patch
+            application = next(
+                (
+                    app
+                    for app in response.json().get("value", [])
+                    if app["clientId"] == application_sp["id"]
+                ),
+                None,
             )
+            if application:
+                request_json = {
+                    "scope": f"{application['scope']} {application_role_name}"
+                }
+                response = self.http_patch(
+                    f"{self.base_endpoint}/oauth2PermissionGrants/{application['id']}",
+                    json=request_json,
+                )
+            # Otherwise we need to make a new delegation request
+            else:
+                request_json = {
+                    "clientId": application_sp["id"],
+                    "consentType": "AllPrincipals",
+                    "resourceId": microsoft_graph_sp["id"],
+                    "scope": application_role_name,
+                }
+                response = self.http_post(
+                    f"{self.base_endpoint}/oauth2PermissionGrants",
+                    json=request_json,
+                )
             self.logger.info(
                 f"Assigned delegated role '[green]{application_role_name}[/]' to '{application_name}'.",
             )
@@ -739,7 +746,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute DELETE request.\n{exc}"
+            msg = f"Could not execute DELETE request to '{url}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_get(self, url: str, **kwargs: Any) -> requests.Response:
@@ -767,7 +774,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute GET request.\n{exc}"
+            msg = f"Could not execute GET request from '{url}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
@@ -795,7 +802,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute PATCH request.\n{exc}"
+            msg = f"Could not execute PATCH request to '{url}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_post(self, url: str, **kwargs: Any) -> requests.Response:
@@ -824,7 +831,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute POST request.\n{exc}"
+            msg = f"Could not execute POST request to '{url}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def read_applications(self) -> Sequence[dict[str, Any]]:
