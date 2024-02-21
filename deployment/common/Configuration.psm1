@@ -325,7 +325,7 @@ function Get-ShmConfig {
         }
         updateServers     = [ordered]@{
             externalIpAddresses = [ordered]@{
-                linux           = (
+                linux   = (
                     @("72.32.157.246", "87.238.57.227", "147.75.85.69", "217.196.149.55") + # apt.postgresql.org
                     @("91.189.91.38", "91.189.91.39", "91.189.91.48", "91.189.91.49", "91.189.91.81", "91.189.91.82", "91.189.91.83", "185.125.190.17", "185.125.190.18", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
                     $cloudFlareIpAddresses + # database.clamav.net, packages.gitlab.com and qgis.org use Cloudflare
@@ -334,7 +334,7 @@ function Get-ShmConfig {
                     @("152.199.20.126") + # developer.download.nvidia.com
                     $microsoftIpAddresses # packages.microsoft.com, azure.archive.ubuntu.com
                 )
-                windows         = @($microsoftIpAddresses) # for several Microsoft-owned endpoints
+                windows = @($microsoftIpAddresses) # for several Microsoft-owned endpoints
             }
             linux               = [ordered]@{
                 adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-linux-update-server".ToLower()
