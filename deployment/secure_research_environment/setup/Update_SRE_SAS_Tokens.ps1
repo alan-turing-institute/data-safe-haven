@@ -45,6 +45,7 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
 Add-LogMessage -Level Info "Retrieving list of SRD VMs..."
 $VMs = Get-AzVM -ResourceGroupName $config.sre.srd.rg | `
     Where-Object { $_.Name -like "*SRD*" }
+Add-LogMessage -Level Success "SRD VMs identified: '$($Vms)'"
 
 # Update blobfuse credentials on each SRD
 # ---------------------------------------
@@ -54,6 +55,7 @@ $sasTokens.Keys | ForEach-Object {
 }
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "scripts" "write_sas_tokens.sh"
 foreach ($VM in $Vms) {
+    Add-LogMessage -Level Info "Updating SAS tokens on '$($VM)'"
     $null = Invoke-RemoteScript -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Shell "UnixShell" -ScriptPath $scriptPath -Parameter $sasTokensBase64
 }
 
