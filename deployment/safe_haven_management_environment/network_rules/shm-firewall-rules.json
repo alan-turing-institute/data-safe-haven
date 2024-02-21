@@ -31,7 +31,6 @@
                         ],
                         "targetAddresses": [
                             "GuestAndHybridManagement",
-                            "AzureMonitor"
                         ],
                         "sourceAddresses": [
                             "*"
