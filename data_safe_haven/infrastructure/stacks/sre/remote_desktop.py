@@ -227,7 +227,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_AUTHORIZATION_ENDPOINT",
-                            value=f"https://login.microsoftonline.com/{props.aad_tenant_id}/oauth2/v2.0/authorize",
+                            value=Output.concat("https://login.microsoftonline.com/", props.aad_tenant_id, "/oauth2/v2.0/authorize"),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_CLIENT_ID",
@@ -235,11 +235,11 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_ISSUER",
-                            value=f"https://login.microsoftonline.com/{props.aad_tenant_id}/v2.0",
+                            value=Output.concat("https://login.microsoftonline.com/", props.aad_tenant_id, "/v2.0"),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_JWKS_ENDPOINT",
-                            value=f"https://login.microsoftonline.com/{props.aad_tenant_id}/discovery/v2.0/keys",
+                            value=Output.concat("https://login.microsoftonline.com/", props.aad_tenant_id, "/discovery/v2.0/keys"),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_REDIRECT_URI", value=props.aad_application_url
@@ -295,7 +295,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.2.0",
+                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.3.0",
                     name="guacamole-user-sync"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(

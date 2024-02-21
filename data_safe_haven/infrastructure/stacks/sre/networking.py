@@ -627,6 +627,18 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             security_rules=[
                 # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests over TCP.",
+                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_port_ranges=["389", "1389"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowLDAPClientTCPInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
                 # Outbound
             ],
             opts=child_opts,
@@ -1041,6 +1053,18 @@ class SRENetworkingComponent(ComponentResource):
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLDAPClientTCPOutbound",
                     priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests over TCP.",
+                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_port_ranges=["389", "1389"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowSREIdentityServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
