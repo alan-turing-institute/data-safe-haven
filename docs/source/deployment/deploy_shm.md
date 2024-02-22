@@ -126,7 +126,7 @@ The following core SHM properties are required - look in the `environment_config
 - This configuration file is also used when deploying an SRE environment.
 - We recommend that you set the fully qualified domain name to `<SHM ID>.<some domain that you control>`.
 - This may require purchasing a dedicated domain so follow your organisation's guidance.
-- You must ensure that the group specifed in `azure.adminGroupName` exists in the Microsoft Entra for the tenant that you will be deploying into. Depending on your setup, this may be different from the Microsoft Entra where your users are created.
+- You must ensure that the group specifed in `azure.adminGroupName` exists in the Microsoft Entra ID for the tenant that you will be deploying into. Depending on your setup, this may be different from the Microsoft Entra ID where your users are created.
 ```
 
 ```{admonition} Alan Turing Institute default
