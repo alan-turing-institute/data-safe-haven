@@ -68,5 +68,5 @@ RUN pip3 install -r /build/requirements.txt
 COPY ./deployment/CheckRequirements.ps1 /build/CheckRequirements.ps1
 COPY ./deployment/common/Logging.psm1 /build/common/Logging.psm1
 RUN pwsh -Command "& {Set-PSRepository -Name PSGallery -InstallationPolicy Trusted}" \
-  && pwsh -File /build/CheckRequirements.ps1 -InstallMissing \
+  && pwsh -File /build/CheckRequirements.ps1 -InstallMissing  -IncludeDev\
   && sudo rm -rf /build/
