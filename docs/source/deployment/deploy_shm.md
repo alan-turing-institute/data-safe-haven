@@ -162,7 +162,7 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 (roles_deployer_setup_aad)=
 
-## 3. {{file_folder}} Setup Microsoft Entra ID (ME-ID)
+## 3. {{file_folder}} Setup Microsoft Entra ID
 
 ```{warning}
 If you wish to reuse an existing Microsoft Entra ID directory please make sure you remove any existing `Conditional Access Policies` by going to `Security > Conditional Access > Policies` and manually removing the `Restrict Microsoft Entra ID access` and `Require MFA` policies.
