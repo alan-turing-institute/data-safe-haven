@@ -178,7 +178,7 @@ If this happens then you will need to wait for the previous disconnection to com
 
 See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_aad_connect_rules>` for more details.
 
-### {{put_litter_in_its_place}} Unregister the old domain controller in Microsoft Entra
+### {{put_litter_in_its_place}} Unregister the old domain controller in Microsoft Entra ID
 
 ![Microsoft Entra ID: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=one%20minute)
 
