@@ -268,7 +268,7 @@ If you see an error like the following when attempting to log in, it is likely t
 - Click on `Authentication` on the left-hand sidebar
 - Ensure that the `ID tokens` checkbox is ticked and click on the `Save` icon if you had to make any changes
   ```{image} deploy_sre/guacamole_aad_app_registration_idtoken.png
-  :alt: ME app registration
+  :alt: Microsoft Entra app registration
   :align: center
   ```
 </details>
