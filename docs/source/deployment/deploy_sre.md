@@ -263,7 +263,7 @@ If you see an error like the following when attempting to log in, it is likely t
 ![Microsoft Entra ID: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%2
 0ID&color=blue&message=one%20minute)
 
-- From the Azure portal, navigate to the ME-ID you have created.
+- From the Azure portal, navigate to the Microsoft Entra ID you have created.
 - Navigate to `Microsoft Entra ID > App registrations`, and select the application called `Guacamole SRE <SRE ID>`.
 - Click on `Authentication` on the left-hand sidebar
 - Ensure that the `ID tokens` checkbox is ticked and click on the `Save` icon if you had to make any changes
