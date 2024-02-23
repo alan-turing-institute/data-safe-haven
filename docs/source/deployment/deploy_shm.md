@@ -202,7 +202,7 @@ You can then continue to the next step: {ref}`getting the Microsoft Entra tenant
 
 (roles_deployer_aad_tenant_id)=
 
-### Get the Entra Tenant ID
+### Get the Microsoft Entra Tenant ID
 
 ![Microsoft Entra ID: one minute](https://img.shields.io/badge/Microsoft_Entra_ID-One_minute-blue?logo=microsoft-academic)
 
