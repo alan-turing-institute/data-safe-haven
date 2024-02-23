@@ -211,7 +211,7 @@ You can then continue to the next step: {ref}`getting the Microsoft Entra tenant
     - Clicking the link displayed at the end of the initial Microsoft Entra ID  deployment.
     - Clicking on your username and profile icon at the top left of the Azure portal, clicking `Switch directory` and selecting the Microsoft Entra ID  you have just created from the `All Directories` section of the `Directory + Subscription` panel that then displays.
 - If required, click the "hamburger" menu in the top left corner (three horizontal lines) and select `Microsoft Entra ID`
-- Click `Overview` in the left panel and copy the `Tenant ID` displayed under the Entra ID name and initial `something.onmicrosoft.com` domain.
+- Click `Overview` in the left panel and copy the `Tenant ID` displayed under the Microsoft Entra ID name and initial `something.onmicrosoft.com` domain.
   <details><summary><b>Screenshots</b></summary>
 
   ```{image} deploy_shm/aad_tenant_id.png
