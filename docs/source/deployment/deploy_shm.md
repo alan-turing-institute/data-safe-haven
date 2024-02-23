@@ -166,7 +166,7 @@ PS> ./ShowConfigFile.ps1 -shmId <SHM ID>
 
 ```{warning}
 If you wish to reuse an existing Microsoft Entra ID please make sure you remove any existing `Conditional Access Policies` by going to `Security > Conditional Access > Policies` and manually removing the `Restrict Microsoft Entra ID access` and `Require MFA` policies.
-You can then continue to the next step: {ref}`getting the Entra ID tenant ID <roles_deployer_aad_tenant_id>`.
+You can then continue to the next step: {ref}`getting the Microsoft Entra tenant ID <roles_deployer_aad_tenant_id>`.
 ```
 
 ### Create a new Microsoft Entra ID
