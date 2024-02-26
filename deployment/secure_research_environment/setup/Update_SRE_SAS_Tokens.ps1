@@ -33,7 +33,8 @@ foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) 
                                         -Permission $config.sre.storage.accessPolicies[$accessPolicyName].permissions `
                                         -StorageAccount $persistentStorageAccount `
                                         -ContainerName $receptacleName `
-                                        -ValidityYears 1
+                                        -ValidityYears 1 `
+                                        -Force
     # Create token
     $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -PolicyName $sasPolicy.Policy -StorageAccount $persistentStorageAccount
     # Write to KeyVault
