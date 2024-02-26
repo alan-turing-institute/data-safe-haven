@@ -669,13 +669,13 @@ You will need to configure your antivirus software to make an exception.
 
 (roles_deployer_shm_aad_connect)=
 
-#### Install Azure Active Directory Connect
+#### Install Microsoft Entra Connect
 
 ![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
 
-```{note}
-Azure Active Directory Connect is being renamed to Microsoft Entra Connect. As of February 2024, the available software still uses the Azure Active Directory Connect name.
-```
+````{include} ../roles/system_manager/snippets/02_ms_entra_connect.partial.md
+:relative-images:
+````
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the `private IP address`, `<admin login>` and `<admin password>` that you {ref}`obtained from the portal above <roles_system_deployer_shm_remote_desktop>`.
 - Navigate to `C:\Installation`

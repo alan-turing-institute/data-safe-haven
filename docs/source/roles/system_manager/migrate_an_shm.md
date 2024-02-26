@@ -157,8 +157,8 @@ All research users in this SHM will have to go to `https://aka.ms/sspr` to reset
 
 See the {ref}`Safe Haven Management documentation <roles_deployer_shm_aad_connect>` for more details.
 
-````{note}
-Microsoft Entra Connect is the new name for Azure AD Connect. However, while all Microsoft documentation and entries in the Azure portal now refer to Microsoft Entra Connect, as of the release of `v4.2.0` of the Data Safe Haven, the software itself is still named `Azure Active Directory Connect`, and will appear as such on your Domain Controller.
+````{include} snippets/02_ms_entra_connect.partial.md
+:relative-images:
 ````
 
 ````{error}
