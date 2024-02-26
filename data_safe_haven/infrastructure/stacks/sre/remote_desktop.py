@@ -45,7 +45,7 @@ class SRERemoteDesktopProps:
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
         ldap_user_search_base: Input[str],
-        ldap_user_security_group_name: Input[str],
+        ldap_user_group_name: Input[str],
         location: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
@@ -70,7 +70,7 @@ class SRERemoteDesktopProps:
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.ldap_user_search_base = ldap_user_search_base
-        self.ldap_user_security_group_name = ldap_user_security_group_name
+        self.ldap_user_group_name = ldap_user_group_name
         self.location = location
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
@@ -326,7 +326,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="LDAP_USER_FILTER",
                             value=Output.concat(
                                 "(&(objectClass=user)(memberOf=CN=",
-                                props.ldap_user_security_group_name,
+                                props.ldap_user_group_name,
                                 ",",
                                 props.ldap_group_search_base,
                                 "))",

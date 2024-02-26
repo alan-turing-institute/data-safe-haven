@@ -35,7 +35,7 @@ class SREHedgeDocServerProps:
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
         ldap_user_search_base: Input[str],
-        ldap_user_security_group_name: Input[str],
+        ldap_user_group_name: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         sre_fqdn: Input[str],
@@ -60,8 +60,8 @@ class SREHedgeDocServerProps:
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.ldap_user_search_base = ldap_user_search_base
-        self.ldap_user_security_group_cn = Output.all(
-            group_name=ldap_user_security_group_name, root_dn=ldap_root_dn
+        self.ldap_user_group_cn = Output.all(
+            group_name=ldap_user_group_name, root_dn=ldap_root_dn
         ).apply(
             lambda kwargs: ",".join(
                 (
@@ -242,7 +242,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                                 "(&",
                                 "(objectClass=user)",
                                 "(memberOf=CN=",
-                                props.ldap_user_security_group_cn,
+                                props.ldap_user_group_cn,
                                 ")",
                                 "(sAMAccountName={{username}}))",
                             ),
