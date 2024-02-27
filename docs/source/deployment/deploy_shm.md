@@ -215,7 +215,7 @@ You can then continue to the next step: {ref}`getting the Microsoft Entra tenant
   <details><summary><b>Screenshots</b></summary>
 
   ```{image} deploy_shm/aad_tenant_id.png
-  :alt: ME-ID Tenant ID
+  :alt: Microsoft Entra tenant ID
   :align: center
   ```
 
