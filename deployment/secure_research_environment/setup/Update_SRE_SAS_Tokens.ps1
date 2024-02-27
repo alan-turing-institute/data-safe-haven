@@ -8,8 +8,6 @@ param(
 Import-Module Az.Accounts -ErrorAction Stop
 Import-Module Az.Resources -ErrorAction Stop
 Import-Module Az.Storage -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/AzureCompute -Force -ErrorAction Stop
-Import-Module $PSScriptRoot/../../common/AzureKeyVault -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/AzureStorage -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/Configuration -Force -ErrorAction Stop
 Import-Module $PSScriptRoot/../../common/DataStructures -Force -ErrorAction Stop
@@ -22,44 +20,18 @@ $config = Get-SreConfig -shmId $shmId -sreId $sreId
 $originalContext = Get-AzContext
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 
-# Generate a new SAS token for each persistent data container
-# -----------------------------------------------------------
+# Update each SAS Access Policy to be valid for one year from now
+# ---------------------------------------------------------------
 $persistentStorageAccount = Get-StorageAccount -ResourceGroupName $config.shm.storage.persistentdata.rg -Name $config.sre.storage.persistentdata.account.name
-$sasTokens = @{}
 foreach ($receptacleName in $config.sre.storage.persistentdata.containers.Keys) {
-    # Create SAS policy
     $accessPolicyName = $config.sre.storage.persistentdata.containers[$receptacleName].accessPolicyName
-    $sasPolicy = Deploy-SasAccessPolicy -Name $accessPolicyName `
-                                        -Permission $config.sre.storage.accessPolicies[$accessPolicyName].permissions `
-                                        -StorageAccount $persistentStorageAccount `
-                                        -ContainerName $receptacleName `
-                                        -ValidityYears 1 `
-                                        -Force
-    # Create token
-    $sasToken = New-StorageReceptacleSasToken -ContainerName $receptacleName -PolicyName $sasPolicy.Policy -StorageAccount $persistentStorageAccount
-    # Write to KeyVault
-    $sasTokens[$receptacleName] = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.storage.persistentdata.containers[$receptacleName].connectionSecretName -DefaultValue $sasToken -AsPlaintext -ForceOverwrite
+    $null = Deploy-SasAccessPolicy -Name $accessPolicyName `
+                                   -Permission $config.sre.storage.accessPolicies[$accessPolicyName].permissions `
+                                   -StorageAccount $persistentStorageAccount `
+                                   -ContainerName $receptacleName `
+                                   -ValidityYears 1 `
+                                   -Force
 }
-
-# Get list of SRDs
-# ----------------
-Add-LogMessage -Level Info "Retrieving list of SRD VMs..."
-$VMs = Get-AzVM -ResourceGroupName $config.sre.srd.rg | `
-    Where-Object { $_.Name -like "*SRD*" }
-Add-LogMessage -Level Success "SRD VMs identified: '$($Vms)'"
-
-# Update blobfuse credentials on each SRD
-# ---------------------------------------
-$sasTokensBase64 = @{}
-$sasTokens.Keys | ForEach-Object {
-    $sasTokensBase64[($_ + '_B64')] = ($sasTokens[$_] | ConvertTo-Base64)
-}
-$scriptPath = Join-Path $PSScriptRoot ".." "remote" "secure_research_desktop" "scripts" "write_sas_tokens.sh"
-foreach ($VM in $Vms) {
-    Add-LogMessage -Level Info "Updating SAS tokens on '$($VM)'"
-    $null = Invoke-RemoteScript -VMName $VM.Name -ResourceGroupName $VM.ResourceGroupName -Shell "UnixShell" -ScriptPath $scriptPath -Parameter $sasTokensBase64
-}
-
 
 # Switch back to original subscription
 # ------------------------------------
