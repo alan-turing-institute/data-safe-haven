@@ -28,13 +28,19 @@ PS> ./Update_SRE_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 (renew_sas)=
 
-## {{locked_with_key}} Renew SRE SAS tokens
+## {{locked_with_key}} Renew SRE Container Access Policies
 
 The [SRE storage containers](role_researcher_user_guide_shared_storage) for input data, backup and output are all provided by blob storage.
-The SRDs use [SAS tokens](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview) to authenticate and access the data.
+The SRDs use [SAS tokens](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview) bound to a [Stored Access Policy](https://learn.microsoft.com/en-us/azure/storage/common/storage-stored-access-policy-define-dotnet) to authenticate and access the data.
 
-When the containers are deployed the SAS tokens are valid for one year.
-If a SRE is deployed for longer than this, the certificates will need to be renewed in order to maintain access to these containers.
+When the containers are deployed the Stored Access Policy is valid for one year.
+If a SRE is deployed for longer than this, the policy will need to be renewed in order to maintain access to these containers.
+
+![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
+
+```powershell
+PS> ./Update_Stored_Access_Policies.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
 
 (resize_vm)=
 
