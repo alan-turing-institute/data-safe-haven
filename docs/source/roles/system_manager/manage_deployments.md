@@ -10,6 +10,27 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 :relative-images:
 ```
 
+(resize_nfs)=
+
+## {{file_cabinet}} Resizing User Storage
+
+The directories for user data, `/home` and `/shared`, are NFS shares mounted to each SRD.
+These shares have a declared, finite size.
+It is therefore possible for this space to become entirely consumed.
+
+In the case of the `/home` directory, this will prevent normal users from being able to login to the SRD as they will be unable to write to their own home directories.
+This can be fixed by increasing the size of the `/home` NFS share.
+
+![Portal: 5 minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=five%20minutes)
+
+- Navigate to the SRE's storage resource group `RG_SHM_<SHM_ID>_SRE_<SRE_ID>_Storage`
+- Navigate to the user data storage account `<sre_id>userdata<random_string>`
+- On the left-hand navigation bar, select "File shares" under the "Data storage" heading
+- You will see the file shares, "home" and "shared".
+- Click on the ellipsis on the same row as the share you would like to adjust, at the far right of the page, and in the pop-up menu click "Size and performance".
+- A form will appear where you can enter the share size in GiB.
+  Enter the new size and click the "Save" button.
+
 (renew_ssl)=
 
 ## {{alarm_clock}} Renewing SRE Domain Certificates
