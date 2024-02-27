@@ -6,15 +6,15 @@
 
     ```{tip}
     - Ensure that the **Owner** of the subscription is an `Azure Security group` that contains all administrators and no-one else.
-    - We recommend using separate `Azure Active Directories` for users and administrators
+    - We recommend using separate `Microsoft Entra IDs` for users and administrators
     ```
 
-- Access to a **global administrator** account on the SHM Azure Active Directory
+- Access to a **global administrator** account on the SHM Microsoft Entra ID
 
 ### {{beginner}} Software
 
 - `PowerShell` with support for Azure
-    - We recommend [installing](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell) the [latest stable release](https://learn.microsoft.com/en-us/powershell/scripting/install/powershell-support-lifecycle?view=powershell-7.3) of Powershell. We have most recently tested deployment using version `7.3.2`.
+    - We recommend [installing](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell) the [latest stable release](https://learn.microsoft.com/en-us/powershell/scripting/install/powershell-support-lifecycle?view=powershell-7.3) of Powershell. We have most recently tested deployment using version `7.3.9`.
     - Install the [Azure PowerShell Module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps) using `Install-Module -Name Az -RequiredVersion 5.0.0 -Repository PSGallery`
 - `Microsoft Remote Desktop`
     - On macOS this can be installed from the [Apple store](https://www.apple.com/app-store/)

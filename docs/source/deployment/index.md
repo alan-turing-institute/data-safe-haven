@@ -32,3 +32,12 @@ For instructions on removing deployed resources, refer to the guide for {ref}`Sy
 
 [Security checklist](security_checklist.md)
 : an example security checklist used at the Alan Turing Institute to help evaluate the security of our deployments.
+
+````{warning}
+Microsoft have renamed Azure Active Directory to [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/fundamentals/new-name).
+We have updated these guides in the light of this change.
+However, as of February 2024, Microsoft have not completed the renaming process.
+Some software and documentation retains the old Azure Active Directory name.
+Our documentation reflects the name that is currently in use, rather than the name that will be used once the renaming process is complete.
+Where we use the name "Azure Active Directory", if the corresponding software, menu option, or documentation cannot be found, look instead for a version using the Microsoft Entra ID name.
+````

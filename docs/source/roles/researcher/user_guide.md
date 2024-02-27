@@ -212,7 +212,7 @@ Please follow these steps carefully.
   The virtual keyboard inside the SRE may not be the same as your physical keyboard and this can make it difficult to type some symbols.
   ```
 
-  Note that this will also ensure that it passes the [Microsoft Azure AD password requirements](https://docs.microsoft.com/en-us/azure/active-directory/authentication/concept-sspr-policy).
+  Note that this will also ensure that it passes the [Microsoft Entra password requirements](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-policy).
 
   ```{tip}
   We recommend using a password generator [like this one](https://bitwarden.com/password-generator/) to create a password that meets these requirements.
