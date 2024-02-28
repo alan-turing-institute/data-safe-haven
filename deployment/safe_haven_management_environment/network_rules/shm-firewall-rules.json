@@ -27,7 +27,8 @@
                     {
                         "name": "AllowExternalAzureAutomationOperations",
                         "protocols": [
-                            "HTTPS:443"
+                            "TCP",
+                            "UDP"
                         ],
                         "targetAddresses": [
                             "GuestAndHybridManagement",
