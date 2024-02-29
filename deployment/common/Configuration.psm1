@@ -325,10 +325,7 @@ function Get-ShmConfig {
         }
         updateServers     = [ordered]@{
             externalIpAddresses = [ordered]@{
-                azureAutomation = @(
-                    "13.66.145.80", "13.69.109.177", "13.71.175.151", "13.71.199.178", "13.75.34.150", "13.77.55.200", "20.140.131.132", "20.192.168.149", "20.36.108.243", "20.49.90.25", "40.78.236.132", "40.78.236.133", "40.79.173.18", "40.79.187.166", "40.80.176.49", "51.105.77.83", "51.107.60.86", "52.138.229.87", "52.167.107.72", "52.167.107.74", "52.236.186.244"
-                ) # *-jobruntimedata-prod-su1.azure-automation.net
-                linux           = (
+                linux   = (
                     @("72.32.157.246", "87.238.57.227", "147.75.85.69", "217.196.149.55") + # apt.postgresql.org
                     @("91.189.91.38", "91.189.91.39", "91.189.91.48", "91.189.91.49", "91.189.91.81", "91.189.91.82", "91.189.91.83", "185.125.190.17", "185.125.190.18", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
                     $cloudFlareIpAddresses + # database.clamav.net, packages.gitlab.com and qgis.org use Cloudflare
@@ -337,7 +334,7 @@ function Get-ShmConfig {
                     @("152.199.20.126") + # developer.download.nvidia.com
                     $microsoftIpAddresses # packages.microsoft.com, azure.archive.ubuntu.com
                 )
-                windows         = @($microsoftIpAddresses) # for several Microsoft-owned endpoints
+                windows = @($microsoftIpAddresses) # for several Microsoft-owned endpoints
             }
             linux               = [ordered]@{
                 adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-linux-update-server".ToLower()
