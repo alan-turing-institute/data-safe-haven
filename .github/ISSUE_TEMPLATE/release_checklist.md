@@ -19,10 +19,11 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
 - [ ] Draft a changelog for the release similar to our previous releases, see https://github.com/alan-turing-institute/data-safe-haven/releases
 - [ ] Deploy an SHM from this branch and save a transcript of the deployment logs
 - [ ] Build an SRE compute image (SRD) and save transcripts of the logs
-- Using the new image, deploy two SREs which between them cover tiers 2 and 3 and Guacamole/Microsoft RDS
+- Using the new image, deploy two SREs which between them cover tiers 2 and 3
     - [ ] Save the transcript of your tier 2 SRE deployment
     - [ ] Save the transcript of your tier 3 SRE deployment
 - [ ] Complete the [Security evaluation checklist](https://data-safe-haven.readthedocs.io/en/latest/deployment/security_checklist.html) from the deployment documentation
+- [ ] Update [SECURITY.md](../../SECURITY.md) and [VERSIONING.md](../../VERSIONING.md)
 
 **For MAJOR releases:**
 
