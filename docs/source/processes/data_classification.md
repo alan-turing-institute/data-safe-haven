@@ -47,6 +47,6 @@ To classify the data to be used in a project, each role representative will go t
 The {ref}`role_data_provider_representative` and {ref}`role_investigator` should classify each work package, based on a clear understanding of what the work involves.
 These two people should agree on a classification before the work can proceed.
 For {ref}`policy_tier_2` and {ref}`policy_tier_3` {ref}`work packages <classification_work_packages>` the {ref}`role_referee` must also agree on the classification.
-This classification will indicate which security controls should be applied when initialising the {ref}`Secure Research Environment <design_sre>` for the project.
+This classification will indicate which security controls should be applied when initialising the Secure Research Environment for the project.
 
 In this documentation we will assume that the outcome of the classification is one of our {ref}`sensitivity tiers <policy_classification_sensitivity_tiers>`, but your organisation may classify projects differently and require different technical and non-technical controls.
