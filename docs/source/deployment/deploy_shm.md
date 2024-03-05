@@ -612,7 +612,7 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 ```
 
 ````{admonition} ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) instructions
-- Start from step 3 of the `macOS` instructions.
+- Start from "Configure VPN client profile" step of the `macOS` instructions.
 - Use IKEv2 for the VPN type
   <details><summary><b>For users of <i>macOS Catalina</i> or later</b></summary>
 
