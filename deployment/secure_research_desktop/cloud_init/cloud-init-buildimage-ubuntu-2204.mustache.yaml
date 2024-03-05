@@ -138,11 +138,6 @@ write_files:
     content: |
       # Deprovisioning log
 
-  - path: "/usr/share/applications/jupyter-notebook.desktop"
-    permissions: "0644"
-    content: |
-      {{jupyter_notebook.desktop}}
-
   - path: "/usr/share/applications/pycharm.desktop"
     permissions: "0644"
     content: |
