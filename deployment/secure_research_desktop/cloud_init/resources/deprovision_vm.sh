@@ -3,6 +3,17 @@
 # Clean up temporary files
 rm -rf /root/* /root/.[a-zA-Z_]* /tmp/* /tmp/.[a-zA-Z_]*
 
+# Disconnect omsagent from default workspace if it exists
+if [ -d "/opt/microsoft/omsagent/" ]; then
+    # Disconnecting omsagent from default workspace
+    echo "Connected workspaces:"
+    /opt/microsoft/omsagent/bin/omsadmin.sh -l
+    echo "Disconnecting omsagent from connected workspace:"
+    /opt/microsoft/omsagent/bin/omsadmin.sh -X
+else 
+    echo "omsagent not found, continuing..."
+fi
+
 # Deprovision this VM
 echo -e "\n$(date -u --iso-8601=seconds): Calling deprovisioner on this VM"
 waagent -deprovision+user -force 2>&1
