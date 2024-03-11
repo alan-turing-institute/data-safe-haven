@@ -46,7 +46,7 @@ packages:
     pygrib:
     pylint:
     pymc:
-        "3.12": ["uninstallable"] # Dependency conflict with other (unidentified) package
+        "3.12": ["uninstallable"]  # Dependency conflict with other (unidentified) package
     pyodbc:
     pyproj:
     pyshp:
