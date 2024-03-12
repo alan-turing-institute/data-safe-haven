@@ -97,7 +97,7 @@ This could be improved by,
 - HPC style job submission queue
 - Isolated resources per user (VMs, cgroups)
 
-# User-Facing Web App for Project Management
+### User-Facing Web App for Project Management
 
 There is currently little tooling for research teams working through processes or managing their environments.
 A web app could be an accessible way to present features like,
