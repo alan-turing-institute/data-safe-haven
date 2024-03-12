@@ -1,10 +1,20 @@
 # Roadmap
 
+Last updated: 2024-03-12
+
+## Background
+
 This document sets out the plan for the evolution of the Data Safe Haven codebase.
-It covers both short term goals, which are organised in sprint milestones, and long term goals, which are expected without a particular time frame.
+It covers both short term-goals, which are organised in sprint milestones, and long-term goals, which are expected without a particular time frame.
 It also collects desirable features which are unplanned or which we have decided not to pursue yet.
 
-Last updated: 2024-03-11
+The [short-term plans](#short-term) aim to give a clear indication of current work and when it may be finished.
+We hope that a focus on defining releases will encourage development to balance new features with other improvements and address the needs of users.
+
+[Long-term goals](#long-term) give reassurance that we have committed to certain changes when we are unable to give a estimation of when they will be ready.
+
+Finally, [desirable features](#desireable-features) is a way for us to express developments we would like to pursue but have decided not to do yet.
+This is a good indication of where we would like the project to go and areas we would be interested in collaborating.
 
 ## Governance
 
@@ -32,9 +42,29 @@ For example,
 
 At a time when the project has a large and active user base, we would like to better formalise how users feedback and ideas influence the roadmap.
 
+## Short Term
+
+Short-term goals are those which we have committed to and have planned an expected completion date.
+These are organised into milestones.
+Each milestone has,
+
+- A description of it's aims
+- A target date
+- A collection of issues which constitute the work to be done
+
+Milestones will usually correspond to new releases of Data Safe Haven.
+Currently we aim to align milestones with Data Study Groups at the Turing, so that new releases are made in time to be used at these events.
+
+The milestones can be seen [on GitHub](https://github.com/alan-turing-institute/data-safe-haven/milestones)
+
+## Long Term
+
+Long-term goals are developments which we have committed to but have not expected completion date.
+This may be because they are lower priority than short-term goals or because the time required needs to be scoped.
+
 ## Desired Features
 
-These are features we would like to highlight but which we have actively decided not to incorporate into the long or short term roadmap.
+These are features we would like to highlight but which we have actively decided not to incorporate into the long- or short-term roadmap.
 This may be because, for example, we have decided we have insufficient resource, are lacking the right expertise or it is low priority.
 
 ### Develop Outside, Run Inside
@@ -79,23 +109,3 @@ A web app could be an accessible way to present features like,
 - Working through IG processes
 
 This work would be particularly powerful if the interfaces/processes can be abstracted so that the web app can be used by other TRE operators and integrated into their TRE implementations.
-
-## Short Term
-
-Short-term goals are those which we have committed to and have planned an expected completion date.
-These are organised into milestones.
-Each milestone has,
-
-- A description of it's aims
-- A target date
-- A collection of issues which constitute the work to be done
-
-Milestones will usually correspond to new releases of Data Safe Haven.
-Currently we aim to align milestones with Data Study Groups at the Turing, so that new releases are made in time to be used at these events.
-
-The milestones can be seen [on GitHub](https://github.com/alan-turing-institute/data-safe-haven/milestones)
-
-## Long Term
-
-Long-term goals are developments which we have committed to but have not expected completion date.
-This may be because they are lower priority than short-term goals or because the time required needs to be scoped.
