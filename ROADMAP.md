@@ -96,3 +96,6 @@ Currently we aim to align milestones with Data Study Groups at the Turing, so th
 The milestones can be seen [on GitHub](https://github.com/alan-turing-institute/data-safe-haven/milestones)
 
 ## Long Term
+
+Long-term goals are developments which we have committed to but have not expected completion date.
+This may be because they are lower priority than short-term goals or because the time required needs to be scoped.
