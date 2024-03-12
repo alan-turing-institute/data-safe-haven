@@ -87,7 +87,7 @@ This would involve,
 
 Enable users to bring containers they have developed outside of the TRE into the TRE to be used in research/analysis.
 The HPC focused container project Apptainer could be a good fit, providing performance and protecting against privilege escalation.
-This work would compliment [](#develop-outside-run-inside)
+This work would compliment [Develop Outside, Run Inside](#develop-outside-run-inside).
 
 ### Improve Resource Competition
 
