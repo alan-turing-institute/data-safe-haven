@@ -82,6 +82,17 @@ This work would be particularly powerful if the interfaces/processes can be abst
 
 ## Short Term
 
-### Milestones
+Short-term goals are those which we have committed to and have planned an expected completion date.
+These are organised into milestones.
+Each milestone has,
+
+- A description of it's aims
+- A target date
+- A collection of issues which constitute the work to be done
+
+Milestones will usually correspond to new releases of Data Safe Haven.
+Currently we aim to align milestones with Data Study Groups at the Turing, so that new releases are made in time to be used at these events.
+
+The milestones can be seen [on GitHub](https://github.com/alan-turing-institute/data-safe-haven/milestones)
 
 ## Long Term
