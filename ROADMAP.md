@@ -11,7 +11,7 @@ It also collects desirable features which are unplanned or which we have decided
 The [short-term plans](#short-term) aim to give a clear indication of current work and when it may be finished.
 We hope that a focus on defining releases will encourage development to balance new features with other improvements and address the needs of users.
 
-[Long-term goals](#long-term) give reassurance that we have committed to certain changes when we are unable to give a estimation of when they will be ready.
+[Long-term goals](#long-term) give reassurance that we have committed to certain changes when we are unable to give an estimation of when they will be ready.
 
 Finally, [desirable features](#desireable-features) is a way for us to express developments we would like to pursue but have decided not to do yet.
 This is a good indication of where we would like the project to go and areas we would be interested in collaborating.
@@ -69,7 +69,7 @@ This may be because, for example, we have decided we have insufficient resource,
 
 ### Develop Outside, Run Inside
 
-A workflow enabling researchers to develop this research and analysis code outside of the TRE, using whatever tools they prefer and a familiar with, and bring this work into the TRE to run against the sensitive data.
+A workflow enabling researchers to develop this research and analysis code outside of the TRE, using whatever tools they prefer and are familiar with, and bring this work into the TRE to run against the sensitive data.
 
 This would improve,
 
