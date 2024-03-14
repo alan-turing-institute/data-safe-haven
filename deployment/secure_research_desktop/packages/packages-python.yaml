@@ -51,7 +51,7 @@ packages:
     pyproj:
     pyshp:
     pystan:
-        "3.12": ["uninstallable"]  # Dependency conflict with other (unidentified) package
+        "3.12": ["uninstallable"]  # Does not currently support 3.12 due to dependency issue
     pytest:
     PyYAML:
     regex:
