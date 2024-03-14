@@ -109,3 +109,20 @@ A web app could be an accessible way to present features like,
 - Working through IG processes
 
 This work would be particularly powerful if the interfaces/processes can be abstracted so that the web app can be used by other TRE operators and integrated into their TRE implementations.
+
+### Addon or Plugin System
+
+For a TRE to be effective, it needs to enable research.
+DSH has always tried to strike a good balance between security and features/convenience for researchers.
+A downside of this is it can lead to a complicated environment with many components.
+This is especially true when working across domains, as each domain has specific tools that they rely on.
+This create a lot of maintenance burden and spreads developer time thin.
+
+Another approach to this could be to break more TRE components out into option addon or plugin modules.
+It would require building a system to integrate these into the TRE.
+This would mean,
+
+- It is easier for communities to add functionality they want
+- Broken features can be easily disabled without affecting the core TRE
+- If we have no interest in continuing to support a module, the community can adopt and maintain it
+- There is an easier entry point to contributing
