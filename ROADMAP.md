@@ -13,7 +13,7 @@ We hope that a focus on defining releases will encourage development to balance 
 
 [Long-term goals](#long-term) give reassurance that we have committed to certain changes when we are unable to give an estimation of when they will be ready.
 
-Finally, [desirable features](#desireable-features) is a way for us to express developments we would like to pursue but have decided not to do yet.
+Finally, [desired features](#desired-features) is a way for us to express developments we would like to pursue but have decided not to do yet.
 This is a good indication of where we would like the project to go and areas we would be interested in collaborating.
 
 ## Governance
@@ -48,7 +48,7 @@ Short-term goals are those which we have committed to and have planned an expect
 These are organised into milestones.
 Each milestone has,
 
-- A description of it's aims
+- A description of its aims
 - A target date
 - A collection of issues which constitute the work to be done
 
@@ -59,7 +59,7 @@ The milestones can be seen [on GitHub](https://github.com/alan-turing-institute/
 
 ## Long Term
 
-Long-term goals are developments which we have committed to but have not expected completion date.
+Long-term goals are developments which we have committed to but have not planned an expected completion date.
 This may be because they are lower priority than short-term goals or because the time required needs to be scoped.
 
 ## Desired Features
