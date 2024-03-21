@@ -27,6 +27,7 @@ packages:
     keras:
         "3.12": ["uninstallable"]  # requires tensorflow
     lightgbm:
+        "all": ["[dask]"]
     lxml:
     matplotlib:
     nltk:
