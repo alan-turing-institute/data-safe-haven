@@ -477,6 +477,7 @@ prettytable
 prometheus-client
 prompt-toolkit
 prophet
+proto-plus
 protobuf
 psutil
 psycopg2
