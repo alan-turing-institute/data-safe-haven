@@ -32,6 +32,11 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
   1. ability to transfer data between SREs
   1. ability to escalate privileges on the SRD.
 
+### Update documentation
+
+- [ ] Update supported versions in `SECURITY.md`
+- [ ] Update pen test results in `VERSIONING.md`
+
 ## :computer: Release information
 
 - **Version number:** _
