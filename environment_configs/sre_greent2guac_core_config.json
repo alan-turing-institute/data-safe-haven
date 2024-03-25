@@ -8,7 +8,7 @@
     "outboundInternetAccess": "default",
     "computeVmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2024020500"
+        "version": "20.04.2024032000"
     },
     "remoteDesktopProvider": "ApacheGuacamole",
     "dataAdminIpAddresses": ["193.60.220.253"],
