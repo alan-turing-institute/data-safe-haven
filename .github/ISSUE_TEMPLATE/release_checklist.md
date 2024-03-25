@@ -24,7 +24,7 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
     - [ ] Save the transcript of your tier 3 SRE deployment
 - [ ] Complete the [Security evaluation checklist](https://data-safe-haven.readthedocs.io/en/latest/deployment/security_checklist.html) from the deployment documentation
 
-**For MAJOR releases:**
+### For major releases
 
 - [ ] Confirm that a third party has carried out a full penetration test evaluating:
   1. external attack surface
