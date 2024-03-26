@@ -479,7 +479,7 @@ Connection from within the secure physical space is possible.
 
 ### Turing configuration setting:
 
-- Prior to access to the ingress volume being provided, the {ref}`role_data_provider_representative` must provide the IP address(es) from which data will be uploaded and a secure mechanism by which a time-limited upload token can be sent, such as an encrypted email system. 
+- Prior to access to the ingress volume being provided, the {ref}`role_data_provider_representative` must provide the IP address(es) from which data will be uploaded and a secure mechanism by which a time-limited upload token can be sent, such as an encrypted email system.
 - Once these details have been received, the data ingress volume should be opened for data upload.
 
 To minimise the risk of unauthorised access to the dataset while the ingress volume is open for uploads, the following security measures are in place:
