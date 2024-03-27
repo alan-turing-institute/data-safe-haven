@@ -2,7 +2,7 @@
 
 Data Safe Havens are used for doing secure data research on individual "work packages" of data.
 Once the project is finished, it is important to extract all outputs from the environment before shutting it down.
-Each time you egress data from the environment, it needs to be classified using the {ref}`process_data_classification`.
+Each time you egress data from the environment, it must be checked that it is safe and appropriate to release.
 
 ```{note}
 You might want to define multiple data collections for egress, which would each have their own sensitivity classification. For example, you might separate a low-sensitivity written report from a high-sensitivity derived dataset.

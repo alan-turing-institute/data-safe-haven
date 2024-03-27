@@ -91,10 +91,6 @@ To use the `sha256` algorithm, replace `md5sum` with `sha256` in the above comma
 
 ## Bringing data into the environment
 
-```{attention}
-Before starting any data ingress, make sure that you have gone through the {ref}`data classification process <process_data_classification>`.
-```
-
 Talk to your {ref}`role_system_manager` to discuss possible methods of bringing data into the environments.
 It may be convenient to use [Azure Storage Explorer](https://azure.microsoft.com/en-us/products/storage/storage-explorer/).
 In this case you will not need log-in credentials, as your {ref}`role_system_manager` can provide a short-lived secure access token which will let you upload data.

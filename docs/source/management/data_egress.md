@@ -5,23 +5,6 @@
 The outputs of the work being done in a Data Safe Haven are also stored in the SRE.
 There are technical and policy controls that must be satisfied before any data can be brought out of the Data Safe Haven.
 
-(process_data_egress_classification)=
-
-## Classification
-
-The first stage of egressing outputs is to classify them.
-This follows the {ref}`same workflow <process_data_classification>` as for {ref}`data ingress <process_data_ingress>`.
-
-```{hint}
-Get the same people who ran the ingress classification process to do this - {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (optional).
-```
-
-```{note}
-Each time you want to bring code or data out of the environment, you'll have to classify this data as a new work package.
-```
-
-Once the outputs are classified, the classification team should let the {ref}`role_system_manager` know who will be performing the egress and how they want this to be done.
-
 (process_data_egress_removal)=
 
 ## Bringing data out of the environment
