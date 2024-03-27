@@ -19,7 +19,7 @@ Under no circumstance should sensitive data be sent via email, even if encrypted
 
 ## Data ingress for a running project
 
-If the project team need further data ingress after the project has started, ensure that you discuss this with the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+If the project team need further data ingress after the project has started, ensure that you discuss this with the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
 They should reclassify the project.
 If the new security tier is higher than the one in which work has already started then the data ingress **is not permitted**.
 

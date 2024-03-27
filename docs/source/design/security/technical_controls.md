@@ -89,22 +89,22 @@ Note that this means that eg. password managers cannot be used to autofill a {re
 
 ### Sign-off on bringing data into the environment:
 
-- **{ref}`policy_tier_2` and {ref}`policy_tier_3`:** At the Alan Turing Institute all three of {ref}`role_investigator`, {ref}`role_data_provider_representative` and {ref}`role_referee` must agree the data is suitable for the environment Tier.
+- **{ref}`policy_tier_2` and {ref}`policy_tier_3`:** At the Alan Turing Institute all three of {ref}`role_investigator`, {ref}`role_data_provider_representative` and referee must agree the data is suitable for the environment Tier.
 - **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** At the Alan Turing Institute both {ref}`role_investigator` and {ref}`role_data_provider_representative` must agree the data is suitable for the environment Tier.
 
 ### Sign-off on bringing data out of the environment:
 
-- **{ref}`policy_tier_2` and {ref}`policy_tier_3`:** At the Alan Turing Institute all three of {ref}`role_investigator`, {ref}`role_data_provider_representative` and {ref}`role_referee` must agree the data is suitable for its destination before it is egressed from an SRE.
+- **{ref}`policy_tier_2` and {ref}`policy_tier_3`:** At the Alan Turing Institute all three of {ref}`role_investigator`, {ref}`role_data_provider_representative` and referee must agree the data is suitable for its destination before it is egressed from an SRE.
 - **{ref}`policy_tier_0` and {ref}`policy_tier_1`:** At the Alan Turing Institute both {ref}`role_investigator` and {ref}`role_data_provider_representative` must agree the data is suitable for its destination before it is egressed from an SRE.
 
 ### Sign-off on adding new users:
 
-- **{ref}`policy_tier_3`:** At the Alan Turing Institute the {ref}`role_investigator` and {ref}`role_referee` must both authorise access to an SRE at {ref}`policy_tier_3`.
+- **{ref}`policy_tier_3`:** At the Alan Turing Institute the {ref}`role_investigator` and referee must both authorise access to an SRE at {ref}`policy_tier_3`.
 - **{ref}`policy_tier_0` to {ref}`policy_tier_2`:** At the Alan Turing Institute the {ref}`role_investigator` can authorise access to an SRE at {ref}`policy_tier_0` to {ref}`policy_tier_2`.
 
 ### Sign-off on bringing external code/software into the environment:
 
-- **{ref}`policy_tier_3`:** At the Alan Turing Institute both the {ref}`role_investigator` and {ref}`role_referee` must authorise the ingress of code or software to an SRE at {ref}`policy_tier_3`.
+- **{ref}`policy_tier_3`:** At the Alan Turing Institute both the {ref}`role_investigator` and referee must authorise the ingress of code or software to an SRE at {ref}`policy_tier_3`.
 - **{ref}`policy_tier_0` to {ref}`policy_tier_2`:** At the Alan Turing Institute the {ref}`role_investigator` can authorise ingress of code or software to an SRE at {ref}`policy_tier_0` to {ref}`policy_tier_2`.
 
 ### Python/R package availability:

@@ -13,7 +13,7 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 It is the data provider's responsibility to upload the data required by the safe haven.
 
 ```{important}
-Any data ingress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+Any data ingress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
 ```
 
 The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider, enabling them to upload the data:
@@ -63,7 +63,7 @@ The data-provider-specific containers should be deleted once the data has been t
 Software ingress is performed in a similar manner to data.
 
 ```{important}
-Software ingress must go through the same approval process as is the case for data ingress, including sign-off from the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+Software ingress must go through the same approval process as is the case for data ingress, including sign-off from the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
 ```
 
 - Follow the same steps as for {ref}`data ingress <roles_system_manager_data_ingress>` above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours)
@@ -75,7 +75,7 @@ Software ingress must go through the same approval process as is the case for da
 ## Data egress
 
 ```{important}
-Any data egress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+Any data egress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
 ```
 
 ```{important}
