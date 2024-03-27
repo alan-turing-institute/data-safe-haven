@@ -1,6 +1,9 @@
 (using_dsh)=
 
-# Using the Data Safe Haven
+# Before using the Data Safe Haven
+
+This page contains some important considerations you must take before using the Data Safe Haven.
+Where appropriate, there are links to external resources, including policies and processes used at The Turing.
 
 ```{warning}
 Use of a Data Safe Haven is not by itself sufficient to guarantee the security of your data! It must be paired with appropriate information governance requirements and user agreements.
