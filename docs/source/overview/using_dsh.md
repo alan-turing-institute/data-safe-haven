@@ -27,12 +27,17 @@ This project provides code to deploy a TRE with a particular architecture and th
 Every group deploying the Data Safe Haven will need to provide the rest including,
 
 - Information governance processes
-  - Classifying using Tiers
-- Mapping internal roles and people to DSH roles
-    - How to fit your structure and expertise in to the roles expected
-    - Some roles are mutually exclusive for security
+    - How to approve data ingress and egress
+    - Classifying work into Data Safe Haven tiers
+- Mapping internal roles or people to Data Safe Haven roles
 - Staffing essential roles such as system and programme managers
-- Supporting infrastructure such as communication channels, domains and DNS, secure methods to share SAS tokens, and programme management tools
+- Data security incident handling procedures
+- Financial planning
+- Supporting infrastructure such as
+    - Communication channels
+    - Domains and DNS
+    - Secure methods to share SAS tokens
+    - Programme management tools
 
 ## Tiering
 
