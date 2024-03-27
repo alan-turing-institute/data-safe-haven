@@ -4,6 +4,8 @@
 
 ```{toctree}
 :hidden:
+
+data_ingress.md
 ```
 
 The Dataset Provider is the organisation that provided the dataset under analysis.
@@ -12,6 +14,9 @@ They must be authorised to act on behalf of the Dataset Provider, especially whe
 
 There may be additional people at the Dataset Provider who will have input in discussions around data sharing and data classification.
 It is the duty of the **Dataset Provider Representative** to manage this set of stakeholders at the Dataset Provider.
+
+[Data ingress process](data_ingress.md)
+: Advice for **Dataset Provider Representatives** on preparing datasets for upload to the Data Safe Haven.
 
 ## Information of interest to data providers
 
