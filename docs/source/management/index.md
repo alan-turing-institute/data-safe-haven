@@ -4,20 +4,12 @@
 :hidden: true
 :maxdepth: 2
 
-data_handling.md
-data_classification.md
 data_ingress.md
 data_egress.md
 data_access_controls.md
 data_transfer_protocol.md
 software_package_approval.md
 ```
-
-[Data handling](data_handling.md)
-: Issues to consider when handling sensitive data.
-
-[Data classification](data_classification.md)
-: How to classify a work package into one of our security tiers.
 
 [Data ingress](data_ingress.md)
 : An overview of the processes for bringing data or software into a Secure Research Environment within the Turing's Data Safe Haven instance. Other organisations may have their own processes for data ingress.
