@@ -1,4 +1,4 @@
-# Processes
+# Management
 
 ```{toctree}
 :hidden: true
