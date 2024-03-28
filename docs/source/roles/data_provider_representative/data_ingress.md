@@ -1,11 +1,9 @@
-(process_data_ingress)=
+(role_dpr_ingress)=
 
 # Data ingress process
 
-## Introduction
-
-The Data Safe Haven has various technical controls to ensure data security.
-However, the processes and contractual agreements that the **Dataset Provider** agrees to are equally important.
+The **Dataset Provider Representative** plays an important role in data ingress.
+As well as being involved in agreeing an appropriate security tier for a project, they may also prepare the data to be uploaded.
 
 ## Preparing data
 
@@ -27,7 +25,7 @@ To help avoid name clashes, if you are uploading multiple data sets you should u
 For example, if the data sets are single files, use unique file names.
 If data sets consist of multiple files, collect them in uniquely named directories.
 
-If there are multiple data providers uploading data for a single work package, each provider should use a uniquely named directory, or prepend their files with a unique name.
+If there are multiple data providers uploading data to a single SRE, each provider should use a uniquely named directory, or prepend their files with a unique name.
 
 ### Avoiding data leakage
 
@@ -90,10 +88,6 @@ md5sum -c hashes.txt | grep FAILED
 To use the `sha256` algorithm, replace `md5sum` with `sha256` in the above commands.
 
 ## Bringing data into the environment
-
-```{attention}
-Before starting any data ingress, make sure that you have gone through the {ref}`data classification process <process_data_classification>`.
-```
 
 Talk to your {ref}`role_system_manager` to discuss possible methods of bringing data into the environments.
 It may be convenient to use [Azure Storage Explorer](https://azure.microsoft.com/en-us/products/storage/storage-explorer/).

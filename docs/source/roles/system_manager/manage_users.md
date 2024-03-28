@@ -29,22 +29,6 @@ Typically, users with either of the latter two roles should also have the `Resea
 
 ## {{scroll}} Generate user details CSV file
 
-### {{car}} Using data classification app
-
-- Follow the [instructions in the classification app documentation](https://github.com/alan-turing-institute/data-classification-app) to create users
-    - Users can be created in bulk by selecting `Create User > Import user list` and uploading a spreadsheet of user details
-    - Users can also be created individually by selecting `Create User > Create Single User`
-- After creating users, export the `UserCreate.csv` file
-    - To export all users, select `Users > Export UserCreate.csv`
-    - To export only users for a particular project, select `Projects > (Project Name) > Export UserCreate.csv`
-- Upload the user details CSV file to a sensible location on the SHM domain controller
-
-    ```{note}
-    We suggest using `C:\Installation\YYYYDDMM-HHMM_user_details.csv` but this is up to you
-    ```
-
-### {{hand}} Manually edit CSV
-
 On the **SHM domain controller (DC1)**.
 
 ```{include} ../../deployment/snippets/user_csv_format.partial.md
