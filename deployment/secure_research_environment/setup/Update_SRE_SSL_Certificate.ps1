@@ -1,7 +1,7 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
     [string]$shmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
     [string]$sreId,
     [Parameter(Mandatory = $false, HelpMessage = "Do a 'dry run' against the Let's Encrypt staging server.")]
     [switch]$dryRun,
@@ -44,8 +44,6 @@ if ($dryRun) { $certificateName += "-dryrun" }
 # ------------------------------------
 if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     $remoteDesktopVmFqdn = $config.sre.remoteDesktop.guacamole.fqdn
-} elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-    $remoteDesktopVmFqdn = $config.sre.remoteDesktop.gateway.fqdn
 } else {
     Add-LogMessage -Level Fatal "SSL certificate updating is not configured for remote desktop type '$($config.sre.remoteDesktop.type)'!"
 }
@@ -263,16 +261,6 @@ if ($doInstall) {
             CERT_THUMBPRINT    = $kvCertificate.Thumbprint
         }
         $scriptType = "UnixShell"
-    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        $targetVM = Get-AzVM -ResourceGroupName $config.sre.remoteDesktop.rg -Name $config.sre.remoteDesktop.gateway.vmName | Remove-AzVMSecret
-        $scriptParams = @{
-            rdsFqdn         = $remoteDesktopVmFqdn
-            certThumbPrint  = $kvCertificate.Thumbprint
-            remoteDirectory = "/Certificates"
-        }
-        $scriptPath = Join-Path $PSScriptRoot ".." "remote" "create_rds" "scripts" "Install_Signed_Ssl_Cert.ps1"
-        $scriptType = "PowerShell"
-        $addSecretParams["CertificateStore"] = "My"
     } else {
         Add-LogMessage -Level Fatal "SSL certificate updating is not configured for remote desktop type '$($config.sre.remoteDesktop.type)'!"
     }

@@ -4,9 +4,9 @@ name: Test code
 # Run workflow on pushes to matching branches
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: [develop]
+    branches: [develop, latest]
   pull_request:
-    branches: [develop]
+    branches: [develop, latest]
 
 jobs:
   test_powershell:

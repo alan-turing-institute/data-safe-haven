@@ -22,9 +22,9 @@ function Get-ConfigRootDir {
 # --------------------------------------------------------------------------------
 function Get-CoreConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
         [string]$shmId,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
         [string]$sreId = $null
     )
     # Construct filename for this config file
@@ -57,7 +57,7 @@ function Get-CoreConfig {
 # ---------------------
 function Get-ShmConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
@@ -186,14 +186,12 @@ function Get-ShmConfig {
         netbiosName = ($shmConfigBase.netbiosName ? $shmConfigBase.netbiosName : $shm.id).ToUpper() | Limit-StringLength -MaximumLength 15 -FailureIsFatal
         dn          = "DC=$(($shmConfigBase.domain).Replace('.',',DC='))"
         ous         = [ordered]@{
-            databaseServers   = [ordered]@{ name = "Secure Research Environment Database Servers" }
-            linuxServers      = [ordered]@{ name = "Secure Research Environment Linux Servers" }
-            rdsGatewayServers = [ordered]@{ name = "Secure Research Environment RDS Gateway Servers" }
-            rdsSessionServers = [ordered]@{ name = "Secure Research Environment RDS Session Servers" }
-            researchUsers     = [ordered]@{ name = "Safe Haven Research Users" }
-            securityGroups    = [ordered]@{ name = "Safe Haven Security Groups" }
-            serviceAccounts   = [ordered]@{ name = "Safe Haven Service Accounts" }
-            identityServers   = [ordered]@{ name = "Safe Haven Identity Servers" }
+            databaseServers = [ordered]@{ name = "Secure Research Environment Database Servers" }
+            linuxServers    = [ordered]@{ name = "Secure Research Environment Linux Servers" }
+            researchUsers   = [ordered]@{ name = "Safe Haven Research Users" }
+            securityGroups  = [ordered]@{ name = "Safe Haven Security Groups" }
+            serviceAccounts = [ordered]@{ name = "Safe Haven Service Accounts" }
+            identityServers = [ordered]@{ name = "Safe Haven Identity Servers" }
         }
     }
     $shm.domain.fqdnLower = ($shm.domain.fqdn).ToLower()
@@ -327,10 +325,7 @@ function Get-ShmConfig {
         }
         updateServers     = [ordered]@{
             externalIpAddresses = [ordered]@{
-                azureAutomation = @(
-                    "13.66.145.80", "13.69.109.177", "13.71.175.151", "13.71.199.178", "13.75.34.150", "13.77.55.200", "20.140.131.132", "20.192.168.149", "20.36.108.243", "20.49.90.25", "40.78.236.132", "40.78.236.133", "40.79.173.18", "40.79.187.166", "40.80.176.49", "51.105.77.83", "51.107.60.86", "52.138.229.87", "52.167.107.72", "52.167.107.74", "52.236.186.244"
-                ) # *-jobruntimedata-prod-su1.azure-automation.net
-                linux           = (
+                linux   = (
                     @("72.32.157.246", "87.238.57.227", "147.75.85.69", "217.196.149.55") + # apt.postgresql.org
                     @("91.189.91.38", "91.189.91.39", "91.189.91.48", "91.189.91.49", "91.189.91.81", "91.189.91.82", "91.189.91.83", "185.125.190.17", "185.125.190.18", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
                     $cloudFlareIpAddresses + # database.clamav.net, packages.gitlab.com and qgis.org use Cloudflare
@@ -339,13 +334,13 @@ function Get-ShmConfig {
                     @("152.199.20.126") + # developer.download.nvidia.com
                     $microsoftIpAddresses # packages.microsoft.com, azure.archive.ubuntu.com
                 )
-                windows         = @($microsoftIpAddresses) # for several Microsoft-owned endpoints
+                windows = @($microsoftIpAddresses) # for several Microsoft-owned endpoints
             }
             linux               = [ordered]@{
                 adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-linux-update-server".ToLower()
                 disks                   = [ordered]@{
                     os = [ordered]@{
-                        sizeGb = "32"
+                        sizeGb = "64"
                         type   = $shm.diskTypeDefault
                     }
                 }
@@ -400,30 +395,20 @@ function Get-ShmConfig {
     # ---------
     $shm.users = [ordered]@{
         computerManagers = [ordered]@{
-            databaseServers   = [ordered]@{
+            databaseServers = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Database Servers Manager"
                 samAccountName     = "$($shm.id)databasesrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-database-servers".ToLower()
             }
-            identityServers   = [ordered]@{
+            identityServers = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Identity Servers Manager"
                 samAccountName     = "$($shm.id)identitysrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-identity-servers".ToLower()
             }
-            linuxServers      = [ordered]@{
+            linuxServers    = [ordered]@{
                 name               = "$($shm.domain.netbiosName) Linux Servers Manager"
                 samAccountName     = "$($shm.id)linuxsrvrs".ToLower() | Limit-StringLength -MaximumLength 20
                 passwordSecretName = "shm-$($shm.id)-computer-manager-password-linux-servers".ToLower()
-            }
-            rdsGatewayServers = [ordered]@{
-                name               = "$($shm.domain.netbiosName) RDS Gateway Manager"
-                samAccountName     = "$($shm.id)gatewaysrvrs".ToLower() | Limit-StringLength -MaximumLength 20
-                passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-gateway-servers".ToLower()
-            }
-            rdsSessionServers = [ordered]@{
-                name               = "$($shm.domain.netbiosName) RDS Session Servers Manager"
-                samAccountName     = "$($shm.id)sessionsrvrs".ToLower() | Limit-StringLength -MaximumLength 20
-                passwordSecretName = "shm-$($shm.id)-computer-manager-password-rds-session-servers".ToLower()
             }
         }
         serviceAccounts  = [ordered]@{
@@ -491,7 +476,10 @@ function Get-ShmConfig {
 
     # Storage config
     # --------------
-    $shmStoragePrefix = "shm$($shm.id)"
+    if ($shm.id.Contains("-")) {
+        Add-LogMessage -Level Warning "The hyphen character is not allowed in storage account names and will be removed."
+    }
+    $shmStoragePrefix = "shm$($shm.id)".Replace("-", "")
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
     $storageRg = "$($shm.rgPrefix)_STORAGE".ToUpper()
     $shm.storage = [ordered]@{
@@ -616,30 +604,25 @@ Export-ModuleMember -Function Get-ShmResourceGroups
 # ---------------------------
 function Get-SreConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
         [string]$shmId,
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
         [string]$sreId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
     $sreConfigBase = Get-CoreConfig -shmId $shmId -sreId $sreId
 
+    # Support for "MicrosoftRDS" has been removed. The "remotedDesktopProvider" field now defaults to "ApacheGuacamole"
+    if ($sreConfigBase.remoteDesktopProvider -ne "ApacheGuacamole") {
+        Add-LogMessage -Level Fatal "Support for remote desktops other than ApacheGuacamole has been removed"
+    } elseif ($sreConfigBase.remoteDesktopProvider -eq "ApacheGuacamole") {
+        Add-LogMessage -Level Warning "The remoteDesktopProvider configuration option has been deprecated and will be removed in the future"
+    }
+    $sreConfigBase.remoteDesktopProvider = "ApacheGuacamole"
+
     # Secure research environment config
     # ----------------------------------
-    # Check that one of the allowed remote desktop providers is selected
-    $remoteDesktopProviders = @("ApacheGuacamole", "MicrosoftRDS")
-    if (-not $sreConfigBase.remoteDesktopProvider) {
-        Add-LogMessage -Level Warning "No remoteDesktopType was provided. Defaulting to $($remoteDesktopProviders[0])"
-        $sreConfigBase.remoteDesktopProvider = $remoteDesktopProviders[0]
-    }
-    if (-not $remoteDesktopProviders.Contains($sreConfigBase.remoteDesktopProvider)) {
-        Add-LogMessage -Level Fatal "Did not recognise remote desktop provider '$($sreConfigBase.remoteDesktopProvider)' as one of the allowed remote desktop types: $remoteDesktopProviders"
-    }
-    if (
-        ($sreConfigBase.remoteDesktopProvider -eq "MicrosoftRDS") -and (-not @(2, 3, 4).Contains([int]$sreConfigBase.tier))
-    ) {
-        Add-LogMessage -Level Fatal "RemoteDesktopProvider '$($sreConfigBase.remoteDesktopProvider)' cannot be used for tier '$($sreConfigBase.tier)'"
-    }
+
     # Setup the basic config
     $config = [ordered]@{
         shm = Get-ShmConfig -shmId $sreConfigBase.shmId
@@ -746,7 +729,6 @@ function Get-SreConfig {
         }
     }
 
-
     # Firewall config
     # ---------------
     $config.sre.firewall = [ordered]@{
@@ -755,8 +737,11 @@ function Get-SreConfig {
 
     # Storage config
     # --------------
+    if ($config.sre.id.Contains("-")) {
+        Add-LogMessage -Level Warning "The hyphen character is not allowed in storage account names and will be removed."
+    }
     $storageRg = "$($config.sre.rgPrefix)_STORAGE".ToUpper()
-    $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)"
+    $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)".Replace("-", "")
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
         accessPolicies  = [ordered]@{
@@ -879,8 +864,8 @@ function Get-SreConfig {
         }
     }
 
-    # Remote desktop either through Apache Guacamole or Microsoft RDS
-    # ---------------------------------------------------------------
+    # Apache Guacamole remote desktop
+    # -------------------------------
     $config.sre.remoteDesktop.rg = "$($config.sre.rgPrefix)_REMOTE_DESKTOP".ToUpper()
     if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
         $config.sre.network.vnet.subnets.remoteDesktop.nsg = [ordered]@{
@@ -894,44 +879,6 @@ function Get-SreConfig {
             vmSize                          = "Standard_DS2_v2"
             ip                              = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
             disks                           = [ordered]@{
-                os = [ordered]@{
-                    sizeGb = "128"
-                    type   = $config.sre.diskTypeDefault
-                }
-            }
-        }
-    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        $config.sre.remoteDesktop.gateway = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
-            vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
-            vmSize                  = "Standard_DS2_v2"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
-            installationDirectory   = "C:\Installation"
-            nsg                     = [ordered]@{
-                name  = "$($config.sre.nsgPrefix)_RDS_SERVER".ToUpper()
-                rules = "sre-nsg-rules-gateway.json"
-            }
-            disks                   = [ordered]@{
-                data = [ordered]@{
-                    sizeGb = "1023"
-                    type   = $config.sre.diskTypeDefault
-                }
-                os   = [ordered]@{
-                    sizeGb = "128"
-                    type   = $config.sre.diskTypeDefault
-                }
-            }
-        }
-        $config.sre.remoteDesktop.appSessionHost = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
-            vmName                  = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
-            vmSize                  = "Standard_DS2_v2"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 5
-            nsg                     = [ordered]@{
-                name  = "$($config.sre.nsgPrefix)_RDS_SESSION_HOSTS".ToUpper()
-                rules = "sre-nsg-rules-session-hosts.json"
-            }
-            disks                   = [ordered]@{
                 os = [ordered]@{
                     sizeGb = "128"
                     type   = $config.sre.diskTypeDefault
@@ -983,28 +930,10 @@ function Get-SreConfig {
     $config.sre.remoteDesktop.networkRules.includeAzurePlatformDnsRule = ($config.sre.remoteDesktop.networkRules.outboundInternet -ne "Allow")
 
 
-    # CoCalc, CodiMD and Gitlab servers
-    # ---------------------------------
+    # CodiMD and Gitlab servers
+    # -------------------------
     $config.sre.webapps = [ordered]@{
         rg     = "$($config.sre.rgPrefix)_WEBAPPS".ToUpper()
-        cocalc = [ordered]@{
-            adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-cocalc"
-            dockerVersion           = "latest"
-            hostname                = "COCALC"
-            vmSize                  = "Standard_D2s_v3"
-            ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 7
-            osVersion               = "Ubuntu-latest"
-            disks                   = [ordered]@{
-                data = [ordered]@{
-                    sizeGb = "512"
-                    type   = $config.sre.diskTypeDefault
-                }
-                os   = [ordered]@{
-                    sizeGb = "32"
-                    type   = $config.sre.diskTypeDefault
-                }
-            }
-        }
         codimd = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-codimd"
             hostname                = "CODIMD"
@@ -1012,11 +941,11 @@ function Get-SreConfig {
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
             osVersion               = "Ubuntu-latest"
             codimd                  = [ordered]@{
-                dockerVersion = "2.4.1-cjk"
+                dockerVersion = "2.5.3"
             }
             postgres                = [ordered]@{
                 passwordSecretName = "$($config.sre.shortName)-other-codimd-password-postgresdb"
-                dockerVersion      = "13.4-alpine"
+                dockerVersion      = "16-alpine"
             }
             disks                   = [ordered]@{
                 data = [ordered]@{

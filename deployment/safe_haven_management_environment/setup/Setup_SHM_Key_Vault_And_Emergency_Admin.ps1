@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
     [string]$shmId
 )
 
@@ -77,7 +77,6 @@ try {
 try {
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.domainAdminPassword -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.dc.safemodePasswordSecretName -DefaultLength 20 -AsPlaintext
-    $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.nps.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.monitoring.updateServers.linux.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     foreach ($repositoryTier in $config.repository.Keys) {
         $null = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.repository[$repositoryTier].nexus.adminPasswordSecretName -DefaultLength 20 -AsPlaintext

@@ -1,7 +1,7 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
     [string]$shmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
     [string]$sreId
 )
 
@@ -34,8 +34,8 @@ $nsgs = @{}
 Add-LogMessage -Level Info "Applying network configuration for SRE '$($config.sre.id)' (Tier $($config.sre.tier)), hosted on subscription '$($config.sre.subscriptionName)'"
 
 
-# ApacheGuacamole and MicrosoftRDS have several NSGs
-# --------------------------------------------------
+# ApacheGuacamole has several NSGs
+# --------------------------------
 # Remote desktop
 if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     # RDS gateway
@@ -47,15 +47,6 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     } else {
         Add-LogMessage -Level Fatal "Guacamole server is not bound to NSG '$($nsgs["remoteDesktop"].Name)'!"
     }
-} elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-    # RDS gateway
-    Add-LogMessage -Level Info "Ensure RDS gateway is bound to correct NSG..."
-    Add-VmToNSG -VMName $config.sre.remoteDesktop.gateway.vmName -VmResourceGroupName $config.sre.remoteDesktop.rg -NSGName $config.sre.remoteDesktop.gateway.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["gateway"] = Get-AzNetworkSecurityGroup -Name $config.sre.remoteDesktop.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
-    # RDS sesssion hosts
-    Add-LogMessage -Level Info "Ensure RDS session hosts are bound to correct NSG..."
-    Add-VmToNSG -VMName $config.sre.remoteDesktop.appSessionHost.vmName -VmResourceGroupName $config.sre.remoteDesktop.rg -NSGName $config.sre.remoteDesktop.appSessionHost.nsg.name -NsgResourceGroupName $config.sre.network.vnet.rg
-    $nsgs["sessionhosts"] = Get-AzNetworkSecurityGroup -Name $config.sre.remoteDesktop.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -ErrorAction Stop
 } else {
     Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
 }
@@ -94,9 +85,6 @@ if ($computeSubnet.NetworkSecurityGroup.Id -eq $nsgs["compute"].Id) {
 if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     Add-LogMessage -Level Info "Setting inbound connection rules on Guacamole NSG..."
     $null = Update-NetworkSecurityGroupRule -Name $inboundApprovedUsersRuleName -NetworkSecurityGroup $nsgs["remoteDesktop"] -SourceAddressPrefix $allowedSources
-} elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-    Add-LogMessage -Level Info "Setting inbound connection rules on RDS Gateway NSG..."
-    $null = Update-NetworkSecurityGroupRule -Name $inboundApprovedUsersRuleName -NetworkSecurityGroup $nsgs["gateway"] -SourceAddressPrefix $allowedSources
 } else {
     Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
 }
@@ -122,7 +110,7 @@ foreach ($nsgName in $nsgs.Keys) {
 # Ensure SRE is peered to correct mirror/proxy set
 # ------------------------------------------------
 # Unpeer any existing networks before (re-)establishing correct peering for SRE
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_SRE_Package_Repositories.ps1) -shmId $shmId -sreId $sreId"
+& $(Join-Path $PSScriptRoot "Unpeer_SRE_Package_Repositories.ps1") -shmId $shmID -sreId $sreId
 # Peer this SRE to the repository network
 Add-LogMessage -Level Info "Ensuring SRE is peered to correct package repository..."
 if (-not $config.sre.repositories.network.name) {
@@ -142,7 +130,7 @@ if (-not $config.sre.repositories.network.name) {
 # Set PyPI and CRAN locations on the SRD
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
-$repositoryFacingVms = Get-AzVM | Where-Object { ($_.ResourceGroupName -eq $config.sre.srd.rg) -or (($_.ResourceGroupName -eq $config.sre.webapps.rg) -and ($_.Name -eq $config.sre.webapps.cocalc.vmName)) }
+$repositoryFacingVms = Get-AzVM | Where-Object ($_.ResourceGroupName -eq $config.sre.srd.rg)
 foreach ($VM in $repositoryFacingVms) {
     Add-LogMessage -Level Info "Ensuring that PyPI and CRAN locations are set correctly on $($VM.Name)"
     $params = @{
@@ -158,8 +146,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Block external DNS queries
 # --------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot "Configure_External_DNS_Queries.ps1") -shmId $shmId -sreId $sreId"
-
+& $(Join-Path $PSScriptRoot "Configure_External_DNS_Queries.ps1") -shmId $shmId -sreId $sreId
 
 # Switch back to original subscription
 # ------------------------------------

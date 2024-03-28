@@ -34,7 +34,7 @@ Some parts of the checklist are only relevant when there are multiple SREs attac
 
 ```{important}
 - If you haven't already, you'll need download a VPN certificate and configure {ref}`VPN access <deploy_shm_vpn>` for the SHM
-- Make sure you can use Remote Desktop to log in to the {ref}`domain controller (DC1) <roles_system_deployer_shm_remote_desktop>` and the {ref}`network policy server (NPS) <roles_system_deployer_shm_remote_desktop_nps>`.
+- Make sure you can use Remote Desktop to log in to the {ref}`domain controller (DC1) <roles_system_deployer_shm_remote_desktop>`.
 ```
 
 The following users will be needed for this checklist
@@ -68,23 +68,13 @@ Attempt to login to the remote desktop web client as the **SRE standard user**
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
-<details><summary>user is prompted to setup MFA</summary>
+ <details><summary> user is prompted to setup MFA</summary>
 
 ```{image} security_checklist/login_no_mfa_guacamole.png
 :alt: Guacamole MFA setup prompt
 :align: center
 ```
-</details>
 
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>login works but apps cannot be viewed</summary>
-
-```{image} security_checklist/login_no_mfa_msrds.png
-:alt: Microsoft RDS dashboard with no apps
-:align: center
-```
 </details>
 ````
 
@@ -94,31 +84,13 @@ Add the **SRE standard user** to the relevant `Research Users` group under `Safe
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
 <details><summary>user is prompted to setup MFA</summary>
 
 ```{image} security_checklist/login_no_mfa_guacamole.png
 :alt: Guacamole MFA setup prompt
 :align: center
 ```
-</details>
 
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>login works and apps can be viewed</summary>
-
-```{image} security_checklist/msrds_dashboard_with_apps.png
-:alt: Microsoft RDS dashboard with apps
-:align: center
-```
-</details>
-
-<details><summary>attempting to login to SRD Main fails</summary>
-
-```{image} security_checklist/msrds_failed_to_connect.png
-:alt: Microsoft RDS failed to connect
-:align: center
-```
 </details>
 ````
 
@@ -155,23 +127,13 @@ Check that the **SRE standard user** can authenticate with MFA.
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
 <details><summary>you are prompted for MFA and can respond</summary>
 
 ```{image} security_checklist/aad_mfa_approve_signin_request.png
 :alt: AAD MFA approve sign-in request
 :align: center
 ```
-</details>
 
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>you are prompted for MFA and can respond when attempting to log in to <i>SRD Main (Desktop)</i></summary>
-
-```{image} security_checklist/aad_mfa_approve_signin_request.png
-:alt: AAD MFA approve sign-in request
-:align: center
-```
 </details>
 ````
 
@@ -183,23 +145,13 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
-
-{{pear}} **Guacamole**:
 <details><summary>you can connect to <i>Desktop: Ubuntu0</i></summary>
 
 ```{image} security_checklist/guacamole_srd_desktop.png
 :alt: SRD desktop
 :align: center
 ```
-</details>
 
-{{bento_box}} **Microsoft Remote Desktop**:
-<details><summary>you can connect to <i>SRD Main (Desktop)</i></summary>
-
-```{image} security_checklist/msrds_srd_desktop.png
-:alt: SRD desktop
-:align: center
-```
 </details>
 ````
 
@@ -221,14 +173,14 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 #### Connect to SHM VMs if and only if connected to the SHM VPN:
 
 - Connect to the SHM VPN
-- Attempt to connect to the SHM DC and SHM NPS
+- Attempt to connect to the SHM DC
 
 ```{attention}
 {{white_check_mark}} **Verify that:** connection works
 ```
 
 - Disconnect from the SHM VPN
-- Attempt to connect to the SHM DC and SHM NPS
+- Attempt to connect to the SHM DC
 
 ```{attention}
 {{white_check_mark}} **Verify that:** connection fails
@@ -248,6 +200,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 :alt: SRD no internet
 :align: center
 ```
+
 </details>
 
 <details><summary>you cannot access the website using curl</summary>
@@ -256,6 +209,7 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 :alt: SRD no curl
 :align: center
 ```
+
 </details>
 
 <details><summary>you cannot look up the IP address for the website using nslookup</summary>
@@ -284,6 +238,7 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 :alt: SSH connection failure
 :align: center
 ```
+
 </details>
 ````
 
@@ -327,18 +282,16 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 
 #### User devices ({ref}`policy_tier_2`)
 
-One can connect regardless of device as long as one has an allow-listed IP address and credentials
-
-- Using a **personal device**, connect to the environment using an allow-listed IP address and credentials
+- Connect to the environment using an allow-listed IP address and credentials
 
 ```{attention}
 {{white_check_mark}} **Verify that:** connection succeeds
 ```
 
-- Using a **managed device**, connect to the environment using an allow-listed IP address and credentials.
+- Connect to the environment from an IP address that is not allow-listed but with correct credentials.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** connection succeeds
+{{white_check_mark}} **Verify that:** connection fails
 ```
 
 #### User devices ({ref}`policy_tier_3`)
@@ -353,18 +306,20 @@ All managed devices should be provided by a known IT team at an approved organis
 {{white_check_mark}} **Verify that:** the user does not have administrator permissions on the device.
 ```
 
-A device is able to connect to the environment if and only if it is managed (with correct VPN and credentials)
-
-- Using a **personal device**, attempt to connect to the environment using the correct VPN and credentials
-
 ```{attention}
-{{white_check_mark}} **Verify that:** connection fails
+{{white_check_mark}} **Verify that:** allow-listed IP addresses are exclusive to managed devices.
 ```
 
-- Using a **managed device**, attempt to connect to the environment using the correct VPN and credentials
+- Connect to the environment using an allow-listed IP address and credentials
 
 ```{attention}
 {{white_check_mark}} **Verify that:** connection succeeds
+```
+
+- Connect to the environment from an IP address that is not allow-listed but with correct credentials.
+
+```{attention}
+{{white_check_mark}} **Verify that:** connection fails
 ```
 
 #### Network rules ({ref}`policy_tier_2` and above):
@@ -372,8 +327,7 @@ A device is able to connect to the environment if and only if it is managed (wit
 There are network rules permitting access to the remote desktop gateway from allow-listed IP addresses only
 
 - Navigate to the NSG for this SRE in the portal:
-    - {{bento_box}} **Microsoft Remote Desktop:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_RDS_SERVER`
-    - {{pear}} **Guacamole:** `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
+    - {{pear}} `NSG_SHM_<SHM ID>_SRE_<SRE ID>_GUACAMOLE`
 
 ````{attention}
 {{camera}} <b>Verify that:</b>
@@ -461,8 +415,7 @@ Connection from within the secure physical space is possible.
 ````
 
 - Find the public IP address for the remote desktop server VM by searching for this VM in the portal, then looking at `Connect` under `Settings`.
-    - {{pear}} **Guacamole:** VM name will be `GUACAMOLE-SRE-<SRE ID>`
-    - {{bento_box}} **Microsoft Remote Desktop:** VM name will be `RDG-SRE-<SRE ID>`
+    - {{pear}} VM name will be `GUACAMOLE-SRE-<SRE ID>`
 - Attempt to login as the **SRE standard user** via `SSH` with `ssh <user.name>@<public IP>` (e.g. `ssh ada.lovelace@8.8.8.8`)
 
 ````{attention}
@@ -526,7 +479,7 @@ Connection from within the secure physical space is possible.
 
 ### Turing configuration setting:
 
-- Prior to access to the ingress volume being provided, the {ref}`role_data_provider_representative` must provide the IP address(es) from which data will be uploaded and an email address to which a secure upload token can be sent.
+- Prior to access to the ingress volume being provided, the {ref}`role_data_provider_representative` must provide the IP address(es) from which data will be uploaded and a secure mechanism by which a time-limited upload token can be sent, such as an encrypted email system.
 - Once these details have been received, the data ingress volume should be opened for data upload.
 
 To minimise the risk of unauthorised access to the dataset while the ingress volume is open for uploads, the following security measures are in place:
@@ -536,7 +489,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
     - This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data.
     - This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.
 - The upload token expires after a time-limited upload window.
-- The upload token is transferred to the Dataset Provider via a secure email system.
+- The upload token is transferred to the Dataset Provider via the provided secure mechanism.
 
 ### Implication:
 
@@ -547,23 +500,23 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 To test all the above, you will need to act both as the {ref}`role_system_manager` and {ref}`role_data_provider_representative`:
 
-#### Check that the {ref}`role_system_manager` can send a secure upload token to the {ref}`role_data_provider_representative` over secure email
+#### Check that the {ref}`role_system_manager` can send an upload token to the {ref}`role_data_provider_representative` over a secure channel
 
 - Use the IP address of your own device in place of that of the data provider
-- Generate a secure upload token with write-only permissions following the instructions in the {ref}`administrator document <roles_system_manager_data_ingress>`.
+- Generate an upload token with write-only permissions following the instructions in the {ref}`administrator document <roles_system_manager_data_ingress>`.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the secure upload token is successfully created.
+{{white_check_mark}} **Verify that:** the upload token is successfully created.
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** you are able to send a secure email containing this token (e.g. send it to your own email for testing purposes).
+{{white_check_mark}} **Verify that:** you are able to send this token using a secure mechanism.
 ```
 
 #### Ensure that data ingress works only for connections from the accepted IP address range
 
 - As the {ref}`role_data_provider_representative`, ensure you're working from a device that has an allow-listed IP address
-- Using the secure upload token with write-only permissions and limited time period that you set up in the previous step, follow the ingress instructions for the {ref}`data provider <role_data_provider_representative>`
+- Using the upload token with write-only permissions and limited time period that you set up in the previous step, follow the ingress instructions for the {ref}`data provider <role_data_provider_representative>`
 
 ```{attention}
 {{white_check_mark}} **Verify that:** writing succeeds by uploading a file
@@ -698,7 +651,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ### Turing configuration setting::
 
-- {ref}`policy_tier_2`: The user can access any package from our mirrors. They can freely use these packages without restriction.
+- {ref}`policy_tier_2`: The user can access any package from our mirrors or via our proxies. They can freely use these packages without restriction.
 - {ref}`policy_tier_3`: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowed list.
 
 ### Implication:
@@ -719,7 +672,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier2_allowed.png
+```{image} security_checklist/srd_pypi_tier2_allow_listed.png
 :alt: SRD PyPI Tier 2
 :align: center
 ```
@@ -733,7 +686,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier2_denied.png
+```{image} security_checklist/srd_pypi_tier2_not_allow_listed.png
 :alt: SRD PyPI Tier 2
 :align: center
 ```
@@ -775,8 +728,8 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ### Turing configuration setting:
 
-- Whilst all user access VMs are entirely blocked off from the internet, this is not the case for administrator access VMs such as the SHM-DC, SRE DATA server.
-- An Azure Firewall governs the internet access provided to these VMs, limiting them mostly to downloading Windows updates.
+- Whilst all user accessible VMs are entirely blocked off from the internet, this is not the case for administrator-only VMs.
+- An Azure Firewall governs the internet access provided to these VMs, limiting them mostly to downloading system updates.
 
 ### Implication:
 

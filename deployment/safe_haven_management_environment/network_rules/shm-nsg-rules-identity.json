@@ -60,18 +60,6 @@
         "sourcePortRange": "*"
     },
     {
-        "name": "AllowRADIUSAuthenticationInbound",
-        "access": "Allow",
-        "description": "Allows RDS servers to connect to NPS server for MFA",
-        "destinationAddressPrefix": "{{nps.ip}}",
-        "destinationPortRange": ["1645", "1646", "1812", "1813"],
-        "direction": "Inbound",
-        "priority": 1300,
-        "protocol": "UDP",
-        "sourceAddressPrefix": "VirtualNetwork",
-        "sourcePortRange": "*"
-    },
-    {
         "name": "AllowAdminVPNInbound",
         "access": "Allow",
         "description": "Allow RDP connection to servers from admin P2S VPN",
@@ -215,11 +203,7 @@
         "name": "AllowAzureAutomationOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to Azure automation servers",
-        "destinationAddressPrefix": [
-            {{#monitoring.updateServers.externalIpAddresses.azureAutomation}}
-                "{{.}}",
-            {{/monitoring.updateServers.externalIpAddresses.azureAutomation}}
-        ],
+        "destinationAddressPrefix": "GuestAndHybridManagement",
         "destinationPortRange": ["443"],
         "direction": "Outbound",
         "priority": 3800,

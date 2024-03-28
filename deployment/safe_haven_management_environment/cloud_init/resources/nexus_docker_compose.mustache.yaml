@@ -3,7 +3,7 @@ version: "3"
 services:
   nexus:
     container_name: nexus_nexus_compose
-    image: sonatype/nexus3:3.37.3
+    image: sonatype/nexus3:3.65.0
     expose:
       - 8081
     volumes:
@@ -13,7 +13,7 @@ services:
     restart: always
   nginx:
     container_name: nginx_nexus_compose
-    image: nginx:1.21.6
+    image: nginx:1.25
     ports:
       - 80:80
     volumes:

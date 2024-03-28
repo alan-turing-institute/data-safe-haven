@@ -467,14 +467,6 @@ configuration ApplyGroupPolicies {
         [ValidateNotNullOrEmpty()]
         [string]$OuNameLinuxServers,
 
-        [Parameter(HelpMessage = "RDS gateway servers OU name (eg. 'Secure Research Environment RDS Gateway Servers')")]
-        [ValidateNotNullOrEmpty()]
-        [string]$OuNameRdsGatewayServers,
-
-        [Parameter(HelpMessage = "RDS session servers OU name (eg. 'Secure Research Environment RDS Session Servers')")]
-        [ValidateNotNullOrEmpty()]
-        [string]$OuNameRdsSessionServers,
-
         [Parameter(HelpMessage = "Research users OU name (eg. 'Safe Haven Research Users')")]
         [ValidateNotNullOrEmpty()]
         [string]$OuNameResearchUsers,
@@ -520,8 +512,7 @@ configuration ApplyGroupPolicies {
                     Write-Verbose -Verbose "Importing GPOs..."
                     foreach ($sourceTargetPair in (("0AF343A0-248D-4CA5-B19E-5FA46DAE9F9C", "All servers - Local Administrators"),
                                                    ("EE9EF278-1F3F-461C-9F7A-97F2B82C04B4", "All Servers - Windows Update"),
-                                                   ("742211F9-1482-4D06-A8DE-BA66101933EB", "All Servers - Windows Services"),
-                                                   ("B0A14FC3-292E-4A23-B280-9CC172D92FD5", "Session Servers - Remote Desktop Control"))) {
+                                                   ("742211F9-1482-4D06-A8DE-BA66101933EB", "All Servers - Windows Services"))) {
                         $source, $target = $sourceTargetPair
                         $null = Import-GPO -BackupId "$source" -TargetName "$target" -Path $using:GpoOutputPath -CreateIfNeeded
                         if ($?) {
@@ -545,19 +536,12 @@ configuration ApplyGroupPolicies {
                     Write-Verbose -Verbose "Linking GPOs to OUs..."
                     foreach ($gpoOuNamePair in (("All servers - Local Administrators", "$using:OuNameDatabaseServers"),
                                                 ("All servers - Local Administrators", "$using:OuNameIdentityServers"),
-                                                ("All servers - Local Administrators", "$using:OuNameRdsSessionServers"),
-                                                ("All servers - Local Administrators", "$using:OuNameRdsGatewayServers"),
                                                 ("All Servers - Windows Services", "Domain Controllers"),
                                                 ("All Servers - Windows Services", "$using:OuNameDatabaseServers"),
                                                 ("All Servers - Windows Services", "$using:OuNameIdentityServers"),
-                                                ("All Servers - Windows Services", "$using:OuNameRdsSessionServers"),
-                                                ("All Servers - Windows Services", "$using:OuNameRdsGatewayServers"),
                                                 ("All Servers - Windows Update", "Domain Controllers"),
                                                 ("All Servers - Windows Update", "$using:OuNameDatabaseServers"),
-                                                ("All Servers - Windows Update", "$using:OuNameIdentityServers"),
-                                                ("All Servers - Windows Update", "$using:OuNameRdsSessionServers"),
-                                                ("All Servers - Windows Update", "$using:OuNameRdsGatewayServers"),
-                                                ("Session Servers - Remote Desktop Control", "$using:OuNameRdsSessionServers"))) {
+                                                ("All Servers - Windows Update", "$using:OuNameIdentityServers"))) {
                         $gpoName, $ouName = $gpoOuNamePair
                         $gpo = Get-GPO -Name "$gpoName"
                         # Check for a match in existing GPOs
@@ -622,29 +606,6 @@ configuration ApplyGroupPolicies {
                     }
                 } catch {
                     Write-Error "GiveDomainAdminsLocalPrivileges: $($_.Exception)"
-                }
-            }
-            GetScript = { @{} }
-            TestScript = { $false }
-            DependsOn = "[Script]ImportGroupPolicies"
-        }
-
-        Script SetRemoteDesktopServerLayout {
-            SetScript = {
-                try {
-                    Write-Verbose -Verbose "Setting the layout file for the Remote Desktop servers..."
-                    $null = Set-GPRegistryValue -Key "HKCU\Software\Policies\Microsoft\Windows\Explorer\" `
-                                                -Name "Session Servers - Remote Desktop Control" `
-                                                -Type "ExpandString" `
-                                                -ValueName "StartLayoutFile" `
-                                                -Value "\\$($using:DomainFqdn)\SYSVOL\$($using:DomainFqdn)\scripts\ServerStartMenu\LayoutModification.xml"
-                    if ($?) {
-                        Write-Verbose -Verbose "Setting the layout file for the Remote Desktop servers succeeded"
-                    } else {
-                        throw "Setting the layout file for the Remote Desktop servers failed!"
-                    }
-                } catch {
-                    Write-Error "SetRemoteDesktopServerLayout: $($_.Exception)"
                 }
             }
             GetScript = { @{} }
@@ -831,8 +792,6 @@ configuration ConfigurePrimaryDomainController {
             OuNameDatabaseServers = $domainOus.databaseServers.name
             OuNameIdentityServers = $domainOus.identityServers.name
             OuNameLinuxServers = $domainOus.linuxServers.name
-            OuNameRdsGatewayServers = $domainOus.rdsGatewayServers.name
-            OuNameRdsSessionServers = $domainOus.rdsSessionServers.name
             OuNameResearchUsers = $domainOus.researchUsers.name
             OuNameSecurityGroups = $domainOus.securityGroups.name
             OuNameServiceAccounts = $domainOus.serviceAccounts.name

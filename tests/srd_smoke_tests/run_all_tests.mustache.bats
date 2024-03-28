@@ -7,7 +7,7 @@ load "../bats/bats-support/load"
 # Helper functions
 # ----------------
 get_full_python_version() {
-    pyenv versions --bare --skip-aliases | grep -v "/" | grep "${1}." | xargs
+    pyenv versions --bare --skip-aliases | grep -v "/" | grep "${1}." | tail -n 1 | xargs
 }
 
 setup_python() {

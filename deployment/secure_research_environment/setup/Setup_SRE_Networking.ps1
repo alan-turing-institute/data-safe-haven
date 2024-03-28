@@ -1,7 +1,7 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
     [string]$shmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
     [string]$sreId
 )
 
@@ -87,15 +87,6 @@ if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
     $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.network.vnet.subnets.remoteDesktop.nsg.rules) -Parameters $config -AsHashtable
     $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $guacamoleNsg -Rules $rules
     $remoteDesktopSubnet = Set-SubnetNetworkSecurityGroup -Subnet $remoteDesktopSubnet -NetworkSecurityGroup $guacamoleNsg
-} elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-    # Ensure that gateway NSG exists with correct rules
-    $gatewayNsg = Deploy-NetworkSecurityGroup -Name $config.sre.remoteDesktop.gateway.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-    $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.remoteDesktop.gateway.nsg.rules) -Parameters $config -AsHashtable
-    $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $gatewayNsg -Rules $rules
-    # Ensure that session host NSG exists with correct rules
-    $sessionHostNsg = Deploy-NetworkSecurityGroup -Name $config.sre.remoteDesktop.appSessionHost.nsg.name -ResourceGroupName $config.sre.network.vnet.rg -Location $config.sre.location
-    $rules = Get-JsonFromMustacheTemplate -TemplatePath (Join-Path $PSScriptRoot ".." "network_rules" $config.sre.remoteDesktop.appSessionHost.nsg.rules) -Parameters $config -AsHashtable
-    $null = Set-NetworkSecurityGroupRules -NetworkSecurityGroup $sessionHostNsg -Rules $rules
 } else {
     Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
 }

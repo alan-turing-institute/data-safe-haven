@@ -28,7 +28,7 @@ The following core SRE properties are required - look in the `environment_config
     "type": "The name of the SRD image (most commonly 'Ubuntu')",
     "version": "The version of the SRD image (e.g. 0.1.2019082900)"
   },
-  "remoteDesktopProvider": "Which remote desktop provider to use. Either 'ApacheGuacamole' (recommended, tiers 0-3) or 'MicrosoftRDS' (tiers 2-3 only)",
+  "remoteDesktopProvider": "[Deprecated] Only 'ApacheGuacamole' is supported. If this parameter is not supplied, it will default to 'ApacheGuacamole'",
   "azureAdminGroupName": "[Optional] Azure Security Group that admins of this SRE will belong to. If not specified then the same one as the SHM will be used.",
   "dataAdminIpAddresses": "A list of one or more IP addresses which admins will be using to transfer sensitive data to/from the secure Azure storage area (if not specified then Turing IP addresses will be used).",
   "databases": "[Optional] A list of zero or more database flavours from the following list ('MSSQL', 'PostgreSQL'). For example ['MSSQL', 'PostgreSQL'] would deploy both an MS-SQL and a PostgreSQL database.",

@@ -41,11 +41,11 @@ If you see a warning dialog that the certificate cannot be verified as root, acc
 - You will need to login to the portal using an account with privileges to make the necessary changes to the resources you are altering
 ```
 
-```{admonition} Azure Active Directory operation
-![Azure AD: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=estimate%20of%20time%20needed)
+```{admonition} Microsoft Entra ID operation
+![Microsoft Entra ID: estimate of time needed](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=estimate%20of%20time%20needed)
 
 - This indicates an operation which needs to be carried out in the [`Azure Portal`](https://portal.azure.com) using a web browser on your local machine.
-- You will need to login to the portal using an account with administrative privileges on the `Azure Active Directory` that you are altering.
+- You will need to login to the portal using an account with administrative privileges on the `Microsoft Entra ID` that you are altering.
 - Note that this might be different from the account which is able to create/alter resources in the Azure subscription where you are building the Safe Haven.
 ```
 

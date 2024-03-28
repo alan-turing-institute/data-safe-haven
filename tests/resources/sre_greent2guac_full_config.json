@@ -52,14 +52,6 @@
           "name": "Secure Research Environment Linux Servers",
           "path": "OU=Secure Research Environment Linux Servers,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
         },
-        "rdsGatewayServers": {
-          "name": "Secure Research Environment RDS Gateway Servers",
-          "path": "OU=Secure Research Environment RDS Gateway Servers,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
-        },
-        "rdsSessionServers": {
-          "name": "Secure Research Environment RDS Session Servers",
-          "path": "OU=Secure Research Environment RDS Session Servers,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
-        },
         "researchUsers": {
           "name": "Safe Haven Research Users",
           "path": "OU=Safe Haven Research Users,DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk"
@@ -121,29 +113,6 @@
       "rg": "RG_SHM_GREEN_MONITORING",
       "updateServers": {
         "externalIpAddresses": {
-          "azureAutomation": [
-            "13.66.145.80",
-            "13.69.109.177",
-            "13.71.175.151",
-            "13.71.199.178",
-            "13.75.34.150",
-            "13.77.55.200",
-            "20.140.131.132",
-            "20.192.168.149",
-            "20.36.108.243",
-            "20.49.90.25",
-            "40.78.236.132",
-            "40.78.236.133",
-            "40.79.173.18",
-            "40.79.187.166",
-            "40.80.176.49",
-            "51.105.77.83",
-            "51.107.60.86",
-            "52.138.229.87",
-            "52.167.107.72",
-            "52.167.107.74",
-            "52.236.186.244"
-          ],
           "linux": [
             "72.32.157.246",
             "87.238.57.227",
@@ -767,7 +736,7 @@
           "adminPasswordSecretName": "shm-green-vm-admin-password-linux-update-server",
           "disks": {
             "os": {
-              "sizeGb": "32",
+              "sizeGb": "64",
               "type": "Standard_LRS"
             }
           },
@@ -1129,16 +1098,6 @@
           "name": "GREEN Linux Servers Manager",
           "passwordSecretName": "shm-green-computer-manager-password-linux-servers",
           "samAccountName": "greenlinuxsrvrs"
-        },
-        "rdsGatewayServers": {
-          "name": "GREEN RDS Gateway Manager",
-          "passwordSecretName": "shm-green-computer-manager-password-rds-gateway-servers",
-          "samAccountName": "greengatewaysrvrs"
-        },
-        "rdsSessionServers": {
-          "name": "GREEN RDS Session Servers Manager",
-          "passwordSecretName": "shm-green-computer-manager-password-rds-session-servers",
-          "samAccountName": "greensessionsrvrs"
         }
       },
       "serviceAccounts": {
@@ -1362,7 +1321,7 @@
       "rg": "RG_SHM_GREEN_SRE_T2GUAC_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2023082900"
+        "version": "20.04.2024032600"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
@@ -1465,30 +1424,10 @@
       }
     },
     "webapps": {
-      "cocalc": {
-        "adminPasswordSecretName": "sre-t2guac-vm-admin-password-cocalc",
-        "disks": {
-          "data": {
-            "sizeGb": "512",
-            "type": "Standard_LRS"
-          },
-          "os": {
-            "sizeGb": "32",
-            "type": "Standard_LRS"
-          }
-        },
-        "dockerVersion": "latest",
-        "fqdn": "COCALC.t2guac.green.develop.turingsafehaven.ac.uk",
-        "hostname": "COCALC",
-        "ip": "10.152.5.7",
-        "osVersion": "Ubuntu-latest",
-        "vmName": "COCALC-SRE-T2GUAC",
-        "vmSize": "Standard_D2s_v3"
-      },
       "codimd": {
         "adminPasswordSecretName": "sre-t2guac-vm-admin-password-codimd",
         "codimd": {
-          "dockerVersion": "2.4.1-cjk"
+          "dockerVersion": "2.5.3"
         },
         "disks": {
           "data": {
@@ -1505,7 +1444,7 @@
         "ip": "10.152.5.6",
         "osVersion": "Ubuntu-latest",
         "postgres": {
-          "dockerVersion": "13.4-alpine",
+          "dockerVersion": "16-alpine",
           "passwordSecretName": "sre-t2guac-other-codimd-password-postgresdb"
         },
         "vmName": "CODIMD-SRE-T2GUAC",

@@ -1,7 +1,7 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
     [string]$shmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
     [string]$sreId
 )
 
@@ -50,15 +50,11 @@ try {
     # Remote desktop
     if ($config.sre.remoteDesktop.provider -eq "ApacheGuacamole") {
         $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.guacamole.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-    } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.gateway.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-        $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.remoteDesktop.appSessionHost.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     } else {
         Add-LogMessage -Level Fatal "Remote desktop type '$($config.sre.remoteDesktop.type)' was not recognised!"
     }
     # Other VMs
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.srd.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
-    $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.cocalc.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.codimd.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     $null = Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.gitlab.adminPasswordSecretName -DefaultLength 20 -AsPlaintext
     Add-LogMessage -Level Success "Ensured that SRE VM admin passwords exist"

@@ -1,7 +1,7 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
     [string]$shmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
     [string]$sreId
 )
 
@@ -54,39 +54,6 @@ $null = Deploy-ResourceGroup -Name $config.sre.webapps.rg -Location $config.sre.
 $bootDiagnosticsAccount = Deploy-StorageAccount -Name $config.sre.storage.bootdiagnostics.accountName -ResourceGroupName $config.sre.storage.bootdiagnostics.rg -Location $config.sre.location
 $cloudInitBasePath = Join-Path $PSScriptRoot ".." "cloud_init" -Resolve
 $ldapSearchUserDn = "CN=$($config.sre.users.serviceAccounts.ldapSearch.name),$($config.shm.domain.ous.serviceAccounts.path)"
-
-
-# Deploy and configure CoCalc VM
-# -------------------------------
-Add-LogMessage -Level Info "Constructing CoCalc cloud-init from template..."
-# Load the cloud-init template then add resources and expand mustache placeholders
-$cocalcCloudInitTemplate = Join-Path $cloudInitBasePath "cloud-init-cocalc.mustache.yaml" | Get-Item | Get-Content -Raw
-$cocalcCloudInitTemplate = Expand-CloudInitResources -Template $cocalcCloudInitTemplate -ResourcePath (Join-Path $cloudInitBasePath "resources")
-$cocalcCloudInitTemplate = Expand-CloudInitResources -Template $cocalcCloudInitTemplate -ResourcePath (Join-Path ".." ".." "common" "resources")
-$cocalcCloudInitTemplate = Expand-MustacheTemplate -Template $cocalcCloudInitTemplate -Parameters $config
-# Deploy CoCalc VM
-$cocalcDataDisk = Deploy-ManagedDisk -Name "$($config.sre.webapps.cocalc.vmName)-DATA-DISK" -SizeGB $config.sre.webapps.cocalc.disks.data.sizeGb -Type $config.sre.webapps.cocalc.disks.data.type -ResourceGroupName $config.sre.webapps.rg -Location $config.sre.location
-$params = @{
-    AdminPassword          = (Resolve-KeyVaultSecret -VaultName $config.sre.keyVault.name -SecretName $config.sre.webapps.cocalc.adminPasswordSecretName -DefaultLength 20)
-    AdminUsername          = $vmAdminUsername
-    BootDiagnosticsAccount = $bootDiagnosticsAccount
-    CloudInitYaml          = $cocalcCloudInitTemplate
-    DataDiskIds            = @($cocalcDataDisk.Id)
-    ImageSku               = $config.sre.webapps.cocalc.osVersion
-    Location               = $config.sre.location
-    Name                   = $config.sre.webapps.cocalc.vmName
-    OsDiskSizeGb           = $config.sre.webapps.cocalc.disks.os.sizeGb
-    OsDiskType             = $config.sre.webapps.cocalc.disks.os.type
-    PrivateIpAddress       = (Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.deployment.cidr -VirtualNetwork $vnet)
-    ResourceGroupName      = $config.sre.webapps.rg
-    Size                   = $config.sre.webapps.cocalc.vmSize
-    Subnet                 = $deploymentSubnet
-}
-$cocalcVm = Deploy-LinuxVirtualMachine @params
-# Change subnets and IP address while CoCalc VM is off then restart
-Update-VMIpAddress -Name $cocalcVm.Name -ResourceGroupName $cocalcVm.ResourceGroupName -Subnet $webappsSubnet -IpAddress $config.sre.webapps.cocalc.ip
-# Update DNS records for this VM
-Update-VMDnsRecords -DcName $config.shm.dc.vmName -DcResourceGroupName $config.shm.dc.rg -BaseFqdn $config.sre.domain.fqdn -ShmSubscriptionName $config.shm.subscriptionName -VmHostname $config.sre.webapps.cocalc.hostname -VmIpAddress $config.sre.webapps.cocalc.ip
 
 
 # Deploy and configure CodiMD VM
