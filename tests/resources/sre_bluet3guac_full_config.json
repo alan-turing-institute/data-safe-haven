@@ -1268,7 +1268,7 @@
       "rg": "RG_SHM_BLUE_SRE_T3GUAC_COMPUTE",
       "vmImage": {
         "type": "Ubuntu",
-        "version": "20.04.2024020500"
+        "version": "20.04.2024032600"
       },
       "vmSizeDefault": "Standard_D2s_v3"
     },
