@@ -17,33 +17,17 @@ A helper script for doing this is already uploaded to the domain controller - yo
 
 ### {{lock}} SRE Security Groups
 
-Each user should be assigned to one or more Active Directory "security groups". The key difference between these groups is the level of privilege they have when manipulating databases within the SRE.
+Each user should be assigned to one or more Active Directory "security groups".
 
 - `SG <SRE ID> Research Users`: Almost all researchers should be in this group. No special permissions. Allows users to log in to `<SRE ID>`.
 - `SG <SRE ID> Data Administrators`: Researchers who can create/modify/delete tables in the `data` schema on databases within `<SRE ID>`. `SG <SRE ID> Research Users` can only read these tables. Restricting this access prevents most users from creating/deleting arbitrary tables, which is important because some SREs have their input data in database form.
-- `SG <SRE ID> System Administrators`: Researchers who have full superuser privileges on databases within `<SRE ID>`. Users in this group have full access to the databases and can manipulate them in any way they choose.
+- `SG <SRE ID> System Administrators`: Researchers who have full superuser privileges on databases within `<SRE ID>`. Users in this group have full access to the databases and can manipulate them in any way they choose. System Administrators also have administration privileges on the [Guacamole Remote Desktop](https://guacamole.apache.org/doc/gug/administration.html).
 
 Typically, users with either of the latter two roles should also have the `Research Users` role to allow them to log in to the SRDs within the SRE.
 
 (generate_user_csv)=
 
 ## {{scroll}} Generate user details CSV file
-
-### {{car}} Using data classification app
-
-- Follow the [instructions in the classification app documentation](https://github.com/alan-turing-institute/data-classification-app) to create users
-    - Users can be created in bulk by selecting `Create User > Import user list` and uploading a spreadsheet of user details
-    - Users can also be created individually by selecting `Create User > Create Single User`
-- After creating users, export the `UserCreate.csv` file
-    - To export all users, select `Users > Export UserCreate.csv`
-    - To export only users for a particular project, select `Projects > (Project Name) > Export UserCreate.csv`
-- Upload the user details CSV file to a sensible location on the SHM domain controller
-
-    ```{note}
-    We suggest using `C:\Installation\YYYYDDMM-HHMM_user_details.csv` but this is up to you
-    ```
-
-### {{hand}} Manually edit CSV
 
 On the **SHM domain controller (DC1)**.
 

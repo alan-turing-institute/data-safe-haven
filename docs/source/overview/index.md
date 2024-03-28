@@ -7,6 +7,7 @@
 what_is_dsh.md
 why_use_dsh.md
 sensitivity_tiers.md
+using_dsh.md
 ```
 
 ## Background and concepts
@@ -19,6 +20,9 @@ sensitivity_tiers.md
 
 [Sensitivity tiers](sensitivity_tiers.md)
 : Details of the five sensitivity tiers that projects are classified into.
+
+[Before using the Data Safe Haven](using_dsh.md)
+: Important considerations for using the Data Safe Haven to enable secure research.
 
 ## Further resources
 

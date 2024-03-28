@@ -4,6 +4,8 @@
 
 ```{toctree}
 :hidden:
+
+data_ingress.md
 ```
 
 The Dataset Provider is the organisation that provided the dataset under analysis.
@@ -13,6 +15,9 @@ They must be authorised to act on behalf of the Dataset Provider, especially whe
 There may be additional people at the Dataset Provider who will have input in discussions around data sharing and data classification.
 It is the duty of the **Dataset Provider Representative** to manage this set of stakeholders at the Dataset Provider.
 
+[Data ingress process](data_ingress.md)
+: Advice for **Dataset Provider Representatives** on preparing datasets for upload to the Data Safe Haven.
+
 ## Information of interest to data providers
 
 {ref}`Implementation details <design_architecture>`
@@ -20,6 +25,3 @@ It is the duty of the **Dataset Provider Representative** to manage this set of 
 
 {ref}`Turing security configuration <design_turing_security_configuration>`
 : Data Safe Haven security configuration used at The Alan Turing Institute. This configuration is presented for information only. The configurations needed by other organisations will depend on their particularly circumstances and their information governance policies and processes.
-
-{ref}`Data classification guide <process_data_classification>`
-: How we classify a work package into one of our security tiers at the Turing.

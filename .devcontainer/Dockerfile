@@ -13,8 +13,8 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     sudo
     
 # Set package versions
-ARG AZURE_CLI_VERSION="2.53.1"
-ARG PWSH_VERSION="7.3.9"
+ARG AZURE_CLI_VERSION="2.58.0"
+ARG PWSH_VERSION="7.4.1"
 
 # Install Azure-CLI 
 # Get Microsoft signing key

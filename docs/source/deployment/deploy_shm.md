@@ -23,7 +23,7 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
   ```
 
 - `PowerShell`
-    - We recommend [installing](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell) the [latest stable release](https://learn.microsoft.com/en-us/powershell/scripting/install/powershell-support-lifecycle?view=powershell-7.3) of Powershell. We have most recently tested deployment using version `7.3.2`.
+    - We recommend [installing](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell) the [latest stable release](https://learn.microsoft.com/en-us/powershell/scripting/install/powershell-support-lifecycle?view=powershell-7.4) of Powershell. We have most recently tested deployment using version `7.4.1`.
 - `Powershell` cross-platform modules
 
   ````{tip}
@@ -612,7 +612,7 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
 ```
 
 ````{admonition} ![macOS](https://img.shields.io/badge/-555?&logo=apple&logoColor=white) instructions
-- Start from step 3 of the `macOS` instructions.
+- Start from "Configure VPN client profile" step of the `macOS` instructions.
 - Use IKEv2 for the VPN type
   <details><summary><b>For users of <i>macOS Catalina</i> or later</b></summary>
 

@@ -13,7 +13,7 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 It is the data provider's responsibility to upload the data required by the safe haven.
 
 ```{important}
-Any data ingress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+Any data ingress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
 ```
 
 The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider, enabling them to upload the data:
@@ -31,7 +31,7 @@ The following steps show how to generate a temporary write-only upload token tha
     - Leave everything else as default and click `Generate SAS token and URL`
     - Copy the `Blob SAS URL`
 - Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
-- The data provider should now be able to upload data by following {ref}`these instructions <process_data_ingress>`
+- The data provider should now be able to upload data
 - You can validate successful data ingress by logging into the SRD for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
 
 (roles_system_manager_multiple_providers)=
@@ -63,25 +63,23 @@ The data-provider-specific containers should be deleted once the data has been t
 Software ingress is performed in a similar manner to data.
 
 ```{important}
-Software ingress must go through the same approval process as is the case for data ingress, including sign-off from the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+Software ingress must go through the same approval process as is the case for data ingress, including sign-off from the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
 ```
 
 - Follow the same steps as for {ref}`data ingress <roles_system_manager_data_ingress>` above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours)
 - Share the token with the {ref}`role_investigator`, so they can install software within the time window
-- The {ref}`role_investigator` can perform software ingress via `Azure Storage Explorer` (for instance as a zip file), by following the same instructions as {ref}`the data provider <process_data_ingress>`
+- The {ref}`role_investigator` can perform software ingress via `Azure Storage Explorer` (for instance as a zip file)
 
 (roles_system_manager_data_egress)=
 
 ## Data egress
 
 ```{important}
-Any data egress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+Any data egress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
 ```
 
 ```{important}
-Classification of output must be completed **before** an egress link is created.
-
-The classification process is explained {ref}`here <process_data_egress_classification>`.
+Assessment of output must be completed **before** an egress link is created.
 ```
 
 The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment, after the outputs have been classified and approved for release.
@@ -105,7 +103,7 @@ The {ref}`role_system_manager` creates a time-limited and IP restricted link to 
       ```
 
     - Leave this portal window open and move to the next step
-- The appropriate person should now be able to download data by following {ref}`these instructions <process_data_egress_removal>`
+- The appropriate person should now be able to download data
 
 ### The output volume
 

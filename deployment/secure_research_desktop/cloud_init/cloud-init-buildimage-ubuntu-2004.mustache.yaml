@@ -129,11 +129,6 @@ write_files:
     content: |
       # Deprovisioning log
 
-  - path: "/usr/share/applications/jupyter-notebook.desktop"
-    permissions: "0644"
-    content: |
-      {{jupyter_notebook.desktop}}
-
   - path: "/usr/share/applications/pycharm.desktop"
     permissions: "0644"
     content: |
@@ -404,13 +399,6 @@ runcmd:
   - sed -i "s|^export PATH=.*|export PATH=${PATH}|" /etc/bash.bashrc
   # Run installation tests
   - python3 /opt/build/check_installation.py || die "Installation check failed!";
-
-  # Remove Linux omsagent before generalising the image
-  - echo ">=== $(date +%s) Removing Linux omsagent ===<"
-  # We use the commit corresponding to a particular tag (currently 1.17.2-0) so that we can audit what the script is doing
-  - wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/c7e1a8f923844f989c8aa7957cee0e89708d821f/installer/scripts/onboard_agent.sh
-  - sh onboard_agent.sh --purge || die "Could not remove Linux omsagent!";
-  - rm onboard_agent.sh
 
 final_message: "System setup through cloud-init is finished. Configuration took $UPTIME seconds"
 
