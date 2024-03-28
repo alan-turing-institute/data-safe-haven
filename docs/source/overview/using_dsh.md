@@ -39,6 +39,10 @@ Every group deploying the Data Safe Haven will need to provide the rest includin
     - Secure methods to share SAS tokens
     - Programme management tools
 
+The [Standard Architecture for Trusted Research Environments (SATRE)](https://satre-specification.readthedocs.io) project is a useful reference for TRE design.
+It features a comprehensive set of requirements, technical and non-technical, that a TRE operator should meet.
+An evaluation of the Data Safe Haven production instances at the Turing against SATRE can be found [here](https://satre-specification.readthedocs.io/evaluations/alan_turing_institute).
+
 ## Tiering
 
 [Tiering](sensitivity_tiers.md) is a fundamental part of DSH.
