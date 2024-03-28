@@ -10,6 +10,27 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 :relative-images:
 ```
 
+(resize_nfs)=
+
+## {{file_cabinet}} Resizing User Storage
+
+The directories for user data, `/home` and `/shared`, are NFS shares mounted to each SRD.
+These shares have a declared, finite size.
+It is therefore possible for this space to become entirely consumed.
+
+In the case of the `/home` directory, this will prevent normal users from being able to login to the SRD as they will be unable to write to their own home directories.
+This can be fixed by increasing the size of the `/home` NFS share.
+
+![Portal: 5 minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-azure&label=portal&color=blue&message=five%20minutes)
+
+- Navigate to the SRE's storage resource group `RG_SHM_<SHM_ID>_SRE_<SRE_ID>_Storage`
+- Navigate to the user data storage account `<sre_id>userdata<random_string>`
+- On the left-hand navigation bar, select "File shares" under the "Data storage" heading
+- You will see the file shares, "home" and "shared".
+- Click on the ellipsis on the same row as the share you would like to adjust, at the far right of the page, and in the pop-up menu click "Size and performance".
+- A form will appear where you can enter the share size in GiB.
+  Enter the new size and click the "Save" button.
+
 (renew_ssl)=
 
 ## {{alarm_clock}} Renewing SRE Domain Certificates
@@ -25,6 +46,22 @@ PS> ./Update_SRE_SSL_Certificate.ps1 -shmId <SHM ID> -sreId <SRE ID>
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
+
+(renew_sas)=
+
+## {{locked_with_key}} Renew SRE Container Access Policies
+
+The [SRE storage containers](role_researcher_user_guide_shared_storage) for input data, backup and output are all provided by blob storage.
+The SRDs use [SAS tokens](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview) bound to a [Stored Access Policy](https://learn.microsoft.com/en-us/azure/storage/common/storage-stored-access-policy-define-dotnet) to authenticate and access the data.
+
+When the containers are deployed the Stored Access Policy is valid for one year.
+If a SRE is deployed for longer than this, the policy will need to be renewed in order to maintain access to these containers.
+
+![Powershell: five minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=five%20minutes) at {{file_folder}} `./deployment/secure_research_environment/setup`
+
+```powershell
+PS> ./Update_Stored_Access_Policies.ps1 -shmId <SHM ID> -sreId <SRE ID>
+```
 
 (resize_vm)=
 
@@ -127,6 +164,15 @@ On your **deployment machine**.
 
 - If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
 
+The `SRE_Teardown.ps1` script *does not* remove the SRE data storage account stored in the SHM. Thus, the `ingress`, `egress`, and `backup` data folders still exist.
+This allows the data to be used for the project associated with the SRE to exist before and after the project starts and ends, without requiring the full SRE to be running.
+
+```{attention}
+To avoid accidental deletion, the storage account must be deleted manually through the Azure Portal.
+The storage account can be found under `RG_SHM_<SHM ID>_PERSISTENT_DATA`, with a name similar to `<SHM ID><SRE ID>data<random letters>`.
+Deleting the SRE storage account from `RG_SHM_<SHM ID>_PERSISTENT_DATA` will delete any work that was done in the SRE.
+```
+
 ## {{end}} Remove a complete Safe Haven
 
 ### {{collision}} Tear down any attached SREs
@@ -154,7 +200,16 @@ On your **deployment machine**.
     If you provide the optional `-dryRun` parameter then the names of all affected resources will be printed, but nothing will be deleted
     ```
 
-### {{unlock}} Disconnect from the Azure Active Directory
+The `SRE_Teardown.ps1` script *does not* remove the SRE data storage account stored in the SHM. Thus, the `ingress`, `egress`, and `backup` data folders still exist.
+This allows the data to be used for the project associated with the SRE to exist before and after the project starts and ends, without requiring the full SRE to be running.
+
+```{attention}
+To avoid accidental deletion, the storage account must be deleted manually through the Azure Portal.
+The storage account can be found under `RG_SHM_<SHM ID>_PERSISTENT_DATA`, with a name similar to `<SHM ID><SRE ID>data<random letters>`.
+Deleting the SRE storage account from `RG_SHM_<SHM ID>_PERSISTENT_DATA` will delete any work that was done in the SRE.
+```
+
+### {{unlock}} Disconnect from the Microsoft Entra ID
 
 Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over the SHM VPN connection
 
@@ -166,8 +221,8 @@ Connect to the **SHM Domain Controller (DC1)** via Remote Desktop Client over th
     - You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
 
 ```{attention}
-Full disconnection of the Azure Active Directory can take up to 72 hours but is typically less.
-If you are planning to install a new SHM connected to the same Azure Active Directory you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
+Full disconnection of the Microsoft Entra ID can take up to 72 hours but is typically less.
+If you are planning to install a new SHM connected to the same Microsoft Entra ID you may find the `AzureADConnect` installation step requires you to wait for the previous disconnection to complete.
 ```
 
 ### {{bomb}} Tear down the SHM

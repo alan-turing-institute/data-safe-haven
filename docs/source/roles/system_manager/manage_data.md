@@ -13,7 +13,7 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 It is the data provider's responsibility to upload the data required by the safe haven.
 
 ```{important}
-Any data ingress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+Any data ingress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
 ```
 
 The following steps show how to generate a temporary write-only upload token that can be securely sent to the data provider, enabling them to upload the data:
@@ -31,8 +31,30 @@ The following steps show how to generate a temporary write-only upload token tha
     - Leave everything else as default and click `Generate SAS token and URL`
     - Copy the `Blob SAS URL`
 - Send the `Blob SAS URL` to the data provider via secure email (for example, you could use the [Egress secure email](https://www.egress.com/) service)
-- The data provider should now be able to upload data by following {ref}`these instructions <process_data_ingress>`
+- The data provider should now be able to upload data
 - You can validate successful data ingress by logging into the SRD for the SRE and checking the `/data` volume, where you should be able to view the data that the data provider has uploaded
+
+(roles_system_manager_multiple_providers)=
+
+## Multiple data providers
+
+In some projects, there may be more than one data provider responsible for uploading data. Two potential issues that may occur are _name clashes_ and _data leakage_.
+
+If all data providers are uploading to the same storage container, then name clashes may occur. There is no protection against overwriting files during upload.
+Thus, if more than one data provider uploads files with the same path, then the earlier upload will be overwritten.
+This can be avoided by providing each data provider with their own subfolder on the storage container and ensuring that each uploads only to their subfolder.
+
+If all data providers are uploading to the same storage container, then they may be able to see the files uploaded by other data providers.
+Although they will not be able to access or download these files, a potential issue is that sensitive information may be visible in either the file names or directory structure of the uploaded data.
+
+If possible, data providers should avoid using any identifying information in the filenames or directory structure of the data that they upload.
+This is not always possible, since some data providers may require identifying information to be part of filenames or directory structures.
+
+An alternative is to provide separate storage containers for upload for each data provider.
+These containers should have all the same access restrictions as used for a single ingress storage container.
+
+After the data has been uploaded, the {ref}`role_system_manager` can transfer the uploaded data to a single storage container accessible to {ref}`role_researcher`s from the relevant SRE, as per the normal data ingress process.
+The data-provider-specific containers should be deleted once the data has been transferred.
 
 (roles_system_manager_software_ingress)=
 
@@ -41,25 +63,23 @@ The following steps show how to generate a temporary write-only upload token tha
 Software ingress is performed in a similar manner to data.
 
 ```{important}
-Software ingress must go through the same approval process as is the case for data ingress, including sign-off from the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+Software ingress must go through the same approval process as is the case for data ingress, including sign-off from the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
 ```
 
 - Follow the same steps as for {ref}`data ingress <roles_system_manager_data_ingress>` above to provide temporary write access, but set the time window for the SAS token to a shorter period (e.g. several hours)
 - Share the token with the {ref}`role_investigator`, so they can install software within the time window
-- The {ref}`role_investigator` can perform software ingress via `Azure Storage Explorer` (for instance as a zip file), by following the same instructions as {ref}`the data provider <process_data_ingress>`
+- The {ref}`role_investigator` can perform software ingress via `Azure Storage Explorer` (for instance as a zip file)
 
 (roles_system_manager_data_egress)=
 
 ## Data egress
 
 ```{important}
-Any data egress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and {ref}`role_referee` (if applicable).
+Any data egress must be signed off by the {ref}`role_data_provider_representative`, {ref}`role_investigator` and referee (if applicable).
 ```
 
 ```{important}
-Classification of output must be completed **before** an egress link is created.
-
-The classification process is explained {ref}`here <process_data_egress_classification>`.
+Assessment of output must be completed **before** an egress link is created.
 ```
 
 The {ref}`role_system_manager` creates a time-limited and IP restricted link to remove data from the environment, after the outputs have been classified and approved for release.
@@ -83,7 +103,7 @@ The {ref}`role_system_manager` creates a time-limited and IP restricted link to 
       ```
 
     - Leave this portal window open and move to the next step
-- The appropriate person should now be able to download data by following {ref}`these instructions <process_data_egress_removal>`
+- The appropriate person should now be able to download data
 
 ### The output volume
 

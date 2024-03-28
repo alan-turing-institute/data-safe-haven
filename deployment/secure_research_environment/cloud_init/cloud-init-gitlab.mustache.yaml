@@ -114,18 +114,18 @@ packages:
 package_update: true
 package_upgrade: true
 
-# We know that exactly one data disk will be attached to this VM and it will be attached as lun1
+# We know that exactly one data disk will be attached to this VM and it will be attached as lun0
 disk_setup:
-  /dev/disk/azure/scsi1/lun1:
+  /dev/disk/azure/scsi1/lun0:
     table_type: gpt
     layout: true
     overwrite: true
 fs_setup:
-  - device: /dev/disk/azure/scsi1/lun1
+  - device: /dev/disk/azure/scsi1/lun0
     partition: auto
     filesystem: ext4
 mounts:
-  - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
+  - [/dev/disk/azure/scsi1/lun0-part1, /data, ext4, "defaults,nofail"]
 
 # Set hostname
 fqdn: {{sre.webapps.gitlab.fqdn}}

@@ -1,5 +1,5 @@
 These steps ensure that you have created a non-privileged user account that you can use for testing.
-You must ensure that you have assigned a licence to this user in the Azure Active Directory so that MFA will work correctly.
+You must ensure that you have assigned a licence to this user in the Microsoft Entra ID so that MFA will work correctly.
 
 You should have already set up a non-privileged user account upon setting up the SHM, when {ref}`validating the active directory synchronisation <deploy_shm>`, but you may wish to set up another or verify that you have set one up already:
 
@@ -31,7 +31,7 @@ You should have already set up a non-privileged user account upon setting up the
   - Enter the start of your username and click `Check names`
   - Select your username and click `Ok`
   - Click `Ok` again to exit the `Add users` dialogue
-- Synchronise with Azure Active Directory by running following the `Powershell` command on the SHM primary domain controller
+- Synchronise with Microsoft Entra ID by running following the `Powershell` command on the SHM primary domain controller
 
 ```powershell
 PS> C:\Installation\Run_ADSync.ps1
@@ -39,12 +39,12 @@ PS> C:\Installation\Run_ADSync.ps1
 
 ### {{closed_lock_with_key}} Ensure that your non-privileged user account has MFA enabled
 
-Switch to your custom Azure Active Directory in the Azure portal and make the following checks:
+Switch to your custom Microsoft Entra ID in the Azure portal and make the following checks:
 
-![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
+![Microsoft Entra ID: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=one%20minute)
 
-- From the Azure portal, navigate to the AAD you have created.
-- The `Usage Location` must be set in Azure Active Directory (should be automatically synchronised from the local Active Directory if it was correctly set there)
-  - Navigate to `Azure Active Directory > Manage / Users > (user account)`, and ensure that `Settings > Usage Location` is set.
+- From the Azure portal, navigate to the Microsoft Entra ID you have created.
+- The `Usage Location` must be set in Microsoft Entra ID (should be automatically synchronised from the local Active Directory if it was correctly set there)
+  - Navigate to `Microsoft Entra ID > Manage / Users > (user account)`, and ensure that `Settings > Usage Location` is set.
 - A licence must be assigned to the user.
-  - Navigate to `Azure Active Directory > Manage / Users > (user account) > Licenses` and verify that a license is assigned and the appropriate MFA service enabled.
+  - Navigate to `Microsoft Entra ID > Manage / Users > (user account) > Licenses` and verify that a license is assigned and the appropriate MFA service enabled.

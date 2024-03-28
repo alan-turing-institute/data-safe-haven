@@ -94,7 +94,7 @@ packages:
   - clamav-freshclam
   - clamav-unofficial-sigs
   - docker.io
-  - docker-compose
+  - docker-compose-v2
   - python3-requests
 package_update: true
 package_upgrade: true
@@ -146,7 +146,7 @@ runcmd:
   - sleep 1m
   - systemctl status docker
   - docker --version
-  - docker-compose --version
+  - docker compose --version
 
   # Create directory for Nexus data that is owned by the correct user inside the Docker container
   - echo ">=== Creating Nexus data directory... ===<"
@@ -163,7 +163,7 @@ runcmd:
 
   # Set up the Nexus container
   - echo ">=== Creating Nexus container... ===<"
-  - su nexusdaemon -c "docker-compose -f /etc/nexus/docker-compose.yaml up -d"
+  - su nexusdaemon -c "docker compose -f /etc/nexus/docker-compose.yaml up -d"
 
   # Give Nexus some time to initialise
   - echo ">=== Waiting for Nexus to initialise (5 minutes)... ===<"

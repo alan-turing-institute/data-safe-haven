@@ -22,9 +22,9 @@ function Get-ConfigRootDir {
 # --------------------------------------------------------------------------------
 function Get-CoreConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
         [string]$shmId,
-        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+        [Parameter(Mandatory = $false, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
         [string]$sreId = $null
     )
     # Construct filename for this config file
@@ -57,7 +57,7 @@ function Get-CoreConfig {
 # ---------------------
 function Get-ShmConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
         $shmId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
@@ -325,10 +325,7 @@ function Get-ShmConfig {
         }
         updateServers     = [ordered]@{
             externalIpAddresses = [ordered]@{
-                azureAutomation = @(
-                    "13.66.145.80", "13.69.109.177", "13.71.175.151", "13.71.199.178", "13.75.34.150", "13.77.55.200", "20.140.131.132", "20.192.168.149", "20.36.108.243", "20.49.90.25", "40.78.236.132", "40.78.236.133", "40.79.173.18", "40.79.187.166", "40.80.176.49", "51.105.77.83", "51.107.60.86", "52.138.229.87", "52.167.107.72", "52.167.107.74", "52.236.186.244"
-                ) # *-jobruntimedata-prod-su1.azure-automation.net
-                linux           = (
+                linux   = (
                     @("72.32.157.246", "87.238.57.227", "147.75.85.69", "217.196.149.55") + # apt.postgresql.org
                     @("91.189.91.38", "91.189.91.39", "91.189.91.48", "91.189.91.49", "91.189.91.81", "91.189.91.82", "91.189.91.83", "185.125.190.17", "185.125.190.18", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
                     $cloudFlareIpAddresses + # database.clamav.net, packages.gitlab.com and qgis.org use Cloudflare
@@ -337,13 +334,13 @@ function Get-ShmConfig {
                     @("152.199.20.126") + # developer.download.nvidia.com
                     $microsoftIpAddresses # packages.microsoft.com, azure.archive.ubuntu.com
                 )
-                windows         = @($microsoftIpAddresses) # for several Microsoft-owned endpoints
+                windows = @($microsoftIpAddresses) # for several Microsoft-owned endpoints
             }
             linux               = [ordered]@{
                 adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-linux-update-server".ToLower()
                 disks                   = [ordered]@{
                     os = [ordered]@{
-                        sizeGb = "32"
+                        sizeGb = "64"
                         type   = $shm.diskTypeDefault
                     }
                 }
@@ -479,7 +476,10 @@ function Get-ShmConfig {
 
     # Storage config
     # --------------
-    $shmStoragePrefix = "shm$($shm.id)"
+    if ($shm.id.Contains("-")) {
+        Add-LogMessage -Level Warning "The hyphen character is not allowed in storage account names and will be removed."
+    }
+    $shmStoragePrefix = "shm$($shm.id)".Replace("-", "")
     $shmStorageSuffix = New-RandomLetters -SeedPhrase "$($shm.subscriptionName)$($shm.id)"
     $storageRg = "$($shm.rgPrefix)_STORAGE".ToUpper()
     $shm.storage = [ordered]@{
@@ -604,9 +604,9 @@ Export-ModuleMember -Function Get-ShmResourceGroups
 # ---------------------------
 function Get-SreConfig {
     param(
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
         [string]$shmId,
-        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+        [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
         [string]$sreId
     )
     # Import minimal management config parameters from JSON config file - we can derive the rest from these
@@ -737,8 +737,11 @@ function Get-SreConfig {
 
     # Storage config
     # --------------
+    if ($config.sre.id.Contains("-")) {
+        Add-LogMessage -Level Warning "The hyphen character is not allowed in storage account names and will be removed."
+    }
     $storageRg = "$($config.sre.rgPrefix)_STORAGE".ToUpper()
-    $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)"
+    $sreStoragePrefix = "$($config.shm.id)$($config.sre.id)".Replace("-", "")
     $sreStorageSuffix = New-RandomLetters -SeedPhrase "$($config.sre.subscriptionName)$($config.sre.id)"
     $config.sre.storage = [ordered]@{
         accessPolicies  = [ordered]@{
@@ -938,11 +941,11 @@ function Get-SreConfig {
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.webapps.cidr -Offset 6
             osVersion               = "Ubuntu-latest"
             codimd                  = [ordered]@{
-                dockerVersion = "2.4.1-cjk"
+                dockerVersion = "2.5.3"
             }
             postgres                = [ordered]@{
                 passwordSecretName = "$($config.sre.shortName)-other-codimd-password-postgresdb"
-                dockerVersion      = "13.4-alpine"
+                dockerVersion      = "16-alpine"
             }
             disks                   = [ordered]@{
                 data = [ordered]@{

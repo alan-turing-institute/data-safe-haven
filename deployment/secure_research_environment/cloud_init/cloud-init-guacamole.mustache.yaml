@@ -110,7 +110,7 @@ packages:
   - clamav-freshclam
   - clamav-unofficial-sigs
   - docker.io
-  - docker-compose
+  - docker-compose-v2
   - gcc
   - libpq-dev
   - make
@@ -170,7 +170,7 @@ runcmd:
   - sleep 1m
   - systemctl status docker
   - docker --version
-  - docker-compose --version
+  - docker compose --version
 
   # Set up the guacamoledaemon user
   - echo ">=== Configuring guacamoledaemon user... ===<"
@@ -197,15 +197,15 @@ runcmd:
 
   # Deploy Guacamole using Docker
   - echo ">=== Deploying Guacamole with Docker...  ===<"
-  - su guacamoledaemon -c "docker-compose -f /opt/guacamole/docker-compose.yaml up -d"
+  - su guacamoledaemon -c "docker compose -f /opt/guacamole/docker-compose.yaml up -d"
 
   # Generate the necessary SQL config for the local PostgreSQL database and run it
   - echo ">=== Configuring local PostgreSQL database... ===<"
-  - su guacamoledaemon -c "docker-compose -f /opt/guacamole/docker-compose.yaml exec -T guacamole /opt/guacamole/bin/initdb.sh --postgres" > /opt/postgresql/scripts/db_init.sql
+  - su guacamoledaemon -c "docker compose -f /opt/guacamole/docker-compose.yaml exec -T guacamole /opt/guacamole/bin/initdb.sh --postgresql" > /opt/postgresql/scripts/db_init.sql
   - echo "CREATE ROLE ldap_users;" >> /opt/postgresql/scripts/db_init.sql
   - echo "CREATE ROLE ldap_groups;" >> /opt/postgresql/scripts/db_init.sql
   - ls -alh /opt/postgresql/scripts/db_init.sql
-  - su guacamoledaemon -c "docker-compose -f /opt/guacamole/docker-compose.yaml exec -T postgres psql -U guacamole -f /scripts/db_init.sql"
+  - su guacamoledaemon -c "docker compose -f /opt/guacamole/docker-compose.yaml exec -T postgres psql -U guacamole -f /scripts/db_init.sql"
 
   # Add initial set of LDAP users with pg-ldap-sync
   - echo ">=== Adding LDAP users with pg-ldap-sync... ===<"

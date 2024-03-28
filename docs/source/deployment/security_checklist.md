@@ -173,14 +173,14 @@ Check that the **SRE standard user** can access the Secure Research Desktop (SRD
 #### Connect to SHM VMs if and only if connected to the SHM VPN:
 
 - Connect to the SHM VPN
-- Attempt to connect to the SHM DC and SHM NPS
+- Attempt to connect to the SHM DC
 
 ```{attention}
 {{white_check_mark}} **Verify that:** connection works
 ```
 
 - Disconnect from the SHM VPN
-- Attempt to connect to the SHM DC and SHM NPS
+- Attempt to connect to the SHM DC
 
 ```{attention}
 {{white_check_mark}} **Verify that:** connection fails
@@ -282,18 +282,16 @@ Check that users cannot connect from one SRE to another one in the same SHM, eve
 
 #### User devices ({ref}`policy_tier_2`)
 
-One can connect regardless of device as long as one has an allow-listed IP address and credentials
-
-- Using a **personal device**, connect to the environment using an allow-listed IP address and credentials
+- Connect to the environment using an allow-listed IP address and credentials
 
 ```{attention}
 {{white_check_mark}} **Verify that:** connection succeeds
 ```
 
-- Using a **managed device**, connect to the environment using an allow-listed IP address and credentials.
+- Connect to the environment from an IP address that is not allow-listed but with correct credentials.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** connection succeeds
+{{white_check_mark}} **Verify that:** connection fails
 ```
 
 #### User devices ({ref}`policy_tier_3`)
@@ -308,18 +306,20 @@ All managed devices should be provided by a known IT team at an approved organis
 {{white_check_mark}} **Verify that:** the user does not have administrator permissions on the device.
 ```
 
-A device is able to connect to the environment if and only if it is managed (with correct VPN and credentials)
-
-- Using a **personal device**, attempt to connect to the environment using the correct VPN and credentials
-
 ```{attention}
-{{white_check_mark}} **Verify that:** connection fails
+{{white_check_mark}} **Verify that:** allow-listed IP addresses are exclusive to managed devices.
 ```
 
-- Using a **managed device**, attempt to connect to the environment using the correct VPN and credentials
+- Connect to the environment using an allow-listed IP address and credentials
 
 ```{attention}
 {{white_check_mark}} **Verify that:** connection succeeds
+```
+
+- Connect to the environment from an IP address that is not allow-listed but with correct credentials.
+
+```{attention}
+{{white_check_mark}} **Verify that:** connection fails
 ```
 
 #### Network rules ({ref}`policy_tier_2` and above):
@@ -479,7 +479,7 @@ Connection from within the secure physical space is possible.
 
 ### Turing configuration setting:
 
-- Prior to access to the ingress volume being provided, the {ref}`role_data_provider_representative` must provide the IP address(es) from which data will be uploaded and an email address to which a secure upload token can be sent.
+- Prior to access to the ingress volume being provided, the {ref}`role_data_provider_representative` must provide the IP address(es) from which data will be uploaded and a secure mechanism by which a time-limited upload token can be sent, such as an encrypted email system.
 - Once these details have been received, the data ingress volume should be opened for data upload.
 
 To minimise the risk of unauthorised access to the dataset while the ingress volume is open for uploads, the following security measures are in place:
@@ -489,7 +489,7 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
     - This allows them to upload, verify and modify the uploaded data, but does not viewing or download of the data.
     - This provides protection against an unauthorised party accessing the data, even they gain access to the upload token.
 - The upload token expires after a time-limited upload window.
-- The upload token is transferred to the Dataset Provider via a secure email system.
+- The upload token is transferred to the Dataset Provider via the provided secure mechanism.
 
 ### Implication:
 
@@ -500,23 +500,23 @@ To minimise the risk of unauthorised access to the dataset while the ingress vol
 
 To test all the above, you will need to act both as the {ref}`role_system_manager` and {ref}`role_data_provider_representative`:
 
-#### Check that the {ref}`role_system_manager` can send a secure upload token to the {ref}`role_data_provider_representative` over secure email
+#### Check that the {ref}`role_system_manager` can send an upload token to the {ref}`role_data_provider_representative` over a secure channel
 
 - Use the IP address of your own device in place of that of the data provider
-- Generate a secure upload token with write-only permissions following the instructions in the {ref}`administrator document <roles_system_manager_data_ingress>`.
+- Generate an upload token with write-only permissions following the instructions in the {ref}`administrator document <roles_system_manager_data_ingress>`.
 
 ```{attention}
-{{white_check_mark}} **Verify that:** the secure upload token is successfully created.
+{{white_check_mark}} **Verify that:** the upload token is successfully created.
 ```
 
 ```{attention}
-{{white_check_mark}} **Verify that:** you are able to send a secure email containing this token (e.g. send it to your own email for testing purposes).
+{{white_check_mark}} **Verify that:** you are able to send this token using a secure mechanism.
 ```
 
 #### Ensure that data ingress works only for connections from the accepted IP address range
 
 - As the {ref}`role_data_provider_representative`, ensure you're working from a device that has an allow-listed IP address
-- Using the secure upload token with write-only permissions and limited time period that you set up in the previous step, follow the ingress instructions for the {ref}`data provider <role_data_provider_representative>`
+- Using the upload token with write-only permissions and limited time period that you set up in the previous step, follow the ingress instructions for the {ref}`data provider <role_data_provider_representative>`
 
 ```{attention}
 {{white_check_mark}} **Verify that:** writing succeeds by uploading a file
@@ -651,7 +651,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ### Turing configuration setting::
 
-- {ref}`policy_tier_2`: The user can access any package from our mirrors. They can freely use these packages without restriction.
+- {ref}`policy_tier_2`: The user can access any package from our mirrors or via our proxies. They can freely use these packages without restriction.
 - {ref}`policy_tier_3`: The user can only access a specific pre-agreed set of packages. They will be unable to download any package not on the allowed list.
 
 ### Implication:
@@ -672,7 +672,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier2_allowed.png
+```{image} security_checklist/srd_pypi_tier2_allow_listed.png
 :alt: SRD PyPI Tier 2
 :align: center
 ```
@@ -686,7 +686,7 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 <details><summary>you can install the package</summary>
 
-```{image} security_checklist/srd_pypi_tier2_denied.png
+```{image} security_checklist/srd_pypi_tier2_not_allow_listed.png
 :alt: SRD PyPI Tier 2
 :align: center
 ```
@@ -728,8 +728,8 @@ To test all the above, you will need to act both as the {ref}`role_system_manage
 
 ### Turing configuration setting:
 
-- Whilst all user access VMs are entirely blocked off from the internet, this is not the case for administrator access VMs such as the SHM-DC, SRE DATA server.
-- An Azure Firewall governs the internet access provided to these VMs, limiting them mostly to downloading Windows updates.
+- Whilst all user accessible VMs are entirely blocked off from the internet, this is not the case for administrator-only VMs.
+- An Azure Firewall governs the internet access provided to these VMs, limiting them mostly to downloading system updates.
 
 ### Implication:
 

@@ -1,7 +1,7 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
     [string]$shmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
     [string]$sreId,
     [Parameter(Mandatory = $false, HelpMessage = "No-op mode which will not remove anything")]
     [Switch]$dryRun
@@ -83,7 +83,7 @@ $scriptPath = Join-Path $PSScriptRoot ".." "secure_research_environment" "setup"
 if ($dryRun.IsPresent) {
     Add-LogMessage -Level Info "SRE data would be removed from the SHM by running: $scriptPath -shmId $shmId -sreId $sreId"
 } else {
-    Invoke-Expression -Command "$scriptPath -shmId $shmId -sreId $sreId"
+    & $scriptPath -shmId $shmId -sreId $sreId
 }
 
 

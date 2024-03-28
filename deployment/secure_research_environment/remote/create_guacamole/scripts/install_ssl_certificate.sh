@@ -29,4 +29,4 @@ cat cert.pem "$LETS_ENCRYPT_CERTIFICATE_PATH" > fullchain.pem
 ls -alh
 
 # Force docker services to reload
-sudo docker-compose -f /opt/guacamole/docker-compose.yaml up --force-recreate -d 2>&1
+sudo docker compose -f /opt/guacamole/docker-compose.yaml up --force-recreate -d 2>&1

@@ -65,17 +65,33 @@ We usually deploy the latest available version of the Data Safe Haven for each o
 | December 2022    | DSG 2022-12                   | [v4.0.2](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.2)           |
 | February 2023    | DSG 2023-02                   | [v4.0.3](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.3)           |
 | May 2023         | DSG 2023-05                   | [v4.0.3](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.3)           |
+| September 2023   | DDRC DSG Exeter 2023          | [v4.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.1.0)           |
+| December 2023    | DSG 2023-12                   | [v4.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.1.0)           |
+
+Additionally, a production instance of DSH is maintained for use by research projects at the Turing.
+
+| Year      | Release used                                                                                     |
+|-----------|--------------------------------------------------------------------------------------------------|
+| 2020      | [v2.0.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v2.0.0-beta) |
+| 2020      | [v3.0.0-beta](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.0.0-beta) |
+| 2021–2022 | [v3.3.1](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.3.1)           |
+| 2022      | [v4.0.2](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.2)           |
+| 2023      | [v4.0.3](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.3)           |
+| 2023–2024 | [v4.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.1.0)           |
+| 2024      | [v4.2.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.2.0)           |
 
 ## Versions that have undergone formal security evaluation
 
 The following versions have been evaluated by third party security consultants prior to release.
 
-| Version                                                                                | Evaluation date  | Evaluation performed                                                                                                                                                                               | Outcome                              |
-| -------------------------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| [v3.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.1.0) | 13 July 2020     | Penetration test evaluating (1) external attack surface, (2) ability to exfiltrate data from the system, (3) ability to transfer data between SREs, (4) ability to escalate privileges on the SRD. | No major security issues identified. |
-| [v3.3.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.3.0) | 15 July 2021     | Penetration test evaluating (1) external attack surface, (2) ability to exfiltrate data from the system, (3) ability to transfer data between SREs, (4) ability to escalate privileges on the SRD. | No major security issues identified. |
-| [v3.4.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.4.0) | 22 April 2022    | Penetration test evaluating (1) external attack surface, (2) ability to exfiltrate data from the system, (3) ability to transfer data between SREs, (4) ability to escalate privileges on the SRD. | No major security issues identified. |
-| [v4.0.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.0) | 2 September 2022 | Penetration test evaluating ability to infiltrate/exfiltrate data from the system.                                                                                                                 | No major security issues identified. |
+| Version                                                                                         | Evaluation date   | Evaluation performed                                                                                                                                                                               | Outcome                              |
+| --------------------------------------------------------------------------------------          | ----------------  | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| [v3.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.1.0)          | 13 July 2020      | Penetration test evaluating (1) external attack surface, (2) ability to exfiltrate data from the system, (3) ability to transfer data between SREs, (4) ability to escalate privileges on the SRD. | No major security issues identified. |
+| [v3.3.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.3.0)          | 15 July 2021      | Penetration test evaluating (1) external attack surface, (2) ability to exfiltrate data from the system, (3) ability to transfer data between SREs, (4) ability to escalate privileges on the SRD. | No major security issues identified. |
+| [v3.4.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v3.4.0)          | 22 April 2022     | Penetration test evaluating (1) external attack surface, (2) ability to exfiltrate data from the system, (3) ability to transfer data between SREs, (4) ability to escalate privileges on the SRD. | No major security issues identified. |
+| [v4.0.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.0)          | 2 September 2022  | Penetration test evaluating ability to infiltrate/exfiltrate data from the system.                                                                                                                 | No major security issues identified. |
+| [v5.0.0-rc1](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v5.0.0-rc.1) | 18 September 2023 | Penetration test evaluating ability to infiltrate/exfiltrate data from the system. Testing next codebase, using Python and Pulumi.                                                                        | No major security issues identified. |
+| [v4.2.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.2.0)          | 22 March 2024     | Penetration test evaluating ability to infiltrate/exfiltrate data from the system. Repeat tests for v4.0.0 vulnerabilities.                                                                        | No major security issues identified. |
 
 ## Questions
 

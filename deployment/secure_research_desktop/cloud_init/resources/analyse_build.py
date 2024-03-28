@@ -61,7 +61,7 @@ def main():
 
     # Get package install/update time
     with suppress(IndexError):
-        end_entries = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-final/config-package-update-upgrade-install", cloud_init_log_events))
+        end_entries = list(filter(lambda x: x["event_type"] == "finish" and x["name"] == "modules-final/config-package_update_upgrade_install", cloud_init_log_events))
         if end_entries:
             events.append({"timestamp": datetime.fromtimestamp(end_entries[0]["timestamp"]), "level": end_entries[0]["result"], "message": "Installing/updating Ubuntu packages"})
         else:

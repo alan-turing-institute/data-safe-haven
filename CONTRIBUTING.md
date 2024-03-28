@@ -27,6 +27,7 @@ Jump to the following sections:
     - [Who's involved in the project](#whos-involved-in-the-project)
     - [Make a change with a pull request](#making-a-change-with-a-pull-request)
     - [Make a change to the documentation](#making-a-change-to-the-documentation)
+    - [Adding new contributors](#adding-new-contributors)
 
 ## A DevOps development philosophy
 
@@ -230,44 +231,15 @@ To preview your changes, you can build the docs locally. See [docs/README.md](do
 
 ### Who's involved in the project
 
-As some users have `GitHub` IDs that make it a little difficult to know who they are in real life and it's sometimes nice to know **who** you're working with on the project, hopefully this table will help you put names to faces and IDs :sparkles:
+Take a look at the full list of contributors on our [README](README.md).
 
-The following people have made one or more commits to the project:
+### Adding new contributors
 
-| Name                 | GitHub ID                                                  |
-| -------------------- | ---------------------------------------------------------- |
-| Daniel Allen         | [@sysdan](https://github.com/sysdan)                       |
-| Diego Arenas         | [@darenasc](https://github.com/darenasc)                   |
-| David Beavan         | [@DavidBeavan](https://github.com/DavidBeavan)             |
-| Alvaro Cabrejas Egea | [@ACabrejas](https://github.com/ACabrejas)                 |
-| Ian Carter           | [@getcarter21](https://github.com/getcarter21)             |
-| Ed Chalstrey         | [@edwardchalstrey1](https://github.com/edwardchalstrey1)   |
-| Rob Clarke           | [@RobC-CTL](https://github.com/RobC-CTL)                   |
-| James Cunningham     | [@james-c](https://github.com/james-c)                     |
-| Tom Doel             | [@tomdoel](https://github.com/tomdoel)                     |
-| Chris Edsall         | [@christopheredsall](https://github.com/christopheredsall) |
-| Oliver Forrest       | [@oforrest](https://github.com/oforrest)                   |
-| Oscar Giles          | [@OscartGiles](https://github.com/OscartGiles)             |
-| James Hetherington   | [@jamespjh](https://github.com/jamespjh)                   |
-| Tim Hobson           | [@thobson88](https://github.com/thobson88)                 |
-| George Holmes        | [@ens-george-holmes](https://github.com/ens-george-holmes) |
-| Catherine Lawrence   | [@cathiest](https://github.com/cathiest)                   |
-| Tomas Lazauskas      | [@tomaslaz](https://github.com/tomaslaz)                   |
-| Jim Madge            | [@JimMadge](https://github.com/JimMadge)                   |
-| Jules Manser         | [@JulesMarz](https://github.com/JulesMarz)                 |
-| Miguel Morin         | [@miguelmorin](https://github.com/miguelmorin)             |
-| Federico Nanni       | [@fedenanni](https://github.com/fedenanni)                 |
-| Guillaume Noell      | [@gn5](https://github.com/gn5)                             |
-| Martin O'Reilly      | [@martintoreilly](https://github.com/martintoreilly)       |
-| Jack Roberts         | [@jack89roberts](https://github.com/jack89roberts)         |
-| James Robinson       | [@jemrobinson](https://github.com/jemrobinson)             |
-| Brett Todd           | [@ens-brett-todd](https://github.com/ens-brett-todd)       |
-| Sebastian Vollmer    | [@vollmersj](https://github.com/vollmersj)                 |
-| Ben Walden           | [@bw-faststream](https://github.com/bw-faststream)         |
-| Kirstie Whitaker     | [@KirstieJane](https://github.com/KirstieJane)             |
-| Rachel Winstanley    | [@rwinstanley1](https://github.com/rwinstanley1)           |
-| Warwick Wood         | [@warwick26](https://github.com/warwick26)                 |
-| Kevin Xu             | [@kevinxufs](https://github.com/kevinxufs)                 |
+We use @all-contributors to maintain the contributor list on the README, however we do not use the GitHub bot.
+
+You should follow the same instructions as above to [make a change with a pull request](#making-a-change-with-a-pull-request) when adding a new contributor.
+
+To add new contributor to the README table, see the [all-contributors CLI documentation](https://allcontributors.org/docs/en/cli/overview) and use the CLI to add the new contributor, then make a pull request with your changes.
 
 ## Get in touch
 

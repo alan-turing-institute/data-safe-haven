@@ -9,8 +9,15 @@ DECLARE
 obj record;
 BEGIN
 IF EXISTS (SELECT usename FROM pg_user WHERE ((usename = CURRENT_USER) AND (usesuper='t'))) THEN
-    FOR obj in SELECT * FROM pg_user WHERE ((usesuper='t' or usecreatedb='t') AND (usename!='postgres') AND NOT pg_has_role(usesysid, '{{sre.domain.securityGroups.systemAdministrators.name}}', 'member')) LOOP
-    EXECUTE format('ALTER USER "%s" WITH NOCREATEDB NOCREATEROLE NOSUPERUSER;', obj.usename);
+    FOR obj in SELECT * FROM pg_user 
+        WHERE usesysid NOT IN (
+            SELECT member FROM pg_auth_members
+            WHERE roleid = (
+                SELECT oid FROM pg_roles 
+                WHERE rolname = '{{sre.domain.securityGroups.systemAdministrators.name}}'))
+            AND NOT usename = 'postgres'
+    LOOP
+        EXECUTE format('ALTER USER "%s" WITH NOCREATEDB NOCREATEROLE NOSUPERUSER;', obj.usename);
     END LOOP;
     FOR obj in SELECT * FROM pg_user WHERE (pg_has_role(usesysid, '{{sre.domain.securityGroups.systemAdministrators.name}}', 'member')) LOOP
     EXECUTE format('ALTER USER "%s" WITH CREATEDB CREATEROLE SUPERUSER;', obj.usename);

@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Path to directory containing allowlist files (default: '<repo root>/environment_configs/package_lists')")]
     [string]$AllowlistDirectory = $null

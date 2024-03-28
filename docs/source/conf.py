@@ -79,6 +79,7 @@ html_theme_options = {
     },
     "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
     "use_edit_page_button": True,
+    "header_links_before_dropdown": 6
 }
 
 # Location of favicon

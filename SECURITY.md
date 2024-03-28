@@ -7,8 +7,8 @@ All organisations using an earlier version in production should update to the la
 
 | Version                                                                                 | Supported          |
 | --------------------------------------------------------------------------------------- | ------------------ |
-| [4.0.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.0)   | :white_check_mark: |
-| < 4.0.0                                                                                 | :x:                |
+| [4.2.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.2.0)   | :white_check_mark: |
+| < 4.2.0                                                                                 | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -54,7 +54,7 @@ coordinate any public release with us.
 
 We will generally look to publish a public security advisory on this repository's
 [security advisories](https://github.com/alan-turing-institute/data-safe-haven/security/advisories)
-page once a vulnerabilty has been resolved and we have given those organisations
+page once a vulnerability has been resolved and we have given those organisations
 we know of with active deployments reasonable time to patch or update their deployments.
 We will credit you with reporting the vulnerability and with any other assistance
 you have provided characterising and resolving it in the published security advisory.

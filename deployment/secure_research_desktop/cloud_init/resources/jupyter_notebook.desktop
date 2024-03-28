@@ -1,7 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Jupyter Notebook
-Exec=jupyter notebook
-Icon=/usr/lib/python3/dist-packages/notebook/static/base/images/favicon.ico
-Categories=Utility;TextEditor;Development;IDE;

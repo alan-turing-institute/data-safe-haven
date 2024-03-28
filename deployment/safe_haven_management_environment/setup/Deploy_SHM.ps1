@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project'. Maximum of seven alphanumeric characters)")]
     [string]$shmId,
     [Parameter(Mandatory = $false, HelpMessage = "Use device authentication for connecting to Azure and Microsoft Graph")]
     [switch]$UseDeviceAuthentication
@@ -73,6 +73,11 @@ Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Monitoring
 # Setup SHM firewall and routing
 # ------------------------------
 Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Firewall.ps1')" -shmId $shmId }
+
+
+# Setup SHM storage accounts
+# --------------------------
+Invoke-Command -ScriptBlock { & "$(Join-Path $PSScriptRoot 'Setup_SHM_Storage_Accounts.ps1')" -shmId $shmId }
 
 
 # Setup SHM domain controllers

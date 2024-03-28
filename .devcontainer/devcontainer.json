@@ -5,13 +5,17 @@
 		"context": "..",
 		"dockerfile": "Dockerfile"
 	},
-	"settings": {
-		"terminal.integrated.defaultProfile.linux": "bash"
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash"
+			},
+			"extensions": [
+				"github.vscode-pull-request-github",
+				"ms-vscode.powershell",
+				"ms-vscode.azure-account"
+			]
+		}
 	},
-	"extensions": [
-		"github.vscode-pull-request-github",
-		"ms-vscode.powershell",
-		"ms-vscode.azure-account"
-	],
 	"remoteUser": "deploydsh"
 }

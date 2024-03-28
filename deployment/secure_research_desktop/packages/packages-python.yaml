@@ -6,9 +6,9 @@
 # [Optional] arguments to each package
 #   <Python version or 'all' for all versions>: <list of constraints that may include 'uninstallable' if appropriate>
 versions:
-    - "3.9"
     - "3.10"
     - "3.11"
+    - "3.12"
 packages:
     arviz:
     beautifulsoup4:
@@ -25,13 +25,13 @@ packages:
     html5lib:
     ipykernel:
     keras:
-        "3.11": ["uninstallable"]  # requires tensorflow
+        "3.12": ["uninstallable"]  # requires tensorflow
     lightgbm:
+        "all": ["[dask]"]
     lxml:
     matplotlib:
     nltk:
     numba:
-        "3.11": ["uninstallable"]  # does not yet support 3.11
     numpy:
         "all": [">1.0.0"]  # increase solver flexibility
     pandas:
@@ -47,10 +47,12 @@ packages:
     pygrib:
     pylint:
     pymc:
+        "3.12": ["uninstallable"]  # Dependency conflict with other (unidentified) package
     pyodbc:
     pyproj:
     pyshp:
     pystan:
+        "3.12": ["uninstallable"]  # Does not currently support 3.12 due to dependency issue
     pytest:
     PyYAML:
     regex:
@@ -70,14 +72,11 @@ packages:
     sympy:
     tables:
     tensorflow:
-        "3.11": ["uninstallable"]  # does not yet support 3.11
     thinc:
     torch:
     torchvision:
-        "3.11": ["uninstallable"]  # does not yet support 3.11
+        "3.12": ["uninstallable"]  # does not yet support 3.12
     tsfresh:
-        "3.11": ["uninstallable"]  # requires numba
     wordcloud:
-        "3.11": ["uninstallable"]  # does not yet support 3.11
     xgboost:
     xlrd:
