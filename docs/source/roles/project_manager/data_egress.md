@@ -5,7 +5,10 @@ Once the project is finished, it is important to extract all outputs from the en
 Each time you egress data from the environment, it must be checked that it is safe and appropriate to release.
 
 ```{note}
-You might want to define multiple data collections for egress, which would each have their own sensitivity classification. For example, you might separate a low-sensitivity written report from a high-sensitivity derived dataset.
+You might want to define multiple data collections for egress, which would each have their own sensitivity.
+For example, you might separate a low-sensitivity written report from a high-sensitivity derived dataset.
+The egress process can then be adjusted based on the sensitivity of each dataset.
+For example, the low-sensitivity report can be publically released whereas the high-sensitivity derived dataset may go back to the data provider only.
 ```
 
 ## Bringing data out of the environment
