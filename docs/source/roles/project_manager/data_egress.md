@@ -2,7 +2,7 @@
 
 Data Safe Havens are used for doing secure data research.
 Once the project is finished, it is important to extract all outputs from the environment before shutting it down.
-Each time you egress data from the environment, it must be checked that it is safe and appropriate to release.
+Each time you egress data from the environment, it must be checked to ensure that it is safe and appropriate to release.
 
 ```{note}
 You might want to define multiple data collections for egress, which would each have their own sensitivity.

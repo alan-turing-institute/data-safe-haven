@@ -27,6 +27,6 @@ If the new security tier is higher than the one in which work has already starte
 If ingress of new data would change the classification of a project, we suggest determining the updated classification and deploying a new environment for it.
 ```
 
-At the end of this process they should have classified project into one of the Data Safe Haven security tiers.
+At the end of this process they should have classified the project into one of the Data Safe Haven security tiers.
 
 If there are multiple data providers, please see the guidance for {ref}`roles_system_manager_multiple_providers`

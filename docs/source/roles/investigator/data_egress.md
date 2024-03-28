@@ -1,7 +1,7 @@
 # Data egress process
 
 Data Safe Havens are used for doing secure data research.
-Once you have finished working with the data for your project, you'll have to conduct the egress any outputs of your work before the environment is shutdown.
+Once you have finished working with the data for your project, you'll have to conduct the egress of any outputs of your work before the environment is shutdown.
 
 ## Bringing data out of the environment
 
