@@ -713,7 +713,7 @@ class AzureApi(AzureAuthenticator):
             if not isinstance(storage_keys, StorageAccountListKeysResult):
                 msg = f"Could not connect to {msg_sa} in {msg_rg}."
                 raise DataSafeHavenAzureError(msg)
-            keys: list[StorageAccountKey] = storage_keys.keys
+            keys = cast(list[StorageAccountKey], storage_keys.keys)
             if not keys or not isinstance(keys, list) or len(keys) == 0:
                 msg = f"No keys were retrieved for {msg_sa} in {msg_rg}."
                 raise DataSafeHavenAzureError(msg)
@@ -888,7 +888,7 @@ class AzureApi(AzureAuthenticator):
                 f"Removed file [green]{blob_name}[/] from blob storage.",
             )
         except Exception as exc:
-            msg = f"Blob file '{blob_name}' could not be removed from '{storage_account_name}'\n{exc}."
+            msg = f"Blob file [green]'{blob_name}'[/] could not be removed from [green]'{storage_account_name}'[/].\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def remove_dns_txt_record(

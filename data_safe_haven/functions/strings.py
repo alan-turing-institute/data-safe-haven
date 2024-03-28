@@ -63,7 +63,7 @@ def replace_separators(input_string: str, separator: str = "") -> str:
 
 def seeded_uuid(seed: str) -> uuid.UUID:
     """Return a UUID seeded from a given string."""
-    generator = random.Random()
+    generator = random.Random()  # noqa: S311
     generator.seed(seed)
     return uuid.UUID(int=generator.getrandbits(128), version=4)
 

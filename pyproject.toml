@@ -65,7 +65,7 @@ dependencies = [
   "black>=24.1.0",
   "mypy>=1.0.0",
   "pydantic>=2.4",
-  "ruff>=0.2.0",
+  "ruff>=0.3.4",
   "types-appdirs>=1.4.3.5",
   "types-chevron>=0.14.2.5",
   "types-pytz>=2023.3.0.0",
@@ -77,7 +77,7 @@ dependencies = [
 typing = "mypy {args:data_safe_haven}"
 
 style = [
-  "ruff {args:data_safe_haven tests_}",
+  "ruff check {args:data_safe_haven tests_}",
   "black --check --diff {args:data_safe_haven tests_}",
 ]
 fmt = [

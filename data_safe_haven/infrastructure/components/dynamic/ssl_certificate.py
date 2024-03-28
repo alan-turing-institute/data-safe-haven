@@ -1,5 +1,6 @@
 """Pulumi dynamic component for SSL certificates uploaded to an Azure KeyVault."""
 
+import time
 from contextlib import suppress
 from typing import Any
 
@@ -78,11 +79,9 @@ class SSLCertificateProvider(DshResourceProvider):
             client.generate_csr()
             # Request DNS verification tokens and add them to the DNS record
             azure_api = AzureApi(props["subscription_name"], disable_logging=True)
-            for (
-                record_name,
-                record_values,
-            ) in client.request_verification_tokens().items():
-                azure_api.ensure_dns_txt_record(
+            verification_tokens = client.request_verification_tokens().items()
+            for record_name, record_values in verification_tokens:
+                record_set = azure_api.ensure_dns_txt_record(
                     record_name=record_name.replace(f".{props['domain_name']}", ""),
                     record_value=record_values[0],
                     resource_group_name=props["networking_resource_group_name"],
@@ -94,6 +93,8 @@ class SSLCertificateProvider(DshResourceProvider):
             ):
                 msg = "DNS propagation failed"
                 raise DataSafeHavenSSLError(msg)
+            # Wait for the TTL for this record to expire to remove risk of caching
+            time.sleep(record_set.ttl or 30)
             # Request a signed certificate
             try:
                 certificate_bytes = client.request_certificate()
@@ -101,6 +102,10 @@ class SSLCertificateProvider(DshResourceProvider):
                 msg = "\n".join(
                     ["ACME validation error:"]
                     + [str(auth_error) for auth_error in exc.failed_authzrs]
+                    + [
+                        f"TXT record {record_name} is currently set to {record_values}"
+                        for (record_name, record_values) in verification_tokens
+                    ]
                 )
                 raise DataSafeHavenSSLError(msg) from exc
             # Although KeyVault will accept a PEM certificate (where we simply prepend
