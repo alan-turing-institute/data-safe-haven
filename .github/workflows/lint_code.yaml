@@ -4,9 +4,9 @@ name: Lint code
 # Run workflow on pushes to matching branches
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: [develop, python-migration]
+    branches: [develop, latest]
   pull_request:
-    branches: [develop, python-migration]
+    branches: [develop, latest]
 
 jobs:
   lint_json:
