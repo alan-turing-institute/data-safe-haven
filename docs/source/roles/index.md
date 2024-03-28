@@ -11,7 +11,6 @@ programme_manager/index.md
 project_manager/index.md
 referee/index.md
 researcher/index.md
-system_manager/index.md
 ```
 
 Several aspects of the Data Safe Haven rely on role-based access controls.
@@ -55,6 +54,3 @@ The different user roles are detailed alphabetically below.
 
 {ref}`role_researcher`
 : a member of a particular project, who analyses data to produce results.
-
-{ref}`role_system_manager`
-: a designated staff member at the {ref}`hosting institution <role_organisation_dsh_host>` who is responsible for administering the Data Safe Haven.

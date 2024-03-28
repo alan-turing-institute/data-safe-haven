@@ -1,7 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=PyCharm
-Exec=/snap/bin/pycharm-community
-Icon=/snap/pycharm-community/current/meta/gui/icon.png
-Categories=Utility;TextEditor;Development;IDE;
