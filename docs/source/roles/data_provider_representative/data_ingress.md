@@ -25,7 +25,7 @@ To help avoid name clashes, if you are uploading multiple data sets you should u
 For example, if the data sets are single files, use unique file names.
 If data sets consist of multiple files, collect them in uniquely named directories.
 
-If there are multiple data providers uploading data for a single work package, each provider should use a uniquely named directory, or prepend their files with a unique name.
+If there are multiple data providers uploading data to a single SRE, each provider should use a uniquely named directory, or prepend their files with a unique name.
 
 ### Avoiding data leakage
 

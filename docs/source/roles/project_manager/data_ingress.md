@@ -24,9 +24,9 @@ They should reclassify the project.
 If the new security tier is higher than the one in which work has already started then the data ingress **is not permitted**.
 
 ```{warning}
-If ingress of new data would change the classification of a project, we suggest defining this as a new work package and deploying a new environment for it.
+If ingress of new data would change the classification of a project, we suggest determining the updated classification and deploying a new environment for it.
 ```
 
-At the end of this process they should have classified the work package into one of the Data Safe Haven security tiers.
+At the end of this process they should have classified project into one of the Data Safe Haven security tiers.
 
 If there are multiple data providers, please see the guidance for {ref}`roles_system_manager_multiple_providers`
