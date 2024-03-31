@@ -97,6 +97,7 @@ charset-normalizer
 clang
 cleo
 click
+click-completion
 click-plugins
 cligj
 clikit
@@ -713,6 +714,8 @@ twisted-iocpsupport
 typed-ast
 typeguard
 typer
+typer-cli
+typer-slim
 types-docutils
 types-PyYAML
 types-setuptools
