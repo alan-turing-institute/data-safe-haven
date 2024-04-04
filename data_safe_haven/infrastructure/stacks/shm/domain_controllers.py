@@ -171,13 +171,7 @@ class SHMDomainControllersComponent(ComponentResource):
             ),
             opts=ResourceOptions.merge(
                 child_opts,
-                ResourceOptions(
-                    depends_on=[
-                        primary_domain_controller,
-                        primary_domain_controller_dsc_node,
-                    ],
-                    parent=primary_domain_controller_dsc_node,
-                ),
+                ResourceOptions(parent=primary_domain_controller_dsc_node),
             ),
         )
 

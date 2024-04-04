@@ -691,6 +691,7 @@ class SREDataComponent(ComponentResource):
             root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
             share_name="home",
             share_quota=1024,
+            signed_identifiers=[],
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_account_data_private_user)
             ),
@@ -704,6 +705,7 @@ class SREDataComponent(ComponentResource):
             root_squash=storage.RootSquashType.ROOT_SQUASH,
             share_name="shared",
             share_quota=1024,
+            signed_identifiers=[],
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_account_data_private_user)
             ),

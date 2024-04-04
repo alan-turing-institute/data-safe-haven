@@ -44,4 +44,7 @@ expanded.yaml
 .mypy_cache
 
 # ruff cache
+.pytest_cache
+
+# ruff cache
 .ruff_cache

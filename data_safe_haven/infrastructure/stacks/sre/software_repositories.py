@@ -65,7 +65,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         opts: ResourceOptions | None = None,
         tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
-        super().__init__("dsh:sre:SRESoftwareRepositoriesComponent", name, {}, opts)
+        super().__init__("dsh:sre:SoftwareRepositoriesComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
@@ -77,6 +77,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             resource_group_name=props.storage_account_resource_group_name,
             share_name="software-repositories-caddy",
             share_quota=1,
+            signed_identifiers=[],
             opts=child_opts,
         )
         file_share_nexus = storage.FileShare(
@@ -86,6 +87,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             resource_group_name=props.storage_account_resource_group_name,
             share_name="software-repositories-nexus",
             share_quota=5120,
+            signed_identifiers=[],
             opts=child_opts,
         )
         file_share_nexus_allowlists = storage.FileShare(
@@ -95,6 +97,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             resource_group_name=props.storage_account_resource_group_name,
             share_name="software-repositories-nexus-allowlists",
             share_quota=1,
+            signed_identifiers=[],
             opts=child_opts,
         )
 
