@@ -10,7 +10,7 @@ The set of controls applied at the Alan Turing Institute are discussed here, tog
 
 - Users must set up MFA before accessing the secure analysis environment.
 - Users cannot access the environment without MFA.
-- Users are required to create passwords that meet the [Azure Active Directory policy](https://docs.microsoft.com/en-us/azure/active-directory/authentication/concept-sspr-policy) requirements.
+- Users are required to create passwords that meet the [Microsoft Entra policy](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-policy) requirements.
 
 ### Implication:
 

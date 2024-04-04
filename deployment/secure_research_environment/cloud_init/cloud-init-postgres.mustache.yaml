@@ -16,20 +16,20 @@ apt:
       source: "deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main"
       keyid: 7FCC7D46ACCC4CF8
 
-# We know that exactly one data disk will be attached to this VM and it will therefore use lun1 as lun0 is the OS disk
+# We know that exactly one data disk will be attached to this VM and it will therefore use lun0
 disk_setup:
-  /dev/disk/azure/scsi1/lun1:
+  /dev/disk/azure/scsi1/lun0:
     table_type: gpt
     layout: true
     overwrite: true
 
 fs_setup:
-  - device: /dev/disk/azure/scsi1/lun1
+  - device: /dev/disk/azure/scsi1/lun0
     partition: auto
     filesystem: ext4
 
 mounts:
-  - [/dev/disk/azure/scsi1/lun1-part1, /data, ext4, "defaults,nofail"]
+  - [/dev/disk/azure/scsi1/lun0-part1, /data, ext4, "defaults,nofail"]
 
 write_files:
   - path: "/etc/apt/apt.conf.d/00proxy"
@@ -59,6 +59,13 @@ write_files:
     content: |
       # Run user synchronisation every 10 minutes
       */10 * * * * postgres /usr/local/bin/pg_ldap_sync -vvv -c /etc/postgresql/12/main/pg-ldap-sync.yaml 2>&1 | logger -t SafeHaven
+
+  - path: "/etc/cron.d/db-role-update"
+    permissions: "0644"
+    content: |
+      # Trigger role updates every 10 minutes by writing a comment to the data schema
+      # Run at 1, 11, 21, 31, 41, 51 minutes past the hour so always after the user sync
+      1-59/10 * * * * postgres /usr/bin/psql -q -c "comment on schema data is 'Data schema can only be modified by Data Admins or System Admins';"
 
   - path: "/etc/cron.d/runonce"
     permissions: "0644"
@@ -158,7 +165,7 @@ write_files:
   - path: "/opt/configuration/create-postgres-triggers.sql"
     permissions: "0444"
     content: |
-      {{{postgres_create_postgres_triggers.mustache.sql}}}
+      {{postgres_create_postgres_triggers.mustache.sql}}
 
   - path: "/opt/configuration/install-postgres-extensions.sql"
     permissions: "0444"

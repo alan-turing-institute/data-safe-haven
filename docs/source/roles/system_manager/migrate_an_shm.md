@@ -22,9 +22,9 @@ The following variables will be used during deploying
 
 - `<old SHM ID>`: the {ref}`management environment ID <roles_deployer_shm_id>` for the previously deployed SHM
 - `<SHM ID>`: the {ref}`management environment ID <roles_deployer_shm_id>` for the new SHM you want to deploy
-- `<AAD tenant ID>`: the {ref}`Tenant ID <roles_deployer_aad_tenant_id>` for the `Azure Active Directory` that your previously deployed SHM is connected to
+- `<AAD tenant ID>`: the {ref}`Tenant ID <roles_deployer_aad_tenant_id>` for the `Microsoft Entra ID` that your previously deployed SHM is connected to
 
-## 2. {{unlock}} Disconnect the old domain controller from the Azure Active Directory
+## 2. {{unlock}} Disconnect the old domain controller from the Microsoft Entra ID
 
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
 
@@ -35,11 +35,11 @@ The following variables will be used during deploying
     - You will need to provide login credentials (including MFA if set up) for `<admin username>@<SHM domain>`
 
 ```{warning}
-Do not attempt to add users to the old SHM after this point as they will not be synchronised to the `Azure` Active Directory!
+Do not attempt to add users to the old SHM after this point as they will not be synchronised to the `Microsoft Entra ID`!
 ```
 
 ```{attention}
-Full disconnection of the `Azure` Active Directory can take up to 72 hours but will typically take around one day.
+Full disconnection of the `Microsoft Entra ID` can take up to 72 hours but will typically take around one day.
 ```
 
 ## 3. {{clipboard}} Safe Haven Management configuration
@@ -62,14 +62,14 @@ Full disconnection of the `Azure` Active Directory can take up to 72 hours but w
 
 See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
-## 5. {{file_folder}} Ensure the Azure Active Directory domain is registered
+## 5. {{file_folder}} Ensure the Microsoft Entra domain is registered
 
 ![Powershell: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=powershell&label=local&color=blue&message=a%20few%20minutes) at {{file_folder}} `./deployment/safe_haven_management_environment/setup`
 
 See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ```{note}
-You will need to use an AAD global admin when the `AzureAD` module asks you to sign-in.
+You will need to use a Microsoft Entra global admin when the `AzureAD` module asks you to sign-in.
 ```
 
 ## 6. {{key}} Deploy Key Vault for SHM secrets and create emergency admin account
@@ -79,7 +79,7 @@ You will need to use an AAD global admin when the `AzureAD` module asks you to s
 See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 
 ```{note}
-You will need to use an AAD global admin when the `AzureAD` module asks you to sign-in.
+You will need to use a Microsoft Entra global admin when the `AzureAD` module asks you to sign-in.
 ```
 
 ## 7. {{station}} Deploy network and VPN gateway
@@ -102,7 +102,7 @@ Do **not** run any of the domain controller configuration steps yet
 
 ### {{lock_with_ink_pen}} Suspend MFA for all users
 
-![Azure AD: under a minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=under%20a%20minute)
+![Microsoft Entra ID: under a minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=under%20a%20minute)
 
 - From the `Azure` portal, navigate to the AAD.
 - Click `Security` in the left hand sidebar
@@ -135,11 +135,11 @@ Run the following `Powershell` commands
 $userOuPath = (Get-ADObject -Filter * | Where-Object { $_.Name -eq "Safe Haven Research Users" }).DistinguishedName
 $users = Get-ADUser -Filter * -SearchBase "$userOuPath" -Properties *
 
-# Connect to AzureAD
-# Use the credentials for an AzureAD global admin (eg. `aad.admin.firstname.surname@<SHM domain>`)
+# Connect to Microsoft Entra ID
+# Use the credentials for a Microsoft Entra global admin (eg. `aad.admin.firstname.surname@<SHM domain>`)
 Connect-MsolService
 
-# Reset source anchor for AzureAD users
+# Reset source anchor for Microsoft Entra users
 foreach ($user in $users) {
   $immutableId = [System.Convert]::ToBase64String($user.ObjectGUID.ToByteArray())
   Set-MsolUser -UserPrincipalName $($user.UserPrincipalName) -immutableID $immutableId
@@ -151,14 +151,18 @@ foreach ($user in $users) {
 All research users in this SHM will have to go to `https://aka.ms/sspr` to reset their passwords although their MFA configuration will stay the same.
 ```
 
-### {{train}} Install Azure Active Directory Connect
+### {{train}} Install Microsoft Entra Connect
 
 ![Remote: ten minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=ten%20minutes)
 
 See the {ref}`Safe Haven Management documentation <roles_deployer_shm_aad_connect>` for more details.
 
+````{include} snippets/02_ms_entra_connect.partial.md
+:relative-images:
+````
+
 ````{error}
-Since you are trying to connect the new SHM to an `Azure` Active Directory that was already synchronised, you may find the `AzureADConnect` installation fails due to a `Directory synchronisation failure`.
+Since you are trying to connect the new SHM to an Microsoft Entra ID that was already synchronised, you may find the `AzureADConnect` installation fails due to a `Directory synchronisation failure`.
 
 ```{image} migrate_shm/aad_connection_failure.png
 :alt: AAD connection failure
@@ -168,22 +172,23 @@ Since you are trying to connect the new SHM to an `Azure` Active Directory that 
 If this happens then you will need to wait for the previous disconnection to complete, which may take up to 72 hours.
 ````
 
-### {{recycle}} Update Azure Active Directory Connect rules
+### {{recycle}} Update Microsoft Entra Connect rules
 
 ![Remote: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-onedrive&label=remote&color=blue&message=one%20minute)
 
 See the {ref}`Safe Haven Management documentation <roles_system_deployer_shm_aad_connect_rules>` for more details.
 
-### {{put_litter_in_its_place}} Unregister the old domain controller in `Azure` Active Directory
+### {{put_litter_in_its_place}} Unregister the old domain controller in Microsoft Entra ID
 
-![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
+![Microsoft Entra ID: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=one%20minute)
 
-- From the `Azure` portal, navigate to the AAD you have created.
-- Select `Azure AD Connect` from the left hand menu
-- Under `Health And Analytics` click `Azure AD Connect Health`
+- From the `Azure` portal, navigate to the Microsoft Entra ID you have created.
+- Select `Microsoft Entra Connect` from the left hand menu
+- Select `Connect Sync` from the left hand menu
+- Under `Health And Analytics` click `Microsoft Entra Connect Health`
 - Select `Sync services` from the left hand menu
 - Click on `<Safe Haven identifier>.onmicrosoft.com`
-- Click on the `Azure Active Directory Connect Server` that corresponds to the **old** DC (marked as `Unhealthy`)
+- Click on the `Microsoft Entra Connect Server` that corresponds to the **old** DC (marked as `Unhealthy`)
 - Click `Delete` in the top bar, type the server name when prompted then click `Delete`
 
 ### {{ballot_box_with_check}} Validate Active Directory synchronisation
@@ -200,7 +205,7 @@ See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` f
 
 ## 11. {{closed_lock_with_key}} Require MFA for all users
 
-![Azure AD: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=a%20few%20minutes)
+![Microsoft Entra ID: a few minutes](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%20ID&color=blue&message=a%20few%20minutes)
 
 See the {ref}`Safe Haven Management documentation <roles_deployer_deploy_shm>` for more details.
 

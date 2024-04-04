@@ -1,7 +1,7 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID (e.g. 'project')")]
     [string]$shmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. use 'sandbox' for Turing Development Sandbox SREs)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SRE ID (e.g. 'sandbox')")]
     [string]$sreId
 )
 
@@ -110,7 +110,7 @@ foreach ($nsgName in $nsgs.Keys) {
 # Ensure SRE is peered to correct mirror/proxy set
 # ------------------------------------------------
 # Unpeer any existing networks before (re-)establishing correct peering for SRE
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot Unpeer_SRE_Package_Repositories.ps1) -shmId $shmId -sreId $sreId"
+& $(Join-Path $PSScriptRoot "Unpeer_SRE_Package_Repositories.ps1") -shmId $shmID -sreId $sreId
 # Peer this SRE to the repository network
 Add-LogMessage -Level Info "Ensuring SRE is peered to correct package repository..."
 if (-not $config.sre.repositories.network.name) {
@@ -130,7 +130,7 @@ if (-not $config.sre.repositories.network.name) {
 # Set PyPI and CRAN locations on the SRD
 $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction Stop
 $scriptPath = Join-Path $PSScriptRoot ".." "remote" "network_configuration" "scripts" "update_mirror_settings.sh"
-$repositoryFacingVms = Get-AzVM | Where-Object { ($_.ResourceGroupName -eq $config.sre.srd.rg)
+$repositoryFacingVms = Get-AzVM | Where-Object ($_.ResourceGroupName -eq $config.sre.srd.rg)
 foreach ($VM in $repositoryFacingVms) {
     Add-LogMessage -Level Info "Ensuring that PyPI and CRAN locations are set correctly on $($VM.Name)"
     $params = @{
@@ -146,8 +146,7 @@ $null = Set-AzContext -SubscriptionId $config.sre.subscriptionName -ErrorAction 
 
 # Block external DNS queries
 # --------------------------
-Invoke-Expression -Command "$(Join-Path $PSScriptRoot "Configure_External_DNS_Queries.ps1") -shmId $shmId -sreId $sreId"
-
+& $(Join-Path $PSScriptRoot "Configure_External_DNS_Queries.ps1") -shmId $shmId -sreId $sreId
 
 # Switch back to original subscription
 # ------------------------------------

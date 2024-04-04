@@ -203,11 +203,7 @@
         "name": "AllowAzureAutomationOutbound",
         "access": "Allow",
         "description": "Allow outbound connections to Azure automation servers",
-        "destinationAddressPrefix": [
-            {{#monitoring.updateServers.externalIpAddresses.azureAutomation}}
-                "{{.}}",
-            {{/monitoring.updateServers.externalIpAddresses.azureAutomation}}
-        ],
+        "destinationAddressPrefix": "GuestAndHybridManagement",
         "destinationPortRange": ["443"],
         "direction": "Outbound",
         "priority": 3800,

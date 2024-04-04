@@ -1,7 +1,7 @@
 param(
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID for the old SHM (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID for the old SHM (e.g. 'project')")]
     [string]$oldShmId,
-    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID for the new SHM (e.g. use 'testa' for Turing Development Safe Haven A)")]
+    [Parameter(Mandatory = $true, HelpMessage = "Enter SHM ID for the new SHM (e.g. 'project')")]
     [string]$newShmId
 )
 

@@ -10,37 +10,24 @@ This document assumes that you already have access to a {ref}`Safe Haven Managem
 
 ## {{beginner}} Create new users
 
-Users should be created on the main domain controller (DC1) in the SHM and synchronised to Azure Active Directory.
+Users should be created on the main domain controller (DC1) in the SHM and synchronised to Microsoft Entra ID.
 A helper script for doing this is already uploaded to the domain controller - you will need to prepare a `CSV` file in the appropriate format for it.
 
 (security_groups)=
 
 ### {{lock}} SRE Security Groups
 
-Each user should be assigned to one or more Active Directory "security groups", which give them access to a given SRE with appropriate privileges. The security groups are named like so:
+Each user should be assigned to one or more Active Directory "security groups".
 
-- `SG <SRE ID> Research Users`: Default for most researchers. No special permissions.
-- `SG <SRE ID> Data Administrators`: Researchers who can create/modify/delete database tables schemas. Given to a smaller number of researchers. Restricting this access to most users prevents them creating/deleting arbitrary schemas, which is important because some SREs have their input data in database form.
+- `SG <SRE ID> Research Users`: Almost all researchers should be in this group. No special permissions. Allows users to log in to `<SRE ID>`.
+- `SG <SRE ID> Data Administrators`: Researchers who can create/modify/delete tables in the `data` schema on databases within `<SRE ID>`. `SG <SRE ID> Research Users` can only read these tables. Restricting this access prevents most users from creating/deleting arbitrary tables, which is important because some SREs have their input data in database form.
+- `SG <SRE ID> System Administrators`: Researchers who have full superuser privileges on databases within `<SRE ID>`. Users in this group have full access to the databases and can manipulate them in any way they choose. System Administrators also have administration privileges on the [Guacamole Remote Desktop](https://guacamole.apache.org/doc/gug/administration.html).
+
+Typically, users with either of the latter two roles should also have the `Research Users` role to allow them to log in to the SRDs within the SRE.
 
 (generate_user_csv)=
 
 ## {{scroll}} Generate user details CSV file
-
-### {{car}} Using data classification app
-
-- Follow the [instructions in the classification app documentation](https://github.com/alan-turing-institute/data-classification-app) to create users
-    - Users can be created in bulk by selecting `Create User > Import user list` and uploading a spreadsheet of user details
-    - Users can also be created individually by selecting `Create User > Create Single User`
-- After creating users, export the `UserCreate.csv` file
-    - To export all users, select `Users > Export UserCreate.csv`
-    - To export only users for a particular project, select `Projects > (Project Name) > Export UserCreate.csv`
-- Upload the user details CSV file to a sensible location on the SHM domain controller
-
-    ```{note}
-    We suggest using `C:\Installation\YYYYDDMM-HHMM_user_details.csv` but this is up to you
-    ```
-
-### {{hand}} Manually edit CSV
 
 On the **SHM domain controller (DC1)**.
 
@@ -56,7 +43,7 @@ This can be done by copying and pasting the file from your deployment device to 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - Open a `Powershell` command window with elevated privileges
 - Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
-- This script will add the users and trigger synchronisation with Azure Active Directory
+- This script will add the users and trigger synchronisation with Microsoft Entra ID
 - It will still take around 5 minutes for the changes to propagate
 
 ```{error}
@@ -99,7 +86,7 @@ Users may have been added to one or more {ref}`security_groups` through setting 
 
 ### {{iphone}} Edit user details
 
-The `DC1` is the source of truth for user details. If these details need to be changed, they should be changed in the `DC1` and then synchronised to Azure AD.
+The `DC1` is the source of truth for user details. If these details need to be changed, they should be changed in the `DC1` and then synchronised to Microsoft Entra ID.
 
 - Log into the **SHM primary domain controller** (`DC1-SHM-<SHM ID>`) VM using the login credentials {ref}`stored in Azure Key Vault <roles_system_deployer_shm_remote_desktop>`
 - In Server Manager click `Tools > Active Directory Users and Computers`
@@ -117,10 +104,10 @@ The `DC1` is the source of truth for user details. If these details need to be c
     - Create a new csv (or edit an existing) one with the correct user details (see {ref}`create_new_users`)
     - Run `C:\Installation\CreateUsers.ps1 <path_to_user_details_file>`
     - Run `C:\Installation\Run_ADSync.ps1`
-- You can check the changes you made were successful by logging into the Azure Portal as the AAD admin
-    - Open `Azure Active Directory`
+- You can check the changes you made were successful by logging into the Azure Portal as the Microsoft Entra admin
+    - Open `Microsoft Entra ID`
     - Click on `Users` under `Manage` and search for the user
-    - Click on the user and then `Edit properties` and confirm your changes propagated to Azure AD
+    - Click on the user and then `Edit properties` and confirm your changes propagated to Microsoft Entra ID
 
 (deleting_users)=
 
@@ -133,7 +120,7 @@ The `DC1` is the source of truth for user details. If these details need to be c
 - Open a `Powershell` command window with elevated privileges
 - Run `C:\Installation\Run_ADSync.ps1`
 - You can check the user is deleted by logging into the Azure Portal as the AAD admin
-    - Open `Azure Active Directory`
+    - Open `Microsoft Entra ID`
     - Click on `Users` under `Manage` and search for the user
     - Confirm the user is no longer present
 
@@ -149,8 +136,8 @@ In some situations, such as at the end of a project after an SRE has been torn d
 
 ### {{hand}} Manually add licence to each user
 
-- Login into the Azure Portal and connect to the correct AAD
-- Open `Azure Active Directory`
+- Login into the Azure Portal and connect to the correct Microsoft Entra ID
+- Open `Microsoft Entra ID`
 - Select `Manage > Licenses > All Products`
 - Click `Azure Active Directory Premium P1`
 - Click `Assign`
@@ -158,9 +145,13 @@ In some situations, such as at the end of a project after an SRE has been torn d
 - Select the users you have recently created and click `Select`
 - Click `Assign` to complete the process
 
+```{note}
+`Azure Active Directory Premium P1` is being renamed to `Microsoft Entra ID P1` and may appear as such when performing the assignment process in future.
+```
+
 ### {{car}} Automatically assign licences to users
 
-To automatically assign licences to all local `Active Directory` users that do not currently have a licence in `Azure Active Directory`.
+To automatically assign licences to all local `Active Directory` users that do not currently have a licence in `Microsoft Entra ID`:
 
 - Ensure you have the same version of the Data Safe Haven repository as was used by your deployment team
 - Open a `Powershell` terminal and navigate to the `deployment/administration` directory within the Data Safe Haven repository

@@ -17,9 +17,6 @@ However, each project must have a single lead **Investigator** who takes respons
 The **Investigator** must be able and willing to accept responsibility for the conduct of the project and its members.
 ```
 
-{ref}`Data classification guide <process_data_classification>`
-: How to classify a work package into one of our security tiers.
-
 [Data ingress](data_ingress.md)
 : What an **Investigator** needs to know about bringing data or software into the environment.
 

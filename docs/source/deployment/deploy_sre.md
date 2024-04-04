@@ -32,13 +32,13 @@ PS> ./Deploy_SRE.ps1 -shmId <SHM ID> -sreId <SRE ID> -VMs <VM sizes>
 
 - where `<SHM ID>` is the {ref}`management environment ID <roles_deployer_shm_id>` for this SHM
 - where `<SRE ID>` is the {ref}`secure research environment ID <roles_deployer_sre_id>` for this SRE
-- where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create. For example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`. If you are unsure of the appropriate VM sizes, run the script with a single `'default'`.
+- where `<VM sizes>` is a list of [Azure VM sizes](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) that you want to create. For example `'Standard_D2s_v3', 'default', 'Standard_NC6s_v3'`. If you are unsure of the appropriate VM sizes, run the script with a single `'default'`. The default VM size is `Standard_D2s_v3`.
 - VMs can be resized after deployment. See how to do so in the {ref}`System Manager instructions <resize_vm>`.
 
 You will be prompted for credentials for:
 
 - a user with admin rights over the Azure subscriptions you plan to deploy into
-- a user with Global Administrator privileges over the SHM Azure Active Active directory
+- a user with Global Administrator privileges over the SHM Microsoft Entra ID
 
 This will perform the following actions, which can be run individually if desired:
 
@@ -251,23 +251,24 @@ For example, if you have authorised a corporate VPN, check that you have correct
 ```
 
 ````{error}
-If you see an error like the following when attempting to log in, it is likely that the AzureAD application is not registered as an `ID token` provider.
+If you see an error like the following when attempting to log in, it is likely that the Microsoft Entra application is not registered as an `ID token` provider.
 
 ```{image} deploy_sre/guacamole_aad_idtoken_failure.png
 :alt: AAD ID token failure
 :align: center
 ```
 
-<details><summary><b>Register AzureAD application</b></summary>
+<details><summary><b>Register Microsoft Entra application</b></summary>
 
-![Azure AD: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Azure%20AD&color=blue&message=one%20minute)
+![Microsoft Entra ID: one minute](https://img.shields.io/static/v1?style=for-the-badge&logo=microsoft-academic&label=Microsoft%20Entra%2
+0ID&color=blue&message=one%20minute)
 
-- From the Azure portal, navigate to the AAD you have created.
-- Navigate to `Azure Active Directory > App registrations`, and select the application called `Guacamole SRE <SRE ID>`.
+- From the Azure portal, navigate to the Microsoft Entra ID you have created.
+- Navigate to `Microsoft Entra ID > App registrations`, and select the application called `Guacamole SRE <SRE ID>`.
 - Click on `Authentication` on the left-hand sidebar
 - Ensure that the `ID tokens` checkbox is ticked and click on the `Save` icon if you had to make any changes
   ```{image} deploy_sre/guacamole_aad_app_registration_idtoken.png
-  :alt: AAD app registration
+  :alt: Microsoft Entra app registration
   :align: center
   ```
 </details>
