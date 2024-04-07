@@ -56,6 +56,7 @@ backports.lzma
 backports.os
 backports.shutil_get_terminal_size
 backports.shutil_which
+backports.tarfile
 backports.tempfile
 backports.weakref
 backports.zoneinfo
@@ -312,7 +313,7 @@ korean-lunar-calendar
 langcodes
 langdetect
 lapsolver
-lazy_loader
+lazy-loader
 lazy-object-proxy
 libclang
 lifelines
