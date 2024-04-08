@@ -476,20 +476,20 @@ class GraphApi:
             DataSafeHavenMicrosoftGraphError if the user could not be created
         """
         username = request_json["mailNickname"]
+        final_verb = "create/update"
         try:
             # Check whether user already exists
             user_id = self.get_id_from_username(username)
-            final_verb = ""
             if user_id:
                 self.logger.debug(
                     f"Updating AzureAD user '[green]{username}[/]'...",
                 )
-                final_verb = "Updated"
+                final_verb = "Update"
             else:
                 self.logger.debug(
                     f"Creating AzureAD user '[green]{username}[/]'...",
                 )
-                final_verb = "Created"
+                final_verb = "Create"
                 # If they do not then create them
                 endpoint = f"{self.base_endpoint}/users"
                 json_response = self.http_post(
@@ -504,8 +504,9 @@ class GraphApi:
                     json={"emailAddress": email_address},
                 )
             except DataSafeHavenMicrosoftGraphError as exc:
-                if "already exists" not in str(exc):
-                    raise
+                if "already registered" not in str(exc):
+                    msg = f"Invalid email address '{email_address}'.\n{exc}"
+                    raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Set the authentication phone number
             try:
                 self.http_post(
@@ -513,18 +514,19 @@ class GraphApi:
                     json={"phoneNumber": phone_number, "phoneType": "mobile"},
                 )
             except DataSafeHavenMicrosoftGraphError as exc:
-                if "already exists" not in str(exc):
-                    raise
+                if "already registered" not in str(exc):
+                    msg = f"Invalid phone number '{phone_number}'.\n{exc}"
+                    raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Ensure user is enabled
             self.http_patch(
                 f"{self.base_endpoint}/users/{user_id}",
                 json={"accountEnabled": True},
             )
             self.logger.info(
-                f"{final_verb} AzureAD user '[green]{username}[/]'.",
+                f"{final_verb}d AzureAD user '[green]{username}[/]'.",
             )
         except DataSafeHavenMicrosoftGraphError as exc:
-            msg = f"Could not create/update user {username}.\n{exc}"
+            msg = f"Could not {final_verb.lower()} user {username}.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def delete_application(
