@@ -279,9 +279,6 @@ class DeclarativeSRE:
             self.stack_name,
             SREWorkspacesProps(
                 admin_password=data.password_workspace_admin,
-                domain_sid=self.pulumi_opts.require(
-                    "shm-domain_controllers-domain_sid"
-                ),
                 ldap_bind_dn=ldap_bind_dn,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,

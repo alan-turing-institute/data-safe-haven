@@ -7,40 +7,6 @@ write_files:
       Acquire::http::Proxy "http://{{linux_update_server_ip}}:8000";
       Acquire::https::Proxy "http://{{linux_update_server_ip}}:8000";
 
-  - path: "/etc/nslcd.conf.old"
-    permissions: "0400"
-    content: |
-      # nslcd configuration file.
-      # http://manpages.ubuntu.com/manpages/bionic/man5/nslcd.conf.5.html
-
-      # Runtime options
-      uid nslcd
-      gid nslcd
-      log syslog debug
-
-      # General connection options
-      uri ldap://10.0.0.132:389
-      binddn {{ldap_bind_dn}}
-      bindpw {{ldap_search_password}}
-
-      # Search/mapping options
-      base {{ldap_user_search_base}}
-      base {{ldap_group_search_base}}
-
-      # All users that are members of the correct security group
-      filter passwd (&(objectClass=user)(memberOf=CN={{ldap_user_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}}))
-
-      # One group for each security group and for each user
-      filter group (|(objectclass=group)(&(objectClass=user)(memberOf=CN={{ldap_user_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}})))
-
-      # Attribute mappings
-      map  passwd  uid                sAMAccountName
-      map  passwd  gidNumber          objectSid:{{domain_sid}}
-      map  passwd  uidNumber          objectSid:{{domain_sid}}
-      map  passwd  homeDirectory      "${unixHomeDirectory:-/home/$sAMAccountName}"
-      map  group   cn                 sAMAccountName
-      map  group   gidNumber          objectSid:{{domain_sid}}
-
   - path: "/etc/nslcd.conf"
     permissions: "0400"
     content: |

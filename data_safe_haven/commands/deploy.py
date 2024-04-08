@@ -136,11 +136,6 @@ def sre(
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
         # Load SHM stack outputs
         stack.add_option(
-            "shm-domain_controllers-domain_sid",
-            shm_stack.output("domain_controllers")["domain_sid"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-domain_controllers-ldap_root_dn",
             shm_stack.output("domain_controllers")["ldap_root_dn"],
             replace=True,

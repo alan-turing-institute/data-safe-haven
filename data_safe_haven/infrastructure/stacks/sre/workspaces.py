@@ -30,7 +30,6 @@ class SREWorkspacesProps:
     def __init__(
         self,
         admin_password: Input[str],
-        domain_sid: Input[str],
         ldap_bind_dn: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
@@ -56,7 +55,6 @@ class SREWorkspacesProps:
     ) -> None:
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
-        self.domain_sid = domain_sid
         self.ldap_bind_dn = ldap_bind_dn
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
@@ -129,7 +127,6 @@ class SREWorkspacesComponent(ComponentResource):
 
         # Load cloud-init file
         b64cloudinit = Output.all(
-            domain_sid=props.domain_sid,
             ldap_bind_dn=props.ldap_bind_dn,
             ldap_group_filter=props.ldap_group_filter,
             ldap_group_search_base=props.ldap_group_search_base,
@@ -222,7 +219,6 @@ class SREWorkspacesComponent(ComponentResource):
 
     def read_cloudinit(
         self,
-        domain_sid: str,
         ldap_bind_dn: str,
         ldap_group_filter: str,
         ldap_group_search_base: str,
@@ -242,7 +238,6 @@ class SREWorkspacesComponent(ComponentResource):
             encoding="utf-8",
         ) as f_cloudinit:
             mustache_values = {
-                "domain_sid": domain_sid,
                 "ldap_bind_dn": ldap_bind_dn,
                 "ldap_group_filter": ldap_group_filter,
                 "ldap_group_search_base": ldap_group_search_base,
