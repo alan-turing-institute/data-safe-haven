@@ -181,7 +181,7 @@ class DeclarativeSRE:
         )
 
         # Deploy identity server
-        SREIdentityComponent(
+        identity = SREIdentityComponent(
             "sre_identity",
             self.stack_name,
             SREIdentityProps(
@@ -190,6 +190,9 @@ class DeclarativeSRE:
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
                 location=self.cfg.azure.location,
                 shm_fqdn=self.cfg.shm.fqdn,
+                storage_account_key=data.storage_account_data_configuration_key,
+                storage_account_name=data.storage_account_data_configuration_name,
+                storage_account_resource_group_name=data.resource_group_name,
                 subnet_containers=networking.subnet_identity_containers,
             ),
         )

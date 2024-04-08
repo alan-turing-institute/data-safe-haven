@@ -3,8 +3,11 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, network, resources
+from pulumi_azure_native import containerinstance, network, resources, storage
 
+from data_safe_haven.infrastructure.common import (
+    get_ip_address_from_container_group,
+)
 from data_safe_haven.infrastructure.components import (
     AzureADApplication,
     AzureADApplicationProps,
@@ -21,6 +24,9 @@ class SREIdentityProps:
         aad_tenant_id: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
+        storage_account_key: Input[str],
+        storage_account_name: Input[str],
+        storage_account_resource_group_name: Input[str],
         subnet_containers: Input[network.GetSubnetResult],
     ) -> None:
         self.aad_application_name = aad_application_name
@@ -28,6 +34,9 @@ class SREIdentityProps:
         self.aad_tenant_id = aad_tenant_id
         self.location = location
         self.shm_fqdn = shm_fqdn
+        self.storage_account_key = storage_account_key
+        self.storage_account_name = storage_account_name
+        self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_containers_id = Output.from_input(subnet_containers).apply(
             lambda s: str(s.id)
         )
@@ -48,6 +57,9 @@ class SREIdentityComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
+        # The port that the server will be hosted on
+        self.server_port = 1389
+
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
@@ -55,6 +67,18 @@ class SREIdentityComponent(ComponentResource):
             resource_group_name=f"{stack_name}-rg-identity",
             opts=child_opts,
             tags=child_tags,
+        )
+
+        # Define configuration file shares
+        file_share_redis = storage.FileShare(
+            f"{self._name}_file_share_redis",
+            access_tier="TransactionOptimized",
+            account_name=props.storage_account_name,
+            resource_group_name=props.storage_account_resource_group_name,
+            share_name="identity-redis",
+            share_quota=5120,
+            signed_identifiers=[],
+            opts=child_opts,
         )
 
         # Define AzureAD application
@@ -65,6 +89,7 @@ class SREIdentityComponent(ComponentResource):
                 application_role_assignments=["User.Read.All", "GroupMember.Read.All"],
                 application_secret_name="Apricot Authentication Secret",
                 auth_token=props.aad_auth_token,
+                delegated_role_assignments=["User.Read.All"],
                 public_client_redirect_uri="urn:ietf:wg:oauth:2.0:oob",
             ),
             opts=child_opts,
@@ -76,7 +101,7 @@ class SREIdentityComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-identity",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/apricot:0.0.4",
+                    image="ghcr.io/alan-turing-institute/apricot:0.0.5",
                     name="apricot",
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
@@ -92,12 +117,20 @@ class SREIdentityComponent(ComponentResource):
                             secure_value=aad_application.application_secret,
                         ),
                         containerinstance.EnvironmentVariableArgs(
+                            name="DEBUG",
+                            value="true",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
                             name="DOMAIN",
                             value=props.shm_fqdn,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="ENTRA_TENANT_ID",
                             value=props.aad_tenant_id,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="REDIS_HOST",
+                            value="localhost",
                         ),
                     ],
                     # All Azure Container Instances need to expose port 80 on at least
@@ -108,7 +141,25 @@ class SREIdentityComponent(ComponentResource):
                             protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                         ),
                         containerinstance.ContainerPortArgs(
-                            port=1389,
+                            port=self.server_port,
+                            protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
+                        ),
+                    ],
+                    resources=containerinstance.ResourceRequirementsArgs(
+                        requests=containerinstance.ResourceRequestsArgs(
+                            cpu=1,
+                            memory_in_gb=1,
+                        ),
+                    ),
+                    volume_mounts=[],
+                ),
+                containerinstance.ContainerArgs(
+                    image="redis:7.2",
+                    name="redis",
+                    environment_variables=[],
+                    ports=[
+                        containerinstance.ContainerPortArgs(
+                            port=6379,
                             protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                         ),
                     ],
@@ -119,11 +170,11 @@ class SREIdentityComponent(ComponentResource):
                         ),
                     ),
                     volume_mounts=[
-                        # containerinstance.VolumeMountArgs(
-                        #     mount_path="/opt/adguardhome/custom",
-                        #     name="adguard-opt-adguardhome-custom",
-                        #     read_only=True,
-                        # ),
+                        containerinstance.VolumeMountArgs(
+                            mount_path="/data",
+                            name="identity-redis-data",
+                            read_only=False,
+                        ),
                     ],
                 ),
             ],
@@ -132,7 +183,11 @@ class SREIdentityComponent(ComponentResource):
                     containerinstance.PortArgs(
                         port=80,
                         protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
-                    )
+                    ),
+                    containerinstance.PortArgs(
+                        port=self.server_port,
+                        protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
+                    ),
                 ],
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
@@ -145,7 +200,16 @@ class SREIdentityComponent(ComponentResource):
                     id=props.subnet_containers_id
                 )
             ],
-            volumes=[],
+            volumes=[
+                containerinstance.VolumeArgs(
+                    azure_file=containerinstance.AzureFileVolumeArgs(
+                        share_name=file_share_redis.name,
+                        storage_account_key=props.storage_account_key,
+                        storage_account_name=props.storage_account_name,
+                    ),
+                    name="identity-redis-data",
+                ),
+            ],
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
@@ -155,3 +219,6 @@ class SREIdentityComponent(ComponentResource):
             ),
             tags=child_tags,
         )
+
+        # Register outputs
+        self.ip_address = get_ip_address_from_container_group(container_group)
