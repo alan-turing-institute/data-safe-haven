@@ -43,7 +43,6 @@ class LocalTokenCache(SerializableTokenCache):
 class GraphApi:
     """Interface to the Microsoft Graph REST API"""
 
-    linux_schema = "extj8xolrvw_linux"  # this is the "Extension with Properties for Linux User and Groups" extension
     application_ids: ClassVar[dict[str, str]] = {
         "Microsoft Graph": "00000003-0000-0000-c000-000000000000",
     }
@@ -301,7 +300,7 @@ class GraphApi:
             msg = f"Could not create application secret '{application_secret_name}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
-    def create_group(self, group_name: str, group_id: str) -> None:
+    def create_group(self, group_name: str) -> None:
         """Create an AzureAD group if it does not already exist
 
         Raises:
@@ -323,21 +322,10 @@ class GraphApi:
                 "mailNickname": group_name,
                 "securityEnabled": True,
             }
-            json_response = self.http_post(
+            self.http_post(
                 f"{self.base_endpoint}/groups",
                 json=request_json,
             ).json()
-            # Add Linux group name and ID
-            patch_json = {
-                self.linux_schema: {
-                    "group": group_name,
-                    "gid": group_id,
-                }
-            }
-            self.http_patch(
-                f"{self.base_endpoint}/groups/{json_response['id']}",
-                json=patch_json,
-            )
             self.logger.info(
                 f"Created AzureAD group '[green]{group_name}[/]'.",
             )
@@ -958,7 +946,6 @@ class GraphApi:
                 "surname",
                 "telephoneNumber",
                 "userPrincipalName",
-                self.linux_schema,
             ]
         )
         users: Sequence[dict[str, Any]]
@@ -975,9 +962,6 @@ class GraphApi:
                 user["isGlobalAdmin"] = any(
                     user["id"] == admin["id"] for admin in administrators
                 )
-                for key, value in user.get(self.linux_schema, {}).items():
-                    user[key] = value
-                user[self.linux_schema] = {}
             return users
         except Exception as exc:
             msg = f"Could not load list of users.\n{exc}"
