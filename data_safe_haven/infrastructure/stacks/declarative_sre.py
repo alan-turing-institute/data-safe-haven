@@ -133,20 +133,6 @@ class DeclarativeSRE:
             tags=self.cfg.tags.model_dump(),
         )
 
-        # Deploy identity server
-        SREIdentityComponent(
-            "sre_identity",
-            self.stack_name,
-            SREIdentityProps(
-                aad_application_name=f"sre-{self.sre_name}-apricot",
-                aad_auth_token=self.graph_api_token,
-                aad_tenant_id=self.cfg.shm.aad_tenant_id,
-                location=self.cfg.azure.location,
-                shm_fqdn=self.cfg.shm.fqdn,
-                subnet_containers=networking.subnet_identity_containers,
-            ),
-        )
-
         # Deploy automated monitoring
         SREMonitoringComponent(
             "sre_monitoring",
@@ -192,6 +178,20 @@ class DeclarativeSRE:
                 tenant_id=self.cfg.azure.tenant_id,
             ),
             tags=self.cfg.tags.model_dump(),
+        )
+
+        # Deploy identity server
+        SREIdentityComponent(
+            "sre_identity",
+            self.stack_name,
+            SREIdentityProps(
+                aad_application_name=f"sre-{self.sre_name}-apricot",
+                aad_auth_token=self.graph_api_token,
+                aad_tenant_id=self.cfg.shm.aad_tenant_id,
+                location=self.cfg.azure.location,
+                shm_fqdn=self.cfg.shm.fqdn,
+                subnet_containers=networking.subnet_identity_containers,
+            ),
         )
 
         # Deploy frontend application gateway
