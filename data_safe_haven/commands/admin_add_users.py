@@ -16,11 +16,14 @@ def admin_add_users(csv_path: pathlib.Path) -> None:
     shm_name = context.shm_name
 
     try:
-        # Load GraphAPI as this may require user-interaction that is not
-        # possible as part of a Pulumi declarative command
+        # Load GraphAPI
         graph_api = GraphApi(
             tenant_id=config.shm.aad_tenant_id,
-            default_scopes=["Group.Read.All"],
+            default_scopes=[
+                "Group.Read.All",
+                "User.ReadWrite.All",
+                "UserAuthenticationMethod.ReadWrite.All",
+            ],
         )
 
         # Add users to SHM

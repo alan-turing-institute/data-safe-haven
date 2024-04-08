@@ -28,16 +28,15 @@ def admin_register_users(
             f"Preparing to register {len(usernames)} user(s) with SRE '{sre_name}'"
         )
 
-        # Load GraphAPI as this may require user-interaction that is not
-        # possible as part of a Pulumi declarative command
+        # Load GraphAPI
         graph_api = GraphApi(
             tenant_id=config.shm.aad_tenant_id,
-            default_scopes=["Group.Read.All"],
+            default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
         )
 
         # List users
         users = UserHandler(config, graph_api)
-        available_usernames = users.get_usernames_domain_controller()
+        available_usernames = users.get_usernames_azure_ad()
         usernames_to_register = []
         for username in usernames:
             if username in available_usernames:

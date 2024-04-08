@@ -71,10 +71,6 @@ class AzureADUsers:
                 user_principal_name=user_details["userPrincipalName"],
             )
             for user_details in user_list
-            if (
-                user_details["onPremisesSamAccountName"]
-                or user_details["isGlobalAdmin"]
-            )
         ]
 
     def register(self, sre_name: str, usernames: Sequence[str]) -> None:

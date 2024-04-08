@@ -27,16 +27,15 @@ def admin_unregister_users(
             f"Preparing to unregister {len(usernames)} users with SRE '{sre_name}'"
         )
 
-        # Load GraphAPI as this may require user-interaction that is not
-        # possible as part of a Pulumi declarative command
+        # Load GraphAPI
         graph_api = GraphApi(
             tenant_id=config.shm.aad_tenant_id,
-            default_scopes=["Group.Read.All"],
+            default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
         )
 
         # List users
         users = UserHandler(config, graph_api)
-        available_usernames = users.get_usernames_domain_controller()
+        available_usernames = users.get_usernames_azure_ad()
         usernames_to_unregister = []
         for username in usernames:
             if username in available_usernames:
@@ -46,7 +45,12 @@ def admin_unregister_users(
                     f"Username '{username}' does not belong to this Data Safe Haven deployment."
                     " Please use 'dsh users add' to create it."
                 )
-        users.unregister(sre_name, usernames_to_unregister)
+        for group_name in (
+            f"{sre_name} Users",
+            f"{sre_name} Privileged Users",
+            f"{sre_name} Administrators",
+        ):
+            users.unregister(group_name, usernames_to_unregister)
     except DataSafeHavenError as exc:
         msg = f"Could not unregister users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc}"
         raise DataSafeHavenError(msg) from exc

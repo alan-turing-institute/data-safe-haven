@@ -10,8 +10,7 @@ from data_safe_haven.external import (
     GraphApi,
 )
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
-from data_safe_haven.resources import resources_path
-from data_safe_haven.utility import FileReader, LoggingSingleton
+from data_safe_haven.utility import LoggingSingleton
 
 
 class SREProvisioningManager:

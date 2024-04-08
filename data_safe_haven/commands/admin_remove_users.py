@@ -16,11 +16,10 @@ def admin_remove_users(
     shm_name = context.shm_name
 
     try:
-        # Load GraphAPI as this may require user-interaction that is not
-        # possible as part of a Pulumi declarative command
+        # Load GraphAPI
         graph_api = GraphApi(
             tenant_id=config.shm.aad_tenant_id,
-            default_scopes=["Group.Read.All"],
+            default_scopes=["User.ReadWrite.All"],
         )
 
         # Remove users from SHM

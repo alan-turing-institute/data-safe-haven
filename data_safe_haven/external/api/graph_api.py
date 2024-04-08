@@ -57,6 +57,7 @@ class GraphApi:
         "Group.Read.All": "5b567255-7703-4780-807c-7be8301ae99b",
         "Group.ReadWrite.All": "62a82d76-70ea-41e2-9197-370581804d09",
         "GroupMember.Read.All": "98830695-27a2-44f7-8c18-0c3ebc9698f6",
+        "GroupMember.ReadWrite.All": "dbaae8cf-10b5-4b86-a4a1-f871c94c6695",
         "User.Read.All": "df021288-bdef-4463-88db-98f22de89214",
         "User.ReadWrite.All": "741f803b-c850-494e-b5df-cde7c675a1ca",
         "UserAuthenticationMethod.ReadWrite.All": "50483e42-d915-4231-9639-7fdb7fd190e5",
@@ -325,10 +326,11 @@ class GraphApi:
                 f"Creating AzureAD group '[green]{group_name}[/]'...",
             )
             request_json = {
+                "description": group_name,
                 "displayName": group_name,
                 "groupTypes": [],
                 "mailEnabled": False,
-                "mailNickname": "".join(filter(str.isalnum, group_name)),
+                "mailNickname": ("".join(filter(str.isalnum, group_name))).lower(),
                 "securityEnabled": True,
             }
             self.http_post(
@@ -502,7 +504,7 @@ class GraphApi:
                 )
             except DataSafeHavenMicrosoftGraphError as exc:
                 if "already registered" not in str(exc):
-                    msg = f"Invalid email address '{email_address}'.\n{exc}"
+                    msg = f"Failed to add authentication email address '{email_address}'.\n{exc}"
                     raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Set the authentication phone number
             try:
@@ -512,7 +514,7 @@ class GraphApi:
                 )
             except DataSafeHavenMicrosoftGraphError as exc:
                 if "already registered" not in str(exc):
-                    msg = f"Invalid phone number '{phone_number}'.\n{exc}"
+                    msg = f"Failed to add authentication phone number '{phone_number}'.\n{exc}"
                     raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Ensure user is enabled
             self.http_patch(

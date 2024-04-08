@@ -34,7 +34,9 @@ class UserHandler:
         try:
             # Construct user list
             with open(users_csv_path, encoding="utf-8") as f_csv:
-                reader = csv.DictReader(f_csv)
+                dialect = csv.Sniffer().sniff(f_csv.read(), delimiters=";,")
+                f_csv.seek(0)
+                reader = csv.DictReader(f_csv, dialect=dialect)
                 for required_field in [
                     "GivenName",
                     "Surname",
@@ -49,6 +51,7 @@ class UserHandler:
                         raise ValueError(msg)
                 users = [
                     ResearchUser(
+                        account_enabled=True,
                         country=user["CountryCode"],
                         email_address=user["Email"],
                         given_name=user["GivenName"],
@@ -60,8 +63,8 @@ class UserHandler:
             for user in users:
                 self.logger.debug(f"Processing new user: {user}")
 
-            # Commit changes
-            self.active_directory_users.add(users)
+            # Add users to AzureAD
+            self.azure_ad_users.add(users)
         except Exception as exc:
             msg = f"Could not add users from '{users_csv_path}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -70,7 +73,6 @@ class UserHandler:
         """Load usernames from all sources"""
         usernames = {}
         usernames["Azure AD"] = self.get_usernames_azure_ad()
-        usernames["Domain controller"] = self.get_usernames_domain_controller()
         for sre_name in self.config.sre_names:
             usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(sre_name)
         return usernames
@@ -134,7 +136,7 @@ class UserHandler:
         """
         try:
             # Add users to the SRE security group
-            self.active_directory_users.register(sre_name, user_names)
+            self.azure_ad_users.register(sre_name, user_names)
         except Exception as exc:
             msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -147,14 +149,18 @@ class UserHandler:
         """
         try:
             # Construct user lists
-            active_directory_users_to_remove = [
+            self.logger.info(f"Attempting to remove {len(user_names)} user(s).")
+            azuread_users_to_remove = [
                 user
-                for user in self.active_directory_users.list()
+                for user in self.azure_ad_users.list()
                 if user.username in user_names
             ]
 
             # Commit changes
-            self.active_directory_users.remove(active_directory_users_to_remove)
+            self.logger.info(
+                f"Found {len(azuread_users_to_remove)} valid user(s) to remove."
+            )
+            self.azure_ad_users.remove(azuread_users_to_remove)
         except Exception as exc:
             msg = f"Could not remove users: {user_names}.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -189,21 +195,19 @@ class UserHandler:
                 self.logger.debug(f"Processing user: {user}")
 
             # Keep existing users with the same username
-            active_directory_desired_users = [
+            azuread_desired_users = [
                 user
-                for user in self.active_directory_users.list()
+                for user in self.azure_ad_users.list()
                 if user.username in [u.username for u in desired_users]
             ]
 
             # Construct list of new users
-            active_directory_desired_users = [
-                user
-                for user in desired_users
-                if user not in active_directory_desired_users
+            azuread_desired_users = [
+                user for user in desired_users if user not in azuread_desired_users
             ]
 
             # Commit changes
-            self.active_directory_users.set(active_directory_desired_users)
+            self.azure_ad_users.set(azuread_desired_users)
         except Exception as exc:
             msg = f"Could not set users from '{users_csv_path}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -216,7 +220,7 @@ class UserHandler:
         """
         try:
             # Remove users from the SRE security group
-            self.active_directory_users.unregister(sre_name, user_names)
+            self.azure_ad_users.unregister(sre_name, user_names)
         except Exception as exc:
-            msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
+            msg = f"Could not unregister {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
