@@ -30,6 +30,7 @@ class SREGiteaServerProps:
         dns_server_ip: Input[str],
         ldap_server_ip: Input[str],
         ldap_server_port: Input[int],
+        ldap_username_attribute: Input[str],
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
         location: Input[str],
@@ -52,6 +53,7 @@ class SREGiteaServerProps:
         self.dns_server_ip = dns_server_ip
         self.ldap_server_ip = ldap_server_ip
         self.ldap_server_port = ldap_server_port
+        self.ldap_username_attribute = ldap_username_attribute
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
@@ -126,7 +128,7 @@ class SREGiteaServerComponent(ComponentResource):
         gitea_configure_sh = Output.all(
             admin_email="dshadmin@example.com",
             admin_username="dshadmin",
-            ldap_username_attribute="uid",
+            ldap_username_attribute=props.ldap_username_attribute,
             ldap_user_filter=props.ldap_user_filter,
             ldap_server_ip=props.ldap_server_ip,
             ldap_server_port=props.ldap_server_port,

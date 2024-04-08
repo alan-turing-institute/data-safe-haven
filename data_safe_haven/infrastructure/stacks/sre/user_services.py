@@ -32,6 +32,7 @@ class SREUserServicesProps:
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
         ldap_server_port: Input[int],
+        ldap_username_attribute: Input[str],
         ldap_user_filter: Input[str],
         ldap_user_group_name: Input[str],
         ldap_user_search_base: Input[str],
@@ -61,6 +62,7 @@ class SREUserServicesProps:
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.ldap_server_port = ldap_server_port
+        self.ldap_username_attribute = ldap_username_attribute
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_group_name = ldap_user_group_name
         self.ldap_user_search_base = ldap_user_search_base
@@ -123,6 +125,7 @@ class SREUserServicesComponent(ComponentResource):
                 dns_server_ip=props.dns_server_ip,
                 ldap_server_ip=props.ldap_server_ip,
                 ldap_server_port=props.ldap_server_port,
+                ldap_username_attribute=props.ldap_username_attribute,
                 ldap_user_filter=props.ldap_user_filter,
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
@@ -144,16 +147,15 @@ class SREUserServicesComponent(ComponentResource):
             stack_name,
             SREHedgeDocServerProps(
                 containers_subnet_id=props.subnet_containers_id,
-                database_subnet_id=props.subnet_containers_support_id,
                 database_password=props.hedgedoc_database_password,
+                database_subnet_id=props.subnet_containers_support_id,
                 dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
                 domain_netbios_name=props.domain_netbios_name,
-                ldap_bind_dn=props.ldap_bind_dn,
-                ldap_root_dn=props.ldap_root_dn,
-                ldap_search_password=props.ldap_search_password,
                 ldap_server_ip=props.ldap_server_ip,
-                ldap_user_group_name=props.ldap_user_group_name,
+                ldap_server_port=props.ldap_server_port,
+                ldap_username_attribute=props.ldap_username_attribute,
+                ldap_user_filter=props.ldap_user_filter,
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,

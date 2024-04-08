@@ -30,12 +30,11 @@ class SREHedgeDocServerProps:
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
         domain_netbios_name: Input[str],
-        ldap_bind_dn: Input[str],
-        ldap_root_dn: Input[str],
-        ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
+        ldap_server_port: Input[int],
+        ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
-        ldap_user_group_name: Input[str],
+        ldap_username_attribute: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         sre_fqdn: Input[str],
@@ -55,22 +54,11 @@ class SREHedgeDocServerProps:
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
         self.domain_netbios_name = domain_netbios_name
-        self.ldap_bind_dn = ldap_bind_dn
-        self.ldap_root_dn = ldap_root_dn
-        self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
+        self.ldap_server_port = Output.from_input(ldap_server_port).apply(str)
+        self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
-        self.ldap_user_group_cn = Output.all(
-            group_name=ldap_user_group_name, root_dn=ldap_root_dn
-        ).apply(
-            lambda kwargs: ",".join(
-                (
-                    kwargs["group_name"],
-                    "OU=Data Safe Haven Security Groups",
-                    kwargs["root_dn"],
-                )
-            )
-        )
+        self.ldap_username_attribute = ldap_username_attribute
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.sre_fqdn = sre_fqdn
@@ -206,11 +194,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_USERNAME",
-                            value=Output.concat(
-                                props.database_username,
-                                "@",
-                                db_server_hedgedoc.db_server.name,
-                            ),
+                            value=props.database_username,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DOMAIN",
@@ -219,14 +203,6 @@ class SREHedgeDocServerComponent(ComponentResource):
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_EMAIL",
                             value="false",
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="CMD_LDAP_BINDCREDENTIALS",
-                            secure_value=props.ldap_search_password,
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="CMD_LDAP_BINDDN",
-                            value=props.ldap_bind_dn,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LDAP_PROVIDERNAME",
@@ -240,20 +216,25 @@ class SREHedgeDocServerComponent(ComponentResource):
                             name="CMD_LDAP_SEARCHFILTER",
                             value=Output.concat(
                                 "(&",
-                                "(objectClass=user)",
-                                "(memberOf=CN=",
-                                props.ldap_user_group_cn,
+                                props.ldap_user_filter,
+                                "(",
+                                props.ldap_username_attribute,
+                                "={{username}})",
                                 ")",
-                                "(sAMAccountName={{username}}))",
                             ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LDAP_URL",
-                            value=f"ldap://{props.ldap_server_ip}",
+                            value=Output.concat(
+                                "ldap://",
+                                props.ldap_server_ip,
+                                ":",
+                                props.ldap_server_port,
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LDAP_USERIDFIELD",
-                            value="sAMAccountName",
+                            value=props.ldap_username_attribute,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LOGLEVEL",

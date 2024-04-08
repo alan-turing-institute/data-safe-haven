@@ -75,6 +75,7 @@ class DeclarativeSRE:
         ldap_base_group_name = f"Data Safe Haven SRE {self.sre_name}"
         ldap_admin_group_name = f"{ldap_base_group_name} Administrators"
         ldap_privileged_user_group_name = f"{ldap_base_group_name} Privileged Users"
+        ldap_username_attribute = "uid"
         ldap_user_group_name = f"{ldap_base_group_name} Users"
         # Users are a posixAccount belonging to any of these groups
         ldap_user_filter = "".join(
@@ -328,6 +329,7 @@ class DeclarativeSRE:
                 ldap_server_ip=identity.ip_address,
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
+                ldap_username_attribute=ldap_username_attribute,
                 ldap_user_group_name=ldap_user_group_name,
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.cfg.azure.location,
