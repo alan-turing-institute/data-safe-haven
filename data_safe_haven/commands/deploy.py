@@ -7,7 +7,6 @@ import typer
 from data_safe_haven.config import Config, ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.functions import password
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 from data_safe_haven.provisioning import SHMProvisioningManager, SREProvisioningManager
 from data_safe_haven.utility import LoggingSingleton
@@ -53,7 +52,6 @@ def shm(
         )
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
         # Add necessary secrets
-        stack.add_secret("password-domain-ldap-searcher", password(20), replace=False)
         stack.add_secret(
             "verification-azuread-custom-domain", verification_record, replace=False
         )
