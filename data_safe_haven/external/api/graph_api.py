@@ -231,7 +231,7 @@ class GraphApi:
                 )
 
             # Ensure that the application service principal exists
-            application_sp = self.ensure_application_service_principal(application_name)
+            self.ensure_application_service_principal(application_name)
 
             # Grant admin consent for the requested scopes
             if application_scopes or delegated_scopes:
