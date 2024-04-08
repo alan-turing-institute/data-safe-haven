@@ -66,17 +66,13 @@ class DeclarativeSRE:
 
         # Construct LDAP paths
         ldap_root_dn = self.pulumi_opts.require("shm-domain_controllers-ldap_root_dn")
-        ldap_bind_dn = (
-            f"CN=dshldapsearcher,OU=Data Safe Haven Service Accounts,{ldap_root_dn}"
-        )
         ldap_group_search_base = f"OU=groups,{ldap_root_dn}"
         ldap_user_search_base = f"OU=users,{ldap_root_dn}"
-        ldap_search_password = self.pulumi_opts.require("password-domain-ldap-searcher")
-        ldap_base_group_name = f"Data Safe Haven SRE {self.sre_name}"
-        ldap_admin_group_name = f"{ldap_base_group_name} Administrators"
-        ldap_privileged_user_group_name = f"{ldap_base_group_name} Privileged Users"
+        ldap_group_name_prefix = f"Data Safe Haven SRE {self.sre_name}"
+        ldap_admin_group_name = f"{ldap_group_name_prefix} Administrators"
+        ldap_privileged_user_group_name = f"{ldap_group_name_prefix} Privileged Users"
         ldap_username_attribute = "uid"
-        ldap_user_group_name = f"{ldap_base_group_name} Users"
+        ldap_user_group_name = f"{ldap_group_name_prefix} Users"
         # Users are a posixAccount belonging to any of these groups
         ldap_user_filter = "".join(
             [
@@ -252,14 +248,11 @@ class DeclarativeSRE:
                 allow_paste=self.cfg.sre(self.sre_name).remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
                 dns_server_ip=dns.ip_address,
-                ldap_bind_dn=ldap_bind_dn,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
-                ldap_search_password=ldap_search_password,
                 ldap_server_ip=identity.ip_address,
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
-                ldap_user_group_name=ldap_user_group_name,
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.cfg.azure.location,
                 storage_account_key=data.storage_account_data_configuration_key,
@@ -277,14 +270,11 @@ class DeclarativeSRE:
             self.stack_name,
             SREWorkspacesProps(
                 admin_password=data.password_workspace_admin,
-                ldap_bind_dn=ldap_bind_dn,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
-                ldap_root_dn=ldap_root_dn,
-                ldap_search_password=ldap_search_password,
                 ldap_server_ip=identity.ip_address,
+                ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
-                ldap_user_group_name=ldap_user_group_name,
                 ldap_user_search_base=ldap_user_search_base,
                 linux_update_server_ip=self.pulumi_opts.require(
                     "shm-update_servers-ip_address_linux"
@@ -323,14 +313,10 @@ class DeclarativeSRE:
                 ),
                 gitea_database_password=data.password_gitea_database_admin,
                 hedgedoc_database_password=data.password_hedgedoc_database_admin,
-                ldap_bind_dn=ldap_bind_dn,
-                ldap_root_dn=ldap_root_dn,
-                ldap_search_password=ldap_search_password,
                 ldap_server_ip=identity.ip_address,
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
                 ldap_username_attribute=ldap_username_attribute,
-                ldap_user_group_name=ldap_user_group_name,
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,

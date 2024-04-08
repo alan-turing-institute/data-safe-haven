@@ -27,14 +27,10 @@ class SREUserServicesProps:
         domain_netbios_name: Input[str],
         gitea_database_password: Input[str],
         hedgedoc_database_password: Input[str],
-        ldap_bind_dn: Input[str],
-        ldap_root_dn: Input[str],
-        ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
         ldap_server_port: Input[int],
         ldap_username_attribute: Input[str],
         ldap_user_filter: Input[str],
-        ldap_user_group_name: Input[str],
         ldap_user_search_base: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
@@ -57,14 +53,10 @@ class SREUserServicesProps:
         self.domain_netbios_name = domain_netbios_name
         self.gitea_database_password = gitea_database_password
         self.hedgedoc_database_password = hedgedoc_database_password
-        self.ldap_bind_dn = ldap_bind_dn
-        self.ldap_root_dn = ldap_root_dn
-        self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.ldap_server_port = ldap_server_port
         self.ldap_username_attribute = ldap_username_attribute
         self.ldap_user_filter = ldap_user_filter
-        self.ldap_user_group_name = ldap_user_group_name
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name

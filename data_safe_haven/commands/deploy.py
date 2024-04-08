@@ -210,8 +210,6 @@ def sre(
             shm_stack.output("update_servers")["ip_address_linux"],
             replace=True,
         )
-        # Add necessary secrets
-        stack.copy_secret("password-domain-ldap-searcher", shm_stack)
 
         # Deploy Azure infrastructure with Pulumi
         if force is None:

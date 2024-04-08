@@ -40,14 +40,11 @@ class SRERemoteDesktopProps:
         allow_paste: Input[bool],
         database_password: Input[str],
         dns_server_ip: Input[str],
-        ldap_bind_dn: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
-        ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
         ldap_server_port: Input[int],
         ldap_user_filter: Input[str],
-        ldap_user_group_name: Input[str],
         ldap_user_search_base: Input[str],
         location: Input[str],
         storage_account_key: Input[str],
@@ -68,14 +65,11 @@ class SRERemoteDesktopProps:
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.dns_server_ip = dns_server_ip
-        self.ldap_bind_dn = ldap_bind_dn
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
-        self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
         self.ldap_server_port = ldap_server_port
         self.ldap_user_filter = ldap_user_filter
-        self.ldap_user_group_name = ldap_user_group_name
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.storage_account_key = storage_account_key
