@@ -7,7 +7,6 @@ from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import LoggingSingleton
 
-from .active_directory_users import ActiveDirectoryUsers
 from .azure_ad_users import AzureADUsers
 from .guacamole_users import GuacamoleUsers
 from .research_user import ResearchUser
@@ -19,7 +18,6 @@ class UserHandler:
         config: Config,
         graph_api: GraphApi,
     ):
-        self.active_directory_users = ActiveDirectoryUsers(config)
         self.azure_ad_users = AzureADUsers(graph_api)
         self.config = config
         self.logger = LoggingSingleton()
@@ -80,10 +78,6 @@ class UserHandler:
     def get_usernames_azure_ad(self) -> list[str]:
         """Load usernames from Azure AD"""
         return [user.username for user in self.azure_ad_users.list()]
-
-    def get_usernames_domain_controller(self) -> list[str]:
-        """Load usernames from all domain controller"""
-        return [user.username for user in self.active_directory_users.list()]
 
     def get_usernames_guacamole(self, sre_name: str) -> list[str]:
         """Lazy-load usernames from Guacamole"""
