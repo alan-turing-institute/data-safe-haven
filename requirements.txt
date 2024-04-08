@@ -105,7 +105,7 @@ chili==2.8.4
     # via data-safe-haven (pyproject.toml)
 click==8.1.7
     # via typer
-cryptography==41.0.7
+cryptography==42.0.4
     # via
     #   acme
     #   azure-identity
