@@ -7,6 +7,7 @@ from data_safe_haven.external import (
     AzureApi,
     AzureContainerInstance,
     AzurePostgreSQLDatabase,
+    GraphApi,
 )
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 from data_safe_haven.resources import resources_path
@@ -18,6 +19,7 @@ class SREProvisioningManager:
 
     def __init__(
         self,
+        graph_api_token: str,
         shm_stack: SHMStackManager,
         sre_name: str,
         sre_stack: SREStackManager,
@@ -26,6 +28,7 @@ class SREProvisioningManager:
     ):
         self._available_vm_skus: dict[str, dict[str, Any]] | None = None
         self.azure_location = shm_stack.cfg.azure.location
+        self.graph_api = GraphApi(auth_token=graph_api_token)
         self.logger = LoggingSingleton()
         self.sre_name = sre_name
         self.subscription_name = subscription_name
@@ -88,24 +91,12 @@ class SREProvisioningManager:
         return self._available_vm_skus
 
     def create_security_groups(self) -> None:
-        azure_api = AzureApi(self.subscription_name)
-        script = FileReader(resources_path / "active_directory" / "add_group.ps1")
+        """Create groups in AzureAD"""
         for group_name in self.security_group_params["security_group_names"].values():
-            script_parameters = {
-                "GroupName": group_name,
-                "OuPath": f"OU=Data Safe Haven Security Groups,{self.security_group_params['dn_base']}",
-            }
-            output = azure_api.run_remote_script(
-                self.security_group_params["resource_group_name"],
-                script.file_contents(),
-                script_parameters,
-                self.security_group_params["vm_name"],
-            )
-            for line in output.split("\n"):
-                self.logger.parse(line)
+            self.graph_api.create_group(group_name)
 
     def restart_remote_desktop_containers(self) -> None:
-        # Restart the Guacamole container group
+        """Restart the Guacamole container group"""
         guacamole_provisioner = AzureContainerInstance(
             self.remote_desktop_params["container_group_name"],
             self.remote_desktop_params["resource_group_name"],

@@ -328,7 +328,7 @@ class GraphApi:
                 "displayName": group_name,
                 "groupTypes": [],
                 "mailEnabled": False,
-                "mailNickname": group_name,
+                "mailNickname": "".join(filter(str.isalnum, group_name)),
                 "securityEnabled": True,
             }
             self.http_post(
