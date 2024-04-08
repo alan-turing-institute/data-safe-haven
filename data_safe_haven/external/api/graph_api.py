@@ -983,6 +983,26 @@ class GraphApi:
             msg = f"Could not load list of users.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
+    def remove_user(
+        self,
+        username: str,
+    ) -> None:
+        """Remove a user from AzureAD
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if the user could not be removed
+        """
+        try:
+            user_id = self.get_id_from_username(username)
+            # Attempt to remove user from group
+            self.http_delete(
+                f"{self.base_endpoint}/users/{user_id}",
+            )
+            return
+        except Exception as exc:
+            msg = f"Could not remove user '{username}'.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
+
     def remove_user_from_group(
         self,
         username: str,
