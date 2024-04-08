@@ -69,8 +69,8 @@ class DeclarativeSRE:
         ldap_bind_dn = (
             f"CN=dshldapsearcher,OU=Data Safe Haven Service Accounts,{ldap_root_dn}"
         )
-        ldap_group_search_base = f"OU=Data Safe Haven Security Groups,{ldap_root_dn}"
-        ldap_user_search_base = f"OU=Data Safe Haven Research Users,{ldap_root_dn}"
+        ldap_group_search_base = f"OU=groups,{ldap_root_dn}"
+        ldap_user_search_base = f"OU=users,{ldap_root_dn}"
         ldap_search_password = self.pulumi_opts.require("password-domain-ldap-searcher")
         ldap_server_ip = self.pulumi_opts.require(
             "shm-domain_controllers-ldap_server_ip"
@@ -79,6 +79,35 @@ class DeclarativeSRE:
         ldap_admin_group_name = f"{ldap_base_group_name} Administrators"
         ldap_privileged_user_group_name = f"{ldap_base_group_name} Privileged Users"
         ldap_user_group_name = f"{ldap_base_group_name} Users"
+        # Users are a posixAccount belonging to any of these groups
+        ldap_user_filter = "".join(
+            [
+                "(&",
+                "(objectClass=posixAccount)",
+                "(|",
+                f"(memberOf=CN={ldap_admin_group_name},{ldap_group_search_base})"
+                f"(memberOf=CN={ldap_privileged_user_group_name},{ldap_group_search_base})"
+                f"(memberOf=CN={ldap_user_group_name},{ldap_group_search_base})"
+                ")",
+                ")",
+            ]
+        )
+        # Groups are a posixGroup which is either a known, named group or belonging to any of these groups
+        ldap_group_filter = "".join(
+            [
+                "(&",
+                "(objectClass=posixGroup)",
+                "(|",
+                f"(CN={ldap_admin_group_name})",
+                f"(CN={ldap_privileged_user_group_name})",
+                f"(CN={ldap_user_group_name})",
+                f"(memberOf=CN=Primary user groups for {ldap_admin_group_name},{ldap_group_search_base})",
+                f"(memberOf=CN=Primary user groups for {ldap_privileged_user_group_name},{ldap_group_search_base})",
+                f"(memberOf=CN=Primary user groups for {ldap_user_group_name},{ldap_group_search_base})",
+                ")",
+                ")",
+            ]
+        )
 
         # Deploy SRE DNS server
         dns = SREDnsServerComponent(
