@@ -3,6 +3,7 @@
 from collections.abc import Sequence
 from typing import Any
 
+from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
 from data_safe_haven.utility import LoggingSingleton
@@ -76,32 +77,34 @@ class AzureADUsers:
             )
         ]
 
+    def register(self, sre_name: str, usernames: Sequence[str]) -> None:
+        """Add usernames to SRE security group"""
+        group_name = f"Data Safe Haven SRE {sre_name} Users"
+        for username in usernames:
+            self.graph_api.add_user_to_group(username, group_name)
+
     def remove(self, users: Sequence[ResearchUser]) -> None:
-        """Disable a list of users in AzureAD"""
-        # for user_to_remove in users:
-        #     matched_users = [user for user in self.users if user == user_to_remove]
-        #     if not matched_users:
-        #         continue
-        #     user = matched_users[0]
-        #     try:
-        #         if self.graph_api.remove_user_from_group(
-        #             user.username, self.researchers_group_name
-        #         ):
-        #             self.logger.info(
-        #                 f"Removed '{user.preferred_username}' from group '{self.researchers_group_name}'"
-        #             )
-        #         else:
-        #             raise DataSafeHavenMicrosoftGraphError
-        #     except DataSafeHavenMicrosoftGraphError:
-        #         self.logger.error(
-        #             f"Unable to remove '{user.preferred_username}' from group '{self.researchers_group_name}'"
-        #         )
-        pass
+        """Remove list of users from AzureAD"""
+        for user_to_remove in users:
+            matched_users = [user for user in self.list() if user == user_to_remove]
+            if not matched_users:
+                continue
+            user = matched_users[0]
+            try:
+                self.graph_api.remove_user(user.username)
+                self.logger.info(f"Removed '{user.preferred_username}'.")
+            except DataSafeHavenMicrosoftGraphError:
+                self.logger.error(f"Unable to remove '{user.preferred_username}'.")
 
     def set(self, users: Sequence[ResearchUser]) -> None:
-        """Set Guacamole users to specified list"""
+        """Set AzureAD users to specified list"""
         users_to_remove = [user for user in self.list() if user not in users]
         self.remove(users_to_remove)
         users_to_add = [user for user in users if user not in self.list()]
         self.add(users_to_add)
 
+    def unregister(self, sre_name: str, usernames: Sequence[str]) -> None:
+        """Remove usernames from SRE security group"""
+        group_name = f"Data Safe Haven SRE {sre_name}"
+        for username in usernames:
+            self.graph_api.remove_user_from_group(username, group_name)
