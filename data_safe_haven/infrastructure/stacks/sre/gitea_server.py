@@ -235,11 +235,7 @@ class SREGiteaServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__database__USER",
-                            value=Output.concat(
-                                props.database_username,
-                                "@",
-                                db_server_gitea.db_server.name,
-                            ),
+                            value=props.database_username,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__database__PASSWD",
