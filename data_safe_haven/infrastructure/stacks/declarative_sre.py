@@ -282,14 +282,15 @@ class DeclarativeSRE:
                 domain_sid=self.pulumi_opts.require(
                     "shm-domain_controllers-domain_sid"
                 ),
-                ldap_base_group_name=ldap_base_group_name,
                 ldap_bind_dn=ldap_bind_dn,
+                ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
                 ldap_root_dn=ldap_root_dn,
                 ldap_search_password=ldap_search_password,
-                ldap_server_ip=ldap_server_ip,
-                ldap_user_search_base=ldap_user_search_base,
+                ldap_server_ip=identity.ip_address,
+                ldap_user_filter=ldap_user_filter,
                 ldap_user_group_name=ldap_user_group_name,
+                ldap_user_search_base=ldap_user_search_base,
                 linux_update_server_ip=self.pulumi_opts.require(
                     "shm-update_servers-ip_address_linux"
                 ),

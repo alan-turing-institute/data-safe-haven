@@ -7,7 +7,7 @@ write_files:
       Acquire::http::Proxy "http://{{linux_update_server_ip}}:8000";
       Acquire::https::Proxy "http://{{linux_update_server_ip}}:8000";
 
-  - path: "/etc/nslcd.conf"
+  - path: "/etc/nslcd.conf.old"
     permissions: "0400"
     content: |
       # nslcd configuration file.
@@ -19,7 +19,7 @@ write_files:
       log syslog debug
 
       # General connection options
-      uri ldap://{{ldap_server_ip}}:389
+      uri ldap://10.0.0.132:389
       binddn {{ldap_bind_dn}}
       bindpw {{ldap_search_password}}
 
@@ -40,6 +40,34 @@ write_files:
       map  passwd  homeDirectory      "${unixHomeDirectory:-/home/$sAMAccountName}"
       map  group   cn                 sAMAccountName
       map  group   gidNumber          objectSid:{{domain_sid}}
+
+  - path: "/etc/nslcd.conf"
+    permissions: "0400"
+    content: |
+      # nslcd configuration file.
+      # http://manpages.ubuntu.com/manpages/bionic/man5/nslcd.conf.5.html
+
+      # Runtime options
+      uid nslcd
+      gid nslcd
+      log syslog debug
+
+      # Do not allow uids lower than 2000 to login
+      nss_min_uid 2000
+
+      # General connection options
+      uri ldap://{{ldap_server_ip}}:1389
+
+      # Search/mapping options
+      base {{ldap_user_search_base}}
+      base {{ldap_group_search_base}}
+
+      # All users that are members of the correct group
+      filter passwd {{{ldap_user_filter}}}
+
+      # One group for each security group belonging to this SRE and for each primary user group for users that belong to a group in this SRE
+      filter group {{{ldap_group_filter}}}
+
 
   - path: "/etc/pip.conf"
     permissions: "0444"

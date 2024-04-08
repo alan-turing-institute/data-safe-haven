@@ -31,14 +31,15 @@ class SREWorkspacesProps:
         self,
         admin_password: Input[str],
         domain_sid: Input[str],
-        ldap_base_group_name: Input[str],
         ldap_bind_dn: Input[str],
+        ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
-        ldap_user_search_base: Input[str],
+        ldap_user_filter: Input[str],
         ldap_user_group_name: Input[str],
+        ldap_user_search_base: Input[str],
         linux_update_server_ip: Input[str],
         location: Input[str],
         log_analytics_workspace_id: Input[str],
@@ -56,14 +57,15 @@ class SREWorkspacesProps:
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
         self.domain_sid = domain_sid
-        self.ldap_base_group_name = ldap_base_group_name
         self.ldap_bind_dn = ldap_bind_dn
+        self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
-        self.ldap_user_search_base = ldap_user_search_base
+        self.ldap_user_filter = ldap_user_filter
         self.ldap_user_group_name = ldap_user_group_name
+        self.ldap_user_search_base = ldap_user_search_base
         self.linux_update_server_ip = linux_update_server_ip
         self.location = location
         self.log_analytics_workspace_id = log_analytics_workspace_id
@@ -128,11 +130,12 @@ class SREWorkspacesComponent(ComponentResource):
         # Load cloud-init file
         b64cloudinit = Output.all(
             domain_sid=props.domain_sid,
-            ldap_base_group_name=props.ldap_base_group_name,
             ldap_bind_dn=props.ldap_bind_dn,
+            ldap_group_filter=props.ldap_group_filter,
             ldap_group_search_base=props.ldap_group_search_base,
             ldap_root_dn=props.ldap_root_dn,
             ldap_search_password=props.ldap_search_password,
+            ldap_user_filter=props.ldap_user_filter,
             ldap_user_group_name=props.ldap_user_group_name,
             ldap_server_ip=props.ldap_server_ip,
             ldap_user_search_base=props.ldap_user_search_base,
@@ -221,11 +224,13 @@ class SREWorkspacesComponent(ComponentResource):
         self,
         domain_sid: str,
         ldap_bind_dn: str,
+        ldap_group_filter: str,
         ldap_group_search_base: str,
         ldap_root_dn: str,
         ldap_search_password: str,
         ldap_user_group_name: str,
         ldap_server_ip: str,
+        ldap_user_filter: str,
         ldap_user_search_base: str,
         linux_update_server_ip: str,
         sre_fqdn: str,
@@ -239,11 +244,13 @@ class SREWorkspacesComponent(ComponentResource):
             mustache_values = {
                 "domain_sid": domain_sid,
                 "ldap_bind_dn": ldap_bind_dn,
+                "ldap_group_filter": ldap_group_filter,
                 "ldap_group_search_base": ldap_group_search_base,
                 "ldap_root_dn": ldap_root_dn,
                 "ldap_search_password": ldap_search_password,
                 "ldap_user_group_name": ldap_user_group_name,
                 "ldap_server_ip": ldap_server_ip,
+                "ldap_user_filter": ldap_user_filter,
                 "ldap_user_search_base": ldap_user_search_base,
                 "linux_update_server_ip": linux_update_server_ip,
                 "sre_fqdn": sre_fqdn,
