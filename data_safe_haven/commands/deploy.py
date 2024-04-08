@@ -186,11 +186,6 @@ def sre(
             replace=True,
         )
         stack.add_option(
-            "shm-networking-subnet_identity_servers_prefix",
-            shm_stack.output("networking")["subnet_identity_servers_prefix"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-networking-subnet_subnet_monitoring_prefix",
             shm_stack.output("networking")["subnet_monitoring_prefix"],
             replace=True,

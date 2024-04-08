@@ -27,7 +27,6 @@ class SRENetworkingProps:
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
-        shm_subnet_identity_servers_prefix: Input[str],
         shm_subnet_monitoring_prefix: Input[str],
         shm_subnet_update_servers_prefix: Input[str],
         shm_virtual_network_name: Input[str],
@@ -86,7 +85,6 @@ class SRENetworkingProps:
         self.user_public_ip_ranges = user_public_ip_ranges
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
-        self.shm_subnet_identity_servers_prefix = shm_subnet_identity_servers_prefix
         self.shm_subnet_monitoring_prefix = shm_subnet_monitoring_prefix
         self.shm_subnet_update_servers_prefix = shm_subnet_update_servers_prefix
         self.shm_virtual_network_name = shm_virtual_network_name
@@ -488,18 +486,6 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow LDAP client requests over TCP.",
-                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
-                    destination_port_ranges=["389", "636"],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLDAPClientTCPOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
@@ -528,7 +514,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=subnet_identity_containers_prefix,
                     destination_port_ranges=["389", "1389"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowSREIdentityServersOutbound",
+                    name="AllowIdentityServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_guacamole_containers_prefix,
@@ -748,18 +734,6 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow LDAP client requests over TCP.",
-                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
-                    destination_port_ranges=["389", "636"],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLDAPClientTCPOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_user_services_containers_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
@@ -776,7 +750,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=subnet_identity_containers_prefix,
                     destination_port_ranges=["389", "1389"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowSREIdentityServersOutbound",
+                    name="AllowIdentityServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_user_services_containers_prefix,
@@ -1092,40 +1066,13 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description=(
-                        "Allow LDAP client requests over TCP. "
-                        "See https://devopstales.github.io/linux/pfsense-ad-join/ for details."
-                    ),
-                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
-                    destination_port_ranges=["389", "636"],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLDAPClientTCPOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over TCP.",
                     destination_address_prefix=subnet_identity_containers_prefix,
                     destination_port_ranges=["389", "1389"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowSREIdentityServersOutbound",
+                    name="AllowIdentityServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow LDAP client requests over UDP.",
-                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
-                    destination_port_ranges=["389", "636"],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLDAPClientUDPOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_UDP,
-                    protocol=network.SecurityRuleProtocol.UDP,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
