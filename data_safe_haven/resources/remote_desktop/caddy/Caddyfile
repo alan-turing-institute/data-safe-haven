@@ -1,0 +1,14 @@
+# Refer to the Caddy docs for more information:
+# https://caddyserver.com/docs/caddyfile
+
+{
+    log {
+        level  DEBUG
+    }
+}
+
+:80 {
+    rewrite / /guacamole
+    reverse_proxy http://localhost:8080
+}
+

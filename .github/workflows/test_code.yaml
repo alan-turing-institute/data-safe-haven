@@ -9,19 +9,19 @@ on:  # yamllint disable-line rule:truthy
     branches: [develop, latest]
 
 jobs:
-  test_powershell:
+  test_python:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Install requirements
-        shell: pwsh
-        run: |
-          Set-PSRepository PSGallery -InstallationPolicy Trusted
-          deployment/CheckRequirements.ps1 -InstallMissing -IncludeDev
-      - name: Test PowerShell
-        shell: pwsh
-        run: ./tests/Run_Pester_Tests.ps1
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: Install hatch
+        run: pip install hatch
+      - name: Test Python
+        run: hatch run test:test
 
   test_markdown_links:
     runs-on: ubuntu-latest

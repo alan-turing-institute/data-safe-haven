@@ -1,0 +1,33 @@
+#cloud-config
+
+write_files:
+  - path: "/etc/squid-deb-proxy/mirror-dstdomain.acl.d/20-data-safe-haven"
+    content: |
+      # Additional mirror domains that are allowed by this cache
+      apt.postgresql.org
+      azure.archive.ubuntu.com
+      d20rj4el6vkp4c.cloudfront.net
+      dbeaver.io
+      developer.download.nvidia.com
+      packages.gitlab.com
+      packages.microsoft.com
+      qgis.org
+      ubuntu.qgis.org
+
+# Install necessary apt packages
+packages:
+  - auditd
+  - clamav
+  - clamav-base
+  - clamav-daemon
+  - clamav-freshclam
+  - clamav-unofficial-sigs
+  - squid-deb-proxy
+package_update: true
+package_upgrade: true
+
+runcmd:
+  # Remove the unnecessary squid service and prevent it from running
+  - service squid stop
+  - systemctl disable -f squid
+  - update-rc.d -f squid remove

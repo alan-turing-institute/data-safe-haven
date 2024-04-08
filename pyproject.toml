@@ -1,0 +1,192 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "data-safe-haven"
+dynamic = ["version"]
+description = "An open-source framework for creating secure environments to analyse sensitive data."
+authors = [
+  { name = "Data Safe Haven development team", email = "safehavendevs@turing.ac.uk" },
+]
+requires-python = ">=3.11"
+license = "BSD-3-Clause"
+dependencies = [
+  "appdirs~=1.4",
+  "azure-core~=1.26",
+  "azure-identity~=1.12",
+  "azure-keyvault-certificates~=4.6",
+  "azure-keyvault-keys~=4.6",
+  "azure-keyvault-secrets~=4.6",
+  "azure-mgmt-automation~=1.0",
+  "azure-mgmt-compute~=30.3",
+  "azure-mgmt-containerinstance~=10.1",
+  "azure-mgmt-dns~=8.0",
+  "azure-mgmt-keyvault~=10.3",
+  "azure-mgmt-msi~=7.0",
+  "azure-mgmt-network~=25.0",
+  "azure-mgmt-rdbms~=10.1",
+  "azure-mgmt-resource~=23.0",
+  "azure-mgmt-storage~=21.1",
+  "azure-storage-blob~=12.15",
+  "azure-storage-file-datalake~=12.10",
+  "azure-storage-file-share~=12.10",
+  "chevron~=0.14",
+  "chili~=2.1",
+  "cryptography~=41.0",
+  "dnspython~=2.3",
+  "fqdn~=1.5",
+  "msal~=1.21",
+  "psycopg~=3.1",
+  "pulumi~=3.80",
+  "pulumi-azure-native~=2.14",
+  "pulumi-random~=4.14",
+  "pydantic~=2.4",
+  "pytz~=2023.3",
+  "PyYAML~=6.0",
+  "rich~=13.4",
+  "simple-acme-dns~=3.0",
+  "typer~=0.9",
+  "websocket-client~=1.5",
+]
+
+[project.scripts]
+dsh = "data_safe_haven.cli:main"
+
+[tool.hatch.version]
+path = "data_safe_haven/version.py"
+
+[tool.hatch.envs.default]
+pre-install-commands = ["pip install -r requirements.txt"]
+
+[tool.hatch.envs.lint]
+detached = true
+dependencies = [
+  "black>=24.1.0",
+  "mypy>=1.0.0",
+  "pydantic>=2.4",
+  "ruff>=0.3.4",
+  "types-appdirs>=1.4.3.5",
+  "types-chevron>=0.14.2.5",
+  "types-pytz>=2023.3.0.0",
+  "types-PyYAML>=6.0.12.11",
+  "types-requests>=2.31.0.2",
+]
+
+[tool.hatch.envs.lint.scripts]
+typing = "mypy {args:data_safe_haven}"
+
+style = [
+  "ruff check {args:data_safe_haven tests_}",
+  "black --check --diff {args:data_safe_haven tests_}",
+]
+fmt = [
+  "black {args:data_safe_haven tests_}",
+  "ruff --fix {args:data_safe_haven tests_}",
+  "style",
+]
+all = [
+  "style",
+  "typing",
+]
+
+[tool.hatch.envs.test]
+dependencies = [
+  "pytest~=7.4"
+]
+pre-install-commands = ["pip install -r requirements.txt"]
+
+[tool.hatch.envs.test.scripts]
+test = "pytest {args:-vvv tests_}"
+
+[tool.black]
+target-version = ["py311", "py312"]
+
+[tool.ruff.lint]
+select = [
+  # See https://beta.ruff.rs/docs/rules/
+  "A",   # flake8-builtins
+  "ARG", # flake8-unused-arguments
+  "B",   # flake8-bugbear
+  "C",   # complexity, mcabe and flake8-comprehensions
+  "DTZ", # flake8-datetimez
+  "E",   # pycodestyle errors
+  "EM",  # flake8-errmsg
+  "F",   # pyflakes
+  "FBT", # flake8-boolean-trap
+  "I",   # isort
+  "ICN", # flake8-import-conventions
+  "ISC", # flake8-implicit-str-concat
+  "N",   # pep8-naming
+  "PLC", # pylint convention
+  "PLE", # pylint error
+  "PLR", # pylint refactor
+  "PLW", # pylint warning
+  "Q",   # flake8-quotes
+  "RUF", # ruff rules
+  "S",   # flake8-bandits
+  "T",   # flake8-debugger and flake8-print
+  "TID", # flake8-tidy-imports
+  "UP",  # pyupgrade
+  "W",   # pycodestyle warnings
+  "YTT", # flake8-2020
+]
+ignore = [
+  "E501",     # ignore line length
+  "S106",     # ignore check for possible passwords
+  "S603",     # allow subprocess with shell=False, this is lower severity than those with shell=True
+  "C901",     # ignore complex-structure
+  "PLR0912",  # ignore too-many-branches
+  "PLR0913",  # ignore too-many-arguments
+  "PLR0915",  # ignore too-many-statements
+]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["data_safe_haven"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests_/**/*" = ["PLR2004", "S101", "TID252"]
+
+[tool.mypy]
+disallow_subclassing_any = false  # allow subclassing of types from third-party libraries
+files = "data_safe_haven"         # run mypy over this directory
+mypy_path = "typings"             # use this directory for stubs
+strict = true                     # enable all optional error checking flags
+
+[[tool.mypy.overrides]]
+module = [
+    "acme.*",
+    "azure.core.*",
+    "azure.identity.*",
+    "azure.keyvault.*",
+    "azure.mgmt.*",
+    "azure.storage.*",
+    "chili.*",
+    "cryptography.*",
+    "dns.*",
+    "msal.*",
+    "numpy.*",
+    "pandas.*",
+    "psycopg.*",
+    "pulumi.*",
+    "pulumi_azure_native.*",
+    "pulumi_random.*",
+    "pymssql.*",
+    "rich.*",
+    "simple_acme_dns.*",
+    "sklearn.*",
+    "typer.*",
+    "websocket.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+    "--disable-warnings",
+]

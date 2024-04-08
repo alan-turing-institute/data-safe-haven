@@ -1,5 +1,6 @@
 # System files
 *.DS_Store
+__pycache__
 
 # All secrets folders, no matter how nested
 secrets/
@@ -38,3 +39,12 @@ expanded.yaml
 
 # Lychee cache
 .lycheecache
+
+# mypy cache
+.mypy_cache
+
+# ruff cache
+.pytest_cache
+
+# ruff cache
+.ruff_cache

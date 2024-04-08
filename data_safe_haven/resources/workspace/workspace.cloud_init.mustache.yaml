@@ -1,0 +1,149 @@
+#cloud-config
+
+write_files:
+  - path: "/etc/apt/apt.conf.d/00proxy"
+    permissions: "0444"
+    content: |
+      Acquire::http::Proxy "http://{{linux_update_server_ip}}:8000";
+      Acquire::https::Proxy "http://{{linux_update_server_ip}}:8000";
+
+  - path: "/etc/nslcd.conf"
+    permissions: "0400"
+    content: |
+      # nslcd configuration file.
+      # http://manpages.ubuntu.com/manpages/bionic/man5/nslcd.conf.5.html
+
+      # Runtime options
+      uid nslcd
+      gid nslcd
+      log syslog debug
+
+      # General connection options
+      uri ldap://{{ldap_server_ip}}:389
+      binddn {{ldap_bind_dn}}
+      bindpw {{ldap_search_password}}
+
+      # Search/mapping options
+      base {{ldap_user_search_base}}
+      base {{ldap_group_search_base}}
+
+      # All users that are members of the correct security group
+      filter passwd (&(objectClass=user)(memberOf=CN={{ldap_user_security_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}}))
+
+      # One group for each security group and for each user
+      filter group (|(objectclass=group)(&(objectClass=user)(memberOf=CN={{ldap_user_security_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}})))
+
+      # Attribute mappings
+      map  passwd  uid                sAMAccountName
+      map  passwd  gidNumber          objectSid:{{domain_sid}}
+      map  passwd  uidNumber          objectSid:{{domain_sid}}
+      map  passwd  homeDirectory      "${unixHomeDirectory:-/home/$sAMAccountName}"
+      map  group   cn                 sAMAccountName
+      map  group   gidNumber          objectSid:{{domain_sid}}
+
+  - path: "/etc/pip.conf"
+    permissions: "0444"
+    content: |
+      # Use the PyPI proxy for package installation
+      [global]
+      index = http://nexus.{{sre_fqdn}}/repository/pypi-proxy
+      index-url = http://nexus.{{sre_fqdn}}/repository/pypi-proxy/simple
+      trusted-host = nexus.{{sre_fqdn}}
+
+  - path: "/etc/R/Rprofile.site"
+    permissions: "0444"
+    content: |
+      # Use the CRAN proxy for package installation
+      local({
+          r <- getOption("repos")
+          r["CRAN"] <- "http://nexus.{{sre_fqdn}}/repository/cran-proxy"
+          options(repos = r)
+      })
+
+  - path: "/etc/skel/.xsession"
+    permissions: "0444"
+    content: |
+      xfce4-session
+
+mounts:
+  # Secure data is in a blob container mounted as NFSv3
+  - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress", /data, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
+  - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/egress", /output, nfs, "rw,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
+  # User data is in a file share mounted as NFSv4
+  - ["{{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/shared", /shared, nfs, "_netdev,sec=sys,nconnect=4"]
+  - ["{{storage_account_data_private_user_name}}.file.core.windows.net:/{{storage_account_data_private_user_name}}/home", /home, nfs, "_netdev,sec=sys,nconnect=4"]
+
+# Add additional apt repositories
+apt:
+  debconf_selections:
+    msodbcsql17: msodbcsql17 msodbcsql/ACCEPT_EULA boolean true
+  preserve_sources_list: true   # Append to the existing /etc/apt/sources.list
+  sources:
+    microsoft-general.list:
+      source: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main"
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
+
+# Install necessary apt packages
+packages:
+  # System requirements
+  - libnss-ldapd  # LDAP login
+  - libpam-ldapd  # LDAP login
+  - ldap-utils    # LDAP login
+  - nfs-common    # Mounting shared volumes
+  - xfce4         # XFCE desktop
+  - xrdp          # remote desktop client
+  # Programming
+  - python-is-python3  # Python language
+  - python3            # Python language
+  - python3-dev        # Python language
+  - python3-pip        # Python language
+  - python3-venv       # Python language
+  - r-base             # R language
+  # Tools
+  - firefox       # web browser
+  - libpq-dev     # interact with PostgreSQL databases
+  - msodbcsql17   # interact with Microsoft SQL databases
+  - unixodbc-dev  # interact with Microsoft SQL databases
+  # Bash testing
+  - bats
+package_update: true
+package_upgrade: true
+
+runcmd:
+  # Configure LDAP user login
+  # -------------------------
+  - echo ">=== Configure LDAP user login... ===<"
+  # Configure nsswitch
+  - echo "Adding ldap to /etc/nsswitch.conf"
+  - sed -i -r "s|^(passwd\|group\|shadow)(:.*)$|\1\2 ldap|g" /etc/nsswitch.conf
+  # Configure PAM for LDAP
+  - echo "Configuring PAM for LDAP login"
+  - sed -i "s|pam_mkhomedir.so|pam_mkhomedir.so skel=/etc/skel umask=0022|g" /usr/share/pam-configs/mkhomedir
+  - sed -i "s| use_authtok||g" /usr/share/pam-configs/ldap
+  - pam-auth-update --enable mkhomedir ldap
+  # Allow SSH password authentication
+  - sed -i "s|^PasswordAuthentication.*|PasswordAuthentication yes|g" /etc/ssh/sshd_config
+  - sed -i "s|^UsePAM.*|UsePAM yes|g" /etc/ssh/sshd_config
+  # Restart services
+  - systemctl restart nscd
+  - systemctl restart nslcd
+  - systemctl restart sshd
+
+  # Enable xrdp and session manager at startup
+  # ------------------------------------------
+  - echo ">=== Enable xrdp... ===<"
+  - systemctl enable xrdp
+  - systemctl enable xrdp-sesman
+  - systemctl start xrdp
+  - systemctl start xrdp-sesman
+
+  # Mount all external volumes
+  # --------------------------
+  - echo ">=== Mounting all external volumes... ===<"
+  - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
+  - mount -fav
+  - while (! mountpoint -q /data); do sleep 5; mount /data; done
+  - while (! mountpoint -q /home); do sleep 5; mount /home; done
+  - while (! mountpoint -q /output); do sleep 5; mount /output; done
+  - while (! mountpoint -q /shared); do sleep 5; mount /shared; done
+  - findmnt
