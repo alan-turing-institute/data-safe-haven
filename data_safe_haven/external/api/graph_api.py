@@ -603,7 +603,7 @@ class GraphApi:
                 next(
                     user
                     for user in self.read_users()
-                    if user["mailNickname"] == username
+                    if user["userPrincipalName"].split("@")[0] == username
                 )["id"]
             )
         except (DataSafeHavenMicrosoftGraphError, StopIteration):
