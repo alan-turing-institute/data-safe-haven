@@ -67,7 +67,7 @@ def annotate(
     return annotated
 
 
-for filename in (pathlib.Path("data_safe_haven") / "pulumi").glob("**/*.py"):
+for filename in (pathlib.Path("data_safe_haven") / "infrastructure").glob("**/*.py"):
     needs_replacement = False
     lines = []
     with open(filename) as f_pulumi:
@@ -87,6 +87,8 @@ for filename in (pathlib.Path("data_safe_haven") / "pulumi").glob("**/*.py"):
                     print(f"Updating {image} from {v_current} to {v_latest} in {filename}")  # noqa: T201
                     needs_replacement = True
                     output = line.replace(v_current, v_latest)
+                else:
+                    print(f"Leaving {image} at {v_current} (latest version) in {filename}")  # noqa: T201
             lines += output
 
     if needs_replacement:
