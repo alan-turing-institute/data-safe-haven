@@ -134,21 +134,6 @@ def sre(
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
         # Load SHM stack outputs
         stack.add_option(
-            "shm-domain_controllers-ldap_root_dn",
-            shm_stack.output("domain_controllers")["ldap_root_dn"],
-            replace=True,
-        )
-        stack.add_option(
-            "shm-domain_controllers-ldap_server_ip",
-            shm_stack.output("domain_controllers")["ldap_server_ip"],
-            replace=True,
-        )
-        stack.add_option(
-            "shm-domain_controllers-netbios_name",
-            shm_stack.output("domain_controllers")["netbios_name"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-firewall-private-ip-address",
             shm_stack.output("firewall")["private_ip_address"],
             replace=True,

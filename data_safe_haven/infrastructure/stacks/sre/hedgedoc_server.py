@@ -29,7 +29,6 @@ class SREHedgeDocServerProps:
         database_subnet_id: Input[str],
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
-        domain_netbios_name: Input[str],
         ldap_server_ip: Input[str],
         ldap_server_port: Input[int],
         ldap_user_filter: Input[str],
@@ -53,7 +52,6 @@ class SREHedgeDocServerProps:
         )
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
-        self.domain_netbios_name = domain_netbios_name
         self.ldap_server_ip = ldap_server_ip
         self.ldap_server_port = Output.from_input(ldap_server_port).apply(str)
         self.ldap_user_filter = ldap_user_filter
@@ -206,7 +204,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LDAP_PROVIDERNAME",
-                            value=props.domain_netbios_name,
+                            value="Data Safe Haven",
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_LDAP_SEARCHBASE",

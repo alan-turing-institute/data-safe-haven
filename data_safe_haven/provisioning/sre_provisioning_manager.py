@@ -49,22 +49,15 @@ class SREProvisioningManager:
 
         # Construct security group parameters
         self.security_group_params = {
-            "dn_base": shm_stack.output("domain_controllers")["ldap_root_dn"],
-            "resource_group_name": shm_stack.output("domain_controllers")[
-                "resource_group_name"
+            "admin_security_group_name": sre_stack.output("ldap")[
+                "admin_security_group_name"
             ],
-            "security_group_names": {
-                "admin_security_group_name": sre_stack.output("ldap")[
-                    "admin_security_group_name"
-                ],
-                "privileged_user_security_group_name": sre_stack.output("ldap")[
-                    "privileged_user_security_group_name"
-                ],
-                "user_security_group_name": sre_stack.output("ldap")[
-                    "user_security_group_name"
-                ],
-            },
-            "vm_name": shm_stack.output("domain_controllers")["vm_name"],
+            "privileged_user_security_group_name": sre_stack.output("ldap")[
+                "privileged_user_security_group_name"
+            ],
+            "user_security_group_name": sre_stack.output("ldap")[
+                "user_security_group_name"
+            ],
         }
 
         # Construct VM parameters
@@ -91,7 +84,7 @@ class SREProvisioningManager:
 
     def create_security_groups(self) -> None:
         """Create groups in AzureAD"""
-        for group_name in self.security_group_params["security_group_names"].values():
+        for group_name in self.security_group_params.values():
             self.graph_api.create_group(group_name)
 
     def restart_remote_desktop_containers(self) -> None:
@@ -129,11 +122,9 @@ class SREProvisioningManager:
                 for vm_identifier, vm_details in self.workspaces.items()
             ],
             "system_administrator_group_name": self.security_group_params[
-                "security_group_names"
-            ]["admin_security_group_name"],
-            "user_group_name": self.security_group_params["security_group_names"][
-                "user_security_group_name"
+                "admin_security_group_name"
             ],
+            "user_group_name": self.security_group_params["user_security_group_name"],
         }
         for details in connection_data["connections"]:
             self.logger.info(

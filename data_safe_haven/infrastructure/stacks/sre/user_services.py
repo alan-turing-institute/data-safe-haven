@@ -24,7 +24,6 @@ class SREUserServicesProps:
         databases: list[DatabaseSystem],  # this must *not* be passed as an Input[T]
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
-        domain_netbios_name: Input[str],
         gitea_database_password: Input[str],
         hedgedoc_database_password: Input[str],
         ldap_server_ip: Input[str],
@@ -50,7 +49,6 @@ class SREUserServicesProps:
         self.databases = databases
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
-        self.domain_netbios_name = domain_netbios_name
         self.gitea_database_password = gitea_database_password
         self.hedgedoc_database_password = hedgedoc_database_password
         self.ldap_server_ip = ldap_server_ip
@@ -143,7 +141,6 @@ class SREUserServicesComponent(ComponentResource):
                 database_subnet_id=props.subnet_containers_support_id,
                 dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
-                domain_netbios_name=props.domain_netbios_name,
                 ldap_server_ip=props.ldap_server_ip,
                 ldap_server_port=props.ldap_server_port,
                 ldap_username_attribute=props.ldap_username_attribute,

@@ -305,9 +305,6 @@ class DeclarativeSRE:
                 databases=self.cfg.sre(self.sre_name).databases,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
-                domain_netbios_name=self.pulumi_opts.require(
-                    "shm-domain_controllers-netbios_name"
-                ),
                 gitea_database_password=data.password_gitea_database_admin,
                 hedgedoc_database_password=data.password_hedgedoc_database_admin,
                 ldap_server_ip=identity.ip_address,
