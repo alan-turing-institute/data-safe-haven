@@ -1,3 +1,6 @@
+# The Turing Data Safe Haven
+
+```{toctree}
 :hidden: true
 :maxdepth: 2
 
