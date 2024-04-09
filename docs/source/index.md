@@ -6,7 +6,6 @@
 
 overview/index.md
 design/index.md
-deployment/index.md
 roles/index.md
 contributing/index.md
 ```
