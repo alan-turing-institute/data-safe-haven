@@ -48,6 +48,17 @@ class AzureADApplicationProvider(DshResourceProvider):
                 ):
                     outs["object_id"] = json_response["id"]
                     outs["application_id"] = json_response["appId"]
+
+                # Ensure that requested role permissions have been granted
+                graph_api.grant_role_permissions(
+                    outs["application_name"],
+                    application_role_assignments=props.get(
+                        "application_role_assignments", []
+                    ),
+                    delegated_role_assignments=props.get(
+                        "delegated_role_assignments", []
+                    ),
+                )
             return outs
         except Exception as exc:
             msg = f"Failed to refresh application [green]{props['application_name']}[/] in AzureAD.\n{exc}"
@@ -82,17 +93,14 @@ class AzureADApplicationProvider(DshResourceProvider):
             outs["object_id"] = json_response["id"]
             outs["application_id"] = json_response["appId"]
 
-            # Grant any requested application role permissions
-            for role_name in props.get("application_role_assignments", []):
-                graph_api.grant_application_role_permissions(
-                    outs["application_name"], role_name
-                )
-
-            # Grant any requested delegated role permissions
-            for role_name in props.get("delegated_role_assignments", []):
-                graph_api.grant_delegated_role_permissions(
-                    outs["application_name"], role_name
-                )
+            # Grant requested role permissions
+            graph_api.grant_role_permissions(
+                outs["application_name"],
+                application_role_assignments=props.get(
+                    "application_role_assignments", []
+                ),
+                delegated_role_assignments=props.get("delegated_role_assignments", []),
+            )
 
             # Attach an application secret if requested
             outs["application_secret"] = (

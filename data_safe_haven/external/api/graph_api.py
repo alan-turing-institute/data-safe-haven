@@ -50,6 +50,8 @@ class GraphApi:
         "Global Administrator": "62e90394-69f5-4237-9190-012177145e10"
     }
     uuid_application: ClassVar[dict[str, str]] = {
+        "Application.ReadWrite.All": "1bfefb4e-e0b5-418b-a88f-73c46d2cc8e9",
+        "AppRoleAssignment.ReadWrite.All": "06b708a9-e830-4db3-a914-8e69da51d44f",
         "Directory.Read.All": "7ab1d382-f21e-4acd-a863-ba3e13f7da61",
         "Domain.Read.All": "dbb9058a-0e50-45d7-ae91-66909b5d4664",
         "Group.Read.All": "5b567255-7703-4780-807c-7be8301ae99b",
@@ -597,6 +599,25 @@ class GraphApi:
         except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
 
+    def grant_role_permissions(
+        self,
+        application_name: str,
+        *,
+        application_role_assignments: Sequence[str],
+        delegated_role_assignments: Sequence[str],
+    ) -> None:
+        """Grant admin permission for requested application roles"""
+        # Ensure that the application has a service principal
+        self.ensure_application_service_principal(application_name)
+
+        # Grant any requested application role permissions
+        for role_name in application_role_assignments:
+            self.grant_application_role_permissions(application_name, role_name)
+
+        # Grant any requested delegated role permissions
+        for role_name in delegated_role_assignments:
+            self.grant_delegated_role_permissions(application_name, role_name)
+
     def grant_application_role_permissions(
         self, application_name: str, application_role_name: str
     ) -> None:
@@ -1000,10 +1021,24 @@ class GraphApi:
         try:
             user_id = self.get_id_from_username(username)
             group_id = self.get_id_from_groupname(group_name)
-            # Attempt to remove user from group
-            self.http_delete(
-                f"{self.base_endpoint}/groups/{group_id}/members/{user_id}/$ref",
-            )
+            # Check whether user is in group
+            json_response = self.http_get(
+                f"{self.base_endpoint}/groups/{group_id}/members",
+            ).json()
+            # Remove user from group if it is a member
+            if user_id in [
+                group_member["id"] for group_member in json_response["value"]
+            ]:
+                self.http_delete(
+                    f"{self.base_endpoint}/groups/{group_id}/members/{user_id}/$ref",
+                )
+                self.logger.info(
+                    f"Removed [green]'{username}'[/] from group [green]'{group_name}'[/]."
+                )
+            else:
+                self.logger.info(
+                    f"User [green]'{username}'[/] does not belong to group [green]'{group_name}'[/]."
+                )
         except Exception as exc:
             msg = (
                 f"Could not remove user '{username}' from group '{group_name}'.\n{exc}"
