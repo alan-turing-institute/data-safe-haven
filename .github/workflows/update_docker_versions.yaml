@@ -1,12 +1,9 @@
 ---
 name: Update Pulumi Docker image versions
 
-# Run workflow on pushes to matching branches
 on:  # yamllint disable-line rule:truthy
-  push:
-    branches: [python-migration]
   schedule:
-    - cron: "0 0 */7 * *"  # run once per week
+    - cron: "0 3 * * 1"  # run at 3:00 every Monday
   workflow_dispatch:  # allow this workflow to be manually triggered
 
 # checkout needs 'contents:read'
