@@ -77,12 +77,12 @@ dependencies = [
 typing = "mypy {args:data_safe_haven}"
 
 style = [
-  "ruff check {args:data_safe_haven tests_}",
-  "black --check --diff {args:data_safe_haven tests_}",
+  "ruff check {args:data_safe_haven tests}",
+  "black --check --diff {args:data_safe_haven tests}",
 ]
 fmt = [
-  "black {args:data_safe_haven tests_}",
-  "ruff --fix {args:data_safe_haven tests_}",
+  "black {args:data_safe_haven tests}",
+  "ruff --fix {args:data_safe_haven tests}",
   "style",
 ]
 all = [
@@ -97,7 +97,7 @@ dependencies = [
 pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.hatch.envs.test.scripts]
-test = "pytest {args:-vvv tests_}"
+test = "pytest {args:-vvv tests}"
 
 [tool.black]
 target-version = ["py311", "py312"]
@@ -150,7 +150,7 @@ known-first-party = ["data_safe_haven"]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests can use magic values, assertions, and relative imports
-"tests_/**/*" = ["PLR2004", "S101", "TID252"]
+"tests/**/*" = ["PLR2004", "S101", "TID252"]
 
 [tool.mypy]
 disallow_subclassing_any = false  # allow subclassing of types from third-party libraries

@@ -11,7 +11,6 @@ Replace the empty checkboxes [ ] below with checked ones [x] accordingly.
 - [ ] You are targeting the appropriate branch. If you're not certain which one this is, it should be **`develop`**.
 - [ ] Your branch is up-to-date with the **target branch** (it probably was when you started, but it may have changed since then).
 - [ ] You have marked this pull request as a **draft** and added `'[WIP]'` to the title if needed (if you're not yet ready to merge).
-- [ ] You have formatted your code using appropriate automated tools (for example `./tests/AutoFormat_Powershell.ps1 -TargetPath <path to file or directory>` for Powershell).
 
 ### :arrow_heading_up: Summary
 
