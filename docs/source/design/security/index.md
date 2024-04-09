@@ -6,7 +6,6 @@
 
 objectives.md
 technical_controls.md
-software_package_approval.md
 reference_configuration.md
 ```
 
