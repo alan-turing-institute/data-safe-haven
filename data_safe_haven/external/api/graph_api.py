@@ -613,7 +613,19 @@ class GraphApi:
         application_role_assignments: Sequence[str],
         delegated_role_assignments: Sequence[str],
     ) -> None:
-        """Grant admin permission for requested application roles"""
+        """
+        Grant roles to the service principal associated with an application and give admin approval to these roles
+
+        These can be either application or delegated roles.
+
+        - Application roles allow the application to perform an action itself.
+        - Delegated roles allow the application to ask a user for permission to perform an action.
+
+        See https://learn.microsoft.com/en-us/graph/permissions-grant-via-msgraph for more details.
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if one or more roles could not be assigned.
+        """
         # Ensure that the application has a service principal
         self.ensure_application_service_principal(application_name)
 
@@ -629,11 +641,14 @@ class GraphApi:
         self, application_name: str, application_role_name: str
     ) -> None:
         """
-        Grant permissions for a particular role to an application.
-        See https://learn.microsoft.com/en-us/graph/permissions-grant-via-msgraph
+        Assign a named application role to the service principal associated with an application.
+        Additionally provide Global Admin approval for the application to hold this role.
+        Application roles allow the application to perform an action itself.
+
+        See https://learn.microsoft.com/en-us/graph/permissions-grant-via-msgraph for more details.
 
         Raises:
-            DataSafeHavenMicrosoftGraphError if the secret could not be created or already exists
+            DataSafeHavenMicrosoftGraphError if one or more roles could not be assigned.
         """
         try:
             # Get service principals for Microsoft Graph and this application
@@ -682,11 +697,14 @@ class GraphApi:
         self, application_name: str, application_role_name: str
     ) -> None:
         """
-        Grant permissions for a particular role to an application.
-        See https://learn.microsoft.com/en-us/graph/permissions-grant-via-msgraph
+        Assign a named delegated role to the service principal associated with an application.
+        Additionally provide Global Admin approval for the application to hold this role.
+        Delegated roles allow the application to ask a user for permission to perform an action.
+
+        See https://learn.microsoft.com/en-us/graph/permissions-grant-via-msgraph for more details.
 
         Raises:
-            DataSafeHavenMicrosoftGraphError if the secret could not be created or already exists
+            DataSafeHavenMicrosoftGraphError if one or more roles could not be assigned.
         """
         try:
             # Get service principals for Microsoft Graph and this application
