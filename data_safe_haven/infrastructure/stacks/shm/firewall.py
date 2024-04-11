@@ -282,7 +282,6 @@ class SHMFirewallComponent(ComponentResource):
                             source_addresses=[props.subnet_identity_servers_iprange],
                             target_fqdns=[
                                 "au.download.windowsupdate.com",
-                                #                            "{{storage.artifacts.accountName}}.blob.core.windows.net",
                                 "ctldl.windowsupdate.com",
                                 "download.microsoft.com",
                                 "download.windowsupdate.com",
