@@ -65,7 +65,7 @@ class DeclarativeSRE:
         self.pulumi_opts = pulumi.Config()
 
         # Construct LDAP paths
-        ldap_root_dn = self.pulumi_opts.require("shm-domain_controllers-ldap_root_dn")
+        ldap_root_dn = f"DC={self.cfg.shm.fqdn.replace('.', ',DC=')}"
         ldap_group_search_base = f"OU=groups,{ldap_root_dn}"
         ldap_user_search_base = f"OU=users,{ldap_root_dn}"
         ldap_group_name_prefix = f"Data Safe Haven SRE {self.sre_name}"
