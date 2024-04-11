@@ -28,5 +28,3 @@ If ingress of new data would change the classification of a project, we suggest 
 ```
 
 At the end of this process they should have classified the project into one of the Data Safe Haven security tiers.
-
-If there are multiple data providers, please see the guidance for {ref}`roles_system_manager_multiple_providers`
