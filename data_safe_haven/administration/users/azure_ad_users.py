@@ -85,11 +85,10 @@ class AzureADUsers:
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
         """Remove list of users from AzureAD"""
-        for user_to_remove in users:
-            matched_users = [user for user in self.list() if user == user_to_remove]
-            if not matched_users:
-                continue
-            user = matched_users[0]
+        for user in filter(
+            lambda existing_user: any(existing_user == user for user in users),
+            self.list(),
+        ):
             try:
                 self.graph_api.remove_user(user.username)
                 self.logger.info(f"Removed '{user.preferred_username}'.")
