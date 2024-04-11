@@ -34,20 +34,6 @@ jobs:
       - name: Lint Markdown
         run: mdl --style .mdlstyle.rb .
 
-  lint_powershell:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install requirements
-        shell: pwsh
-        run: |
-          Set-PSRepository PSGallery -InstallationPolicy Trusted
-          Install-Module PSScriptAnalyzer
-      - name: Lint PowerShell
-        shell: pwsh
-        run: Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary
-
   lint_python:
     runs-on: ubuntu-latest
     steps:
