@@ -240,13 +240,20 @@ class GraphApi:
                     self.grant_application_role_permissions(application_name, scope)
                 for scope in delegated_scopes:
                     self.grant_delegated_role_permissions(application_name, scope)
-                while True:
+                attempts = 0
+                max_attempts = 5
+                while attempts < max_attempts:
                     if application_sp := self.get_service_principal_by_name(
                         application_name
                     ):
                         if self.read_application_permissions(application_sp["id"]):
                             break
                     time.sleep(10)
+                    attempts += 1
+
+                if attempts == max_attempts:
+                    msg = "Maximum attempts to validate service principle permissions exceeded"
+                    raise DataSafeHavenMicrosoftGraphError(msg)
 
             # Return JSON representation of the AzureAD application
             return json_response
