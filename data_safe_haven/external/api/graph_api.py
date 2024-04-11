@@ -658,7 +658,7 @@ class GraphApi:
                 raise DataSafeHavenMicrosoftGraphError(msg)
             application_sp = self.get_service_principal_by_name(application_name)
             if not application_sp:
-                msg = "Could not find application service principal."
+                msg = f"Could not find application service principal for application {application_name}."
                 raise DataSafeHavenMicrosoftGraphError(msg)
             # Check whether permission is already granted
             app_role_id = self.uuid_application[application_role_name]
@@ -1051,9 +1051,9 @@ class GraphApi:
                 f"{self.base_endpoint}/groups/{group_id}/members",
             ).json()
             # Remove user from group if it is a member
-            if user_id in [
+            if user_id in (
                 group_member["id"] for group_member in json_response["value"]
-            ]:
+            ):
                 self.http_delete(
                     f"{self.base_endpoint}/groups/{group_id}/members/{user_id}/$ref",
                 )
