@@ -354,18 +354,18 @@ class SHMFirewallComponent(ComponentResource):
                             ],
                             source_addresses=[props.subnet_update_servers_iprange],
                             target_fqdns=[
-                                "apt.postgresql.org",
+                                # "apt.postgresql.org",
                                 "archive.ubuntu.com",
                                 "azure.archive.ubuntu.com",
                                 "changelogs.ubuntu.com",
                                 "cloudapp.azure.com",  # this is where azure.archive.ubuntu.com is hosted
-                                "d20rj4el6vkp4c.cloudfront.net",
-                                "dbeaver.io",
-                                "packages.gitlab.com",
+                                # "d20rj4el6vkp4c.cloudfront.net",
+                                # "dbeaver.io",
+                                # "packages.gitlab.com",
                                 "packages.microsoft.com",
-                                "qgis.org",
+                                # "qgis.org",
                                 "security.ubuntu.com",
-                                "ubuntu.qgis.org"
+                                # "ubuntu.qgis.org"
                             ],
                         ),
                     ],
