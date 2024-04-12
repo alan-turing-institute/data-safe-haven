@@ -122,7 +122,7 @@ class SHMFirewallComponent(ComponentResource):
                                 "s1.adhybridhealth.azure.com",
                                 "umwatson.events.data.microsoft.com",
                                 "v10.events.data.microsoft.com",
-                                "v20.events.data.microsoft.com"
+                                "v20.events.data.microsoft.com",
                             ],
                         ),
                         network.AzureFirewallApplicationRuleArgs(
@@ -138,7 +138,7 @@ class SHMFirewallComponent(ComponentResource):
                             target_fqdns=[
                                 "*-sb.servicebus.windows.net",
                                 "*.servicebus.windows.net",
-                                "passwordreset.microsoftonline.com"
+                                "passwordreset.microsoftonline.com",
                             ],
                         ),
                         network.AzureFirewallApplicationRuleArgs(
@@ -312,8 +312,10 @@ class SHMFirewallComponent(ComponentResource):
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Azure Automation requests",
                             name="AllowExternalAzureAutomationOperations",
-                            protocols=[network.AzureFirewallNetworkRuleProtocol.TCP,
-                                       network.AzureFirewallNetworkRuleProtocol.UDP],
+                            protocols=[
+                                network.AzureFirewallNetworkRuleProtocol.TCP,
+                                network.AzureFirewallNetworkRuleProtocol.UDP,
+                            ],
                             source_addresses=["*"],
                             target_fqdns=[
                                 "GuestAndHybridManagement",
