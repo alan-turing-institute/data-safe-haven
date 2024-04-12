@@ -3,6 +3,7 @@
 from collections.abc import Sequence
 from typing import Any
 
+from data_safe_haven.exceptions import DataSafeHavenMicrosoftGraphError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
 from data_safe_haven.utility import LoggingSingleton
@@ -46,16 +47,8 @@ class AzureADUsers:
                     request_json, user.email_address, user.phone_number
                 )
             self.logger.info(
-                f"Ensured user '{user.preferred_username}' exists in AzureAD"
+                f"Ensured user '[green]{user.preferred_username}[/]' exists in AzureAD"
             )
-        # Decorate all users with the Linux schema
-        self.set_user_attributes()
-        # # Ensure that all users belong to an associated group the same name and UID
-        # for user in self.list():
-        #     self.graph_api.create_group(user.username, user.uid_number)
-        #     self.graph_api.add_user_to_group(user.username, user.username)
-        #     # Also add the user to the research users group
-        #     self.graph_api.add_user_to_group(user.username, self.researchers_group_name)
 
     def list(self) -> Sequence[ResearchUser]:
         user_list = self.graph_api.read_users()
@@ -84,84 +77,33 @@ class AzureADUsers:
             )
         ]
 
+    def register(self, sre_name: str, usernames: Sequence[str]) -> None:
+        """Add usernames to SRE security group"""
+        group_name = f"Data Safe Haven SRE {sre_name} Users"
+        for username in usernames:
+            self.graph_api.add_user_to_group(username, group_name)
+
     def remove(self, users: Sequence[ResearchUser]) -> None:
-        """Disable a list of users in AzureAD"""
-        # for user_to_remove in users:
-        #     matched_users = [user for user in self.users if user == user_to_remove]
-        #     if not matched_users:
-        #         continue
-        #     user = matched_users[0]
-        #     try:
-        #         if self.graph_api.remove_user_from_group(
-        #             user.username, self.researchers_group_name
-        #         ):
-        #             self.logger.info(
-        #                 f"Removed '{user.preferred_username}' from group '{self.researchers_group_name}'"
-        #             )
-        #         else:
-        #             raise DataSafeHavenMicrosoftGraphError
-        #     except DataSafeHavenMicrosoftGraphError:
-        #         self.logger.error(
-        #             f"Unable to remove '{user.preferred_username}' from group '{self.researchers_group_name}'"
-        #         )
-        pass
+        """Remove list of users from AzureAD"""
+        for user in filter(
+            lambda existing_user: any(existing_user == user for user in users),
+            self.list(),
+        ):
+            try:
+                self.graph_api.remove_user(user.username)
+                self.logger.info(f"Removed '{user.preferred_username}'.")
+            except DataSafeHavenMicrosoftGraphError:
+                self.logger.error(f"Unable to remove '{user.preferred_username}'.")
 
     def set(self, users: Sequence[ResearchUser]) -> None:
-        """Set Guacamole users to specified list"""
+        """Set AzureAD users to specified list"""
         users_to_remove = [user for user in self.list() if user not in users]
         self.remove(users_to_remove)
         users_to_add = [user for user in users if user not in self.list()]
         self.add(users_to_add)
 
-    def set_user_attributes(self) -> None:
-        """Ensure that all users have Linux attributes"""
-        # next_uid = max(
-        #     [int(user.uid_number) + 1 if user.uid_number else 0 for user in self.users]
-        #     + [10000]
-        # )
-        # for user in self.users:
-        #     try:
-        #         # Get username from userPrincipalName
-        #         username = user.user_principal_name.split("@")[0]
-        #         if not user.homedir:
-        #             user.homedir = f"/home/{username}"
-        #             self.logger.debug(
-        #                 f"Added homedir {user.homedir} to user {user.preferred_username}"
-        #             )
-        #         if not user.shell:
-        #             user.shell = "/bin/bash"
-        #             self.logger.debug(
-        #                 f"Added shell {user.shell} to user {user.preferred_username}"
-        #             )
-        #         if not user.uid_number:
-        #             # Set UID to the next unused one
-        #             user.uid_number = next_uid
-        #             next_uid += 1
-        #             self.logger.debug(
-        #                 f"Added uid {user.uid_number} to user {user.preferred_username}"
-        #             )
-        #         if not user.username:
-        #             user.username = username
-        #             self.logger.debug(
-        #                 f"Added username {user.username} to user {user.preferred_username}"
-        #             )
-        #         # Ensure that the remote user matches the local model
-        #         patch_json = {
-        #             GraphApi.linux_schema: {
-        #                 "gidnumber": user.uid_number,
-        #                 "homedir": user.homedir,
-        #                 "shell": user.shell,
-        #                 "uid": user.uid_number,
-        #                 "user": user.username,
-        #             }
-        #         }
-        #         self.graph_api.http_patch(
-        #             f"{self.graph_api.base_endpoint}/users/{user.azure_oid}",
-        #             json=patch_json,
-        #         )
-        #         self.logger.debug(f"Set Linux attributes for user {user.preferred_username}.")
-        #     except Exception as exc:
-        #         self.logger.error(
-        #             f"Failed to set Linux attributes for user {user.preferred_username}.\n{str(exc)}"
-        #         )
-        pass
+    def unregister(self, sre_name: str, usernames: Sequence[str]) -> None:
+        """Remove usernames from SRE security group"""
+        group_name = f"Data Safe Haven SRE {sre_name}"
+        for username in usernames:
+            self.graph_api.remove_user_from_group(username, group_name)

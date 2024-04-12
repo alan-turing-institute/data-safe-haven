@@ -115,7 +115,12 @@ def sre(
         # part of a Pulumi declarative command
         graph_api = GraphApi(
             tenant_id=config.shm.aad_tenant_id,
-            default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
+            default_scopes=[
+                "Application.ReadWrite.All",
+                "AppRoleAssignment.ReadWrite.All",
+                "Directory.ReadWrite.All",
+                "Group.ReadWrite.All",
+            ],
         )
 
         # Initialise Pulumi stack

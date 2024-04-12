@@ -43,15 +43,20 @@ class LocalTokenCache(SerializableTokenCache):
 class GraphApi:
     """Interface to the Microsoft Graph REST API"""
 
-    linux_schema = "extj8xolrvw_linux"  # this is the "Extension with Properties for Linux User and Groups" extension
+    application_ids: ClassVar[dict[str, str]] = {
+        "Microsoft Graph": "00000003-0000-0000-c000-000000000000",
+    }
     role_template_ids: ClassVar[dict[str, str]] = {
         "Global Administrator": "62e90394-69f5-4237-9190-012177145e10"
     }
     uuid_application: ClassVar[dict[str, str]] = {
+        "Application.ReadWrite.All": "1bfefb4e-e0b5-418b-a88f-73c46d2cc8e9",
+        "AppRoleAssignment.ReadWrite.All": "06b708a9-e830-4db3-a914-8e69da51d44f",
         "Directory.Read.All": "7ab1d382-f21e-4acd-a863-ba3e13f7da61",
         "Domain.Read.All": "dbb9058a-0e50-45d7-ae91-66909b5d4664",
         "Group.Read.All": "5b567255-7703-4780-807c-7be8301ae99b",
         "Group.ReadWrite.All": "62a82d76-70ea-41e2-9197-370581804d09",
+        "GroupMember.Read.All": "98830695-27a2-44f7-8c18-0c3ebc9698f6",
         "User.Read.All": "df021288-bdef-4463-88db-98f22de89214",
         "User.ReadWrite.All": "741f803b-c850-494e-b5df-cde7c675a1ca",
         "UserAuthenticationMethod.ReadWrite.All": "50483e42-d915-4231-9639-7fdb7fd190e5",
@@ -213,7 +218,7 @@ class GraphApi:
                 if scopes:
                     request_json["requiredResourceAccess"] = [
                         {
-                            "resourceAppId": "00000003-0000-0000-c000-000000000000",  # Microsoft Graph: https://graph.microsoft.com
+                            "resourceAppId": self.application_ids["Microsoft Graph"],
                             "resourceAccess": scopes,
                         }
                     ]
@@ -225,35 +230,31 @@ class GraphApi:
                 self.logger.info(
                     f"Created new application '[green]{json_response['displayName']}[/]'.",
                 )
+
+            # Ensure that the application service principal exists
+            self.ensure_application_service_principal(application_name)
+
             # Grant admin consent for the requested scopes
             if application_scopes or delegated_scopes:
-                application_id = self.get_id_from_application_name(application_name)
-                application_sp = self.get_service_principal_by_name(application_name)
-                if not (
-                    application_sp
-                    and self.read_application_permissions(application_sp["id"])
-                ):
-                    self.logger.info(
-                        f"Application [green]{application_name}[/] has requested permissions"
-                        " that need administrator approval."
-                    )
-                    self.logger.info(
-                        "Please sign-in with [bold]global administrator[/] credentials for the"
-                        " Azure Active Directory where your users are stored."
-                    )
-                    self.logger.info(
-                        "To sign in, use a web browser to open the page"
-                        f" [green]https://login.microsoftonline.com/{self.tenant_id}/adminconsent?client_id="
-                        f"{application_id}&redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient[/]"
-                        " and follow the instructions."
-                    )
-                    while True:
-                        if application_sp := self.get_service_principal_by_name(
-                            application_name
-                        ):
-                            if self.read_application_permissions(application_sp["id"]):
-                                break
-                        time.sleep(10)
+                for scope in application_scopes:
+                    self.grant_application_role_permissions(application_name, scope)
+                for scope in delegated_scopes:
+                    self.grant_delegated_role_permissions(application_name, scope)
+                attempts = 0
+                max_attempts = 5
+                while attempts < max_attempts:
+                    if application_sp := self.get_service_principal_by_name(
+                        application_name
+                    ):
+                        if self.read_application_permissions(application_sp["id"]):
+                            break
+                    time.sleep(10)
+                    attempts += 1
+
+                if attempts == max_attempts:
+                    msg = "Maximum attempts to validate service principle permissions exceeded"
+                    raise DataSafeHavenMicrosoftGraphError(msg)
+
             # Return JSON representation of the AzureAD application
             return json_response
         except Exception as exc:
@@ -261,7 +262,7 @@ class GraphApi:
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_application_secret(
-        self, application_secret_name: str, application_name: str
+        self, application_name: str, application_secret_name: str
     ) -> str:
         """Add a secret to an existing AzureAD application
 
@@ -308,7 +309,7 @@ class GraphApi:
             msg = f"Could not create application secret '{application_secret_name}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
-    def create_group(self, group_name: str, group_id: str) -> None:
+    def create_group(self, group_name: str) -> None:
         """Create an AzureAD group if it does not already exist
 
         Raises:
@@ -323,7 +324,6 @@ class GraphApi:
             self.logger.debug(
                 f"Creating AzureAD group '[green]{group_name}[/]'...",
             )
-            endpoint = f"{self.base_endpoint}/groups"
             request_json = {
                 "displayName": group_name,
                 "groupTypes": [],
@@ -331,26 +331,51 @@ class GraphApi:
                 "mailNickname": group_name,
                 "securityEnabled": True,
             }
-            json_response = self.http_post(
-                endpoint,
+            self.http_post(
+                f"{self.base_endpoint}/groups",
                 json=request_json,
             ).json()
-            # Add Linux group name and ID
-            patch_json = {
-                self.linux_schema: {
-                    "group": group_name,
-                    "gid": group_id,
-                }
-            }
-            self.http_patch(
-                f"{self.base_endpoint}/groups/{json_response['id']}",
-                json=patch_json,
-            )
             self.logger.info(
                 f"Created AzureAD group '[green]{group_name}[/]'.",
             )
         except Exception as exc:
             msg = f"Could not create AzureAD group '{group_name}'.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
+
+    def ensure_application_service_principal(
+        self, application_name: str
+    ) -> dict[str, Any]:
+        """Create a service principal for an AzureAD application if it does not already exist
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if the service principal could not be created
+        """
+        try:
+            # Return existing service principal if there is one
+            application_sp = self.get_service_principal_by_name(application_name)
+            if not application_sp:
+                # Otherwise we need to try
+                self.logger.debug(
+                    f"Creating service principal for application '[green]{application_name}[/]'...",
+                )
+                application_json = self.get_application_by_name(application_name)
+                if not application_json:
+                    msg = f"Could not retrieve application '{application_name}'"
+                    raise DataSafeHavenMicrosoftGraphError(msg)
+                self.http_post(
+                    f"{self.base_endpoint}/servicePrincipals",
+                    json={"appId": application_json["appId"]},
+                ).json()
+                self.logger.info(
+                    f"Created service principal for application '[green]{application_name}[/]'.",
+                )
+                application_sp = self.get_service_principal_by_name(application_name)
+                if not application_sp:
+                    msg = f"service principal for application '[green]{application_name}[/]' not found."
+                    raise DataSafeHavenMicrosoftGraphError(msg)
+            return application_sp
+        except Exception as exc:
+            msg = f"Could not create service principal for application '[green]{application_name}[/]'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_token_administrator(self) -> str:
@@ -448,20 +473,20 @@ class GraphApi:
             DataSafeHavenMicrosoftGraphError if the user could not be created
         """
         username = request_json["mailNickname"]
+        final_verb = "create/update"
         try:
             # Check whether user already exists
             user_id = self.get_id_from_username(username)
-            final_verb = ""
             if user_id:
                 self.logger.debug(
                     f"Updating AzureAD user '[green]{username}[/]'...",
                 )
-                final_verb = "Updated"
+                final_verb = "Update"
             else:
                 self.logger.debug(
                     f"Creating AzureAD user '[green]{username}[/]'...",
                 )
-                final_verb = "Created"
+                final_verb = "Create"
                 # If they do not then create them
                 endpoint = f"{self.base_endpoint}/users"
                 json_response = self.http_post(
@@ -476,8 +501,9 @@ class GraphApi:
                     json={"emailAddress": email_address},
                 )
             except DataSafeHavenMicrosoftGraphError as exc:
-                if "already exists" not in str(exc):
-                    raise
+                if "already registered" not in str(exc):
+                    msg = f"Invalid email address '{email_address}'.\n{exc}"
+                    raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Set the authentication phone number
             try:
                 self.http_post(
@@ -485,18 +511,19 @@ class GraphApi:
                     json={"phoneNumber": phone_number, "phoneType": "mobile"},
                 )
             except DataSafeHavenMicrosoftGraphError as exc:
-                if "already exists" not in str(exc):
-                    raise
+                if "already registered" not in str(exc):
+                    msg = f"Invalid phone number '{phone_number}'.\n{exc}"
+                    raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Ensure user is enabled
             self.http_patch(
                 f"{self.base_endpoint}/users/{user_id}",
                 json={"accountEnabled": True},
             )
             self.logger.info(
-                f"{final_verb} AzureAD user '[green]{username}[/]'.",
+                f"{final_verb}d AzureAD user '[green]{username}[/]'.",
             )
         except DataSafeHavenMicrosoftGraphError as exc:
-            msg = f"Could not create/update user {username}.\n{exc}"
+            msg = f"Could not {final_verb.lower()} user {username}.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def delete_application(
@@ -573,11 +600,162 @@ class GraphApi:
                 next(
                     user
                     for user in self.read_users()
-                    if user["mailNickname"] == username
+                    if user["userPrincipalName"].split("@")[0] == username
                 )["id"]
             )
         except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
+
+    def grant_role_permissions(
+        self,
+        application_name: str,
+        *,
+        application_role_assignments: Sequence[str],
+        delegated_role_assignments: Sequence[str],
+    ) -> None:
+        """
+        Grant roles to the service principal associated with an application and give admin approval to these roles
+
+        These can be either application or delegated roles.
+
+        - Application roles allow the application to perform an action itself.
+        - Delegated roles allow the application to ask a user for permission to perform an action.
+
+        See https://learn.microsoft.com/en-us/graph/permissions-grant-via-msgraph for more details.
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if one or more roles could not be assigned.
+        """
+        # Ensure that the application has a service principal
+        self.ensure_application_service_principal(application_name)
+
+        # Grant any requested application role permissions
+        for role_name in application_role_assignments:
+            self.grant_application_role_permissions(application_name, role_name)
+
+        # Grant any requested delegated role permissions
+        for role_name in delegated_role_assignments:
+            self.grant_delegated_role_permissions(application_name, role_name)
+
+    def grant_application_role_permissions(
+        self, application_name: str, application_role_name: str
+    ) -> None:
+        """
+        Assign a named application role to the service principal associated with an application.
+        Additionally provide Global Admin approval for the application to hold this role.
+        Application roles allow the application to perform an action itself.
+
+        See https://learn.microsoft.com/en-us/graph/permissions-grant-via-msgraph for more details.
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if one or more roles could not be assigned.
+        """
+        try:
+            # Get service principals for Microsoft Graph and this application
+            microsoft_graph_sp = self.get_service_principal_by_name("Microsoft Graph")
+            if not microsoft_graph_sp:
+                msg = "Could not find Microsoft Graph service principal."
+                raise DataSafeHavenMicrosoftGraphError(msg)
+            application_sp = self.get_service_principal_by_name(application_name)
+            if not application_sp:
+                msg = f"Could not find application service principal for application {application_name}."
+                raise DataSafeHavenMicrosoftGraphError(msg)
+            # Check whether permission is already granted
+            app_role_id = self.uuid_application[application_role_name]
+            response = self.http_get(
+                f"{self.base_endpoint}/servicePrincipals/{microsoft_graph_sp['id']}/appRoleAssignedTo",
+            )
+            for application in response.json().get("value", []):
+                if (application["appRoleId"] == app_role_id) and (
+                    application["principalDisplayName"] == application_name
+                ):
+                    self.logger.debug(
+                        f"Application role '[green]{application_role_name}[/]' already assigned to '{application_name}'.",
+                    )
+                    return
+            # Otherwise grant permissions for this role to the application
+            self.logger.debug(
+                f"Assigning application role '[green]{application_role_name}[/]' to '{application_name}'...",
+            )
+            request_json = {
+                "principalId": application_sp["id"],
+                "resourceId": microsoft_graph_sp["id"],
+                "appRoleId": app_role_id,
+            }
+            response = self.http_post(
+                f"{self.base_endpoint}/servicePrincipals/{microsoft_graph_sp['id']}/appRoleAssignments",
+                json=request_json,
+            )
+            self.logger.info(
+                f"Assigned application role '[green]{application_role_name}[/]' to '{application_name}'.",
+            )
+        except Exception as exc:
+            msg = f"Could not assign application role '{application_role_name}' to application '{application_name}'.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
+
+    def grant_delegated_role_permissions(
+        self, application_name: str, application_role_name: str
+    ) -> None:
+        """
+        Assign a named delegated role to the service principal associated with an application.
+        Additionally provide Global Admin approval for the application to hold this role.
+        Delegated roles allow the application to ask a user for permission to perform an action.
+
+        See https://learn.microsoft.com/en-us/graph/permissions-grant-via-msgraph for more details.
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if one or more roles could not be assigned.
+        """
+        try:
+            # Get service principals for Microsoft Graph and this application
+            microsoft_graph_sp = self.get_service_principal_by_name("Microsoft Graph")
+            if not microsoft_graph_sp:
+                msg = "Could not find Microsoft Graph service principal."
+                raise DataSafeHavenMicrosoftGraphError(msg)
+            application_sp = self.get_service_principal_by_name(application_name)
+            if not application_sp:
+                msg = "Could not find application service principal."
+                raise DataSafeHavenMicrosoftGraphError(msg)
+            # Check existing permissions
+            response = self.http_get(f"{self.base_endpoint}/oauth2PermissionGrants")
+            self.logger.debug(
+                f"Assigning delegated role '[green]{application_role_name}[/]' to '{application_name}'...",
+            )
+            # If there are existing permissions then we need to patch
+            application = next(
+                (
+                    app
+                    for app in response.json().get("value", [])
+                    if app["clientId"] == application_sp["id"]
+                ),
+                None,
+            )
+            if application:
+                request_json = {
+                    "scope": f"{application['scope']} {application_role_name}"
+                }
+                response = self.http_patch(
+                    f"{self.base_endpoint}/oauth2PermissionGrants/{application['id']}",
+                    json=request_json,
+                )
+            # Otherwise we need to make a new delegation request
+            else:
+                request_json = {
+                    "clientId": application_sp["id"],
+                    "consentType": "AllPrincipals",
+                    "resourceId": microsoft_graph_sp["id"],
+                    "scope": application_role_name,
+                }
+                response = self.http_post(
+                    f"{self.base_endpoint}/oauth2PermissionGrants",
+                    json=request_json,
+                )
+            self.logger.info(
+                f"Assigned delegated role '[green]{application_role_name}[/]' to '{application_name}'.",
+            )
+        except Exception as exc:
+            msg = f"Could not assign delegated role '{application_role_name}' to application '{application_name}'.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_delete(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP DELETE request
@@ -604,7 +782,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute DELETE request.\n{exc}"
+            msg = f"Could not execute DELETE request to '{url}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_get(self, url: str, **kwargs: Any) -> requests.Response:
@@ -632,7 +810,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute GET request.\n{exc}"
+            msg = f"Could not execute GET request from '{url}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
@@ -660,7 +838,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute PATCH request.\n{exc}"
+            msg = f"Could not execute PATCH request to '{url}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_post(self, url: str, **kwargs: Any) -> requests.Response:
@@ -689,7 +867,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute POST request.\n{exc}"
+            msg = f"Could not execute POST request to '{url}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def read_applications(self) -> Sequence[dict[str, Any]]:
@@ -814,7 +992,6 @@ class GraphApi:
                 "surname",
                 "telephoneNumber",
                 "userPrincipalName",
-                self.linux_schema,
             ]
         )
         users: Sequence[dict[str, Any]]
@@ -831,12 +1008,29 @@ class GraphApi:
                 user["isGlobalAdmin"] = any(
                     user["id"] == admin["id"] for admin in administrators
                 )
-                for key, value in user.get(self.linux_schema, {}).items():
-                    user[key] = value
-                user[self.linux_schema] = {}
             return users
         except Exception as exc:
             msg = f"Could not load list of users.\n{exc}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
+
+    def remove_user(
+        self,
+        username: str,
+    ) -> None:
+        """Remove a user from AzureAD
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if the user could not be removed
+        """
+        try:
+            user_id = self.get_id_from_username(username)
+            # Attempt to remove user from group
+            self.http_delete(
+                f"{self.base_endpoint}/users/{user_id}",
+            )
+            return
+        except Exception as exc:
+            msg = f"Could not remove user '{username}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def remove_user_from_group(
@@ -852,10 +1046,24 @@ class GraphApi:
         try:
             user_id = self.get_id_from_username(username)
             group_id = self.get_id_from_groupname(group_name)
-            # Attempt to remove user from group
-            self.http_delete(
-                f"{self.base_endpoint}/groups/{group_id}/members/{user_id}/$ref",
-            )
+            # Check whether user is in group
+            json_response = self.http_get(
+                f"{self.base_endpoint}/groups/{group_id}/members",
+            ).json()
+            # Remove user from group if it is a member
+            if user_id in (
+                group_member["id"] for group_member in json_response["value"]
+            ):
+                self.http_delete(
+                    f"{self.base_endpoint}/groups/{group_id}/members/{user_id}/$ref",
+                )
+                self.logger.info(
+                    f"Removed [green]'{username}'[/] from group [green]'{group_name}'[/]."
+                )
+            else:
+                self.logger.info(
+                    f"User [green]'{username}'[/] does not belong to group [green]'{group_name}'[/]."
+                )
         except Exception as exc:
             msg = (
                 f"Could not remove user '{username}' from group '{group_name}'.\n{exc}"

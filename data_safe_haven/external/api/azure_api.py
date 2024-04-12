@@ -227,7 +227,7 @@ class AzureApi(AzureAuthenticator):
                 parameters=RecordSet(
                     ttl=30, txt_records=[TxtRecord(value=[record_value])]
                 ),
-                record_type="TXT",
+                record_type=RecordType.TXT,
                 relative_record_set_name=record_name,
                 resource_group_name=resource_group_name,
                 zone_name=zone_name,

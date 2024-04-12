@@ -136,8 +136,8 @@ class SRERemoteDesktopComponent(ComponentResource):
             f"{self._name}_aad_application",
             AzureADApplicationProps(
                 application_name=props.aad_application_name,
-                application_url=props.aad_application_url,
                 auth_token=props.aad_auth_token,
+                web_redirect_url=props.aad_application_url,
             ),
             opts=child_opts,
         )

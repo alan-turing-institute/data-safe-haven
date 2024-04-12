@@ -18,12 +18,20 @@ class AzureADApplicationProps:
     def __init__(
         self,
         application_name: Input[str],
-        application_url: Input[str],
         auth_token: Input[str],
+        application_role_assignments: Input[list[str]] | None = None,
+        application_secret_name: Input[str] | None = None,
+        delegated_role_assignments: Input[list[str]] | None = None,
+        public_client_redirect_uri: Input[str] | None = None,
+        web_redirect_url: Input[str] | None = None,
     ) -> None:
         self.application_name = application_name
-        self.application_url = application_url
-        self.auth_token = auth_token
+        self.application_role_assignments = application_role_assignments
+        self.application_secret_name = application_secret_name
+        self.auth_token = Output.secret(auth_token)
+        self.delegated_role_assignments = delegated_role_assignments
+        self.public_client_redirect_uri = public_client_redirect_uri
+        self.web_redirect_url = web_redirect_url
 
 
 class AzureADApplicationProvider(DshResourceProvider):
@@ -40,6 +48,17 @@ class AzureADApplicationProvider(DshResourceProvider):
                 ):
                     outs["object_id"] = json_response["id"]
                     outs["application_id"] = json_response["appId"]
+
+                # Ensure that requested role permissions have been granted
+                graph_api.grant_role_permissions(
+                    outs["application_name"],
+                    application_role_assignments=props.get(
+                        "application_role_assignments", []
+                    ),
+                    delegated_role_assignments=props.get(
+                        "delegated_role_assignments", []
+                    ),
+                )
             return outs
         except Exception as exc:
             msg = f"Failed to refresh application [green]{props['application_name']}[/] in AzureAD.\n{exc}"
@@ -50,19 +69,48 @@ class AzureADApplicationProvider(DshResourceProvider):
         outs = dict(**props)
         try:
             graph_api = GraphApi(auth_token=props["auth_token"], disable_logging=True)
+            request_json = {
+                "displayName": props["application_name"],
+                "signInAudience": "AzureADMyOrg",
+            }
+            # Add a web redirection URL if requested
+            if props.get("web_redirect_url", None):
+                request_json["web"] = {
+                    "redirectUris": [props["web_redirect_url"]],
+                    "implicitGrantSettings": {"enableIdTokenIssuance": True},
+                }
+            # Add a public client redirection URL if requested
+            if props.get("public_client_redirect_uri", None):
+                request_json["publicClient"] = {
+                    "redirectUris": [props["public_client_redirect_uri"]],
+                }
             json_response = graph_api.create_application(
                 props["application_name"],
-                request_json={
-                    "displayName": props["application_name"],
-                    "web": {
-                        "redirectUris": [props["application_url"]],
-                        "implicitGrantSettings": {"enableIdTokenIssuance": True},
-                    },
-                    "signInAudience": "AzureADMyOrg",
-                },
+                application_scopes=props.get("application_role_assignments", []),
+                delegated_scopes=props.get("delegated_role_assignments", []),
+                request_json=request_json,
             )
             outs["object_id"] = json_response["id"]
             outs["application_id"] = json_response["appId"]
+
+            # Grant requested role permissions
+            graph_api.grant_role_permissions(
+                outs["application_name"],
+                application_role_assignments=props.get(
+                    "application_role_assignments", []
+                ),
+                delegated_role_assignments=props.get("delegated_role_assignments", []),
+            )
+
+            # Attach an application secret if requested
+            outs["application_secret"] = (
+                graph_api.create_application_secret(
+                    props["application_name"],
+                    props["application_secret_name"],
+                )
+                if props.get("application_secret_name", None)
+                else ""
+            )
         except Exception as exc:
             msg = f"Failed to create application [green]{props['application_name']}[/] in AzureAD.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
@@ -116,6 +164,7 @@ class AzureADApplicationProvider(DshResourceProvider):
 
 class AzureADApplication(Resource):
     application_id: Output[str]
+    application_secret: Output[str]
     object_id: Output[str]
     _resource_type_name = "dsh:common:AzureADApplication"  # set resource type
 
@@ -128,6 +177,11 @@ class AzureADApplication(Resource):
         super().__init__(
             AzureADApplicationProvider(),
             name,
-            {"application_id": None, "object_id": None, **vars(props)},
+            {
+                "application_id": None,
+                "application_secret": None,
+                "object_id": None,
+                **vars(props),
+            },
             opts,
         )
