@@ -49,7 +49,7 @@ packaging==23.1
     # via
     #   pydata-sphinx-theme
     #   sphinx
-pydata-sphinx-theme==0.13.3
+pydata-sphinx-theme==0.15.2
     # via -r requirements.in
 pygments==2.15.1
     # via
