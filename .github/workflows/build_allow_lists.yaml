@@ -55,7 +55,7 @@ jobs:
       - name: Create pull request
         if: ${{ (env.TIMEOUT_REACHED == 0) && (! env.ACT) }}
         id: pull-request
-        uses: peter-evans/create-pull-request@38e0b6e68b4c852a5500a94740f0e535e0d7ba54  # This commit corresponds to tag 4.2.4
+        uses: peter-evans/create-pull-request@c55203cfde3e5c11a452d352b4393e68b85b4533  # This commit corresponds to tag 6.0.3
         with:
           commit-message: Update PyPI and CRAN allow lists
           committer: GitHub Actions <noreply@github.com>
