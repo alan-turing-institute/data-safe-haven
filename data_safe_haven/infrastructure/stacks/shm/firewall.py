@@ -312,8 +312,8 @@ class SHMFirewallComponent(ComponentResource):
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Azure Automation requests",
                             name="AllowExternalAzureAutomationOperations",
-                            protocols=[azure_native.network.AzureFirewallNetworkRuleProtocol.TCP,
-                                       azure_native.network.AzureFirewallNetworkRuleProtocol.UDP],
+                            protocols=[network.AzureFirewallNetworkRuleProtocol.TCP,
+                                       network.AzureFirewallNetworkRuleProtocol.UDP],
                             source_addresses=["*"],
                             target_fqdns=[
                                 "GuestAndHybridManagement",
