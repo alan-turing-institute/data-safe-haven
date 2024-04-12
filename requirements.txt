@@ -190,7 +190,7 @@ pulumi-random==4.15.1
     # via data-safe-haven (pyproject.toml)
 pycparser==2.21
     # via cffi
-pydantic==2.6.1
+pydantic==2.7.0
     # via data-safe-haven (pyproject.toml)
 pydantic-core==2.16.2
     # via pydantic
