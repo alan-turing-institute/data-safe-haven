@@ -40,7 +40,7 @@ jobs:
       - name: Create pull request
         if: ${{ ! env.ACT }}
         id: pull-request
-        uses: peter-evans/create-pull-request@153407881ec5c347639a548ade7d8ad1d6740e38  # This commit corresponds to tag 5.0.2
+        uses: peter-evans/create-pull-request@c55203cfde3e5c11a452d352b4393e68b85b4533  # This commit corresponds to tag 6.0.3
         with:
           commit-message: Update Pulumi Docker images
           committer: GitHub Actions <noreply@github.com>
