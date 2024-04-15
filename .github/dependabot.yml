@@ -12,6 +12,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      # Group all version updates into a single PR
+      all-dependencies:
+        applies-to: version-updates
+        patterns: ["*"]
   # documentations pip dependency (pip-compile requirements.in, requirements.txt) update PRs
   - package-ecosystem: "pip"
     directory: "/docs/"
