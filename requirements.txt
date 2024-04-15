@@ -112,7 +112,7 @@ cryptography==42.0.5
     #   pyopenssl
 dill==0.3.8
     # via pulumi
-dnspython==2.4.2
+dnspython==2.6.1
     # via
     #   data-safe-haven (pyproject.toml)
     #   simple-acme-dns
