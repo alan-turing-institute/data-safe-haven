@@ -22,7 +22,6 @@ class SHMFirewallProps:
         resource_group_name: Input[str],
         route_table_name: Input[str],
         subnet_firewall: Input[network.GetSubnetResult],
-        subnet_identity_servers: Input[network.GetSubnetResult],
         subnet_update_servers: Input[network.GetSubnetResult],
     ) -> None:
         self.dns_zone_name = Output.from_input(dns_zone).apply(lambda zone: zone.name)
@@ -32,9 +31,6 @@ class SHMFirewallProps:
         self.subnet_firewall_id = Output.from_input(subnet_firewall).apply(
             get_id_from_subnet
         )
-        self.subnet_identity_servers_iprange = Output.from_input(
-            subnet_identity_servers
-        ).apply(lambda s: str(s.address_prefix) if s.address_prefix else "")
         self.subnet_update_servers_iprange = Output.from_input(
             subnet_update_servers
         ).apply(lambda s: str(s.address_prefix) if s.address_prefix else "")
@@ -105,211 +101,6 @@ class SHMFirewallComponent(ComponentResource):
             f"{self._name}_firewall",
             additional_properties={"Network.DNS.EnableProxy": "true"},
             application_rule_collections=[
-                network.AzureFirewallApplicationRuleCollectionArgs(
-                    action=network.AzureFirewallRCActionArgs(type="Allow"),
-                    name=f"{stack_name}-identity-servers",
-                    priority=FirewallPriorities.SHM_IDENTITY_SERVERS,
-                    rules=[
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external operational requests from AzureAD Connect",
-                            name="AllowExternalAzureADConnectOperations",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "*.blob.core.windows.net",
-                                "*.servicebus.windows.net",
-                                "aadconnecthealth.azure.com",
-                                "adminwebservice.microsoftonline.com",
-                                "s1.adhybridhealth.azure.com",
-                                "umwatson.events.data.microsoft.com",
-                                "v10.events.data.microsoft.com",
-                                "v20.events.data.microsoft.com",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external password reset requests from AzureAD Connect",
-                            name="AllowExternalAzureADConnectPasswordReset",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "*-sb.servicebus.windows.net",
-                                "*.servicebus.windows.net",
-                                "passwordreset.microsoftonline.com",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external setup requests from AzureAD Connect",
-                            name="AllowExternalAzureADConnectSetup",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "s1.adhybridhealth.azure.com",
-                                "management.azure.com",
-                                "policykeyservice.dc.ad.msft.net",
-                                "www.office.com",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external AzureAD login requests",
-                            name="AllowExternalAzureADLogin",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "aadcdn.msftauth.net",
-                                "login.live.com",
-                                "login.microsoftonline.com",
-                                "login.windows.net",
-                                "secure.aadcdn.microsoftonline-p.com",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external AzureMFAConnect operational requests",
-                            name="AllowExternalAzureMFAConnectOperations",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "css.phonefactor.net",
-                                "pfd.phonefactor.net",
-                                "pfd2.phonefactor.net",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external AzureMFAConnect setup requests",
-                            name="AllowExternalAzureMFAConnectSetup",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "adnotifications.windowsazure.com",
-                                "credentials.azure.com",
-                                "strongauthenticationservice.auth.microsoft.com",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external certificate setup requests",
-                            name="AllowExternalCertificateStatusCheck",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "crl.microsoft.com",
-                                "crl3.digicert.com",
-                                "crl4.digicert.com",
-                                "ocsp.digicert.com",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external script downloads from GitHub",
-                            name="AllowExternalGitHubScriptDownload",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "raw.githubusercontent.com",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external Powershell module installation requests",
-                            name="AllowExternalPowershellModuleInstallation",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "psg-prod-eastus.azureedge.net",
-                                "www.powershellgallery.com",
-                            ],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external MSOnline connection requests",
-                            name="AllowExternalPowershellModuleMSOnlineConnections",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                )
-                            ],
-                            source_addresses=[props.subnet_update_servers_iprange],
-                            target_fqdns=["provisioningapi.microsoftonline.com"],
-                        ),
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external Windows update requests",
-                            name="AllowExternalWindowsUpdate",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=80,
-                                    protocol_type="Http",
-                                ),
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type="Https",
-                                ),
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                            target_fqdns=[
-                                "au.download.windowsupdate.com",
-                                "ctldl.windowsupdate.com",
-                                "download.microsoft.com",
-                                "download.windowsupdate.com",
-                                "fe2cr.update.microsoft.com",
-                                "fe3cr.delivery.mp.microsoft.com",
-                                "geo-prod.do.dsp.mp.microsoft.com",
-                                "go.microsoft.com",
-                                "ntservicepack.microsoft.com",
-                                "onegetcdn.azureedge.net",
-                                "settings-win.data.microsoft.com",
-                                "slscr.update.microsoft.com",
-                                "test.stats.update.microsoft.com",
-                                "tlu.dl.delivery.mp.microsoft.com",
-                                "umwatson.events.data.microsoft.com",
-                                "v10.events.data.microsoft.com",
-                                "v10.vortex-win.data.microsoft.com",
-                                "v20.events.data.microsoft.com",
-                                "windowsupdate.microsoft.com",
-                            ],
-                        ),
-                    ],
-                ),
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-any",
@@ -503,24 +294,6 @@ class SHMFirewallComponent(ComponentResource):
             ],
             location=props.location,
             network_rule_collections=[
-                network.AzureFirewallNetworkRuleCollectionArgs(
-                    action=network.AzureFirewallRCActionArgs(type="Allow"),
-                    name=f"{stack_name}-identity-servers",
-                    priority=FirewallPriorities.SHM_IDENTITY_SERVERS,
-                    rules=[
-                        network.AzureFirewallNetworkRuleArgs(
-                            description="Allow external DNS resolver",
-                            destination_addresses=[external_dns_resolver],
-                            destination_ports=["53"],
-                            name="AllowExternalDnsResolver",
-                            protocols=[
-                                network.AzureFirewallNetworkRuleProtocol.TCP,
-                                network.AzureFirewallNetworkRuleProtocol.UDP,
-                            ],
-                            source_addresses=[props.subnet_identity_servers_iprange],
-                        ),
-                    ],
-                ),
                 network.AzureFirewallNetworkRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-all",
