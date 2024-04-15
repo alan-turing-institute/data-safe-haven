@@ -4,7 +4,6 @@ import pulumi
 
 from data_safe_haven.config import Config
 
-from .shm.bastion import SHMBastionComponent, SHMBastionProps
 from .shm.data import SHMDataComponent, SHMDataProps
 from .shm.firewall import SHMFirewallComponent, SHMFirewallProps
 from .shm.monitoring import SHMMonitoringComponent, SHMMonitoringProps
@@ -53,18 +52,6 @@ class DeclarativeSHM:
                 subnet_firewall=networking.subnet_firewall,
                 subnet_identity_servers=networking.subnet_identity_servers,
                 subnet_update_servers=networking.subnet_update_servers,
-            ),
-            tags=self.cfg.tags.model_dump(),
-        )
-
-        # Deploy firewall and routing
-        SHMBastionComponent(
-            "shm_bastion",
-            self.stack_name,
-            SHMBastionProps(
-                location=self.cfg.azure.location,
-                resource_group_name=networking.resource_group_name,
-                subnet=networking.subnet_bastion,
             ),
             tags=self.cfg.tags.model_dump(),
         )
