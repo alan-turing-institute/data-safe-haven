@@ -18,7 +18,7 @@ deploy_command_group = typer.Typer()
 @deploy_command_group.command()
 def shm(
     force: Annotated[
-        Optional[bool],  # noqa: UP007
+        Optional[bool],
         typer.Option(
             "--force",
             "-f",
@@ -91,7 +91,7 @@ def shm(
 def sre(
     name: Annotated[str, typer.Argument(help="Name of SRE to deploy")],
     force: Annotated[
-        Optional[bool],  # noqa: UP007
+        Optional[bool],
         typer.Option(
             "--force",
             "-f",
