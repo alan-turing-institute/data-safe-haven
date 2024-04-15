@@ -84,7 +84,7 @@ jobs:
           done
           rm expanded.tmp
       - name: Lint YAML
-        uses: karancode/yamllint-github-action@2.1.1
+        uses: karancode/yamllint-github-action@v2.1.1
         with:
           yamllint_strict: true
           yamllint_comment: false
