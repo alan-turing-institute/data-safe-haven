@@ -6,10 +6,6 @@ from data_safe_haven.config import Config
 
 from .shm.bastion import SHMBastionComponent, SHMBastionProps
 from .shm.data import SHMDataComponent, SHMDataProps
-from .shm.domain_controllers import (
-    SHMDomainControllersComponent,
-    SHMDomainControllersProps,
-)
 from .shm.firewall import SHMFirewallComponent, SHMFirewallProps
 from .shm.monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .shm.networking import SHMNetworkingComponent, SHMNetworkingProps
@@ -116,32 +112,7 @@ class DeclarativeSHM:
             tags=self.cfg.tags.model_dump(),
         )
 
-        # Deploy domain controllers
-        domain_controllers = SHMDomainControllersComponent(
-            "shm_domain_controllers",
-            self.stack_name,
-            SHMDomainControllersProps(
-                automation_account=monitoring.automation_account,
-                automation_account_modules=monitoring.automation_account_modules,
-                automation_account_private_dns=monitoring.automation_account_private_dns,
-                domain_fqdn=networking.dns_zone.name,
-                domain_netbios_name=self.shm_name.upper(),
-                location=self.cfg.azure.location,
-                log_analytics_workspace=monitoring.log_analytics_workspace,
-                password_domain_admin=data.password_domain_admin,
-                password_domain_azuread_connect=data.password_domain_azure_ad_connect,
-                password_domain_searcher=data.password_domain_searcher,
-                private_ip_address=networking.domain_controller_private_ip,
-                subnet_identity_servers=networking.subnet_identity_servers,
-                subscription_name=self.cfg.context.subscription_name,
-                virtual_network_name=networking.virtual_network.name,
-                virtual_network_resource_group_name=networking.resource_group_name,
-            ),
-            tags=self.cfg.tags.model_dump(),
-        )
-
         # Export values for later use
-        pulumi.export("domain_controllers", domain_controllers.exports)
         pulumi.export("firewall", firewall.exports)
         pulumi.export("monitoring", monitoring.exports)
         pulumi.export("networking", networking.exports)
