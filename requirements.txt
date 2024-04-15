@@ -167,7 +167,7 @@ msrest==0.7.1
     #   azure-mgmt-rdbms
 oauthlib==3.2.2
     # via requests-oauthlib
-packaging==23.2
+packaging==24.0
     # via msal-extensions
 parver==0.5
     # via
