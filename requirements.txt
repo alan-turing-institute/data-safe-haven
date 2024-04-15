@@ -219,7 +219,7 @@ rich==13.7.1
     # via
     #   data-safe-haven (pyproject.toml)
     #   typer
-semver==2.13.0
+semver==3.0.2
     # via
     #   pulumi
     #   pulumi-azure-native
