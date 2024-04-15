@@ -313,8 +313,10 @@ class SHMFirewallComponent(ComponentResource):
                             description="Allow external Azure Automation requests",
                             name="AllowExternalAzureAutomationOperations",
                             protocols=[
-                                network.AzureFirewallNetworkRuleProtocol.TCP,
-                                network.AzureFirewallNetworkRuleProtocol.UDP,
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type="Https",
+                                )
                             ],
                             source_addresses=["*"],
                             target_fqdns=[
