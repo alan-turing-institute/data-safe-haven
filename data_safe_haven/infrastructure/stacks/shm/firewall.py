@@ -126,7 +126,7 @@ class SHMFirewallComponent(ComponentResource):
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=123,
-                                    protocol_type="Http",
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 )
                             ],
                             source_addresses=["*"],
@@ -145,11 +145,11 @@ class SHMFirewallComponent(ComponentResource):
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=80,
-                                    protocol_type="Http",
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 ),
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=443,
-                                    protocol_type="Https",
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 ),
                             ],
                             source_addresses=[props.subnet_update_servers_iprange],
@@ -181,7 +181,7 @@ class SHMFirewallComponent(ComponentResource):
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=443,
-                                    protocol_type="Https",
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
                             source_addresses=sre_identity_server_subnets,
@@ -203,7 +203,7 @@ class SHMFirewallComponent(ComponentResource):
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=443,
-                                    protocol_type="Https",
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
                             source_addresses=sre_package_repositories_subnets,
@@ -215,7 +215,7 @@ class SHMFirewallComponent(ComponentResource):
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=443,
-                                    protocol_type="Https",
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
                             source_addresses=sre_package_repositories_subnets,
@@ -234,7 +234,7 @@ class SHMFirewallComponent(ComponentResource):
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=443,
-                                    protocol_type="Https",
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
                             source_addresses=sre_remote_desktop_gateway_subnets,
@@ -253,11 +253,11 @@ class SHMFirewallComponent(ComponentResource):
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=80,
-                                    protocol_type="Http",
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 ),
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=443,
-                                    protocol_type="Https",
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 ),
                             ],
                             source_addresses=sre_workspaces_subnets,
@@ -273,7 +273,7 @@ class SHMFirewallComponent(ComponentResource):
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=11371,
-                                    protocol_type="Http",
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 ),
                             ],
                             source_addresses=sre_workspaces_subnets,
