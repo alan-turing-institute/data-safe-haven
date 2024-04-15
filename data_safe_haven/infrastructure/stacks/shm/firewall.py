@@ -17,7 +17,6 @@ class SHMFirewallProps:
 
     def __init__(
         self,
-        domain_controller_private_ip: Input[str],
         dns_zone: Input[network.Zone],
         location: Input[str],
         resource_group_name: Input[str],
@@ -26,7 +25,6 @@ class SHMFirewallProps:
         subnet_identity_servers: Input[network.GetSubnetResult],
         subnet_update_servers: Input[network.GetSubnetResult],
     ) -> None:
-        self.domain_controller_private_ip = domain_controller_private_ip
         self.dns_zone_name = Output.from_input(dns_zone).apply(lambda zone: zone.name)
         self.location = location
         self.resource_group_name = resource_group_name

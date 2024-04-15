@@ -44,7 +44,6 @@ class DeclarativeSHM:
             "shm_firewall",
             self.stack_name,
             SHMFirewallProps(
-                domain_controller_private_ip=networking.domain_controller_private_ip,
                 dns_zone=networking.dns_zone,
                 location=self.cfg.azure.location,
                 resource_group_name=networking.resource_group_name,

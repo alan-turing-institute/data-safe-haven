@@ -487,9 +487,6 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Register outputs
         self.dns_zone = dns_zone
-        self.domain_controller_private_ip = str(
-            props.subnet_identity_servers_iprange.available()[0]
-        )
         self.private_dns_zone_base_id = private_zone_ids[0]
         self.resource_group_name = Output.from_input(resource_group.name)
         self.route_table = route_table
