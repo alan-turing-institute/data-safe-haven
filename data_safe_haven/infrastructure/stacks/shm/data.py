@@ -124,48 +124,6 @@ class SHMDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Secret: Domain admin password
-        password_domain_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_domain_admin",
-            length=20,
-            special=True,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
-        )
-        keyvault.Secret(
-            f"{self._name}_kvs_password_domain_admin",
-            properties=keyvault.SecretPropertiesArgs(
-                value=password_domain_admin.result
-            ),
-            resource_group_name=resource_group.name,
-            secret_name="password-domain-admin",
-            vault_name=key_vault.name,
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=password_domain_admin)
-            ),
-            tags=child_tags,
-        )
-
-        # Secret: Azure ADConnect password
-        password_domain_azure_ad_connect = pulumi_random.RandomPassword(
-            f"{self._name}_password_domain_azure_ad_connect",
-            length=20,
-            special=True,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
-        )
-        keyvault.Secret(
-            f"{self._name}_kvs_password_domain_azure_ad_connect",
-            properties=keyvault.SecretPropertiesArgs(
-                value=password_domain_azure_ad_connect.result
-            ),
-            resource_group_name=resource_group.name,
-            secret_name="password-domain-azure-ad-connect",
-            vault_name=key_vault.name,
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=password_domain_azure_ad_connect)
-            ),
-            tags=child_tags,
-        )
-
         # Secret: Linux update server admin password
         password_update_server_linux_admin = pulumi_random.RandomPassword(
             f"{self._name}_password_update_server_linux_admin",
@@ -243,10 +201,6 @@ class SHMDataComponent(ComponentResource):
         )
 
         # Register outputs
-        self.password_domain_admin = Output.secret(password_domain_admin.result)
-        self.password_domain_azure_ad_connect = Output.secret(
-            password_domain_azure_ad_connect.result
-        )
         self.password_update_server_linux_admin = Output.secret(
             password_update_server_linux_admin.result
         )
