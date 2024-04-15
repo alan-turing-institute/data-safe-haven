@@ -51,7 +51,7 @@ jobs:
         run: |
           make html SPHINXOPTS="-W"
       - name: Link Checker
-        uses: lycheeverse/lychee-action@v1.7.0
+        uses: lycheeverse/lychee-action@v1.9.3
         with:
           args: --config='./.lychee.toml' --no-progress './docs/build/html/**/*.html'
           fail: true  # fail on broken links

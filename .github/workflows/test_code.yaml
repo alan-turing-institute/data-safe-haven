@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: npm install -g markdown-link-check
       - name: Link Checker
-        uses: lycheeverse/lychee-action@v1.7.0
+        uses: lycheeverse/lychee-action@v1.9.3
         with:
           args: --config='./.lychee.toml' --no-progress --offline '**/*.md' --exclude-path './docs'
           fail: true  # fail on broken links
