@@ -250,7 +250,7 @@ typing-extensions==4.11.0
     #   typer
 urllib3==2.2.1
     # via requests
-validators==0.22.0
+validators==0.28.0
     # via simple-acme-dns
 websocket-client==1.7.0
     # via data-safe-haven (pyproject.toml)
