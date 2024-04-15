@@ -313,8 +313,10 @@ class SHMFirewallComponent(ComponentResource):
                             description="Allow external Azure Automation requests",
                             name="AllowExternalAzureAutomationOperations",
                             protocols=[
-                                network.AzureFirewallNetworkRuleProtocol.TCP,
-                                network.AzureFirewallNetworkRuleProtocol.UDP,
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type="Https",
+                                )
                             ],
                             source_addresses=["*"],
                             target_fqdns=[
@@ -484,8 +486,8 @@ class SHMFirewallComponent(ComponentResource):
                             destination_ports=["53"],
                             name="AllowExternalDnsResolver",
                             protocols=[
-                                network.AzureFirewallNetworkRuleProtocol.UDP,
                                 network.AzureFirewallNetworkRuleProtocol.TCP,
+                                network.AzureFirewallNetworkRuleProtocol.UDP,
                             ],
                             source_addresses=[props.subnet_identity_servers_iprange],
                         ),
@@ -496,6 +498,17 @@ class SHMFirewallComponent(ComponentResource):
                     name=f"{stack_name}-all",
                     priority=1010,
                     rules=[
+                        network.AzureFirewallNetworkRuleArgs(
+                            description="Allow external Azure Automation requests",
+                            destination_addresses=["GuestAndHybridManagement"],
+                            destination_ports=["*"],
+                            name="AllowExternalAzureAutomationOperations",
+                            protocols=[
+                                network.AzureFirewallNetworkRuleProtocol.TCP,
+                                network.AzureFirewallNetworkRuleProtocol.UDP,
+                            ],
+                            source_addresses=["*"],
+                        ),
                         network.AzureFirewallNetworkRuleArgs(
                             description="Allow external NTP requests",
                             destination_addresses=ntp_ip_addresses,
