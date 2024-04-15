@@ -381,7 +381,7 @@ After going through the account setup procedure, you should have access to:
 - Multifactor authentication
 
 ```{tip}
-If you aren't sure about any of these then please return to the [**Set up your account**](#set-up-your-account) section above.
+If you aren't sure about any of these then please return to the [**Set up your account**](#-set-up-your-account) section above.
 ```
 
 ### {{house}} Log into the research environment
@@ -470,7 +470,7 @@ Once connected to it, you can analyse the sensitive data belonging to your proje
 
   ```{caution}
   We recommend _not_ including special characters in your password as the keyboard layout expected by the login screen may be different from the one you're using.
-  - if you want to reset your password, follow the steps defined in the [Password and MFA](#password-and-mfa) section above.
+  - if you want to reset your password, follow the steps defined in the [Password and MFA](#-password-and-mfa) section above.
   - if you want to continue with special characters in your password, please test that they are being entered correctly by typing them in the username field.
   ```
 
@@ -531,7 +531,7 @@ If you need anything that is not already installed, please discuss this with the
 
 ```{attention}
 This secure research desktop SRD is your interface to a single computer running in the cloud.
-You may have access to [additional SRDs](#access-additional-srds) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
+You may have access to [additional SRDs](#-access-additional-srds) so be careful to check which machine you are working in as files and installed packages may not be the same across the machines.
 ```
 
 ### {{musical_keyboard}} Keyboard mapping
@@ -545,7 +545,7 @@ You may find that the keyboard mapping on your computer is not the same as the o
 Click on `Desktop` and `Applications > Settings > Keyboard` to change the layout.
 
 ```{tip}
-We recommend opening an application that allows text entry (such as `Libre Office Writer` , see [Access applications](#access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
+We recommend opening an application that allows text entry (such as `Libre Office Writer` , see [Access applications](#-access-applications) below) to check what keys the remote desktop thinks you're typing – especially if you need to use special characters.
 ```
 
 ### {{unlock}} Access applications
@@ -676,7 +676,7 @@ Depending on the type of data you are accessing, different `R` and `python` pack
 - {ref}`Tier 2 <policy_tier_2>` (medium security) environments have full mirrors of `PyPI` and `CRAN` available.
 - {ref}`Tier 3 <policy_tier_3>` (high security) environments only have pre-authorised packages available.
 
-If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#bring-in-new-files-to-the-sre) below.
+If you need to use a package that is not on the allowlist see the section on how to [bring software or data into the environment](#-bring-in-new-files-to-the-sre) below.
 
 (role_researcher_user_guide_shared_storage)=
 
@@ -832,7 +832,7 @@ We recommend that you make your repositories public to facilitate collaboration 
 
 If you have not used GitLab before:
 
-- There is a small tutorial available as an [Appendix](#appendix-b-gitlab-tutorial-notes) to this user guide.
+- There is a small tutorial available as an [Appendix](#-appendix-b-gitlab-tutorial-notes) to this user guide.
 - You can find the official documentation on the [GitLab website](https://docs.gitlab.com/ee/user/index.html).
 - Ask your team mates for help.
 - Ask the designated contact for your SRE.
