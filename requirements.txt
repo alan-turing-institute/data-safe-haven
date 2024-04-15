@@ -4,7 +4,7 @@
 #
 #    pip-compile pyproject.toml
 #
-acme==2.6.0
+acme==2.10.0
     # via simple-acme-dns
 annotated-types==0.6.0
     # via pydantic
@@ -112,13 +112,13 @@ cryptography==42.0.5
     #   pyopenssl
 dill==0.3.8
     # via pulumi
-dnspython==2.4.2
+dnspython==2.6.1
     # via
     #   data-safe-haven (pyproject.toml)
     #   simple-acme-dns
 fqdn==1.5.1
     # via data-safe-haven (pyproject.toml)
-grpcio==1.60.1
+grpcio==1.62.1
     # via pulumi
 idna==3.7
     # via requests
@@ -166,7 +166,7 @@ parver==0.5
     #   pulumi-random
 portalocker==2.8.2
     # via msal-extensions
-protobuf==4.25.3
+protobuf==5.26.1
     # via pulumi
 psycopg==3.1.18
     # via data-safe-haven (pyproject.toml)
@@ -197,7 +197,7 @@ pyopenssl==24.1.0
     #   josepy
 pyrfc3339==1.1
     # via acme
-pytz==2023.4
+pytz==2024.1
     # via
     #   acme
     #   data-safe-haven (pyproject.toml)
@@ -219,7 +219,7 @@ rich==13.7.1
     # via
     #   data-safe-haven (pyproject.toml)
     #   typer
-semver==2.13.0
+semver==3.0.2
     # via
     #   pulumi
     #   pulumi-azure-native
@@ -250,7 +250,7 @@ typing-extensions==4.11.0
     #   typer
 urllib3==2.2.1
     # via requests
-validators==0.22.0
+validators==0.28.0
     # via simple-acme-dns
 websocket-client==1.7.0
     # via data-safe-haven (pyproject.toml)
