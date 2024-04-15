@@ -112,26 +112,26 @@ def add(
 @context_command_group.command()
 def update(
     admin_group: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             help="The ID of an Azure group containing all administrators.",
             callback=typer_validate_aad_guid,
         ),
     ] = None,
     location: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             help="The Azure location to deploy resources into.",
         ),
     ] = None,
     name: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             help="The human friendly name to give this Data Safe Haven deployment.",
         ),
     ] = None,
     subscription: Annotated[
-        Optional[str],
+        Optional[str],  # noqa: UP007
         typer.Option(
             help="The name of an Azure subscription to deploy resources into.",
         ),

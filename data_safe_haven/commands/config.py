@@ -14,7 +14,7 @@ config_command_group = typer.Typer()
 @config_command_group.command()
 def template(
     file: Annotated[
-        Optional[Path],
+        Optional[Path],  # noqa: UP007
         typer.Option(help="File path to write configuration template to."),
     ] = None
 ) -> None:
@@ -43,7 +43,7 @@ def upload(
 @config_command_group.command()
 def show(
     file: Annotated[
-        Optional[Path],
+        Optional[Path],  # noqa: UP007
         typer.Option(help="File path to write configuration template to."),
     ] = None
 ) -> None:

@@ -19,13 +19,13 @@ from data_safe_haven.utility import LoggingSingleton
 
 def callback(
     output: Annotated[
-        Optional[pathlib.Path],
+        Optional[pathlib.Path],  # noqa: UP007
         typer.Option(
             "--output", "-o", resolve_path=True, help="Path to an output log file"
         ),
     ] = None,
     verbosity: Annotated[
-        Optional[int],
+        Optional[int],  # noqa: UP007
         typer.Option(
             "--verbosity",
             "-v",
@@ -35,7 +35,7 @@ def callback(
         ),
     ] = None,
     version: Annotated[
-        Optional[bool],
+        Optional[bool],  # noqa: UP007
         typer.Option(
             "--version", "-V", help="Display the version of this application."
         ),
