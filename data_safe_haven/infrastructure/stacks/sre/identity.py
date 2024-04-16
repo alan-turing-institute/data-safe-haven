@@ -227,7 +227,6 @@ class SREIdentityComponent(ComponentResource):
             ),
             tags=child_tags,
         )
-        private_ip_address = get_ip_address_from_container_group(container_group)
 
         # Register the container group in the SRE DNS zone
         local_dns = LocalDnsRecordComponent(
@@ -236,7 +235,7 @@ class SREIdentityComponent(ComponentResource):
                 base_fqdn=props.sre_fqdn,
                 public_dns_resource_group_name=props.networking_resource_group_name,
                 private_dns_resource_group_name=props.dns_resource_group_name,
-                private_ip_address=private_ip_address,
+                private_ip_address=get_ip_address_from_container_group(container_group),
                 record_name="identity",
             ),
             opts=ResourceOptions.merge(
@@ -246,4 +245,3 @@ class SREIdentityComponent(ComponentResource):
 
         # Register outputs
         self.hostname = local_dns.hostname
-        self.ip_address = private_ip_address
