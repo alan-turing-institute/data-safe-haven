@@ -137,7 +137,7 @@ class TestConfigSectionSRE:
         assert sre_config.software_packages == SoftwarePackageCategory.NONE
 
     def test_all_databases_must_be_unique(self):
-        with pytest.raises(ValueError, match="all databases must be unique"):
+        with pytest.raises(ValueError, match="All items must be unique."):
             ConfigSectionSRE(
                 index=1,
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],

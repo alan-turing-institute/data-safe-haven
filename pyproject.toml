@@ -91,7 +91,7 @@ all = [
 
 [tool.hatch.envs.test]
 dependencies = [
-  "pytest~=7.4"
+  "pytest~=8.1"
 ]
 pre-install-commands = ["pip install -r requirements.txt"]
 
@@ -99,7 +99,7 @@ pre-install-commands = ["pip install -r requirements.txt"]
 test = "pytest {args:-vvv tests}"
 
 [tool.black]
-target-version = ["py311", "py312"]
+target-version = ["py312"]
 
 [tool.ruff.lint]
 select = [

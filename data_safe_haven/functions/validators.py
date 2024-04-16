@@ -1,5 +1,6 @@
 import ipaddress
 import re
+from collections.abc import Hashable
 
 import fqdn
 import pytz
@@ -57,3 +58,10 @@ def validate_timezone(timezone: str) -> str:
         msg = "Expected valid timezone, for example 'Europe/London'."
         raise ValueError(msg)
     return timezone
+
+
+def validate_unique_list(items: list[Hashable]) -> list[Hashable]:
+    if len(items) != len(set(items)):
+        msg = "All items must be unique."
+        raise ValueError(msg)
+    return items
