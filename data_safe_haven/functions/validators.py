@@ -1,6 +1,7 @@
 import ipaddress
 import re
 from collections.abc import Hashable
+from typing import TypeVar
 
 import fqdn
 import pytz
@@ -60,7 +61,10 @@ def validate_timezone(timezone: str) -> str:
     return timezone
 
 
-def validate_unique_list(items: list[Hashable]) -> list[Hashable]:
+TH = TypeVar("TH", bound=Hashable)
+
+
+def validate_unique_list(items: list[TH]) -> list[TH]:
     if len(items) != len(set(items)):
         msg = "All items must be unique."
         raise ValueError(msg)

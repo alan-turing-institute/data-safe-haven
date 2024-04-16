@@ -239,7 +239,7 @@ class TestConfig:
     def test_all_sre_indices_must_be_unique(
         self, context, azure_config, pulumi_config, shm_config
     ):
-        with pytest.raises(ValueError, match="all SRE indices must be unique"):
+        with pytest.raises(ValueError, match="All items must be unique."):
             sre_config_1 = ConfigSectionSRE(index=1)
             sre_config_2 = ConfigSectionSRE(index=1)
             Config(

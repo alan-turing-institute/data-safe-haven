@@ -26,6 +26,7 @@ from data_safe_haven.functions import (
     b64decode,
     b64encode,
 )
+from data_safe_haven.functions.validators import validate_unique_list
 from data_safe_haven.utility import (
     DatabaseSystem,
     LoggingSingleton,
@@ -250,9 +251,7 @@ class Config(BaseModel, validate_assignment=True):
         cls, v: dict[str, ConfigSectionSRE]
     ) -> dict[str, ConfigSectionSRE]:
         indices = [s.index for s in v.values()]
-        if len(indices) != len(set(indices)):
-            msg = "all SRE indices must be unique"
-            raise ValueError(msg)
+        validate_unique_list(indices)
         return v
 
     @property
