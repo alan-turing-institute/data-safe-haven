@@ -21,6 +21,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalError,
     DataSafeHavenMicrosoftGraphError,
 )
+from data_safe_haven.functions import alphanumeric
 from data_safe_haven.utility import LoggingSingleton, NonLoggingSingleton
 
 
@@ -330,7 +331,7 @@ class GraphApi:
                 "displayName": group_name,
                 "groupTypes": [],
                 "mailEnabled": False,
-                "mailNickname": ("".join(filter(str.isalnum, group_name))).lower(),
+                "mailNickname": alphanumeric(group_name).lower(),
                 "securityEnabled": True,
             }
             self.http_post(
