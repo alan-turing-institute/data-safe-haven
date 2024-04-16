@@ -13,7 +13,6 @@ from pulumi_azure_native import (
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
-    get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
     AzureADApplication,
@@ -421,9 +420,6 @@ class SRERemoteDesktopComponent(ComponentResource):
             "connection_db_name": db_guacamole_connections,
             "connection_db_server_name": db_server_guacamole.db_server.name,
             "container_group_name": container_group.name,
-            "container_ip_address": get_ip_address_from_container_group(
-                container_group
-            ),
             "disable_copy": props.disable_copy,
             "disable_paste": props.disable_paste,
             "resource_group_name": resource_group.name,
