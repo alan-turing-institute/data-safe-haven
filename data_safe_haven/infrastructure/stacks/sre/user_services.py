@@ -26,7 +26,7 @@ class SREUserServicesProps:
         dns_server_ip: Input[str],
         gitea_database_password: Input[str],
         hedgedoc_database_password: Input[str],
-        ldap_server_ip: Input[str],
+        ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_username_attribute: Input[str],
         ldap_user_filter: Input[str],
@@ -51,7 +51,7 @@ class SREUserServicesProps:
         self.dns_server_ip = dns_server_ip
         self.gitea_database_password = gitea_database_password
         self.hedgedoc_database_password = hedgedoc_database_password
-        self.ldap_server_ip = ldap_server_ip
+        self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
         self.ldap_username_attribute = ldap_username_attribute
         self.ldap_user_filter = ldap_user_filter
@@ -113,7 +113,7 @@ class SREUserServicesComponent(ComponentResource):
                 database_password=props.gitea_database_password,
                 dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
-                ldap_server_ip=props.ldap_server_ip,
+                ldap_server_hostname=props.ldap_server_hostname,
                 ldap_server_port=props.ldap_server_port,
                 ldap_username_attribute=props.ldap_username_attribute,
                 ldap_user_filter=props.ldap_user_filter,
@@ -141,7 +141,7 @@ class SREUserServicesComponent(ComponentResource):
                 database_subnet_id=props.subnet_containers_support_id,
                 dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
-                ldap_server_ip=props.ldap_server_ip,
+                ldap_server_hostname=props.ldap_server_hostname,
                 ldap_server_port=props.ldap_server_port,
                 ldap_username_attribute=props.ldap_username_attribute,
                 ldap_user_filter=props.ldap_user_filter,

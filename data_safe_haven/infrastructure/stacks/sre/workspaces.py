@@ -32,7 +32,7 @@ class SREWorkspacesProps:
         admin_password: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
-        ldap_server_ip: Input[str],
+        ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
@@ -54,7 +54,7 @@ class SREWorkspacesProps:
         self.admin_username = "dshadmin"
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
-        self.ldap_server_ip = ldap_server_ip
+        self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = Output.from_input(ldap_server_port).apply(str)
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
@@ -123,7 +123,7 @@ class SREWorkspacesComponent(ComponentResource):
         b64cloudinit = Output.all(
             ldap_group_filter=props.ldap_group_filter,
             ldap_group_search_base=props.ldap_group_search_base,
-            ldap_server_ip=props.ldap_server_ip,
+            ldap_server_hostname=props.ldap_server_hostname,
             ldap_server_port=props.ldap_server_port,
             ldap_user_filter=props.ldap_user_filter,
             ldap_user_search_base=props.ldap_user_search_base,
@@ -212,7 +212,7 @@ class SREWorkspacesComponent(ComponentResource):
         self,
         ldap_group_filter: str,
         ldap_group_search_base: str,
-        ldap_server_ip: str,
+        ldap_server_hostname: str,
         ldap_server_port: str,
         ldap_user_filter: str,
         ldap_user_search_base: str,
@@ -228,7 +228,7 @@ class SREWorkspacesComponent(ComponentResource):
             mustache_values = {
                 "ldap_group_filter": ldap_group_filter,
                 "ldap_group_search_base": ldap_group_search_base,
-                "ldap_server_ip": ldap_server_ip,
+                "ldap_server_hostname": ldap_server_hostname,
                 "ldap_server_port": ldap_server_port,
                 "ldap_user_filter": ldap_user_filter,
                 "ldap_user_search_base": ldap_user_search_base,
