@@ -1,6 +1,7 @@
 """Pulumi declarative program"""
 
 import pulumi
+from ldap_filter import Filter
 
 from data_safe_haven.config import Config
 from data_safe_haven.infrastructure.common import get_subscription_id_from_rg
@@ -69,39 +70,51 @@ class DeclarativeSRE:
         ldap_group_search_base = f"OU=groups,{ldap_root_dn}"
         ldap_user_search_base = f"OU=users,{ldap_root_dn}"
         ldap_group_name_prefix = f"Data Safe Haven SRE {self.sre_name}"
-        ldap_admin_group_name = f"{ldap_group_name_prefix} Administrators"
-        ldap_privileged_user_group_name = f"{ldap_group_name_prefix} Privileged Users"
+        ldap_group_names = {
+            "admin_group_name": f"{ldap_group_name_prefix} Administrators",
+            "privileged_user_group_name": f"{ldap_group_name_prefix} Privileged Users",
+            "user_group_name": f"{ldap_group_name_prefix} Users",
+        }
         ldap_username_attribute = "uid"
-        ldap_user_group_name = f"{ldap_group_name_prefix} Users"
-        # Users are a posixAccount belonging to any of these groups
-        ldap_user_filter = "".join(
-            [
-                "(&",
-                "(objectClass=posixAccount)",
-                "(|",
-                f"(memberOf=CN={ldap_admin_group_name},{ldap_group_search_base})"
-                f"(memberOf=CN={ldap_privileged_user_group_name},{ldap_group_search_base})"
-                f"(memberOf=CN={ldap_user_group_name},{ldap_group_search_base})"
-                ")",
-                ")",
-            ]
-        )
-        # Groups are a posixGroup which is either a known, named group or belonging to any of these groups
-        ldap_group_filter = "".join(
-            [
-                "(&",
-                "(objectClass=posixGroup)",
-                "(|",
-                f"(CN={ldap_admin_group_name})",
-                f"(CN={ldap_privileged_user_group_name})",
-                f"(CN={ldap_user_group_name})",
-                f"(memberOf=CN=Primary user groups for {ldap_admin_group_name},{ldap_group_search_base})",
-                f"(memberOf=CN=Primary user groups for {ldap_privileged_user_group_name},{ldap_group_search_base})",
-                f"(memberOf=CN=Primary user groups for {ldap_user_group_name},{ldap_group_search_base})",
-                ")",
-                ")",
-            ]
-        )
+
+        # Construct an LDAP filter for users of this SRE
+        ldap_user_filter = Filter.AND(
+            (
+                # Users must be a posixAccount
+                Filter.attribute("objectClass").equal_to("posixAccount"),
+                # ... that belongs to one of the LDAP groups for this SRE
+                Filter.OR(
+                    [
+                        Filter.attribute("memberOf").equal_to(
+                            f"CN={group_name},{ldap_group_search_base}"
+                        )
+                        for group_name in ldap_group_names.values()
+                    ]
+                ),
+            )
+        ).to_string()
+
+        # Construct an LDAP filter for groups in this SRE
+        ldap_group_filter = Filter.AND(
+            (
+                # Groups must be a posixGroup
+                Filter.attribute("objectClass").equal_to("posixGroup"),
+                Filter.OR(
+                    # ... that is one of the LDAP groups for this SRE
+                    [
+                        Filter.attribute("CN").equal_to(group_name)
+                        for group_name in ldap_group_names.values()
+                    ]
+                    # ... or is the primary user group for a member of one of those groups
+                    + [
+                        Filter.attribute("memberOf").equal_to(
+                            f"CN=Primary user groups for {group_name},{ldap_group_search_base}"
+                        )
+                        for group_name in ldap_group_names.values()
+                    ]
+                ),
+            )
+        ).to_string()
 
         # Deploy SRE DNS server
         dns = SREDnsServerComponent(
@@ -343,13 +356,6 @@ class DeclarativeSRE:
 
         # Export values for later use
         pulumi.export("data", data.exports)
-        pulumi.export(
-            "ldap",
-            {
-                "admin_security_group_name": ldap_admin_group_name,
-                "privileged_user_security_group_name": ldap_privileged_user_group_name,
-                "user_security_group_name": ldap_user_group_name,
-            },
-        )
+        pulumi.export("ldap", ldap_group_names)
         pulumi.export("remote_desktop", remote_desktop.exports)
         pulumi.export("workspaces", workspaces.exports)

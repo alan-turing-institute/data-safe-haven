@@ -48,17 +48,7 @@ class SREProvisioningManager:
         self.remote_desktop_params["timezone"] = timezone
 
         # Construct security group parameters
-        self.security_group_params = {
-            "admin_security_group_name": sre_stack.output("ldap")[
-                "admin_security_group_name"
-            ],
-            "privileged_user_security_group_name": sre_stack.output("ldap")[
-                "privileged_user_security_group_name"
-            ],
-            "user_security_group_name": sre_stack.output("ldap")[
-                "user_security_group_name"
-            ],
-        }
+        self.security_group_params = dict(sre_stack.output("ldap"))
 
         # Construct VM parameters
         self.workspaces = {}
@@ -122,9 +112,9 @@ class SREProvisioningManager:
                 for vm_identifier, vm_details in self.workspaces.items()
             ],
             "system_administrator_group_name": self.security_group_params[
-                "admin_security_group_name"
+                "admin_group_name"
             ],
-            "user_group_name": self.security_group_params["user_security_group_name"],
+            "user_group_name": self.security_group_params["user_group_name"],
         }
         for details in connection_data["connections"]:
             self.logger.info(
