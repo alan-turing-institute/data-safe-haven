@@ -5,7 +5,11 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
-from data_safe_haven.infrastructure.common import SREIpRanges, get_id_from_subnet
+from data_safe_haven.infrastructure.common import (
+    FirewallPriorities,
+    SREIpRanges,
+    get_id_from_subnet,
+)
 
 
 class SHMFirewallProps:
@@ -106,7 +110,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-identity-servers",
-                    priority=1000,
+                    priority=FirewallPriorities.SHM_IDENTITY_SERVERS,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external operational requests from AzureAD Connect",
@@ -311,7 +315,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-any",
-                    priority=1010,
+                    priority=FirewallPriorities.ALL,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Azure Automation requests",
@@ -344,7 +348,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-update-servers",
-                    priority=1020,
+                    priority=FirewallPriorities.SHM_UPDATE_SERVERS,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Linux update requests",
@@ -380,7 +384,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-sre-identity-servers",
-                    priority=1100,
+                    priority=FirewallPriorities.SRE_IDENTITY_CONTAINERS,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external OAuth login requests",
@@ -402,7 +406,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-sre-package-repositories",
-                    priority=1110,
+                    priority=FirewallPriorities.SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external CRAN package requests",
@@ -433,7 +437,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-sre-remote-desktop-gateways",
-                    priority=1120,
+                    priority=FirewallPriorities.SRE_GUACAMOLE_CONTAINERS,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external OAuth login requests",
@@ -452,7 +456,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-sre-workspaces",
-                    priority=1130,
+                    priority=FirewallPriorities.SRE_WORKSPACES,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Linux ClamAV update requests",
@@ -504,7 +508,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallNetworkRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-identity-servers",
-                    priority=1000,
+                    priority=FirewallPriorities.SHM_IDENTITY_SERVERS,
                     rules=[
                         network.AzureFirewallNetworkRuleArgs(
                             description="Allow external DNS resolver",
@@ -522,7 +526,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallNetworkRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-all",
-                    priority=1010,
+                    priority=FirewallPriorities.ALL,
                     rules=[
                         network.AzureFirewallNetworkRuleArgs(
                             description="Allow external Azure Automation requests",

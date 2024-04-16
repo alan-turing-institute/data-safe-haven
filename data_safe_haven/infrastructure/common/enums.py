@@ -2,6 +2,22 @@ from enum import UNIQUE, Enum, verify
 
 
 @verify(UNIQUE)
+class FirewallPriorities(int, Enum):
+    """Priorities for firewall rules."""
+
+    # All sources: 1000-1099
+    ALL = 1000
+    # SHM sources: 2000-2999
+    SHM_IDENTITY_SERVERS = 2000
+    SHM_UPDATE_SERVERS = 2100
+    # SRE sources: 3000-3999
+    SRE_GUACAMOLE_CONTAINERS = 3000
+    SRE_IDENTITY_CONTAINERS = 3100
+    SRE_USER_SERVICES_SOFTWARE_REPOSITORIES = 3200
+    SRE_WORKSPACES = 3300
+
+
+@verify(UNIQUE)
 class NetworkingPriorities(int, Enum):
     """Priorities for network security group rules."""
 
