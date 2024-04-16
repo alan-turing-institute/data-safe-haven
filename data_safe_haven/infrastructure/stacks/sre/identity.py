@@ -230,7 +230,7 @@ class SREIdentityComponent(ComponentResource):
         private_ip_address = get_ip_address_from_container_group(container_group)
 
         # Register the container group in the SRE DNS zone
-        LocalDnsRecordComponent(
+        local_dns = LocalDnsRecordComponent(
             f"{self._name}_dns_record_set",
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
@@ -245,4 +245,5 @@ class SREIdentityComponent(ComponentResource):
         )
 
         # Register outputs
+        self.hostname = local_dns.hostname
         self.ip_address = private_ip_address
