@@ -1,6 +1,7 @@
-from enum import Enum
+from enum import UNIQUE, Enum, verify
 
 
+@verify(UNIQUE)
 class NetworkingPriorities(int, Enum):
     """Priorities for network security group rules."""
 
