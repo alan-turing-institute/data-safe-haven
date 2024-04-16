@@ -1,6 +1,11 @@
 import pytest
 
-from data_safe_haven.functions.validators import validate_aad_guid, validate_fqdn
+from data_safe_haven.functions.validators import (
+    validate_aad_guid,
+    validate_fqdn,
+    validate_unique_list,
+)
+from data_safe_haven.utility.enums import DatabaseSystem
 
 
 class TestValidateAadGuid:
@@ -53,3 +58,28 @@ class TestValidateFqdn:
             ValueError, match="Expected valid fully qualified domain name"
         ):
             validate_fqdn(fqdn)
+
+
+class TestValidateUniqueList:
+    @pytest.mark.parametrize(
+        "items",
+        [
+            [1, 2, 3],
+            ["a", 5, len],
+        ],
+    )
+    def test_validate_unique_list(self, items):
+        validate_unique_list(items)
+
+    @pytest.mark.parametrize(
+        "items",
+        [
+            [DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
+            [DatabaseSystem.POSTGRESQL, 2, DatabaseSystem.POSTGRESQL],
+            [1, 1],
+            ["abc", "abc"],
+        ],
+    )
+    def test_validate_unique_list_fail(self, items):
+        with pytest.raises(ValueError, match="All items must be unique."):
+            validate_unique_list(items)

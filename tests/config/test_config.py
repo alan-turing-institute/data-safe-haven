@@ -137,7 +137,7 @@ class TestConfigSectionSRE:
         assert sre_config.software_packages == SoftwarePackageCategory.NONE
 
     def test_all_databases_must_be_unique(self):
-        with pytest.raises(ValueError, match="all databases must be unique"):
+        with pytest.raises(ValueError, match="All items must be unique."):
             ConfigSectionSRE(
                 index=1,
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
@@ -239,7 +239,7 @@ class TestConfig:
     def test_all_sre_indices_must_be_unique(
         self, context, azure_config, pulumi_config, shm_config
     ):
-        with pytest.raises(ValueError, match="all SRE indices must be unique"):
+        with pytest.raises(ValueError, match="All items must be unique."):
             sre_config_1 = ConfigSectionSRE(index=1)
             sre_config_2 = ConfigSectionSRE(index=1)
             Config(

@@ -26,6 +26,7 @@ from data_safe_haven.functions import (
     b64decode,
     b64encode,
 )
+from data_safe_haven.functions.validators import validate_unique_list
 from data_safe_haven.utility import (
     DatabaseSystem,
     LoggingSingleton,
@@ -39,6 +40,7 @@ from data_safe_haven.utility.annotated_types import (
     Guid,
     IpAddress,
     TimeZone,
+    UniqueList,
 )
 
 from .context_settings import Context
@@ -150,7 +152,9 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
-    databases: list[DatabaseSystem] = Field(..., default_factory=list[DatabaseSystem])
+    databases: UniqueList[DatabaseSystem] = Field(
+        ..., default_factory=list[DatabaseSystem]
+    )
     data_provider_ip_addresses: list[IpAddress] = Field(
         ..., default_factory=list[IpAddress]
     )
@@ -163,17 +167,6 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         ..., default_factory=list[IpAddress]
     )
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
-
-    @field_validator("databases")
-    @classmethod
-    def all_databases_must_be_unique(
-        cls, v: list[DatabaseSystem | str]
-    ) -> list[DatabaseSystem]:
-        v_ = [DatabaseSystem(d) for d in v]
-        if len(v_) != len(set(v_)):
-            msg = "all databases must be unique"
-            raise ValueError(msg)
-        return v_
 
     def update(
         self,
@@ -258,9 +251,7 @@ class Config(BaseModel, validate_assignment=True):
         cls, v: dict[str, ConfigSectionSRE]
     ) -> dict[str, ConfigSectionSRE]:
         indices = [s.index for s in v.values()]
-        if len(indices) != len(set(indices)):
-            msg = "all SRE indices must be unique"
-            raise ValueError(msg)
+        validate_unique_list(indices)
         return v
 
     @property
