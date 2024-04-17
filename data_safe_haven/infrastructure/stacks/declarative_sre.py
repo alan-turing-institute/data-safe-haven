@@ -1,7 +1,6 @@
 """Pulumi declarative program"""
 
 import pulumi
-from ldap_filter import Filter
 
 from data_safe_haven.config import Config
 from data_safe_haven.infrastructure.common import get_subscription_id_from_rg
@@ -76,45 +75,41 @@ class DeclarativeSRE:
             "user_group_name": f"{ldap_group_name_prefix} Users",
         }
         ldap_username_attribute = "uid"
-
-        # Construct an LDAP filter for users of this SRE
-        ldap_user_filter = Filter.AND(
-            (
-                # Users must be a posixAccount
-                Filter.attribute("objectClass").equal_to("posixAccount"),
-                # ... that belongs to one of the LDAP groups for this SRE
-                Filter.OR(
-                    [
-                        Filter.attribute("memberOf").equal_to(
-                            f"CN={group_name},{ldap_group_search_base}"
-                        )
-                        for group_name in ldap_group_names.values()
-                    ]
+        # LDAP filter syntax: https://ldap.com/ldap-filters/
+        # LDAP filter for users of this SRE
+        ldap_user_filter = "".join(
+            [
+                "(&",
+                # Users are a posixAccount and
+                "(objectClass=posixAccount)",
+                # belong to any of these groups
+                "(|",
+                *(
+                    f"(memberOf=CN={group_name},{ldap_group_search_base})"
+                    for group_name in ldap_group_names.values()
                 ),
-            )
-        ).to_string()
-
-        # Construct an LDAP filter for groups in this SRE
-        ldap_group_filter = Filter.AND(
-            (
-                # Groups must be a posixGroup
-                Filter.attribute("objectClass").equal_to("posixGroup"),
-                Filter.OR(
-                    # ... that is one of the LDAP groups for this SRE
-                    [
-                        Filter.attribute("CN").equal_to(group_name)
-                        for group_name in ldap_group_names.values()
-                    ]
-                    # ... or is the primary user group for a member of one of those groups
-                    + [
-                        Filter.attribute("memberOf").equal_to(
-                            f"CN=Primary user groups for {group_name},{ldap_group_search_base}"
-                        )
-                        for group_name in ldap_group_names.values()
-                    ]
+                ")",
+                ")",
+            ]
+        )
+        # LDAP filter for groups in this SRE
+        ldap_group_filter = "".join(
+            [
+                "(&",
+                # Groups are a posixGroup
+                "(objectClass=posixGroup)",
+                "(|",
+                # which is either one of the LDAP groups
+                *(f"(CN={group_name})" for group_name in ldap_group_names.values()),
+                # or is the primary user group for a member of one of those groups
+                *(
+                    f"(memberOf=CN=Primary user groups for {group_name},{ldap_group_search_base})"
+                    for group_name in ldap_group_names.values()
                 ),
-            )
-        ).to_string()
+                ")",
+                ")",
+            ]
+        )
 
         # Deploy SRE DNS server
         dns = SREDnsServerComponent(
