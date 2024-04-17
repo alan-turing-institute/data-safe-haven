@@ -5,6 +5,7 @@ from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
+    Ports,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -188,7 +189,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_PORT",
-                            value="5432",
+                            value=Ports.POSTGRESQL,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_USERNAME",

@@ -7,6 +7,7 @@ from pulumi_azure_native import network
 
 from data_safe_haven.infrastructure.common import (
     FirewallPriorities,
+    Ports,
     SREIpRanges,
     get_id_from_subnet,
 )
@@ -513,7 +514,7 @@ class SHMFirewallComponent(ComponentResource):
                         network.AzureFirewallNetworkRuleArgs(
                             description="Allow external DNS resolver",
                             destination_addresses=[external_dns_resolver],
-                            destination_ports=["53"],
+                            destination_ports=[Ports.DNS],
                             name="AllowExternalDnsResolver",
                             protocols=[
                                 network.AzureFirewallNetworkRuleProtocol.TCP,
@@ -542,7 +543,7 @@ class SHMFirewallComponent(ComponentResource):
                         network.AzureFirewallNetworkRuleArgs(
                             description="Allow external NTP requests",
                             destination_addresses=ntp_ip_addresses,
-                            destination_ports=["123"],
+                            destination_ports=[Ports.NTP],
                             name="AllowExternalNTP",
                             protocols=[network.AzureFirewallNetworkRuleProtocol.UDP],
                             source_addresses=["*"],

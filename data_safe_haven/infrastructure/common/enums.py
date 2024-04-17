@@ -57,3 +57,25 @@ class NetworkingPriorities(int, Enum):
     EXTERNAL_INTERNET = 3999
     # Deny all other: 4096
     ALL_OTHER = 4096
+
+
+@verify(UNIQUE)
+class Ports(str, Enum):
+    AZURE_BASTIAN_1 = (
+        "8080"  # https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
+    )
+    AZURE_BASTIAN_2 = "5701"
+    DNS = "53"
+    HTTP = "80"
+    HTTPS = "443"
+    LDAP = "389"
+    LDAPS = "636"
+    LDAP_APRICOT = "1389"
+    LINUX_UPDATE = "8000"
+    MSSQL = "1433"
+    NEXUS = "8081"
+    NTP = "123"
+    POSTGRESQL = "5432"
+    RDP = "3389"
+    SSH = "22"
+    SQUID = "3128"

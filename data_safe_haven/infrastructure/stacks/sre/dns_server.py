@@ -13,6 +13,7 @@ from data_safe_haven.functions import (
 )
 from data_safe_haven.infrastructure.common import (
     NetworkingPriorities,
+    Ports,
     SREDnsIpRanges,
     SREIpRanges,
     get_ip_address_from_container_group,
@@ -107,7 +108,7 @@ class SREDnsServerComponent(ComponentResource):
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from attached.",
                     destination_address_prefix=props.ip_range_prefix,
-                    destination_port_ranges=["53"],
+                    destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowSREInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_ANY,
@@ -132,7 +133,7 @@ class SREDnsServerComponent(ComponentResource):
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound DNS traffic over the internet.",
                     destination_address_prefix="Internet",
-                    destination_port_ranges=["53"],
+                    destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDnsInternetOutbound",
                     priority=NetworkingPriorities.EXTERNAL_INTERNET,
