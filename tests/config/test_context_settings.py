@@ -76,6 +76,12 @@ class TestContext:
         context = Context(**context_dict)
         assert context.storage_account_name == "shmveryveryveryvecontext"
 
+    def test_key_vault_name(self, context):
+        assert context.key_vault_name == "shm-acmedeplo-kv-context"
+
+    def test_managed_identity_name(self, context):
+        assert context.managed_identity_name == "shm-acmedeployment-identity-reader-context"
+
     def test_pulumi_backend_url(self, context):
         assert context.pulumi_backend_url == "azblob://pulumi"
 

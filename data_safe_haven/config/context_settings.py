@@ -71,9 +71,6 @@ class Context(BaseModel, validate_assignment=True):
     def managed_identity_name(self) -> str:
         return f"shm-{self.shm_name}-identity-reader-context"
 
-    def to_yaml(self) -> str:
-        return yaml.dump(self.model_dump(), indent=2)
-
     @property
     def pulumi_backend_url(self) -> str:
         return f"azblob://{self.pulumi_storage_container_name}"
@@ -97,6 +94,9 @@ class Context(BaseModel, validate_assignment=True):
     @property
     def pulumi_secrets_provider_url(self) -> str:
         return f"azurekeyvault://{self.key_vault_name}.vault.azure.net/keys/{self.pulumi_encryption_key_name}/{self.pulumi_encryption_key_version}"
+
+    def to_yaml(self) -> str:
+        return yaml.dump(self.model_dump(), indent=2)
 
 
 class ContextSettings(BaseModel, validate_assignment=True):
