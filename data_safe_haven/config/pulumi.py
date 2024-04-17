@@ -3,7 +3,7 @@ from typing import Annotated
 from pydantic import BaseModel, PlainSerializer
 from pydantic.functional_validators import AfterValidator
 
-from data_safe_haven.functions import b64encode, b64decode
+from data_safe_haven.functions import b64decode, b64encode
 
 
 def base64_string_decode(v: str) -> str:
@@ -13,7 +13,7 @@ def base64_string_decode(v: str) -> str:
 B64String = Annotated[
     str,
     PlainSerializer(b64encode, return_type=str),
-    AfterValidator(base64_string_decode)
+    AfterValidator(base64_string_decode),
 ]
 
 

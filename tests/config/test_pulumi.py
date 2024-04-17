@@ -1,7 +1,7 @@
 from pytest import fixture
 
-from data_safe_haven.functions import b64encode
 from data_safe_haven.config.pulumi import PulumiStack
+from data_safe_haven.functions import b64encode
 
 
 @fixture

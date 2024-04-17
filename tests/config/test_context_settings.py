@@ -80,14 +80,15 @@ class TestContext:
         assert context.key_vault_name == "shm-acmedeplo-kv-context"
 
     def test_managed_identity_name(self, context):
-        assert context.managed_identity_name == "shm-acmedeployment-identity-reader-context"
+        assert (
+            context.managed_identity_name
+            == "shm-acmedeployment-identity-reader-context"
+        )
 
     def test_pulumi_backend_url(self, context):
         assert context.pulumi_backend_url == "azblob://pulumi"
 
-    def test_pulumi_encryption_key(
-        self, context, mock_key_vault_key  # noqa: ARG002
-    ):
+    def test_pulumi_encryption_key(self, context, mock_key_vault_key):  # noqa: ARG002
         key = context.pulumi_encryption_key
         assert key.key_name == context.pulumi_encryption_key_name
         assert key.key_vault_name == context.key_vault_name
@@ -98,8 +99,13 @@ class TestContext:
         version = context.pulumi_encryption_key_version
         assert version == "version"
 
-    def test_pulumi_secrets_provider_url(self, context, mock_key_vault_key):
-        assert context.pulumi_secrets_provider_url == "azurekeyvault://shm-acmedeplo-kv-context.vault.azure.net/keys/pulumi-encryption-key/version"
+    def test_pulumi_secrets_provider_url(
+        self, context, mock_key_vault_key  # noqa: ARG002
+    ):
+        assert (
+            context.pulumi_secrets_provider_url
+            == "azurekeyvault://shm-acmedeplo-kv-context.vault.azure.net/keys/pulumi-encryption-key/version"
+        )
 
 
 @fixture
