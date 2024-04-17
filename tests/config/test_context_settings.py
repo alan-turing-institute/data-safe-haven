@@ -76,6 +76,9 @@ class TestContext:
         context = Context(**context_dict)
         assert context.storage_account_name == "shmveryveryveryvecontext"
 
+    def test_pulumi_backend_url(self, context):
+        assert context.pulumi_backend_url == "azblob://pulumi"
+
     def test_pulumi_encryption_key(
         self, context, mock_key_vault_key  # noqa: ARG002
     ):
