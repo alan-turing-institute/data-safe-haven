@@ -92,6 +92,9 @@ class TestContext:
         version = context.pulumi_encryption_key_version
         assert version == "version"
 
+    def test_pulumi_secrets_provider_url(self, context, mock_key_vault_key):
+        assert context.pulumi_secrets_provider_url == "azurekeyvault://shm-acmedeplo-kv-context.vault.azure.net/keys/pulumi-encryption-key/version"
+
 
 @fixture
 def context_yaml():
