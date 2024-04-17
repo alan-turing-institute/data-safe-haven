@@ -7,10 +7,10 @@ from data_safe_haven.external import (
     AzureApi,
     AzureContainerInstance,
     AzurePostgreSQLDatabase,
+    GraphApi,
 )
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
-from data_safe_haven.resources import resources_path
-from data_safe_haven.utility import FileReader, LoggingSingleton
+from data_safe_haven.utility import LoggingSingleton
 
 
 class SREProvisioningManager:
@@ -18,6 +18,7 @@ class SREProvisioningManager:
 
     def __init__(
         self,
+        graph_api_token: str,
         shm_stack: SHMStackManager,
         sre_name: str,
         sre_stack: SREStackManager,
@@ -26,6 +27,7 @@ class SREProvisioningManager:
     ):
         self._available_vm_skus: dict[str, dict[str, Any]] | None = None
         self.azure_location = shm_stack.cfg.azure.location
+        self.graph_api = GraphApi(auth_token=graph_api_token)
         self.logger = LoggingSingleton()
         self.sre_name = sre_name
         self.subscription_name = subscription_name
@@ -46,24 +48,7 @@ class SREProvisioningManager:
         self.remote_desktop_params["timezone"] = timezone
 
         # Construct security group parameters
-        self.security_group_params = {
-            "dn_base": shm_stack.output("domain_controllers")["ldap_root_dn"],
-            "resource_group_name": shm_stack.output("domain_controllers")[
-                "resource_group_name"
-            ],
-            "security_group_names": {
-                "admin_security_group_name": sre_stack.output("ldap")[
-                    "admin_security_group_name"
-                ],
-                "privileged_user_security_group_name": sre_stack.output("ldap")[
-                    "privileged_user_security_group_name"
-                ],
-                "user_security_group_name": sre_stack.output("ldap")[
-                    "user_security_group_name"
-                ],
-            },
-            "vm_name": shm_stack.output("domain_controllers")["vm_name"],
-        }
+        self.security_group_params = dict(sre_stack.output("ldap"))
 
         # Construct VM parameters
         self.workspaces = {}
@@ -88,24 +73,12 @@ class SREProvisioningManager:
         return self._available_vm_skus
 
     def create_security_groups(self) -> None:
-        azure_api = AzureApi(self.subscription_name)
-        script = FileReader(resources_path / "active_directory" / "add_group.ps1")
-        for group_name in self.security_group_params["security_group_names"].values():
-            script_parameters = {
-                "GroupName": group_name,
-                "OuPath": f"OU=Data Safe Haven Security Groups,{self.security_group_params['dn_base']}",
-            }
-            output = azure_api.run_remote_script(
-                self.security_group_params["resource_group_name"],
-                script.file_contents(),
-                script_parameters,
-                self.security_group_params["vm_name"],
-            )
-            for line in output.split("\n"):
-                self.logger.parse(line)
+        """Create groups in AzureAD"""
+        for group_name in self.security_group_params.values():
+            self.graph_api.create_group(group_name)
 
     def restart_remote_desktop_containers(self) -> None:
-        # Restart the Guacamole container group
+        """Restart the Guacamole container group"""
         guacamole_provisioner = AzureContainerInstance(
             self.remote_desktop_params["container_group_name"],
             self.remote_desktop_params["resource_group_name"],
@@ -139,11 +112,9 @@ class SREProvisioningManager:
                 for vm_identifier, vm_details in self.workspaces.items()
             ],
             "system_administrator_group_name": self.security_group_params[
-                "security_group_names"
-            ]["admin_security_group_name"],
-            "user_group_name": self.security_group_params["security_group_names"][
-                "user_security_group_name"
+                "admin_group_name"
             ],
+            "user_group_name": self.security_group_params["user_group_name"],
         }
         for details in connection_data["connections"]:
             self.logger.info(

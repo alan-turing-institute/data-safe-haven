@@ -1,6 +1,23 @@
-from enum import Enum
+from enum import UNIQUE, Enum, verify
 
 
+@verify(UNIQUE)
+class FirewallPriorities(int, Enum):
+    """Priorities for firewall rules."""
+
+    # All sources: 1000-1099
+    ALL = 1000
+    # SHM sources: 2000-2999
+    SHM_IDENTITY_SERVERS = 2000
+    SHM_UPDATE_SERVERS = 2100
+    # SRE sources: 3000-3999
+    SRE_GUACAMOLE_CONTAINERS = 3000
+    SRE_IDENTITY_CONTAINERS = 3100
+    SRE_USER_SERVICES_SOFTWARE_REPOSITORIES = 3200
+    SRE_WORKSPACES = 3300
+
+
+@verify(UNIQUE)
 class NetworkingPriorities(int, Enum):
     """Priorities for network security group rules."""
 
@@ -24,6 +41,7 @@ class NetworkingPriorities(int, Enum):
     INTERNAL_SRE_DATA_PRIVATE = 1700
     INTERNAL_SRE_GUACAMOLE_CONTAINERS = 1800
     INTERNAL_SRE_GUACAMOLE_CONTAINERS_SUPPORT = 1900
+    INTERNAL_SRE_IDENTITY_CONTAINERS = 1950
     INTERNAL_SRE_USER_SERVICES_CONTAINERS = 2000
     INTERNAL_SRE_USER_SERVICES_CONTAINERS_SUPPORT = 2100
     INTERNAL_SRE_USER_SERVICES_DATABASES = 2200

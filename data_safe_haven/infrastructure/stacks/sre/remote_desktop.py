@@ -40,12 +40,12 @@ class SRERemoteDesktopProps:
         allow_paste: Input[bool],
         database_password: Input[str],
         dns_server_ip: Input[str],
-        ldap_bind_dn: Input[str],
+        ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
-        ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
+        ldap_server_port: Input[int],
+        ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
-        ldap_user_security_group_name: Input[str],
         location: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
@@ -65,12 +65,12 @@ class SRERemoteDesktopProps:
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.dns_server_ip = dns_server_ip
-        self.ldap_bind_dn = ldap_bind_dn
+        self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
-        self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
+        self.ldap_server_port = ldap_server_port
+        self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
-        self.ldap_user_security_group_name = ldap_user_security_group_name
         self.location = location
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
@@ -227,7 +227,11 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_AUTHORIZATION_ENDPOINT",
-                            value=f"https://login.microsoftonline.com/{props.aad_tenant_id}/oauth2/v2.0/authorize",
+                            value=Output.concat(
+                                "https://login.microsoftonline.com/",
+                                props.aad_tenant_id,
+                                "/oauth2/v2.0/authorize",
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_CLIENT_ID",
@@ -235,11 +239,19 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_ISSUER",
-                            value=f"https://login.microsoftonline.com/{props.aad_tenant_id}/v2.0",
+                            value=Output.concat(
+                                "https://login.microsoftonline.com/",
+                                props.aad_tenant_id,
+                                "/v2.0",
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_JWKS_ENDPOINT",
-                            value=f"https://login.microsoftonline.com/{props.aad_tenant_id}/discovery/v2.0/keys",
+                            value=Output.concat(
+                                "https://login.microsoftonline.com/",
+                                props.aad_tenant_id,
+                                "/discovery/v2.0/keys",
+                            ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_REDIRECT_URI", value=props.aad_application_url
@@ -295,28 +307,32 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.2.0",
+                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.4.0",
                     name="guacamole-user-sync"[:63],
                     environment_variables=[
-                        containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_BIND_DN",
-                            value=props.ldap_bind_dn,
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="LDAP_BIND_PASSWORD",
-                            secure_value=props.ldap_search_password,
-                        ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_GROUP_BASE_DN",
                             value=props.ldap_group_search_base,
                         ),
                         containerinstance.EnvironmentVariableArgs(
+                            name="LDAP_GROUP_NAME_ATTR",
+                            value="cn",
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
                             name="LDAP_GROUP_FILTER",
-                            value="(objectClass=group)",
+                            value=props.ldap_group_filter,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_HOST",
                             value=props.ldap_server_ip,
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="LDAP_PORT",
+                            value=Output.from_input(props.ldap_server_port).apply(str),
+                        ),
+                        containerinstance.EnvironmentVariableArgs(
+                            name="LDAP_USER_NAME_ATTR",
+                            value="oauth_username",  # this is the name that users connect with
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_USER_BASE_DN",
@@ -324,13 +340,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_USER_FILTER",
-                            value=Output.concat(
-                                "(&(objectClass=user)(memberOf=CN=",
-                                props.ldap_user_security_group_name,
-                                ",",
-                                props.ldap_group_search_base,
-                                "))",
-                            ),
+                            value=props.ldap_user_filter,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="POSTGRESQL_DB_NAME",

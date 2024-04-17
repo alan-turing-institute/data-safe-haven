@@ -28,12 +28,11 @@ class SREGiteaServerProps:
         database_subnet_id: Input[str],
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
-        ldap_bind_dn: Input[str],
-        ldap_root_dn: Input[str],
-        ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
+        ldap_server_port: Input[int],
+        ldap_username_attribute: Input[str],
+        ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
-        ldap_user_security_group_name: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         sre_fqdn: Input[str],
@@ -52,12 +51,11 @@ class SREGiteaServerProps:
         )
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
-        self.ldap_bind_dn = ldap_bind_dn
-        self.ldap_root_dn = ldap_root_dn
-        self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
+        self.ldap_server_port = ldap_server_port
+        self.ldap_username_attribute = ldap_username_attribute
+        self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
-        self.ldap_user_security_group_name = ldap_user_security_group_name
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.sre_fqdn = sre_fqdn
@@ -130,11 +128,10 @@ class SREGiteaServerComponent(ComponentResource):
         gitea_configure_sh = Output.all(
             admin_email="dshadmin@example.com",
             admin_username="dshadmin",
-            ldap_bind_dn=props.ldap_bind_dn,
-            ldap_root_dn=props.ldap_root_dn,
-            ldap_search_password=props.ldap_search_password,
-            ldap_user_security_group_name=props.ldap_user_security_group_name,
+            ldap_username_attribute=props.ldap_username_attribute,
+            ldap_user_filter=props.ldap_user_filter,
             ldap_server_ip=props.ldap_server_ip,
+            ldap_server_port=props.ldap_server_port,
             ldap_user_search_base=props.ldap_user_search_base,
         ).apply(
             lambda mustache_values: gitea_configure_sh_reader.file_contents(
@@ -240,11 +237,7 @@ class SREGiteaServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__database__USER",
-                            value=Output.concat(
-                                props.database_username,
-                                "@",
-                                db_server_gitea.db_server.name,
-                            ),
+                            value=props.database_username,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="GITEA__database__PASSWD",

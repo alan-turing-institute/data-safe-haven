@@ -81,7 +81,6 @@ class DeclarativeSHM:
                 admin_group_id=self.cfg.azure.admin_group_id,
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 location=self.cfg.azure.location,
-                pulumi_opts=self.pulumi_opts,
                 tenant_id=self.cfg.azure.tenant_id,
             ),
             tags=self.cfg.tags.model_dump(),

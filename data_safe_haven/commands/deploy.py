@@ -7,7 +7,6 @@ import typer
 from data_safe_haven.config import Config, ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.functions import password
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 from data_safe_haven.provisioning import SHMProvisioningManager, SREProvisioningManager
 from data_safe_haven.utility import LoggingSingleton
@@ -53,7 +52,6 @@ def shm(
         )
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
         # Add necessary secrets
-        stack.add_secret("password-domain-ldap-searcher", password(20), replace=False)
         stack.add_secret(
             "verification-azuread-custom-domain", verification_record, replace=False
         )
@@ -136,26 +134,6 @@ def sre(
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
         # Load SHM stack outputs
         stack.add_option(
-            "shm-domain_controllers-domain_sid",
-            shm_stack.output("domain_controllers")["domain_sid"],
-            replace=True,
-        )
-        stack.add_option(
-            "shm-domain_controllers-ldap_root_dn",
-            shm_stack.output("domain_controllers")["ldap_root_dn"],
-            replace=True,
-        )
-        stack.add_option(
-            "shm-domain_controllers-ldap_server_ip",
-            shm_stack.output("domain_controllers")["ldap_server_ip"],
-            replace=True,
-        )
-        stack.add_option(
-            "shm-domain_controllers-netbios_name",
-            shm_stack.output("domain_controllers")["netbios_name"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-firewall-private-ip-address",
             shm_stack.output("firewall")["private_ip_address"],
             replace=True,
@@ -191,11 +169,6 @@ def sre(
             replace=True,
         )
         stack.add_option(
-            "shm-networking-subnet_identity_servers_prefix",
-            shm_stack.output("networking")["subnet_identity_servers_prefix"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-networking-subnet_subnet_monitoring_prefix",
             shm_stack.output("networking")["subnet_monitoring_prefix"],
             replace=True,
@@ -215,8 +188,6 @@ def sre(
             shm_stack.output("update_servers")["ip_address_linux"],
             replace=True,
         )
-        # Add necessary secrets
-        stack.copy_secret("password-domain-ldap-searcher", shm_stack)
 
         # Deploy Azure infrastructure with Pulumi
         if force is None:
@@ -232,6 +203,7 @@ def sre(
 
         # Provision SRE with anything that could not be done in Pulumi
         manager = SREProvisioningManager(
+            graph_api_token=graph_api.token,
             shm_stack=shm_stack,
             sre_name=sre_name,
             sre_stack=stack,

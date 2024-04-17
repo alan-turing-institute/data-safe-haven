@@ -18,15 +18,11 @@ class SHMDataProps:
         admin_group_id: Input[str],
         admin_ip_addresses: Input[Sequence[str]],
         location: Input[str],
-        pulumi_opts: Config,
         tenant_id: Input[str],
     ) -> None:
         self.admin_group_id = admin_group_id
         self.admin_ip_addresses = admin_ip_addresses
         self.location = location
-        self.password_domain_searcher = self.get_secret(
-            pulumi_opts, "password-domain-ldap-searcher"
-        )
         self.tenant_id = tenant_id
 
     def get_secret(self, pulumi_opts: Config, secret_name: str) -> Output[str]:
@@ -191,19 +187,6 @@ class SHMDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Add other Pulumi secrets to key vault
-        keyvault.Secret(
-            f"{self._name}_kvs_password_domain_searcher",
-            properties=keyvault.SecretPropertiesArgs(
-                value=props.password_domain_searcher
-            ),
-            resource_group_name=resource_group.name,
-            secret_name="password-domain-ldap-searcher",
-            vault_name=key_vault.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
-            tags=child_tags,
-        )
-
         # Deploy persistent data account
         storage_account_persistent_data = storage.StorageAccount(
             f"{self._name}_storage_account_persistent_data",
@@ -264,7 +247,6 @@ class SHMDataComponent(ComponentResource):
         self.password_domain_azure_ad_connect = Output.secret(
             password_domain_azure_ad_connect.result
         )
-        self.password_domain_searcher = Output.secret(props.password_domain_searcher)
         self.password_update_server_linux_admin = Output.secret(
             password_update_server_linux_admin.result
         )

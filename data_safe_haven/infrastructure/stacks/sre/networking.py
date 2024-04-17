@@ -27,7 +27,6 @@ class SRENetworkingProps:
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
-        shm_subnet_identity_servers_prefix: Input[str],
         shm_subnet_monitoring_prefix: Input[str],
         shm_subnet_update_servers_prefix: Input[str],
         shm_virtual_network_name: Input[str],
@@ -52,6 +51,9 @@ class SRENetworkingProps:
         )
         self.subnet_guacamole_containers_support_iprange = subnet_ranges.apply(
             lambda s: s.guacamole_containers_support
+        )
+        self.subnet_identity_containers_iprange = subnet_ranges.apply(
+            lambda s: s.identity_containers
         )
         self.subnet_user_services_containers_iprange = subnet_ranges.apply(
             lambda s: s.user_services_containers
@@ -80,7 +82,6 @@ class SRENetworkingProps:
         self.user_public_ip_ranges = user_public_ip_ranges
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
-        self.shm_subnet_identity_servers_prefix = shm_subnet_identity_servers_prefix
         self.shm_subnet_monitoring_prefix = shm_subnet_monitoring_prefix
         self.shm_subnet_update_servers_prefix = shm_subnet_update_servers_prefix
         self.shm_virtual_network_name = shm_virtual_network_name
@@ -146,6 +147,9 @@ class SRENetworkingComponent(ComponentResource):
         )
         subnet_guacamole_containers_support_prefix = (
             props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
+        )
+        subnet_identity_containers_prefix = (
+            props.subnet_identity_containers_iprange.apply(lambda r: str(r))
         )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
@@ -476,18 +480,6 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow LDAP client requests over TCP.",
-                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
-                    destination_port_ranges=["389", "636"],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLDAPClientTCPOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
@@ -506,6 +498,18 @@ class SRENetworkingComponent(ComponentResource):
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowGuacamoleContainersSupportOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS_SUPPORT,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests over TCP.",
+                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_port_ranges=["1389"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowIdentityServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_guacamole_containers_prefix,
                     source_port_range="*",
@@ -609,6 +613,53 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
+        nsg_identity_containers = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_identity_containers",
+            network_security_group_name=f"{stack_name}-nsg-identity-containers",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests from Guacamole over TCP.",
+                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_port_ranges=["1389"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowGuacamoleLDAPClientTCPInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests from user services over TCP.",
+                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_port_ranges=["1389"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowUserServicesLDAPClientTCPInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests from workspaces over TCP.",
+                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_port_ranges=["1389"],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspaceLDAPClientTCPInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                # Outbound
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
         nsg_user_services_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers",
             network_security_group_name=f"{stack_name}-nsg-user-services-containers",
@@ -666,18 +717,6 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow LDAP client requests over TCP.",
-                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
-                    destination_port_ranges=["389", "636"],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLDAPClientTCPOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_user_services_containers_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
@@ -685,6 +724,18 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow LDAP client requests over TCP.",
+                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_port_ranges=["1389"],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowIdentityServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
+                    protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_user_services_containers_prefix,
                     source_port_range="*",
                 ),
@@ -998,28 +1049,13 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description=(
-                        "Allow LDAP client requests over TCP. "
-                        "See https://devopstales.github.io/linux/pfsense-ad-join/ for details."
-                    ),
-                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
-                    destination_port_ranges=["389", "636"],
+                    description="Allow LDAP client requests over TCP.",
+                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_port_ranges=["1389"],
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLDAPClientTCPOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
+                    name="AllowIdentityServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow LDAP client requests over UDP.",
-                    destination_address_prefix=props.shm_subnet_identity_servers_prefix,
-                    destination_port_ranges=["389", "636"],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLDAPClientUDPOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_UDP,
-                    protocol=network.SecurityRuleProtocol.UDP,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
@@ -1142,6 +1178,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_data_private_name = "DataPrivateSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
+        subnet_identity_containers_name = "IdentityContainersSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
         subnet_user_services_containers_support_name = (
             "UserServicesContainersSupportSubnet"
@@ -1223,6 +1260,22 @@ class SRENetworkingComponent(ComponentResource):
                         id=nsg_guacamole_containers_support.id
                     ),
                     private_endpoint_network_policies=network.VirtualNetworkPrivateEndpointNetworkPolicies.ENABLED,
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),
+                # Identity containers
+                network.SubnetArgs(
+                    address_prefix=subnet_identity_containers_prefix,
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
+                    name=subnet_identity_containers_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_identity_containers.id
+                    ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # User services containers
@@ -1487,6 +1540,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_guacamole_containers_support = network.get_subnet_output(
             subnet_name=subnet_guacamole_containers_support_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_identity_containers = network.get_subnet_output(
+            subnet_name=subnet_identity_containers_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

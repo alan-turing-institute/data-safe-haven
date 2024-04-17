@@ -24,15 +24,13 @@ class SREUserServicesProps:
         databases: list[DatabaseSystem],  # this must *not* be passed as an Input[T]
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
-        domain_netbios_name: Input[str],
         gitea_database_password: Input[str],
         hedgedoc_database_password: Input[str],
-        ldap_bind_dn: Input[str],
-        ldap_root_dn: Input[str],
-        ldap_search_password: Input[str],
         ldap_server_ip: Input[str],
+        ldap_server_port: Input[int],
+        ldap_username_attribute: Input[str],
+        ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
-        ldap_user_security_group_name: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         nexus_admin_password: Input[str],
@@ -42,8 +40,8 @@ class SREUserServicesProps:
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
-        subnet_containers: Input[network.GetSubnetResult],
         subnet_containers_support: Input[network.GetSubnetResult],
+        subnet_containers: Input[network.GetSubnetResult],
         subnet_databases: Input[network.GetSubnetResult],
         subnet_software_repositories: Input[network.GetSubnetResult],
     ) -> None:
@@ -51,15 +49,13 @@ class SREUserServicesProps:
         self.databases = databases
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
-        self.domain_netbios_name = domain_netbios_name
         self.gitea_database_password = gitea_database_password
         self.hedgedoc_database_password = hedgedoc_database_password
-        self.ldap_bind_dn = ldap_bind_dn
-        self.ldap_root_dn = ldap_root_dn
-        self.ldap_search_password = ldap_search_password
         self.ldap_server_ip = ldap_server_ip
+        self.ldap_server_port = ldap_server_port
+        self.ldap_username_attribute = ldap_username_attribute
+        self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
-        self.ldap_user_security_group_name = ldap_user_security_group_name
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.nexus_admin_password = Output.secret(nexus_admin_password)
@@ -117,11 +113,10 @@ class SREUserServicesComponent(ComponentResource):
                 database_password=props.gitea_database_password,
                 dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
-                ldap_bind_dn=props.ldap_bind_dn,
-                ldap_root_dn=props.ldap_root_dn,
-                ldap_search_password=props.ldap_search_password,
                 ldap_server_ip=props.ldap_server_ip,
-                ldap_user_security_group_name=props.ldap_user_security_group_name,
+                ldap_server_port=props.ldap_server_port,
+                ldap_username_attribute=props.ldap_username_attribute,
+                ldap_user_filter=props.ldap_user_filter,
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
@@ -142,16 +137,14 @@ class SREUserServicesComponent(ComponentResource):
             stack_name,
             SREHedgeDocServerProps(
                 containers_subnet_id=props.subnet_containers_id,
-                database_subnet_id=props.subnet_containers_support_id,
                 database_password=props.hedgedoc_database_password,
+                database_subnet_id=props.subnet_containers_support_id,
                 dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
-                domain_netbios_name=props.domain_netbios_name,
-                ldap_bind_dn=props.ldap_bind_dn,
-                ldap_root_dn=props.ldap_root_dn,
-                ldap_search_password=props.ldap_search_password,
                 ldap_server_ip=props.ldap_server_ip,
-                ldap_user_security_group_name=props.ldap_user_security_group_name,
+                ldap_server_port=props.ldap_server_port,
+                ldap_username_attribute=props.ldap_username_attribute,
+                ldap_user_filter=props.ldap_user_filter,
                 ldap_user_search_base=props.ldap_user_search_base,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,

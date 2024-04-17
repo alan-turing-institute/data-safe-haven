@@ -18,28 +18,22 @@ write_files:
       gid nslcd
       log syslog debug
 
+      # Do not allow uids lower than 2000 to login
+      nss_min_uid 2000
+
       # General connection options
-      uri ldap://{{ldap_server_ip}}:389
-      binddn {{ldap_bind_dn}}
-      bindpw {{ldap_search_password}}
+      uri ldap://{{ldap_server_ip}}:{{ldap_server_port}}
 
       # Search/mapping options
       base {{ldap_user_search_base}}
       base {{ldap_group_search_base}}
 
-      # All users that are members of the correct security group
-      filter passwd (&(objectClass=user)(memberOf=CN={{ldap_user_security_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}}))
+      # All users that are members of the correct group
+      filter passwd {{{ldap_user_filter}}}
 
-      # One group for each security group and for each user
-      filter group (|(objectclass=group)(&(objectClass=user)(memberOf=CN={{ldap_user_security_group_name}},OU=Data Safe Haven Security Groups,{{ldap_root_dn}})))
+      # One group for each security group belonging to this SRE and for each primary user group for users that belong to a group in this SRE
+      filter group {{{ldap_group_filter}}}
 
-      # Attribute mappings
-      map  passwd  uid                sAMAccountName
-      map  passwd  gidNumber          objectSid:{{domain_sid}}
-      map  passwd  uidNumber          objectSid:{{domain_sid}}
-      map  passwd  homeDirectory      "${unixHomeDirectory:-/home/$sAMAccountName}"
-      map  group   cn                 sAMAccountName
-      map  group   gidNumber          objectSid:{{domain_sid}}
 
   - path: "/etc/pip.conf"
     permissions: "0444"

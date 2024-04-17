@@ -16,6 +16,7 @@ class SREIpRanges:
         self.data_private = self.vnet.next_subnet(8)
         self.guacamole_containers = self.vnet.next_subnet(8)
         self.guacamole_containers_support = self.vnet.next_subnet(8)
+        self.identity_containers = self.vnet.next_subnet(8)
         self.user_services_containers = self.vnet.next_subnet(8)
         self.user_services_containers_support = self.vnet.next_subnet(8)
         self.user_services_databases = self.vnet.next_subnet(8)

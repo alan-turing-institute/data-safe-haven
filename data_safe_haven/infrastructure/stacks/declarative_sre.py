@@ -21,6 +21,10 @@ from .sre.dns_server import (
     SREDnsServerComponent,
     SREDnsServerProps,
 )
+from .sre.identity import (
+    SREIdentityComponent,
+    SREIdentityProps,
+)
 from .sre.monitoring import (
     SREMonitoringComponent,
     SREMonitoringProps,
@@ -61,23 +65,51 @@ class DeclarativeSRE:
         self.pulumi_opts = pulumi.Config()
 
         # Construct LDAP paths
-        ldap_root_dn = self.pulumi_opts.require("shm-domain_controllers-ldap_root_dn")
-        ldap_bind_dn = (
-            f"CN=dshldapsearcher,OU=Data Safe Haven Service Accounts,{ldap_root_dn}"
+        ldap_root_dn = f"DC={self.cfg.shm.fqdn.replace('.', ',DC=')}"
+        ldap_group_search_base = f"OU=groups,{ldap_root_dn}"
+        ldap_user_search_base = f"OU=users,{ldap_root_dn}"
+        ldap_group_name_prefix = f"Data Safe Haven SRE {self.sre_name}"
+        ldap_group_names = {
+            "admin_group_name": f"{ldap_group_name_prefix} Administrators",
+            "privileged_user_group_name": f"{ldap_group_name_prefix} Privileged Users",
+            "user_group_name": f"{ldap_group_name_prefix} Users",
+        }
+        ldap_username_attribute = "uid"
+        # LDAP filter syntax: https://ldap.com/ldap-filters/
+        # LDAP filter for users of this SRE
+        ldap_user_filter = "".join(
+            [
+                "(&",
+                # Users are a posixAccount and
+                "(objectClass=posixAccount)",
+                # belong to any of these groups
+                "(|",
+                *(
+                    f"(memberOf=CN={group_name},{ldap_group_search_base})"
+                    for group_name in ldap_group_names.values()
+                ),
+                ")",
+                ")",
+            ]
         )
-        ldap_group_search_base = f"OU=Data Safe Haven Security Groups,{ldap_root_dn}"
-        ldap_user_search_base = f"OU=Data Safe Haven Research Users,{ldap_root_dn}"
-        ldap_search_password = self.pulumi_opts.require("password-domain-ldap-searcher")
-        ldap_server_ip = self.pulumi_opts.require(
-            "shm-domain_controllers-ldap_server_ip"
+        # LDAP filter for groups in this SRE
+        ldap_group_filter = "".join(
+            [
+                "(&",
+                # Groups are a posixGroup
+                "(objectClass=posixGroup)",
+                "(|",
+                # which is either one of the LDAP groups
+                *(f"(CN={group_name})" for group_name in ldap_group_names.values()),
+                # or is the primary user group for a member of one of those groups
+                *(
+                    f"(memberOf=CN=Primary user groups for {group_name},{ldap_group_search_base})"
+                    for group_name in ldap_group_names.values()
+                ),
+                ")",
+                ")",
+            ]
         )
-        ldap_admin_security_group_name = (
-            f"Data Safe Haven SRE {self.sre_name} Administrators"
-        )
-        ldap_privileged_user_security_group_name = (
-            f"Data Safe Haven SRE {self.sre_name} Privileged Users"
-        )
-        ldap_user_security_group_name = f"Data Safe Haven SRE {self.sre_name} Users"
 
         # Deploy SRE DNS server
         dns = SREDnsServerComponent(
@@ -109,9 +141,6 @@ class DeclarativeSRE:
                 shm_fqdn=self.cfg.shm.fqdn,
                 shm_networking_resource_group_name=self.pulumi_opts.require(
                     "shm-networking-resource_group_name"
-                ),
-                shm_subnet_identity_servers_prefix=self.pulumi_opts.require(
-                    "shm-networking-subnet_identity_servers_prefix",
                 ),
                 shm_subnet_monitoring_prefix=self.pulumi_opts.require(
                     "shm-networking-subnet_subnet_monitoring_prefix",
@@ -179,6 +208,23 @@ class DeclarativeSRE:
             tags=self.cfg.tags.model_dump(),
         )
 
+        # Deploy identity server
+        identity = SREIdentityComponent(
+            "sre_identity",
+            self.stack_name,
+            SREIdentityProps(
+                aad_application_name=f"sre-{self.sre_name}-apricot",
+                aad_auth_token=self.graph_api_token,
+                aad_tenant_id=self.cfg.shm.aad_tenant_id,
+                location=self.cfg.azure.location,
+                shm_fqdn=self.cfg.shm.fqdn,
+                storage_account_key=data.storage_account_data_configuration_key,
+                storage_account_name=data.storage_account_data_configuration_name,
+                storage_account_resource_group_name=data.resource_group_name,
+                subnet_containers=networking.subnet_identity_containers,
+            ),
+        )
+
         # Deploy frontend application gateway
         SREApplicationGatewayComponent(
             "sre_application_gateway",
@@ -199,26 +245,26 @@ class DeclarativeSRE:
             "sre_remote_desktop",
             self.stack_name,
             SRERemoteDesktopProps(
-                aad_application_name=f"sre-{self.sre_name}-azuread-guacamole",
                 aad_application_fqdn=networking.sre_fqdn,
+                aad_application_name=f"sre-{self.sre_name}-guacamole",
                 aad_auth_token=self.graph_api_token,
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
                 allow_copy=self.cfg.sre(self.sre_name).remote_desktop.allow_copy,
                 allow_paste=self.cfg.sre(self.sre_name).remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
                 dns_server_ip=dns.ip_address,
-                ldap_bind_dn=ldap_bind_dn,
+                ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
-                ldap_search_password=ldap_search_password,
-                ldap_server_ip=ldap_server_ip,
+                ldap_server_ip=identity.ip_address,
+                ldap_server_port=identity.server_port,
+                ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
-                ldap_user_security_group_name=ldap_user_security_group_name,
                 location=self.cfg.azure.location,
-                subnet_guacamole_containers=networking.subnet_guacamole_containers,
-                subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 storage_account_resource_group_name=data.resource_group_name,
+                subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
+                subnet_guacamole_containers=networking.subnet_guacamole_containers,
             ),
             tags=self.cfg.tags.model_dump(),
         )
@@ -229,16 +275,12 @@ class DeclarativeSRE:
             self.stack_name,
             SREWorkspacesProps(
                 admin_password=data.password_workspace_admin,
-                domain_sid=self.pulumi_opts.require(
-                    "shm-domain_controllers-domain_sid"
-                ),
-                ldap_bind_dn=ldap_bind_dn,
+                ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
-                ldap_root_dn=ldap_root_dn,
-                ldap_search_password=ldap_search_password,
-                ldap_server_ip=ldap_server_ip,
+                ldap_server_ip=identity.ip_address,
+                ldap_server_port=identity.server_port,
+                ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
-                ldap_user_security_group_name=ldap_user_security_group_name,
                 linux_update_server_ip=self.pulumi_opts.require(
                     "shm-update_servers-ip_address_linux"
                 ),
@@ -271,16 +313,12 @@ class DeclarativeSRE:
                 databases=self.cfg.sre(self.sre_name).databases,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
-                domain_netbios_name=self.pulumi_opts.require(
-                    "shm-domain_controllers-netbios_name"
-                ),
                 gitea_database_password=data.password_gitea_database_admin,
                 hedgedoc_database_password=data.password_hedgedoc_database_admin,
-                ldap_bind_dn=ldap_bind_dn,
-                ldap_root_dn=ldap_root_dn,
-                ldap_search_password=ldap_search_password,
-                ldap_server_ip=ldap_server_ip,
-                ldap_user_security_group_name=ldap_user_security_group_name,
+                ldap_server_ip=identity.ip_address,
+                ldap_server_port=identity.server_port,
+                ldap_user_filter=ldap_user_filter,
+                ldap_username_attribute=ldap_username_attribute,
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,
@@ -313,13 +351,6 @@ class DeclarativeSRE:
 
         # Export values for later use
         pulumi.export("data", data.exports)
-        pulumi.export(
-            "ldap",
-            {
-                "admin_security_group_name": ldap_admin_security_group_name,
-                "privileged_user_security_group_name": ldap_privileged_user_security_group_name,
-                "user_security_group_name": ldap_user_security_group_name,
-            },
-        )
+        pulumi.export("ldap", ldap_group_names)
         pulumi.export("remote_desktop", remote_desktop.exports)
         pulumi.export("workspaces", workspaces.exports)

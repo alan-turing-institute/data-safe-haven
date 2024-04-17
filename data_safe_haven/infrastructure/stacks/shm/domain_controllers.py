@@ -9,8 +9,6 @@ from data_safe_haven.infrastructure.common import get_name_from_subnet
 from data_safe_haven.infrastructure.components import (
     AutomationDscNode,
     AutomationDscNodeProps,
-    RemoteScript,
-    RemoteScriptProps,
     VMComponent,
     WindowsVMComponentProps,
     WrappedAutomationAccount,
@@ -122,7 +120,7 @@ class SHMDomainControllersComponent(ComponentResource):
             / "desired_state_configuration"
             / f"{dsc_configuration_name}.ps1"
         )
-        primary_domain_controller_dsc_node = AutomationDscNode(
+        AutomationDscNode(
             f"{self._name}_primary_domain_controller_dsc_node",
             AutomationDscNodeProps(
                 automation_account=props.automation_account,
@@ -154,33 +152,12 @@ class SHMDomainControllersComponent(ComponentResource):
             ),
             tags=child_tags,
         )
-        # Extract the domain SID
-        domain_sid_script = FileReader(
-            resources_path / "active_directory" / "get_ad_sid.ps1"
-        )
-        domain_sid = RemoteScript(
-            f"{self._name}_get_ad_sid",
-            RemoteScriptProps(
-                force_refresh=True,
-                script_contents=domain_sid_script.file_contents(),
-                script_hash=domain_sid_script.sha256(),
-                script_parameters={},
-                subscription_name=props.subscription_name,
-                vm_name=primary_domain_controller.vm_name,
-                vm_resource_group_name=resource_group.name,
-            ),
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=primary_domain_controller_dsc_node),
-            ),
-        )
 
         # Register outputs
         self.resource_group_name = resource_group.name
 
         # Register exports
         self.exports = {
-            "domain_sid": domain_sid.script_output,
             "ldap_root_dn": props.domain_root_dn,
             "ldap_search_username": props.username_domain_searcher,
             "ldap_server_ip": primary_domain_controller.ip_address_private,

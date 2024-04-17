@@ -1,4 +1,4 @@
-from .enums import NetworkingPriorities
+from .enums import FirewallPriorities, NetworkingPriorities
 from .ip_ranges import SREDnsIpRanges, SREIpRanges
 from .transformations import (
     get_available_ips_from_subnet,
@@ -14,6 +14,7 @@ from .transformations import (
 )
 
 __all__ = [
+    "FirewallPriorities",
     "get_available_ips_from_subnet",
     "get_id_from_rg",
     "get_id_from_subnet",
