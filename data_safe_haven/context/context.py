@@ -1,4 +1,4 @@
-from data_safe_haven.config import ConfigSectionPulumi, ConfigSectionTags, Context
+from data_safe_haven.config import ConfigSectionTags, Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 
@@ -59,7 +59,7 @@ class ContextInfra:
                 storage_account_name=storage_account.name,
             )
             _ = self.azure_api.ensure_storage_blob_container(
-                container_name=ConfigSectionPulumi.storage_container_name,
+                container_name=self.context.pulumi_storage_container_name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account.name,
             )
@@ -75,7 +75,7 @@ class ContextInfra:
                 msg = f"Keyvault '{self.context.key_vault_name}' was not created."
                 raise DataSafeHavenAzureError(msg)
             self.azure_api.ensure_keyvault_key(
-                key_name=ConfigSectionPulumi.encryption_key_name,
+                key_name=self.context.pulumi_encryption_key_name,
                 key_vault_name=keyvault.name,
             )
         except Exception as exc:

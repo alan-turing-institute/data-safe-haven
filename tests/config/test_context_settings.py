@@ -8,6 +8,21 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
+from data_safe_haven.external import AzureApi
+
+
+@fixture
+def mock_key_vault_key(monkeypatch):
+    class MockKeyVaultKey:
+        def __init__(self, key_name, key_vault_name):
+            self.key_name = key_name
+            self.key_vault_name = key_vault_name
+            self.id = "mock_key/version"
+
+    def mock_get_keyvault_key(self, key_name, key_vault_name):  # noqa: ARG001
+        return MockKeyVaultKey(key_name, key_vault_name)
+
+    monkeypatch.setattr(AzureApi, "get_keyvault_key", mock_get_keyvault_key)
 
 
 class TestContext:
@@ -60,6 +75,19 @@ class TestContext:
         context_dict["name"] = "very " * 5 + "long name"
         context = Context(**context_dict)
         assert context.storage_account_name == "shmveryveryveryvecontext"
+
+    def test_pulumi_encryption_key(
+        self, context, mock_key_vault_key  # noqa: ARG002
+    ):
+        key = context.pulumi_encryption_key
+        assert key.key_name == context.pulumi_encryption_key_name
+        assert key.key_vault_name == context.key_vault_name
+
+    def test_pulumi_encryption_key_version(
+        self, context, mock_key_vault_key  # noqa: ARG002
+    ):
+        version = context.pulumi_encryption_key_version
+        assert version == "version"
 
 
 @fixture

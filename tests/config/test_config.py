@@ -15,7 +15,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
-from data_safe_haven.external import AzureApi
 from data_safe_haven.utility.enums import DatabaseSystem, SoftwarePackageCategory
 from data_safe_haven.version import __version__
 
@@ -47,9 +46,7 @@ def pulumi_config():
 class TestConfigSectionPulumi:
     def test_constructor_defaults(self):
         pulumi_config = ConfigSectionPulumi()
-        assert pulumi_config.encryption_key_name == "pulumi-encryption-key"
         assert pulumi_config.stacks == {}
-        assert pulumi_config.storage_container_name == "pulumi"
 
 
 @fixture
@@ -212,20 +209,6 @@ def config_sres(context, azure_config, pulumi_config, shm_config):
     )
 
 
-@fixture
-def mock_key_vault_key(monkeypatch):
-    class MockKeyVaultKey:
-        def __init__(self, key_name, key_vault_name):
-            self.key_name = key_name
-            self.key_vault_name = key_vault_name
-            self.id = "mock_key/version"
-
-    def mock_get_keyvault_key(self, key_name, key_vault_name):  # noqa: ARG001
-        return MockKeyVaultKey(key_name, key_vault_name)
-
-    monkeypatch.setattr(AzureApi, "get_keyvault_key", mock_get_keyvault_key)
-
-
 class TestConfig:
     def test_constructor(self, context, azure_config, pulumi_config, shm_config):
         config = Config(
@@ -256,19 +239,6 @@ class TestConfig:
     def test_work_directory(self, config_sres):
         config = config_sres
         assert config.work_directory == config.context.work_directory
-
-    def test_pulumi_encryption_key(
-        self, config_sres, mock_key_vault_key  # noqa: ARG002
-    ):
-        key = config_sres.pulumi_encryption_key
-        assert key.key_name == config_sres.pulumi.encryption_key_name
-        assert key.key_vault_name == config_sres.context.key_vault_name
-
-    def test_pulumi_encryption_key_version(
-        self, config_sres, mock_key_vault_key  # noqa: ARG002
-    ):
-        version = config_sres.pulumi_encryption_key_version
-        assert version == "version"
 
     @pytest.mark.parametrize("require_sres,expected", [(False, True), (True, False)])
     def test_is_complete_no_sres(self, config_no_sres, require_sres, expected):
