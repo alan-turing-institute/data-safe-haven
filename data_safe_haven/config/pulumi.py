@@ -11,6 +11,7 @@ from data_safe_haven.utility.annotated_types import UniqueList
 
 
 def base64_string_decode(v: str) -> str:
+    """Pydantic validator function for decoding base64"""
     return b64decode(v)
 
 
@@ -22,6 +23,8 @@ B64String = Annotated[
 
 
 class PulumiStack(BaseModel, validate_assignment=True):
+    """Container for Pulumi Stack persistent information"""
+
     name: str
     config: B64String
 
@@ -50,6 +53,10 @@ class PulumiConfig(BaseModel, validate_assignment=True):
         raise IndexError(msg)
 
     def __setitem__(self, key: str, value: PulumiStack) -> None:
+        """
+        Add a pulumi stack.
+        This method does not support modifying existing stacks.
+        """
         if not isinstance(key, str):
             msg = "'key' must be a string."
             raise TypeError(msg)
@@ -75,7 +82,9 @@ class PulumiConfig(BaseModel, validate_assignment=True):
 
     @property
     def stack_names(self) -> list[str]:
+        """Produce a list of known Pulumi stack names"""
         return [stack.name for stack in self.stacks]
 
     def to_yaml(self) -> str:
+        """Write Pulumi configuration to a YAML formatted string"""
         return yaml.dump(self.model_dump(mode="json"), indent=2)
