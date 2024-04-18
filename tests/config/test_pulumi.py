@@ -23,17 +23,6 @@ def pulumi_stack(stack_config_encoded):
     return PulumiStack(name="my_stack", config=stack_config_encoded)
 
 
-class TestPulumiStack:
-    def test_pulumi_stack(self, pulumi_stack):
-        assert pulumi_stack.name == "my_stack"
-        assert "encryptedkey: zjhejU2XsOKLo95w9CLD" in pulumi_stack.config
-
-    def test_dump(self, pulumi_stack, stack_config_encoded):
-        d = pulumi_stack.model_dump()
-        assert d.get("name") == "my_stack"
-        assert d.get("config") == stack_config_encoded
-
-
 @fixture
 def pulumi_stack2():
     return PulumiStack(
@@ -46,6 +35,23 @@ config:
 """
         ),
     )
+
+
+class TestPulumiStack:
+    def test_pulumi_stack(self, pulumi_stack):
+        assert pulumi_stack.name == "my_stack"
+        assert "encryptedkey: zjhejU2XsOKLo95w9CLD" in pulumi_stack.config
+
+    def test_dump(self, pulumi_stack, stack_config_encoded):
+        d = pulumi_stack.model_dump()
+        assert d.get("name") == "my_stack"
+        assert d.get("config") == stack_config_encoded
+
+    def test_eq(self, pulumi_stack):
+        assert pulumi_stack == pulumi_stack.model_copy(deep=True)
+
+    def test_not_eq(self, pulumi_stack, pulumi_stack2):
+        assert pulumi_stack != pulumi_stack2
 
 
 @fixture
