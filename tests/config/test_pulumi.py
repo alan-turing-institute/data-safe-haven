@@ -32,6 +32,25 @@ class TestPulumiStack:
         d = pulumi_stack.model_dump()
         assert d.get("name") == "my_stack"
         assert d.get("config") == stack_config_encoded
+
+
+@fixture
+def pulumi_stack2():
+    return PulumiStack(
+        name="other_stack",
+        config=b64encode("""secretsprovider: azurekeyvault://example
+encryptedkey: B5tHWpqERXgblwRZ7wgu
+config:
+  azure-native:location: uksouth
+"""),
+    )
+
+
+@fixture
+def pulumi_config(pulumi_stack, pulumi_stack2):
+    return PulumiConfig(stacks=[pulumi_stack, pulumi_stack2])
+
+
 class TestPulumiConfig:
     def test_pulumi_config(self, pulumi_stack):
         config = PulumiConfig(stacks=[pulumi_stack])
@@ -40,3 +59,15 @@ class TestPulumiConfig:
     def test_unique_list(self, pulumi_stack):
         with raises(ValueError, match="All items must be unique."):
             PulumiConfig(stacks=[pulumi_stack, pulumi_stack.model_copy(deep=True)])
+
+    def test_getitem(self, pulumi_config, pulumi_stack, pulumi_stack2):
+        assert pulumi_config["my_stack"] == pulumi_stack
+        assert pulumi_config["other_stack"] == pulumi_stack2
+
+    def test_getitem_type_error(self, pulumi_config):
+        with raises(TypeError, match="'key' must be a string."):
+            pulumi_config[0]
+
+    def test_getitem_index_error(self, pulumi_config):
+        with raises(IndexError, match="No configuration for Pulumi stack Ringo."):
+            pulumi_config["Ringo"]

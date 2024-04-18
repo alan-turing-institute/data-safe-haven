@@ -31,3 +31,13 @@ class PulumiStack(BaseModel, validate_assignment=True):
 
 class PulumiConfig(BaseModel, validate_assignment=True):
     stacks: UniqueList[PulumiStack]
+
+    def __getitem__(self, key: str):
+        if not isinstance(key, str):
+            raise TypeError("'key' must be a string.")
+
+        for stack in self.stacks:
+            if stack.name == key:
+                return stack
+
+        raise IndexError(f"No configuration for Pulumi stack {key}.")
