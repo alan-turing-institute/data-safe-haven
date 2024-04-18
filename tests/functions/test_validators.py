@@ -60,12 +60,24 @@ class TestValidateFqdn:
             validate_fqdn(fqdn)
 
 
+class MyClass:
+    def __init__(self, x):
+        self.x = x
+
+    def __eq__(self, other):
+        return self.x == other.x
+
+    def __hash__(self):
+        return hash(self.x)
+
+
 class TestValidateUniqueList:
     @pytest.mark.parametrize(
         "items",
         [
             [1, 2, 3],
             ["a", 5, len],
+            [MyClass(x=1), MyClass(x=2)],
         ],
     )
     def test_validate_unique_list(self, items):
@@ -78,6 +90,7 @@ class TestValidateUniqueList:
             [DatabaseSystem.POSTGRESQL, 2, DatabaseSystem.POSTGRESQL],
             [1, 1],
             ["abc", "abc"],
+            [MyClass(x=1), MyClass(x=1)],
         ],
     )
     def test_validate_unique_list_fail(self, items):
