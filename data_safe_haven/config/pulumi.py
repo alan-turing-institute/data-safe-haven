@@ -1,8 +1,8 @@
 from typing import Annotated
 
+import yaml
 from pydantic import BaseModel, PlainSerializer
 from pydantic.functional_validators import AfterValidator
-import yaml
 
 from data_safe_haven.functions import b64decode, b64encode
 from data_safe_haven.utility.annotated_types import UniqueList
@@ -41,6 +41,19 @@ class PulumiConfig(BaseModel, validate_assignment=True):
         for stack in self.stacks:
             if stack.name == key:
                 return stack
+
+        msg = f"No configuration for Pulumi stack {key}."
+        raise IndexError(msg)
+
+    def __delitem__(self, key: str):
+        if not isinstance(key, str):
+            msg = "'key' must be a string."
+            raise TypeError(msg)
+
+        for stack in self.stacks:
+            if stack.name == key:
+                self.stacks.remove(stack)
+                return
 
         msg = f"No configuration for Pulumi stack {key}."
         raise IndexError(msg)
