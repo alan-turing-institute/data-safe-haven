@@ -2,6 +2,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, PlainSerializer
 from pydantic.functional_validators import AfterValidator
+import yaml
 
 from data_safe_haven.functions import b64decode, b64encode
 from data_safe_haven.utility.annotated_types import UniqueList
@@ -47,3 +48,6 @@ class PulumiConfig(BaseModel, validate_assignment=True):
     @property
     def stack_names(self):
         return [stack.name for stack in self.stacks]
+
+    def to_yaml(self) -> str:
+        return yaml.dump(self.model_dump(mode="json"), indent=2)

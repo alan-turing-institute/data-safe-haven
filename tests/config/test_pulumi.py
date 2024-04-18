@@ -76,3 +76,9 @@ class TestPulumiConfig:
 
     def test_stack_names(self, pulumi_config):
         assert "my_stack" in pulumi_config.stack_names
+
+    def test_to_yaml(self, pulumi_config):
+        yaml = pulumi_config.to_yaml()
+        assert isinstance(yaml, str)
+        assert "stacks:" in yaml
+        assert "config: c2VjcmV0" in yaml
