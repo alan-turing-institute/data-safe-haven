@@ -27,3 +27,8 @@ class TestPulumiStack:
     def test_pulumi_stack(self, pulumi_stack):
         assert pulumi_stack.name == "my_stack"
         assert "encryptedkey: zjhejU2XsOKLo95w9CLD" in pulumi_stack.config
+
+    def test_dump(self, pulumi_stack, stack_config_encoded):
+        d = pulumi_stack.model_dump()
+        assert d.get("name") == "my_stack"
+        assert d.get("config") == stack_config_encoded
