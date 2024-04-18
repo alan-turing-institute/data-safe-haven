@@ -87,6 +87,22 @@ class TestPulumiConfig:
         with raises(IndexError, match="No configuration for Pulumi stack Ringo."):
             del pulumi_config["Ringo"]
 
+    def test_setitem(self, pulumi_config, pulumi_stack):
+        del pulumi_config["my_stack"]
+        assert len(pulumi_config.stack_names) == 1
+        assert "my_stack" not in pulumi_config.stack_names
+        pulumi_config["my_stack"] = pulumi_stack
+        assert len(pulumi_config.stack_names) == 2
+        assert "my_stack" in pulumi_config.stack_names
+
+    def test_setitem_type_error(self, pulumi_config):
+        with raises(TypeError, match="'key' must be a string."):
+            pulumi_config[1] = 5
+
+    def test_setitem_value_error(self, pulumi_config):
+        with raises(ValueError, match="Stack other_stack already exists."):
+            pulumi_config["other_stack"] = 5
+
     def test_stack_names(self, pulumi_config):
         assert "my_stack" in pulumi_config.stack_names
 

@@ -45,6 +45,17 @@ class PulumiConfig(BaseModel, validate_assignment=True):
         msg = f"No configuration for Pulumi stack {key}."
         raise IndexError(msg)
 
+    def __setitem__(self, key: str, value: PulumiStack):
+        if not isinstance(key, str):
+            msg = "'key' must be a string."
+            raise TypeError(msg)
+
+        if key in self.stack_names:
+            msg = f"Stack {key} already exists."
+            raise ValueError(msg)
+
+        self.stacks.append(value)
+
     def __delitem__(self, key: str):
         if not isinstance(key, str):
             msg = "'key' must be a string."
