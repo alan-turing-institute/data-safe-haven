@@ -73,3 +73,6 @@ class TestPulumiConfig:
     def test_getitem_index_error(self, pulumi_config):
         with raises(IndexError, match="No configuration for Pulumi stack Ringo."):
             pulumi_config["Ringo"]
+
+    def test_stack_names(self, pulumi_config):
+        assert "my_stack" in pulumi_config.stack_names

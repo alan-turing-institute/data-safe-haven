@@ -43,3 +43,7 @@ class PulumiConfig(BaseModel, validate_assignment=True):
 
         msg = f"No configuration for Pulumi stack {key}."
         raise IndexError(msg)
+
+    @property
+    def stack_names(self):
+        return [stack.name for stack in self.stacks]
