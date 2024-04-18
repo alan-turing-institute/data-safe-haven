@@ -1,6 +1,6 @@
-from pytest import fixture
+from pytest import fixture, raises
 
-from data_safe_haven.config.pulumi import PulumiStack
+from data_safe_haven.config.pulumi import PulumiStack, PulumiConfig
 from data_safe_haven.functions import b64encode
 
 
@@ -32,3 +32,11 @@ class TestPulumiStack:
         d = pulumi_stack.model_dump()
         assert d.get("name") == "my_stack"
         assert d.get("config") == stack_config_encoded
+class TestPulumiConfig:
+    def test_pulumi_config(self, pulumi_stack):
+        config = PulumiConfig(stacks=[pulumi_stack])
+        assert config.stacks[0].name == "my_stack"
+
+    def test_unique_list(self, pulumi_stack):
+        with raises(ValueError, match="All items must be unique."):
+            PulumiConfig(stacks=[pulumi_stack, pulumi_stack.model_copy(deep=True)])
