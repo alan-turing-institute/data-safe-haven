@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from pytest import fixture
 
+import data_safe_haven.config.context_settings as context_mod
 from data_safe_haven.config.context_settings import Context
 from data_safe_haven.external import AzureApi
 
@@ -17,6 +20,12 @@ def context_dict():
 @fixture
 def context(context_dict):
     return Context(**context_dict)
+
+
+@fixture
+def context_tmpdir(context_dict, tmpdir, monkeypatch):
+    monkeypatch.setattr(context_mod, "config_dir", lambda: Path(tmpdir))
+    return Context(**context_dict), tmpdir
 
 
 @fixture

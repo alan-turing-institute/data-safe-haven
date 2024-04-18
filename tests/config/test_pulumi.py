@@ -53,6 +53,23 @@ class TestPulumiStack:
     def test_not_eq(self, pulumi_stack, pulumi_stack2):
         assert pulumi_stack != pulumi_stack2
 
+    def test_write_config(self, pulumi_stack, context_tmpdir):
+        context, tmpdir = context_tmpdir
+
+        pulumi_stack.write_config(context)
+
+        outfile = (
+            tmpdir
+            / context.shm_name
+            / "pulumi"
+            / pulumi_stack.name
+            / f"Pulumi.{pulumi_stack.name}.yaml"
+        )
+        assert outfile.exists()
+
+        text = open(outfile).read()
+        assert text == pulumi_stack.config
+
 
 @fixture
 def pulumi_config(pulumi_stack, pulumi_stack2):

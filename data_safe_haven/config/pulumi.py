@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Annotated
 
 import yaml
 from pydantic import BaseModel, PlainSerializer
 from pydantic.functional_validators import AfterValidator
 
+from data_safe_haven.config import Context
 from data_safe_haven.functions import b64decode, b64encode
 from data_safe_haven.utility.annotated_types import UniqueList
 
@@ -35,6 +37,14 @@ class PulumiStack(BaseModel, validate_assignment=True):
 
     def __hash__(self) -> int:
         return hash(self.name)
+
+    def write_config(self, context: Context) -> None:
+        work_dir = Path(context.work_directory / "pulumi" / self.name)
+        if not work_dir.exists():
+            work_dir.mkdir(parents=True)
+        config_path = work_dir / f"Pulumi.{self.name}.yaml"
+        with open(config_path, "w") as f_config:
+            f_config.write(self.config)
 
 
 class PulumiConfig(BaseModel, validate_assignment=True):
