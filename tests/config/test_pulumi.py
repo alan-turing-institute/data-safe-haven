@@ -1,6 +1,6 @@
 from pytest import fixture, raises
 
-from data_safe_haven.config.pulumi import PulumiStack, PulumiConfig
+from data_safe_haven.config.pulumi import PulumiConfig, PulumiStack
 from data_safe_haven.functions import b64encode
 
 
@@ -38,11 +38,13 @@ class TestPulumiStack:
 def pulumi_stack2():
     return PulumiStack(
         name="other_stack",
-        config=b64encode("""secretsprovider: azurekeyvault://example
+        config=b64encode(
+            """secretsprovider: azurekeyvault://example
 encryptedkey: B5tHWpqERXgblwRZ7wgu
 config:
   azure-native:location: uksouth
-"""),
+"""
+        ),
     )
 
 
