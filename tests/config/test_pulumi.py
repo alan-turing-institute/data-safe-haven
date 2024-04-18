@@ -79,6 +79,14 @@ class TestPulumiConfig:
         del pulumi_config["my_stack"]
         assert len(pulumi_config.stacks) == 1
 
+    def test_delitem_value_error(self, pulumi_config):
+        with raises(TypeError, match="'key' must be a string."):
+            del pulumi_config[-1]
+
+    def test_delitem_index_error(self, pulumi_config):
+        with raises(IndexError, match="No configuration for Pulumi stack Ringo."):
+            del pulumi_config["Ringo"]
+
     def test_stack_names(self, pulumi_config):
         assert "my_stack" in pulumi_config.stack_names
 
