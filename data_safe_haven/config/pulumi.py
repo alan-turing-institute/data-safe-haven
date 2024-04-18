@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Annotated
 
 import yaml
@@ -23,17 +25,19 @@ class PulumiStack(BaseModel, validate_assignment=True):
     name: str
     config: B64String
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PulumiStack):
+            return NotImplemented
         return self.name == other.name or self.config == other.config
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.name)
 
 
 class PulumiConfig(BaseModel, validate_assignment=True):
     stacks: UniqueList[PulumiStack]
 
-    def __getitem__(self, key: str):
+    def __getitem__(self, key: str) -> PulumiStack:
         if not isinstance(key, str):
             msg = "'key' must be a string."
             raise TypeError(msg)
@@ -45,7 +49,7 @@ class PulumiConfig(BaseModel, validate_assignment=True):
         msg = f"No configuration for Pulumi stack {key}."
         raise IndexError(msg)
 
-    def __setitem__(self, key: str, value: PulumiStack):
+    def __setitem__(self, key: str, value: PulumiStack) -> None:
         if not isinstance(key, str):
             msg = "'key' must be a string."
             raise TypeError(msg)
@@ -56,7 +60,7 @@ class PulumiConfig(BaseModel, validate_assignment=True):
 
         self.stacks.append(value)
 
-    def __delitem__(self, key: str):
+    def __delitem__(self, key: str) -> None:
         if not isinstance(key, str):
             msg = "'key' must be a string."
             raise TypeError(msg)
@@ -70,7 +74,7 @@ class PulumiConfig(BaseModel, validate_assignment=True):
         raise IndexError(msg)
 
     @property
-    def stack_names(self):
+    def stack_names(self) -> list[str]:
         return [stack.name for stack in self.stacks]
 
     def to_yaml(self) -> str:
