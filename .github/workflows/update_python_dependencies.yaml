@@ -1,0 +1,62 @@
+---
+name: Update Python dependencies
+
+# Run workflow on pushes to matching branches
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  update_python_dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install dependencies
+        run: pip install hatch pip-tools
+
+      - name: Update 'docs' dependencies
+        run: hatch env show docs --json | jq -r '.docs.dependencies | .[]' | pip-compile -U - -o docs/requirements.txt
+
+      - name: Check for changes
+        shell: bash
+        run: git --no-pager diff -- .
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Create pull request
+        if: ${{ ! env.ACT }}
+        id: pull-request
+        uses: peter-evans/create-pull-request@v6.0.4
+        with:
+          commit-message: Update Python dependencies
+          committer: GitHub Actions <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          base: develop
+          branch: python-dependencies
+          delete-branch: true
+          title: Update Python dependencies
+          body: |
+            ### :arrow_heading_up: Summary
+            - Apply Python dependency diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
+
+            ### :closed_umbrella: Related issues
+            None
+
+            ### :microscope: Tests
+            Package versions only
+          labels: |
+            affected: developers
+            severity: minor
+            type: enhancement
+          draft: false
