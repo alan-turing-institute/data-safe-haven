@@ -139,7 +139,7 @@ class PulumiConfig(BaseModel, validate_assignment=True):
     def from_remote(cls, context: Context) -> PulumiConfig:
         azure_api = AzureApi(subscription_name=context.subscription_name)
         config_yaml = azure_api.download_blob(
-            context.config_filename,
+            context.pulumi_config_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,

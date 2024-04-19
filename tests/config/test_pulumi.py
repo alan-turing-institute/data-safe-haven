@@ -187,3 +187,18 @@ class TestPulumiConfig:
             context.storage_account_name,
             context.storage_container_name,
         )
+
+    def test_from_remote(self, pulumi_config_yaml, context):
+        with patch.object(AzureApi, "download_blob", return_value=pulumi_config_yaml) as mock_method:
+            pulumi_config = PulumiConfig.from_remote(context)
+
+        assert isinstance(pulumi_config, PulumiConfig)
+        assert pulumi_config["my_stack"]
+        assert len(pulumi_config.stacks) == 2
+
+        mock_method.assert_called_once_with(
+            context.pulumi_config_filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
