@@ -4,30 +4,6 @@ version: 2
 updates:
   # GitHub Action update PRs
   - package-ecosystem: "github-actions"
-    directory: "/"  # Checks /.github/workflows/
+    directory: "/"  # This is recursive so it also checks .github/workflows/
     schedule:
       interval: "weekly"
-  # data_safe_haven pip dependency(pyproject.toml) update PRs
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    groups:
-      # Group all version updates into a single PR
-      all-dependencies:
-        applies-to: version-updates
-        patterns: ["*"]
-  # documentations pip dependency (pip-compile requirements.in, requirements.txt) update PRs
-  - package-ecosystem: "pip"
-    directory: "/docs/"
-    schedule:
-      interval: "monthly"
-    ignore:
-      # Don't open PRs for patch version updates for all packages
-      - update-types: ["version-update:semver-patch"]
-        dependency-name: "*"
-    groups:
-      # Group all version updates into a single PR
-      all-dependencies:
-        applies-to: version-updates
-        patterns: ["*"]
