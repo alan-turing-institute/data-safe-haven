@@ -26,7 +26,6 @@ class SHMNetworkingProps:
         self.subnet_bastion_iprange = self.vnet_iprange.next_subnet(64)
         # Firewall subnet must be at least /26 in size (64 addresses)
         self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
-        self.subnet_identity_servers_iprange = self.vnet_iprange.next_subnet(8)
         # Monitoring subnet needs 2 IP addresses for automation and 13 for log analytics
         self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(32)
         self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
@@ -199,58 +198,6 @@ class SHMNetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
-        nsg_identity_servers = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_identity",
-            network_security_group_name=f"{stack_name}-nsg-identity",
-            resource_group_name=resource_group.name,
-            security_rules=[
-                # Inbound
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound LDAP to domain controllers.",
-                    destination_address_prefix=str(
-                        props.subnet_identity_servers_iprange
-                    ),
-                    destination_port_ranges=[Ports.LDAP, Ports.LDAPS],
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowLDAPClientUDPInbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_UDP,
-                    protocol=network.SecurityRuleProtocol.UDP,
-                    source_address_prefix="VirtualNetwork",
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound LDAP to domain controllers.",
-                    destination_address_prefix=str(
-                        props.subnet_identity_servers_iprange
-                    ),
-                    destination_port_ranges=[Ports.LDAP, Ports.LDAPS],
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowLDAPClientTCPInbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_LDAP_TCP,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix="VirtualNetwork",
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound RDP connections from admins using AzureBastion.",
-                    destination_address_prefix=str(
-                        props.subnet_identity_servers_iprange
-                    ),
-                    destination_port_ranges=[Ports.RDP],
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowBastionAdminsInbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_BASTION,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=str(props.subnet_bastion_iprange),
-                    source_port_range="*",
-                ),
-            ],
-            opts=child_opts,
-            tags=child_tags,
-        )
         nsg_monitoring = network.NetworkSecurityGroup(
             f"{self._name}_nsg_monitoring",
             network_security_group_name=f"{stack_name}-nsg-monitoring",
@@ -350,7 +297,6 @@ class SHMNetworkingComponent(ComponentResource):
         # Define the virtual network and its subnets
         subnet_firewall_name = "AzureFirewallSubnet"  # this name is forced by https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
         subnet_bastion_name = "AzureBastionSubnet"  # this name is forced by https://learn.microsoft.com/en-us/azure/bastion/configuration-settings#subnet
-        subnet_identity_servers_name = "IdentityServersSubnet"
         subnet_monitoring_name = "MonitoringSubnet"
         subnet_update_servers_name = "UpdateServersSubnet"
         virtual_network = network.VirtualNetwork(
@@ -375,15 +321,6 @@ class SHMNetworkingComponent(ComponentResource):
                     name=subnet_firewall_name,
                     network_security_group=None,  # the firewall subnet must NOT have an NSG
                     route_table=None,  # the firewall subnet must NOT be attached to the route table
-                ),
-                # Identity servers subnet
-                network.SubnetArgs(
-                    address_prefix=str(props.subnet_identity_servers_iprange),
-                    name=subnet_identity_servers_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_identity_servers.id
-                    ),
-                    route_table=network.RouteTableArgs(id=route_table.id),
                 ),
                 # Monitoring subnet
                 network.SubnetArgs(
@@ -493,9 +430,6 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Register outputs
         self.dns_zone = dns_zone
-        self.domain_controller_private_ip = str(
-            props.subnet_identity_servers_iprange.available()[0]
-        )
         self.private_dns_zone_base_id = private_zone_ids[0]
         self.resource_group_name = Output.from_input(resource_group.name)
         self.route_table = route_table
@@ -506,11 +440,6 @@ class SHMNetworkingComponent(ComponentResource):
         )
         self.subnet_firewall = network.get_subnet_output(
             subnet_name=subnet_firewall_name,
-            resource_group_name=resource_group.name,
-            virtual_network_name=virtual_network.name,
-        )
-        self.subnet_identity_servers = network.get_subnet_output(
-            subnet_name=subnet_identity_servers_name,
             resource_group_name=resource_group.name,
             virtual_network_name=virtual_network.name,
         )
@@ -532,9 +461,6 @@ class SHMNetworkingComponent(ComponentResource):
             "private_dns_zone_base_id": self.private_dns_zone_base_id,
             "resource_group_name": resource_group.name,
             "subnet_bastion_prefix": self.subnet_bastion.apply(
-                lambda s: str(s.address_prefix) if s.address_prefix else ""
-            ),
-            "subnet_identity_servers_prefix": self.subnet_identity_servers.apply(
                 lambda s: str(s.address_prefix) if s.address_prefix else ""
             ),
             "subnet_monitoring_prefix": self.subnet_monitoring.apply(

@@ -45,8 +45,8 @@ jobs:
           commit-message: Update Pulumi Docker images
           committer: GitHub Actions <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
-          base: python-migration
-          branch: pulumi-docker-images
+          base: develop
+          branch: update-docker-images
           delete-branch: true
           title: Update Pulumi Docker images
           body: |

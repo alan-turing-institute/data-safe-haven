@@ -141,7 +141,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-hedgedoc",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="caddy:2.7.4",
+                    image="caddy:2.7.6",
                     name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
