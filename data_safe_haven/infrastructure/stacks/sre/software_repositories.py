@@ -160,7 +160,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 container_group_name=f"{stack_name}-container-group-software-repositories",
                 containers=[
                     containerinstance.ContainerArgs(
-                        image="caddy:2.7.4",
+                        image="caddy:2.7.6",
                         name="caddy"[:63],
                         ports=[
                             containerinstance.ContainerPortArgs(
@@ -183,7 +183,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="sonatype/nexus3:3.59.0",
+                        image="sonatype/nexus3:3.67.1",
                         name="nexus"[:63],
                         environment_variables=[],
                         ports=[],
@@ -202,7 +202,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="ghcr.io/alan-turing-institute/nexus-allowlist:v0.8.0",
+                        image="ghcr.io/alan-turing-institute/nexus-allowlist:v0.9.0",
                         name="nexus-allowlist"[:63],
                         environment_variables=[
                             containerinstance.EnvironmentVariableArgs(
