@@ -154,7 +154,7 @@ class SREIdentityComponent(ComponentResource):
                     volume_mounts=[],
                 ),
                 containerinstance.ContainerArgs(
-                    image="redis:7.2",
+                    image="redis:7.2.4",
                     name="redis",
                     environment_variables=[],
                     ports=[
