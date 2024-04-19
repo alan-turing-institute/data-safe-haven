@@ -61,10 +61,10 @@ class NetworkingPriorities(int, Enum):
 
 @verify(UNIQUE)
 class Ports(str, Enum):
-    AZURE_BASTIAN_1 = (
+    AZURE_BASTION_1 = (
         "8080"  # https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
     )
-    AZURE_BASTIAN_2 = "5701"
+    AZURE_BASTION_2 = "5701"
     DNS = "53"
     HTTP = "80"
     HTTPS = "443"

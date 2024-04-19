@@ -109,8 +109,8 @@ class SHMNetworkingComponent(ComponentResource):
                     description="Allow inbound internal bastion host communication.",
                     destination_address_prefix="VirtualNetwork",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
                     destination_port_ranges=[
-                        Ports.AZURE_BASTIAN_1,
-                        Ports.AZURE_BASTIAN_2,
+                        Ports.AZURE_BASTION_1,
+                        Ports.AZURE_BASTION_2,
                     ],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowBastionHostInbound",
@@ -161,8 +161,8 @@ class SHMNetworkingComponent(ComponentResource):
                     description="Allow outbound internal bastion host communication.",
                     destination_address_prefix="VirtualNetwork",  # required by https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
                     destination_port_ranges=[
-                        Ports.AZURE_BASTIAN_1,
-                        Ports.AZURE_BASTIAN_2,
+                        Ports.AZURE_BASTION_1,
+                        Ports.AZURE_BASTION_2,
                     ],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowBastionHostOutbound",
