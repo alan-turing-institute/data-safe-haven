@@ -27,7 +27,7 @@ jobs:
         run: pip-compile -U pyproject.toml -o requirements.txt
 
       - name: Update 'docs' dependencies
-        run: hatch env show docs --json | jq -r '.docs.dependencies | .[]' | pip-compile -U - -o docs/requirements.txt
+        run: hatch env show --json | jq -r ".docs.dependencies | .[]" | pip-compile -U - -o docs/requirements.txt
 
       - name: Check for changes
         shell: bash
