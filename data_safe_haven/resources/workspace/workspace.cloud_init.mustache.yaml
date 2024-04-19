@@ -22,7 +22,7 @@ write_files:
       nss_min_uid 2000
 
       # General connection options
-      uri ldap://{{ldap_server_ip}}:{{ldap_server_port}}
+      uri ldap://{{ldap_server_hostname}}:{{ldap_server_port}}
 
       # Search/mapping options
       base {{ldap_user_search_base}}

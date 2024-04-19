@@ -13,7 +13,6 @@ from pulumi_azure_native import (
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
-    get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
     AzureADApplication,
@@ -42,7 +41,7 @@ class SRERemoteDesktopProps:
         dns_server_ip: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
-        ldap_server_ip: Input[str],
+        ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
@@ -67,7 +66,7 @@ class SRERemoteDesktopProps:
         self.dns_server_ip = dns_server_ip
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
-        self.ldap_server_ip = ldap_server_ip
+        self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
@@ -324,7 +323,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_HOST",
-                            value=props.ldap_server_ip,
+                            value=props.ldap_server_hostname,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="LDAP_PORT",
@@ -421,9 +420,6 @@ class SRERemoteDesktopComponent(ComponentResource):
             "connection_db_name": db_guacamole_connections,
             "connection_db_server_name": db_server_guacamole.db_server.name,
             "container_group_name": container_group.name,
-            "container_ip_address": get_ip_address_from_container_group(
-                container_group
-            ),
             "disable_copy": props.disable_copy,
             "disable_paste": props.disable_paste,
             "resource_group_name": resource_group.name,

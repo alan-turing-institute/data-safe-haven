@@ -28,7 +28,7 @@ class SREGiteaServerProps:
         database_subnet_id: Input[str],
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
-        ldap_server_ip: Input[str],
+        ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_username_attribute: Input[str],
         ldap_user_filter: Input[str],
@@ -51,7 +51,7 @@ class SREGiteaServerProps:
         )
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
-        self.ldap_server_ip = ldap_server_ip
+        self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = ldap_server_port
         self.ldap_username_attribute = ldap_username_attribute
         self.ldap_user_filter = ldap_user_filter
@@ -130,7 +130,7 @@ class SREGiteaServerComponent(ComponentResource):
             admin_username="dshadmin",
             ldap_username_attribute=props.ldap_username_attribute,
             ldap_user_filter=props.ldap_user_filter,
-            ldap_server_ip=props.ldap_server_ip,
+            ldap_server_hostname=props.ldap_server_hostname,
             ldap_server_port=props.ldap_server_port,
             ldap_user_search_base=props.ldap_user_search_base,
         ).apply(

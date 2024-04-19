@@ -11,6 +11,8 @@ from data_safe_haven.infrastructure.common import (
 from data_safe_haven.infrastructure.components import (
     AzureADApplication,
     AzureADApplicationProps,
+    LocalDnsRecordComponent,
+    LocalDnsRecordProps,
 )
 
 
@@ -22,8 +24,11 @@ class SREIdentityProps:
         aad_application_name: Input[str],
         aad_auth_token: Input[str],
         aad_tenant_id: Input[str],
+        dns_resource_group_name: Input[str],
         location: Input[str],
+        networking_resource_group_name: Input[str],
         shm_fqdn: Input[str],
+        sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
@@ -32,8 +37,11 @@ class SREIdentityProps:
         self.aad_application_name = aad_application_name
         self.aad_auth_token = aad_auth_token
         self.aad_tenant_id = aad_tenant_id
+        self.dns_resource_group_name = dns_resource_group_name
         self.location = location
+        self.networking_resource_group_name = networking_resource_group_name
         self.shm_fqdn = shm_fqdn
+        self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
@@ -220,5 +228,20 @@ class SREIdentityComponent(ComponentResource):
             tags=child_tags,
         )
 
+        # Register the container group in the SRE DNS zone
+        local_dns = LocalDnsRecordComponent(
+            f"{self._name}_dns_record_set",
+            LocalDnsRecordProps(
+                base_fqdn=props.sre_fqdn,
+                public_dns_resource_group_name=props.networking_resource_group_name,
+                private_dns_resource_group_name=props.dns_resource_group_name,
+                private_ip_address=get_ip_address_from_container_group(container_group),
+                record_name="identity",
+            ),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=container_group)
+            ),
+        )
+
         # Register outputs
-        self.ip_address = get_ip_address_from_container_group(container_group)
+        self.hostname = local_dns.hostname
