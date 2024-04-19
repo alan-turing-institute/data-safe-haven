@@ -4,6 +4,6 @@ version: 2
 updates:
   # GitHub Action update PRs
   - package-ecosystem: "github-actions"
-    directory: "/"  # This is recursive so it also checks .github/workflows/
+    directory: "/"  # The exact logic is unclear, but it recursively searches at least .github/workflows/
     schedule:
       interval: "weekly"
