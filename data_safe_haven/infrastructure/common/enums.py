@@ -28,7 +28,6 @@ class NetworkingPriorities(int, Enum):
     AZURE_PLATFORM_DNS = 400
     # SHM connections: 1000-1399
     INTERNAL_SELF = 1000
-    INTERNAL_SHM_BASTION = 1100
     INTERNAL_SHM_LDAP_TCP = 1200
     INTERNAL_SHM_LDAP_UDP = 1250
     INTERNAL_SHM_MONITORING_TOOLS = 1300
@@ -61,10 +60,6 @@ class NetworkingPriorities(int, Enum):
 
 @verify(UNIQUE)
 class Ports(str, Enum):
-    AZURE_BASTION_1 = (
-        "8080"  # https://learn.microsoft.com/en-us/azure/bastion/bastion-nsg
-    )
-    AZURE_BASTION_2 = "5701"
     DNS = "53"
     HTTP = "80"
     HTTPS = "443"
