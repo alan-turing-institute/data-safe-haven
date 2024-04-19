@@ -23,6 +23,9 @@ jobs:
       - name: Install dependencies
         run: pip install hatch pip-tools
 
+      - name: Update 'default' dependencies
+        run: pip-compile -U pyproject.toml -o requirements.txt
+
       - name: Update 'docs' dependencies
         run: hatch env show docs --json | jq -r '.docs.dependencies | .[]' | pip-compile -U - -o docs/requirements.txt
 
