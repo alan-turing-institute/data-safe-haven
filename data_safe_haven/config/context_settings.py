@@ -55,6 +55,10 @@ class Context(BaseModel, validate_assignment=True):
         return f"config-{self.shm_name}.yaml"
 
     @property
+    def pulumi_config_filename(self) -> str:
+        return f"pulumi-config-{self.shm_name}.yaml"
+
+    @property
     def resource_group_name(self) -> str:
         return f"shm-{self.shm_name}-rg-context"
 

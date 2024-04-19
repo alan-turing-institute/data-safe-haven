@@ -1,6 +1,7 @@
 from pytest import fixture, raises
 
 from data_safe_haven.config.pulumi import PulumiConfig, PulumiStack
+from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenParameterError
 from data_safe_haven.functions import b64encode
 
 
@@ -76,6 +77,16 @@ def pulumi_config(pulumi_stack, pulumi_stack2):
     return PulumiConfig(stacks=[pulumi_stack, pulumi_stack2])
 
 
+@fixture
+def pulumi_config_yaml():
+    return """stacks:
+- config: c2VjcmV0c3Byb3ZpZGVyOiBhenVyZWtleXZhdWx0Oi8vZXhhbXBsZQplbmNyeXB0ZWRrZXk6IHpqaGVqVTJYc09LTG85NXc5Q0xECmNvbmZpZzoKICBhenVyZS1uYXRpdmU6bG9jYXRpb246IHVrc291dGgK
+  name: my_stack
+- config: c2VjcmV0c3Byb3ZpZGVyOiBhenVyZWtleXZhdWx0Oi8vZXhhbXBsZQplbmNyeXB0ZWRrZXk6IEI1dEhXcHFFUlhnYmx3Ulo3d2d1CmNvbmZpZzoKICBhenVyZS1uYXRpdmU6bG9jYXRpb246IHVrc291dGgK
+  name: other_stack
+"""
+
+
 class TestPulumiConfig:
     def test_pulumi_config(self, pulumi_stack):
         config = PulumiConfig(stacks=[pulumi_stack])
@@ -134,3 +145,19 @@ class TestPulumiConfig:
         assert isinstance(yaml, str)
         assert "stacks:" in yaml
         assert "config: c2VjcmV0" in yaml
+
+    def test_from_yaml(self, pulumi_config_yaml):
+        PulumiConfig.from_yaml(pulumi_config_yaml)
+
+    def test_from_yaml_invalid_yaml(self):
+        with raises(DataSafeHavenConfigError, match="Could not parse Pulumi configuration as YAML."):
+            PulumiConfig.from_yaml("a: [1,2")
+
+    def test_from_yaml_not_dict(self):
+        with raises(DataSafeHavenConfigError, match="Unable to parse Pulumi configuration as a dict."):
+            PulumiConfig.from_yaml("5")
+
+    def test_from_yaml_validation_error(self, pulumi_config_yaml):
+        not_valid = "stacks: -3"
+        with raises(DataSafeHavenParameterError, match="Could not load Pulumi configuration."):
+            PulumiConfig.from_yaml(not_valid)

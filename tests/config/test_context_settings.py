@@ -65,6 +65,9 @@ class TestContext:
     def test_config_filename(self, context):
         assert context.config_filename == "config-acmedeployment.yaml"
 
+    def test_pulumi_config_filename(self, context):
+        assert context.pulumi_config_filename == "pulumi-config-acmedeployment.yaml"
+
     def test_resource_group_name(self, context):
         assert context.resource_group_name == "shm-acmedeployment-rg-context"
 
