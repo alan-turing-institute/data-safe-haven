@@ -66,6 +66,13 @@ dependencies = [
   "pydata-sphinx-theme>=0.15.0",
   "Sphinx>=7.3.0",
 ]
+pre-install-commands = ["pip install -r docs/requirements.txt"]
+
+[tool.hatch.envs.docs.scripts]
+build = [
+  # Treat warnings as errors
+  "make -C docs html SPHINXOPTS='-W'"
+]
 
 [tool.hatch.envs.lint]
 detached = true
