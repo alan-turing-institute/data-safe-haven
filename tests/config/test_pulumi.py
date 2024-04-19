@@ -1,7 +1,13 @@
+from unittest.mock import patch
+
 from pytest import fixture, raises
 
 from data_safe_haven.config.pulumi import PulumiConfig, PulumiStack
-from data_safe_haven.exceptions import DataSafeHavenConfigError, DataSafeHavenParameterError
+from data_safe_haven.exceptions import (
+    DataSafeHavenConfigError,
+    DataSafeHavenParameterError,
+)
+from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import b64encode
 
 
@@ -150,14 +156,34 @@ class TestPulumiConfig:
         PulumiConfig.from_yaml(pulumi_config_yaml)
 
     def test_from_yaml_invalid_yaml(self):
-        with raises(DataSafeHavenConfigError, match="Could not parse Pulumi configuration as YAML."):
+        with raises(
+            DataSafeHavenConfigError,
+            match="Could not parse Pulumi configuration as YAML.",
+        ):
             PulumiConfig.from_yaml("a: [1,2")
 
     def test_from_yaml_not_dict(self):
-        with raises(DataSafeHavenConfigError, match="Unable to parse Pulumi configuration as a dict."):
+        with raises(
+            DataSafeHavenConfigError,
+            match="Unable to parse Pulumi configuration as a dict.",
+        ):
             PulumiConfig.from_yaml("5")
 
-    def test_from_yaml_validation_error(self, pulumi_config_yaml):
+    def test_from_yaml_validation_error(self):
         not_valid = "stacks: -3"
-        with raises(DataSafeHavenParameterError, match="Could not load Pulumi configuration."):
+        with raises(
+            DataSafeHavenParameterError, match="Could not load Pulumi configuration."
+        ):
             PulumiConfig.from_yaml(not_valid)
+
+    def test_upload(self, pulumi_config, context):
+        with patch.object(AzureApi, "upload_blob", return_value=None) as mock_method:
+            pulumi_config.upload(context)
+
+        mock_method.assert_called_once_with(
+            pulumi_config.to_yaml(),
+            context.pulumi_config_filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )

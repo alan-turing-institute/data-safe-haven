@@ -4,15 +4,15 @@ from pathlib import Path
 from typing import Annotated
 
 import yaml
-from pydantic import BaseModel, ValidationError, PlainSerializer
+from pydantic import BaseModel, PlainSerializer, ValidationError
 from pydantic.functional_validators import AfterValidator
 from yaml import YAMLError
 
+from data_safe_haven.config import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError
+    DataSafeHavenParameterError,
 )
-from data_safe_haven.config import Context
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import b64decode, b64encode
 from data_safe_haven.utility.annotated_types import UniqueList
@@ -108,13 +108,13 @@ class PulumiConfig(BaseModel, validate_assignment=True):
 
     def upload(self, context: Context) -> None:
         """Upload Pulumi persistent data to Azure storage"""
-        azure_api = AzureApi(subscription_name=self.context.subscription_name)
+        azure_api = AzureApi(subscription_name=context.subscription_name)
         azure_api.upload_blob(
             self.to_yaml(),
-            self.context.pulumi_config_filename,
-            self.context.resource_group_name,
-            self.context.storage_account_name,
-            self.context.storage_container_name,
+            context.pulumi_config_filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
         )
 
     @classmethod
