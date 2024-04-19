@@ -6,6 +6,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.infrastructure.common import (
+    Ports,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -219,7 +220,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                             ),
                             containerinstance.EnvironmentVariableArgs(
                                 name="NEXUS_PORT",
-                                value="8081",
+                                value=Ports.NEXUS,
                             ),
                             # Use fallback updating method due to issue with changes to
                             # files on Azure storage mount not being recognised by entr
