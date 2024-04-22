@@ -23,8 +23,8 @@ docutils==0.20.1
     #   myst-parser
     #   pydata-sphinx-theme
     #   sphinx
-emoji==2.11.0
-    # via -r requirements.in
+emoji==2.11.1
+    # via -r docs/requirements.in
 idna==3.7
     # via requests
 imagesize==1.4.1
@@ -44,13 +44,13 @@ mdit-py-plugins==0.4.0
 mdurl==0.1.2
     # via markdown-it-py
 myst-parser==2.0.0
-    # via -r requirements.in
+    # via -r docs/requirements.in
 packaging==24.0
     # via
     #   pydata-sphinx-theme
     #   sphinx
 pydata-sphinx-theme==0.15.2
-    # via -r requirements.in
+    # via -r docs/requirements.in
 pygments==2.17.2
     # via
     #   accessible-pygments
@@ -64,9 +64,9 @@ snowballstemmer==2.2.0
     # via sphinx
 soupsieve==2.5
     # via beautifulsoup4
-sphinx==7.2.6
+sphinx==7.3.7
     # via
-    #   -r requirements.in
+    #   -r docs/requirements.in
     #   myst-parser
     #   pydata-sphinx-theme
 sphinxcontrib-applehelp==1.0.8
