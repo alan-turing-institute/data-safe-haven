@@ -3,10 +3,8 @@ name: Update package versions
 
 # Run workflow on pushes to matching branches
 on:  # yamllint disable-line rule:truthy
-  push:
-    branches: [develop]
   schedule:
-    - cron: "0 0 */7 * *"  # run once per week
+    - cron: "0 3 * * 1"  # run at 3:00 every Monday
   workflow_dispatch:  # allow this workflow to be manually triggered
 
 # checkout needs 'contents:read'
@@ -50,7 +48,7 @@ jobs:
 
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Create pull request
         if: ${{ ! env.ACT }}
