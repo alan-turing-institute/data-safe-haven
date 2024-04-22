@@ -189,7 +189,9 @@ class TestPulumiConfig:
         )
 
     def test_from_remote(self, pulumi_config_yaml, context):
-        with patch.object(AzureApi, "download_blob", return_value=pulumi_config_yaml) as mock_method:
+        with patch.object(
+            AzureApi, "download_blob", return_value=pulumi_config_yaml
+        ) as mock_method:
             pulumi_config = PulumiConfig.from_remote(context)
 
         assert isinstance(pulumi_config, PulumiConfig)
