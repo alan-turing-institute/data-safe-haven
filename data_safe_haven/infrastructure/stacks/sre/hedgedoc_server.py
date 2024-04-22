@@ -121,7 +121,7 @@ class SREHedgeDocServerComponent(ComponentResource):
         # Define a PostgreSQL server and default database
         db_hedgedoc_documents_name = "hedgedoc"
         db_server_hedgedoc = PostgresqlDatabaseComponent(
-            f"{self._name}_db_gitea",
+            f"{self._name}_db_hedgedoc",
             PostgresqlDatabaseProps(
                 database_names=[db_hedgedoc_documents_name],
                 database_password=props.database_password,
