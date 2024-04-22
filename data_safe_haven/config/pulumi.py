@@ -1,19 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, ClassVar
 
-import yaml
-from pydantic import BaseModel, PlainSerializer, ValidationError
+from pydantic import BaseModel, PlainSerializer
 from pydantic.functional_validators import AfterValidator
-from yaml import YAMLError
 
-from data_safe_haven.config import Context
-from data_safe_haven.exceptions import (
-    DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
-)
-from data_safe_haven.external import AzureApi
+from data_safe_haven.config.config_class import ConfigClass
+from data_safe_haven.config.context_settings import Context
 from data_safe_haven.functions import b64decode, b64encode
 from data_safe_haven.utility.annotated_types import UniqueList
 
@@ -54,7 +48,9 @@ class PulumiStack(BaseModel, validate_assignment=True):
             f_config.write(self.config)
 
 
-class PulumiConfig(BaseModel, validate_assignment=True):
+class PulumiConfig(ConfigClass):
+    config_type: ClassVar[str] = "Pulumi"
+    filename: ClassVar[str] = "pulumi.yaml"
     stacks: UniqueList[PulumiStack]
 
     def __getitem__(self, key: str) -> PulumiStack:
@@ -101,47 +97,3 @@ class PulumiConfig(BaseModel, validate_assignment=True):
     def stack_names(self) -> list[str]:
         """Produce a list of known Pulumi stack names"""
         return [stack.name for stack in self.stacks]
-
-    def to_yaml(self) -> str:
-        """Write Pulumi configuration to a YAML formatted string"""
-        return yaml.dump(self.model_dump(mode="json"), indent=2)
-
-    def upload(self, context: Context) -> None:
-        """Upload Pulumi persistent data to Azure storage"""
-        azure_api = AzureApi(subscription_name=context.subscription_name)
-        azure_api.upload_blob(
-            self.to_yaml(),
-            context.pulumi_config_filename,
-            context.resource_group_name,
-            context.storage_account_name,
-            context.storage_container_name,
-        )
-
-    @classmethod
-    def from_yaml(cls, settings_yaml: str) -> PulumiConfig:
-        try:
-            settings_dict = yaml.safe_load(settings_yaml)
-        except YAMLError as exc:
-            msg = f"Could not parse Pulumi configuration as YAML.\n{exc}"
-            raise DataSafeHavenConfigError(msg) from exc
-
-        if not isinstance(settings_dict, dict):
-            msg = "Unable to parse Pulumi configuration as a dict."
-            raise DataSafeHavenConfigError(msg)
-
-        try:
-            return PulumiConfig.model_validate(settings_dict)
-        except ValidationError as exc:
-            msg = f"Could not load Pulumi configuration.\n{exc}"
-            raise DataSafeHavenParameterError(msg) from exc
-
-    @classmethod
-    def from_remote(cls, context: Context) -> PulumiConfig:
-        azure_api = AzureApi(subscription_name=context.subscription_name)
-        config_yaml = azure_api.download_blob(
-            context.pulumi_config_filename,
-            context.resource_group_name,
-            context.storage_account_name,
-            context.storage_container_name,
-        )
-        return PulumiConfig.from_yaml(config_yaml)
