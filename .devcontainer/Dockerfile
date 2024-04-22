@@ -1,26 +1,42 @@
-ARG VARIANT=3.10
-FROM python:${VARIANT}-buster
-
-# Set package versions
-ARG AZURE_CLI_VERSION="2.42.0"
-ARG PULUMI_VERSION="3.80.0"
+ARG VARIANT=3.12
+ARG DISTRIBUTION="bookworm"
+FROM python:${VARIANT}-${DISTRIBUTION}
 
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
-      git \
-      libssl-dev \
-      python3-sphinx
-
-# Set up TARGETARCH variable to use to pull the right binaries
-# for the current architecture.
-ARG TARGETARCH
+        git \
+        libssl-dev \
+        python3-sphinx
 
 # Install Azure-CLI
-# Standard install method currently does not support ARM64
-# Use pip instead - https://github.com/Azure/azure-cli/issues/22875
-RUN pip3 install azure-cli==${AZURE_CLI_VERSION}
-RUN pip3 install hatch
+RUN apt-get update \
+    && apt-get -y install --no-install-recommends \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg \
+        lsb-release
+RUN mkdir -p /etc/apt/keyrings \
+    && curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg \
+    && chmod go+r /etc/apt/keyrings/microsoft.gpg
+
+# Set package versions
+ARG AZURE_CLI_VERSION="2.59.0"
+ARG DISTRIBUTION
+
+# Add the Azure CLI repository
+RUN cat <<EOF > /etc/apt/sources.list.d/azure-cli.sources
+Types: deb
+URIs: https://packages.microsoft.com/repos/azure-cli/
+Suites: $(lsb_release -cs)
+Components: main
+Architectures: $(dpkg --print-architecture)
+Signed-by: /etc/apt/keyrings/microsoft.gpg
+EOF
+
+RUN apt-get update \
+   && apt-get -y install azure-cli=${AZURE_CLI_VERSION}-1~${DISTRIBUTION}
 
 # Create non-root user and give them sudo access
 ARG USERNAME=deploydsh
@@ -42,3 +58,6 @@ RUN pip3 install -r /build/requirements.txt
 
 # Set PATH for pulumi - pulumi installed as feature to work round installing as root
 ENV PATH=$PATH:/home/${USERNAME}/.pulumi/bin
+
+# Install hatch to build the dsh cli tool
+RUN pip3 install hatch
