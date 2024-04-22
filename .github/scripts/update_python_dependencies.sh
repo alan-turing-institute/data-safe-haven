@@ -19,5 +19,5 @@ fi
 if [ "$ENV_NAME" = "default" ]; then
     pip-compile -U pyproject.toml -o "$TARGET"
 else
-    hatch env show --json | jq -r ".${ENV_NAME}.dependencies | .[]" | pip-compile -U - -o "$TARGET"
+    hatch env show --json | jq -r ".${ENV_NAME}.dependencies | .[]" | pip-compile - -U -o "$TARGET"
 fi
