@@ -57,6 +57,14 @@ class TestDSHPulumiProject:
     def test_not_eq(self, pulumi_project, pulumi_project2):
         assert pulumi_project != pulumi_project2
 
+    def test_stack_config_dict(self, pulumi_project):
+        config_dict = pulumi_project.stack_config_dict
+        assert "encryptedkey" in config_dict.keys()
+        assert "config" in config_dict.keys()
+        assert isinstance(config_dict["config"], dict)
+        assert "azure-native:location" in config_dict["config"].keys()
+        assert config_dict.get("config").get("azure-native:location") == "uksouth"
+
 
 @fixture
 def pulumi_config(pulumi_project, pulumi_project2):

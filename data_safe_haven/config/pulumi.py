@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from typing import Annotated, ClassVar
+from typing import Annotated, Any, ClassVar
 
+import yaml
 from pydantic import BaseModel, PlainSerializer
 from pydantic.functional_validators import AfterValidator
 
 from data_safe_haven.config.config_class import ConfigClass
+from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.functions import b64decode, b64encode
 
 
@@ -33,6 +35,16 @@ class DSHPulumiProject(BaseModel, validate_assignment=True):
 
     def __hash__(self) -> int:
         return hash(self.stack_config)
+
+    @property
+    def stack_config_dict(self) -> dict[Any, Any]:
+        config_dict = yaml.safe_load(self.stack_config)
+
+        if not isinstance(config_dict, dict):
+            msg = "Invalid stack configuration."
+            raise DataSafeHavenConfigError(msg)
+
+        return config_dict
 
 
 class DSHPulumiConfig(ConfigClass):
