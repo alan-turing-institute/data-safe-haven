@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Annotated, ClassVar
 
 from pydantic import BaseModel, PlainSerializer
 from pydantic.functional_validators import AfterValidator
 
 from data_safe_haven.config.config_class import ConfigClass
-from data_safe_haven.config.context_settings import Context
 from data_safe_haven.functions import b64decode, b64encode
-from data_safe_haven.utility.annotated_types import UniqueList
 
 
 def base64_string_decode(v: str) -> str:
@@ -24,76 +21,63 @@ B64String = Annotated[
 ]
 
 
-class PulumiStack(BaseModel, validate_assignment=True):
-    """Container for Pulumi Stack persistent information"""
+class DSHPulumiProject(BaseModel, validate_assignment=True):
+    """Container for DSH Pulumi Project persistent information"""
 
-    name: str
-    config: B64String
+    stack_config: B64String
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, PulumiStack):
+        if not isinstance(other, DSHPulumiProject):
             return NotImplemented
-        return self.name == other.name or self.config == other.config
+        return self.stack_config == other.stack_config
 
     def __hash__(self) -> int:
-        return hash(self.name)
-
-    def write_config(self, context: Context) -> None:
-        """Write stack configuration to a YAML file"""
-        work_dir = Path(context.work_directory / "pulumi" / self.name)
-        if not work_dir.exists():
-            work_dir.mkdir(parents=True)
-        config_path = work_dir / f"Pulumi.{self.name}.yaml"
-        with open(config_path, "w") as f_config:
-            f_config.write(self.config)
+        return hash(self.stack_config)
 
 
-class PulumiConfig(ConfigClass):
+class DSHPulumiConfig(ConfigClass):
     config_type: ClassVar[str] = "Pulumi"
     filename: ClassVar[str] = "pulumi.yaml"
-    stacks: UniqueList[PulumiStack]
+    projects: dict[str, DSHPulumiProject]
 
-    def __getitem__(self, key: str) -> PulumiStack:
+    def __getitem__(self, key: str) -> DSHPulumiProject:
         if not isinstance(key, str):
             msg = "'key' must be a string."
             raise TypeError(msg)
 
-        for stack in self.stacks:
-            if stack.name == key:
-                return stack
+        if key not in self.projects.keys():
+            msg = f"No configuration for DSH Pulumi Project {key}."
+            raise KeyError(msg)
 
-        msg = f"No configuration for Pulumi stack {key}."
-        raise IndexError(msg)
+        return self.projects[key]
 
-    def __setitem__(self, key: str, value: PulumiStack) -> None:
+    def __setitem__(self, key: str, value: DSHPulumiProject) -> None:
         """
-        Add a pulumi stack.
-        This method does not support modifying existing stacks.
+        Add a DSH Pulumi Project.
+        This method does not support modifying existing projects.
         """
         if not isinstance(key, str):
             msg = "'key' must be a string."
             raise TypeError(msg)
 
-        if key in self.stack_names:
+        if key in self.project_names:
             msg = f"Stack {key} already exists."
             raise ValueError(msg)
 
-        self.stacks.append(value)
+        self.projects[key] = value
 
     def __delitem__(self, key: str) -> None:
         if not isinstance(key, str):
             msg = "'key' must be a string."
             raise TypeError(msg)
 
-        for stack in self.stacks:
-            if stack.name == key:
-                self.stacks.remove(stack)
-                return
+        if key not in self.projects.keys():
+            msg = f"No configuration for DSH Pulumi Project {key}."
+            raise KeyError(msg)
 
-        msg = f"No configuration for Pulumi stack {key}."
-        raise IndexError(msg)
+        del self.projects[key]
 
     @property
-    def stack_names(self) -> list[str]:
-        """Produce a list of known Pulumi stack names"""
-        return [stack.name for stack in self.stacks]
+    def project_names(self) -> list[str]:
+        """Produce a list of known DSH Pulumi Project names"""
+        return list(self.projects.keys())
