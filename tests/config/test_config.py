@@ -7,7 +7,6 @@ from pytest import fixture
 from data_safe_haven.config.config import (
     Config,
     ConfigSectionAzure,
-    ConfigSectionPulumi,
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
@@ -34,17 +33,6 @@ class TestConfigSectionAzure:
             subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         )
-
-
-@fixture
-def pulumi_config():
-    return ConfigSectionPulumi()
-
-
-class TestConfigSectionPulumi:
-    def test_constructor_defaults(self):
-        pulumi_config = ConfigSectionPulumi()
-        assert pulumi_config.stacks == {}
 
 
 @fixture
@@ -157,21 +145,19 @@ class TestConfigSectionSRE:
 
 
 @fixture
-def config_no_sres(azure_config, pulumi_config, shm_config):
+def config_no_sres(azure_config, shm_config):
     return Config(
         azure=azure_config,
-        pulumi=pulumi_config,
         shm=shm_config,
     )
 
 
 @fixture
-def config_sres(azure_config, pulumi_config, shm_config):
+def config_sres(azure_config, shm_config):
     sre_config_1 = ConfigSectionSRE(index=1)
     sre_config_2 = ConfigSectionSRE(index=2)
     return Config(
         azure=azure_config,
-        pulumi=pulumi_config,
         shm=shm_config,
         sres={
             "sre1": sre_config_1,
@@ -181,23 +167,19 @@ def config_sres(azure_config, pulumi_config, shm_config):
 
 
 class TestConfig:
-    def test_constructor(self, azure_config, pulumi_config, shm_config):
+    def test_constructor(self, azure_config, shm_config):
         config = Config(
             azure=azure_config,
-            pulumi=pulumi_config,
             shm=shm_config,
         )
         assert not config.sres
 
-    def test_all_sre_indices_must_be_unique(
-        self, azure_config, pulumi_config, shm_config
-    ):
+    def test_all_sre_indices_must_be_unique(self, azure_config, shm_config):
         with pytest.raises(ValueError, match="All items must be unique."):
             sre_config_1 = ConfigSectionSRE(index=1)
             sre_config_2 = ConfigSectionSRE(index=1)
             Config(
                 azure=azure_config,
-                pulumi=pulumi_config,
                 shm=shm_config,
                 sres={
                     "sre1": sre_config_1,

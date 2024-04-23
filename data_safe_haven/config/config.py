@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import ClassVar
 
 from pydantic import (
@@ -17,8 +16,6 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.functions import (
     alphanumeric,
-    b64decode,
-    b64encode,
 )
 from data_safe_haven.functions.validators import validate_unique_list
 from data_safe_haven.utility import (
@@ -40,10 +37,6 @@ from data_safe_haven.utility.annotated_types import (
 class ConfigSectionAzure(BaseModel, validate_assignment=True):
     subscription_id: Guid
     tenant_id: Guid
-
-
-class ConfigSectionPulumi(BaseModel, validate_assignment=True):
-    stacks: dict[str, str] = Field(..., default_factory=dict[str, str])
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
@@ -201,7 +194,6 @@ class Config(ConfigClass):
     config_type: ClassVar[str] = "Config"
     filename: ClassVar[str] = "config.yaml"
     azure: ConfigSectionAzure
-    pulumi: ConfigSectionPulumi
     shm: ConfigSectionSHM
     sres: dict[str, ConfigSectionSRE] = Field(
         ..., default_factory=dict[str, ConfigSectionSRE]
@@ -225,7 +217,7 @@ class Config(ConfigClass):
         if require_sres:
             if not self.sres:
                 return False
-        if not all((self.azure, self.pulumi, self.shm)):
+        if not all((self.azure, self.shm)):
             return False
         return True
 
@@ -245,27 +237,6 @@ class Config(ConfigClass):
         if name in self.sre_names:
             del self.sres[name]
 
-    def add_stack(self, name: str, path: Path) -> None:
-        """Add a Pulumi stack file to config"""
-        if self.pulumi:
-            with open(path, encoding="utf-8") as f_stack:
-                pulumi_cfg = f_stack.read()
-            self.pulumi.stacks[name] = b64encode(pulumi_cfg)
-
-    def remove_stack(self, name: str) -> None:
-        """Remove Pulumi stack section by name"""
-        if self.pulumi:
-            stacks = self.pulumi.stacks
-            if name in stacks.keys():
-                del stacks[name]
-
-    def write_stack(self, name: str, path: Path) -> None:
-        """Write a Pulumi stack file from config"""
-        if self.pulumi:
-            pulumi_cfg = b64decode(self.pulumi.stacks[name])
-            with open(path, "w", encoding="utf-8") as f_stack:
-                f_stack.write(pulumi_cfg)
-
     @classmethod
     def template(cls) -> Config:
         # Create object without validation to allow "replace me" prompts
@@ -274,7 +245,6 @@ class Config(ConfigClass):
                 subscription_id="Azure subscription ID",
                 tenant_id="Azure tenant ID",
             ),
-            pulumi=ConfigSectionPulumi(),
             shm=ConfigSectionSHM.model_construct(
                 aad_tenant_id="Azure Active Directory tenant ID",
                 admin_email_address="Admin email address",
