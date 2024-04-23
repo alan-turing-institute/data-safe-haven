@@ -4,7 +4,8 @@ from typing import Annotated, Optional
 
 import typer
 
-from data_safe_haven.config import Config, ContextSettings
+from data_safe_haven.config import Config
+from data_safe_haven.config.context_settings import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
@@ -42,9 +43,9 @@ def shm(
         verification_record = graph_api.add_custom_domain(config.shm.fqdn)
 
         # Initialise Pulumi stack
-        stack = SHMStackManager(config)
+        stack = SHMStackManager(context, config)
         # Set Azure options
-        stack.add_option("azure-native:location", config.azure.location, replace=False)
+        stack.add_option("azure-native:location", context.location, replace=False)
         stack.add_option(
             "azure-native:subscriptionId",
             config.azure.subscription_id,
@@ -66,7 +67,7 @@ def shm(
         config.add_stack(stack.stack_name, stack.local_stack_path)
 
         # Upload config to blob storage
-        config.upload()
+        config.upload(context)
 
         # Add the SHM domain as a custom domain in AzureAD
         graph_api.verify_custom_domain(
@@ -76,7 +77,7 @@ def shm(
 
         # Provision SHM with anything that could not be done in Pulumi
         manager = SHMProvisioningManager(
-            subscription_name=config.context.subscription_name,
+            subscription_name=context.subscription_name,
             stack=stack,
         )
         manager.run()
@@ -122,10 +123,12 @@ def sre(
         )
 
         # Initialise Pulumi stack
-        shm_stack = SHMStackManager(config)
-        stack = SREStackManager(config, sre_name, graph_api_token=graph_api.token)
+        shm_stack = SHMStackManager(context, config)
+        stack = SREStackManager(
+            context, config, sre_name, graph_api_token=graph_api.token
+        )
         # Set Azure options
-        stack.add_option("azure-native:location", config.azure.location, replace=False)
+        stack.add_option("azure-native:location", context.location, replace=False)
         stack.add_option(
             "azure-native:subscriptionId",
             config.azure.subscription_id,
@@ -199,7 +202,7 @@ def sre(
         config.add_stack(stack.stack_name, stack.local_stack_path)
 
         # Upload config to blob storage
-        config.upload()
+        config.upload(context)
 
         # Provision SRE with anything that could not be done in Pulumi
         manager = SREProvisioningManager(
@@ -207,7 +210,7 @@ def sre(
             shm_stack=shm_stack,
             sre_name=sre_name,
             sre_stack=stack,
-            subscription_name=config.context.subscription_name,
+            subscription_name=context.subscription_name,
             timezone=config.shm.timezone,
         )
         manager.run()

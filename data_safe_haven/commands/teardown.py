@@ -4,7 +4,8 @@ from typing import Annotated
 
 import typer
 
-from data_safe_haven.config import Config, ContextSettings
+from data_safe_haven.config import Config
+from data_safe_haven.config.context_settings import ContextSettings
 from data_safe_haven.exceptions import (
     DataSafeHavenError,
     DataSafeHavenInputError,
@@ -25,7 +26,7 @@ def shm() -> None:
     try:
         # Remove infrastructure deployed with Pulumi
         try:
-            stack = SHMStackManager(config)
+            stack = SHMStackManager(context, config)
             stack.teardown()
         except Exception as exc:
             msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
@@ -36,7 +37,7 @@ def shm() -> None:
             del config.pulumi.stacks[stack.stack_name]
 
         # Upload config to blob storage
-        config.upload()
+        config.upload(context)
     except DataSafeHavenError as exc:
         msg = f"Could not teardown Safe Haven Management component.\n{exc}"
         raise DataSafeHavenError(msg) from exc
@@ -62,7 +63,9 @@ def sre(
 
         # Remove infrastructure deployed with Pulumi
         try:
-            stack = SREStackManager(config, sre_name, graph_api_token=graph_api.token)
+            stack = SREStackManager(
+                context, config, sre_name, graph_api_token=graph_api.token
+            )
             if stack.work_dir.exists():
                 stack.teardown()
             else:
@@ -76,7 +79,7 @@ def sre(
         config.remove_stack(stack.stack_name)
 
         # Upload config to blob storage
-        config.upload()
+        config.upload(context)
     except DataSafeHavenError as exc:
         msg = f"Could not teardown Secure Research Environment '{sre_name}'.\n{exc}"
         raise DataSafeHavenError(msg) from exc

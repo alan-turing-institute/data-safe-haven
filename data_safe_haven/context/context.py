@@ -1,4 +1,4 @@
-from data_safe_haven.config import ConfigSectionTags, Context
+from data_safe_haven.config.context_settings import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 
@@ -9,7 +9,7 @@ class ContextInfra:
     def __init__(self, context: Context) -> None:
         self.azure_api_: AzureApi | None = None
         self.context = context
-        self.tags = {"component": "context"} | ConfigSectionTags(context).model_dump()
+        self.tags = {"component": "context"} | context.tags
 
     @property
     def azure_api(self) -> AzureApi:

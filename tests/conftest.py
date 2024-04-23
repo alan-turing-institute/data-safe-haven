@@ -4,7 +4,6 @@ from pytest import fixture
 
 import data_safe_haven.config.context_settings as context_mod
 from data_safe_haven.config.context_settings import Context
-from data_safe_haven.external import AzureApi
 
 
 @fixture
@@ -72,40 +71,3 @@ def config_file(config_yaml, tmp_path):
     with open(config_file_path, "w") as f:
         f.write(config_yaml)
     return config_file_path
-
-
-@fixture
-def mock_download_blob(monkeypatch, context, config_yaml):
-    def mock_download_blob(
-        self,  # noqa: ARG001
-        blob_name: str,
-        resource_group_name: str,
-        storage_account_name: str,
-        storage_container_name: str,
-    ):
-        assert blob_name == context.config_filename
-        assert resource_group_name == context.resource_group_name
-        assert storage_account_name == context.storage_account_name
-        assert storage_container_name == context.storage_container_name
-        return config_yaml
-
-    monkeypatch.setattr(AzureApi, "download_blob", mock_download_blob)
-
-
-@fixture
-def mock_upload_blob(monkeypatch, context):
-    def mock_upload_blob(
-        self,  # noqa: ARG001
-        blob_data: bytes | str,  # noqa: ARG001
-        blob_name: str,
-        resource_group_name: str,
-        storage_account_name: str,
-        storage_container_name: str,
-    ):
-        assert blob_name == context.config_filename
-        assert resource_group_name == context.resource_group_name
-        assert storage_account_name == context.storage_account_name
-        assert storage_container_name == context.storage_container_name
-        pass
-
-    monkeypatch.setattr(AzureApi, "upload_blob", mock_upload_blob)

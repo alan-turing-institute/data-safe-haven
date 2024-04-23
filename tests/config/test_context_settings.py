@@ -9,6 +9,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenParameterError,
 )
 from data_safe_haven.external import AzureApi
+from data_safe_haven.version import __version__
 
 
 @fixture
@@ -33,6 +34,8 @@ class TestContext:
             getattr(context, item) == context_dict[item] for item in context_dict.keys()
         )
         assert context.storage_container_name == "config"
+        assert context.pulumi_storage_container_name == "pulumi"
+        assert context.pulumi_encryption_key_name == "pulumi-encryption-key"
 
     def test_invalid_guid(self, context_dict):
         context_dict["admin_group_id"] = "not a guid"
@@ -55,18 +58,18 @@ class TestContext:
         ):
             Context(**context_dict)
 
+    def test_tags(self, context):
+        assert context.tags["deployment"] == "Acme Deployment"
+        assert context.tags["deployed by"] == "Python"
+        assert context.tags["project"] == "Data Safe Haven"
+        assert context.tags["version"] == __version__
+
     def test_shm_name(self, context):
         assert context.shm_name == "acmedeployment"
 
     def test_work_directory(self, context, monkeypatch):
         monkeypatch.delenv("DSH_CONFIG_DIRECTORY", raising=False)
         assert "data_safe_haven/acmedeployment" in str(context.work_directory)
-
-    def test_config_filename(self, context):
-        assert context.config_filename == "config-acmedeployment.yaml"
-
-    def test_pulumi_config_filename(self, context):
-        assert context.pulumi_config_filename == "pulumi-config-acmedeployment.yaml"
 
     def test_resource_group_name(self, context):
         assert context.resource_group_name == "shm-acmedeployment-rg-context"

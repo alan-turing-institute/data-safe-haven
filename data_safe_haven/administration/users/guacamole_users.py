@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from data_safe_haven.config import Config
+from data_safe_haven.config.context_settings import Context
 from data_safe_haven.external import AzureApi, AzurePostgreSQLDatabase
 from data_safe_haven.infrastructure import SREStackManager
 
@@ -10,11 +11,13 @@ from .research_user import ResearchUser
 
 
 class GuacamoleUsers:
-    def __init__(self, config: Config, sre_name: str, *args: Any, **kwargs: Any):
+    def __init__(
+        self, context: Context, config: Config, sre_name: str, *args: Any, **kwargs: Any
+    ):
         super().__init__(*args, **kwargs)
-        sre_stack = SREStackManager(config, sre_name)
+        sre_stack = SREStackManager(context, config, sre_name)
         # Read the SRE database secret from key vault
-        azure_api = AzureApi(config.context.subscription_name)
+        azure_api = AzureApi(context.subscription_name)
         connection_db_server_password = azure_api.get_keyvault_secret(
             sre_stack.output("data")["key_vault_name"],
             sre_stack.output("data")["password_user_database_admin_secret"],
@@ -24,7 +27,7 @@ class GuacamoleUsers:
             connection_db_server_password,
             sre_stack.output("remote_desktop")["connection_db_server_name"],
             sre_stack.output("remote_desktop")["resource_group_name"],
-            config.context.subscription_name,
+            context.subscription_name,
         )
         self.users_: Sequence[ResearchUser] | None = None
         self.postgres_script_path: pathlib.Path = (

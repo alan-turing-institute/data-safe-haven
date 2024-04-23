@@ -182,7 +182,7 @@ class TestPulumiConfig:
 
         mock_method.assert_called_once_with(
             pulumi_config.to_yaml(),
-            context.pulumi_config_filename,
+            PulumiConfig.filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -199,7 +199,7 @@ class TestPulumiConfig:
         assert len(pulumi_config.stacks) == 2
 
         mock_method.assert_called_once_with(
-            context.pulumi_config_filename,
+            PulumiConfig.filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,

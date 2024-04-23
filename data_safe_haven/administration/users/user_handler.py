@@ -3,6 +3,7 @@ import pathlib
 from collections.abc import Sequence
 
 from data_safe_haven.config import Config
+from data_safe_haven.config.context_settings import Context
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import LoggingSingleton
@@ -15,10 +16,12 @@ from .research_user import ResearchUser
 class UserHandler:
     def __init__(
         self,
+        context: Context,
         config: Config,
         graph_api: GraphApi,
     ):
         self.azure_ad_users = AzureADUsers(graph_api)
+        self.context = context
         self.config = config
         self.logger = LoggingSingleton()
         self.sre_guacamole_users_: dict[str, GuacamoleUsers] = {}
@@ -84,7 +87,7 @@ class UserHandler:
         try:
             if sre_name not in self.sre_guacamole_users_.keys():
                 self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
-                    self.config, sre_name
+                    self.context, self.config, sre_name
                 )
             return [
                 user.username for user in self.sre_guacamole_users_[sre_name].list()

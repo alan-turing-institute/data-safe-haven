@@ -12,6 +12,7 @@ from typing import Any
 from pulumi import automation
 
 from data_safe_haven.config import Config
+from data_safe_haven.config.context_settings import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCliSingleton
 from data_safe_haven.functions import replace_separators
@@ -22,7 +23,8 @@ from data_safe_haven.utility import LoggingSingleton
 class PulumiAccount:
     """Manage and interact with Pulumi backend account"""
 
-    def __init__(self, config: Config):
+    def __init__(self, context: Context, config: Config):
+        self.context = context
         self.cfg = config
         self.env_: dict[str, Any] | None = None
         path = which("pulumi")
@@ -38,16 +40,16 @@ class PulumiAccount:
     def env(self) -> dict[str, Any]:
         """Get necessary Pulumi environment variables"""
         if not self.env_:
-            azure_api = AzureApi(self.cfg.context.subscription_name)
+            azure_api = AzureApi(self.context.subscription_name)
             backend_storage_account_keys = azure_api.get_storage_account_keys(
-                self.cfg.context.resource_group_name,
-                self.cfg.context.storage_account_name,
+                self.context.resource_group_name,
+                self.context.storage_account_name,
             )
             self.env_ = {
-                "AZURE_STORAGE_ACCOUNT": self.cfg.context.storage_account_name,
+                "AZURE_STORAGE_ACCOUNT": self.context.storage_account_name,
                 "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
-                "PULUMI_BACKEND_URL": self.cfg.context.pulumi_backend_url,
+                "PULUMI_BACKEND_URL": self.context.pulumi_backend_url,
             }
         return self.env_
 
@@ -57,20 +59,22 @@ class StackManager:
 
     def __init__(
         self,
+        context: Context,
         config: Config,
         program: DeclarativeSHM | DeclarativeSRE,
     ) -> None:
-        self.account = PulumiAccount(config)
+        self.account = PulumiAccount(context, config)
+        self.context: Context = context
         self.cfg: Config = config
         self.logger = LoggingSingleton()
         self.stack_: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}
         self.program = program
-        self.project_name = replace_separators(self.cfg.tags.project.lower(), "-")
+        self.project_name = replace_separators(context.tags["project"].lower(), "-")
         self.stack_name = self.program.stack_name
         self.work_dir: pathlib.Path = (
-            config.work_directory / "pulumi" / self.program.short_name
+            context.work_directory / "pulumi" / self.program.short_name
         )
         self.work_dir.mkdir(parents=True, exist_ok=True)
         self.initialise_workdir()
@@ -101,7 +105,7 @@ class StackManager:
                     stack_name=self.stack_name,
                     program=self.program.run,
                     opts=automation.LocalWorkspaceOptions(
-                        secrets_provider=self.cfg.context.pulumi_secrets_provider_url,
+                        secrets_provider=self.context.pulumi_secrets_provider_url,
                         work_dir=str(self.work_dir),
                         env_vars=self.account.env,
                     ),
@@ -211,12 +215,12 @@ class StackManager:
                 self.logger.info(
                     f"Removing Pulumi stack backup [green]{stack_backup_name}[/]."
                 )
-                azure_api = AzureApi(self.cfg.context.subscription_name)
+                azure_api = AzureApi(self.context.subscription_name)
                 azure_api.remove_blob(
                     blob_name=f".pulumi/stacks/{self.project_name}/{stack_backup_name}",
-                    resource_group_name=self.cfg.context.resource_group_name,
-                    storage_account_name=self.cfg.context.storage_account_name,
-                    storage_container_name=self.cfg.context.pulumi_storage_container_name,
+                    resource_group_name=self.context.resource_group_name,
+                    storage_account_name=self.context.storage_account_name,
+                    storage_container_name=self.context.pulumi_storage_container_name,
                 )
             except DataSafeHavenAzureError as exc:
                 if "blob does not exist" in str(exc):
@@ -368,10 +372,13 @@ class SHMStackManager(StackManager):
 
     def __init__(
         self,
+        context: Context,
         config: Config,
     ) -> None:
         """Constructor"""
-        super().__init__(config, DeclarativeSHM(config, config.shm.name))
+        super().__init__(
+            context, config, DeclarativeSHM(context, config, context.shm_name)
+        )
 
 
 class SREStackManager(StackManager):
@@ -379,6 +386,7 @@ class SREStackManager(StackManager):
 
     def __init__(
         self,
+        context: Context,
         config: Config,
         sre_name: str,
         *,
@@ -387,5 +395,7 @@ class SREStackManager(StackManager):
         """Constructor"""
         token = graph_api_token if graph_api_token else ""
         super().__init__(
-            config, DeclarativeSRE(config, config.shm.name, sre_name, token)
+            context,
+            config,
+            DeclarativeSRE(context, config, context.shm_name, sre_name, token),
         )

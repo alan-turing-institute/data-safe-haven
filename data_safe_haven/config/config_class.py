@@ -1,15 +1,19 @@
-from typing import ClassVar
+from __future__ import annotations
+
+from typing import ClassVar, TypeVar
 
 import yaml
 from pydantic import BaseModel, ValidationError
 from yaml import YAMLError
 
-from data_safe_haven.config import Context
+from data_safe_haven.config.context_settings import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
 from data_safe_haven.external import AzureApi
+
+T = TypeVar("T", bound="ConfigClass")
 
 
 class ConfigClass(BaseModel, validate_assignment=True):
@@ -34,7 +38,7 @@ class ConfigClass(BaseModel, validate_assignment=True):
         )
 
     @classmethod
-    def from_yaml(cls, settings_yaml: str) -> BaseModel:
+    def from_yaml(cls: type[T], settings_yaml: str) -> T:
         """Construct configuration from a YAML string"""
         try:
             settings_dict = yaml.safe_load(settings_yaml)
@@ -53,7 +57,7 @@ class ConfigClass(BaseModel, validate_assignment=True):
             raise DataSafeHavenParameterError(msg) from exc
 
     @classmethod
-    def from_remote(cls, context: Context) -> BaseModel:
+    def from_remote(cls: type[T], context: Context) -> T:
         """Construct configuration from a YAML file in Azure storage"""
         azure_api = AzureApi(subscription_name=context.subscription_name)
         config_yaml = azure_api.download_blob(

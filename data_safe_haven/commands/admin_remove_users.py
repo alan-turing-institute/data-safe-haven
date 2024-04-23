@@ -1,7 +1,8 @@
 """Remove existing users from a deployed Data Safe Haven"""
 
 from data_safe_haven.administration.users import UserHandler
-from data_safe_haven.config import Config, ContextSettings
+from data_safe_haven.config import Config
+from data_safe_haven.config.context_settings import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 
@@ -24,7 +25,7 @@ def admin_remove_users(
 
         # Remove users from SHM
         if usernames:
-            users = UserHandler(config, graph_api)
+            users = UserHandler(context, config, graph_api)
             users.remove(usernames)
     except DataSafeHavenError as exc:
         msg = f"Could not remove users from Data Safe Haven '{shm_name}'.\n{exc}"

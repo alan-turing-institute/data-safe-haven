@@ -13,6 +13,7 @@ from azure.keyvault.keys import KeyVaultKey
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from yaml import YAMLError
 
+from data_safe_haven import __version__
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
@@ -43,20 +44,21 @@ class Context(BaseModel, validate_assignment=True):
     _pulumi_encryption_key = None
 
     @property
+    def tags(self) -> dict[str, str]:
+        return {
+            "deployment": self.name,
+            "deployed by": "Python",
+            "project": "Data Safe Haven",
+            "version": __version__,
+        }
+
+    @property
     def shm_name(self) -> str:
         return alphanumeric(self.name).lower()
 
     @property
     def work_directory(self) -> Path:
         return config_dir() / self.shm_name
-
-    @property
-    def config_filename(self) -> str:
-        return f"config-{self.shm_name}.yaml"
-
-    @property
-    def pulumi_config_filename(self) -> str:
-        return f"pulumi-config-{self.shm_name}.yaml"
 
     @property
     def resource_group_name(self) -> str:

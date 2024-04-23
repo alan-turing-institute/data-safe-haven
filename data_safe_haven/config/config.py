@@ -3,23 +3,18 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import ClassVar
 
-import yaml
 from pydantic import (
     BaseModel,
     Field,
-    ValidationError,
     field_validator,
 )
-from yaml import YAMLError
 
-from data_safe_haven import __version__
+from data_safe_haven.config.config_class import ConfigClass
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
 )
-from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import (
     alphanumeric,
     b64decode,
@@ -32,7 +27,6 @@ from data_safe_haven.utility import (
     SoftwarePackageCategory,
 )
 from data_safe_haven.utility.annotated_types import (
-    AzureLocation,
     AzureVmSku,
     EmailAdress,
     Fqdn,
@@ -42,19 +36,10 @@ from data_safe_haven.utility.annotated_types import (
     UniqueList,
 )
 
-from .context_settings import Context
-
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):
-    admin_group_id: Guid = Field(..., exclude=True)
-    location: AzureLocation = Field(..., exclude=True)
     subscription_id: Guid
     tenant_id: Guid
-
-    def __init__(self, context: Context, **kwargs: dict[Any, Any]):
-        super().__init__(
-            admin_group_id=context.admin_group_id, location=context.location, **kwargs
-        )
 
 
 class ConfigSectionPulumi(BaseModel, validate_assignment=True):
@@ -66,11 +51,7 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
     admin_email_address: EmailAdress
     admin_ip_addresses: list[IpAddress]
     fqdn: Fqdn
-    name: str = Field(..., exclude=True)
     timezone: TimeZone
-
-    def __init__(self, context: Context, **kwargs: dict[Any, Any]):
-        super().__init__(name=context.shm_name, **kwargs)
 
     def update(
         self,
@@ -216,29 +197,15 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         )
 
 
-class ConfigSectionTags(BaseModel, validate_assignment=True):
-    deployment: str
-    deployed_by: str = "Python"
-    project: str = "Data Safe Haven"
-    version: str = __version__
-
-    def __init__(self, context: Context, **kwargs: dict[Any, Any]):
-        super().__init__(deployment=context.name, **kwargs)
-
-
-class Config(BaseModel, validate_assignment=True):
+class Config(ConfigClass):
+    config_type: ClassVar[str] = "Config"
+    filename: ClassVar[str] = "config.yaml"
     azure: ConfigSectionAzure
-    context: Context = Field(..., exclude=True)
     pulumi: ConfigSectionPulumi
     shm: ConfigSectionSHM
     sres: dict[str, ConfigSectionSRE] = Field(
         ..., default_factory=dict[str, ConfigSectionSRE]
     )
-    tags: ConfigSectionTags = Field(..., exclude=True)
-
-    def __init__(self, context: Context, **kwargs: dict[Any, Any]):
-        tags = ConfigSectionTags(context)
-        super().__init__(context=context, tags=tags, **kwargs)
 
     @field_validator("sres")
     @classmethod
@@ -250,10 +217,6 @@ class Config(BaseModel, validate_assignment=True):
         return v
 
     @property
-    def work_directory(self) -> Path:
-        return self.context.work_directory
-
-    @property
     def sre_names(self) -> list[str]:
         """Names of all SREs"""
         return list(self.sres.keys())
@@ -262,7 +225,7 @@ class Config(BaseModel, validate_assignment=True):
         if require_sres:
             if not self.sres:
                 return False
-        if not all((self.azure, self.pulumi, self.shm, self.tags)):
+        if not all((self.azure, self.pulumi, self.shm)):
             return False
         return True
 
@@ -304,10 +267,9 @@ class Config(BaseModel, validate_assignment=True):
                 f_stack.write(pulumi_cfg)
 
     @classmethod
-    def template(cls, context: Context) -> Config:
+    def template(cls) -> Config:
         # Create object without validation to allow "replace me" prompts
         return Config.model_construct(
-            context=context,
             azure=ConfigSectionAzure.model_construct(
                 subscription_id="Azure subscription ID",
                 tenant_id="Azure tenant ID",
@@ -333,52 +295,4 @@ class Config(BaseModel, validate_assignment=True):
                     software_packages=SoftwarePackageCategory.ANY,
                 )
             },
-        )
-
-    @classmethod
-    def from_yaml(cls, context: Context, config_yaml: str) -> Config:
-        try:
-            config_dict = yaml.safe_load(config_yaml)
-        except YAMLError as exc:
-            msg = f"Could not parse configuration as YAML.\n{exc}"
-            raise DataSafeHavenConfigError(msg) from exc
-
-        if not isinstance(config_dict, dict):
-            msg = "Unable to parse configuration as a dict."
-            raise DataSafeHavenConfigError(msg)
-
-        # Add context for constructors that require it
-        config_dict["context"] = context
-        for section in ["azure", "shm"]:
-            config_dict[section]["context"] = context
-
-        try:
-            return Config.model_validate(config_dict, strict=True)
-        except ValidationError as exc:
-            msg = f"Could not load configuration.\n{exc}"
-            raise DataSafeHavenParameterError(msg) from exc
-
-    @classmethod
-    def from_remote(cls, context: Context) -> Config:
-        azure_api = AzureApi(subscription_name=context.subscription_name)
-        config_yaml = azure_api.download_blob(
-            context.config_filename,
-            context.resource_group_name,
-            context.storage_account_name,
-            context.storage_container_name,
-        )
-        return Config.from_yaml(context, config_yaml)
-
-    def to_yaml(self) -> str:
-        return yaml.dump(self.model_dump(mode="json"), indent=2)
-
-    def upload(self) -> None:
-        """Upload config to Azure storage"""
-        azure_api = AzureApi(subscription_name=self.context.subscription_name)
-        azure_api.upload_blob(
-            self.to_yaml(),
-            self.context.config_filename,
-            self.context.resource_group_name,
-            self.context.storage_account_name,
-            self.context.storage_container_name,
         )

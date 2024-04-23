@@ -1,6 +1,8 @@
 from pytest import fixture
 from typer.testing import CliRunner
 
+from data_safe_haven.config.context_settings import ContextSettings
+
 
 @fixture
 def context_settings():
@@ -17,6 +19,11 @@ def context_settings():
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             location: uksouth
             subscription_name: Data Safe Haven (Gems)"""
+
+
+@fixture
+def context(context_settings):
+    return ContextSettings.from_yaml(context_settings).context
 
 
 @fixture
