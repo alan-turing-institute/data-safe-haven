@@ -1,46 +1,13 @@
 from unittest.mock import patch
 
-from pytest import fixture, raises
+from pytest import raises
 
-from data_safe_haven.config.pulumi import DSHPulumiConfig, DSHPulumiProject
+from data_safe_haven.config.pulumi import DSHPulumiConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
 from data_safe_haven.external import AzureApi
-from data_safe_haven.functions import b64encode
-
-
-@fixture
-def stack_config():
-    return """secretsprovider: azurekeyvault://example
-encryptedkey: zjhejU2XsOKLo95w9CLD
-config:
-  azure-native:location: uksouth
-"""
-
-
-@fixture
-def stack_config_encoded(stack_config):
-    return b64encode(stack_config)
-
-
-@fixture
-def pulumi_project(stack_config_encoded):
-    return DSHPulumiProject(stack_config=stack_config_encoded)
-
-
-@fixture
-def pulumi_project2():
-    return DSHPulumiProject(
-        stack_config=b64encode(
-            """secretsprovider: azurekeyvault://example
-encryptedkey: B5tHWpqERXgblwRZ7wgu
-config:
-  azure-native:location: uksouth
-"""
-        ),
-    )
 
 
 class TestDSHPulumiProject:
@@ -64,23 +31,6 @@ class TestDSHPulumiProject:
         assert isinstance(config_dict["config"], dict)
         assert "azure-native:location" in config_dict["config"].keys()
         assert config_dict.get("config").get("azure-native:location") == "uksouth"
-
-
-@fixture
-def pulumi_config(pulumi_project, pulumi_project2):
-    return DSHPulumiConfig(
-        projects={"my_project": pulumi_project, "other_project": pulumi_project2}
-    )
-
-
-@fixture
-def pulumi_config_yaml():
-    return """projects:
-  my_project:
-    stack_config: c2VjcmV0c3Byb3ZpZGVyOiBhenVyZWtleXZhdWx0Oi8vZXhhbXBsZQplbmNyeXB0ZWRrZXk6IHpqaGVqVTJYc09LTG85NXc5Q0xECmNvbmZpZzoKICBhenVyZS1uYXRpdmU6bG9jYXRpb246IHVrc291dGgK
-  other_project:
-    stack_config: c2VjcmV0c3Byb3ZpZGVyOiBhenVyZWtleXZhdWx0Oi8vZXhhbXBsZQplbmNyeXB0ZWRrZXk6IEI1dEhXcHFFUlhnYmx3Ulo3d2d1CmNvbmZpZzoKICBhenVyZS1uYXRpdmU6bG9jYXRpb246IHVrc291dGgK
-"""
 
 
 class TestDSHPulumiConfig:
