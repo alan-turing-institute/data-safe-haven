@@ -2,7 +2,6 @@ from unittest.mock import patch
 
 import pytest
 from pydantic import ValidationError
-from pytest import fixture
 
 from data_safe_haven.config.config import (
     Config,
@@ -19,31 +18,12 @@ from data_safe_haven.external import AzureApi
 from data_safe_haven.utility.enums import DatabaseSystem, SoftwarePackageCategory
 
 
-@fixture
-def azure_config():
-    return ConfigSectionAzure(
-        subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-    )
-
-
 class TestConfigSectionAzure:
     def test_constructor(self):
         ConfigSectionAzure(
             subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         )
-
-
-@fixture
-def shm_config():
-    return ConfigSectionSHM(
-        aad_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        admin_email_address="admin@example.com",
-        admin_ip_addresses=["0.0.0.0"],  # noqa: S104
-        fqdn="shm.acme.com",
-        timezone="UTC",
-    )
 
 
 class TestConfigSectionSHM:
@@ -67,11 +47,6 @@ class TestConfigSectionSHM:
             match="Value error, Expected valid email address.*not an email address",
         ):
             shm_config.update(admin_email_address="not an email address")
-
-
-@fixture
-def remote_desktop_config():
-    return ConfigSubsectionRemoteDesktopOpts()
 
 
 class TestConfigSubsectionRemoteDesktopOpts:
@@ -144,28 +119,6 @@ class TestConfigSectionSRE:
         assert sre_config.software_packages == SoftwarePackageCategory.ANY
 
 
-@fixture
-def config_no_sres(azure_config, shm_config):
-    return Config(
-        azure=azure_config,
-        shm=shm_config,
-    )
-
-
-@fixture
-def config_sres(azure_config, shm_config):
-    sre_config_1 = ConfigSectionSRE(index=1)
-    sre_config_2 = ConfigSectionSRE(index=2)
-    return Config(
-        azure=azure_config,
-        shm=shm_config,
-        sres={
-            "sre1": sre_config_1,
-            "sre2": sre_config_2,
-        },
-    )
-
-
 class TestConfig:
     def test_constructor(self, azure_config, shm_config):
         config = Config(
@@ -194,13 +147,6 @@ class TestConfig:
     @pytest.mark.parametrize("require_sres", [False, True])
     def test_is_complete_sres(self, config_sres, require_sres):
         assert config_sres.is_complete(require_sres=require_sres)
-
-    @pytest.mark.parametrize(
-        "value,expected",
-        [("Test SRE", "testsre"), ("%*aBc", "abc"), ("MY_SRE", "mysre")],
-    )
-    def test_sanitise_sre_name(self, value, expected):
-        assert Config.sanitise_sre_name(value) == expected
 
     def test_sre(self, config_sres):
         sre1, sre2 = config_sres.sre("sre1"), config_sres.sre("sre2")
