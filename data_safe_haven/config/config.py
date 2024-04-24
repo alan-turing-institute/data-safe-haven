@@ -11,12 +11,7 @@ from pydantic import (
 )
 
 from data_safe_haven.config.config_class import ConfigClass
-from data_safe_haven.exceptions import (
-    DataSafeHavenConfigError,
-)
-from data_safe_haven.functions import (
-    alphanumeric,
-)
+from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.functions.validators import validate_unique_list
 from data_safe_haven.utility import (
     DatabaseSystem,
@@ -220,10 +215,6 @@ class Config(ConfigClass):
         if not all((self.azure, self.shm)):
             return False
         return True
-
-    @staticmethod
-    def sanitise_sre_name(name: str) -> str:
-        return alphanumeric(name).lower()
 
     def sre(self, name: str) -> ConfigSectionSRE:
         """Return the config entry for this SRE, raising an exception if it does not exist"""
