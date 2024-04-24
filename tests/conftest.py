@@ -12,6 +12,7 @@ from data_safe_haven.config.config import (
 )
 from data_safe_haven.config.context_settings import Context
 from data_safe_haven.config.pulumi import DSHPulumiConfig, DSHPulumiProject
+from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import b64encode
 
 
@@ -132,6 +133,8 @@ def stack_config():
 encryptedkey: zjhejU2XsOKLo95w9CLD
 config:
   azure-native:location: uksouth
+  azure-native:subscriptionId: abc
+  data-safe-haven:variable: 5
 """
 
 
@@ -173,3 +176,29 @@ def pulumi_config_yaml():
   other_project:
     stack_config: c2VjcmV0c3Byb3ZpZGVyOiBhenVyZWtleXZhdWx0Oi8vZXhhbXBsZQplbmNyeXB0ZWRrZXk6IEI1dEhXcHFFUlhnYmx3Ulo3d2d1CmNvbmZpZzoKICBhenVyZS1uYXRpdmU6bG9jYXRpb246IHVrc291dGgK
 """
+
+
+@fixture
+def mock_key_vault_key(monkeypatch):
+    class MockKeyVaultKey:
+        def __init__(self, key_name, key_vault_name):
+            self.key_name = key_name
+            self.key_vault_name = key_vault_name
+            self.id = "mock_key/version"
+
+    def mock_get_keyvault_key(self, key_name, key_vault_name):  # noqa: ARG001
+        return MockKeyVaultKey(key_name, key_vault_name)
+
+    monkeypatch.setattr(AzureApi, "get_keyvault_key", mock_get_keyvault_key)
+
+
+# @fixture
+# def mock_get_storage_account_keys(monkeypatch):
+#     class MockStorageAccountKey:
+#         def __init__(self, value):
+#             self.value = value
+
+#     def mock_get_storage_account_keys(self, resource_group_name, storage_account_name, *, attempts=3):
+#         return [MockStorageAccountKey("key1"), MockStorageAccountKey("key2")]
+
+#     monkeypatch.setattr(AzureApi, "get_storage_account_keys", mock_get_storage_account_keys)

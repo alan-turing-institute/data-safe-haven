@@ -8,22 +8,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
-from data_safe_haven.external import AzureApi
 from data_safe_haven.version import __version__
-
-
-@fixture
-def mock_key_vault_key(monkeypatch):
-    class MockKeyVaultKey:
-        def __init__(self, key_name, key_vault_name):
-            self.key_name = key_name
-            self.key_vault_name = key_vault_name
-            self.id = "mock_key/version"
-
-    def mock_get_keyvault_key(self, key_name, key_vault_name):  # noqa: ARG001
-        return MockKeyVaultKey(key_name, key_vault_name)
-
-    monkeypatch.setattr(AzureApi, "get_keyvault_key", mock_get_keyvault_key)
 
 
 class TestContext:
