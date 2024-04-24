@@ -1,6 +1,6 @@
 // Development container for the Data Safe Haven project pulumi
 {
-    "name": "Turing Data Safe Haven - Pulumi",
+    "name": "Turing Data Safe Haven",
     "build": {
         "context": "..",
         "dockerfile": "Dockerfile"
