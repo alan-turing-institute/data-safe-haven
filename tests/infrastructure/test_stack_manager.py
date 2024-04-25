@@ -1,4 +1,6 @@
-from pulumi.automation import LocalWorkspace, Stack
+from collections.abc import MutableMapping
+
+from pulumi.automation import ConfigValue, LocalWorkspace, Stack
 from pytest import fixture
 
 from data_safe_haven.infrastructure import SHMStackManager
@@ -73,5 +75,12 @@ class TestSHMStackManager:
         )
         assert workspace.env_vars == {}
         config = stack.get_all_config()
+        assert config["azure-native:location"].value == "uksouth"
+        assert config["data-safe-haven:variable"].value == "5"
+
+    def test_stack_all_config(self, shm_stack_manager):
+        config = shm_stack_manager.stack_all_config
+        assert isinstance(config, MutableMapping)
+        assert isinstance(config["azure-native:location"], ConfigValue)
         assert config["azure-native:location"].value == "uksouth"
         assert config["data-safe-haven:variable"].value == "5"

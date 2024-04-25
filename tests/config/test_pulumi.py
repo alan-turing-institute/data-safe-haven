@@ -90,7 +90,10 @@ class TestDSHPulumiConfig:
         assert isinstance(pulumi_config["my_project"], DSHPulumiProject)
         assert "other_project" in pulumi_config.project_names
         assert isinstance(pulumi_config["other_project"], DSHPulumiProject)
-        assert pulumi_config["my_project"].stack_config.get("data-safe-haven:variable") == 5
+        assert (
+            pulumi_config["my_project"].stack_config.get("data-safe-haven:variable")
+            == 5
+        )
 
     def test_from_yaml_invalid_yaml(self):
         with raises(

@@ -2,14 +2,15 @@
 
 import logging
 import pathlib
-import shutil
 import time
+from collections.abc import MutableMapping
 from contextlib import suppress
 from importlib import metadata
 from shutil import which
 from typing import Any
 
 from pulumi import automation
+from pulumi.automation import ConfigValue
 
 from data_safe_haven.config import Config
 from data_safe_haven.config.context_settings import Context
@@ -300,17 +301,6 @@ class StackManager:
             msg = f"Pulumi refresh failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
-    def remove_workdir(self) -> None:
-        """Remove project directory if it exists."""
-        try:
-            self.logger.info(f"Removing [green]{self.work_dir}[/]...")
-            if self.work_dir.exists():
-                shutil.rmtree(self.work_dir)
-            self.logger.info(f"Removed [green]{self.work_dir}[/].")
-        except Exception as exc:
-            msg = f"Removing Pulumi working directory failed.\n{exc}."
-            raise DataSafeHavenPulumiError(msg) from exc
-
     def secret(self, name: str) -> str:
         """Read a secret from the Pulumi stack."""
         try:
@@ -347,6 +337,10 @@ class StackManager:
         except automation.CommandError as exc:
             msg = f"Pulumi update failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
+
+    @property
+    def stack_all_config(self) -> MutableMapping[str, ConfigValue]:
+        return self.stack.get_all_config()
 
 
 class SHMStackManager(StackManager):
