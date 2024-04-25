@@ -342,6 +342,13 @@ class StackManager:
     def stack_all_config(self) -> MutableMapping[str, ConfigValue]:
         return self.stack.get_all_config()
 
+    def update_dsh_pulumi_project(self) -> None:
+        """Update persistent data in the DSHPulumiProject object"""
+        all_config_dict = {
+            key: item.value for key, item in self.stack_all_config.items()
+        }
+        self.pulumi_project.stack_config = all_config_dict
+
 
 class SHMStackManager(StackManager):
     """Interact with an SHM using Pulumi"""

@@ -84,3 +84,13 @@ class TestSHMStackManager:
         assert isinstance(config["azure-native:location"], ConfigValue)
         assert config["azure-native:location"].value == "uksouth"
         assert config["data-safe-haven:variable"].value == "5"
+
+    def test_update_dsh_pulumi_project(self, shm_stack_manager):
+        shm_stack_manager.set_config("new-key", "hello", secret=False)
+        config = shm_stack_manager.stack_all_config
+        assert "data-safe-haven:new-key" in config
+        assert config.get("data-safe-haven:new-key").value == "hello"
+        shm_stack_manager.update_dsh_pulumi_project()
+        stack_config = shm_stack_manager.pulumi_project.stack_config
+        assert "data-safe-haven:new-key" in stack_config
+        assert stack_config.get("data-safe-haven:new-key") == "hello"
