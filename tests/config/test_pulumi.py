@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from pytest import raises
 
-from data_safe_haven.config.pulumi import DSHPulumiConfig
+from data_safe_haven.config.pulumi import DSHPulumiConfig, DSHPulumiProject
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
@@ -12,25 +12,19 @@ from data_safe_haven.external import AzureApi
 
 class TestDSHPulumiProject:
     def test_pulumi_project(self, pulumi_project):
-        assert "encryptedkey: zjhejU2XsOKLo95w9CLD" in pulumi_project.stack_config
+        assert isinstance(pulumi_project.stack_config, dict)
+        assert "azure-native:location" in pulumi_project.stack_config.keys()
+        assert pulumi_project.stack_config.get("azure-native:location") == "uksouth"
 
-    def test_dump(self, pulumi_project, stack_config_encoded):
+    def test_dump(self, pulumi_project, stack_config):
         d = pulumi_project.model_dump()
-        assert d.get("stack_config") == stack_config_encoded
+        assert d.get("stack_config") == stack_config
 
     def test_eq(self, pulumi_project):
         assert pulumi_project == pulumi_project.model_copy(deep=True)
 
     def test_not_eq(self, pulumi_project, pulumi_project2):
         assert pulumi_project != pulumi_project2
-
-    def test_stack_config_dict(self, pulumi_project):
-        config_dict = pulumi_project.stack_config_dict
-        assert "encryptedkey" in config_dict.keys()
-        assert "config" in config_dict.keys()
-        assert isinstance(config_dict["config"], dict)
-        assert "azure-native:location" in config_dict["config"].keys()
-        assert config_dict.get("config").get("azure-native:location") == "uksouth"
 
 
 class TestDSHPulumiConfig:
@@ -86,10 +80,17 @@ class TestDSHPulumiConfig:
         yaml = pulumi_config.to_yaml()
         assert isinstance(yaml, str)
         assert "projects:" in yaml
-        assert "config: c2VjcmV0" in yaml
+        assert "stack_config:" in yaml
+        assert "azure-native:location: uksouth" in yaml
 
     def test_from_yaml(self, pulumi_config_yaml):
-        DSHPulumiConfig.from_yaml(pulumi_config_yaml)
+        pulumi_config = DSHPulumiConfig.from_yaml(pulumi_config_yaml)
+        assert len(pulumi_config.projects) == 2
+        assert "my_project" in pulumi_config.project_names
+        assert isinstance(pulumi_config["my_project"], DSHPulumiProject)
+        assert "other_project" in pulumi_config.project_names
+        assert isinstance(pulumi_config["other_project"], DSHPulumiProject)
+        assert pulumi_config["my_project"].stack_config.get("data-safe-haven:variable") == 5
 
     def test_from_yaml_invalid_yaml(self):
         with raises(

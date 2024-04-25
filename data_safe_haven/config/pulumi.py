@@ -1,32 +1,16 @@
 from __future__ import annotations
 
-from typing import Annotated, Any, ClassVar
+from typing import Any, ClassVar
 
-import yaml
-from pydantic import BaseModel, PlainSerializer
-from pydantic.functional_validators import AfterValidator
+from pydantic import BaseModel
 
 from data_safe_haven.config.config_class import ConfigClass
-from data_safe_haven.exceptions import DataSafeHavenConfigError
-from data_safe_haven.functions import b64decode, b64encode
-
-
-def base64_string_decode(v: str) -> str:
-    """Pydantic validator function for decoding base64"""
-    return b64decode(v)
-
-
-B64String = Annotated[
-    str,
-    PlainSerializer(b64encode, return_type=str),
-    AfterValidator(base64_string_decode),
-]
 
 
 class DSHPulumiProject(BaseModel, validate_assignment=True):
     """Container for DSH Pulumi Project persistent information"""
 
-    stack_config: B64String
+    stack_config: dict[str, Any]
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DSHPulumiProject):
@@ -35,16 +19,6 @@ class DSHPulumiProject(BaseModel, validate_assignment=True):
 
     def __hash__(self) -> int:
         return hash(self.stack_config)
-
-    @property
-    def stack_config_dict(self) -> dict[Any, Any]:
-        config_dict = yaml.safe_load(self.stack_config)
-
-        if not isinstance(config_dict, dict):
-            msg = "Invalid stack configuration."
-            raise DataSafeHavenConfigError(msg)
-
-        return config_dict
 
 
 class DSHPulumiConfig(ConfigClass):
