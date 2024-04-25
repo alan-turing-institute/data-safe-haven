@@ -1,4 +1,6 @@
 from pathlib import Path
+from shutil import which
+from subprocess import run
 
 from pytest import fixture
 
@@ -14,6 +16,14 @@ from data_safe_haven.config import (
 )
 from data_safe_haven.context import Context
 from data_safe_haven.external import AzureApi
+
+
+@fixture(autouse=True, scope="session")
+def local_pulumi_login():
+    pulumi_path = which("pulumi")
+    run([pulumi_path, "login", "--local"])
+    yield
+    run([pulumi_path, "logout"])
 
 
 @fixture
