@@ -12,9 +12,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./docs/
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,9 +31,6 @@ jobs:
     name: Check links
     runs-on: ubuntu-latest
     needs: build
-    defaults:
-      run:
-        working-directory: ./docs/
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
