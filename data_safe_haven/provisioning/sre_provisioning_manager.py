@@ -84,9 +84,7 @@ class SREProvisioningManager:
             self.remote_desktop_params["resource_group_name"],
             self.subscription_name,
         )
-        guacamole_provisioner.restart(
-            self.remote_desktop_params["container_ip_address"]
-        )
+        guacamole_provisioner.restart()
 
     def update_remote_desktop_connections(self) -> None:
         """Update connection information on the Guacamole PostgreSQL server"""

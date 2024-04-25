@@ -47,6 +47,7 @@ class LocalDnsRecordComponent(ComponentResource):
             ttl=3600,
             opts=child_opts,
         )
+
         # Redirect the public DNS to private DNS
         network.RecordSet(
             f"{self._name}_public_record_set",
@@ -62,3 +63,6 @@ class LocalDnsRecordComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=private_dns_record_set)
             ),
         )
+
+        # Register outputs
+        self.hostname = Output.concat(props.record_name, ".", props.base_fqdn)

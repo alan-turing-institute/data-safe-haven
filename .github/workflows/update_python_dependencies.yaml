@@ -1,37 +1,37 @@
 ---
-name: Update Docker image versions
+name: Update Python dependencies
 
+# Run workflow on pushes to matching branches
 on:  # yamllint disable-line rule:truthy
   schedule:
     - cron: "0 3 * * 1"  # run at 3:00 every Monday
   workflow_dispatch:  # allow this workflow to be manually triggered
 
-# checkout needs 'contents:read'
-# pull request needs 'pull-requests:write' and 'contents:write'
-permissions:
-  contents: write
-  pull-requests: write
 
 jobs:
-  update_docker_versions:
+  update_python_dependencies:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: 3.12
 
-      - name: Install Python packages
-        run: |
-          pip install --upgrade pip
-          pip install -r .github/scripts/requirements.txt
+      - name: Install dependencies
+        run: pip install hatch pip-tools
 
-      - name: Update Docker image versions
-        run: |
-          python .github/scripts/update_docker_versions.py
+      - name: Update 'default' dependencies
+        run: .github/scripts/update_python_dependencies.sh default requirements.txt
+
+      - name: Update 'docs' dependencies
+        run: .github/scripts/update_python_dependencies.sh docs docs/requirements.txt
+
+      - name: Check for changes
+        shell: bash
+        run: git --no-pager diff -- .
 
       - name: Get current date
         id: date
@@ -40,18 +40,18 @@ jobs:
       - name: Create pull request
         if: ${{ ! env.ACT }}
         id: pull-request
-        uses: peter-evans/create-pull-request@9153d834b60caba6d51c9b9510b087acf9f33f83  # This commit corresponds to tag 6.0.4
+        uses: peter-evans/create-pull-request@v6.0.4
         with:
-          commit-message: Update Pulumi Docker images
+          commit-message: Update Python dependencies
           committer: GitHub Actions <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           base: develop
-          branch: update-docker-images
+          branch: python-dependencies
           delete-branch: true
-          title: Update Pulumi Docker images
+          title: Update Python dependencies
           body: |
             ### :arrow_heading_up: Summary
-            - Apply Pulumi image version diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
+            - Apply Python dependency diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
 
             ### :closed_umbrella: Related issues
             None

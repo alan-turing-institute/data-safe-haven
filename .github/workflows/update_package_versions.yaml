@@ -3,10 +3,8 @@ name: Update package versions
 
 # Run workflow on pushes to matching branches
 on:  # yamllint disable-line rule:truthy
-  push:
-    branches: [develop]
   schedule:
-    - cron: "0 0 */7 * *"  # run once per week
+    - cron: "0 3 * * 1"  # run at 3:00 every Monday
   workflow_dispatch:  # allow this workflow to be manually triggered
 
 # checkout needs 'contents:read'
@@ -50,12 +48,12 @@ jobs:
 
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Create pull request
         if: ${{ ! env.ACT }}
         id: pull-request
-        uses: peter-evans/create-pull-request@c55203cfde3e5c11a452d352b4393e68b85b4533  # This commit corresponds to tag 6.0.3
+        uses: peter-evans/create-pull-request@9153d834b60caba6d51c9b9510b087acf9f33f83  # This commit corresponds to tag 6.0.4
         with:
           commit-message: Update SRD package versions
           committer: GitHub Actions <noreply@github.com>

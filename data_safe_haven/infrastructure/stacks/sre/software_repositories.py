@@ -6,6 +6,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.infrastructure.common import (
+    Ports,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -160,7 +161,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 container_group_name=f"{stack_name}-container-group-software-repositories",
                 containers=[
                     containerinstance.ContainerArgs(
-                        image="caddy:2.7.4",
+                        image="caddy:2.7.6",
                         name="caddy"[:63],
                         ports=[
                             containerinstance.ContainerPortArgs(
@@ -183,7 +184,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="sonatype/nexus3:3.59.0",
+                        image="sonatype/nexus3:3.67.1",
                         name="nexus"[:63],
                         environment_variables=[],
                         ports=[],
@@ -202,7 +203,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="ghcr.io/alan-turing-institute/nexus-allowlist:v0.8.0",
+                        image="ghcr.io/alan-turing-institute/nexus-allowlist:v0.9.0",
                         name="nexus-allowlist"[:63],
                         environment_variables=[
                             containerinstance.EnvironmentVariableArgs(
@@ -219,7 +220,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                             ),
                             containerinstance.EnvironmentVariableArgs(
                                 name="NEXUS_PORT",
-                                value="8081",
+                                value=Ports.NEXUS,
                             ),
                             # Use fallback updating method due to issue with changes to
                             # files on Azure storage mount not being recognised by entr

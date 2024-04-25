@@ -5,6 +5,7 @@ from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
+    Ports,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -29,7 +30,7 @@ class SREHedgeDocServerProps:
         database_subnet_id: Input[str],
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
-        ldap_server_ip: Input[str],
+        ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
@@ -52,7 +53,7 @@ class SREHedgeDocServerProps:
         )
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
-        self.ldap_server_ip = ldap_server_ip
+        self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = Output.from_input(ldap_server_port).apply(str)
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
@@ -140,7 +141,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-hedgedoc",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="caddy:2.7.4",
+                    image="caddy:2.7.6",
                     name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
@@ -188,7 +189,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_PORT",
-                            value="5432",
+                            value=Ports.POSTGRESQL,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CMD_DB_USERNAME",
@@ -225,7 +226,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                             name="CMD_LDAP_URL",
                             value=Output.concat(
                                 "ldap://",
-                                props.ldap_server_ip,
+                                props.ldap_server_hostname,
                                 ":",
                                 props.ldap_server_port,
                             ),

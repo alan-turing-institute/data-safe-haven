@@ -13,7 +13,7 @@ until su-exec "$USER" /usr/local/bin/gitea admin auth list | grep "DataSafeHaven
     su-exec "$USER" /usr/local/bin/gitea admin auth add-ldap \
         --name DataSafeHavenLDAP \
         --security-protocol "unencrypted" \
-        --host "{{ldap_server_ip}}" \
+        --host "{{ldap_server_hostname}}" \
         --port "{{ldap_server_port}}" \
         --user-search-base "{{ldap_user_search_base}}" \
         --user-filter "(&{{{ldap_user_filter}}}({{ldap_username_attribute}}=%[1]s))" \

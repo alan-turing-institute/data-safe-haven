@@ -11,7 +11,7 @@ from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
-from data_safe_haven.provisioning import SHMProvisioningManager, SREProvisioningManager
+from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.utility import LoggingSingleton
 
 deploy_command_group = typer.Typer()
@@ -75,13 +75,6 @@ def shm(
             config.shm.fqdn,
             stack.output("networking")["fqdn_nameservers"],
         )
-
-        # Provision SHM with anything that could not be done in Pulumi
-        manager = SHMProvisioningManager(
-            subscription_name=context.subscription_name,
-            stack=stack,
-        )
-        manager.run()
     except DataSafeHavenError as exc:
         msg = f"Could not deploy Data Safe Haven Management environment.\n{exc}"
         raise DataSafeHavenError(msg) from exc
