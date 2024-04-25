@@ -67,3 +67,8 @@ class DSHPulumiConfig(ConfigClass):
     def project_names(self) -> list[str]:
         """Produce a list of known DSH Pulumi Project names"""
         return list(self.projects.keys())
+
+    def create_or_select_project(self, project_name: str) -> DSHPulumiProject:
+        if project_name not in self.project_names:
+            self[project_name] = DSHPulumiProject(stack_config={})
+        return self[project_name]
