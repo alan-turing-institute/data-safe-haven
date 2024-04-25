@@ -67,8 +67,8 @@ class StackManager:
         program: DeclarativeSHM | DeclarativeSRE,
     ) -> None:
         self.account = PulumiAccount(context, config)
-        self.context: Context = context
-        self.cfg: Config = config
+        self.context = context
+        self.cfg = config
         self.pulumi_project = pulumi_project
         self.logger = LoggingSingleton()
         self._stack: automation.Stack | None = None
