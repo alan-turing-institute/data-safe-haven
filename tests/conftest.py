@@ -3,15 +3,16 @@ from pathlib import Path
 from pytest import fixture
 
 import data_safe_haven.config.context_settings as context_mod
-from data_safe_haven.config.config import (
+from data_safe_haven.config import (
     Config,
     ConfigSectionAzure,
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
+    DSHPulumiConfig,
+    DSHPulumiProject,
 )
-from data_safe_haven.config.context_settings import Context
-from data_safe_haven.config.pulumi import DSHPulumiConfig, DSHPulumiProject
+from data_safe_haven.config_settings import Context
 from data_safe_haven.external import AzureApi
 
 

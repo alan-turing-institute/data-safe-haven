@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from data_safe_haven.config.config import (
+from data_safe_haven.config import (
     Config,
     ConfigSectionAzure,
     ConfigSectionSHM,

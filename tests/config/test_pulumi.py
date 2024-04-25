@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from pytest import raises
 
-from data_safe_haven.config.pulumi import DSHPulumiConfig, DSHPulumiProject
+from data_safe_haven.config import DSHPulumiConfig, DSHPulumiProject
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,

@@ -6,7 +6,7 @@ import yaml
 from pydantic import BaseModel, ValidationError
 from yaml import YAMLError
 
-from data_safe_haven.config.context_settings import Context
+from data_safe_haven.config import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,

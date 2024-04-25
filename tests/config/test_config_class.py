@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from pytest import fixture, raises
 
-from data_safe_haven.config.config_class import ConfigClass
+from data_safe_haven.config import ConfigClass
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,

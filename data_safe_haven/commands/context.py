@@ -5,10 +5,9 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.config.context_settings import (
+from data_safe_haven.config import (
     Context,
     ContextSettings,
-    default_config_file_path,
 )
 from data_safe_haven.context import ContextInfra
 from data_safe_haven.functions.typer_validators import typer_validate_aad_guid
@@ -87,7 +86,7 @@ def add(
     ],
 ) -> None:
     """Add a new context to the context list."""
-    if default_config_file_path().exists():
+    if ContextSettings.default_config_file_path().exists():
         settings = ContextSettings.from_file()
         settings.add(
             key=key,

@@ -2,9 +2,7 @@ import csv
 import pathlib
 from collections.abc import Sequence
 
-from data_safe_haven.config import Config
-from data_safe_haven.config.context_settings import Context
-from data_safe_haven.config.pulumi import DSHPulumiConfig, DSHPulumiProject
+from data_safe_haven.config import Config, Context, DSHPulumiConfig, DSHPulumiProject
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import LoggingSingleton

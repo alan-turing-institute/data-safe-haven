@@ -28,10 +28,6 @@ from data_safe_haven.utility.annotated_types import (
 )
 
 
-def default_config_file_path() -> Path:
-    return config_dir() / "contexts.yaml"
-
-
 class Context(BaseModel, validate_assignment=True):
     admin_group_id: Guid
     location: AzureLocation
@@ -129,6 +125,10 @@ class ContextSettings(BaseModel, validate_assignment=True):
                 msg = f"Selected context '{self.selected}' is not defined."
                 raise ValueError(msg)
         return self
+
+    @staticmethod
+    def default_config_file_path() -> Path:
+        return config_dir() / "contexts.yaml"
 
     @property
     def selected(self) -> str | None:
@@ -241,7 +241,7 @@ class ContextSettings(BaseModel, validate_assignment=True):
     @classmethod
     def from_file(cls, config_file_path: Path | None = None) -> ContextSettings:
         if config_file_path is None:
-            config_file_path = default_config_file_path()
+            config_file_path = cls.default_config_file_path()
         cls.logger.info(
             f"Reading project settings from '[green]{config_file_path}[/]'."
         )
@@ -259,7 +259,7 @@ class ContextSettings(BaseModel, validate_assignment=True):
     def write(self, config_file_path: Path | None = None) -> None:
         """Write settings to YAML file"""
         if config_file_path is None:
-            config_file_path = default_config_file_path()
+            config_file_path = self.default_config_file_path()
         # Create the parent directory if it does not exist then write YAML
         config_file_path.parent.mkdir(parents=True, exist_ok=True)
 

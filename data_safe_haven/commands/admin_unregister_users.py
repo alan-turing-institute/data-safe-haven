@@ -1,9 +1,7 @@
 """Unregister existing users from a deployed SRE"""
 
 from data_safe_haven.administration.users import UserHandler
-from data_safe_haven.config import Config
-from data_safe_haven.config.context_settings import ContextSettings
-from data_safe_haven.config.pulumi import DSHPulumiConfig
+from data_safe_haven.config import Config, ContextSettings, DSHPulumiConfig
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name

@@ -4,7 +4,7 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel
 
-from data_safe_haven.config.config_class import ConfigClass
+from data_safe_haven.config import ConfigClass
 
 
 class DSHPulumiProject(BaseModel, validate_assignment=True):

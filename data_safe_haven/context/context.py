@@ -1,4 +1,4 @@
-from data_safe_haven.config.context_settings import Context
+from data_safe_haven.config import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 

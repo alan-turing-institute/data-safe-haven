@@ -10,7 +10,7 @@ from pydantic import (
     field_validator,
 )
 
-from data_safe_haven.config.config_class import ConfigClass
+from data_safe_haven.config import ConfigClass
 from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.functions.validators import validate_unique_list
 from data_safe_haven.utility import (

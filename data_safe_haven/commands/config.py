@@ -6,8 +6,7 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.config import Config
-from data_safe_haven.config.context_settings import ContextSettings
+from data_safe_haven.config import Config, ContextSettings
 
 config_command_group = typer.Typer()
 
