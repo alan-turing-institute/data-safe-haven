@@ -6,8 +6,10 @@ import typer
 
 from data_safe_haven.config import Config
 from data_safe_haven.config.context_settings import ContextSettings
+from data_safe_haven.config.pulumi import DSHPulumiConfig
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
+from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
 from data_safe_haven.provisioning import SHMProvisioningManager, SREProvisioningManager
 from data_safe_haven.utility import LoggingSingleton
@@ -29,6 +31,8 @@ def shm(
     """Deploy a Safe Haven Management component"""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
+    pulumi_project = pulumi_config.create_or_select_project(context.shm_name)
 
     try:
         # Add the SHM domain to AzureAD as a custom domain
@@ -43,7 +47,7 @@ def shm(
         verification_record = graph_api.add_custom_domain(config.shm.fqdn)
 
         # Initialise Pulumi stack
-        stack = SHMStackManager(context, config)
+        stack = SHMStackManager(context, config, pulumi_project)
         # Set Azure options
         stack.add_option("azure-native:location", context.location, replace=False)
         stack.add_option(
@@ -63,11 +67,8 @@ def shm(
         else:
             stack.deploy(force=force)
 
-        # Add Pulumi infrastructure information to the config file
-        config.add_stack(stack.stack_name, stack.local_stack_path)
-
-        # Upload config to blob storage
-        config.upload(context)
+        # Upload Pulumi config to blob storage
+        pulumi_config.upload(context)
 
         # Add the SHM domain as a custom domain in AzureAD
         graph_api.verify_custom_domain(
@@ -102,7 +103,10 @@ def sre(
     logger = LoggingSingleton()
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
-    sre_name = config.sanitise_sre_name(name)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
+    shm_pulumi_project = pulumi_config.create_or_select_project(context.shm_name)
+    sre_name = sanitise_sre_name(name)
+    sre_pulumi_project = pulumi_config.create_or_select_project(sre_name)
 
     try:
         # Exit if SRE name is not recognised
@@ -123,9 +127,13 @@ def sre(
         )
 
         # Initialise Pulumi stack
-        shm_stack = SHMStackManager(context, config)
+        shm_stack = SHMStackManager(context, config, shm_pulumi_project)
         stack = SREStackManager(
-            context, config, sre_name, graph_api_token=graph_api.token
+            context,
+            config,
+            sre_pulumi_project,
+            sre_name,
+            graph_api_token=graph_api.token,
         )
         # Set Azure options
         stack.add_option("azure-native:location", context.location, replace=False)
@@ -198,11 +206,8 @@ def sre(
         else:
             stack.deploy(force=force)
 
-        # Add Pulumi infrastructure information to the config file
-        config.add_stack(stack.stack_name, stack.local_stack_path)
-
-        # Upload config to blob storage
-        config.upload(context)
+        # Upload Pulumi config to blob storage
+        pulumi_config.upload(context)
 
         # Provision SRE with anything that could not be done in Pulumi
         manager = SREProvisioningManager(

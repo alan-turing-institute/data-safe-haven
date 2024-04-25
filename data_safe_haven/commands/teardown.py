@@ -6,6 +6,7 @@ import typer
 
 from data_safe_haven.config import Config
 from data_safe_haven.config.context_settings import ContextSettings
+from data_safe_haven.config.pulumi import DSHPulumiConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenError,
     DataSafeHavenInputError,
@@ -23,22 +24,23 @@ teardown_command_group = typer.Typer()
 def shm() -> None:
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
+    pulumi_project = pulumi_config[context.shm_name]
 
     try:
         # Remove infrastructure deployed with Pulumi
         try:
-            stack = SHMStackManager(context, config)
+            stack = SHMStackManager(context, config, pulumi_project)
             stack.teardown()
         except Exception as exc:
             msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
             raise DataSafeHavenInputError(msg) from exc
 
         # Remove information from config file
-        if stack.stack_name in config.pulumi.stacks.keys():
-            del config.pulumi.stacks[stack.stack_name]
+        del pulumi_config[context.shm_name]
 
-        # Upload config to blob storage
-        config.upload(context)
+        # Upload Pulumi config to blob storage
+        pulumi_config.upload(context)
     except DataSafeHavenError as exc:
         msg = f"Could not teardown Safe Haven Management component.\n{exc}"
         raise DataSafeHavenError(msg) from exc
@@ -52,6 +54,8 @@ def sre(
 ) -> None:
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
+    pulumi_project = pulumi_config[name]
 
     sre_name = sanitise_sre_name(name)
     try:
@@ -65,7 +69,11 @@ def sre(
         # Remove infrastructure deployed with Pulumi
         try:
             stack = SREStackManager(
-                context, config, sre_name, graph_api_token=graph_api.token
+                context,
+                config,
+                pulumi_project,
+                sre_name,
+                graph_api_token=graph_api.token,
             )
             if stack.work_dir.exists():
                 stack.teardown()
@@ -76,11 +84,11 @@ def sre(
             msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
             raise DataSafeHavenInputError(msg) from exc
 
-        # Remove stack from config file
-        config.remove_stack(stack.stack_name)
+        # Remove Pulumi project from Pulumi config file
+        del pulumi_config[name]
 
-        # Upload config to blob storage
-        config.upload(context)
+        # Upload Pulumi config to blob storage
+        pulumi_config.upload(context)
     except DataSafeHavenError as exc:
         msg = f"Could not teardown Secure Research Environment '{sre_name}'.\n{exc}"
         raise DataSafeHavenError(msg) from exc

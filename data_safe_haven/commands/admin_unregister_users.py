@@ -3,8 +3,10 @@
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import Config
 from data_safe_haven.config.context_settings import ContextSettings
+from data_safe_haven.config.pulumi import DSHPulumiConfig
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
+from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.utility import LoggingSingleton
 
 
@@ -15,9 +17,12 @@ def admin_unregister_users(
     """Unregister existing users from a deployed SRE"""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
 
     shm_name = context.shm_name
-    sre_name = config.sanitise_sre_name(sre)
+    sre_name = sanitise_sre_name(sre)
+
+    # sre_pulumi_project = pulumi_config.create_or_select_project(sre_name)
 
     try:
         # Check that SRE option has been provided
@@ -35,7 +40,7 @@ def admin_unregister_users(
         )
 
         # List users
-        users = UserHandler(context, config, graph_api)
+        users = UserHandler(context, config, pulumi_config, graph_api)
         available_usernames = users.get_usernames_azure_ad()
         usernames_to_unregister = []
         for username in usernames:

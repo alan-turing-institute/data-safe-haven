@@ -205,7 +205,7 @@ class StackManager:
             try:
                 self.logger.info(f"Removing Pulumi stack [green]{self.stack_name}[/].")
                 if self._stack:
-                    self.stack_.workspace.remove_stack(self.stack_name)
+                    self._stack.workspace.remove_stack(self.stack_name)
             except automation.CommandError as exc:
                 if "no stack named" not in str(exc):
                     msg = f"Pulumi stack could not be removed.\n{exc}"
@@ -312,13 +312,14 @@ class StackManager:
     def set_config(self, name: str, value: str, *, secret: bool) -> None:
         """Set config values, overwriting any existing value."""
         self.stack.set_config(name, automation.ConfigValue(value=value, secret=secret))
+        self.update_dsh_pulumi_project()
 
     def teardown(self) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
         try:
             self.refresh()
             self.destroy()
-            self.remove_workdir()
+            self.update_dsh_pulumi_project()
         except Exception as exc:
             msg = f"Tearing down Pulumi infrastructure failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
@@ -334,13 +335,15 @@ class StackManager:
                 **self.pulumi_extra_args,
             )
             self.evaluate(result.summary.result)
+            self.update_dsh_pulumi_project()
         except automation.CommandError as exc:
             msg = f"Pulumi update failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
     @property
     def stack_all_config(self) -> MutableMapping[str, ConfigValue]:
-        return self.stack.get_all_config()
+        stack_all_config: MutableMapping[str, ConfigValue] = self.stack.get_all_config()
+        return stack_all_config
 
     def update_dsh_pulumi_project(self) -> None:
         """Update persistent data in the DSHPulumiProject object"""
