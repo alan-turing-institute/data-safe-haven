@@ -8,8 +8,6 @@ from data_safe_haven.infrastructure.stack_manager import (
     StackManager,
 )
 
-# from data_safe_haven.external.api.azure_cli import AzureCliSingleton
-
 
 @fixture
 def mock_azure_cli_confirm(monkeypatch):
