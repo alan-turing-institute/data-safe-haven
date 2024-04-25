@@ -5,11 +5,11 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.config import (
+from data_safe_haven.context import (
     Context,
+    ContextInfra,
     ContextSettings,
 )
-from data_safe_haven.context import ContextInfra
 from data_safe_haven.functions.typer_validators import typer_validate_aad_guid
 
 context_command_group = typer.Typer()

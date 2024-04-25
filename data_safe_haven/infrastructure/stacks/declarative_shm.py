@@ -2,7 +2,8 @@
 
 import pulumi
 
-from data_safe_haven.config import Config, Context
+from data_safe_haven.config import Config
+from data_safe_haven.context import Context
 
 from .shm.data import SHMDataComponent, SHMDataProps
 from .shm.firewall import SHMFirewallComponent, SHMFirewallProps

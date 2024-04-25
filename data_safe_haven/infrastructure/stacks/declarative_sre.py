@@ -2,7 +2,8 @@
 
 import pulumi
 
-from data_safe_haven.config import Config, Context
+from data_safe_haven.config import Config
+from data_safe_haven.context import Context
 from data_safe_haven.infrastructure.common import get_subscription_id_from_rg
 
 from .sre.application_gateway import (

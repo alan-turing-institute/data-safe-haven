@@ -12,7 +12,8 @@ from typing import Any
 from pulumi import automation
 from pulumi.automation import ConfigValue
 
-from data_safe_haven.config import Config, Context, DSHPulumiProject
+from data_safe_haven.config import Config, DSHPulumiProject
+from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCliSingleton
 from data_safe_haven.functions import replace_separators

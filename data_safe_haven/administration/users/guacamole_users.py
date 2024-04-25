@@ -2,7 +2,8 @@ import pathlib
 from collections.abc import Sequence
 from typing import Any
 
-from data_safe_haven.config import Config, Context, DSHPulumiProject
+from data_safe_haven.config import Config, DSHPulumiProject
+from data_safe_haven.context import Context
 from data_safe_haven.external import AzureApi, AzurePostgreSQLDatabase
 from data_safe_haven.infrastructure import SREStackManager
 

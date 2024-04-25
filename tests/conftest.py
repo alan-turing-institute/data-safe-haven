@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pytest import fixture
 
-import data_safe_haven.config.context_settings as context_mod
+import data_safe_haven.context.context_settings as context_mod
 from data_safe_haven.config import (
     Config,
     ConfigSectionAzure,
@@ -12,7 +12,7 @@ from data_safe_haven.config import (
     DSHPulumiConfig,
     DSHPulumiProject,
 )
-from data_safe_haven.config_settings import Context
+from data_safe_haven.context import Context
 from data_safe_haven.external import AzureApi
 
 

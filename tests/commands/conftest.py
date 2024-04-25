@@ -1,7 +1,7 @@
 from pytest import fixture
 from typer.testing import CliRunner
 
-from data_safe_haven.config_settings import ContextSettings
+from data_safe_haven.context import ContextSettings
 
 
 @fixture

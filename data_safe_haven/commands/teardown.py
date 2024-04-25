@@ -4,7 +4,8 @@ from typing import Annotated
 
 import typer
 
-from data_safe_haven.config import Config, ContextSettings, DSHPulumiConfig
+from data_safe_haven.config import Config, DSHPulumiConfig
+from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import (
     DataSafeHavenError,
     DataSafeHavenInputError,
