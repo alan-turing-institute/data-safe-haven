@@ -4,7 +4,7 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel
 
-from .serialisable_config import SerialisableConfig
+from data_safe_haven.utility import AzureSerialisableModel
 
 
 class DSHPulumiProject(BaseModel, validate_assignment=True):
@@ -21,7 +21,7 @@ class DSHPulumiProject(BaseModel, validate_assignment=True):
         return hash(self.stack_config)
 
 
-class DSHPulumiConfig(SerialisableConfig):
+class DSHPulumiConfig(AzureSerialisableModel):
     config_type: ClassVar[str] = "Pulumi"
     filename: ClassVar[str] = "pulumi.yaml"
     projects: dict[str, DSHPulumiProject]

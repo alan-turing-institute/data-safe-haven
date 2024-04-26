@@ -6,7 +6,6 @@ from .config import (
     ConfigSubsectionRemoteDesktopOpts,
 )
 from .pulumi import DSHPulumiConfig, DSHPulumiProject
-from .serialisable_config import SerialisableConfig
 
 __all__ = [
     "Config",
@@ -14,7 +13,6 @@ __all__ = [
     "ConfigSectionSHM",
     "ConfigSectionSRE",
     "ConfigSubsectionRemoteDesktopOpts",
-    "SerialisableConfig",
     "DSHPulumiConfig",
     "DSHPulumiProject",
 ]

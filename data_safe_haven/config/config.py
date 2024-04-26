@@ -13,6 +13,7 @@ from pydantic import (
 from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.functions.validators import validate_unique_list
 from data_safe_haven.utility import (
+    AzureSerialisableModel,
     DatabaseSystem,
     LoggingSingleton,
     SoftwarePackageCategory,
@@ -26,8 +27,6 @@ from data_safe_haven.utility.annotated_types import (
     TimeZone,
     UniqueList,
 )
-
-from .serialisable_config import SerialisableConfig
 
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):
@@ -186,7 +185,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         )
 
 
-class Config(SerialisableConfig):
+class Config(AzureSerialisableModel):
     config_type: ClassVar[str] = "Config"
     filename: ClassVar[str] = "config.yaml"
     azure: ConfigSectionAzure
