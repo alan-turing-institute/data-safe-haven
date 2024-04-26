@@ -4,6 +4,7 @@ from .file_reader import FileReader
 from .logger import LoggingSingleton, NonLoggingSingleton
 from .singleton import Singleton
 from .types import PathType
+from .yaml_serialisable_model import YAMLSerialisableModel
 
 __all__ = [
     "config_dir",
@@ -14,4 +15,5 @@ __all__ = [
     "PathType",
     "Singleton",
     "SoftwarePackageCategory",
+    "YAMLSerialisableModel",
 ]
