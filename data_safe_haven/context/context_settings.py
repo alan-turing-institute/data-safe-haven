@@ -101,7 +101,7 @@ class Context(BaseModel, validate_assignment=True):
 
 
 class ContextSettings(YAMLSerialisableModel):
-    """Load global and local settings from dotfiles with structure like the following
+    """Load available and current contexts from YAML files structured as follows:
 
     selected: acme_deployment
     contexts:
@@ -110,6 +110,11 @@ class ContextSettings(YAMLSerialisableModel):
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             location: uksouth
             subscription_name: Data Safe Haven (Acme)
+        acme_testing:
+            name: Acme Testing
+            admin_group_id: 32ebe412-e198-41f3-88f6-bc6687eb471b
+            location: ukwest
+            subscription_name: Data Safe Haven (Acme Testing)
         ...
     """
 
