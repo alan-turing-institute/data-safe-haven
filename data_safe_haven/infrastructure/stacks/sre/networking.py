@@ -68,6 +68,9 @@ class SRENetworkingProps:
         self.subnet_user_services_software_repositories_iprange = subnet_ranges.apply(
             lambda s: s.user_services_software_repositories
         )
+        self.subnet_user_services_update_servers_iprange = subnet_ranges.apply(
+            lambda s: s.user_services_update_servers
+        )
         self.subnet_workspaces_iprange = subnet_ranges.apply(lambda s: s.workspaces)
         # Other variables
         self.dns_resource_group_name = dns_resource_group_name
@@ -167,6 +170,9 @@ class SRENetworkingComponent(ComponentResource):
             props.subnet_user_services_software_repositories_iprange.apply(
                 lambda r: str(r)
             )
+        )
+        subnet_user_services_update_servers_prefix = (
+            props.subnet_user_services_update_servers_iprange.apply(lambda r: str(r))
         )
         subnet_workspaces_prefix = props.subnet_workspaces_iprange.apply(
             lambda r: str(r)
@@ -1005,6 +1011,101 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
+        nsg_user_services_update_servers = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_update_servers",
+            network_security_group_name=f"{stack_name}-nsg-user-services-update-servers",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from SRE workspaces.",
+                    destination_address_prefix=subnet_user_services_update_servers_prefix,
+                    destination_port_ranges=[Ports.HTTP, Ports.HTTPS, Ports.SQUID],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=[Ports.DNS],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_update_servers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to configuration data endpoints.",
+                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDataConfigurationEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_user_services_update_servers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to external repositories over the internet.",
+                    destination_address_prefix="Internet",
+                    destination_port_ranges=[Ports.HTTP, Ports.HTTPS],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowPackagesInternetOutbound",
+                    priority=NetworkingPriorities.EXTERNAL_INTERNET,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_user_services_update_servers_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
         nsg_workspaces = network.NetworkSecurityGroup(
             f"{self._name}_nsg_workspaces",
             network_security_group_name=f"{stack_name}-nsg-workspaces",
@@ -1078,7 +1179,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=props.shm_subnet_update_servers_prefix,
                     destination_port_ranges=[Ports.LINUX_UPDATE],
                     direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLinuxUpdatesOutbound",
+                    name="AllowSHMLinuxUpdatesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SHM_UPDATE_SERVERS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
@@ -1146,6 +1247,18 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to Linux update servers.",
+                    destination_address_prefix=subnet_user_services_update_servers_prefix,
+                    destination_port_ranges=[Ports.LINUX_UPDATE],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowLinuxUpdatesOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_UPDATE_SERVERS,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound configuration traffic over the internet.",
                     destination_address_prefix="Internet",
                     destination_port_range="*",
@@ -1188,6 +1301,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_user_services_software_repositories_name = (
             "UserServicesSoftwareRepositoriesSubnet"
         )
+        subnet_user_services_update_servers_name = "UserServicesUpdateServersSubnet"
         subnet_workspaces_name = "WorkspacesSubnet"
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
@@ -1326,6 +1440,15 @@ class SRENetworkingComponent(ComponentResource):
                     name=subnet_user_services_software_repositories_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_software_repositories.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),
+                # User services update servers
+                network.SubnetArgs(
+                    address_prefix=subnet_user_services_update_servers_prefix,
+                    name=subnet_user_services_update_servers_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_user_services_update_servers.id
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
@@ -1571,6 +1694,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_user_services_software_repositories = network.get_subnet_output(
             subnet_name=subnet_user_services_software_repositories_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_user_services_update_servers = network.get_subnet_output(
+            subnet_name=subnet_user_services_update_servers_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

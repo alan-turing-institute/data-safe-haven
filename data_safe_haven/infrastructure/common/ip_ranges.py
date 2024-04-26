@@ -21,6 +21,7 @@ class SREIpRanges:
         self.user_services_containers_support = self.vnet.next_subnet(8)
         self.user_services_databases = self.vnet.next_subnet(8)
         self.user_services_software_repositories = self.vnet.next_subnet(8)
+        self.user_services_update_servers = self.vnet.next_subnet(8)
         self.workspaces = self.vnet.next_subnet(256)
 
 
