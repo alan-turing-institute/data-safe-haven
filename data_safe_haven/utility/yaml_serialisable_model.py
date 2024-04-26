@@ -22,7 +22,7 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
     """
 
     @classmethod
-    def from_file(cls: type[T], config_file_path: PathType) -> T:
+    def from_filepath(cls: type[T], config_file_path: PathType) -> T:
         """Construct a YAMLSerialisableModel from a YAML file"""
         try:
             with open(Path(config_file_path), encoding="utf-8") as f_yaml:
@@ -51,7 +51,7 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
             msg = f"Could not load {cls.config_type} configuration.\n{exc}"
             raise DataSafeHavenParameterError(msg) from exc
 
-    def to_file(self, config_file_path: PathType) -> None:
+    def to_filepath(self, config_file_path: PathType) -> None:
         """Serialise a YAMLSerialisableModel to a YAML file"""
         # Create the parent directory if it does not exist then write YAML
         _config_file_path = Path(config_file_path)
