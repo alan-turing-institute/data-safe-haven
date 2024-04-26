@@ -146,13 +146,13 @@ class TestDSHPulumiConfig:
         )
 
     def test_from_remote_or_create(self, pulumi_config_yaml, context):
-        with patch.object(
-            AzureApi, "blob_exists", return_value=True
-        ) as mock_exists:
+        with patch.object(AzureApi, "blob_exists", return_value=True) as mock_exists:
             with patch.object(
                 AzureApi, "download_blob", return_value=pulumi_config_yaml
             ) as mock_download:
-                pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
+                pulumi_config = DSHPulumiConfig.from_remote_or_create(
+                    context, projects={}
+                )
 
         assert isinstance(pulumi_config, DSHPulumiConfig)
         assert pulumi_config["my_project"]
@@ -172,10 +172,10 @@ class TestDSHPulumiConfig:
             context.storage_container_name,
         )
 
-    def test_from_remote_or_create_create(self, pulumi_config_yaml, context):
-        with patch.object(
-            AzureApi, "blob_exists", return_value=False
-        ) as mock_exists:
+    def test_from_remote_or_create_create(
+        self, pulumi_config_yaml, context  # noqa: ARG002
+    ):
+        with patch.object(AzureApi, "blob_exists", return_value=False) as mock_exists:
             pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
 
         assert isinstance(pulumi_config, DSHPulumiConfig)

@@ -30,7 +30,7 @@ def shm(
     """Deploy a Safe Haven Management component"""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
-    pulumi_config = DSHPulumiConfig.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
     pulumi_project = pulumi_config.create_or_select_project(context.shm_name)
 
     try:
