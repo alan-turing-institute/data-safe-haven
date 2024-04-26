@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import ClassVar, TypeVar
+from typing import Any, ClassVar, TypeVar
 
 import yaml
 from pydantic import BaseModel, ValidationError
@@ -67,3 +67,18 @@ class ConfigClass(BaseModel, validate_assignment=True):
             context.storage_container_name,
         )
         return cls.from_yaml(config_yaml)
+
+    @classmethod
+    def from_remote_or_create(
+        cls: type[T], context: Context, **default_args: dict[Any, Any]
+    ) -> T:
+        azure_api = AzureApi(subscription_name=context.subscription_name)
+        if azure_api.blob_exists(
+            cls.filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        ):
+            return cls.from_remote(context)
+        else:
+            return cls(**default_args)

@@ -145,6 +145,49 @@ class TestDSHPulumiConfig:
             context.storage_container_name,
         )
 
+    def test_from_remote_or_create(self, pulumi_config_yaml, context):
+        with patch.object(
+            AzureApi, "blob_exists", return_value=True
+        ) as mock_exists:
+            with patch.object(
+                AzureApi, "download_blob", return_value=pulumi_config_yaml
+            ) as mock_download:
+                pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
+
+        assert isinstance(pulumi_config, DSHPulumiConfig)
+        assert pulumi_config["my_project"]
+        assert len(pulumi_config.projects) == 2
+
+        mock_exists.assert_called_once_with(
+            DSHPulumiConfig.filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
+
+        mock_download.assert_called_once_with(
+            DSHPulumiConfig.filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
+
+    def test_from_remote_or_create_create(self, pulumi_config_yaml, context):
+        with patch.object(
+            AzureApi, "blob_exists", return_value=False
+        ) as mock_exists:
+            pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
+
+        assert isinstance(pulumi_config, DSHPulumiConfig)
+        assert len(pulumi_config.projects) == 0
+
+        mock_exists.assert_called_once_with(
+            DSHPulumiConfig.filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
+
     def test_create_or_select_project(self, pulumi_config, pulumi_project):
         assert len(pulumi_config.project_names) == 2
         project = pulumi_config.create_or_select_project("my_project")
