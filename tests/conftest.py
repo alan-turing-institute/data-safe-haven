@@ -43,7 +43,7 @@ def context(context_dict):
 
 @fixture
 def context_no_secrets(monkeypatch, context_dict):
-    monkeypatch.setattr(Context, "pulumi_secrets_provider_url", lambda: None)
+    monkeypatch.setattr(Context, "pulumi_secrets_provider_url", None)
     return Context(**context_dict)
 
 
