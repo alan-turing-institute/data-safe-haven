@@ -1272,13 +1272,14 @@ class AzureApi(AzureAuthenticator):
         resource_group_name: str,
         storage_account_name: str,
         storage_container_name: str,
-    ) -> None:
+    ) -> bool:
         blob_client = self.blob_client(
             resource_group_name, storage_account_name, storage_container_name, blob_name
         )
         # Upload the created file
-        exists = blob_client.exists()
+        exists: bool = blob_client.exists()
         response = "exists" if exists else "does not exist"
         self.logger.info(
             f"File [green]{blob_name}[/] {response} in blob storage.",
         )
+        return exists
