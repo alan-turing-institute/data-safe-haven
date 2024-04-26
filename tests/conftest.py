@@ -21,9 +21,9 @@ from data_safe_haven.external import AzureApi
 @fixture(autouse=True, scope="session")
 def local_pulumi_login():
     pulumi_path = which("pulumi")
-    run([pulumi_path, "login", "--local"])
+    run([pulumi_path, "login", "--local"], check=False)
     yield
-    run([pulumi_path, "logout"])
+    run([pulumi_path, "logout"], check=False)
 
 
 @fixture
