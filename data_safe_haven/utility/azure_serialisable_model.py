@@ -1,3 +1,5 @@
+"""A YAMLSerialisableModel that can be serialised to and from Azure"""
+
 from typing import Any, ClassVar, TypeVar
 
 from data_safe_haven.context import Context
