@@ -13,6 +13,7 @@ from .software_repositories import (
     SRESoftwareRepositoriesComponent,
     SRESoftwareRepositoriesProps,
 )
+from .update_server import SREUpdateServerComponent, SREUpdateServerProps
 
 
 class SREUserServicesProps:
@@ -199,3 +200,22 @@ class SREUserServicesComponent(ComponentResource):
                 opts=child_opts,
                 tags=child_tags,
             )
+
+        # Deploy the Ubuntu update server
+        SREUpdateServerComponent(
+            "sre_update_server",
+            stack_name,
+            SREUpdateServerProps(
+                containers_subnet_id=props.subnet_containers_id,
+                dns_resource_group_name=props.dns_resource_group_name,
+                dns_server_ip=props.dns_server_ip,
+                networking_resource_group_name=props.networking_resource_group_name,
+                sre_fqdn=props.sre_fqdn,
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
+                storage_account_resource_group_name=props.storage_account_resource_group_name,
+                user_services_resource_group_name=resource_group.name,
+            ),
+            opts=child_opts,
+            tags=child_tags,
+        )
