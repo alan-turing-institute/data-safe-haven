@@ -13,13 +13,13 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi
 
-T = TypeVar("T", bound="ConfigClass")
+T = TypeVar("T", bound="SerialisableConfig")
 
 
-class ConfigClass(BaseModel, validate_assignment=True):
+class SerialisableConfig(BaseModel, validate_assignment=True):
     """Base class for configuration that can be written to Azure storage"""
 
-    config_type: ClassVar[str] = "ConfigClass"
+    config_type: ClassVar[str] = "SerialisableConfig"
     filename: ClassVar[str] = "config.yaml"
 
     def to_yaml(self) -> str:

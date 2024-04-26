@@ -4,7 +4,7 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel
 
-from data_safe_haven.config import ConfigClass
+from .serialisable_config import SerialisableConfig
 
 
 class DSHPulumiProject(BaseModel, validate_assignment=True):
@@ -21,7 +21,7 @@ class DSHPulumiProject(BaseModel, validate_assignment=True):
         return hash(self.stack_config)
 
 
-class DSHPulumiConfig(ConfigClass):
+class DSHPulumiConfig(SerialisableConfig):
     config_type: ClassVar[str] = "Pulumi"
     filename: ClassVar[str] = "pulumi.yaml"
     projects: dict[str, DSHPulumiProject]

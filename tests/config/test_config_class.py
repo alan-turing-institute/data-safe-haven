@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from pytest import fixture, raises
 
-from data_safe_haven.config import ConfigClass
+from data_safe_haven.config import SerialisableConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
@@ -10,7 +10,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.external import AzureApi
 
 
-class ExampleConfigClass(ConfigClass):
+class ExampleSerialisableConfig(SerialisableConfig):
     config_type = "Example"
     filename = "file.yaml"
     string: str
@@ -20,7 +20,9 @@ class ExampleConfigClass(ConfigClass):
 
 @fixture
 def example_config_class():
-    return ExampleConfigClass(string="hello", integer=5, list_of_integers=[1, 2, 3])
+    return ExampleSerialisableConfig(
+        string="hello", integer=5, list_of_integers=[1, 2, 3]
+    )
 
 
 @fixture
@@ -31,10 +33,10 @@ list_of_integers: [-1,0,1]
 """
 
 
-class TestConfigClass:
+class TestSerialisableConfig:
     def test_constructor(self, example_config_class):
-        assert isinstance(example_config_class, ExampleConfigClass)
-        assert isinstance(example_config_class, ConfigClass)
+        assert isinstance(example_config_class, ExampleSerialisableConfig)
+        assert isinstance(example_config_class, SerialisableConfig)
         assert example_config_class.string == "hello"
 
     def test_to_yaml(self, example_config_class):
@@ -57,9 +59,9 @@ class TestConfigClass:
         )
 
     def test_from_yaml(self, example_config_yaml):
-        example_config_class = ExampleConfigClass.from_yaml(example_config_yaml)
-        assert isinstance(example_config_class, ExampleConfigClass)
-        assert isinstance(example_config_class, ConfigClass)
+        example_config_class = ExampleSerialisableConfig.from_yaml(example_config_yaml)
+        assert isinstance(example_config_class, ExampleSerialisableConfig)
+        assert isinstance(example_config_class, SerialisableConfig)
         assert example_config_class.string == "abc"
         assert example_config_class.integer == -3
         assert example_config_class.list_of_integers == [-1, 0, 1]
@@ -73,7 +75,7 @@ list_of_integers: [-1,0,1
             DataSafeHavenConfigError,
             match="Could not parse Example configuration as YAML.",
         ):
-            ExampleConfigClass.from_yaml(yaml)
+            ExampleSerialisableConfig.from_yaml(yaml)
 
     def test_from_yaml_not_dict(self):
         yaml = """42"""
@@ -81,7 +83,7 @@ list_of_integers: [-1,0,1
             DataSafeHavenConfigError,
             match="Unable to parse Example configuration as a dict.",
         ):
-            ExampleConfigClass.from_yaml(yaml)
+            ExampleSerialisableConfig.from_yaml(yaml)
 
     def test_from_yaml_validation_error(self):
         yaml = """string: 'abc'
@@ -92,15 +94,15 @@ list_of_integers: [-1,0,1]
             DataSafeHavenParameterError,
             match="Could not load Example configuration.",
         ):
-            ExampleConfigClass.from_yaml(yaml)
+            ExampleSerialisableConfig.from_yaml(yaml)
 
     def test_from_remote(self, context, example_config_yaml):
         with patch.object(
             AzureApi, "download_blob", return_value=example_config_yaml
         ) as mock_method:
-            example_config = ExampleConfigClass.from_remote(context)
+            example_config = ExampleSerialisableConfig.from_remote(context)
 
-        assert isinstance(example_config, ExampleConfigClass)
+        assert isinstance(example_config, ExampleSerialisableConfig)
         assert example_config.string == "abc"
 
         mock_method.assert_called_once_with(
