@@ -42,6 +42,12 @@ def context(context_dict):
 
 
 @fixture
+def context_no_secrets(monkeypatch, context_dict):
+    monkeypatch.setattr(Context, "pulumi_secrets_provider_url", lambda: None)
+    return Context(**context_dict)
+
+
+@fixture
 def context_tmpdir(context_dict, tmpdir, monkeypatch):
     monkeypatch.setattr(context_mod, "config_dir", lambda: Path(tmpdir))
     return Context(**context_dict), tmpdir

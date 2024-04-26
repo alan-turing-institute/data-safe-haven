@@ -33,7 +33,7 @@ def offline_pulumi_account(monkeypatch, mock_azure_cli_confirm):  # noqa: ARG001
 
 @fixture
 def shm_stack_manager(
-    context,
+    context_no_secrets,
     config_sres,
     pulumi_project,
     mock_azure_cli_confirm,  # noqa: ARG001
@@ -41,22 +41,22 @@ def shm_stack_manager(
     mock_key_vault_key,  # noqa: ARG001
     offline_pulumi_account,  # noqa: ARG001
 ):
-    return SHMStackManager(context, config_sres, pulumi_project)
+    return SHMStackManager(context_no_secrets, config_sres, pulumi_project)
 
 
 class TestSHMStackManager:
     def test_constructor(
         self,
-        context,
+        context_no_secrets,
         config_sres,
         pulumi_project,
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
     ):
-        shm = SHMStackManager(context, config_sres, pulumi_project)
+        shm = SHMStackManager(context_no_secrets, config_sres, pulumi_project)
         assert isinstance(shm, SHMStackManager)
         assert isinstance(shm, StackManager)
-        assert shm.context == context
+        assert shm.context == context_no_secrets
         assert shm.cfg == config_sres
         assert shm.pulumi_project == pulumi_project
 
