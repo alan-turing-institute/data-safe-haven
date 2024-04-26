@@ -60,7 +60,7 @@ from azure.mgmt.storage.v2021_08_01.models import (
     StorageAccountKey,
     StorageAccountListKeysResult,
 )
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobClient, BlobServiceClient
 from azure.storage.filedatalake import DataLakeServiceClient
 
 from data_safe_haven.exceptions import (
@@ -79,6 +79,32 @@ class AzureApi(AzureAuthenticator):
     ) -> None:
         super().__init__(subscription_name)
         self.logger = NonLoggingSingleton() if disable_logging else LoggingSingleton()
+
+    def blob_client(
+        self,
+        resource_group_name: str,
+        storage_account_name: str,
+        storage_container_name: str,
+        blob_name: str,
+    ) -> BlobClient:
+        """Construct a client for a blob which may exist or not"""
+        # Connect to Azure client
+        storage_account_keys = self.get_storage_account_keys(
+            resource_group_name, storage_account_name
+        )
+        blob_service_client = BlobServiceClient.from_connection_string(
+            f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
+        )
+
+        if not isinstance(blob_service_client, BlobServiceClient):
+            msg = f"Could not connect to storage account '{storage_account_name}'."
+            raise DataSafeHavenAzureError(msg)
+
+        blob_client = blob_service_client.get_blob_client(
+            container=storage_container_name, blob=blob_name
+        )
+
+        return blob_client
 
     def compile_desired_state(
         self,
@@ -181,20 +207,13 @@ class AzureApi(AzureAuthenticator):
             DataSafeHavenAzureError if the blob could not be downloaded
         """
         try:
-            # Connect to Azure client
-            storage_account_keys = self.get_storage_account_keys(
-                resource_group_name, storage_account_name
+            blob_client = self.blob_client(
+                resource_group_name,
+                storage_account_name,
+                storage_container_name,
+                blob_name,
             )
-            blob_service_client = BlobServiceClient.from_connection_string(
-                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
-            )
-            if not isinstance(blob_service_client, BlobServiceClient):
-                msg = f"Could not connect to storage account '{storage_account_name}'."
-                raise DataSafeHavenAzureError(msg)
             # Download the requested file
-            blob_client = blob_service_client.get_blob_client(
-                container=storage_container_name, blob=blob_name
-            )
             return str(blob_client.download_blob(encoding="utf-8").readall())
         except Exception as exc:
             msg = f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'\n{exc}."
@@ -1232,20 +1251,13 @@ class AzureApi(AzureAuthenticator):
             DataSafeHavenAzureError if the blob could not be uploaded
         """
         try:
-            # Connect to Azure client
-            storage_account_keys = self.get_storage_account_keys(
-                resource_group_name, storage_account_name
+            blob_client = self.blob_client(
+                resource_group_name,
+                storage_account_name,
+                storage_container_name,
+                blob_name,
             )
-            blob_service_client = BlobServiceClient.from_connection_string(
-                f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
-            )
-            if not isinstance(blob_service_client, BlobServiceClient):
-                msg = f"Could not connect to storage account '{storage_account_name}'."
-                raise DataSafeHavenAzureError(msg)
             # Upload the created file
-            blob_client = blob_service_client.get_blob_client(
-                container=storage_container_name, blob=blob_name
-            )
             blob_client.upload_blob(blob_data, overwrite=True)
             self.logger.info(
                 f"Uploaded file [green]{blob_name}[/] to blob storage.",
@@ -1253,3 +1265,20 @@ class AzureApi(AzureAuthenticator):
         except Exception as exc:
             msg = f"Blob file '{blob_name}' could not be uploaded to '{storage_account_name}'\n{exc}."
             raise DataSafeHavenAzureError(msg) from exc
+
+    def blob_exists(
+        self,
+        blob_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        storage_container_name: str,
+    ) -> None:
+        blob_client = self.blob_client(
+            resource_group_name, storage_account_name, storage_container_name, blob_name
+        )
+        # Upload the created file
+        exists = blob_client.exists()
+        response = "exists" if exists else "does not exist"
+        self.logger.info(
+            f"File [green]{blob_name}[/] {response} in blob storage.",
+        )
