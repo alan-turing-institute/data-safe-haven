@@ -66,9 +66,6 @@ def shm(
         else:
             stack.deploy(force=force)
 
-        # Upload Pulumi config to blob storage
-        pulumi_config.upload(context)
-
         # Add the SHM domain as a custom domain in AzureAD
         graph_api.verify_custom_domain(
             config.shm.fqdn,
@@ -77,7 +74,9 @@ def shm(
     except DataSafeHavenError as exc:
         msg = f"Could not deploy Data Safe Haven Management environment.\n{exc}"
         raise DataSafeHavenError(msg) from exc
-
+    finally:
+        # Upload Pulumi config to blob storage
+        pulumi_config.upload(context)
 
 @deploy_command_group.command()
 def sre(
