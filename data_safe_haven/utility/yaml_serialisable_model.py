@@ -64,4 +64,4 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
 
     def to_yaml(self) -> str:
         """Serialise a YAMLSerialisableModel to a YAML string"""
-        return yaml.dump(self.model_dump(by_alias=True), indent=2)
+        return yaml.dump(self.model_dump(by_alias=True, mode="json"), indent=2)
