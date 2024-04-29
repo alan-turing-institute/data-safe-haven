@@ -336,6 +336,7 @@ class DeclarativeSRE:
                 subnet_containers_support=networking.subnet_user_services_containers_support,
                 subnet_databases=networking.subnet_user_services_databases,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
+                subnet_update_servers=networking.subnet_user_services_update_servers,
             ),
             tags=self.cfg.tags.model_dump(),
         )

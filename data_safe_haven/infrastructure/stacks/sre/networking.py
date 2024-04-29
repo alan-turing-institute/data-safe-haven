@@ -1446,6 +1446,13 @@ class SRENetworkingComponent(ComponentResource):
                 # User services update servers
                 network.SubnetArgs(
                     address_prefix=subnet_user_services_update_servers_prefix,
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
                     name=subnet_user_services_update_servers_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_update_servers.id

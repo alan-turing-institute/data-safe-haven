@@ -45,6 +45,7 @@ class SREUserServicesProps:
         subnet_containers: Input[network.GetSubnetResult],
         subnet_databases: Input[network.GetSubnetResult],
         subnet_software_repositories: Input[network.GetSubnetResult],
+        subnet_update_servers: Input[network.GetSubnetResult],
     ) -> None:
         self.database_service_admin_password = database_service_admin_password
         self.databases = databases
@@ -78,6 +79,9 @@ class SREUserServicesProps:
         self.subnet_software_repositories_id = Output.from_input(
             subnet_software_repositories
         ).apply(get_id_from_subnet)
+        self.subnet_update_servers_id = Output.from_input(subnet_update_servers).apply(
+            get_id_from_subnet
+        )
 
 
 class SREUserServicesComponent(ComponentResource):
@@ -206,7 +210,7 @@ class SREUserServicesComponent(ComponentResource):
             "sre_update_server",
             stack_name,
             SREUpdateServerProps(
-                containers_subnet_id=props.subnet_containers_id,
+                containers_subnet_id=props.subnet_update_servers_id,
                 dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
                 networking_resource_group_name=props.networking_resource_group_name,
