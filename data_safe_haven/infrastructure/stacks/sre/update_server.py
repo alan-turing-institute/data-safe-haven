@@ -145,7 +145,7 @@ class SREUpdateServerComponent(ComponentResource):
                     containerinstance.PortArgs(
                         port=8000,
                         protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
-                    )
+                    ),
                 ],
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),

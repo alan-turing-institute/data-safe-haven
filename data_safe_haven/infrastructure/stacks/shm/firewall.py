@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
+from data_safe_haven.functions import allowed_dns_lookups
 from data_safe_haven.infrastructure.common import (
     FirewallPriorities,
     Ports,
@@ -78,6 +79,10 @@ class SHMFirewallComponent(ComponentResource):
         ]
         sre_remote_desktop_gateway_subnets = [
             str(SREIpRanges(idx).guacamole_containers)
+            for idx in range(1, SREIpRanges.max_index)
+        ]
+        sre_update_server_subnets = [
+            str(SREIpRanges(idx).update_servers)
             for idx in range(1, SREIpRanges.max_index)
         ]
         sre_workspaces_subnets = [
@@ -154,20 +159,7 @@ class SHMFirewallComponent(ComponentResource):
                                 ),
                             ],
                             source_addresses=[props.subnet_update_servers_iprange],
-                            target_fqdns=[
-                                # "apt.postgresql.org",
-                                "archive.ubuntu.com",
-                                "azure.archive.ubuntu.com",
-                                "changelogs.ubuntu.com",
-                                "cloudapp.azure.com",  # this is where azure.archive.ubuntu.com is hosted
-                                # "d20rj4el6vkp4c.cloudfront.net",
-                                # "dbeaver.io",
-                                # "packages.gitlab.com",
-                                "packages.microsoft.com",
-                                # "qgis.org",
-                                "security.ubuntu.com",
-                                # "ubuntu.qgis.org"
-                            ],
+                            target_fqdns=allowed_dns_lookups("apt_updates"),
                         ),
                     ],
                 ),
@@ -240,6 +232,29 @@ class SHMFirewallComponent(ComponentResource):
                             ],
                             source_addresses=sre_remote_desktop_gateway_subnets,
                             target_fqdns=["login.microsoftonline.com"],
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(type="Allow"),
+                    name=f"{stack_name}-sre-update-servers",
+                    priority=FirewallPriorities.SRE_UPDATE_SERVERS,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external Linux update requests",
+                            name="AllowExternalLinuxUpdate",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=80,
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
+                                ),
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=443,
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                ),
+                            ],
+                            source_addresses=sre_update_server_subnets,
+                            target_fqdns=allowed_dns_lookups("apt_updates"),
                         ),
                     ],
                 ),

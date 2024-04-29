@@ -90,7 +90,7 @@ class SHMUpdateServersComponent(ComponentResource):
         self,
     ) -> str:
         with open(
-            resources_path / "update_servers" / "update_server_linux.cloud_init.yaml",
+            resources_path / "update_server" / "update_server_linux.cloud_init.yaml",
             encoding="utf-8",
         ) as f_cloudinit:
             cloudinit = f_cloudinit.read()
