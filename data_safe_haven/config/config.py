@@ -13,7 +13,6 @@ from pydantic import (
 from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.functions.validators import validate_unique_list
 from data_safe_haven.utility import (
-    AzureSerialisableModel,
     DatabaseSystem,
     LoggingSingleton,
     SoftwarePackageCategory,
@@ -27,6 +26,7 @@ from data_safe_haven.utility.annotated_types import (
     TimeZone,
     UniqueList,
 )
+from .azure_serialisable_model import AzureSerialisableModel
 
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):

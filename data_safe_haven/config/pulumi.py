@@ -4,7 +4,7 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel
 
-from data_safe_haven.utility import AzureSerialisableModel
+from .azure_serialisable_model import AzureSerialisableModel
 
 
 class DSHPulumiProject(BaseModel, validate_assignment=True):
