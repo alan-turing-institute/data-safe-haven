@@ -53,7 +53,7 @@ jobs:
       - name: Create pull request
         if: ${{ ! env.ACT }}
         id: pull-request
-        uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e  # This commit corresponds to tag 6.0.5
+        uses: peter-evans/create-pull-request@v6.0.5
         with:
           commit-message: Update SRD package versions
           committer: GitHub Actions <noreply@github.com>
