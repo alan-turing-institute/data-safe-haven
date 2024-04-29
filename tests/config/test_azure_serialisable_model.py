@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from pytest import fixture, raises
 
-from data_safe_haven.config import SerialisableConfig
+from data_safe_haven.config.azure_serialisable_model import AzureSerialisableModel
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
@@ -10,7 +10,7 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.external import AzureApi
 
 
-class ExampleSerialisableConfig(SerialisableConfig):
+class ExampleAzureSerialisableModel(AzureSerialisableModel):
     config_type = "Example"
     filename = "file.yaml"
     string: str
@@ -20,23 +20,20 @@ class ExampleSerialisableConfig(SerialisableConfig):
 
 @fixture
 def example_config_class():
-    return ExampleSerialisableConfig(
+    return ExampleAzureSerialisableModel(
         string="hello", integer=5, list_of_integers=[1, 2, 3]
     )
 
 
 @fixture
 def example_config_yaml():
-    return """string: 'abc'
-integer: -3
-list_of_integers: [-1,0,1]
-"""
+    return "\n".join(["string: 'abc'", "integer: -3", "list_of_integers: [-1,0,1]"])
 
 
-class TestSerialisableConfig:
+class TestAzureSerialisableModel:
     def test_constructor(self, example_config_class):
-        assert isinstance(example_config_class, ExampleSerialisableConfig)
-        assert isinstance(example_config_class, SerialisableConfig)
+        assert isinstance(example_config_class, ExampleAzureSerialisableModel)
+        assert isinstance(example_config_class, AzureSerialisableModel)
         assert example_config_class.string == "hello"
 
     def test_to_yaml(self, example_config_class):
@@ -59,23 +56,20 @@ class TestSerialisableConfig:
         )
 
     def test_from_yaml(self, example_config_yaml):
-        example_config_class = ExampleSerialisableConfig.from_yaml(example_config_yaml)
-        assert isinstance(example_config_class, ExampleSerialisableConfig)
-        assert isinstance(example_config_class, SerialisableConfig)
+        example_config_class = ExampleAzureSerialisableModel.from_yaml(example_config_yaml)
+        assert isinstance(example_config_class, ExampleAzureSerialisableModel)
+        assert isinstance(example_config_class, AzureSerialisableModel)
         assert example_config_class.string == "abc"
         assert example_config_class.integer == -3
         assert example_config_class.list_of_integers == [-1, 0, 1]
 
     def test_from_yaml_invalid_yaml(self):
-        yaml = """string: 'abc'
-integer: -3
-list_of_integers: [-1,0,1
-"""
+        yaml = "\n".join(["string: 'abc'", "integer: -3", "list_of_integers: [-1,0,1"])
         with raises(
             DataSafeHavenConfigError,
             match="Could not parse Example configuration as YAML.",
         ):
-            ExampleSerialisableConfig.from_yaml(yaml)
+            ExampleAzureSerialisableModel.from_yaml(yaml)
 
     def test_from_yaml_not_dict(self):
         yaml = """42"""
@@ -83,26 +77,24 @@ list_of_integers: [-1,0,1
             DataSafeHavenConfigError,
             match="Unable to parse Example configuration as a dict.",
         ):
-            ExampleSerialisableConfig.from_yaml(yaml)
+            ExampleAzureSerialisableModel.from_yaml(yaml)
 
     def test_from_yaml_validation_error(self):
-        yaml = """string: 'abc'
-integer: 'not an integer'
-list_of_integers: [-1,0,1]
-"""
+        yaml = "\n".join(["string: 'abc'", "integer: 'not an integer'", "list_of_integers: [-1,0,1]"])
+
         with raises(
             DataSafeHavenParameterError,
             match="Could not load Example configuration.",
         ):
-            ExampleSerialisableConfig.from_yaml(yaml)
+            ExampleAzureSerialisableModel.from_yaml(yaml)
 
     def test_from_remote(self, context, example_config_yaml):
         with patch.object(
             AzureApi, "download_blob", return_value=example_config_yaml
         ) as mock_method:
-            example_config = ExampleSerialisableConfig.from_remote(context)
+            example_config = ExampleAzureSerialisableModel.from_remote(context)
 
-        assert isinstance(example_config, ExampleSerialisableConfig)
+        assert isinstance(example_config, ExampleAzureSerialisableModel)
         assert example_config.string == "abc"
 
         mock_method.assert_called_once_with(

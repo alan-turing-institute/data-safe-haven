@@ -1,7 +1,7 @@
 """A pydantic BaseModel that can be serialised to and from YAML"""
 
 from pathlib import Path
-from typing import TypeVar
+from typing import ClassVar, TypeVar
 
 import yaml
 from pydantic import BaseModel, ValidationError
@@ -20,6 +20,8 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
     """
     A pydantic BaseModel that can be serialised to and from YAML
     """
+
+    config_type: ClassVar[str] = "YAMLSerialisableModel"
 
     @classmethod
     def from_filepath(cls: type[T], config_file_path: PathType) -> T:

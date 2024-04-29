@@ -13,6 +13,7 @@ T = TypeVar("T", bound="AzureSerialisableModel")
 class AzureSerialisableModel(YAMLSerialisableModel):
     """Base class for configuration that can be written to Azure storage"""
 
+    config_type: ClassVar[str] = "AzureSerialisableModel"
     filename: ClassVar[str] = "config.yaml"
 
     @classmethod
