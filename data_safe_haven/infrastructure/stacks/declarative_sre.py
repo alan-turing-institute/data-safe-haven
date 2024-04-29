@@ -37,6 +37,7 @@ from .sre.remote_desktop import (
     SRERemoteDesktopComponent,
     SRERemoteDesktopProps,
 )
+from .sre.update_server import SREUpdateServerComponent, SREUpdateServerProps
 from .sre.user_services import (
     SREUserServicesComponent,
     SREUserServicesProps,
@@ -208,6 +209,24 @@ class DeclarativeSRE:
             tags=self.cfg.tags.model_dump(),
         )
 
+        # Deploy the Ubuntu update server
+        SREUpdateServerComponent(
+            "sre_update_server",
+            self.stack_name,
+            SREUpdateServerProps(
+                containers_subnet=networking.subnet_update_servers,
+                dns_resource_group_name=dns.resource_group.name,
+                dns_server_ip=dns.ip_address,
+                location=self.cfg.azure.location,
+                networking_resource_group_name=networking.resource_group.name,
+                sre_fqdn=networking.sre_fqdn,
+                storage_account_key=data.storage_account_data_configuration_key,
+                storage_account_name=data.storage_account_data_configuration_name,
+                storage_account_resource_group_name=data.resource_group_name,
+            ),
+            tags=self.cfg.tags.model_dump(),
+        )
+
         # Deploy identity server
         identity = SREIdentityComponent(
             "sre_identity",
@@ -336,7 +355,6 @@ class DeclarativeSRE:
                 subnet_containers_support=networking.subnet_user_services_containers_support,
                 subnet_databases=networking.subnet_user_services_databases,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
-                subnet_update_servers=networking.subnet_user_services_update_servers,
             ),
             tags=self.cfg.tags.model_dump(),
         )

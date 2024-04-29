@@ -1,9 +1,10 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, storage
+from pulumi_azure_native import containerinstance, resources, storage
 
 from data_safe_haven.infrastructure.common import (
+    get_id_from_subnet,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -21,25 +22,27 @@ class SREUpdateServerProps:
 
     def __init__(
         self,
-        containers_subnet_id: Input[str],
+        containers_subnet: Input[str],
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
+        location: Input[str],
         networking_resource_group_name: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
-        user_services_resource_group_name: Input[str],
     ) -> None:
-        self.containers_subnet_id = containers_subnet_id
+        self.containers_subnet_id = Output.from_input(containers_subnet).apply(
+            get_id_from_subnet
+        )
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
+        self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
-        self.user_services_resource_group_name = user_services_resource_group_name
 
 
 class SREUpdateServerComponent(ComponentResource):
@@ -56,6 +59,15 @@ class SREUpdateServerComponent(ComponentResource):
         super().__init__("dsh:sre:UpdateServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
+
+        # Deploy resource group
+        resource_group = resources.ResourceGroup(
+            f"{self._name}_resource_group",
+            location=props.location,
+            resource_group_name=f"{stack_name}-rg-identity",
+            opts=child_opts,
+            tags=child_tags,
+        )
 
         # Define configuration file shares
         file_share_update_server_proxy = storage.FileShare(
@@ -128,7 +140,7 @@ class SREUpdateServerComponent(ComponentResource):
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
             os_type=containerinstance.OperatingSystemTypes.LINUX,
-            resource_group_name=props.user_services_resource_group_name,
+            resource_group_name=resource_group.name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
             subnet_ids=[

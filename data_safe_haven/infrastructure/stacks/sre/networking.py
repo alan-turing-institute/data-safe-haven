@@ -68,8 +68,8 @@ class SRENetworkingProps:
         self.subnet_user_services_software_repositories_iprange = subnet_ranges.apply(
             lambda s: s.user_services_software_repositories
         )
-        self.subnet_user_services_update_servers_iprange = subnet_ranges.apply(
-            lambda s: s.user_services_update_servers
+        self.subnet_update_servers_iprange = subnet_ranges.apply(
+            lambda s: s.update_servers
         )
         self.subnet_workspaces_iprange = subnet_ranges.apply(lambda s: s.workspaces)
         # Other variables
@@ -171,8 +171,8 @@ class SRENetworkingComponent(ComponentResource):
                 lambda r: str(r)
             )
         )
-        subnet_user_services_update_servers_prefix = (
-            props.subnet_user_services_update_servers_iprange.apply(lambda r: str(r))
+        subnet_update_servers_prefix = props.subnet_update_servers_iprange.apply(
+            lambda r: str(r)
         )
         subnet_workspaces_prefix = props.subnet_workspaces_iprange.apply(
             lambda r: str(r)
@@ -1011,16 +1011,16 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
-        nsg_user_services_update_servers = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_user_services_update_servers",
-            network_security_group_name=f"{stack_name}-nsg-user-services-update-servers",
+        nsg_update_servers = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_update_servers",
+            network_security_group_name=f"{stack_name}-nsg-update-servers",
             resource_group_name=resource_group.name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from SRE workspaces.",
-                    destination_address_prefix=subnet_user_services_update_servers_prefix,
+                    destination_address_prefix=subnet_update_servers_prefix,
                     destination_port_ranges=[Ports.HTTP, Ports.HTTPS, Ports.SQUID],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowWorkspacesInbound",
@@ -1063,7 +1063,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowDNSServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_update_servers_prefix,
+                    source_address_prefix=subnet_update_servers_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1075,7 +1075,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_update_servers_prefix,
+                    source_address_prefix=subnet_update_servers_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1087,7 +1087,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowPackagesInternetOutbound",
                     priority=NetworkingPriorities.EXTERNAL_INTERNET,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_user_services_update_servers_prefix,
+                    source_address_prefix=subnet_update_servers_prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1248,11 +1248,11 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to Linux update servers.",
-                    destination_address_prefix=subnet_user_services_update_servers_prefix,
+                    destination_address_prefix=subnet_update_servers_prefix,
                     destination_port_ranges=[Ports.LINUX_UPDATE],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowLinuxUpdatesOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_UPDATE_SERVERS,
+                    priority=NetworkingPriorities.INTERNAL_SRE_UPDATE_SERVERS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
@@ -1293,6 +1293,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
         subnet_identity_containers_name = "IdentityContainersSubnet"
+        subnet_update_servers_name = "UpdateServersSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
         subnet_user_services_containers_support_name = (
             "UserServicesContainersSupportSubnet"
@@ -1301,7 +1302,6 @@ class SRENetworkingComponent(ComponentResource):
         subnet_user_services_software_repositories_name = (
             "UserServicesSoftwareRepositoriesSubnet"
         )
-        subnet_user_services_update_servers_name = "UserServicesUpdateServersSubnet"
         subnet_workspaces_name = "WorkspacesSubnet"
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
@@ -1393,7 +1393,22 @@ class SRENetworkingComponent(ComponentResource):
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
-                # User services containers
+                # Update servers
+                network.SubnetArgs(
+                    address_prefix=subnet_update_servers_prefix,
+                    delegations=[
+                        network.DelegationArgs(
+                            name="SubnetDelegationContainerGroups",
+                            service_name="Microsoft.ContainerInstance/containerGroups",
+                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
+                        ),
+                    ],
+                    name=subnet_update_servers_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_update_servers.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),  # User services containers
                 network.SubnetArgs(
                     address_prefix=subnet_user_services_containers_prefix,
                     delegations=[
@@ -1440,22 +1455,6 @@ class SRENetworkingComponent(ComponentResource):
                     name=subnet_user_services_software_repositories_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_software_repositories.id
-                    ),
-                    route_table=network.RouteTableArgs(id=route_table.id),
-                ),
-                # User services update servers
-                network.SubnetArgs(
-                    address_prefix=subnet_user_services_update_servers_prefix,
-                    delegations=[
-                        network.DelegationArgs(
-                            name="SubnetDelegationContainerGroups",
-                            service_name="Microsoft.ContainerInstance/containerGroups",
-                            type="Microsoft.Network/virtualNetworks/subnets/delegations",
-                        ),
-                    ],
-                    name=subnet_user_services_update_servers_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_user_services_update_servers.id
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
@@ -1704,8 +1703,8 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
-        self.subnet_user_services_update_servers = network.get_subnet_output(
-            subnet_name=subnet_user_services_update_servers_name,
+        self.subnet_update_servers = network.get_subnet_output(
+            subnet_name=subnet_update_servers_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
