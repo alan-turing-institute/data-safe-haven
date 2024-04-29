@@ -6,7 +6,6 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches: [develop, latest]
   pull_request:
-    branches: [develop, latest]
 
 jobs:
   test_python:
