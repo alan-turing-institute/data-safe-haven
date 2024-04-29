@@ -118,6 +118,7 @@ class ContextSettings(YAMLSerialisableModel):
         ...
     """
 
+    config_type: ClassVar[str] = "ContextSettings"
     selected_: str | None = Field(..., alias="selected")
     contexts: dict[str, Context]
     logger: ClassVar[LoggingSingleton] = LoggingSingleton()
