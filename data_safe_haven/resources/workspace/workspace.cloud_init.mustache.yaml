@@ -4,8 +4,8 @@ write_files:
   - path: "/etc/apt/apt.conf.d/00proxy"
     permissions: "0444"
     content: |
-      Acquire::http::Proxy "http://{{linux_update_server_ip}}:8000";
-      Acquire::https::Proxy "http://{{linux_update_server_ip}}:8000";
+      Acquire::http::Proxy "http://{{update_server_hostname}}:8000";
+      Acquire::https::Proxy "http://{{update_server_hostname}}:8000";
 
   - path: "/etc/nslcd.conf"
     permissions: "0400"

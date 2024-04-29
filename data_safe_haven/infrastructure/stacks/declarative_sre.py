@@ -210,7 +210,7 @@ class DeclarativeSRE:
         )
 
         # Deploy the Ubuntu update server
-        SREUpdateServerComponent(
+        update_server = SREUpdateServerComponent(
             "sre_update_server",
             self.stack_name,
             SREUpdateServerProps(
@@ -303,9 +303,7 @@ class DeclarativeSRE:
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
-                linux_update_server_ip=self.pulumi_opts.require(
-                    "shm-update_servers-ip_address_linux"
-                ),
+                update_server_hostname=update_server.hostname,
                 location=self.cfg.azure.location,
                 log_analytics_workspace_id=self.pulumi_opts.require(
                     "shm-monitoring-log_analytics_workspace_id"

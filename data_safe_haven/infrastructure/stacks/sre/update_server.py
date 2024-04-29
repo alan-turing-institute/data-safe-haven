@@ -46,7 +46,7 @@ class SREUpdateServerProps:
 
 
 class SREUpdateServerComponent(ComponentResource):
-    """Deploy Linux update server with Pulumi"""
+    """Deploy Ubuntu update server proxy with Pulumi"""
 
     def __init__(
         self,
@@ -64,7 +64,7 @@ class SREUpdateServerComponent(ComponentResource):
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"{stack_name}-rg-identity",
+            resource_group_name=f"{stack_name}-rg-update-server",
             opts=child_opts,
             tags=child_tags,
         )
@@ -82,7 +82,7 @@ class SREUpdateServerComponent(ComponentResource):
         )
 
         # Upload allowed repositories
-        reader = FileReader(resources_path / "update_servers" / "repositories.acl")
+        reader = FileReader(resources_path / "update_server" / "repositories.acl")
         file_share_update_server_proxy_repositories = FileShareFile(
             f"{self._name}_file_share_update_server_proxy_repositories",
             FileShareFileProps(
@@ -173,7 +173,7 @@ class SREUpdateServerComponent(ComponentResource):
         )
 
         # Register the container group in the SRE DNS zone
-        LocalDnsRecordComponent(
+        local_dns = LocalDnsRecordComponent(
             f"{self._name}_update_server_dns_record_set",
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
@@ -186,3 +186,6 @@ class SREUpdateServerComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=container_group)
             ),
         )
+
+        # Register outputs
+        self.hostname = local_dns.hostname
