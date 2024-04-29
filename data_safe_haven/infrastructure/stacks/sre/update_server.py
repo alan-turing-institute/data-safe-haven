@@ -106,7 +106,13 @@ class SREUpdateServerComponent(ComponentResource):
                     image="ghcr.io/alan-turing-institute/squid-deb-proxy:main",
                     name="squid-deb-proxy"[:63],
                     environment_variables=[],
+                    # All Azure Container Instances need to expose port 80 on at least
+                    # one container. In this case, there is nothing there.
                     ports=[
+                        containerinstance.ContainerPortArgs(
+                            port=80,
+                            protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
+                        ),
                         containerinstance.ContainerPortArgs(
                             port=8000,
                             protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
@@ -132,6 +138,10 @@ class SREUpdateServerComponent(ComponentResource):
             ),
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
+                    containerinstance.PortArgs(
+                        port=80,
+                        protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
+                    ),
                     containerinstance.PortArgs(
                         port=8000,
                         protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
