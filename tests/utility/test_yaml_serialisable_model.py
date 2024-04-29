@@ -1,11 +1,10 @@
 from pytest import fixture, raises
 
-from data_safe_haven.utility.yaml_serialisable_model import YAMLSerialisableModel
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
-from data_safe_haven.external import AzureApi
+from data_safe_haven.utility.yaml_serialisable_model import YAMLSerialisableModel
 
 
 class ExampleYAMLSerialisableModel(YAMLSerialisableModel):
@@ -41,7 +40,9 @@ class TestYAMLSerialisableModel:
         assert "config_type" not in yaml
 
     def test_from_yaml(self, example_config_yaml):
-        example_config_class = ExampleYAMLSerialisableModel.from_yaml(example_config_yaml)
+        example_config_class = ExampleYAMLSerialisableModel.from_yaml(
+            example_config_yaml
+        )
         assert isinstance(example_config_class, ExampleYAMLSerialisableModel)
         assert isinstance(example_config_class, YAMLSerialisableModel)
         assert example_config_class.string == "abc"
@@ -65,7 +66,9 @@ class TestYAMLSerialisableModel:
             ExampleYAMLSerialisableModel.from_yaml(yaml)
 
     def test_from_yaml_validation_error(self):
-        yaml = "\n".join(["string: 'abc'", "integer: 'not an integer'", "list_of_integers: [-1,0,1]"])
+        yaml = "\n".join(
+            ["string: 'abc'", "integer: 'not an integer'", "list_of_integers: [-1,0,1]"]
+        )
 
         with raises(
             DataSafeHavenParameterError,

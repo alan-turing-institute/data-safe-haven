@@ -26,6 +26,7 @@ from data_safe_haven.utility.annotated_types import (
     TimeZone,
     UniqueList,
 )
+
 from .azure_serialisable_model import AzureSerialisableModel
 
 

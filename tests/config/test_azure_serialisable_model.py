@@ -56,7 +56,9 @@ class TestAzureSerialisableModel:
         )
 
     def test_from_yaml(self, example_config_yaml):
-        example_config_class = ExampleAzureSerialisableModel.from_yaml(example_config_yaml)
+        example_config_class = ExampleAzureSerialisableModel.from_yaml(
+            example_config_yaml
+        )
         assert isinstance(example_config_class, ExampleAzureSerialisableModel)
         assert isinstance(example_config_class, AzureSerialisableModel)
         assert example_config_class.string == "abc"
@@ -80,7 +82,9 @@ class TestAzureSerialisableModel:
             ExampleAzureSerialisableModel.from_yaml(yaml)
 
     def test_from_yaml_validation_error(self):
-        yaml = "\n".join(["string: 'abc'", "integer: 'not an integer'", "list_of_integers: [-1,0,1]"])
+        yaml = "\n".join(
+            ["string: 'abc'", "integer: 'not an integer'", "list_of_integers: [-1,0,1]"]
+        )
 
         with raises(
             DataSafeHavenParameterError,

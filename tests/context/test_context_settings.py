@@ -175,7 +175,8 @@ class TestContextSettings:
     def test_invalid_yaml(self):
         invalid_yaml = "a: [1,2"
         with pytest.raises(
-            DataSafeHavenConfigError, match="Could not parse YAMLSerialisableModel configuration as YAML."
+            DataSafeHavenConfigError,
+            match="Could not parse YAMLSerialisableModel configuration as YAML.",
         ):
             ContextSettings.from_yaml(invalid_yaml)
 
