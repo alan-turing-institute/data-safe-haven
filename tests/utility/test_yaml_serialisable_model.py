@@ -78,19 +78,16 @@ class TestYAMLSerialisableModel:
         ):
             ExampleYAMLSerialisableModel.from_yaml(yaml)
 
-    def test_to_filepath(self, tmp_path, example_config_yaml):
+    def test_to_filepath(self, tmp_path, example_config_class):
         filepath = tmp_path / "test.yaml"
-        example_config_class = ExampleYAMLSerialisableModel.from_yaml(
-            example_config_yaml
-        )
         example_config_class.to_filepath(filepath)
         contents = filepath.read_text().split("\n")
-        assert "string: abc" in contents
-        assert "integer: -3" in contents
+        assert "string: hello" in contents
+        assert "integer: 5" in contents
         assert "list_of_integers:" in contents
-        assert "- -1" in contents
-        assert "- 0" in contents
         assert "- 1" in contents
+        assert "- 2" in contents
+        assert "- 3" in contents
 
     def test_to_yaml(self, example_config_class):
         yaml = example_config_class.to_yaml()
