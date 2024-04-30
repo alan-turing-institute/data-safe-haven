@@ -3,6 +3,7 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, resources, storage
 
+from data_safe_haven.functions import allowed_dns_lookups
 from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
     get_ip_address_from_container_group,
@@ -13,8 +14,6 @@ from data_safe_haven.infrastructure.components import (
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
 )
-from data_safe_haven.resources import resources_path
-from data_safe_haven.utility import FileReader
 
 
 class SREAptProxyServerProps:
@@ -82,13 +81,14 @@ class SREAptProxyServerComponent(ComponentResource):
         )
 
         # Upload allowed repositories
-        reader = FileReader(resources_path / "apt_proxy_server" / "repositories.acl")
+        # reader = FileReader(resources_path / "apt_proxy_server" / "repositories.acl")
+        repositories = "\n".join(allowed_dns_lookups("apt_repositories"))
         file_share_apt_proxy_server_repositories = FileShareFile(
             f"{self._name}_file_share_apt_proxy_server_repositories",
             FileShareFileProps(
-                destination_path=reader.name,
+                destination_path="repositories.acl",
                 share_name=file_share_apt_proxy_server.name,
-                file_contents=Output.secret(reader.file_contents()),
+                file_contents=repositories,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
