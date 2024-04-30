@@ -186,7 +186,7 @@ class SRERemoteDesktopComponent(ComponentResource):
 
         # Define the container group with guacd, guacamole and caddy
         container_group = containerinstance.ContainerGroup(
-            f"{self._name}_container_group_remote_desktop",
+            f"{self._name}_container_group",
             container_group_name=f"{stack_name}-container-group-remote-desktop",
             containers=[
                 containerinstance.ContainerArgs(
