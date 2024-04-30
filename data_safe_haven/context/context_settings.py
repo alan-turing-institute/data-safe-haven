@@ -14,7 +14,8 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
-from data_safe_haven.utility import LoggingSingleton, YAMLSerialisableModel, config_dir
+from data_safe_haven.serialisers import YAMLSerialisableModel
+from data_safe_haven.utility import LoggingSingleton, config_dir
 
 from .context import Context
 

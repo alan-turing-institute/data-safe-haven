@@ -10,8 +10,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
-
-from .types import PathType
+from data_safe_haven.utility import PathType
 
 T = TypeVar("T", bound="YAMLSerialisableModel")
 

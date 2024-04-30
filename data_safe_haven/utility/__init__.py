@@ -5,7 +5,6 @@ from .file_reader import FileReader
 from .logger import LoggingSingleton, NonLoggingSingleton
 from .singleton import Singleton
 from .types import PathType
-from .yaml_serialisable_model import YAMLSerialisableModel
 
 __all__ = [
     "AzureLocation",
@@ -19,5 +18,4 @@ __all__ = [
     "PathType",
     "Singleton",
     "SoftwarePackageCategory",
-    "YAMLSerialisableModel",
 ]

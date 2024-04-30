@@ -4,7 +4,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
-from data_safe_haven.utility.yaml_serialisable_model import YAMLSerialisableModel
+from data_safe_haven.serialisers import YAMLSerialisableModel
 
 
 class ExampleYAMLSerialisableModel(YAMLSerialisableModel):
