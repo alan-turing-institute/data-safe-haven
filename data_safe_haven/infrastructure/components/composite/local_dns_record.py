@@ -44,7 +44,7 @@ class LocalDnsRecordComponent(ComponentResource):
             record_type="A",
             relative_record_set_name=props.record_name,
             resource_group_name=props.private_dns_resource_group_name,
-            ttl=3600,
+            ttl=30,
             opts=child_opts,
         )
 
