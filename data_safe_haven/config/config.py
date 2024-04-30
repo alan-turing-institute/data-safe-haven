@@ -13,19 +13,19 @@ from pydantic import (
 from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.functions.validators import validate_unique_list
 from data_safe_haven.serialisers import AzureSerialisableModel
-from data_safe_haven.utility import (
-    DatabaseSystem,
-    LoggingSingleton,
-    SoftwarePackageCategory,
-)
-from data_safe_haven.utility.annotated_types import (
+from data_safe_haven.types import (
     AzureVmSku,
-    EmailAdress,
+    DatabaseSystem,
+    EmailAddress,
     Fqdn,
     Guid,
     IpAddress,
+    SoftwarePackageCategory,
     TimeZone,
     UniqueList,
+)
+from data_safe_haven.utility import (
+    LoggingSingleton,
 )
 
 
@@ -36,7 +36,7 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
     aad_tenant_id: Guid
-    admin_email_address: EmailAdress
+    admin_email_address: EmailAddress
     admin_ip_addresses: list[IpAddress]
     fqdn: Fqdn
     timezone: TimeZone

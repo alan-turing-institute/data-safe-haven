@@ -6,8 +6,7 @@ from typing import Any
 import chevron
 
 from data_safe_haven.functions import sha256hash
-
-from .types import PathType
+from data_safe_haven.types import PathType
 
 
 class FileReader:

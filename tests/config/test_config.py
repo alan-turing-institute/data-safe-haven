@@ -15,7 +15,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenParameterError,
 )
 from data_safe_haven.external import AzureApi
-from data_safe_haven.utility.enums import DatabaseSystem, SoftwarePackageCategory
+from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
 
 class TestConfigSectionAzure:

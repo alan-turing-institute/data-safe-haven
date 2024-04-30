@@ -15,12 +15,12 @@ from pydantic import BaseModel
 from data_safe_haven import __version__
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.utility import config_dir
-from data_safe_haven.utility.annotated_types import (
+from data_safe_haven.types import (
     AzureLocation,
     AzureLongName,
     Guid,
 )
+from data_safe_haven.utility import config_dir
 
 
 class Context(BaseModel, validate_assignment=True):

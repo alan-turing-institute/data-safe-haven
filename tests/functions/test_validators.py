@@ -5,7 +5,7 @@ from data_safe_haven.functions.validators import (
     validate_fqdn,
     validate_unique_list,
 )
-from data_safe_haven.utility.enums import DatabaseSystem
+from data_safe_haven.types import DatabaseSystem
 
 
 class TestValidateAadGuid:
