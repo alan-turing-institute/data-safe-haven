@@ -198,9 +198,6 @@ def sre(
         else:
             stack.deploy(force=force)
 
-        # Upload Pulumi config to blob storage
-        pulumi_config.upload(context)
-
         # Provision SRE with anything that could not be done in Pulumi
         manager = SREProvisioningManager(
             graph_api_token=graph_api.token,
@@ -214,3 +211,6 @@ def sre(
     except DataSafeHavenError as exc:
         msg = f"Could not deploy Secure Research Environment {sre_name}.\n{exc}"
         raise DataSafeHavenError(msg) from exc
+    finally:
+        # Upload Pulumi config to blob storage
+        pulumi_config.upload(context)
