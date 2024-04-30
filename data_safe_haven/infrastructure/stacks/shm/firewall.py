@@ -113,7 +113,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalAzureAutomationOperations",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type="Https",
                                 )
                             ],
@@ -127,7 +127,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalGoogleNTP",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=123,
+                                    port=int(Ports.NTP),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 )
                             ],
@@ -146,7 +146,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalOAuthLogin",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
@@ -168,7 +168,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalPackageDownloadCRAN",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
@@ -180,7 +180,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalPackageDownloadPyPI",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
@@ -199,7 +199,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalOAuthLogin",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
@@ -218,11 +218,11 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalAptRepositories",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=80,
+                                    port=int(Ports.HTTP),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 ),
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 ),
                             ],
@@ -241,11 +241,11 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalLinuxClamAVUpdate",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=80,
+                                    port=int(Ports.HTTP),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 ),
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 ),
                             ],
@@ -261,7 +261,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalUbuntuKeyserver",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=11371,
+                                    port=int(Ports.CLAMAV),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 ),
                             ],

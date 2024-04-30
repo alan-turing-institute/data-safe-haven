@@ -56,6 +56,7 @@ class NetworkingPriorities(int, Enum):
 
 @verify(UNIQUE)
 class Ports(str, Enum):
+    CLAMAV = "11371"
     DNS = "53"
     HTTP = "80"
     HTTPS = "443"
