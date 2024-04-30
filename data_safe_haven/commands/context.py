@@ -22,8 +22,8 @@ def show() -> None:
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError:
-        print("No context selected.")
-        return
+        print("No context configuration file.")
+        raise typer.Exit(code=1)
 
     current_context_key = settings.selected
     current_context = settings.context

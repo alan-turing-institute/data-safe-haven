@@ -16,8 +16,8 @@ class TestShow:
 
     def test_no_context_file(self, runner_no_context_file):
         result = runner_no_context_file.invoke(context_command_group, ["show"])
-        assert result.exit_code == 0
-        assert "No context selected." in result.stdout
+        assert result.exit_code == 1
+        assert "No context configuration file." in result.stdout
 
 
 class TestAvailable:
