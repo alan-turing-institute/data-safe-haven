@@ -1,7 +1,7 @@
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
 
-from .context_settings import Context
+from .context import Context
 
 
 class ContextInfra:
