@@ -14,6 +14,11 @@ class TestShow:
         assert result.exit_code == 0
         assert "Current context: None" in result.stdout
 
+    def test_no_context_file(self, runner_no_context_file):
+        result = runner_no_context_file.invoke(context_command_group, ["show"])
+        assert result.exit_code == 0
+        assert "No context selected." in result.stdout
+
 
 class TestAvailable:
     def test_available(self, runner):
