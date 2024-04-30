@@ -236,6 +236,9 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                # Attempting to add our standard DenyAzurePlatformDnsOutbound rule will
+                # cause this NSG to fail validation. More details here:
+                # https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-groups
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
@@ -273,7 +276,8 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Attempting to add our standard DenyAllOtherOutbound rule will cause
-                # this NSG to fail validation. See: https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-groups
+                # this NSG to fail validation. More details here:
+                # https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure#network-security-groups
             ],
             opts=child_opts,
             tags=child_tags,
@@ -748,6 +752,30 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to DNS servers.",
+                    destination_address_prefix=dns_servers_prefix,
+                    destination_port_ranges=[Ports.DNS],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDNSServersOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_identity_containers_prefix,
+                    source_port_range="*",
+                ),
             ],
             opts=child_opts,
             tags=child_tags,
