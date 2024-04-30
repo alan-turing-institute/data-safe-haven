@@ -136,45 +136,37 @@ class SRENetworkingComponent(ComponentResource):
         # Set address prefixes from ranges
         dns_servers_prefix = str(props.dns_servers_iprange)
         subnet_application_gateway_prefix = (
-            props.subnet_application_gateway_iprange.apply(lambda r: str(r))
+            props.subnet_application_gateway_iprange.apply(str)
         )
         subnet_apt_proxy_server_prefix = props.subnet_apt_proxy_server_iprange.apply(
-            lambda r: str(r)
+            str
         )
         subnet_data_configuration_prefix = (
-            props.subnet_data_configuration_iprange.apply(lambda r: str(r))
+            props.subnet_data_configuration_iprange.apply(str)
         )
-        subnet_data_private_prefix = props.subnet_data_private_iprange.apply(
-            lambda r: str(r)
-        )
+        subnet_data_private_prefix = props.subnet_data_private_iprange.apply(str)
         subnet_guacamole_containers_prefix = (
-            props.subnet_guacamole_containers_iprange.apply(lambda r: str(r))
+            props.subnet_guacamole_containers_iprange.apply(str)
         )
         subnet_guacamole_containers_support_prefix = (
-            props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
+            props.subnet_guacamole_containers_support_iprange.apply(str)
         )
         subnet_identity_containers_prefix = (
-            props.subnet_identity_containers_iprange.apply(lambda r: str(r))
+            props.subnet_identity_containers_iprange.apply(str)
         )
         subnet_user_services_containers_prefix = (
-            props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
+            props.subnet_user_services_containers_iprange.apply(str)
         )
         subnet_user_services_containers_support_prefix = (
-            props.subnet_user_services_containers_support_iprange.apply(
-                lambda r: str(r)
-            )
+            props.subnet_user_services_containers_support_iprange.apply(str)
         )
         subnet_user_services_databases_prefix = (
-            props.subnet_user_services_databases_iprange.apply(lambda r: str(r))
+            props.subnet_user_services_databases_iprange.apply(str)
         )
         subnet_user_services_software_repositories_prefix = (
-            props.subnet_user_services_software_repositories_iprange.apply(
-                lambda r: str(r)
-            )
+            props.subnet_user_services_software_repositories_iprange.apply(str)
         )
-        subnet_workspaces_prefix = props.subnet_workspaces_iprange.apply(
-            lambda r: str(r)
-        )
+        subnet_workspaces_prefix = props.subnet_workspaces_iprange.apply(str)
 
         # Define NSGs
         nsg_application_gateway = network.NetworkSecurityGroup(
@@ -1292,7 +1284,7 @@ class SRENetworkingComponent(ComponentResource):
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
-                address_prefixes=[props.vnet_iprange.apply(lambda r: str(r))],
+                address_prefixes=[props.vnet_iprange.apply(str)],
             ),
             dhcp_options=network.DhcpOptionsArgs(dns_servers=[props.dns_server_ip]),
             resource_group_name=resource_group.name,

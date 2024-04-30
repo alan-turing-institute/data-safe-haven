@@ -6,6 +6,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources, storage
 
 from data_safe_haven.infrastructure.common import (
+    get_id_from_subnet,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -46,7 +47,7 @@ class SREIdentityProps:
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_containers_id = Output.from_input(subnet_containers).apply(
-            lambda s: str(s.id)
+            get_id_from_subnet
         )
 
 
