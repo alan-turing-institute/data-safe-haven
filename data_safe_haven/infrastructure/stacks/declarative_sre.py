@@ -146,9 +146,6 @@ class DeclarativeSRE:
                 shm_subnet_monitoring_prefix=self.pulumi_opts.require(
                     "shm-networking-subnet_subnet_monitoring_prefix",
                 ),
-                shm_subnet_update_servers_prefix=self.pulumi_opts.require(
-                    "shm-networking-subnet_update_servers_prefix",
-                ),
                 shm_virtual_network_name=self.pulumi_opts.require(
                     "shm-networking-virtual_network_name"
                 ),

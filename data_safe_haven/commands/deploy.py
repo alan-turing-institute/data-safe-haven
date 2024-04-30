@@ -167,18 +167,8 @@ def sre(
             replace=True,
         )
         stack.add_option(
-            "shm-networking-subnet_update_servers_prefix",
-            shm_stack.output("networking")["subnet_update_servers_prefix"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-networking-virtual_network_name",
             shm_stack.output("networking")["virtual_network_name"],
-            replace=True,
-        )
-        stack.add_option(
-            "shm-update_servers-ip_address_linux",
-            shm_stack.output("update_servers")["ip_address_linux"],
             replace=True,
         )
 

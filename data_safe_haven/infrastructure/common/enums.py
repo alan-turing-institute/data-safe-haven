@@ -9,7 +9,6 @@ class FirewallPriorities(int, Enum):
     ALL = 1000
     # SHM sources: 2000-2999
     SHM_IDENTITY_SERVERS = 2000
-    SHM_UPDATE_SERVERS = 2100
     # SRE sources: 3000-3999
     SRE_APT_PROXY_SERVER = 3000
     SRE_GUACAMOLE_CONTAINERS = 3100
@@ -29,7 +28,6 @@ class NetworkingPriorities(int, Enum):
     # SHM connections: 1000-1299
     INTERNAL_SELF = 1000
     INTERNAL_SHM_MONITORING_TOOLS = 1100
-    INTERNAL_SHM_UPDATE_SERVERS = 1200
     # DNS connections: 1400-1499
     INTERNAL_SRE_DNS_SERVERS = 1400
     # SRE connections: 1500-2999

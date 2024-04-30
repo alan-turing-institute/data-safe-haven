@@ -24,7 +24,6 @@ class SHMFirewallProps:
         resource_group_name: Input[str],
         route_table_name: Input[str],
         subnet_firewall: Input[network.GetSubnetResult],
-        subnet_update_servers: Input[network.GetSubnetResult],
     ) -> None:
         self.dns_zone_name = Output.from_input(dns_zone).apply(lambda zone: zone.name)
         self.location = location
@@ -33,9 +32,6 @@ class SHMFirewallProps:
         self.subnet_firewall_id = Output.from_input(subnet_firewall).apply(
             get_id_from_subnet
         )
-        self.subnet_update_servers_iprange = Output.from_input(
-            subnet_update_servers
-        ).apply(lambda s: str(s.address_prefix) if s.address_prefix else "")
 
 
 class SHMFirewallComponent(ComponentResource):
@@ -137,29 +133,6 @@ class SHMFirewallComponent(ComponentResource):
                             ],
                             source_addresses=["*"],
                             target_fqdns=ntp_fqdns,
-                        ),
-                    ],
-                ),
-                network.AzureFirewallApplicationRuleCollectionArgs(
-                    action=network.AzureFirewallRCActionArgs(type="Allow"),
-                    name=f"{stack_name}-update-servers",
-                    priority=FirewallPriorities.SHM_UPDATE_SERVERS,
-                    rules=[
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external Linux update requests",
-                            name="AllowExternalLinuxUpdate",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=80,
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
-                                ),
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
-                                ),
-                            ],
-                            source_addresses=[props.subnet_update_servers_iprange],
-                            target_fqdns=allowed_dns_lookups("apt_repositories"),
                         ),
                     ],
                 ),

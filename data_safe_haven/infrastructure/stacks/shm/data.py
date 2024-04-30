@@ -2,7 +2,6 @@
 
 from collections.abc import Mapping, Sequence
 
-import pulumi_random
 from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
 from pulumi_azure_native import keyvault, resources, storage
 
@@ -124,27 +123,6 @@ class SHMDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Secret: Linux update server admin password
-        password_update_server_linux_admin = pulumi_random.RandomPassword(
-            f"{self._name}_password_update_server_linux_admin",
-            length=20,
-            special=True,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
-        )
-        keyvault.Secret(
-            f"{self._name}_kvs_password_update_server_linux_admin",
-            properties=keyvault.SecretPropertiesArgs(
-                value=password_update_server_linux_admin.result
-            ),
-            resource_group_name=resource_group.name,
-            secret_name="password-update-server-linux-admin",
-            vault_name=key_vault.name,
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=password_update_server_linux_admin)
-            ),
-            tags=child_tags,
-        )
-
         # Deploy persistent data account
         storage_account_persistent_data = storage.StorageAccount(
             f"{self._name}_storage_account_persistent_data",
@@ -201,8 +179,5 @@ class SHMDataComponent(ComponentResource):
         )
 
         # Register outputs
-        self.password_update_server_linux_admin = Output.secret(
-            password_update_server_linux_admin.result
-        )
         self.resource_group_name = Output.from_input(resource_group.name)
         self.vault = key_vault

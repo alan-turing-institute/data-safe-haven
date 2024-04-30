@@ -29,7 +29,6 @@ class SRENetworkingProps:
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
         shm_subnet_monitoring_prefix: Input[str],
-        shm_subnet_update_servers_prefix: Input[str],
         shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
         sre_index: Input[int],
@@ -87,7 +86,6 @@ class SRENetworkingProps:
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
         self.shm_subnet_monitoring_prefix = shm_subnet_monitoring_prefix
-        self.shm_subnet_update_servers_prefix = shm_subnet_update_servers_prefix
         self.shm_virtual_network_name = shm_virtual_network_name
         self.shm_zone_name = shm_zone_name
         self.sre_name = sre_name
@@ -1169,18 +1167,6 @@ class SRENetworkingComponent(ComponentResource):
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowMonitoringToolsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SHM_MONITORING_TOOLS,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to Linux update servers.",
-                    destination_address_prefix=props.shm_subnet_update_servers_prefix,
-                    destination_port_ranges=[Ports.LINUX_UPDATE],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowSHMLinuxUpdatesOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_UPDATE_SERVERS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
