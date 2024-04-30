@@ -70,6 +70,9 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
+        # Use a dummy hostname if no repositories are deployed
+        hostname: Output[str] = "example.com"
+
         # Define configuration file shares
         file_share_caddy = storage.FileShare(
             f"{self._name}_file_share_caddy",
@@ -305,7 +308,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
             )
 
             # Register the container group in the SRE DNS zone
-            LocalDnsRecordComponent(
+            local_dns = LocalDnsRecordComponent(
                 f"{self._name}_nexus_dns_record_set",
                 LocalDnsRecordProps(
                     base_fqdn=props.sre_fqdn,
@@ -320,3 +323,8 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                     child_opts, ResourceOptions(parent=container_group)
                 ),
             )
+
+            hostname = local_dns.hostname
+
+        # Register outputs
+        self.hostname = hostname

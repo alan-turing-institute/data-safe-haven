@@ -34,9 +34,9 @@ write_files:
     content: |
       # Use the PyPI proxy for package installation
       [global]
-      index = http://nexus.{{sre_fqdn}}/repository/pypi-proxy
-      index-url = http://nexus.{{sre_fqdn}}/repository/pypi-proxy/simple
-      trusted-host = nexus.{{sre_fqdn}}
+      index = http://{{software_repository_hostname}}/repository/pypi-proxy
+      index-url = http://{{software_repository_hostname}}/repository/pypi-proxy/simple
+      trusted-host = {{software_repository_hostname}}
 
   - path: "/etc/R/Rprofile.site"
     permissions: "0444"
@@ -44,7 +44,7 @@ write_files:
       # Use the CRAN proxy for package installation
       local({
           r <- getOption("repos")
-          r["CRAN"] <- "http://nexus.{{sre_fqdn}}/repository/cran-proxy"
+          r["CRAN"] <- "http://{{software_repository_hostname}}/repository/cran-proxy"
           options(repos = r)
       })
 

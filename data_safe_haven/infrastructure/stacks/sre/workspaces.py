@@ -40,7 +40,7 @@ class SREWorkspacesProps:
         location: Input[str],
         log_analytics_workspace_id: Input[str],
         log_analytics_workspace_key: Input[str],
-        sre_fqdn: Input[str],
+        software_repository_hostname: Input[str],
         sre_name: Input[str],
         storage_account_data_private_user_name: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
@@ -62,7 +62,7 @@ class SREWorkspacesProps:
         self.location = location
         self.log_analytics_workspace_id = log_analytics_workspace_id
         self.log_analytics_workspace_key = log_analytics_workspace_key
-        self.sre_fqdn = sre_fqdn
+        self.software_repository_hostname = software_repository_hostname
         self.sre_name = sre_name
         self.storage_account_data_private_user_name = (
             storage_account_data_private_user_name
@@ -128,7 +128,7 @@ class SREWorkspacesComponent(ComponentResource):
             ldap_server_port=props.ldap_server_port,
             ldap_user_filter=props.ldap_user_filter,
             ldap_user_search_base=props.ldap_user_search_base,
-            sre_fqdn=props.sre_fqdn,
+            software_repository_hostname=props.software_repository_hostname,
             storage_account_data_private_user_name=props.storage_account_data_private_user_name,
             storage_account_data_private_sensitive_name=props.storage_account_data_private_sensitive_name,
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
@@ -217,7 +217,7 @@ class SREWorkspacesComponent(ComponentResource):
         ldap_server_port: str,
         ldap_user_filter: str,
         ldap_user_search_base: str,
-        sre_fqdn: str,
+        software_repository_hostname: str,
         storage_account_data_private_sensitive_name: str,
         storage_account_data_private_user_name: str,
     ) -> str:
@@ -233,7 +233,7 @@ class SREWorkspacesComponent(ComponentResource):
                 "ldap_server_port": ldap_server_port,
                 "ldap_user_filter": ldap_user_filter,
                 "ldap_user_search_base": ldap_user_search_base,
-                "sre_fqdn": sre_fqdn,
+                "software_repository_hostname": software_repository_hostname,
                 "storage_account_data_private_user_name": storage_account_data_private_user_name,
                 "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive_name,
             }

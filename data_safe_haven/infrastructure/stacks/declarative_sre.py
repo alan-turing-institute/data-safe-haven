@@ -9,6 +9,7 @@ from .sre.application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
+from .sre.apt_proxy_server import SREAptProxyServerComponent, SREAptProxyServerProps
 from .sre.backup import (
     SREBackupComponent,
     SREBackupProps,
@@ -37,7 +38,6 @@ from .sre.remote_desktop import (
     SRERemoteDesktopComponent,
     SRERemoteDesktopProps,
 )
-from .sre.apt_proxy_server import SREAptProxyServerComponent, SREAptProxyServerProps
 from .sre.user_services import (
     SREUserServicesComponent,
     SREUserServicesProps,
@@ -291,41 +291,8 @@ class DeclarativeSRE:
             tags=self.cfg.tags.model_dump(),
         )
 
-        # Deploy workspaces
-        workspaces = SREWorkspacesComponent(
-            "sre_workspaces",
-            self.stack_name,
-            SREWorkspacesProps(
-                admin_password=data.password_workspace_admin,
-                apt_proxy_server_hostname=apt_proxy_server.hostname,
-                ldap_group_filter=ldap_group_filter,
-                ldap_group_search_base=ldap_group_search_base,
-                ldap_server_hostname=identity.hostname,
-                ldap_server_port=identity.server_port,
-                ldap_user_filter=ldap_user_filter,
-                ldap_user_search_base=ldap_user_search_base,
-                location=self.cfg.azure.location,
-                log_analytics_workspace_id=self.pulumi_opts.require(
-                    "shm-monitoring-log_analytics_workspace_id"
-                ),
-                log_analytics_workspace_key=self.pulumi_opts.require(
-                    "shm-monitoring-log_analytics_workspace_key"
-                ),
-                sre_fqdn=networking.sre_fqdn,
-                sre_name=self.sre_name,
-                storage_account_data_private_user_name=data.storage_account_data_private_user_name,
-                storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
-                subnet_workspaces=networking.subnet_workspaces,
-                subscription_name=self.cfg.context.subscription_name,
-                virtual_network_resource_group=networking.resource_group,
-                virtual_network=networking.virtual_network,
-                vm_details=list(enumerate(self.cfg.sre(self.sre_name).workspace_skus)),
-            ),
-            tags=self.cfg.tags.model_dump(),
-        )
-
         # Deploy containerised user services
-        SREUserServicesComponent(
+        user_services = SREUserServicesComponent(
             "sre_user_services",
             self.stack_name,
             SREUserServicesProps(
@@ -353,6 +320,39 @@ class DeclarativeSRE:
                 subnet_containers_support=networking.subnet_user_services_containers_support,
                 subnet_databases=networking.subnet_user_services_databases,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
+            ),
+            tags=self.cfg.tags.model_dump(),
+        )
+
+        # Deploy workspaces
+        workspaces = SREWorkspacesComponent(
+            "sre_workspaces",
+            self.stack_name,
+            SREWorkspacesProps(
+                admin_password=data.password_workspace_admin,
+                apt_proxy_server_hostname=apt_proxy_server.hostname,
+                ldap_group_filter=ldap_group_filter,
+                ldap_group_search_base=ldap_group_search_base,
+                ldap_server_hostname=identity.hostname,
+                ldap_server_port=identity.server_port,
+                ldap_user_filter=ldap_user_filter,
+                ldap_user_search_base=ldap_user_search_base,
+                location=self.cfg.azure.location,
+                log_analytics_workspace_id=self.pulumi_opts.require(
+                    "shm-monitoring-log_analytics_workspace_id"
+                ),
+                log_analytics_workspace_key=self.pulumi_opts.require(
+                    "shm-monitoring-log_analytics_workspace_key"
+                ),
+                software_repository_hostname=user_services.software_repositories.hostname,
+                sre_name=self.sre_name,
+                storage_account_data_private_user_name=data.storage_account_data_private_user_name,
+                storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
+                subnet_workspaces=networking.subnet_workspaces,
+                subscription_name=self.cfg.context.subscription_name,
+                virtual_network_resource_group=networking.resource_group,
+                virtual_network=networking.virtual_network,
+                vm_details=list(enumerate(self.cfg.sre(self.sre_name).workspace_skus)),
             ),
             tags=self.cfg.tags.model_dump(),
         )
