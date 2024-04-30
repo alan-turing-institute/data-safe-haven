@@ -81,8 +81,8 @@ class SHMFirewallComponent(ComponentResource):
             str(SREIpRanges(idx).guacamole_containers)
             for idx in range(1, SREIpRanges.max_index)
         ]
-        sre_update_server_subnets = [
-            str(SREIpRanges(idx).update_servers)
+        sre_apt_proxy_servers = [
+            str(SREIpRanges(idx).apt_proxy_server)
             for idx in range(1, SREIpRanges.max_index)
         ]
         sre_workspaces_subnets = [
@@ -159,7 +159,7 @@ class SHMFirewallComponent(ComponentResource):
                                 ),
                             ],
                             source_addresses=[props.subnet_update_servers_iprange],
-                            target_fqdns=allowed_dns_lookups("apt_updates"),
+                            target_fqdns=allowed_dns_lookups("apt_repositories"),
                         ),
                     ],
                 ),
@@ -237,12 +237,12 @@ class SHMFirewallComponent(ComponentResource):
                 ),
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
-                    name=f"{stack_name}-sre-update-servers",
-                    priority=FirewallPriorities.SRE_UPDATE_SERVERS,
+                    name=f"{stack_name}-sre-apt-proxy-servers",
+                    priority=FirewallPriorities.SRE_APT_PROXY_SERVER,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external Linux update requests",
-                            name="AllowExternalLinuxUpdate",
+                            description="Allow external apt repository requests",
+                            name="AllowExternalAptRepositories",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=80,
@@ -253,8 +253,8 @@ class SHMFirewallComponent(ComponentResource):
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 ),
                             ],
-                            source_addresses=sre_update_server_subnets,
-                            target_fqdns=allowed_dns_lookups("apt_updates"),
+                            source_addresses=sre_apt_proxy_servers,
+                            target_fqdns=allowed_dns_lookups("apt_repositories"),
                         ),
                     ],
                 ),

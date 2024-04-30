@@ -17,8 +17,8 @@ from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
 
 
-class SREUpdateServerProps:
-    """Properties for SREUpdateServerComponent"""
+class SREAptProxyServerProps:
+    """Properties for SREAptProxyServerComponent"""
 
     def __init__(
         self,
@@ -45,18 +45,18 @@ class SREUpdateServerProps:
         self.storage_account_resource_group_name = storage_account_resource_group_name
 
 
-class SREUpdateServerComponent(ComponentResource):
-    """Deploy Ubuntu update server proxy with Pulumi"""
+class SREAptProxyServerComponent(ComponentResource):
+    """Deploy APT proxy server with Pulumi"""
 
     def __init__(
         self,
         name: str,
         stack_name: str,
-        props: SREUpdateServerProps,
+        props: SREAptProxyServerProps,
         opts: ResourceOptions | None = None,
         tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
-        super().__init__("dsh:sre:UpdateServerComponent", name, {}, opts)
+        super().__init__("dsh:sre:AptProxyServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
@@ -64,43 +64,43 @@ class SREUpdateServerComponent(ComponentResource):
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"{stack_name}-rg-update-server",
+            resource_group_name=f"{stack_name}-rg-apt-proxy-server",
             opts=child_opts,
             tags=child_tags,
         )
 
         # Define configuration file shares
-        file_share_update_server_proxy = storage.FileShare(
-            f"{self._name}_file_share_update_server_proxy",
+        file_share_apt_proxy_server = storage.FileShare(
+            f"{self._name}_file_share_apt_proxy_server",
             access_tier="TransactionOptimized",
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
-            share_name="update-server-proxy",
+            share_name="apt-proxy-server",
             share_quota=1,
             signed_identifiers=[],
             opts=child_opts,
         )
 
         # Upload allowed repositories
-        reader = FileReader(resources_path / "update_server" / "repositories.acl")
-        file_share_update_server_proxy_repositories = FileShareFile(
-            f"{self._name}_file_share_update_server_proxy_repositories",
+        reader = FileReader(resources_path / "apt_proxy_server" / "repositories.acl")
+        file_share_apt_proxy_server_repositories = FileShareFile(
+            f"{self._name}_file_share_apt_proxy_server_repositories",
             FileShareFileProps(
                 destination_path=reader.name,
-                share_name=file_share_update_server_proxy.name,
+                share_name=file_share_apt_proxy_server.name,
                 file_contents=Output.secret(reader.file_contents()),
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=file_share_update_server_proxy)
+                child_opts, ResourceOptions(parent=file_share_apt_proxy_server)
             ),
         )
 
         # Define the container group with squid-deb-proxy
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
-            container_group_name=f"{stack_name}-container-group-update-server",
+            container_group_name=f"{stack_name}-container-group-apt-proxy-server",
             containers=[
                 containerinstance.ContainerArgs(
                     image="ghcr.io/alan-turing-institute/squid-deb-proxy:main",
@@ -161,7 +161,7 @@ class SREUpdateServerComponent(ComponentResource):
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_update_server_proxy.name,
+                        share_name=file_share_apt_proxy_server.name,
                         storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),
@@ -173,8 +173,8 @@ class SREUpdateServerComponent(ComponentResource):
                 ResourceOptions(
                     delete_before_replace=True,
                     depends_on=[
-                        file_share_update_server_proxy,
-                        file_share_update_server_proxy_repositories,
+                        file_share_apt_proxy_server,
+                        file_share_apt_proxy_server_repositories,
                     ],
                     replace_on_changes=["containers"],
                 ),
@@ -184,7 +184,7 @@ class SREUpdateServerComponent(ComponentResource):
 
         # Register the container group in the SRE DNS zone
         local_dns = LocalDnsRecordComponent(
-            f"{self._name}_update_server_dns_record_set",
+            f"{self._name}_apt_proxy_server_dns_record_set",
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
                 public_dns_resource_group_name=props.networking_resource_group_name,

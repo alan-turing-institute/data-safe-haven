@@ -30,6 +30,7 @@ class SREWorkspacesProps:
     def __init__(
         self,
         admin_password: Input[str],
+        apt_proxy_server_hostname: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
         ldap_server_hostname: Input[str],
@@ -45,13 +46,13 @@ class SREWorkspacesProps:
         storage_account_data_private_sensitive_name: Input[str],
         subnet_workspaces: Input[network.GetSubnetResult],
         subscription_name: Input[str],
-        update_server_hostname: Input[str],
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
         vm_details: list[tuple[int, str]],  # this must *not* be passed as an Input[T]
     ) -> None:
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
+        self.apt_proxy_server_hostname = apt_proxy_server_hostname
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
         self.ldap_server_hostname = ldap_server_hostname
@@ -76,7 +77,6 @@ class SREWorkspacesProps:
         self.subnet_workspaces_name = Output.from_input(subnet_workspaces).apply(
             get_name_from_subnet
         )
-        self.update_server_hostname = update_server_hostname
         self.virtual_network_resource_group_name = Output.from_input(
             virtual_network_resource_group
         ).apply(get_name_from_rg)
@@ -121,6 +121,7 @@ class SREWorkspacesComponent(ComponentResource):
 
         # Load cloud-init file
         b64cloudinit = Output.all(
+            apt_proxy_server_hostname=props.apt_proxy_server_hostname,
             ldap_group_filter=props.ldap_group_filter,
             ldap_group_search_base=props.ldap_group_search_base,
             ldap_server_hostname=props.ldap_server_hostname,
@@ -130,7 +131,6 @@ class SREWorkspacesComponent(ComponentResource):
             sre_fqdn=props.sre_fqdn,
             storage_account_data_private_user_name=props.storage_account_data_private_user_name,
             storage_account_data_private_sensitive_name=props.storage_account_data_private_sensitive_name,
-            update_server_hostname=props.update_server_hostname,
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
 
         # Deploy a variable number of VMs depending on the input parameters
@@ -210,6 +210,7 @@ class SREWorkspacesComponent(ComponentResource):
 
     def read_cloudinit(
         self,
+        apt_proxy_server_hostname: str,
         ldap_group_filter: str,
         ldap_group_search_base: str,
         ldap_server_hostname: str,
@@ -219,13 +220,13 @@ class SREWorkspacesComponent(ComponentResource):
         sre_fqdn: str,
         storage_account_data_private_sensitive_name: str,
         storage_account_data_private_user_name: str,
-        update_server_hostname: str,
     ) -> str:
         with open(
             resources_path / "workspace" / "workspace.cloud_init.mustache.yaml",
             encoding="utf-8",
         ) as f_cloudinit:
             mustache_values = {
+                "apt_proxy_server_hostname": apt_proxy_server_hostname,
                 "ldap_group_filter": ldap_group_filter,
                 "ldap_group_search_base": ldap_group_search_base,
                 "ldap_server_hostname": ldap_server_hostname,
@@ -235,7 +236,6 @@ class SREWorkspacesComponent(ComponentResource):
                 "sre_fqdn": sre_fqdn,
                 "storage_account_data_private_user_name": storage_account_data_private_user_name,
                 "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive_name,
-                "update_server_hostname": update_server_hostname,
             }
             cloudinit = chevron.render(f_cloudinit, mustache_values)
             return b64encode(cloudinit)

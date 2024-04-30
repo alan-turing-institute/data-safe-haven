@@ -5,7 +5,7 @@ import pytz
 
 def allowed_dns_lookups(category: str | None = None) -> list[str]:
     dns_lookups = {
-        "apt_updates": [
+        "apt_repositories": [
             # "apt.postgresql.org",
             "archive.ubuntu.com",
             "azure.archive.ubuntu.com",

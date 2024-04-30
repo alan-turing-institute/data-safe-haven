@@ -37,7 +37,7 @@ from .sre.remote_desktop import (
     SRERemoteDesktopComponent,
     SRERemoteDesktopProps,
 )
-from .sre.update_server import SREUpdateServerComponent, SREUpdateServerProps
+from .sre.apt_proxy_server import SREAptProxyServerComponent, SREAptProxyServerProps
 from .sre.user_services import (
     SREUserServicesComponent,
     SREUserServicesProps,
@@ -209,12 +209,12 @@ class DeclarativeSRE:
             tags=self.cfg.tags.model_dump(),
         )
 
-        # Deploy the Ubuntu update server
-        update_server = SREUpdateServerComponent(
-            "sre_update_server",
+        # Deploy the apt proxy server
+        apt_proxy_server = SREAptProxyServerComponent(
+            "sre_apt_proxy_server",
             self.stack_name,
-            SREUpdateServerProps(
-                containers_subnet=networking.subnet_update_servers,
+            SREAptProxyServerProps(
+                containers_subnet=networking.subnet_apt_proxy_server,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 location=self.cfg.azure.location,
@@ -297,13 +297,13 @@ class DeclarativeSRE:
             self.stack_name,
             SREWorkspacesProps(
                 admin_password=data.password_workspace_admin,
+                apt_proxy_server_hostname=apt_proxy_server.hostname,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
                 ldap_server_hostname=identity.hostname,
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
-                update_server_hostname=update_server.hostname,
                 location=self.cfg.azure.location,
                 log_analytics_workspace_id=self.pulumi_opts.require(
                     "shm-monitoring-log_analytics_workspace_id"
