@@ -27,7 +27,7 @@ from data_safe_haven.utility.annotated_types import (
     UniqueList,
 )
 
-from .serialisable_config import SerialisableConfig
+from .azure_serialisable_model import AzureSerialisableModel
 
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):
@@ -186,7 +186,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         )
 
 
-class Config(SerialisableConfig):
+class Config(AzureSerialisableModel):
     config_type: ClassVar[str] = "Config"
     filename: ClassVar[str] = "config.yaml"
     azure: ConfigSectionAzure

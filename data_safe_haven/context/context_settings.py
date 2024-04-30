@@ -10,8 +10,7 @@ from typing import ClassVar
 
 import yaml
 from azure.keyvault.keys import KeyVaultKey
-from pydantic import BaseModel, Field, ValidationError, model_validator
-from yaml import YAMLError
+from pydantic import BaseModel, Field, model_validator
 
 from data_safe_haven import __version__
 from data_safe_haven.exceptions import (
@@ -20,7 +19,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.utility import LoggingSingleton, config_dir
+from data_safe_haven.utility import LoggingSingleton, YAMLSerialisableModel, config_dir
 from data_safe_haven.utility.annotated_types import (
     AzureLocation,
     AzureLongName,
@@ -101,8 +100,8 @@ class Context(BaseModel, validate_assignment=True):
         return yaml.dump(self.model_dump(), indent=2)
 
 
-class ContextSettings(BaseModel, validate_assignment=True):
-    """Load global and local settings from dotfiles with structure like the following
+class ContextSettings(YAMLSerialisableModel):
+    """Load available and current contexts from YAML files structured as follows:
 
     selected: acme_deployment
     contexts:
@@ -111,9 +110,15 @@ class ContextSettings(BaseModel, validate_assignment=True):
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             location: uksouth
             subscription_name: Data Safe Haven (Acme)
+        acme_testing:
+            name: Acme Testing
+            admin_group_id: 32ebe412-e198-41f3-88f6-bc6687eb471b
+            location: ukwest
+            subscription_name: Data Safe Haven (Acme Testing)
         ...
     """
 
+    config_type: ClassVar[str] = "ContextSettings"
     selected_: str | None = Field(..., alias="selected")
     contexts: dict[str, Context]
     logger: ClassVar[LoggingSingleton] = LoggingSingleton()
@@ -221,48 +226,17 @@ class ContextSettings(BaseModel, validate_assignment=True):
             self.selected = None
 
     @classmethod
-    def from_yaml(cls, settings_yaml: str) -> ContextSettings:
-        try:
-            settings_dict = yaml.safe_load(settings_yaml)
-        except YAMLError as exc:
-            msg = f"Could not parse context settings as YAML.\n{exc}"
-            raise DataSafeHavenConfigError(msg) from exc
-
-        if not isinstance(settings_dict, dict):
-            msg = "Unable to parse context settings as a dict."
-            raise DataSafeHavenConfigError(msg)
-
-        try:
-            return ContextSettings.model_validate(settings_dict)
-        except ValidationError as exc:
-            msg = f"Could not load context settings.\n{exc}"
-            raise DataSafeHavenParameterError(msg) from exc
-
-    @classmethod
     def from_file(cls, config_file_path: Path | None = None) -> ContextSettings:
         if config_file_path is None:
             config_file_path = cls.default_config_file_path()
         cls.logger.info(
             f"Reading project settings from '[green]{config_file_path}[/]'."
         )
-        try:
-            with open(config_file_path, encoding="utf-8") as f_yaml:
-                settings_yaml = f_yaml.read()
-            return cls.from_yaml(settings_yaml)
-        except FileNotFoundError as exc:
-            msg = f"Could not find file {config_file_path}.\n{exc}"
-            raise DataSafeHavenConfigError(msg) from exc
-
-    def to_yaml(self) -> str:
-        return yaml.dump(self.model_dump(by_alias=True), indent=2)
+        return cls.from_filepath(config_file_path)
 
     def write(self, config_file_path: Path | None = None) -> None:
         """Write settings to YAML file"""
         if config_file_path is None:
             config_file_path = self.default_config_file_path()
-        # Create the parent directory if it does not exist then write YAML
-        config_file_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(config_file_path, "w", encoding="utf-8") as f_yaml:
-            f_yaml.write(self.to_yaml())
+        self.to_filepath(config_file_path)
         self.logger.info(f"Saved context settings to '[green]{config_file_path}[/]'.")

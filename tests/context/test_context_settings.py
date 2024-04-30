@@ -152,7 +152,7 @@ class TestContextSettings:
         context_yaml = "\n".join(context_yaml.splitlines()[1:])
         msg = "\n".join(
             [
-                "Could not load context settings.",
+                "Could not load ContextSettings configuration.",
                 "1 validation error for ContextSettings",
                 "selected",
                 "  Field required",
@@ -175,7 +175,8 @@ class TestContextSettings:
     def test_invalid_yaml(self):
         invalid_yaml = "a: [1,2"
         with pytest.raises(
-            DataSafeHavenConfigError, match="Could not parse context settings as YAML."
+            DataSafeHavenConfigError,
+            match="Could not parse ContextSettings configuration as YAML.",
         ):
             ContextSettings.from_yaml(invalid_yaml)
 
@@ -183,7 +184,7 @@ class TestContextSettings:
         not_dict = "[1, 2, 3]"
         with pytest.raises(
             DataSafeHavenConfigError,
-            match="Unable to parse context settings as a dict.",
+            match="Unable to parse ContextSettings configuration as a dict.",
         ):
             ContextSettings.from_yaml(not_dict)
 
