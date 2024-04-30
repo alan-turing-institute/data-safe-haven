@@ -1,27 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, ClassVar
-
-from pydantic import BaseModel
+from typing import ClassVar
 
 from data_safe_haven.serialisers import AzureSerialisableModel
 
-
-class DSHPulumiProject(BaseModel, validate_assignment=True):
-    """Container for DSH Pulumi Project persistent information"""
-
-    stack_config: dict[str, Any]
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, DSHPulumiProject):
-            return NotImplemented
-        return self.stack_config == other.stack_config
-
-    def __hash__(self) -> int:
-        return hash(self.stack_config)
+from .pulumi_project import DSHPulumiProject
 
 
 class DSHPulumiConfig(AzureSerialisableModel):
+    """Serialisable container for multiple DSH Pulumi projects."""
+
     config_type: ClassVar[str] = "Pulumi"
     filename: ClassVar[str] = "pulumi.yaml"
     projects: dict[str, DSHPulumiProject]
