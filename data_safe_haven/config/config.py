@@ -253,7 +253,9 @@ class Config(AzureSerialisableModel):
                         allow_copy="Whether to allow copying text out of the environment",
                         allow_paste="Whether to allow pasting text into the environment",
                     ),
-                    workspace_skus=["Azure VM SKUs - see cloudprice.net for list of valid SKUs"],
+                    workspace_skus=[
+                        "Azure VM SKUs - see cloudprice.net for list of valid SKUs"
+                    ],
                     research_user_ip_addresses=["Research user IP addresses"],
                     software_packages=SoftwarePackageCategory.ANY,
                 )

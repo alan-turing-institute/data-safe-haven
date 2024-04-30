@@ -350,7 +350,9 @@ class StackManager:
         all_config_dict = {
             key: item.value for key, item in self.stack_all_config.items()
         }
-        self.pulumi_project.encrypted_key = self.stack.workspace.stack_settings(stack_name=self.stack_name).encrypted_key
+        self.pulumi_project.encrypted_key = self.stack.workspace.stack_settings(
+            stack_name=self.stack_name
+        ).encrypted_key
         self.pulumi_project.stack_config = all_config_dict
 
 

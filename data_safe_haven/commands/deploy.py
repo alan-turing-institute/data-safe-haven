@@ -78,6 +78,7 @@ def shm(
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
 
+
 @deploy_command_group.command()
 def sre(
     name: Annotated[str, typer.Argument(help="Name of SRE to deploy")],
