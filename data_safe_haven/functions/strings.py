@@ -12,6 +12,10 @@ def alphanumeric(input_string: str) -> str:
     return "".join(filter(str.isalnum, input_string))
 
 
+def sanitise_sre_name(name: str) -> str:
+    return alphanumeric(name).lower()
+
+
 def b64decode(input_string: str) -> str:
     """Decode a Base64 string into a normal string."""
     return base64.b64decode(input_string.encode("utf-8")).decode()

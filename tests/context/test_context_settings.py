@@ -3,11 +3,12 @@ import yaml
 from pydantic import ValidationError
 from pytest import fixture
 
-from data_safe_haven.config.context_settings import Context, ContextSettings
+from data_safe_haven.context import Context, ContextSettings
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
+from data_safe_haven.version import __version__
 
 
 class TestContext:
@@ -18,6 +19,8 @@ class TestContext:
             getattr(context, item) == context_dict[item] for item in context_dict.keys()
         )
         assert context.storage_container_name == "config"
+        assert context.pulumi_storage_container_name == "pulumi"
+        assert context.pulumi_encryption_key_name == "pulumi-encryption-key"
 
     def test_invalid_guid(self, context_dict):
         context_dict["admin_group_id"] = "not a guid"
@@ -40,15 +43,18 @@ class TestContext:
         ):
             Context(**context_dict)
 
+    def test_tags(self, context):
+        assert context.tags["deployment"] == "Acme Deployment"
+        assert context.tags["deployed by"] == "Python"
+        assert context.tags["project"] == "Data Safe Haven"
+        assert context.tags["version"] == __version__
+
     def test_shm_name(self, context):
         assert context.shm_name == "acmedeployment"
 
     def test_work_directory(self, context, monkeypatch):
         monkeypatch.delenv("DSH_CONFIG_DIRECTORY", raising=False)
         assert "data_safe_haven/acmedeployment" in str(context.work_directory)
-
-    def test_config_filename(self, context):
-        assert context.config_filename == "config-acmedeployment.yaml"
 
     def test_resource_group_name(self, context):
         assert context.resource_group_name == "shm-acmedeployment-rg-context"
@@ -60,6 +66,37 @@ class TestContext:
         context_dict["name"] = "very " * 5 + "long name"
         context = Context(**context_dict)
         assert context.storage_account_name == "shmveryveryveryvecontext"
+
+    def test_key_vault_name(self, context):
+        assert context.key_vault_name == "shm-acmedeplo-kv-context"
+
+    def test_managed_identity_name(self, context):
+        assert (
+            context.managed_identity_name
+            == "shm-acmedeployment-identity-reader-context"
+        )
+
+    def test_pulumi_backend_url(self, context):
+        assert context.pulumi_backend_url == "azblob://pulumi"
+
+    def test_pulumi_encryption_key(self, context, mock_key_vault_key):  # noqa: ARG002
+        key = context.pulumi_encryption_key
+        assert key.key_name == context.pulumi_encryption_key_name
+        assert key.key_vault_name == context.key_vault_name
+
+    def test_pulumi_encryption_key_version(
+        self, context, mock_key_vault_key  # noqa: ARG002
+    ):
+        version = context.pulumi_encryption_key_version
+        assert version == "version"
+
+    def test_pulumi_secrets_provider_url(
+        self, context, mock_key_vault_key  # noqa: ARG002
+    ):
+        assert (
+            context.pulumi_secrets_provider_url
+            == "azurekeyvault://shm-acmedeplo-kv-context.vault.azure.net/keys/pulumi-encryption-key/version"
+        )
 
 
 @fixture
@@ -115,7 +152,7 @@ class TestContextSettings:
         context_yaml = "\n".join(context_yaml.splitlines()[1:])
         msg = "\n".join(
             [
-                "Could not load context settings.",
+                "Could not load ContextSettings configuration.",
                 "1 validation error for ContextSettings",
                 "selected",
                 "  Field required",
@@ -138,7 +175,8 @@ class TestContextSettings:
     def test_invalid_yaml(self):
         invalid_yaml = "a: [1,2"
         with pytest.raises(
-            DataSafeHavenConfigError, match="Could not parse context settings as YAML."
+            DataSafeHavenConfigError,
+            match="Could not parse ContextSettings configuration as YAML.",
         ):
             ContextSettings.from_yaml(invalid_yaml)
 
@@ -146,7 +184,7 @@ class TestContextSettings:
         not_dict = "[1, 2, 3]"
         with pytest.raises(
             DataSafeHavenConfigError,
-            match="Unable to parse context settings as a dict.",
+            match="Unable to parse ContextSettings configuration as a dict.",
         ):
             ContextSettings.from_yaml(not_dict)
 

@@ -1,17 +1,18 @@
 """Deploy with Pulumi"""
 
 import logging
-import pathlib
-import shutil
 import time
+from collections.abc import MutableMapping
 from contextlib import suppress
 from importlib import metadata
 from shutil import which
 from typing import Any
 
 from pulumi import automation
+from pulumi.automation import ConfigValue
 
-from data_safe_haven.config import Config
+from data_safe_haven.config import Config, DSHPulumiProject
+from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCliSingleton
 from data_safe_haven.functions import replace_separators
@@ -22,7 +23,8 @@ from data_safe_haven.utility import LoggingSingleton
 class PulumiAccount:
     """Manage and interact with Pulumi backend account"""
 
-    def __init__(self, config: Config):
+    def __init__(self, context: Context, config: Config):
+        self.context = context
         self.cfg = config
         self.env_: dict[str, Any] | None = None
         path = which("pulumi")
@@ -38,16 +40,15 @@ class PulumiAccount:
     def env(self) -> dict[str, Any]:
         """Get necessary Pulumi environment variables"""
         if not self.env_:
-            azure_api = AzureApi(self.cfg.context.subscription_name)
+            azure_api = AzureApi(self.context.subscription_name)
             backend_storage_account_keys = azure_api.get_storage_account_keys(
-                self.cfg.context.resource_group_name,
-                self.cfg.context.storage_account_name,
+                self.context.resource_group_name,
+                self.context.storage_account_name,
             )
             self.env_ = {
-                "AZURE_STORAGE_ACCOUNT": self.cfg.context.storage_account_name,
+                "AZURE_STORAGE_ACCOUNT": self.context.storage_account_name,
                 "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
-                "PULUMI_BACKEND_URL": f"azblob://{self.cfg.pulumi.storage_container_name}",
             }
         return self.env_
 
@@ -57,29 +58,23 @@ class StackManager:
 
     def __init__(
         self,
+        context: Context,
         config: Config,
+        pulumi_project: DSHPulumiProject,
         program: DeclarativeSHM | DeclarativeSRE,
     ) -> None:
-        self.account = PulumiAccount(config)
-        self.cfg: Config = config
+        self.account = PulumiAccount(context, config)
+        self.context = context
+        self.cfg = config
+        self.pulumi_project = pulumi_project
         self.logger = LoggingSingleton()
-        self.stack_: automation.Stack | None = None
+        self._stack: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}
         self.program = program
-        self.project_name = replace_separators(self.cfg.tags.project.lower(), "-")
+        self.project_name = replace_separators(context.tags["project"].lower(), "-")
         self.stack_name = self.program.stack_name
-        self.work_dir: pathlib.Path = (
-            config.work_directory / "pulumi" / self.program.short_name
-        )
-        self.work_dir.mkdir(parents=True, exist_ok=True)
-        self.initialise_workdir()
         self.install_plugins()
-
-    @property
-    def local_stack_path(self) -> pathlib.Path:
-        """Return the local stack path"""
-        return self.work_dir / f"Pulumi.{self.stack_name}.yaml"
 
     @property
     def pulumi_extra_args(self) -> dict[str, Any]:
@@ -91,26 +86,43 @@ class StackManager:
         return extra_args
 
     @property
+    def project_settings(self) -> automation.ProjectSettings:
+        return automation.ProjectSettings(
+            name="data-safe-haven",
+            runtime="python",
+            backend=automation.ProjectBackend(url=self.context.pulumi_backend_url),
+        )
+
+    @property
+    def stack_settings(self) -> automation.StackSettings:
+        return automation.StackSettings(
+            config=self.pulumi_project.stack_config,
+            encrypted_key=self.pulumi_project.encrypted_key,
+            secrets_provider=self.context.pulumi_secrets_provider_url,
+        )
+
+    @property
     def stack(self) -> automation.Stack:
         """Load the Pulumi stack, creating if needed."""
-        if not self.stack_:
+        if not self._stack:
             self.logger.info(f"Creating/loading stack [green]{self.stack_name}[/].")
             try:
-                self.stack_ = automation.create_or_select_stack(
+                self._stack = automation.create_or_select_stack(
+                    opts=automation.LocalWorkspaceOptions(
+                        env_vars=self.account.env,
+                        project_settings=self.project_settings,
+                        secrets_provider=self.context.pulumi_secrets_provider_url,
+                        stack_settings={self.stack_name: self.stack_settings},
+                    ),
+                    program=self.program.run,
                     project_name=self.project_name,
                     stack_name=self.stack_name,
-                    program=self.program.run,
-                    opts=automation.LocalWorkspaceOptions(
-                        secrets_provider=f"azurekeyvault://{self.cfg.context.key_vault_name}.vault.azure.net/keys/{self.cfg.pulumi.encryption_key_name}/{self.cfg.pulumi_encryption_key_version}",
-                        work_dir=str(self.work_dir),
-                        env_vars=self.account.env,
-                    ),
                 )
                 self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
             except automation.CommandError as exc:
                 msg = f"Could not load Pulumi stack {self.stack_name}.\n{exc}"
                 raise DataSafeHavenPulumiError(msg) from exc
-        return self.stack_
+        return self._stack
 
     def add_option(self, name: str, value: str, *, replace: bool) -> None:
         """Add a public configuration option"""
@@ -199,8 +211,8 @@ class StackManager:
             # Remove stack JSON
             try:
                 self.logger.info(f"Removing Pulumi stack [green]{self.stack_name}[/].")
-                if self.stack_:
-                    self.stack_.workspace.remove_stack(self.stack_name)
+                if self._stack:
+                    self._stack.workspace.remove_stack(self.stack_name)
             except automation.CommandError as exc:
                 if "no stack named" not in str(exc):
                     msg = f"Pulumi stack could not be removed.\n{exc}"
@@ -211,12 +223,12 @@ class StackManager:
                 self.logger.info(
                     f"Removing Pulumi stack backup [green]{stack_backup_name}[/]."
                 )
-                azure_api = AzureApi(self.cfg.context.subscription_name)
+                azure_api = AzureApi(self.context.subscription_name)
                 azure_api.remove_blob(
                     blob_name=f".pulumi/stacks/{self.project_name}/{stack_backup_name}",
-                    resource_group_name=self.cfg.context.resource_group_name,
-                    storage_account_name=self.cfg.context.storage_account_name,
-                    storage_container_name=self.cfg.pulumi.storage_container_name,
+                    resource_group_name=self.context.resource_group_name,
+                    storage_account_name=self.context.storage_account_name,
+                    storage_container_name=self.context.pulumi_storage_container_name,
                 )
             except DataSafeHavenAzureError as exc:
                 if "blob does not exist" in str(exc):
@@ -245,24 +257,6 @@ class StackManager:
             self.logger.error("Pulumi operation [red]failed[/].")
             msg = "Pulumi operation failed."
             raise DataSafeHavenPulumiError(msg)
-
-    def initialise_workdir(self) -> None:
-        """Create project directory if it does not exist and update local stack."""
-        try:
-            self.logger.info("Initialising Pulumi work directory")
-            self.logger.debug(f"Ensuring that [green]{self.work_dir}[/] exists...")
-            if not self.work_dir.exists():
-                self.work_dir.mkdir(parents=True)
-            self.logger.info(f"Ensured that [green]{self.work_dir}[/] exists.")
-            # If stack information is saved in the config file then apply it here
-            if self.stack_name in self.cfg.pulumi.stacks.keys():
-                self.logger.info(
-                    f"Updating stack [green]{self.stack_name}[/] information from config"
-                )
-                self.cfg.write_stack(self.stack_name, self.local_stack_path)
-        except Exception as exc:
-            msg = f"Initialising Pulumi working directory failed.\n{exc}."
-            raise DataSafeHavenPulumiError(msg) from exc
 
     def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
@@ -314,17 +308,6 @@ class StackManager:
             msg = f"Pulumi refresh failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
-    def remove_workdir(self) -> None:
-        """Remove project directory if it exists."""
-        try:
-            self.logger.info(f"Removing [green]{self.work_dir}[/]...")
-            if self.work_dir.exists():
-                shutil.rmtree(self.work_dir)
-            self.logger.info(f"Removed [green]{self.work_dir}[/].")
-        except Exception as exc:
-            msg = f"Removing Pulumi working directory failed.\n{exc}."
-            raise DataSafeHavenPulumiError(msg) from exc
-
     def secret(self, name: str) -> str:
         """Read a secret from the Pulumi stack."""
         try:
@@ -336,13 +319,14 @@ class StackManager:
     def set_config(self, name: str, value: str, *, secret: bool) -> None:
         """Set config values, overwriting any existing value."""
         self.stack.set_config(name, automation.ConfigValue(value=value, secret=secret))
+        self.update_dsh_pulumi_project()
 
     def teardown(self) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
         try:
             self.refresh()
             self.destroy()
-            self.remove_workdir()
+            self.update_dsh_pulumi_project()
         except Exception as exc:
             msg = f"Tearing down Pulumi infrastructure failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
@@ -358,20 +342,40 @@ class StackManager:
                 **self.pulumi_extra_args,
             )
             self.evaluate(result.summary.result)
+            self.update_dsh_pulumi_project()
         except automation.CommandError as exc:
             msg = f"Pulumi update failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
+
+    @property
+    def stack_all_config(self) -> MutableMapping[str, ConfigValue]:
+        stack_all_config: MutableMapping[str, ConfigValue] = self.stack.get_all_config()
+        return stack_all_config
+
+    def update_dsh_pulumi_project(self) -> None:
+        """Update persistent data in the DSHPulumiProject object"""
+        all_config_dict = {
+            key: item.value for key, item in self.stack_all_config.items()
+        }
+        self.pulumi_project.encrypted_key = self.stack.workspace.stack_settings(
+            stack_name=self.stack_name
+        ).encrypted_key
+        self.pulumi_project.stack_config = all_config_dict
 
 
 class SHMStackManager(StackManager):
     """Interact with an SHM using Pulumi"""
 
     def __init__(
-        self,
-        config: Config,
+        self, context: Context, config: Config, pulumi_project: DSHPulumiProject
     ) -> None:
         """Constructor"""
-        super().__init__(config, DeclarativeSHM(config, config.shm.name))
+        super().__init__(
+            context,
+            config,
+            pulumi_project,
+            DeclarativeSHM(context, config, context.shm_name),
+        )
 
 
 class SREStackManager(StackManager):
@@ -379,7 +383,9 @@ class SREStackManager(StackManager):
 
     def __init__(
         self,
+        context: Context,
         config: Config,
+        pulumi_project: DSHPulumiProject,
         sre_name: str,
         *,
         graph_api_token: str | None = None,
@@ -387,5 +393,8 @@ class SREStackManager(StackManager):
         """Constructor"""
         token = graph_api_token if graph_api_token else ""
         super().__init__(
-            config, DeclarativeSRE(config, config.shm.name, sre_name, token)
+            context,
+            config,
+            pulumi_project,
+            DeclarativeSRE(context, config, context.shm_name, sre_name, token),
         )

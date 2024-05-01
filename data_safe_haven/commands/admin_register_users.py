@@ -1,9 +1,11 @@
 """Register existing users with a deployed SRE"""
 
 from data_safe_haven.administration.users import UserHandler
-from data_safe_haven.config import Config, ContextSettings
+from data_safe_haven.config import Config, DSHPulumiConfig
+from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
+from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.utility import LoggingSingleton
 
 
@@ -14,10 +16,11 @@ def admin_register_users(
     """Register existing users with a deployed SRE"""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
 
     shm_name = context.shm_name
     # Use a JSON-safe SRE name
-    sre_name = config.sanitise_sre_name(sre)
+    sre_name = sanitise_sre_name(sre)
 
     try:
         # Check that SRE option has been provided
@@ -35,7 +38,7 @@ def admin_register_users(
         )
 
         # List users
-        users = UserHandler(config, graph_api)
+        users = UserHandler(context, config, pulumi_config, graph_api)
         available_usernames = users.get_usernames_azure_ad()
         usernames_to_register = []
         for username in usernames:

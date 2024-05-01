@@ -5,9 +5,12 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.config import ContextSettings
-from data_safe_haven.config.context_settings import Context, default_config_file_path
-from data_safe_haven.context import ContextInfra
+from data_safe_haven.context import (
+    Context,
+    ContextInfra,
+    ContextSettings,
+)
+from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.functions.typer_validators import typer_validate_aad_guid
 
 context_command_group = typer.Typer()
@@ -16,7 +19,11 @@ context_command_group = typer.Typer()
 @context_command_group.command()
 def show() -> None:
     """Show information about the selected context."""
-    settings = ContextSettings.from_file()
+    try:
+        settings = ContextSettings.from_file()
+    except DataSafeHavenConfigError as exc:
+        print("No context configuration file.")
+        raise typer.Exit(code=1) from exc
 
     current_context_key = settings.selected
     current_context = settings.context
@@ -84,7 +91,7 @@ def add(
     ],
 ) -> None:
     """Add a new context to the context list."""
-    if default_config_file_path().exists():
+    if ContextSettings.default_config_file_path().exists():
         settings = ContextSettings.from_file()
         settings.add(
             key=key,

@@ -6,7 +6,8 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.config import Config, ContextSettings
+from data_safe_haven.config import Config
+from data_safe_haven.context import ContextSettings
 
 config_command_group = typer.Typer()
 
@@ -19,8 +20,7 @@ def template(
     ] = None
 ) -> None:
     """Write a template Data Safe Haven configuration."""
-    context = ContextSettings.from_file().assert_context()
-    config = Config.template(context)
+    config = Config.template()
     if file:
         with open(file, "w") as outfile:
             outfile.write(config.to_yaml())
@@ -36,8 +36,8 @@ def upload(
     context = ContextSettings.from_file().assert_context()
     with open(file) as config_file:
         config_yaml = config_file.read()
-    config = Config.from_yaml(context, config_yaml)
-    config.upload()
+    config = Config.from_yaml(config_yaml)
+    config.upload(context)
 
 
 @config_command_group.command()

@@ -1,10 +1,18 @@
-from .config import Config, ConfigSectionPulumi, ConfigSectionTags
-from .context_settings import Context, ContextSettings
+from .config import (
+    Config,
+    ConfigSectionAzure,
+    ConfigSectionSHM,
+    ConfigSectionSRE,
+    ConfigSubsectionRemoteDesktopOpts,
+)
+from .pulumi import DSHPulumiConfig, DSHPulumiProject
 
 __all__ = [
     "Config",
-    "ConfigSectionPulumi",
-    "ConfigSectionTags",
-    "Context",
-    "ContextSettings",
+    "ConfigSectionAzure",
+    "ConfigSectionSHM",
+    "ConfigSectionSRE",
+    "ConfigSubsectionRemoteDesktopOpts",
+    "DSHPulumiConfig",
+    "DSHPulumiProject",
 ]
