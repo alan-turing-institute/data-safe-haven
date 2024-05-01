@@ -88,7 +88,7 @@ class StackManager:
     @property
     def project_settings(self) -> automation.ProjectSettings:
         return automation.ProjectSettings(
-            name=self.program.stack_name,
+            name="data-safe-haven",
             runtime="python",
             backend=automation.ProjectBackend(url=self.context.pulumi_backend_url),
         )
