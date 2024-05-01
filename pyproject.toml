@@ -107,7 +107,8 @@ all = [
 
 [tool.hatch.envs.test]
 dependencies = [
-  "pytest~=8.1"
+  "pytest~=8.1",
+  "pytest-mock~=3.14",
 ]
 pre-install-commands = ["pip install -r requirements.txt"]
 

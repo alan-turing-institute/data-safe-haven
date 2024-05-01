@@ -1,6 +1,7 @@
 from pytest import fixture
 from typer.testing import CliRunner
 
+from data_safe_haven.config import Config
 from data_safe_haven.context import ContextSettings
 
 
@@ -82,3 +83,8 @@ def runner_no_context_file(tmp_path):
         mix_stderr=False,
     )
     return runner
+
+
+@fixture
+def mock_config_from_remote(mocker, config_sres):
+    mocker.patch.object(Config, "from_remote", return_value=config_sres)

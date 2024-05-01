@@ -3,6 +3,7 @@
 from typing import Annotated, Optional
 
 import typer
+from rich import print
 
 from data_safe_haven.config import Config, DSHPulumiConfig
 from data_safe_haven.context import ContextSettings
@@ -72,8 +73,8 @@ def shm(
             stack.output("networking")["fqdn_nameservers"],
         )
     except DataSafeHavenError as exc:
-        msg = f"Could not deploy Data Safe Haven Management environment.\n{exc}"
-        raise DataSafeHavenError(msg) from exc
+        print("Could not deploy Data Safe Haven Management environment.")
+        raise typer.Exit(code=1) from exc
     finally:
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
