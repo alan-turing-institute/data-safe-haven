@@ -10,6 +10,7 @@ from .azure_serialisable_model import AzureSerialisableModel
 class DSHPulumiProject(BaseModel, validate_assignment=True):
     """Container for DSH Pulumi Project persistent information"""
 
+    encrypted_key: str
     stack_config: dict[str, Any]
 
     def __eq__(self, other: object) -> bool:
@@ -70,5 +71,5 @@ class DSHPulumiConfig(AzureSerialisableModel):
 
     def create_or_select_project(self, project_name: str) -> DSHPulumiProject:
         if project_name not in self.project_names:
-            self[project_name] = DSHPulumiProject(stack_config={})
+            self[project_name] = DSHPulumiProject(encrypted_key="", stack_config={})
         return self[project_name]

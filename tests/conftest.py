@@ -154,12 +154,16 @@ def stack_config():
 
 @fixture
 def pulumi_project(stack_config):
-    return DSHPulumiProject(stack_config=stack_config)
+    return DSHPulumiProject(
+        encrypted_key="NZVaEDfeuIPR7N8Dwnpx",
+        stack_config=stack_config,
+    )
 
 
 @fixture
 def pulumi_project2():
     return DSHPulumiProject(
+        encrypted_key="CALbHybtRdxKjSnr9UYY",
         stack_config={
             "azure-native:location": "uksouth",
             "azure-native:subscriptionId": "def",
@@ -179,11 +183,13 @@ def pulumi_config(pulumi_project, pulumi_project2):
 def pulumi_config_yaml():
     return """projects:
   my_project:
+    encrypted_key: NZVaEDfeuIPR7N8Dwnpx
     stack_config:
       azure-native:location: uksouth
       azure-native:subscriptionId: abc
       data-safe-haven:variable: 5
   other_project:
+    encrypted_key: CALbHybtRdxKjSnr9UYY
     stack_config:
       azure-native:location: uksouth
       azure-native:subscriptionId: def
