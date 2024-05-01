@@ -74,11 +74,7 @@ def sre(
                 sre_name,
                 graph_api_token=graph_api.token,
             )
-            if stack.work_dir.exists():
-                stack.teardown()
-            else:
-                msg = f"SRE {sre_name} not found - check the name is spelt correctly."
-                raise DataSafeHavenInputError(msg)
+            stack.teardown()
         except Exception as exc:
             msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
             raise DataSafeHavenInputError(msg) from exc
