@@ -148,10 +148,10 @@ class TestDSHPulumiConfig:
 
     def test_from_remote_or_create(self, mocker, pulumi_config_yaml, context):
         mock_exists = mocker.patch.object(AzureApi, "blob_exists", return_value=True)
-        mock_download = mocker.patch.object(AzureApi, "download_blob", return_value=pulumi_config_yaml)
-        pulumi_config = DSHPulumiConfig.from_remote_or_create(
-            context, projects={}
+        mock_download = mocker.patch.object(
+            AzureApi, "download_blob", return_value=pulumi_config_yaml
         )
+        pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
 
         assert isinstance(pulumi_config, DSHPulumiConfig)
         assert pulumi_config["my_project"]

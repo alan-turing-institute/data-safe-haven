@@ -192,9 +192,7 @@ class TestConfig:
         assert config_sres.to_yaml() == config_yaml
 
     def test_upload(self, mocker, context, config_sres):
-        mock_method = mocker.patch.object(
-            AzureApi, "upload_blob", return_value=None
-        )
+        mock_method = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         config_sres.upload(context)
 
         mock_method.assert_called_once_with(
