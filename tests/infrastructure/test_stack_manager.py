@@ -1,6 +1,6 @@
 from collections.abc import MutableMapping
 
-from pulumi.automation import ConfigValue, LocalWorkspace, Stack
+from pulumi.automation import ConfigValue, LocalWorkspace, ProjectSettings, Stack
 from pytest import fixture
 
 from data_safe_haven.infrastructure import SHMStackManager
@@ -34,6 +34,19 @@ def offline_pulumi_account(monkeypatch, mock_azure_cli_confirm):  # noqa: ARG001
 
 
 @fixture
+def local_project_settings(context_no_secrets, mocker):  # noqa: ARG001
+    """Overwrite adjust project settings to work locally, no secrets"""
+    mocker.patch.object(
+        StackManager,
+        "project_settings",
+        ProjectSettings(
+            name="data-safe-haven",
+            runtime="python",
+        ),
+    )
+
+
+@fixture
 def shm_stack_manager(
     context_no_secrets,
     config_sres,
@@ -42,6 +55,7 @@ def shm_stack_manager(
     mock_install_plugins,  # noqa: ARG001
     mock_key_vault_key,  # noqa: ARG001
     offline_pulumi_account,  # noqa: ARG001
+    local_project_settings,  # noqa: ARG001
 ):
     return SHMStackManager(context_no_secrets, config_sres, pulumi_project)
 
