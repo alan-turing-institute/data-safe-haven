@@ -8,6 +8,7 @@ from pydantic import BaseModel
 class DSHPulumiProject(BaseModel, validate_assignment=True):
     """Container for DSH Pulumi Project persistent information"""
 
+    encrypted_key: str
     stack_config: dict[str, Any]
 
     def __eq__(self, other: object) -> bool:
