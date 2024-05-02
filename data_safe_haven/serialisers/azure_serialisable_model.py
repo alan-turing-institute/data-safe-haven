@@ -2,9 +2,9 @@
 
 from typing import Any, ClassVar, TypeVar
 
-from data_safe_haven.context.context import Context
 from data_safe_haven.external import AzureApi
 
+from .context_base import ContextBase
 from .yaml_serialisable_model import YAMLSerialisableModel
 
 T = TypeVar("T", bound="AzureSerialisableModel")
@@ -17,7 +17,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
     filename: ClassVar[str] = "config.yaml"
 
     @classmethod
-    def from_remote(cls: type[T], context: Context) -> T:
+    def from_remote(cls: type[T], context: ContextBase) -> T:
         """Construct an AzureSerialisableModel from a YAML file in Azure storage."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
         config_yaml = azure_api.download_blob(
@@ -30,7 +30,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
 
     @classmethod
     def from_remote_or_create(
-        cls: type[T], context: Context, **default_args: dict[Any, Any]
+        cls: type[T], context: ContextBase, **default_args: dict[Any, Any]
     ) -> T:
         """
         Construct an AzureSerialisableModel from a YAML file in Azure storage, or from
@@ -47,7 +47,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         else:
             return cls(**default_args)
 
-    def upload(self, context: Context) -> None:
+    def upload(self, context: ContextBase) -> None:
         """Serialise an AzureSerialisableModel to a YAML file in Azure storage."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
         azure_api.upload_blob(
