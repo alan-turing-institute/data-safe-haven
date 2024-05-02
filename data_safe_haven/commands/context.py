@@ -10,6 +10,7 @@ from data_safe_haven.context import (
     ContextInfra,
     ContextSettings,
 )
+from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.functions.typer_validators import typer_validate_aad_guid
 
 context_command_group = typer.Typer()
@@ -18,7 +19,11 @@ context_command_group = typer.Typer()
 @context_command_group.command()
 def show() -> None:
     """Show information about the selected context."""
-    settings = ContextSettings.from_file()
+    try:
+        settings = ContextSettings.from_file()
+    except DataSafeHavenConfigError as exc:
+        print("No context configuration file.")
+        raise typer.Exit(code=1) from exc
 
     current_context_key = settings.selected
     current_context = settings.context

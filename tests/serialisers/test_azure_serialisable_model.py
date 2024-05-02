@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 from pytest import fixture, raises
 
 from data_safe_haven.exceptions import (
@@ -43,9 +41,9 @@ class TestAzureSerialisableModel:
         assert "integer: 5" in yaml
         assert "config_type" not in yaml
 
-    def test_upload(self, example_config_class, context):
-        with patch.object(AzureApi, "upload_blob", return_value=None) as mock_method:
-            example_config_class.upload(context)
+    def test_upload(self, mocker, example_config_class, context):
+        mock_method = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        example_config_class.upload(context)
 
         mock_method.assert_called_once_with(
             example_config_class.to_yaml(),
@@ -92,11 +90,11 @@ class TestAzureSerialisableModel:
         ):
             ExampleAzureSerialisableModel.from_yaml(yaml)
 
-    def test_from_remote(self, context, example_config_yaml):
-        with patch.object(
+    def test_from_remote(self, mocker, context, example_config_yaml):
+        mock_method = mocker.patch.object(
             AzureApi, "download_blob", return_value=example_config_yaml
-        ) as mock_method:
-            example_config = ExampleAzureSerialisableModel.from_remote(context)
+        )
+        example_config = ExampleAzureSerialisableModel.from_remote(context)
 
         assert isinstance(example_config, ExampleAzureSerialisableModel)
         assert example_config.string == "abc"

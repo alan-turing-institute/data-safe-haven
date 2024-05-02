@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import pytest
 from pydantic import ValidationError
 
@@ -176,11 +174,11 @@ class TestConfig:
             config.sres["sre1"].software_packages, SoftwarePackageCategory
         )
 
-    def test_from_remote(self, context, config_sres, config_yaml):
-        with patch.object(
+    def test_from_remote(self, mocker, context, config_sres, config_yaml):
+        mock_method = mocker.patch.object(
             AzureApi, "download_blob", return_value=config_yaml
-        ) as mock_method:
-            config = Config.from_remote(context)
+        )
+        config = Config.from_remote(context)
 
         assert config == config_sres
         mock_method.assert_called_once_with(
@@ -193,9 +191,9 @@ class TestConfig:
     def test_to_yaml(self, config_sres, config_yaml):
         assert config_sres.to_yaml() == config_yaml
 
-    def test_upload(self, context, config_sres):
-        with patch.object(AzureApi, "upload_blob", return_value=None) as mock_method:
-            config_sres.upload(context)
+    def test_upload(self, mocker, context, config_sres):
+        mock_method = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        config_sres.upload(context)
 
         mock_method.assert_called_once_with(
             config_sres.to_yaml(),

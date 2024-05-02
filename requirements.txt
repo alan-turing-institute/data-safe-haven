@@ -170,20 +170,20 @@ protobuf==4.25.3
     # via pulumi
 psycopg==3.1.18
     # via data-safe-haven (pyproject.toml)
-pulumi==3.113.3
+pulumi==3.114.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.37.0
+pulumi-azure-native==2.38.0
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.1
     # via data-safe-haven (pyproject.toml)
 pycparser==2.22
     # via cffi
-pydantic==2.7.0
+pydantic==2.7.1
     # via data-safe-haven (pyproject.toml)
-pydantic-core==2.18.1
+pydantic-core==2.18.2
     # via pydantic
 pygments==2.17.2
     # via rich
@@ -252,7 +252,7 @@ urllib3==2.2.1
     # via requests
 validators==0.22.0
     # via simple-acme-dns
-websocket-client==1.7.0
+websocket-client==1.8.0
     # via data-safe-haven (pyproject.toml)
 
 # The following packages are considered to be unsafe in a requirements file:

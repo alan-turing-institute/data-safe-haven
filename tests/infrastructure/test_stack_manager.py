@@ -1,6 +1,12 @@
 from collections.abc import MutableMapping
 
-from pulumi.automation import ConfigValue, LocalWorkspace, Stack
+from pulumi.automation import (
+    ConfigValue,
+    LocalWorkspace,
+    ProjectSettings,
+    Stack,
+    StackSettings,
+)
 from pytest import fixture
 
 from data_safe_haven.infrastructure import SHMStackManager
@@ -34,6 +40,19 @@ def offline_pulumi_account(monkeypatch, mock_azure_cli_confirm):  # noqa: ARG001
 
 
 @fixture
+def local_project_settings(context_no_secrets, mocker):  # noqa: ARG001
+    """Overwrite adjust project settings to work locally, no secrets"""
+    mocker.patch.object(
+        StackManager,
+        "project_settings",
+        ProjectSettings(
+            name="data-safe-haven",
+            runtime="python",
+        ),
+    )
+
+
+@fixture
 def shm_stack_manager(
     context_no_secrets,
     config_sres,
@@ -42,6 +61,7 @@ def shm_stack_manager(
     mock_install_plugins,  # noqa: ARG001
     mock_key_vault_key,  # noqa: ARG001
     offline_pulumi_account,  # noqa: ARG001
+    local_project_settings,  # noqa: ARG001
 ):
     return SHMStackManager(context_no_secrets, config_sres, pulumi_project)
 
@@ -61,6 +81,26 @@ class TestSHMStackManager:
         assert shm.context == context_no_secrets
         assert shm.cfg == config_sres
         assert shm.pulumi_project == pulumi_project
+
+    def test_project_settings(self, shm_stack_manager):
+        project_settings = shm_stack_manager.project_settings
+        assert isinstance(project_settings, ProjectSettings)
+        assert project_settings.name == "data-safe-haven"
+        assert project_settings.runtime == "python"
+        assert project_settings.backend is None
+
+    def test_stack_settings(self, shm_stack_manager):
+        stack_settings = shm_stack_manager.stack_settings
+        assert isinstance(stack_settings, StackSettings)
+        assert stack_settings.config == shm_stack_manager.pulumi_project.stack_config
+        assert (
+            stack_settings.encrypted_key
+            == shm_stack_manager.pulumi_project.encrypted_key
+        )
+        assert (
+            stack_settings.secrets_provider
+            == shm_stack_manager.context.pulumi_secrets_provider_url
+        )
 
     def test_stack(self, shm_stack_manager):
         stack = shm_stack_manager.stack

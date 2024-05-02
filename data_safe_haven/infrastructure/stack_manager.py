@@ -1,7 +1,6 @@
 """Deploy with Pulumi"""
 
 import logging
-import pathlib
 import time
 from collections.abc import MutableMapping
 from contextlib import suppress
@@ -50,7 +49,6 @@ class PulumiAccount:
                 "AZURE_STORAGE_ACCOUNT": self.context.storage_account_name,
                 "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
-                "PULUMI_BACKEND_URL": self.context.pulumi_backend_url,
             }
         return self.env_
 
@@ -76,9 +74,6 @@ class StackManager:
         self.program = program
         self.project_name = replace_separators(context.tags["project"].lower(), "-")
         self.stack_name = self.program.stack_name
-        self.work_dir: pathlib.Path = (
-            context.work_directory / "pulumi" / self.program.short_name
-        )
         self.install_plugins()
 
     @property
@@ -91,24 +86,37 @@ class StackManager:
         return extra_args
 
     @property
+    def project_settings(self) -> automation.ProjectSettings:
+        return automation.ProjectSettings(
+            name="data-safe-haven",
+            runtime="python",
+            backend=automation.ProjectBackend(url=self.context.pulumi_backend_url),
+        )
+
+    @property
+    def stack_settings(self) -> automation.StackSettings:
+        return automation.StackSettings(
+            config=self.pulumi_project.stack_config,
+            encrypted_key=self.pulumi_project.encrypted_key,
+            secrets_provider=self.context.pulumi_secrets_provider_url,
+        )
+
+    @property
     def stack(self) -> automation.Stack:
         """Load the Pulumi stack, creating if needed."""
         if not self._stack:
             self.logger.info(f"Creating/loading stack [green]{self.stack_name}[/].")
             try:
                 self._stack = automation.create_or_select_stack(
+                    opts=automation.LocalWorkspaceOptions(
+                        env_vars=self.account.env,
+                        project_settings=self.project_settings,
+                        secrets_provider=self.context.pulumi_secrets_provider_url,
+                        stack_settings={self.stack_name: self.stack_settings},
+                    ),
+                    program=self.program.run,
                     project_name=self.project_name,
                     stack_name=self.stack_name,
-                    program=self.program.run,
-                    opts=automation.LocalWorkspaceOptions(
-                        secrets_provider=self.context.pulumi_secrets_provider_url,
-                        env_vars=self.account.env,
-                        stack_settings={
-                            self.stack_name: automation.StackSettings(
-                                config=self.pulumi_project.stack_config
-                            )
-                        },
-                    ),
                 )
                 self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
             except automation.CommandError as exc:
@@ -349,6 +357,9 @@ class StackManager:
         all_config_dict = {
             key: item.value for key, item in self.stack_all_config.items()
         }
+        self.pulumi_project.encrypted_key = self.stack.workspace.stack_settings(
+            stack_name=self.stack_name
+        ).encrypted_key
         self.pulumi_project.stack_config = all_config_dict
 
 
