@@ -401,7 +401,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=subnet_data_configuration_prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowGuacamoleContainersInbound",
+                    name="AllowIdentityServersInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=subnet_identity_containers_prefix,
