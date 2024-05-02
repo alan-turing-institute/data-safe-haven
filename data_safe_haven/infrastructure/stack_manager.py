@@ -114,7 +114,7 @@ class StackManager:
                         secrets_provider=self.context.pulumi_secrets_provider_url,
                         stack_settings={self.stack_name: self.stack_settings},
                     ),
-                    program=self.program.run,
+                    program=self.program,
                     project_name=self.project_name,
                     stack_name=self.stack_name,
                 )
