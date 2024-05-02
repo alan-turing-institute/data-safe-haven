@@ -3,6 +3,7 @@
 import pulumi
 
 from data_safe_haven.config import Config
+from data_safe_haven.context import Context
 from data_safe_haven.infrastructure.common import get_subscription_id_from_rg
 
 from .sre.application_gateway import (
@@ -52,14 +53,21 @@ class DeclarativeSRE:
     """Deploy with Pulumi"""
 
     def __init__(
-        self, config: Config, shm_name: str, sre_name: str, graph_api_token: str
+        self,
+        context: Context,
+        config: Config,
+        shm_name: str,
+        sre_name: str,
+        graph_api_token: str,
     ) -> None:
+        self.context = context
         self.cfg = config
         self.graph_api_token = graph_api_token
         self.shm_name = shm_name
         self.sre_name = sre_name
         self.short_name = f"sre-{sre_name}"
         self.stack_name = f"shm-{shm_name}-{self.short_name}"
+        self.tags = context.tags
 
     def run(self) -> None:
         # Load pulumi configuration options
@@ -117,14 +125,14 @@ class DeclarativeSRE:
             "sre_dns_server",
             self.stack_name,
             SREDnsServerProps(
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 shm_fqdn=self.cfg.shm.fqdn,
                 shm_networking_resource_group_name=self.pulumi_opts.require(
                     "shm-networking-resource_group_name"
                 ),
                 sre_index=self.cfg.sre(self.sre_name).index,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy networking
@@ -138,7 +146,7 @@ class DeclarativeSRE:
                 firewall_ip_address=self.pulumi_opts.require(
                     "shm-firewall-private-ip-address"
                 ),
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 shm_fqdn=self.cfg.shm.fqdn,
                 shm_networking_resource_group_name=self.pulumi_opts.require(
                     "shm-networking-resource_group_name"
@@ -156,7 +164,7 @@ class DeclarativeSRE:
                     self.sre_name
                 ).research_user_ip_addresses,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy automated monitoring
@@ -167,7 +175,7 @@ class DeclarativeSRE:
                 automation_account_name=self.pulumi_opts.require(
                     "shm-monitoring-automation_account_name"
                 ),
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 subscription_resource_id=get_subscription_id_from_rg(
                     dns.resource_group
                 ),
@@ -177,7 +185,7 @@ class DeclarativeSRE:
                 sre_index=self.cfg.sre(self.sre_name).index,
                 timezone=self.cfg.shm.timezone,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy data storage
@@ -186,24 +194,24 @@ class DeclarativeSRE:
             self.stack_name,
             SREDataProps(
                 admin_email_address=self.cfg.shm.admin_email_address,
-                admin_group_id=self.cfg.azure.admin_group_id,
+                admin_group_id=self.context.admin_group_id,
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 data_provider_ip_addresses=self.cfg.sre(
                     self.sre_name
                 ).data_provider_ip_addresses,
                 dns_record=networking.shm_ns_record,
                 dns_server_admin_password=dns.password_admin,
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 networking_resource_group=networking.resource_group,
                 pulumi_opts=self.pulumi_opts,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_data_configuration=networking.subnet_data_configuration,
                 subnet_data_private=networking.subnet_data_private,
                 subscription_id=self.cfg.azure.subscription_id,
-                subscription_name=self.cfg.context.subscription_name,
+                subscription_name=self.context.subscription_name,
                 tenant_id=self.cfg.azure.tenant_id,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy the apt proxy server
@@ -214,14 +222,14 @@ class DeclarativeSRE:
                 containers_subnet=networking.subnet_apt_proxy_server,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 networking_resource_group_name=networking.resource_group.name,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 storage_account_resource_group_name=data.resource_group_name,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy identity server
@@ -233,7 +241,7 @@ class DeclarativeSRE:
                 aad_auth_token=self.graph_api_token,
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
                 dns_resource_group_name=dns.resource_group.name,
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 networking_resource_group_name=networking.resource_group.name,
                 shm_fqdn=self.cfg.shm.fqdn,
                 sre_fqdn=networking.sre_fqdn,
@@ -242,6 +250,7 @@ class DeclarativeSRE:
                 storage_account_resource_group_name=data.resource_group_name,
                 subnet_containers=networking.subnet_identity_containers,
             ),
+            tags=self.tags,
         )
 
         # Deploy frontend application gateway
@@ -256,7 +265,7 @@ class DeclarativeSRE:
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
                 sre_fqdn=networking.sre_fqdn,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy containerised remote desktop gateway
@@ -278,14 +287,14 @@ class DeclarativeSRE:
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 storage_account_resource_group_name=data.resource_group_name,
                 subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy containerised user services
@@ -304,7 +313,7 @@ class DeclarativeSRE:
                 ldap_user_filter=ldap_user_filter,
                 ldap_username_attribute=ldap_username_attribute,
                 ldap_user_search_base=ldap_user_search_base,
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 networking_resource_group_name=networking.resource_group.name,
                 nexus_admin_password=data.password_nexus_admin,
                 software_packages=self.cfg.sre(self.sre_name).software_packages,
@@ -318,7 +327,7 @@ class DeclarativeSRE:
                 subnet_databases=networking.subnet_user_services_databases,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy workspaces
@@ -334,7 +343,7 @@ class DeclarativeSRE:
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 log_analytics_workspace_id=self.pulumi_opts.require(
                     "shm-monitoring-log_analytics_workspace_id"
                 ),
@@ -346,12 +355,12 @@ class DeclarativeSRE:
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
                 subnet_workspaces=networking.subnet_workspaces,
-                subscription_name=self.cfg.context.subscription_name,
+                subscription_name=self.context.subscription_name,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
                 vm_details=list(enumerate(self.cfg.sre(self.sre_name).workspace_skus)),
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy backup service
@@ -359,11 +368,11 @@ class DeclarativeSRE:
             "sre_user_services",
             self.stack_name,
             SREBackupProps(
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 storage_account_data_private_sensitive_id=data.storage_account_data_private_sensitive_id,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Export values for later use

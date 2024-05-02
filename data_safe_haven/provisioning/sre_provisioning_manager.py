@@ -26,7 +26,7 @@ class SREProvisioningManager:
         timezone: str,
     ):
         self._available_vm_skus: dict[str, dict[str, Any]] | None = None
-        self.azure_location = shm_stack.cfg.azure.location
+        self.azure_location = shm_stack.context.location
         self.graph_api = GraphApi(auth_token=graph_api_token)
         self.logger = LoggingSingleton()
         self.sre_name = sre_name

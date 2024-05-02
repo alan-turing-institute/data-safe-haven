@@ -3,6 +3,7 @@
 import pulumi
 
 from data_safe_haven.config import Config
+from data_safe_haven.context import Context
 
 from .shm.data import SHMDataComponent, SHMDataProps
 from .shm.firewall import SHMFirewallComponent, SHMFirewallProps
@@ -13,11 +14,13 @@ from .shm.networking import SHMNetworkingComponent, SHMNetworkingProps
 class DeclarativeSHM:
     """Deploy Data Safe Haven Management environment with Pulumi"""
 
-    def __init__(self, config: Config, shm_name: str) -> None:
+    def __init__(self, context: Context, config: Config, shm_name: str) -> None:
+        self.context = context
         self.cfg = config
         self.shm_name = shm_name
         self.short_name = f"shm-{shm_name}"
         self.stack_name = self.short_name
+        self.tags = context.tags
 
     def run(self) -> None:
         # Load pulumi configuration options
@@ -30,12 +33,12 @@ class DeclarativeSHM:
             SHMNetworkingProps(
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 fqdn=self.cfg.shm.fqdn,
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 record_domain_verification=self.pulumi_opts.require(
                     "verification-azuread-custom-domain"
                 ),
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy firewall and routing
@@ -44,12 +47,12 @@ class DeclarativeSHM:
             self.stack_name,
             SHMFirewallProps(
                 dns_zone=networking.dns_zone,
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 resource_group_name=networking.resource_group_name,
                 route_table_name=networking.route_table.name,
                 subnet_firewall=networking.subnet_firewall,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy data storage
@@ -57,12 +60,12 @@ class DeclarativeSHM:
             "shm_data",
             self.stack_name,
             SHMDataProps(
-                admin_group_id=self.cfg.azure.admin_group_id,
+                admin_group_id=self.context.admin_group_id,
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 tenant_id=self.cfg.azure.tenant_id,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Deploy automated monitoring
@@ -71,12 +74,12 @@ class DeclarativeSHM:
             self.stack_name,
             SHMMonitoringProps(
                 dns_resource_group_name=networking.resource_group_name,
-                location=self.cfg.azure.location,
+                location=self.context.location,
                 private_dns_zone_base_id=networking.private_dns_zone_base_id,
                 subnet_monitoring=networking.subnet_monitoring,
                 timezone=self.cfg.shm.timezone,
             ),
-            tags=self.cfg.tags.model_dump(),
+            tags=self.tags,
         )
 
         # Export values for later use

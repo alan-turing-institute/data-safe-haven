@@ -1,6 +1,9 @@
 from pytest import fixture
 from typer.testing import CliRunner
 
+from data_safe_haven.config import Config
+from data_safe_haven.context import ContextSettings
+
 
 @fixture
 def context_settings():
@@ -17,6 +20,11 @@ def context_settings():
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             location: uksouth
             subscription_name: Data Safe Haven (Gems)"""
+
+
+@fixture
+def context(context_settings):
+    return ContextSettings.from_yaml(context_settings).context
 
 
 @fixture
@@ -62,3 +70,21 @@ def runner_none(tmp_contexts_none):
         mix_stderr=False,
     )
     return runner
+
+
+@fixture
+def runner_no_context_file(tmp_path):
+    runner = CliRunner(
+        env={
+            "DSH_CONFIG_DIRECTORY": str(tmp_path),
+            "COLUMNS": "500",  # Set large number of columns to avoid rich wrapping text
+            "TERM": "dumb",  # Disable colours, style and interactive rich features
+        },
+        mix_stderr=False,
+    )
+    return runner
+
+
+@fixture
+def mock_config_from_remote(mocker, config_sres):
+    mocker.patch.object(Config, "from_remote", return_value=config_sres)

@@ -2,7 +2,8 @@ import csv
 import pathlib
 from collections.abc import Sequence
 
-from data_safe_haven.config import Config
+from data_safe_haven.config import Config, DSHPulumiConfig, DSHPulumiProject
+from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import LoggingSingleton
@@ -15,11 +16,15 @@ from .research_user import ResearchUser
 class UserHandler:
     def __init__(
         self,
+        context: Context,
         config: Config,
+        pulumi_config: DSHPulumiConfig,
         graph_api: GraphApi,
     ):
         self.azure_ad_users = AzureADUsers(graph_api)
+        self.context = context
         self.config = config
+        self.pulumi_config = pulumi_config
         self.logger = LoggingSingleton()
         self.sre_guacamole_users_: dict[str, GuacamoleUsers] = {}
 
@@ -72,19 +77,24 @@ class UserHandler:
         usernames = {}
         usernames["Azure AD"] = self.get_usernames_azure_ad()
         for sre_name in self.config.sre_names:
-            usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(sre_name)
+            usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
+                sre_name,
+                self.pulumi_config[sre_name],
+            )
         return usernames
 
     def get_usernames_azure_ad(self) -> list[str]:
         """Load usernames from Azure AD"""
         return [user.username for user in self.azure_ad_users.list()]
 
-    def get_usernames_guacamole(self, sre_name: str) -> list[str]:
+    def get_usernames_guacamole(
+        self, sre_name: str, sre_pulumi_project: DSHPulumiProject
+    ) -> list[str]:
         """Lazy-load usernames from Guacamole"""
         try:
             if sre_name not in self.sre_guacamole_users_.keys():
                 self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
-                    self.config, sre_name
+                    self.context, self.config, sre_pulumi_project, sre_name
                 )
             return [
                 user.username for user in self.sre_guacamole_users_[sre_name].list()
