@@ -4,7 +4,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 from data_safe_haven.infrastructure.common import get_id_from_subnet
-from data_safe_haven.utility import DatabaseSystem, SoftwarePackageCategory
+from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
 from .database_servers import SREDatabaseServerComponent, SREDatabaseServerProps
 from .gitea_server import SREGiteaServerComponent, SREGiteaServerProps

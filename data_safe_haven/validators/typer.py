@@ -3,13 +3,7 @@ from typing import Any
 
 from typer import BadParameter
 
-from data_safe_haven.functions.validators import (
-    validate_aad_guid,
-    validate_azure_vm_sku,
-    validate_email_address,
-    validate_ip_address,
-    validate_timezone,
-)
+from . import validators
 
 
 def typer_validator_factory(validator: Callable[[Any], Any]) -> Callable[[Any], Any]:
@@ -30,8 +24,8 @@ def typer_validator_factory(validator: Callable[[Any], Any]) -> Callable[[Any], 
     return typer_validator
 
 
-typer_validate_aad_guid = typer_validator_factory(validate_aad_guid)
-typer_validate_email_address = typer_validator_factory(validate_email_address)
-typer_validate_ip_address = typer_validator_factory(validate_ip_address)
-typer_validate_azure_vm_sku = typer_validator_factory(validate_azure_vm_sku)
-typer_validate_timezone = typer_validator_factory(validate_timezone)
+typer_aad_guid = typer_validator_factory(validators.aad_guid)
+typer_azure_vm_sku = typer_validator_factory(validators.azure_vm_sku)
+typer_email_address = typer_validator_factory(validators.email_address)
+typer_ip_address = typer_validator_factory(validators.ip_address)
+typer_timezone = typer_validator_factory(validators.timezone)

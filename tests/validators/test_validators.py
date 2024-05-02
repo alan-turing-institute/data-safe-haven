@@ -1,11 +1,7 @@
 import pytest
 
-from data_safe_haven.functions.validators import (
-    validate_aad_guid,
-    validate_fqdn,
-    validate_unique_list,
-)
-from data_safe_haven.utility.enums import DatabaseSystem
+from data_safe_haven import validators
+from data_safe_haven.types import DatabaseSystem
 
 
 class TestValidateAadGuid:
@@ -16,8 +12,8 @@ class TestValidateAadGuid:
             "10de18e7-b238-6f1e-a4ad-772708929203",
         ],
     )
-    def test_validate_aad_guid(self, guid):
-        assert validate_aad_guid(guid) == guid
+    def test_aad_guid(self, guid):
+        assert validators.aad_guid(guid) == guid
 
     @pytest.mark.parametrize(
         "guid",
@@ -26,9 +22,9 @@ class TestValidateAadGuid:
             "not a guid",
         ],
     )
-    def test_validate_aad_guid_fail(self, guid):
+    def test_aad_guid_fail(self, guid):
         with pytest.raises(ValueError, match="Expected GUID"):
-            validate_aad_guid(guid)
+            validators.aad_guid(guid)
 
 
 class TestValidateFqdn:
@@ -41,8 +37,8 @@ class TestValidateFqdn:
             "a-b-c.com",
         ],
     )
-    def test_validate_fqdn(self, fqdn):
-        assert validate_fqdn(fqdn) == fqdn
+    def test_fqdn(self, fqdn):
+        assert validators.fqdn(fqdn) == fqdn
 
     @pytest.mark.parametrize(
         "fqdn",
@@ -53,11 +49,11 @@ class TestValidateFqdn:
             "a_b_c.com",
         ],
     )
-    def test_validate_fqdn_fail(self, fqdn):
+    def test_fqdn_fail(self, fqdn):
         with pytest.raises(
             ValueError, match="Expected valid fully qualified domain name"
         ):
-            validate_fqdn(fqdn)
+            validators.fqdn(fqdn)
 
 
 class MyClass:
@@ -71,7 +67,7 @@ class MyClass:
         return hash(self.x)
 
 
-class TestValidateUniqueList:
+class TestUniqueList:
     @pytest.mark.parametrize(
         "items",
         [
@@ -80,8 +76,8 @@ class TestValidateUniqueList:
             [MyClass(x=1), MyClass(x=2)],
         ],
     )
-    def test_validate_unique_list(self, items):
-        validate_unique_list(items)
+    def test_unique_list(self, items):
+        validators.unique_list(items)
 
     @pytest.mark.parametrize(
         "items",
@@ -93,6 +89,6 @@ class TestValidateUniqueList:
             [MyClass(x=1), MyClass(x=1)],
         ],
     )
-    def test_validate_unique_list_fail(self, items):
+    def test_unique_list_fail(self, items):
         with pytest.raises(ValueError, match="All items must be unique."):
-            validate_unique_list(items)
+            validators.unique_list(items)

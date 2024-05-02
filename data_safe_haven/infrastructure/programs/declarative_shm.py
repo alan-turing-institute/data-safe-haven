@@ -22,7 +22,7 @@ class DeclarativeSHM:
         self.stack_name = self.short_name
         self.tags = context.tags
 
-    def run(self) -> None:
+    def __call__(self) -> None:
         # Load pulumi configuration options
         self.pulumi_opts = pulumi.Config()
 

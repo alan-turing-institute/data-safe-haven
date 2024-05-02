@@ -11,8 +11,9 @@ from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.text import Text
 
+from data_safe_haven.types import PathType
+
 from .singleton import Singleton
-from .types import PathType
 
 
 class LoggingHandlerPlainFile(logging.FileHandler):

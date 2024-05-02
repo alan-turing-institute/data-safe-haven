@@ -10,7 +10,7 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
 )
-from data_safe_haven.utility import DatabaseSystem
+from data_safe_haven.types import DatabaseSystem
 
 
 class SREDatabaseServerProps:

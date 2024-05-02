@@ -1,100 +1,91 @@
-import time
+from __future__ import annotations
 
-from data_safe_haven.exceptions import DataSafeHavenAzureError
+from pathlib import Path
+from typing import ClassVar
+
+import yaml
+from azure.keyvault.keys import KeyVaultKey
+from pydantic import BaseModel
+
+from data_safe_haven import __version__
 from data_safe_haven.external import AzureApi
+from data_safe_haven.functions import alphanumeric
+from data_safe_haven.types import (
+    AzureLocation,
+    AzureLongName,
+    Guid,
+)
+from data_safe_haven.utility import config_dir
 
-from .context_settings import Context
 
+class Context(BaseModel, validate_assignment=True):
+    admin_group_id: Guid
+    location: AzureLocation
+    name: str
+    subscription_name: AzureLongName
+    storage_container_name: ClassVar[str] = "config"
+    pulumi_storage_container_name: ClassVar[str] = "pulumi"
+    pulumi_encryption_key_name: ClassVar[str] = "pulumi-encryption-key"
 
-class ContextInfra:
-    """Azure resources to support Data Safe Haven context"""
-
-    def __init__(self, context: Context) -> None:
-        self.azure_api_: AzureApi | None = None
-        self.context = context
-        self.tags = {"component": "context"} | context.tags
+    _pulumi_encryption_key = None
 
     @property
-    def azure_api(self) -> AzureApi:
-        """Load AzureAPI on demand
+    def tags(self) -> dict[str, str]:
+        return {
+            "deployment": self.name,
+            "deployed by": "Python",
+            "project": "Data Safe Haven",
+            "version": __version__,
+        }
 
-        Returns:
-            AzureApi: An initialised AzureApi object
-        """
-        if not self.azure_api_:
-            self.azure_api_ = AzureApi(
-                subscription_name=self.context.subscription_name,
-            )
-        return self.azure_api_
+    @property
+    def shm_name(self) -> str:
+        return alphanumeric(self.name).lower()
 
-    def create(self) -> None:
-        """Create all desired resources
+    @property
+    def work_directory(self) -> Path:
+        return config_dir() / self.shm_name
 
-        Raises:
-            DataSafeHavenAzureError if any resources cannot be created
-        """
-        try:
-            resource_group = self.azure_api.ensure_resource_group(
-                location=self.context.location,
-                resource_group_name=self.context.resource_group_name,
-                tags=self.tags,
-            )
-            if not resource_group.name:
-                msg = f"Resource group '{self.context.resource_group_name}' was not created."
-                raise DataSafeHavenAzureError(msg)
-            identity = self.azure_api.ensure_managed_identity(
-                identity_name=self.context.managed_identity_name,
-                location=resource_group.location,
-                resource_group_name=resource_group.name,
-            )
-            storage_account = self.azure_api.ensure_storage_account(
-                location=resource_group.location,
-                resource_group_name=resource_group.name,
-                storage_account_name=self.context.storage_account_name,
-                tags=self.tags,
-            )
-            if not storage_account.name:
-                msg = f"Storage account '{self.context.storage_account_name}' was not created."
-                raise DataSafeHavenAzureError(msg)
-            _ = self.azure_api.ensure_storage_blob_container(
-                container_name=self.context.storage_container_name,
-                resource_group_name=resource_group.name,
-                storage_account_name=storage_account.name,
-            )
-            _ = self.azure_api.ensure_storage_blob_container(
-                container_name=self.context.pulumi_storage_container_name,
-                resource_group_name=resource_group.name,
-                storage_account_name=storage_account.name,
-            )
-            keyvault = self.azure_api.ensure_keyvault(
-                admin_group_id=self.context.admin_group_id,
-                key_vault_name=self.context.key_vault_name,
-                location=resource_group.location,
-                managed_identity=identity,
-                resource_group_name=resource_group.name,
-                tags=self.tags,
-            )
-            if not keyvault.name:
-                msg = f"Keyvault '{self.context.key_vault_name}' was not created."
-                raise DataSafeHavenAzureError(msg)
-            # Wait for keyvault to be ready before creating key
-            time.sleep(30)
-            self.azure_api.ensure_keyvault_key(
-                key_name=self.context.pulumi_encryption_key_name,
-                key_vault_name=keyvault.name,
-            )
-        except Exception as exc:
-            msg = f"Failed to create context resources.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
+    @property
+    def resource_group_name(self) -> str:
+        return f"shm-{self.shm_name}-rg-context"
 
-    def teardown(self) -> None:
-        """Destroy all created resources
+    @property
+    def storage_account_name(self) -> str:
+        # maximum of 24 characters allowed
+        return f"shm{self.shm_name[:14]}context"
 
-        Raises:
-            DataSafeHavenAzureError if any resources cannot be destroyed
-        """
-        try:
-            self.azure_api.remove_resource_group(self.context.resource_group_name)
-        except Exception as exc:
-            msg = f"Failed to destroy context resources.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
+    @property
+    def key_vault_name(self) -> str:
+        return f"shm-{self.shm_name[:9]}-kv-context"
+
+    @property
+    def managed_identity_name(self) -> str:
+        return f"shm-{self.shm_name}-identity-reader-context"
+
+    @property
+    def pulumi_backend_url(self) -> str:
+        return f"azblob://{self.pulumi_storage_container_name}"
+
+    @property
+    def pulumi_encryption_key(self) -> KeyVaultKey:
+        if not self._pulumi_encryption_key:
+            azure_api = AzureApi(subscription_name=self.subscription_name)
+            self._pulumi_encryption_key = azure_api.get_keyvault_key(
+                key_name=self.pulumi_encryption_key_name,
+                key_vault_name=self.key_vault_name,
+            )
+        return self._pulumi_encryption_key
+
+    @property
+    def pulumi_encryption_key_version(self) -> str:
+        """ID for the Pulumi encryption key"""
+        key_id: str = self.pulumi_encryption_key.id
+        return key_id.split("/")[-1]
+
+    @property
+    def pulumi_secrets_provider_url(self) -> str:
+        return f"azurekeyvault://{self.key_vault_name}.vault.azure.net/keys/{self.pulumi_encryption_key_name}/{self.pulumi_encryption_key_version}"
+
+    def to_yaml(self) -> str:
+        return yaml.dump(self.model_dump(), indent=2)

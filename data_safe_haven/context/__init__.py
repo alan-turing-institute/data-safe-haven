@@ -1,8 +1,7 @@
-from .context import ContextInfra
-from .context_settings import Context, ContextSettings
+from .context import Context
+from .context_settings import ContextSettings
 
 __all__ = [
     "Context",
-    "ContextInfra",
     "ContextSettings",
 ]

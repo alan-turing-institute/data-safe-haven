@@ -9,7 +9,7 @@ from data_safe_haven.external import (
     AzurePostgreSQLDatabase,
     GraphApi,
 )
-from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
+from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
 from data_safe_haven.utility import LoggingSingleton
 
 
@@ -19,9 +19,9 @@ class SREProvisioningManager:
     def __init__(
         self,
         graph_api_token: str,
-        shm_stack: SHMStackManager,
+        shm_stack: SHMProjectManager,
         sre_name: str,
-        sre_stack: SREStackManager,
+        sre_stack: SREProjectManager,
         subscription_name: str,
         timezone: str,
     ):

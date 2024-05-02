@@ -69,7 +69,7 @@ class DeclarativeSRE:
         self.stack_name = f"shm-{shm_name}-{self.short_name}"
         self.tags = context.tags
 
-    def run(self) -> None:
+    def __call__(self) -> None:
         # Load pulumi configuration options
         self.pulumi_opts = pulumi.Config()
 

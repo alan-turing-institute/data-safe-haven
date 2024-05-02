@@ -1,5 +1,5 @@
 from data_safe_haven.commands.context import context_command_group
-from data_safe_haven.context import ContextInfra
+from data_safe_haven.context_infrastructure import ContextInfrastructure
 
 
 class TestShow:
@@ -181,7 +181,7 @@ class TestCreate:
         def mock_create(self):  # noqa: ARG001
             print("mock create")  # noqa: T201
 
-        monkeypatch.setattr(ContextInfra, "create", mock_create)
+        monkeypatch.setattr(ContextInfrastructure, "create", mock_create)
 
         result = runner.invoke(context_command_group, ["create"])
         assert "mock create" in result.stdout
@@ -193,7 +193,7 @@ class TestTeardown:
         def mock_teardown(self):  # noqa: ARG001
             print("mock teardown")  # noqa: T201
 
-        monkeypatch.setattr(ContextInfra, "teardown", mock_teardown)
+        monkeypatch.setattr(ContextInfrastructure, "teardown", mock_teardown)
 
         result = runner.invoke(context_command_group, ["teardown"])
         assert "mock teardown" in result.stdout

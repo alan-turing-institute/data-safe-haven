@@ -9,7 +9,7 @@ from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
-from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
+from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
 from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.utility import LoggingSingleton
 
@@ -46,7 +46,7 @@ def shm(
         verification_record = graph_api.add_custom_domain(config.shm.fqdn)
 
         # Initialise Pulumi stack
-        stack = SHMStackManager(context, config, pulumi_project)
+        stack = SHMProjectManager(context, config, pulumi_project)
         # Set Azure options
         stack.add_option("azure-native:location", context.location, replace=False)
         stack.add_option(
@@ -124,8 +124,8 @@ def sre(
         )
 
         # Initialise Pulumi stack
-        shm_stack = SHMStackManager(context, config, shm_pulumi_project)
-        stack = SREStackManager(
+        shm_stack = SHMProjectManager(context, config, shm_pulumi_project)
+        stack = SREProjectManager(
             context,
             config,
             sre_pulumi_project,

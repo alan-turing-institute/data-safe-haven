@@ -1,11 +1,11 @@
 from pytest import fixture, raises
 
-from data_safe_haven.config.azure_serialisable_model import AzureSerialisableModel
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
 from data_safe_haven.external import AzureApi
+from data_safe_haven.serialisers import AzureSerialisableModel
 
 
 class ExampleAzureSerialisableModel(AzureSerialisableModel):
