@@ -54,8 +54,15 @@ class PulumiAccount:
         return self.env_
 
 
-class StackManager:
-    """Interact with infrastructure using Pulumi"""
+class ProjectManager:
+    """
+    Interact with DSH infrastructure using Pulumi
+
+    Constructing a ProjectManager creates a Pulumi project, with a single stack. The
+    Pulumi project's program corresponds to either an SHM or SRE. Methods provider a
+    high level, DSH focused interface to call Pulumi operations on the project,
+    including `pulumi up` and `pulumi destroy`.
+    """
 
     def __init__(
         self,
@@ -159,11 +166,11 @@ class StackManager:
                 f"No ongoing Pulumi operation found for stack [green]{self.stack.name}[/]."
             )
 
-    def copy_option(self, name: str, other_stack: "StackManager") -> None:
+    def copy_option(self, name: str, other_stack: "ProjectManager") -> None:
         """Copy a public configuration option from another Pulumi stack"""
         self.add_option(name, other_stack.secret(name), replace=True)
 
-    def copy_secret(self, name: str, other_stack: "StackManager") -> None:
+    def copy_secret(self, name: str, other_stack: "ProjectManager") -> None:
         """Copy a secret configuration option from another Pulumi stack"""
         self.add_secret(name, other_stack.secret(name), replace=True)
 
@@ -364,7 +371,7 @@ class StackManager:
         self.pulumi_project.stack_config = all_config_dict
 
 
-class SHMStackManager(StackManager):
+class SHMProjectManager(ProjectManager):
     """Interact with an SHM using Pulumi"""
 
     def __init__(
@@ -379,7 +386,7 @@ class SHMStackManager(StackManager):
         )
 
 
-class SREStackManager(StackManager):
+class SREProjectManager(ProjectManager):
     """Interact with an SRE using Pulumi"""
 
     def __init__(
