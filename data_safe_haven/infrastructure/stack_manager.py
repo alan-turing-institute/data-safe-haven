@@ -16,8 +16,9 @@ from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCliSingleton
 from data_safe_haven.functions import replace_separators
-from data_safe_haven.infrastructure.stacks import DeclarativeSHM, DeclarativeSRE
 from data_safe_haven.utility import LoggingSingleton
+
+from .programs import DeclarativeSHM, DeclarativeSRE
 
 
 class PulumiAccount:
