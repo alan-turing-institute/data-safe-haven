@@ -8,9 +8,9 @@ from rich import print
 from data_safe_haven import validators
 from data_safe_haven.context import (
     Context,
-    ContextInfra,
     ContextSettings,
 )
+from data_safe_haven.context_infrastructure import ContextInfrastructure
 from data_safe_haven.exceptions import DataSafeHavenConfigError
 
 context_command_group = typer.Typer()
@@ -169,7 +169,7 @@ def remove(
 def create() -> None:
     """Create Data Safe Haven context infrastructure."""
     context = ContextSettings.from_file().assert_context()
-    context_infra = ContextInfra(context)
+    context_infra = ContextInfrastructure(context)
     context_infra.create()
 
 
@@ -177,5 +177,5 @@ def create() -> None:
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure."""
     context = ContextSettings.from_file().assert_context()
-    context_infra = ContextInfra(context)
+    context_infra = ContextInfrastructure(context)
     context_infra.teardown()
