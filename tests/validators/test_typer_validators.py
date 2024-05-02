@@ -1,10 +1,10 @@
 import pytest
 from typer import BadParameter
 
-from data_safe_haven.functions.typer_validators import typer_validate_aad_guid
+from data_safe_haven import validators
 
 
-class TestTyperValidateAadGuid:
+class TestTyperAadGuid:
     @pytest.mark.parametrize(
         "guid",
         [
@@ -13,7 +13,7 @@ class TestTyperValidateAadGuid:
         ],
     )
     def test_typer_validate_aad_guid(self, guid):
-        assert typer_validate_aad_guid(guid) == guid
+        assert validators.typer_aad_guid(guid) == guid
 
     @pytest.mark.parametrize(
         "guid",
@@ -24,7 +24,7 @@ class TestTyperValidateAadGuid:
     )
     def test_typer_validate_aad_guid_fail(self, guid):
         with pytest.raises(BadParameter, match="Expected GUID"):
-            typer_validate_aad_guid(guid)
+            validators.typer_aad_guid(guid)
 
     def test_typer_validate_aad_guid_nonae(self):
-        assert typer_validate_aad_guid(None) is None
+        assert validators.typer_aad_guid(None) is None

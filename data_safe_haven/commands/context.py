@@ -5,13 +5,13 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
+from data_safe_haven import validators
 from data_safe_haven.context import (
     Context,
     ContextInfra,
     ContextSettings,
 )
 from data_safe_haven.exceptions import DataSafeHavenConfigError
-from data_safe_haven.functions.typer_validators import typer_validate_aad_guid
 
 context_command_group = typer.Typer()
 
@@ -68,7 +68,7 @@ def add(
         str,
         typer.Option(
             help="The ID of an Azure group containing all administrators.",
-            callback=typer_validate_aad_guid,
+            callback=validators.typer_aad_guid,
         ),
     ],
     location: Annotated[
@@ -122,7 +122,7 @@ def update(
         Optional[str],  # noqa: UP007
         typer.Option(
             help="The ID of an Azure group containing all administrators.",
-            callback=typer_validate_aad_guid,
+            callback=validators.typer_aad_guid,
         ),
     ] = None,
     location: Annotated[

@@ -10,8 +10,8 @@ from pydantic import (
     field_validator,
 )
 
+from data_safe_haven import validators
 from data_safe_haven.exceptions import DataSafeHavenConfigError
-from data_safe_haven.functions.validators import validate_unique_list
 from data_safe_haven.serialisers import AzureSerialisableModel
 from data_safe_haven.types import (
     AzureVmSku,
@@ -200,7 +200,7 @@ class Config(AzureSerialisableModel):
         cls, v: dict[str, ConfigSectionSRE]
     ) -> dict[str, ConfigSectionSRE]:
         indices = [s.index for s in v.values()]
-        validate_unique_list(indices)
+        validators.unique_list(indices)
         return v
 
     @property
