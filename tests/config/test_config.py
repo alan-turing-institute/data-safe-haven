@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from data_safe_haven.config import (
-    Config,
+from data_safe_haven.config import Config
+from data_safe_haven.config.config import (
     ConfigSectionAzure,
     ConfigSectionSHM,
     ConfigSectionSRE,
@@ -13,7 +13,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenParameterError,
 )
 from data_safe_haven.external import AzureApi
-from data_safe_haven.utility.enums import DatabaseSystem, SoftwarePackageCategory
+from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
 
 class TestConfigSectionAzure:

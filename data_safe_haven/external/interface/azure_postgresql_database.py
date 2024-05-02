@@ -18,7 +18,8 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
 )
 from data_safe_haven.external import AzureApi
-from data_safe_haven.utility import FileReader, LoggingSingleton, PathType
+from data_safe_haven.types import PathType
+from data_safe_haven.utility import FileReader, LoggingSingleton
 
 
 class AzurePostgreSQLDatabase:

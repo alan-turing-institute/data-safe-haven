@@ -12,7 +12,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
-from data_safe_haven.infrastructure import SHMStackManager, SREStackManager
+from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
 
 teardown_command_group = typer.Typer()
 
@@ -29,7 +29,7 @@ def shm() -> None:
     try:
         # Remove infrastructure deployed with Pulumi
         try:
-            stack = SHMStackManager(context, config, pulumi_project)
+            stack = SHMProjectManager(context, config, pulumi_project)
             stack.teardown()
         except Exception as exc:
             msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
@@ -67,7 +67,7 @@ def sre(
 
         # Remove infrastructure deployed with Pulumi
         try:
-            stack = SREStackManager(
+            stack = SREProjectManager(
                 context,
                 config,
                 pulumi_project,

@@ -1,7 +1,7 @@
-from .stack_manager import PulumiAccount, SHMStackManager, SREStackManager
+from .project_manager import PulumiAccount, SHMProjectManager, SREProjectManager
 
 __all__ = [
-    "SHMStackManager",
-    "SREStackManager",
+    "SHMProjectManager",
+    "SREProjectManager",
     "PulumiAccount",
 ]

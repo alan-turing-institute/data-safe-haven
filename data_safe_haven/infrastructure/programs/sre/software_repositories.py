@@ -16,7 +16,8 @@ from data_safe_haven.infrastructure.components import (
     LocalDnsRecordProps,
 )
 from data_safe_haven.resources import resources_path
-from data_safe_haven.utility import FileReader, SoftwarePackageCategory
+from data_safe_haven.types import SoftwarePackageCategory
+from data_safe_haven.utility import FileReader
 
 
 class SRESoftwareRepositoriesProps:

@@ -9,11 +9,11 @@ from pulumi.automation import (
 )
 from pytest import fixture
 
-from data_safe_haven.infrastructure import SHMStackManager
-from data_safe_haven.infrastructure.stack_manager import (
+from data_safe_haven.infrastructure import SHMProjectManager
+from data_safe_haven.infrastructure.project_manager import (
     AzureCliSingleton,
+    ProjectManager,
     PulumiAccount,
-    StackManager,
 )
 
 
@@ -27,7 +27,7 @@ def mock_azure_cli_confirm(monkeypatch):
 def mock_install_plugins(monkeypatch):
     """Skip installing Pulumi plugins"""
     monkeypatch.setattr(
-        StackManager, "install_plugins", lambda self: None  # noqa: ARG005
+        ProjectManager, "install_plugins", lambda self: None  # noqa: ARG005
     )
 
 
@@ -43,7 +43,7 @@ def offline_pulumi_account(monkeypatch, mock_azure_cli_confirm):  # noqa: ARG001
 def local_project_settings(context_no_secrets, mocker):  # noqa: ARG001
     """Overwrite adjust project settings to work locally, no secrets"""
     mocker.patch.object(
-        StackManager,
+        ProjectManager,
         "project_settings",
         ProjectSettings(
             name="data-safe-haven",
@@ -63,10 +63,10 @@ def shm_stack_manager(
     offline_pulumi_account,  # noqa: ARG001
     local_project_settings,  # noqa: ARG001
 ):
-    return SHMStackManager(context_no_secrets, config_sres, pulumi_project)
+    return SHMProjectManager(context_no_secrets, config_sres, pulumi_project)
 
 
-class TestSHMStackManager:
+class TestSHMProjectManager:
     def test_constructor(
         self,
         context_no_secrets,
@@ -75,9 +75,9 @@ class TestSHMStackManager:
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
     ):
-        shm = SHMStackManager(context_no_secrets, config_sres, pulumi_project)
-        assert isinstance(shm, SHMStackManager)
-        assert isinstance(shm, StackManager)
+        shm = SHMProjectManager(context_no_secrets, config_sres, pulumi_project)
+        assert isinstance(shm, SHMProjectManager)
+        assert isinstance(shm, ProjectManager)
         assert shm.context == context_no_secrets
         assert shm.cfg == config_sres
         assert shm.pulumi_project == pulumi_project
