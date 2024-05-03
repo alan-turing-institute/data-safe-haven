@@ -12,6 +12,7 @@ class DSHPulumiConfig(AzureSerialisableModel):
 
     config_type: ClassVar[str] = "Pulumi"
     filename: ClassVar[str] = "pulumi.yaml"
+    encrypted_key: str | None
     projects: dict[str, DSHPulumiProject]
 
     def __getitem__(self, key: str) -> DSHPulumiProject:
@@ -58,5 +59,5 @@ class DSHPulumiConfig(AzureSerialisableModel):
 
     def create_or_select_project(self, project_name: str) -> DSHPulumiProject:
         if project_name not in self.project_names:
-            self[project_name] = DSHPulumiProject(encrypted_key="", stack_config={})
+            self[project_name] = DSHPulumiProject(stack_config={})
         return self[project_name]
