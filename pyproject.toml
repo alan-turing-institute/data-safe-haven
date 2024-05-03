@@ -109,12 +109,13 @@ all = [
 dependencies = [
   "pytest~=8.1",
   "pytest-mock~=3.14",
+  "pytest-cov~=5.0.0"
 ]
 pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.hatch.envs.test.scripts]
 test = "pytest {args:-vvv tests}"
-
+test-cov = "pytest {args:-vvv --cov data_safe_haven tests}"
 [tool.black]
 target-version = ["py312"]
 
