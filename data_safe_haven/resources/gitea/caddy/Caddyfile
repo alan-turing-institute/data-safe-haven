@@ -1,12 +1,11 @@
 # Refer to the Caddy docs for more information:
 # https://caddyserver.com/docs/caddyfile
-
 {
     log {
         format console {
             level_format upper
         }
-        level  DEBUG
+        level DEBUG
     }
 }
 
