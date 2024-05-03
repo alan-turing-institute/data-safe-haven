@@ -59,6 +59,7 @@ def application() -> typer.Typer:
     application = typer.Typer(
         context_settings={"help_option_names": ["-h", "--help"]},
         invoke_without_command=True,
+        name="dsh",
         no_args_is_help=True,
     )
 
