@@ -124,16 +124,14 @@ class SRENetworkingComponent(ComponentResource):
             f"{self._name}_route_table",
             location=props.location,
             resource_group_name=resource_group.name,
-            route_table_name=f"{stack_name}-route",
-            routes=[
-                network.RouteArgs(
-                    address_prefix="0.0.0.0/0",
-                    name="ViaFirewall",
-                    next_hop_ip_address=props.firewall_ip_address,
-                    next_hop_type=network.RouteNextHopType.VIRTUAL_APPLIANCE,
-                ),
-            ],
-            opts=child_opts,
+            route_table_name=f"{stack_name}-route-table",
+            routes=[],
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    ignore_changes=["routes"]
+                ),  # allow routes to be created outside this definition
+            ),
             tags=child_tags,
         )
 
@@ -1728,6 +1726,7 @@ class SRENetworkingComponent(ComponentResource):
 
         # Register outputs
         self.resource_group = resource_group
+        self.route_table_name = route_table.name
         self.shm_ns_record = shm_ns_record
         self.sre_fqdn = sre_dns_zone.name
         self.sre_private_dns_zone_id = sre_private_dns_zone.id
