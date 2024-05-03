@@ -12,6 +12,7 @@ class SREIpRanges:
         """Constructor"""
         self.vnet = AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
         self.application_gateway = self.vnet.next_subnet(256)
+        self.apt_proxy_server = self.vnet.next_subnet(8)
         self.data_configuration = self.vnet.next_subnet(8)
         self.data_private = self.vnet.next_subnet(8)
         self.guacamole_containers = self.vnet.next_subnet(8)

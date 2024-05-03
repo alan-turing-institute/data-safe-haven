@@ -1,12 +1,6 @@
 #cloud-config
 
 write_files:
-  - path: "/etc/apt/apt.conf.d/00proxy"
-    permissions: "0444"
-    content: |
-      Acquire::http::Proxy "http://{{linux_update_server_ip}}:8000";
-      Acquire::https::Proxy "http://{{linux_update_server_ip}}:8000";
-
   - path: "/etc/nslcd.conf"
     permissions: "0400"
     content: |
@@ -40,9 +34,9 @@ write_files:
     content: |
       # Use the PyPI proxy for package installation
       [global]
-      index = http://nexus.{{sre_fqdn}}/repository/pypi-proxy
-      index-url = http://nexus.{{sre_fqdn}}/repository/pypi-proxy/simple
-      trusted-host = nexus.{{sre_fqdn}}
+      index = http://{{software_repository_hostname}}/repository/pypi-proxy
+      index-url = http://{{software_repository_hostname}}/repository/pypi-proxy/simple
+      trusted-host = {{software_repository_hostname}}
 
   - path: "/etc/R/Rprofile.site"
     permissions: "0444"
@@ -50,7 +44,7 @@ write_files:
       # Use the CRAN proxy for package installation
       local({
           r <- getOption("repos")
-          r["CRAN"] <- "http://nexus.{{sre_fqdn}}/repository/cran-proxy"
+          r["CRAN"] <- "http://{{software_repository_hostname}}/repository/cran-proxy"
           options(repos = r)
       })
 
@@ -71,7 +65,9 @@ mounts:
 apt:
   debconf_selections:
     msodbcsql17: msodbcsql17 msodbcsql/ACCEPT_EULA boolean true
-  preserve_sources_list: true   # Append to the existing /etc/apt/sources.list
+  http_proxy: http://{{apt_proxy_server_hostname}}:8000
+  https_proxy: http://{{apt_proxy_server_hostname}}:8000
+  preserve_sources_list: true  # Append to the existing /etc/apt/sources.list
   sources:
     microsoft-general.list:
       source: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main"

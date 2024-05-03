@@ -97,7 +97,7 @@ style = [
 ]
 fmt = [
   "black {args:data_safe_haven tests}",
-  "ruff --fix {args:data_safe_haven tests}",
+  "ruff check --fix {args:data_safe_haven tests}",
   "style",
 ]
 all = [

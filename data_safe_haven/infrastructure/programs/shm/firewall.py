@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
+from data_safe_haven.functions import allowed_dns_lookups
 from data_safe_haven.infrastructure.common import (
     FirewallPriorities,
     Ports,
@@ -23,7 +24,6 @@ class SHMFirewallProps:
         resource_group_name: Input[str],
         route_table_name: Input[str],
         subnet_firewall: Input[network.GetSubnetResult],
-        subnet_update_servers: Input[network.GetSubnetResult],
     ) -> None:
         self.dns_zone_name = Output.from_input(dns_zone).apply(lambda zone: zone.name)
         self.location = location
@@ -32,9 +32,6 @@ class SHMFirewallProps:
         self.subnet_firewall_id = Output.from_input(subnet_firewall).apply(
             get_id_from_subnet
         )
-        self.subnet_update_servers_iprange = Output.from_input(
-            subnet_update_servers
-        ).apply(lambda s: str(s.address_prefix) if s.address_prefix else "")
 
 
 class SHMFirewallComponent(ComponentResource):
@@ -80,6 +77,10 @@ class SHMFirewallComponent(ComponentResource):
             str(SREIpRanges(idx).guacamole_containers)
             for idx in range(1, SREIpRanges.max_index)
         ]
+        sre_apt_proxy_servers = [
+            str(SREIpRanges(idx).apt_proxy_server)
+            for idx in range(1, SREIpRanges.max_index)
+        ]
         sre_workspaces_subnets = [
             str(SREIpRanges(idx).workspaces) for idx in range(1, SREIpRanges.max_index)
         ]
@@ -112,7 +113,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalAzureAutomationOperations",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type="Https",
                                 )
                             ],
@@ -126,48 +127,12 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalGoogleNTP",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=123,
+                                    port=int(Ports.NTP),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 )
                             ],
                             source_addresses=["*"],
                             target_fqdns=ntp_fqdns,
-                        ),
-                    ],
-                ),
-                network.AzureFirewallApplicationRuleCollectionArgs(
-                    action=network.AzureFirewallRCActionArgs(type="Allow"),
-                    name=f"{stack_name}-update-servers",
-                    priority=FirewallPriorities.SHM_UPDATE_SERVERS,
-                    rules=[
-                        network.AzureFirewallApplicationRuleArgs(
-                            description="Allow external Linux update requests",
-                            name="AllowExternalLinuxUpdate",
-                            protocols=[
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=80,
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
-                                ),
-                                network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
-                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
-                                ),
-                            ],
-                            source_addresses=[props.subnet_update_servers_iprange],
-                            target_fqdns=[
-                                # "apt.postgresql.org",
-                                "archive.ubuntu.com",
-                                "azure.archive.ubuntu.com",
-                                "changelogs.ubuntu.com",
-                                "cloudapp.azure.com",  # this is where azure.archive.ubuntu.com is hosted
-                                # "d20rj4el6vkp4c.cloudfront.net",
-                                # "dbeaver.io",
-                                # "packages.gitlab.com",
-                                "packages.microsoft.com",
-                                # "qgis.org",
-                                "security.ubuntu.com",
-                                # "ubuntu.qgis.org"
-                            ],
                         ),
                     ],
                 ),
@@ -181,7 +146,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalOAuthLogin",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
@@ -203,7 +168,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalPackageDownloadCRAN",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
@@ -215,7 +180,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalPackageDownloadPyPI",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
@@ -234,12 +199,35 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalOAuthLogin",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 )
                             ],
                             source_addresses=sre_remote_desktop_gateway_subnets,
                             target_fqdns=["login.microsoftonline.com"],
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(type="Allow"),
+                    name=f"{stack_name}-sre-apt-proxy-servers",
+                    priority=FirewallPriorities.SRE_APT_PROXY_SERVER,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external apt repository requests",
+                            name="AllowExternalAptRepositories",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTP),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
+                                ),
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                ),
+                            ],
+                            source_addresses=sre_apt_proxy_servers,
+                            target_fqdns=allowed_dns_lookups("apt_repositories"),
                         ),
                     ],
                 ),
@@ -253,11 +241,11 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalLinuxClamAVUpdate",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=80,
+                                    port=int(Ports.HTTP),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 ),
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=443,
+                                    port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 ),
                             ],
@@ -273,7 +261,7 @@ class SHMFirewallComponent(ComponentResource):
                             name="AllowExternalUbuntuKeyserver",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
-                                    port=11371,
+                                    port=int(Ports.CLAMAV),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
                                 ),
                             ],

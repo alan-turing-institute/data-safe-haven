@@ -10,6 +10,7 @@ from .sre.application_gateway import (
     SREApplicationGatewayComponent,
     SREApplicationGatewayProps,
 )
+from .sre.apt_proxy_server import SREAptProxyServerComponent, SREAptProxyServerProps
 from .sre.backup import (
     SREBackupComponent,
     SREBackupProps,
@@ -153,9 +154,6 @@ class DeclarativeSRE:
                 shm_subnet_monitoring_prefix=self.pulumi_opts.require(
                     "shm-networking-subnet_subnet_monitoring_prefix",
                 ),
-                shm_subnet_update_servers_prefix=self.pulumi_opts.require(
-                    "shm-networking-subnet_update_servers_prefix",
-                ),
                 shm_virtual_network_name=self.pulumi_opts.require(
                     "shm-networking-virtual_network_name"
                 ),
@@ -216,6 +214,24 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
+        # Deploy the apt proxy server
+        apt_proxy_server = SREAptProxyServerComponent(
+            "sre_apt_proxy_server",
+            self.stack_name,
+            SREAptProxyServerProps(
+                containers_subnet=networking.subnet_apt_proxy_server,
+                dns_resource_group_name=dns.resource_group.name,
+                dns_server_ip=dns.ip_address,
+                location=self.context.location,
+                networking_resource_group_name=networking.resource_group.name,
+                sre_fqdn=networking.sre_fqdn,
+                storage_account_key=data.storage_account_data_configuration_key,
+                storage_account_name=data.storage_account_data_configuration_name,
+                storage_account_resource_group_name=data.resource_group_name,
+            ),
+            tags=self.tags,
+        )
+
         # Deploy identity server
         identity = SREIdentityComponent(
             "sre_identity",
@@ -234,6 +250,7 @@ class DeclarativeSRE:
                 storage_account_resource_group_name=data.resource_group_name,
                 subnet_containers=networking.subnet_identity_containers,
             ),
+            tags=self.tags,
         )
 
         # Deploy frontend application gateway
@@ -280,43 +297,8 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
-        # Deploy workspaces
-        workspaces = SREWorkspacesComponent(
-            "sre_workspaces",
-            self.stack_name,
-            SREWorkspacesProps(
-                admin_password=data.password_workspace_admin,
-                ldap_group_filter=ldap_group_filter,
-                ldap_group_search_base=ldap_group_search_base,
-                ldap_server_hostname=identity.hostname,
-                ldap_server_port=identity.server_port,
-                ldap_user_filter=ldap_user_filter,
-                ldap_user_search_base=ldap_user_search_base,
-                linux_update_server_ip=self.pulumi_opts.require(
-                    "shm-update_servers-ip_address_linux"
-                ),
-                location=self.context.location,
-                log_analytics_workspace_id=self.pulumi_opts.require(
-                    "shm-monitoring-log_analytics_workspace_id"
-                ),
-                log_analytics_workspace_key=self.pulumi_opts.require(
-                    "shm-monitoring-log_analytics_workspace_key"
-                ),
-                sre_fqdn=networking.sre_fqdn,
-                sre_name=self.sre_name,
-                storage_account_data_private_user_name=data.storage_account_data_private_user_name,
-                storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
-                subnet_workspaces=networking.subnet_workspaces,
-                subscription_name=self.context.subscription_name,
-                virtual_network_resource_group=networking.resource_group,
-                virtual_network=networking.virtual_network,
-                vm_details=list(enumerate(self.cfg.sre(self.sre_name).workspace_skus)),
-            ),
-            tags=self.tags,
-        )
-
         # Deploy containerised user services
-        SREUserServicesComponent(
+        user_services = SREUserServicesComponent(
             "sre_user_services",
             self.stack_name,
             SREUserServicesProps(
@@ -344,6 +326,39 @@ class DeclarativeSRE:
                 subnet_containers_support=networking.subnet_user_services_containers_support,
                 subnet_databases=networking.subnet_user_services_databases,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
+            ),
+            tags=self.tags,
+        )
+
+        # Deploy workspaces
+        workspaces = SREWorkspacesComponent(
+            "sre_workspaces",
+            self.stack_name,
+            SREWorkspacesProps(
+                admin_password=data.password_workspace_admin,
+                apt_proxy_server_hostname=apt_proxy_server.hostname,
+                ldap_group_filter=ldap_group_filter,
+                ldap_group_search_base=ldap_group_search_base,
+                ldap_server_hostname=identity.hostname,
+                ldap_server_port=identity.server_port,
+                ldap_user_filter=ldap_user_filter,
+                ldap_user_search_base=ldap_user_search_base,
+                location=self.context.location,
+                log_analytics_workspace_id=self.pulumi_opts.require(
+                    "shm-monitoring-log_analytics_workspace_id"
+                ),
+                log_analytics_workspace_key=self.pulumi_opts.require(
+                    "shm-monitoring-log_analytics_workspace_key"
+                ),
+                software_repository_hostname=user_services.software_repositories.hostname,
+                sre_name=self.sre_name,
+                storage_account_data_private_user_name=data.storage_account_data_private_user_name,
+                storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
+                subnet_workspaces=networking.subnet_workspaces,
+                subscription_name=self.context.subscription_name,
+                virtual_network_resource_group=networking.resource_group,
+                virtual_network=networking.virtual_network,
+                vm_details=list(enumerate(self.cfg.sre(self.sre_name).workspace_skus)),
             ),
             tags=self.tags,
         )

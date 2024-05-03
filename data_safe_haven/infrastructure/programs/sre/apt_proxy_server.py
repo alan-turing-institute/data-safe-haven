@@ -1,174 +1,120 @@
-"""Pulumi component for SRE identity"""
-
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, network, resources, storage
+from pulumi_azure_native import containerinstance, resources, storage
 
+from data_safe_haven.functions import allowed_dns_lookups
 from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
-    AzureADApplication,
-    AzureADApplicationProps,
+    FileShareFile,
+    FileShareFileProps,
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
 )
 
 
-class SREIdentityProps:
-    """Properties for SREIdentityComponent"""
+class SREAptProxyServerProps:
+    """Properties for SREAptProxyServerComponent"""
 
     def __init__(
         self,
-        aad_application_name: Input[str],
-        aad_auth_token: Input[str],
-        aad_tenant_id: Input[str],
+        containers_subnet: Input[str],
         dns_resource_group_name: Input[str],
+        dns_server_ip: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
-        shm_fqdn: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
-        subnet_containers: Input[network.GetSubnetResult],
     ) -> None:
-        self.aad_application_name = aad_application_name
-        self.aad_auth_token = aad_auth_token
-        self.aad_tenant_id = aad_tenant_id
+        self.containers_subnet_id = Output.from_input(containers_subnet).apply(
+            get_id_from_subnet
+        )
         self.dns_resource_group_name = dns_resource_group_name
+        self.dns_server_ip = dns_server_ip
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
-        self.shm_fqdn = shm_fqdn
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
-        self.subnet_containers_id = Output.from_input(subnet_containers).apply(
-            get_id_from_subnet
-        )
 
 
-class SREIdentityComponent(ComponentResource):
-    """Deploy SRE backup with Pulumi"""
+class SREAptProxyServerComponent(ComponentResource):
+    """Deploy APT proxy server with Pulumi"""
 
     def __init__(
         self,
         name: str,
         stack_name: str,
-        props: SREIdentityProps,
+        props: SREAptProxyServerProps,
         opts: ResourceOptions | None = None,
         tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
-        super().__init__("dsh:sre:IdentityComponent", name, {}, opts)
+        super().__init__("dsh:sre:AptProxyServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
-
-        # The port that the server will be hosted on
-        self.server_port = 1389
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
             f"{self._name}_resource_group",
             location=props.location,
-            resource_group_name=f"{stack_name}-rg-identity",
+            resource_group_name=f"{stack_name}-rg-apt-proxy-server",
             opts=child_opts,
             tags=child_tags,
         )
 
         # Define configuration file shares
-        file_share_redis = storage.FileShare(
-            f"{self._name}_file_share_redis",
+        file_share_apt_proxy_server = storage.FileShare(
+            f"{self._name}_file_share_apt_proxy_server",
             access_tier="TransactionOptimized",
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
-            share_name="identity-redis",
-            share_quota=5120,
+            share_name="apt-proxy-server",
+            share_quota=1,
             signed_identifiers=[],
             opts=child_opts,
         )
 
-        # Define AzureAD application
-        aad_application = AzureADApplication(
-            f"{self._name}_aad_application",
-            AzureADApplicationProps(
-                application_name=props.aad_application_name,
-                application_role_assignments=["User.Read.All", "GroupMember.Read.All"],
-                application_secret_name="Apricot Authentication Secret",
-                auth_token=props.aad_auth_token,
-                delegated_role_assignments=["User.Read.All"],
-                public_client_redirect_uri="urn:ietf:wg:oauth:2.0:oob",
+        # Upload allowed repositories
+        # reader = FileReader(resources_path / "apt_proxy_server" / "repositories.acl")
+        repositories = "\n".join(allowed_dns_lookups("apt_repositories"))
+        file_share_apt_proxy_server_repositories = FileShareFile(
+            f"{self._name}_file_share_apt_proxy_server_repositories",
+            FileShareFileProps(
+                destination_path="repositories.acl",
+                share_name=file_share_apt_proxy_server.name,
+                file_contents=repositories,
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
             ),
-            opts=child_opts,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=file_share_apt_proxy_server)
+            ),
         )
 
-        # Define the LDAP server container group with Apricot
+        # Define the container group with squid-deb-proxy
         container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group",
-            container_group_name=f"{stack_name}-container-group-identity",
+            container_group_name=f"{stack_name}-container-group-apt-proxy-server",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/apricot:0.0.5",
-                    name="apricot",
-                    environment_variables=[
-                        containerinstance.EnvironmentVariableArgs(
-                            name="BACKEND",
-                            value="MicrosoftEntra",
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="CLIENT_ID",
-                            value=aad_application.application_id,
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="CLIENT_SECRET",
-                            secure_value=aad_application.application_secret,
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="DEBUG",
-                            value="true",
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="DOMAIN",
-                            value=props.shm_fqdn,
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="ENTRA_TENANT_ID",
-                            value=props.aad_tenant_id,
-                        ),
-                        containerinstance.EnvironmentVariableArgs(
-                            name="REDIS_HOST",
-                            value="localhost",
-                        ),
-                    ],
+                    image="ghcr.io/alan-turing-institute/squid-deb-proxy:main",
+                    name="squid-deb-proxy"[:63],
+                    environment_variables=[],
                     # All Azure Container Instances need to expose port 80 on at least
-                    # one container even if there's nothing behind it.
+                    # one container. In this case, there is nothing there.
                     ports=[
                         containerinstance.ContainerPortArgs(
                             port=80,
                             protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                         ),
                         containerinstance.ContainerPortArgs(
-                            port=self.server_port,
-                            protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
-                        ),
-                    ],
-                    resources=containerinstance.ResourceRequirementsArgs(
-                        requests=containerinstance.ResourceRequestsArgs(
-                            cpu=1,
-                            memory_in_gb=1,
-                        ),
-                    ),
-                    volume_mounts=[],
-                ),
-                containerinstance.ContainerArgs(
-                    image="redis:7.2.4",
-                    name="redis",
-                    environment_variables=[],
-                    ports=[
-                        containerinstance.ContainerPortArgs(
-                            port=6379,
+                            port=8000,
                             protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                         ),
                     ],
@@ -180,13 +126,16 @@ class SREIdentityComponent(ComponentResource):
                     ),
                     volume_mounts=[
                         containerinstance.VolumeMountArgs(
-                            mount_path="/data",
-                            name="identity-redis-data",
-                            read_only=False,
+                            mount_path="/app/allowlists",
+                            name="proxy-app-allowlists",
+                            read_only=True,
                         ),
                     ],
                 ),
             ],
+            dns_config=containerinstance.DnsConfigurationArgs(
+                name_servers=[props.dns_server_ip],
+            ),
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(
@@ -194,7 +143,7 @@ class SREIdentityComponent(ComponentResource):
                         protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                     ),
                     containerinstance.PortArgs(
-                        port=self.server_port,
+                        port=8000,
                         protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
                     ),
                 ],
@@ -206,23 +155,27 @@ class SREIdentityComponent(ComponentResource):
             sku=containerinstance.ContainerGroupSku.STANDARD,
             subnet_ids=[
                 containerinstance.ContainerGroupSubnetIdArgs(
-                    id=props.subnet_containers_id
+                    id=props.containers_subnet_id
                 )
             ],
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_redis.name,
+                        share_name=file_share_apt_proxy_server.name,
                         storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),
-                    name="identity-redis-data",
+                    name="proxy-app-allowlists",
                 ),
             ],
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
                     delete_before_replace=True,
+                    depends_on=[
+                        file_share_apt_proxy_server,
+                        file_share_apt_proxy_server_repositories,
+                    ],
                     replace_on_changes=["containers"],
                 ),
             ),
@@ -231,13 +184,13 @@ class SREIdentityComponent(ComponentResource):
 
         # Register the container group in the SRE DNS zone
         local_dns = LocalDnsRecordComponent(
-            f"{self._name}_dns_record_set",
+            f"{self._name}_apt_proxy_server_dns_record_set",
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
                 public_dns_resource_group_name=props.networking_resource_group_name,
                 private_dns_resource_group_name=props.dns_resource_group_name,
                 private_ip_address=get_ip_address_from_container_group(container_group),
-                record_name="identity",
+                record_name="apt",
             ),
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=container_group)

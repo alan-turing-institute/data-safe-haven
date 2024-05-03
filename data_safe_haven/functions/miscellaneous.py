@@ -3,8 +3,23 @@ import datetime
 import pytz
 
 
-def allowed_dns_lookups() -> list[str]:
+def allowed_dns_lookups(category: str | None = None) -> list[str]:
     dns_lookups = {
+        "apt_repositories": [
+            # "apt.postgresql.org",
+            "archive.ubuntu.com",
+            "azure.archive.ubuntu.com",
+            "changelogs.ubuntu.com",
+            "cloudapp.azure.com",  # this is where azure.archive.ubuntu.com is hosted
+            "deb.debian.org",
+            # "d20rj4el6vkp4c.cloudfront.net",
+            # "dbeaver.io",
+            # "packages.gitlab.com",
+            "packages.microsoft.com",
+            # "qgis.org",
+            "security.ubuntu.com",
+            # "ubuntu.qgis.org"
+        ],
         "clamav": ["clamav.net", "database.clamav.net.cdn.cloudflare.net"],
         "oauth": ["login.microsoftonline.com"],
         "package_repositories": [
@@ -15,7 +30,11 @@ def allowed_dns_lookups() -> list[str]:
         "private_dns": ordered_private_dns_zones(),
         "ubuntu_setup": ["keyserver.ubuntu.com"],
     }
-    return sorted({zone for zones in dns_lookups.values() for zone in zones})
+    if category:
+        fqdns = [dns_lookups[category]]
+    else:
+        fqdns = list(dns_lookups.values())
+    return sorted({zone for zones in fqdns for zone in zones})
 
 
 def ordered_private_dns_zones(resource_type: str | None = None) -> list[str]:
