@@ -3,6 +3,9 @@
 
 {
     log {
+        format console {
+            level_format upper
+        }
         level  DEBUG
     }
 }
