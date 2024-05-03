@@ -52,7 +52,7 @@ def callback(
         raise typer.Exit()
 
 
-def main() -> None:
+def application() -> typer.Typer:
     """Command line entrypoint for Data Safe Haven application"""
 
     # Create the application
@@ -90,9 +90,13 @@ def main() -> None:
         help="Tear down a Data Safe Haven component.",
     )
 
-    # Start the application
+    return application
+
+
+def main() -> None:
+    """Run the application and log any exceptions"""
     try:
-        application()
+        application()()
     except DataSafeHavenError as exc:
         logger = LoggingSingleton()
         for line in str(exc).split("\n"):
