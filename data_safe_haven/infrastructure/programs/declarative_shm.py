@@ -5,7 +5,6 @@ import pulumi
 from data_safe_haven.config import Config
 from data_safe_haven.context import Context
 
-from .shm.data import SHMDataComponent, SHMDataProps
 from .shm.firewall import SHMFirewallComponent, SHMFirewallProps
 from .shm.monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .shm.networking import SHMNetworkingComponent, SHMNetworkingProps
@@ -51,19 +50,6 @@ class DeclarativeSHM:
                 resource_group_name=networking.resource_group_name,
                 route_table_name=networking.route_table.name,
                 subnet_firewall=networking.subnet_firewall,
-            ),
-            tags=self.tags,
-        )
-
-        # Deploy data storage
-        SHMDataComponent(
-            "shm_data",
-            self.stack_name,
-            SHMDataProps(
-                admin_group_id=self.context.admin_group_id,
-                admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
-                location=self.context.location,
-                tenant_id=self.cfg.azure.tenant_id,
             ),
             tags=self.tags,
         )
