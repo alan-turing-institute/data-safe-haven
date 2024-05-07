@@ -177,7 +177,7 @@ class TestDSHPulumiConfig:
         self, mocker, pulumi_config_yaml, context  # noqa: ARG002
     ):
         mock_exists = mocker.patch.object(AzureApi, "blob_exists", return_value=False)
-        pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
+        pulumi_config = DSHPulumiConfig.from_remote_or_create(context, encrypted_key="abc", projects={})
 
         assert isinstance(pulumi_config, DSHPulumiConfig)
         assert len(pulumi_config.projects) == 0
@@ -189,13 +189,15 @@ class TestDSHPulumiConfig:
             context.storage_container_name,
         )
 
-    def test_create_or_select_project(self, pulumi_config, pulumi_project):
+    def test_create_if_new(self, pulumi_config, pulumi_project):
         assert len(pulumi_config.project_names) == 2
-        project = pulumi_config.create_or_select_project("my_project")
+        pulumi_config.create_if_new("my_project")
+        project = pulumi_config["my_project"]
         assert len(pulumi_config.project_names) == 2
         assert isinstance(project, DSHPulumiProject)
         assert project == pulumi_project
-        project = pulumi_config.create_or_select_project("new_project")
+        pulumi_config.create_if_new("new_project")
+        project = pulumi_config["new_project"]
         assert len(pulumi_config.project_names) == 3
         assert isinstance(project, DSHPulumiProject)
         assert project.stack_config == {}

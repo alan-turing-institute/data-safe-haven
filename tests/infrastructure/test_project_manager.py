@@ -56,14 +56,19 @@ def local_project_settings(context_no_secrets, mocker):  # noqa: ARG001
 def shm_stack_manager(
     context_no_secrets,
     config_sres,
-    pulumi_project,
+    pulumi_config,
     mock_azure_cli_confirm,  # noqa: ARG001
     mock_install_plugins,  # noqa: ARG001
     mock_key_vault_key,  # noqa: ARG001
     offline_pulumi_account,  # noqa: ARG001
     local_project_settings,  # noqa: ARG001
 ):
-    return SHMProjectManager(context_no_secrets, config_sres, pulumi_project)
+    return SHMProjectManager(
+        context=context_no_secrets,
+        config=config_sres,
+        pulumi_config=pulumi_config,
+        shm_name=context_no_secrets.shm_name
+    )
 
 
 class TestSHMProjectManager:
@@ -71,11 +76,13 @@ class TestSHMProjectManager:
         self,
         context_no_secrets,
         config_sres,
+        pulumi_config,
         pulumi_project,
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
     ):
-        shm = SHMProjectManager(context_no_secrets, config_sres, pulumi_project)
+        shm = SHMProjectManager(context_no_secrets, config_sres, pulumi_config,
+                                shm_name=context_no_secrets.shm_name)
         assert isinstance(shm, SHMProjectManager)
         assert isinstance(shm, ProjectManager)
         assert shm.context == context_no_secrets
