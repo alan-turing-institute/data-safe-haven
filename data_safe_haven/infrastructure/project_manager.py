@@ -127,6 +127,8 @@ class ProjectManager:
                     stack_name=self.stack_name,
                 )
                 self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
+                # Ensure encrypted key is stored in the Pulumi configuration
+                self.update_dsh_pulumi_config()
             except automation.CommandError as exc:
                 msg = f"Could not load Pulumi stack {self.stack_name}.\n{exc}"
                 raise DataSafeHavenPulumiError(msg) from exc
@@ -366,9 +368,6 @@ class ProjectManager:
             key: item.value for key, item in self.stack_all_config.items()
         }
         self.pulumi_project.stack_config = all_config_dict
-        # self.pulumi_project.encrypted_key = self.stack.workspace.stack_settings(
-        #     stack_name=self.stack_name
-        # ).encrypted_key
 
     def update_dsh_pulumi_config(self) -> None:
         """Update persistent data in the DSHPulumiProject object"""
