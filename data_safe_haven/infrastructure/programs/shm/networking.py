@@ -7,7 +7,6 @@ from pulumi_azure_native import network, resources
 
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import ordered_private_dns_zones
-from data_safe_haven.infrastructure.common import NetworkingPriorities, Ports
 
 
 class SHMNetworkingProps:
@@ -26,7 +25,6 @@ class SHMNetworkingProps:
         self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
         # Monitoring subnet needs 2 IP addresses for automation and 13 for log analytics
         self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(32)
-        self.subnet_update_servers_iprange = self.vnet_iprange.next_subnet(8)
         # Other variables
         self.admin_ip_addresses = admin_ip_addresses
         self.fqdn = fqdn
@@ -67,77 +65,6 @@ class SHMNetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
-        nsg_update_servers = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_update_servers",
-            network_security_group_name=f"{stack_name}-nsg-update-servers",
-            resource_group_name=resource_group.name,
-            security_rules=[
-                # Inbound
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow inbound connections from the local virtual network.",
-                    destination_address_prefix=str(props.subnet_update_servers_iprange),
-                    destination_port_range="*",
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowVirtualNetworkInbound",
-                    priority=NetworkingPriorities.INTERNAL_SELF,
-                    protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix="VirtualNetwork",
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.DENY,
-                    description="Deny all other inbound traffic.",
-                    destination_address_prefix="*",
-                    destination_port_range="*",
-                    direction=network.SecurityRuleDirection.INBOUND,
-                    name="DenyAllOtherInbound",
-                    priority=NetworkingPriorities.ALL_OTHER,
-                    protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix="*",
-                    source_port_range="*",
-                ),
-                # Outbound
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to local monitoring tools.",
-                    destination_address_prefix=str(props.subnet_monitoring_iprange),
-                    destination_port_ranges=[Ports.HTTPS],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowMonitoringToolsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_MONITORING_TOOLS,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=str(props.subnet_update_servers_iprange),
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to Linux update servers.",
-                    destination_address_prefix="Internet",
-                    destination_port_ranges=[Ports.HTTP, Ports.HTTPS],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowLinuxUpdatesOutbound",
-                    priority=NetworkingPriorities.EXTERNAL_LINUX_UPDATES,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=str(props.subnet_update_servers_iprange),
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.DENY,
-                    description="Deny all other outbound traffic.",
-                    destination_address_prefix="*",
-                    destination_port_range="*",
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="DenyAllOtherOutbound",
-                    priority=NetworkingPriorities.ALL_OTHER,
-                    protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix="*",
-                    source_port_range="*",
-                ),
-            ],
-            opts=child_opts,
-            tags=child_tags,
-        )
 
         # Define route table
         route_table = network.RouteTable(
@@ -158,7 +85,6 @@ class SHMNetworkingComponent(ComponentResource):
         # Define the virtual network and its subnets
         subnet_firewall_name = "AzureFirewallSubnet"  # this name is forced by https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
         subnet_monitoring_name = "MonitoringSubnet"
-        subnet_update_servers_name = "UpdateServersSubnet"
         virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
@@ -179,15 +105,6 @@ class SHMNetworkingComponent(ComponentResource):
                     name=subnet_monitoring_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_monitoring.id
-                    ),
-                    route_table=network.RouteTableArgs(id=route_table.id),
-                ),
-                # Update servers subnet
-                network.SubnetArgs(
-                    address_prefix=str(props.subnet_update_servers_iprange),
-                    name=subnet_update_servers_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_update_servers.id
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
@@ -294,11 +211,6 @@ class SHMNetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=virtual_network.name,
         )
-        self.subnet_update_servers = network.get_subnet_output(
-            subnet_name=subnet_update_servers_name,
-            resource_group_name=resource_group.name,
-            virtual_network_name=virtual_network.name,
-        )
         self.virtual_network = virtual_network
 
         # Register exports
@@ -307,9 +219,6 @@ class SHMNetworkingComponent(ComponentResource):
             "private_dns_zone_base_id": self.private_dns_zone_base_id,
             "resource_group_name": resource_group.name,
             "subnet_monitoring_prefix": self.subnet_monitoring.apply(
-                lambda s: str(s.address_prefix) if s.address_prefix else ""
-            ),
-            "subnet_update_servers_prefix": self.subnet_update_servers.apply(
                 lambda s: str(s.address_prefix) if s.address_prefix else ""
             ),
             "virtual_network_name": virtual_network.name,

@@ -42,24 +42,26 @@ jobs:
         id: pull-request
         uses: peter-evans/create-pull-request@v6.0.5
         with:
-          commit-message: Update Pulumi Docker images
-          committer: GitHub Actions <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           base: develop
-          branch: update-docker-images
-          delete-branch: true
-          title: Update Pulumi Docker images
           body: |
+            :warning: In order for CI to run on this PR it needs to be manually closed and re-opened :warning:
+
             ### :arrow_heading_up: Summary
-            - Apply Pulumi image version diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
+            - Update Docker image versions from ${{ github.sha }} on ${{ steps.date.outputs.date }}
 
             ### :closed_umbrella: Related issues
             None
 
             ### :microscope: Tests
             Package versions only
+          branch: update-docker-images
+          commit-message: ":arrow_up: Update Pulumi Docker images"
+          committer: GitHub Actions <noreply@github.com>
+          delete-branch: true
+          draft: false
           labels: |
             affected: developers
             severity: minor
             type: enhancement
-          draft: false
+          title: ":arrow_up: Update Pulumi Docker images"

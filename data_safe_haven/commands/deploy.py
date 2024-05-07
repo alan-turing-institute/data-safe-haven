@@ -182,18 +182,8 @@ def sre(
             replace=True,
         )
         stack.add_option(
-            "shm-networking-subnet_update_servers_prefix",
-            shm_stack.output("networking")["subnet_update_servers_prefix"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-networking-virtual_network_name",
             shm_stack.output("networking")["virtual_network_name"],
-            replace=True,
-        )
-        stack.add_option(
-            "shm-update_servers-ip_address_linux",
-            shm_stack.output("update_servers")["ip_address_linux"],
             replace=True,
         )
 
@@ -206,7 +196,7 @@ def sre(
         # Provision SRE with anything that could not be done in Pulumi
         manager = SREProvisioningManager(
             graph_api_token=graph_api.token,
-            shm_stack=shm_stack,
+            location=context.location,
             sre_name=sre_name,
             sre_stack=stack,
             subscription_name=context.subscription_name,
