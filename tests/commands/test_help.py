@@ -19,9 +19,9 @@ class TestHelp:
         assert "│ teardown" in result.stdout
 
     def test_help(self, runner):
-        result = runner.invoke(application(), ["--help"])
+        result = runner.invoke(application, ["--help"])
         self.result_checker(result)
 
     def test_help_short_code(self, runner):
-        result = runner.invoke(application(), ["-h"])
+        result = runner.invoke(application, ["-h"])
         self.result_checker(result)
