@@ -2,7 +2,7 @@ import pathlib
 from collections.abc import Sequence
 from typing import Any
 
-from data_safe_haven.config import Config, DSHPulumiProject
+from data_safe_haven.config import Config, DSHPulumiConfig
 from data_safe_haven.context import Context
 from data_safe_haven.external import AzureApi, AzurePostgreSQLDatabase
 from data_safe_haven.infrastructure import SREProjectManager
@@ -15,13 +15,18 @@ class GuacamoleUsers:
         self,
         context: Context,
         config: Config,
-        pulumi_project: DSHPulumiProject,
+        pulumi_config: DSHPulumiConfig,
         sre_name: str,
         *args: Any,
         **kwargs: Any,
     ):
         super().__init__(*args, **kwargs)
-        sre_stack = SREProjectManager(context, config, pulumi_project, sre_name)
+        sre_stack = SREProjectManager(
+            context=context,
+            config=config,
+            pulumi_config=pulumi_config,
+            sre_name=sre_name,
+        )
         # Read the SRE database secret from key vault
         azure_api = AzureApi(context.subscription_name)
         connection_db_server_password = azure_api.get_keyvault_secret(

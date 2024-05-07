@@ -11,7 +11,7 @@ from typing import Any
 from pulumi import automation
 from pulumi.automation import ConfigValue
 
-from data_safe_haven.config import Config, DSHPulumiProject
+from data_safe_haven.config import Config, DSHPulumiConfig, DSHPulumiProject
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
 from data_safe_haven.external import AzureApi, AzureCliSingleton
@@ -68,13 +68,15 @@ class ProjectManager:
         self,
         context: Context,
         config: Config,
-        pulumi_project: DSHPulumiProject,
+        pulumi_config: DSHPulumiConfig,
+        pulumi_project_name: str,
         program: DeclarativeSHM | DeclarativeSRE,
     ) -> None:
         self.account = PulumiAccount(context, config)
         self.context = context
         self.cfg = config
-        self.pulumi_project = pulumi_project
+        self.pulumi_config = pulumi_config
+        self.pulumi_project_name = pulumi_project_name
         self.logger = LoggingSingleton()
         self._stack: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
@@ -105,9 +107,13 @@ class ProjectManager:
     def stack_settings(self) -> automation.StackSettings:
         return automation.StackSettings(
             config=self.pulumi_project.stack_config,
-            encrypted_key=self.pulumi_project.encrypted_key,
+            encrypted_key=self.pulumi_config.encrypted_key,
             secrets_provider=self.context.pulumi_secrets_provider_url,
         )
+
+    @property
+    def pulumi_project(self) -> DSHPulumiProject:
+        return self.pulumi_config[self.pulumi_project_name]
 
     @property
     def stack(self) -> automation.Stack:
@@ -179,6 +185,8 @@ class ProjectManager:
     def deploy(self, *, force: bool = False) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
+            # Create DSH Pulumi Project if it does not exist, otherwise use existing
+            _ = self.pulumi_config.create_or_select_project(self.pulumi_project_name)
             self.apply_config_options()
             if force:
                 self.cancel()
@@ -381,13 +389,19 @@ class SHMProjectManager(ProjectManager):
     """Interact with an SHM using Pulumi"""
 
     def __init__(
-        self, context: Context, config: Config, pulumi_project: DSHPulumiProject
+        self,
+        context: Context,
+        config: Config,
+        pulumi_config: DSHPulumiConfig,
+        *,
+        shm_name: str,
     ) -> None:
         """Constructor"""
         super().__init__(
             context,
             config,
-            pulumi_project,
+            pulumi_config,
+            shm_name,
             DeclarativeSHM(context, config, context.shm_name),
         )
 
@@ -399,9 +413,9 @@ class SREProjectManager(ProjectManager):
         self,
         context: Context,
         config: Config,
-        pulumi_project: DSHPulumiProject,
-        sre_name: str,
+        pulumi_config: DSHPulumiConfig,
         *,
+        sre_name: str,
         graph_api_token: str | None = None,
     ) -> None:
         """Constructor"""
@@ -409,6 +423,7 @@ class SREProjectManager(ProjectManager):
         super().__init__(
             context,
             config,
-            pulumi_project,
+            pulumi_config,
+            sre_name,
             DeclarativeSRE(context, config, context.shm_name, sre_name, token),
         )

@@ -10,8 +10,6 @@ from data_safe_haven.external import AzureApi
 
 class TestDSHPulumiProject:
     def test_pulumi_project(self, pulumi_project):
-        assert isinstance(pulumi_project.encrypted_key, str)
-        assert pulumi_project.encrypted_key == "NZVaEDfeuIPR7N8Dwnpx"
         assert isinstance(pulumi_project.stack_config, dict)
         assert "azure-native:location" in pulumi_project.stack_config.keys()
         assert pulumi_project.stack_config.get("azure-native:location") == "uksouth"
@@ -19,7 +17,6 @@ class TestDSHPulumiProject:
     def test_dump(self, pulumi_project, stack_config):
         d = pulumi_project.model_dump()
         assert d.get("stack_config") == stack_config
-        assert d.get("encrypted_key") == "NZVaEDfeuIPR7N8Dwnpx"
 
     def test_eq(self, pulumi_project):
         assert pulumi_project == pulumi_project.model_copy(deep=True)
@@ -30,8 +27,13 @@ class TestDSHPulumiProject:
 
 class TestDSHPulumiConfig:
     def test_pulumi_config(self, pulumi_project):
-        config = DSHPulumiConfig(projects={"my_project": pulumi_project})
+        config = DSHPulumiConfig(
+            encrypted_key="NZVaEDfeuIPR7N8Dwnpx",
+            projects={"my_project": pulumi_project},
+        )
         assert config.projects["my_project"] == pulumi_project
+        assert isinstance(config.encrypted_key, str)
+        assert config.encrypted_key == "NZVaEDfeuIPR7N8Dwnpx"
 
     def test_getitem(self, pulumi_config, pulumi_project, pulumi_project2):
         assert pulumi_config["my_project"] == pulumi_project

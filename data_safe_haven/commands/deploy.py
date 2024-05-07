@@ -30,8 +30,9 @@ def shm(
     """Deploy a Safe Haven Management component"""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
-    pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
-    pulumi_project = pulumi_config.create_or_select_project(context.shm_name)
+    pulumi_config = DSHPulumiConfig.from_remote_or_create(
+        context, encrypted_key=None, projects={}
+    )
 
     try:
         # Add the SHM domain to AzureAD as a custom domain
@@ -46,7 +47,12 @@ def shm(
         verification_record = graph_api.add_custom_domain(config.shm.fqdn)
 
         # Initialise Pulumi stack
-        stack = SHMProjectManager(context, config, pulumi_project)
+        stack = SHMProjectManager(
+            context=context,
+            config=config,
+            pulumi_config=pulumi_config,
+            shm_name=context.shm_name,
+        )
         # Set Azure options
         stack.add_option("azure-native:location", context.location, replace=False)
         stack.add_option(
@@ -101,9 +107,7 @@ def sre(
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
-    shm_pulumi_project = pulumi_config.create_or_select_project(context.shm_name)
     sre_name = sanitise_sre_name(name)
-    sre_pulumi_project = pulumi_config.create_or_select_project(sre_name)
 
     try:
         # Exit if SRE name is not recognised
@@ -124,12 +128,17 @@ def sre(
         )
 
         # Initialise Pulumi stack
-        shm_stack = SHMProjectManager(context, config, shm_pulumi_project)
+        shm_stack = SHMProjectManager(
+            context=context,
+            config=config,
+            pulumi_config=pulumi_config,
+            shm_name=context.shm_name,
+        )
         stack = SREProjectManager(
-            context,
-            config,
-            sre_pulumi_project,
-            sre_name,
+            context=context,
+            config=config,
+            pulumi_config=pulumi_config,
+            sre_name=sre_name,
             graph_api_token=graph_api.token,
         )
         # Set Azure options
