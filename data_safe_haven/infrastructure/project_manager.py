@@ -186,7 +186,7 @@ class ProjectManager:
         """Deploy the infrastructure with Pulumi."""
         try:
             # Create DSH Pulumi Project if it does not exist, otherwise use existing
-            _ = self.pulumi_config.create_or_select_project(self.pulumi_project_name)
+            self.pulumi_config.create_if_new(self.pulumi_project_name)
             self.apply_config_options()
             if force:
                 self.cancel()
