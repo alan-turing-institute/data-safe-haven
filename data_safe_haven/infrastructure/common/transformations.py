@@ -74,7 +74,7 @@ def get_ip_addresses_from_private_endpoint(
 def get_name_from_rg(rg: resources.ResourceGroup) -> Output[str]:
     """Get the name of a resource group"""
     if isinstance(rg.name, Output):
-        return rg.name.apply(lambda s: str(s))
+        return rg.name.apply(str)
     msg = f"Resource group '{rg.id}' has no name."
     raise DataSafeHavenPulumiError(msg)
 
@@ -90,7 +90,7 @@ def get_name_from_subnet(subnet: network.GetSubnetResult) -> str:
 def get_name_from_vnet(vnet: network.VirtualNetwork) -> Output[str]:
     """Get the name of a virtual network"""
     if isinstance(vnet.name, Output):
-        return vnet.name.apply(lambda s: str(s))
+        return vnet.name.apply(str)
     msg = f"Virtual network '{vnet.id}' has no name."
     raise DataSafeHavenPulumiError(msg)
 

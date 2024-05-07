@@ -1,4 +1,4 @@
-from data_safe_haven.commands import context_command_group
+from data_safe_haven.commands.context import context_command_group
 from data_safe_haven.context_infrastructure import ContextInfrastructure
 
 
