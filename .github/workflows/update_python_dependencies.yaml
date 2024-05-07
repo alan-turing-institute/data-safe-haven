@@ -45,8 +45,10 @@ jobs:
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           base: develop
           body: |
+            :warning: In order for CI to run on this PR it needs to be manually closed and re-opened :warning:
+
             ### :arrow_heading_up: Summary
-            - Apply Python dependency diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
+            - Update Python dependencies from ${{ github.sha }} on ${{ steps.date.outputs.date }}
 
             ### :closed_umbrella: Related issues
             None
