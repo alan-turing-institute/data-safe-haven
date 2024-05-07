@@ -1,4 +1,4 @@
-from data_safe_haven.commands import config_command_group
+from data_safe_haven.commands.config import config_command_group
 from data_safe_haven.config import Config
 from data_safe_haven.external import AzureApi
 
