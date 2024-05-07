@@ -9,7 +9,8 @@ from data_safe_haven.external import (
     AzurePostgreSQLDatabase,
     GraphApi,
 )
-from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
+from data_safe_haven.infrastructure import SREProjectManager
+from data_safe_haven.types import AzureLocation, AzureLongName
 from data_safe_haven.utility import LoggingSingleton
 
 
@@ -19,14 +20,14 @@ class SREProvisioningManager:
     def __init__(
         self,
         graph_api_token: str,
-        shm_stack: SHMProjectManager,
+        location: AzureLocation,
         sre_name: str,
         sre_stack: SREProjectManager,
-        subscription_name: str,
+        subscription_name: AzureLongName,
         timezone: str,
     ):
         self._available_vm_skus: dict[str, dict[str, Any]] | None = None
-        self.azure_location = shm_stack.context.location
+        self.location = location
         self.graph_api = GraphApi(auth_token=graph_api_token)
         self.logger = LoggingSingleton()
         self.sre_name = sre_name
@@ -67,9 +68,7 @@ class SREProvisioningManager:
         """Load available VM SKUs for this region"""
         if not self._available_vm_skus:
             azure_api = AzureApi(self.subscription_name)
-            self._available_vm_skus = azure_api.list_available_vm_skus(
-                self.azure_location
-            )
+            self._available_vm_skus = azure_api.list_available_vm_skus(self.location)
         return self._available_vm_skus
 
     def create_security_groups(self) -> None:

@@ -196,7 +196,7 @@ def sre(
         # Provision SRE with anything that could not be done in Pulumi
         manager = SREProvisioningManager(
             graph_api_token=graph_api.token,
-            shm_stack=shm_stack,
+            location=context.location,
             sre_name=sre_name,
             sre_stack=stack,
             subscription_name=context.subscription_name,
