@@ -55,13 +55,8 @@ jobs:
         id: pull-request
         uses: peter-evans/create-pull-request@v6.0.5
         with:
-          commit-message: Update SRD package versions
-          committer: GitHub Actions <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           base: develop
-          branch: srd-package-versions
-          delete-branch: true
-          title: Update SRD package versions
           body: |
             ### :arrow_heading_up: Summary
             - Apply package version diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
@@ -71,8 +66,13 @@ jobs:
 
             ### :microscope: Tests
             Package versions only
+          branch: srd-package-versions
+          commit-message: Update SRD package versions
+          committer: GitHub Actions <noreply@github.com>
+          delete-branch: true
+          draft: false
           labels: |
             affected: developers
             severity: minor
             type: enhancement
-          draft: false
+          title: Update SRD package versions

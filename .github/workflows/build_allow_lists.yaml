@@ -57,13 +57,8 @@ jobs:
         id: pull-request
         uses: peter-evans/create-pull-request@v6.0.5
         with:
-          commit-message: Update PyPI and CRAN allow lists
-          committer: GitHub Actions <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           base: develop
-          branch: package-allowlist-updates
-          delete-branch: true
-          title: Update PyPI and CRAN allow lists
           body: |
             ### :arrow_heading_up: Summary
             - Apply package allowlist diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
@@ -73,8 +68,13 @@ jobs:
 
             ### :microscope: Tests
             Allow-list only
+          branch: package-allowlist-updates
+          commit-message: Update PyPI and CRAN allow lists
+          committer: GitHub Actions <noreply@github.com>
+          delete-branch: true
+          draft: false
           labels: |
             affected: developers
             severity: minor
             type: enhancement
-          draft: false
+          title: Update PyPI and CRAN allow lists
