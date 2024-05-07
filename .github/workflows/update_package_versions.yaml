@@ -67,7 +67,7 @@ jobs:
             ### :microscope: Tests
             Package versions only
           branch: srd-package-versions
-          commit-message: Update SRD package versions
+          commit-message: ":arrow_up: Update SRD package versions"
           committer: GitHub Actions <noreply@github.com>
           delete-branch: true
           draft: false
@@ -75,4 +75,4 @@ jobs:
             affected: developers
             severity: minor
             type: enhancement
-          title: Update SRD package versions
+          title: ":arrow_up: Update SRD package versions"

@@ -54,7 +54,7 @@ jobs:
             ### :microscope: Tests
             Package versions only
           branch: update-docker-images
-          commit-message: Update Pulumi Docker images
+          commit-message: ":arrow_up: Update Pulumi Docker images"
           committer: GitHub Actions <noreply@github.com>
           delete-branch: true
           draft: false
@@ -62,4 +62,4 @@ jobs:
             affected: developers
             severity: minor
             type: enhancement
-          title: Update Pulumi Docker images
+          title: ":arrow_up: Update Pulumi Docker images"
