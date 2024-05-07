@@ -8,6 +8,27 @@ on:  # yamllint disable-line rule:truthy
   pull_request:
 
 jobs:
+  lint_caddy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install caddy
+        shell: bash
+        run: |
+          sudo mkdir -m 0755 -p /usr/share/keyrings/
+          sudo wget 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' -O - | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+          sudo wget 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' -O /etc/apt/sources.list.d/caddy-stable.list
+          sudo apt update
+          sudo apt install caddy
+      - name: Lint Caddy
+        shell: bash
+        run: |
+          # Check Caddyfile formatting
+          find . -name Caddyfile -print0 | xargs -0 -n 1 caddy fmt
+          # Check Caddyfile validity
+          find . -name Caddyfile -print0 | xargs -0 -n 1 -I {} caddy validate --config "{}"
+
   lint_json:
     runs-on: ubuntu-latest
     steps:
