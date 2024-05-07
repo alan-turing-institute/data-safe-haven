@@ -84,7 +84,7 @@ class SREGiteaServerComponent(ComponentResource):
         # Define configuration file shares
         file_share_gitea_caddy = storage.FileShare(
             f"{self._name}_file_share_gitea_caddy",
-            access_tier="TransactionOptimized",
+            access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
             share_name="gitea-caddy",
@@ -94,7 +94,7 @@ class SREGiteaServerComponent(ComponentResource):
         )
         file_share_gitea_gitea = storage.FileShare(
             f"{self._name}_file_share_gitea_gitea",
-            access_tier="TransactionOptimized",
+            access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
             share_name="gitea-gitea",

@@ -79,9 +79,9 @@ class SREIdentityComponent(ComponentResource):
         )
 
         # Define configuration file shares
-        file_share_redis = storage.FileShare(
-            f"{self._name}_file_share_redis",
-            access_tier="TransactionOptimized",
+        file_share = storage.FileShare(
+            f"{self._name}_file_share",
+            access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
             share_name="identity-redis",
@@ -212,7 +212,7 @@ class SREIdentityComponent(ComponentResource):
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_redis.name,
+                        share_name=file_share.name,
                         storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),
