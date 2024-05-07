@@ -241,6 +241,7 @@ class DeclarativeSRE:
                 aad_auth_token=self.graph_api_token,
                 aad_tenant_id=self.cfg.shm.aad_tenant_id,
                 dns_resource_group_name=dns.resource_group.name,
+                dns_server_ip=dns.ip_address,
                 location=self.context.location,
                 networking_resource_group_name=networking.resource_group.name,
                 shm_fqdn=self.cfg.shm.fqdn,

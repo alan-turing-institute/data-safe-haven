@@ -86,7 +86,7 @@ class SREHedgeDocServerComponent(ComponentResource):
         # Define configuration file shares
         file_share_hedgedoc_caddy = storage.FileShare(
             f"{self._name}_file_share_hedgedoc_caddy",
-            access_tier="TransactionOptimized",
+            access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
             share_name="hedgedoc-caddy",
