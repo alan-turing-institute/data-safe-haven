@@ -6,16 +6,14 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import __version__
-from data_safe_haven.commands import (
-    admin_command_group,
-    config_command_group,
-    context_command_group,
-    deploy_command_group,
-    teardown_command_group,
-)
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.utility import LoggingSingleton
 
+from .admin import admin_command_group
+from .config import config_command_group
+from .context import context_command_group
+from .deploy import deploy_command_group
+from .teardown import teardown_command_group
 
 # Create the application
 application = typer.Typer(

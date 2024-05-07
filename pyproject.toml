@@ -50,7 +50,7 @@ dependencies = [
 ]
 
 [project.scripts]
-dsh = "data_safe_haven.cli:main"
+dsh = "data_safe_haven.commands.cli:main"
 
 [tool.hatch.version]
 path = "data_safe_haven/version.py"

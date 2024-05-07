@@ -1,4 +1,4 @@
-from data_safe_haven.cli import application
+from data_safe_haven.commands import application
 
 
 class TestHelp:
