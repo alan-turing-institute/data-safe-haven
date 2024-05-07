@@ -25,7 +25,7 @@ jobs:
         shell: bash
         run: |
           # Check Caddyfile formatting
-          find . -name Caddyfile -print0 | xargs -0 -n 1 caddy fmt
+          find . -name Caddyfile -print0 | xargs -0 -n 1 caddy fmt > /dev/null
           # Check Caddyfile validity
           find . -name Caddyfile -print0 | xargs -0 -n 1 -I {} caddy validate --config "{}"
 
