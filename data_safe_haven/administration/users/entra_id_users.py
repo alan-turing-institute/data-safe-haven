@@ -11,8 +11,8 @@ from data_safe_haven.utility import LoggingSingleton
 from .research_user import ResearchUser
 
 
-class AzureADUsers:
-    """Interact with users in an Azure Active Directory"""
+class EntraIDUsers:
+    """Interact with users in an Entra ID directory."""
 
     def __init__(
         self,
@@ -25,7 +25,7 @@ class AzureADUsers:
         self.logger = LoggingSingleton()
 
     def add(self, new_users: Sequence[ResearchUser]) -> None:
-        """Add list of users to AzureAD"""
+        """Add list of users to Entra ID"""
         # Get the default domain
         default_domain = next(
             domain["id"]
@@ -47,7 +47,7 @@ class AzureADUsers:
                     request_json, user.email_address, user.phone_number
                 )
             self.logger.info(
-                f"Ensured user '[green]{user.preferred_username}[/]' exists in AzureAD"
+                f"Ensured user '[green]{user.preferred_username}[/]' exists in Entra ID"
             )
 
     def list(self) -> Sequence[ResearchUser]:
@@ -74,13 +74,13 @@ class AzureADUsers:
         ]
 
     def register(self, sre_name: str, usernames: Sequence[str]) -> None:
-        """Add usernames to SRE security group"""
+        """Add usernames to SRE group"""
         group_name = f"Data Safe Haven SRE {sre_name} Users"
         for username in usernames:
             self.graph_api.add_user_to_group(username, group_name)
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
-        """Remove list of users from AzureAD"""
+        """Remove list of users from Entra ID"""
         for user in filter(
             lambda existing_user: any(existing_user == user for user in users),
             self.list(),
@@ -92,14 +92,14 @@ class AzureADUsers:
                 self.logger.error(f"Unable to remove '{user.preferred_username}'.")
 
     def set(self, users: Sequence[ResearchUser]) -> None:
-        """Set AzureAD users to specified list"""
+        """Set Entra ID users to specified list"""
         users_to_remove = [user for user in self.list() if user not in users]
         self.remove(users_to_remove)
         users_to_add = [user for user in users if user not in self.list()]
         self.add(users_to_add)
 
     def unregister(self, sre_name: str, usernames: Sequence[str]) -> None:
-        """Remove usernames from SRE security group"""
+        """Remove usernames from SRE group"""
         group_name = f"Data Safe Haven SRE {sre_name}"
         for username in usernames:
             self.graph_api.remove_user_from_group(username, group_name)
