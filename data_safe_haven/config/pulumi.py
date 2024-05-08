@@ -57,6 +57,7 @@ class DSHPulumiConfig(AzureSerialisableModel):
         """Produce a list of known DSH Pulumi Project names"""
         return list(self.projects.keys())
 
-    def create_if_new(self, project_name: str) -> None:
+    def create_or_select_project(self, project_name: str) -> DSHPulumiProject:
         if project_name not in self.project_names:
             self[project_name] = DSHPulumiProject(stack_config={})
+        return self[project_name]
