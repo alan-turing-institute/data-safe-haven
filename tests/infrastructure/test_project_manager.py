@@ -107,6 +107,9 @@ class TestSHMProjectManager:
             == shm_stack_manager.context.pulumi_secrets_provider_url
         )
 
+    def test_pulumi_project(self, shm_stack_manager, pulumi_project):
+        assert shm_stack_manager.pulumi_project == pulumi_project
+
     def test_stack(self, shm_stack_manager):
         stack = shm_stack_manager.stack
         assert isinstance(stack, Stack)
