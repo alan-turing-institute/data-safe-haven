@@ -80,9 +80,7 @@ class TestSHMProjectManager:
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
     ):
-        shm = SHMProjectManager(
-            context_no_secrets, config_sres, pulumi_config
-        )
+        shm = SHMProjectManager(context_no_secrets, config_sres, pulumi_config)
         assert isinstance(shm, SHMProjectManager)
         assert isinstance(shm, ProjectManager)
         assert shm.context == context_no_secrets

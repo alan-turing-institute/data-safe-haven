@@ -392,10 +392,15 @@ class ProjectManager:
 
     def update_dsh_pulumi_config(self) -> None:
         """Update persistent data in the DSHPulumiProject object"""
+        stack_key = self.stack.workspace.stack_settings(
+            stack_name=self.stack_name
+        ).encrypted_key
+
         if self.pulumi_config.encrypted_key is None:
-            self.pulumi_config.encrypted_key = self.stack.workspace.stack_settings(
-                stack_name=self.stack_name
-            ).encrypted_key
+            self.pulumi_config.encrypted_key = stack_key
+        elif self.pulumi_config.encrypted_key != stack_key:
+            msg = "Stack encrypted key does not match project encrypted key"
+            raise DataSafeHavenPulumiError(msg)
 
 
 class SHMProjectManager(ProjectManager):

@@ -150,7 +150,7 @@ def stack_config():
     return {
         "azure-native:location": "uksouth",
         "azure-native:subscriptionId": "abc",
-        "data-safe-haven:variable": 5,
+        "data-safe-haven:variable": "5",
     }
 
 
