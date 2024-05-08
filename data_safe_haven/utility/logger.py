@@ -59,6 +59,7 @@ class LoggingHandlerRichConsole(RichHandler):
             tracebacks_show_locals=True,
             **kwargs,
         )
+        print("hola chicos")
         self.setFormatter(logging.Formatter(fmt, datefmt))
 
 
