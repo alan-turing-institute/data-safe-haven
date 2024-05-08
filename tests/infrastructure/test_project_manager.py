@@ -67,7 +67,7 @@ def shm_stack_manager(
         context=context_no_secrets,
         config=config_sres,
         pulumi_config=pulumi_config,
-        shm_name=context_no_secrets.shm_name
+        shm_name="my_project",
     )
 
 
@@ -81,8 +81,9 @@ class TestSHMProjectManager:
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
     ):
-        shm = SHMProjectManager(context_no_secrets, config_sres, pulumi_config,
-                                shm_name=context_no_secrets.shm_name)
+        shm = SHMProjectManager(
+            context_no_secrets, config_sres, pulumi_config, shm_name="my_project"
+        )
         assert isinstance(shm, SHMProjectManager)
         assert isinstance(shm, ProjectManager)
         assert shm.context == context_no_secrets

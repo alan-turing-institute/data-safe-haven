@@ -177,7 +177,9 @@ class TestDSHPulumiConfig:
         self, mocker, pulumi_config_yaml, context  # noqa: ARG002
     ):
         mock_exists = mocker.patch.object(AzureApi, "blob_exists", return_value=False)
-        pulumi_config = DSHPulumiConfig.from_remote_or_create(context, encrypted_key="abc", projects={})
+        pulumi_config = DSHPulumiConfig.from_remote_or_create(
+            context, encrypted_key="abc", projects={}
+        )
 
         assert isinstance(pulumi_config, DSHPulumiConfig)
         assert len(pulumi_config.projects) == 0
