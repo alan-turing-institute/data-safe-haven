@@ -115,15 +115,16 @@ pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.coverage.paths]
 source = [
-"data_safe_haven"
+"data_safe_haven/"
 ]
+
 
 [tool.coverage.run]
 relative_files = true
 
 [tool.hatch.envs.test.scripts]
 test = "pytest {args:-vvv tests}"
-test-coverage = "coverage run -m pytest tests --debug=pathmap"
+test-coverage = "coverage run -m pytest tests"
 test-report = "coverage report"
 cov = ["test-coverage", "test-report"]
 

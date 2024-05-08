@@ -26,6 +26,7 @@ class SREIdentityProps:
         aad_auth_token: Input[str],
         aad_tenant_id: Input[str],
         dns_resource_group_name: Input[str],
+        dns_server_ip: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         shm_fqdn: Input[str],
@@ -39,6 +40,7 @@ class SREIdentityProps:
         self.aad_auth_token = aad_auth_token
         self.aad_tenant_id = aad_tenant_id
         self.dns_resource_group_name = dns_resource_group_name
+        self.dns_server_ip = dns_server_ip
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.shm_fqdn = shm_fqdn
@@ -78,14 +80,14 @@ class SREIdentityComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Define configuration file shares
-        file_share_redis = storage.FileShare(
-            f"{self._name}_file_share_redis",
-            access_tier="TransactionOptimized",
+        # Define configuration file share
+        file_share = storage.FileShare(
+            f"{self._name}_file_share",
+            access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
             share_name="identity-redis",
-            share_quota=5120,
+            share_quota=5,
             signed_identifiers=[],
             opts=child_opts,
         )
@@ -187,6 +189,9 @@ class SREIdentityComponent(ComponentResource):
                     ],
                 ),
             ],
+            dns_config=containerinstance.DnsConfigurationArgs(
+                name_servers=[props.dns_server_ip],
+            ),
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(
@@ -212,7 +217,7 @@ class SREIdentityComponent(ComponentResource):
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_redis.name,
+                        share_name=file_share.name,
                         storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),
