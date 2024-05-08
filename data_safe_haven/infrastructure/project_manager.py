@@ -78,19 +78,18 @@ class ProjectManager:
         self.cfg = config
         self.pulumi_config = pulumi_config
         self.pulumi_project_name = pulumi_project_name
-
-        # Create DSH Pulumi Project if it does not exist, otherwise use existing
-        if create_project:
-            self.pulumi_config.create_if_new(self.pulumi_project_name)
+        self.program = program
+        self.create_project = create_project
 
         self.account = PulumiAccount(context, config)
         self.logger = LoggingSingleton()
         self._stack: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}
-        self.program = program
         self.project_name = replace_separators(context.tags["project"].lower(), "-")
+        self._pulumi_project: DSHPulumiProject | None = None
         self.stack_name = self.program.stack_name
+
         self.install_plugins()
 
     @property
@@ -120,7 +119,16 @@ class ProjectManager:
 
     @property
     def pulumi_project(self) -> DSHPulumiProject:
-        return self.pulumi_config[self.pulumi_project_name]
+        if not self._pulumi_project:
+            # Create DSH Pulumi Project if it does not exist, otherwise use existing
+            if self.create_project:
+                self._pulumi_project = self.pulumi_config.create_or_select_project(
+                    self.pulumi_project_name
+                )
+            else:
+                self._pulumi_project = self.pulumi_config[self.pulumi_project_name]
+
+        return self._pulumi_project
 
     @property
     def stack(self) -> automation.Stack:

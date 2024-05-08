@@ -191,15 +191,13 @@ class TestDSHPulumiConfig:
             context.storage_container_name,
         )
 
-    def test_create_if_new(self, pulumi_config, pulumi_project):
+    def test_create_or_select_project(self, pulumi_config, pulumi_project):
         assert len(pulumi_config.project_names) == 2
-        pulumi_config.create_if_new("my_project")
-        project = pulumi_config["my_project"]
+        project = pulumi_config.create_or_select_project("my_project")
         assert len(pulumi_config.project_names) == 2
         assert isinstance(project, DSHPulumiProject)
         assert project == pulumi_project
-        pulumi_config.create_if_new("new_project")
-        project = pulumi_config["new_project"]
+        project = pulumi_config.create_or_select_project("new_project")
         assert len(pulumi_config.project_names) == 3
         assert isinstance(project, DSHPulumiProject)
         assert project.stack_config == {}
