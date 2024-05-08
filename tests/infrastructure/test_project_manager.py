@@ -7,7 +7,7 @@ from pulumi.automation import (
     Stack,
     StackSettings,
 )
-from pytest import fixture
+from pytest import fixture, raises
 
 from data_safe_haven.config import DSHPulumiProject
 from data_safe_haven.infrastructure import SHMProjectManager
@@ -96,8 +96,9 @@ class TestSHMProjectManager:
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
     ):
-        shm = SHMProjectManager(context_no_secrets, config_sres, pulumi_config_empty,
-                                create_project=True)
+        shm = SHMProjectManager(
+            context_no_secrets, config_sres, pulumi_config_empty, create_project=True
+        )
         assert isinstance(shm, SHMProjectManager)
         assert isinstance(shm, ProjectManager)
         assert shm.context == context_no_secrets
@@ -107,6 +108,22 @@ class TestSHMProjectManager:
         assert "acmedeployment" in pulumi_config_empty.project_names
         assert pulumi_config_empty["acmedeployment"].stack_config == {}
         assert pulumi_config_empty.encrypted_key is None
+
+    def test_new_project_fail(
+        self,
+        context_no_secrets,
+        config_sres,
+        pulumi_config_empty,
+        mock_azure_cli_confirm,  # noqa: ARG002
+        mock_install_plugins,  # noqa: ARG002
+    ):
+        shm = SHMProjectManager(
+            context_no_secrets, config_sres, pulumi_config_empty, create_project=False
+        )
+        with raises(
+            KeyError, match="No configuration for DSH Pulumi Project acmedeployment."
+        ):
+            _ = shm.pulumi_project
 
     def test_project_settings(self, shm_stack_manager):
         project_settings = shm_stack_manager.project_settings
