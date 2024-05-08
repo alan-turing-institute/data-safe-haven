@@ -10,6 +10,14 @@ on:  # yamllint disable-line rule:truthy
 jobs:
   test_python:
     runs-on: ubuntu-latest
+    permissions:
+      # Gives the action the necessary permissions for publishing new
+      # comments in pull requests.
+      pull-requests: write
+      # Gives the action the necessary permissions for pushing data to the
+      # python-coverage-comment-action branch, and for editing existing
+      # comments (to avoid publishing multiple comments in the same PR)
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
