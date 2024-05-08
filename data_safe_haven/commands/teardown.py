@@ -61,7 +61,7 @@ def sre(
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(
-            tenant_id=config.shm.aad_tenant_id,
+            tenant_id=config.shm.entra_id_tenant_id,
             default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
         )
 

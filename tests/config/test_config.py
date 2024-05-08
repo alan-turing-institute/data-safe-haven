@@ -27,7 +27,7 @@ class TestConfigSectionAzure:
 class TestConfigSectionSHM:
     def test_constructor(self):
         ConfigSectionSHM(
-            aad_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+            entra_id_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             admin_email_address="admin@example.com",
             admin_ip_addresses=["0.0.0.0"],  # noqa: S104
             fqdn="shm.acme.com",

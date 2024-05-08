@@ -33,7 +33,7 @@ def admin_register_users(
 
         # Load GraphAPI
         graph_api = GraphApi(
-            tenant_id=config.shm.aad_tenant_id,
+            tenant_id=config.shm.entra_id_tenant_id,
             default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
         )
 

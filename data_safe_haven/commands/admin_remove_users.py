@@ -20,7 +20,7 @@ def admin_remove_users(
     try:
         # Load GraphAPI
         graph_api = GraphApi(
-            tenant_id=config.shm.aad_tenant_id,
+            tenant_id=config.shm.entra_id_tenant_id,
             default_scopes=["User.ReadWrite.All"],
         )
 

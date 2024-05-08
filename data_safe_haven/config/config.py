@@ -35,7 +35,7 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
-    aad_tenant_id: Guid
+    entra_id_tenant_id: Guid
     admin_email_address: EmailAddress
     admin_ip_addresses: list[IpAddress]
     fqdn: Fqdn
@@ -44,7 +44,7 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
     def update(
         self,
         *,
-        aad_tenant_id: str | None = None,
+        entra_id_tenant_id: str | None = None,
         admin_email_address: str | None = None,
         admin_ip_addresses: list[str] | None = None,
         fqdn: str | None = None,
@@ -53,18 +53,18 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
         """Update SHM settings
 
         Args:
-            aad_tenant_id: AzureAD tenant containing users
+            entra_id_tenant_id: Entra ID tenant containing users
             admin_email_address: Email address shared by all administrators
             admin_ip_addresses: List of IP addresses belonging to administrators
             fqdn: Fully-qualified domain name to use for this SHM
             timezone: Timezone in pytz format (eg. Europe/London)
         """
         logger = LoggingSingleton()
-        # Set AzureAD tenant ID
-        if aad_tenant_id:
-            self.aad_tenant_id = aad_tenant_id
+        # Set Entra ID tenant ID
+        if entra_id_tenant_id:
+            self.entra_id_tenant_id = entra_id_tenant_id
         logger.info(
-            f"[bold]AzureAD tenant ID[/] will be [green]{self.aad_tenant_id}[/]."
+            f"[bold]Entra ID tenant ID[/] will be [green]{self.entra_id_tenant_id}[/]."
         )
         # Set admin email address
         if admin_email_address:
@@ -237,7 +237,7 @@ class Config(AzureSerialisableModel):
                 tenant_id="Azure tenant ID",
             ),
             shm=ConfigSectionSHM.model_construct(
-                aad_tenant_id="Azure Active Directory tenant ID",
+                entra_id_tenant_id="Entra ID tenant ID",
                 admin_email_address="Admin email address",
                 admin_ip_addresses=["Admin IP addresses"],
                 fqdn="TRE domain name",

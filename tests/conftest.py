@@ -61,7 +61,7 @@ def config_yaml():
   subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
   tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
 shm:
-  aad_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+  entra_id_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
   admin_email_address: admin@example.com
   admin_ip_addresses:
   - 0.0.0.0/32
@@ -110,7 +110,7 @@ def azure_config():
 @fixture
 def shm_config():
     return ConfigSectionSHM(
-        aad_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        entra_id_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         admin_email_address="admin@example.com",
         admin_ip_addresses=["0.0.0.0"],  # noqa: S104
         fqdn="shm.acme.com",
