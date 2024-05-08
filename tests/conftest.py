@@ -181,6 +181,14 @@ def pulumi_config(pulumi_project, pulumi_project2):
 
 
 @fixture
+def pulumi_config_no_key(pulumi_project, pulumi_project2):
+    return DSHPulumiConfig(
+        encrypted_key=None,
+        projects={"acmedeployment": pulumi_project, "other_project": pulumi_project2},
+    )
+
+
+@fixture
 def pulumi_config_yaml():
     return """encrypted_key: CALbHybtRdxKjSnr9UYY
 projects:
