@@ -10,8 +10,8 @@ from data_safe_haven.infrastructure.common import (
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
-    AzureADApplication,
-    AzureADApplicationProps,
+    EntraIDApplication,
+    EntraIDApplicationProps,
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
 )
@@ -93,9 +93,9 @@ class SREIdentityComponent(ComponentResource):
         )
 
         # Define AzureAD application
-        aad_application = AzureADApplication(
+        aad_application = EntraIDApplication(
             f"{self._name}_aad_application",
-            AzureADApplicationProps(
+            EntraIDApplicationProps(
                 application_name=props.aad_application_name,
                 application_role_assignments=["User.Read.All", "GroupMember.Read.All"],
                 application_secret_name="Apricot Authentication Secret",

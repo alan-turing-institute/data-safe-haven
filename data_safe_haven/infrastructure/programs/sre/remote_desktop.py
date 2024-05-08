@@ -15,8 +15,8 @@ from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
 )
 from data_safe_haven.infrastructure.components import (
-    AzureADApplication,
-    AzureADApplicationProps,
+    EntraIDApplication,
+    EntraIDApplicationProps,
     FileShareFile,
     FileShareFileProps,
     PostgresqlDatabaseComponent,
@@ -131,9 +131,9 @@ class SRERemoteDesktopComponent(ComponentResource):
         )
 
         # Define AzureAD application
-        aad_application = AzureADApplication(
+        aad_application = EntraIDApplication(
             f"{self._name}_aad_application",
-            AzureADApplicationProps(
+            EntraIDApplicationProps(
                 application_name=props.aad_application_name,
                 auth_token=props.aad_auth_token,
                 web_redirect_url=props.aad_application_url,
