@@ -118,7 +118,6 @@ source = [
 "data_safe_haven/"
 ]
 
-
 [tool.coverage.run]
 relative_files = true
 
