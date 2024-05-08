@@ -15,8 +15,10 @@ $ dsh admin add-users <my CSV users file>
 ```
 
 :::{warning}
+
 - the phone number must be in full international format.
 - the country code is the two letter `ISO 3166-1 Alpha-2` code.
+
 :::
 
 ## Assign existing users to an SRE

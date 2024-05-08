@@ -20,6 +20,7 @@ As private endpoints for flexible PostgreSQL are still in preview, the following
 ```{code} shell
 $ az feature register --name "enablePrivateEndpoint" --namespace "Microsoft.DBforPostgreSQL"
 ```
+
 :::
 
 ## Deployment
