@@ -15,7 +15,8 @@ class SREIpRanges:
         self.apt_proxy_server = self.vnet.next_subnet(8)
         self.data_configuration = self.vnet.next_subnet(8)
         self.data_private = self.vnet.next_subnet(8)
-        self.firewall = self.vnet.next_subnet(64)  # Firewall needs 64 addresses
+        self.firewall = self.vnet.next_subnet(64)  # 64 address minimum
+        self.firewall_management = self.vnet.next_subnet(64)  # 64 address minimum
         self.guacamole_containers = self.vnet.next_subnet(8)
         self.guacamole_containers_support = self.vnet.next_subnet(8)
         self.identity_containers = self.vnet.next_subnet(8)

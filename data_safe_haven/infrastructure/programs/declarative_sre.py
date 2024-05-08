@@ -23,6 +23,10 @@ from .sre.dns_server import (
     SREDnsServerComponent,
     SREDnsServerProps,
 )
+from .sre.firewall import (
+    SREFirewallComponent,
+    SREFirewallProps,
+)
 from .sre.identity import (
     SREIdentityComponent,
     SREIdentityProps,
@@ -163,6 +167,20 @@ class DeclarativeSRE:
                 user_public_ip_ranges=self.cfg.sre(
                     self.sre_name
                 ).research_user_ip_addresses,
+            ),
+            tags=self.tags,
+        )
+
+        # Deploy SRE firewall
+        SREFirewallComponent(
+            "sre_firewall",
+            self.stack_name,
+            SREFirewallProps(
+                location=self.context.location,
+                resource_group_name=networking.resource_group.name,
+                route_table_name=networking.route_table_name,
+                subnet_firewall=networking.subnet_firewall,
+                subnet_firewall_management=networking.subnet_firewall_management,
             ),
             tags=self.tags,
         )
