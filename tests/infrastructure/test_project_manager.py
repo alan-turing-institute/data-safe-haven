@@ -9,6 +9,7 @@ from pulumi.automation import (
 )
 from pytest import fixture
 
+from data_safe_haven.config import DSHPulumiProject
 from data_safe_haven.infrastructure import SHMProjectManager
 from data_safe_haven.infrastructure.project_manager import (
     AzureCliSingleton,
@@ -86,6 +87,26 @@ class TestSHMProjectManager:
         assert shm.context == context_no_secrets
         assert shm.cfg == config_sres
         assert shm.pulumi_project == pulumi_project
+
+    def test_new_project(
+        self,
+        context_no_secrets,
+        config_sres,
+        pulumi_config_empty,
+        mock_azure_cli_confirm,  # noqa: ARG002
+        mock_install_plugins,  # noqa: ARG002
+    ):
+        shm = SHMProjectManager(context_no_secrets, config_sres, pulumi_config_empty,
+                                create_project=True)
+        assert isinstance(shm, SHMProjectManager)
+        assert isinstance(shm, ProjectManager)
+        assert shm.context == context_no_secrets
+        assert shm.cfg == config_sres
+        # Ensure a project was created
+        assert isinstance(shm.pulumi_project, DSHPulumiProject)
+        assert "acmedeployment" in pulumi_config_empty.project_names
+        assert pulumi_config_empty["acmedeployment"].stack_config == {}
+        assert pulumi_config_empty.encrypted_key is None
 
     def test_project_settings(self, shm_stack_manager):
         project_settings = shm_stack_manager.project_settings
