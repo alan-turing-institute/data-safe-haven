@@ -51,6 +51,7 @@ def shm(
             context=context,
             config=config,
             pulumi_config=pulumi_config,
+            create_project=True,
             shm_name=context.shm_name,
         )
         # Set Azure options
@@ -138,6 +139,7 @@ def sre(
             context=context,
             config=config,
             pulumi_config=pulumi_config,
+            create_project=True,
             sre_name=sre_name,
             graph_api_token=graph_api.token,
         )

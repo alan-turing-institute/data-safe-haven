@@ -71,12 +71,19 @@ class ProjectManager:
         pulumi_config: DSHPulumiConfig,
         pulumi_project_name: str,
         program: DeclarativeSHM | DeclarativeSRE,
+        *,
+        create_project: bool,
     ) -> None:
-        self.account = PulumiAccount(context, config)
         self.context = context
         self.cfg = config
         self.pulumi_config = pulumi_config
         self.pulumi_project_name = pulumi_project_name
+
+        # Create DSH Pulumi Project if it does not exist, otherwise use existing
+        if create_project:
+            self.pulumi_config.create_if_new(self.pulumi_project_name)
+
+        self.account = PulumiAccount(context, config)
         self.logger = LoggingSingleton()
         self._stack: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
@@ -185,8 +192,6 @@ class ProjectManager:
     def deploy(self, *, force: bool = False) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
-            # Create DSH Pulumi Project if it does not exist, otherwise use existing
-            self.pulumi_config.create_if_new(self.pulumi_project_name)
             self.apply_config_options()
             if force:
                 self.cancel()
@@ -394,6 +399,7 @@ class SHMProjectManager(ProjectManager):
         config: Config,
         pulumi_config: DSHPulumiConfig,
         *,
+        create_project: bool = False,
         shm_name: str,
     ) -> None:
         """Constructor"""
@@ -403,6 +409,7 @@ class SHMProjectManager(ProjectManager):
             pulumi_config,
             shm_name,
             DeclarativeSHM(context, config, context.shm_name),
+            create_project=create_project,
         )
 
 
@@ -415,6 +422,7 @@ class SREProjectManager(ProjectManager):
         config: Config,
         pulumi_config: DSHPulumiConfig,
         *,
+        create_project: bool = False,
         sre_name: str,
         graph_api_token: str | None = None,
     ) -> None:
@@ -426,4 +434,5 @@ class SREProjectManager(ProjectManager):
             pulumi_config,
             sre_name,
             DeclarativeSRE(context, config, context.shm_name, sre_name, token),
+            create_project=create_project,
         )
