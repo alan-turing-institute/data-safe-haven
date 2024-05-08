@@ -113,9 +113,11 @@ dependencies = [
 ]
 pre-install-commands = ["pip install -r requirements.txt"]
 
+[tool.coverage.paths]
+source = "data_safe_haven/"
+
 [tool.coverage.run]
 relative_files = true
-source = "."
 
 [tool.hatch.envs.test.scripts]
 test = "pytest {args:-vvv tests}"
