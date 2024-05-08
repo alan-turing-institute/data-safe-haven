@@ -113,6 +113,9 @@ dependencies = [
 ]
 pre-install-commands = ["pip install -r requirements.txt"]
 
+[tool.coverage.run]
+relative_files = true
+
 [tool.hatch.envs.test.scripts]
 test = "pytest {args:-vvv tests}"
 test-coverage = "coverage run -m pytest tests"
