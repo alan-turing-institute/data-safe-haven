@@ -408,14 +408,13 @@ class SHMProjectManager(ProjectManager):
         pulumi_config: DSHPulumiConfig,
         *,
         create_project: bool = False,
-        shm_name: str,
     ) -> None:
         """Constructor"""
         super().__init__(
             context,
             config,
             pulumi_config,
-            shm_name,
+            context.shm_name,
             DeclarativeSHM(context, config, context.shm_name),
             create_project=create_project,
         )

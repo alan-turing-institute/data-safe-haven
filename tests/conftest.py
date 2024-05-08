@@ -176,7 +176,7 @@ def pulumi_project2():
 def pulumi_config(pulumi_project, pulumi_project2):
     return DSHPulumiConfig(
         encrypted_key="CALbHybtRdxKjSnr9UYY",
-        projects={"my_project": pulumi_project, "other_project": pulumi_project2},
+        projects={"acmedeployment": pulumi_project, "other_project": pulumi_project2},
     )
 
 
@@ -184,7 +184,7 @@ def pulumi_config(pulumi_project, pulumi_project2):
 def pulumi_config_yaml():
     return """encrypted_key: CALbHybtRdxKjSnr9UYY
 projects:
-  my_project:
+  acmedeployment:
     stack_config:
       azure-native:location: uksouth
       azure-native:subscriptionId: abc

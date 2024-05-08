@@ -52,7 +52,6 @@ def shm(
             config=config,
             pulumi_config=pulumi_config,
             create_project=True,
-            shm_name=context.shm_name,
         )
         # Set Azure options
         stack.add_option("azure-native:location", context.location, replace=False)
@@ -133,7 +132,6 @@ def sre(
             context=context,
             config=config,
             pulumi_config=pulumi_config,
-            shm_name=context.shm_name,
         )
         stack = SREProjectManager(
             context=context,

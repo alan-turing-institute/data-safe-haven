@@ -32,7 +32,6 @@ def shm() -> None:
                 context=context,
                 config=config,
                 pulumi_config=pulumi_config,
-                shm_name=context.shm_name,
             )
             stack.teardown()
         except Exception as exc:
