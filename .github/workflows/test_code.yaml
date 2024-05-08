@@ -20,7 +20,7 @@ jobs:
       - name: Install hatch
         run: pip install hatch
       - name: Test Python
-        run: hatch run test:test
+        run: hatch run test:cov
 
   test_markdown_links:
     runs-on: ubuntu-latest
