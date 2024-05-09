@@ -126,8 +126,11 @@ class ProjectManager:
                     self.pulumi_project_name
                 )
             else:
-                self._pulumi_project = self.pulumi_config[self.pulumi_project_name]
-
+                try:
+                    self._pulumi_project = self.pulumi_config[self.pulumi_project_name]
+                except (KeyError, TypeError) as exc:
+                    msg = "No SHM/SRE named {self.pulumi_project_name} is defined."
+                    raise DataSafeHavenConfigError(msg) from exc
         return self._pulumi_project
 
     @property
