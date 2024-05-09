@@ -18,8 +18,6 @@ from .dynamic import (
     FileShareFileProps,
     FileUpload,
     FileUploadProps,
-    RemoteScript,
-    RemoteScriptProps,
     SSLCertificate,
     SSLCertificateProps,
 )
@@ -44,8 +42,6 @@ __all__ = [
     "MicrosoftSQLDatabaseProps",
     "PostgresqlDatabaseComponent",
     "PostgresqlDatabaseProps",
-    "RemoteScript",
-    "RemoteScriptProps",
     "SSLCertificate",
     "SSLCertificateProps",
     "VMComponent",
