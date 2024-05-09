@@ -10,6 +10,7 @@ from pulumi.automation import (
 from pytest import fixture, raises
 
 from data_safe_haven.config import DSHPulumiProject
+from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.infrastructure import SHMProjectManager
 from data_safe_haven.infrastructure.project_manager import (
     AzureCliSingleton,
@@ -121,7 +122,7 @@ class TestSHMProjectManager:
             context_no_secrets, config_sres, pulumi_config_empty, create_project=False
         )
         with raises(
-            KeyError, match="No configuration for DSH Pulumi Project acmedeployment."
+            DataSafeHavenConfigError, match="No SHM/SRE named acmedeployment is defined."
         ):
             _ = shm.pulumi_project
 
