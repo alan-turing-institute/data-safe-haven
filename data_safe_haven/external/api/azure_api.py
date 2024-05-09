@@ -572,28 +572,6 @@ class AzureApi(AzureAuthenticator):
             msg = f"Keys could not be loaded for {msg_sa} in {msg_rg}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
-    def get_vm_sku_details(self, sku: str) -> tuple[str, str, str]:
-        # Connect to Azure client
-        cpus, gpus, ram = None, None, None
-        compute_client = ComputeManagementClient(self.credential, self.subscription_id)
-        for resource_sku in compute_client.resource_skus.list():
-            if resource_sku.name == sku:
-                if resource_sku.capabilities:
-                    # Cast to correct spurious type hint in Azure libraries
-                    for capability in cast(
-                        list[ResourceSkuCapabilities], resource_sku.capabilities
-                    ):
-                        if capability.name == "vCPUs":
-                            cpus = capability.value
-                        if capability.name == "GPUs":
-                            gpus = capability.value
-                        if capability.name == "MemoryGB":
-                            ram = capability.value
-        if cpus and gpus and ram:
-            return (cpus, gpus, ram)
-        msg = f"Could not find information for VM SKU {sku}."
-        raise DataSafeHavenAzureError(msg)
-
     def import_keyvault_certificate(
         self,
         certificate_name: str,
