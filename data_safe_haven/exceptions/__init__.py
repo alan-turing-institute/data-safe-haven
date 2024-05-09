@@ -9,7 +9,8 @@ class DataSafeHavenCloudError(DataSafeHavenError):
 class DataSafeHavenConfigError(DataSafeHavenError):
     pass
 
-
+# This is a custom exception class for handling errors when interacting with Entra ID.
+# For example, when adding users to an Entra group fails.
 class DataSafeHavenEntraIDError(DataSafeHavenCloudError):
     pass
 
