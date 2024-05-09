@@ -1,5 +1,5 @@
 ---
-name: Comment with test coverage
+name: Test code - post coverage comment
 
 # Run workflow after test_code has completed
 on:  # yamllint disable-line rule:truthy
@@ -24,7 +24,7 @@ jobs:
       # artifact that contains the comment to be published
       actions: read
     steps:
-      # For details, refer to https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+      # Post the pre-generated coverage comment
       - name: Post coverage comment
         uses: py-cov-action/python-coverage-comment-action@v3
         with:
