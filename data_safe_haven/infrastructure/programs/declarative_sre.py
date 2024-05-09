@@ -147,9 +147,6 @@ class DeclarativeSRE:
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 dns_virtual_network=dns.virtual_network,
-                firewall_ip_address=self.pulumi_opts.require(
-                    "shm-firewall-private-ip-address"
-                ),
                 location=self.context.location,
                 shm_fqdn=self.cfg.shm.fqdn,
                 shm_networking_resource_group_name=self.pulumi_opts.require(

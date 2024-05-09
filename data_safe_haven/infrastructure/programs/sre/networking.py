@@ -27,7 +27,6 @@ class SRENetworkingProps:
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
         dns_virtual_network: Input[network.VirtualNetwork],
-        firewall_ip_address: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
@@ -87,7 +86,6 @@ class SRENetworkingProps:
             get_name_from_vnet
         )
         self.dns_server_ip = dns_server_ip
-        self.firewall_ip_address = firewall_ip_address
         self.location = location
         self.user_public_ip_ranges = user_public_ip_ranges
         self.shm_fqdn = shm_fqdn
