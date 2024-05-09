@@ -39,7 +39,7 @@ def admin_register_users(
 
         # List users
         users = UserHandler(context, config, pulumi_config, graph_api)
-        available_usernames = users.get_usernames_azure_ad()
+        available_usernames = users.get_usernames_entra_id()
         usernames_to_register = []
         for username in usernames:
             if username in available_usernames:

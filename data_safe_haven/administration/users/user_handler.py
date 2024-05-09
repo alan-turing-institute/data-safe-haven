@@ -8,7 +8,7 @@ from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import LoggingSingleton
 
-from .entra_id_users import EntraIDUsers
+from .entra_users import EntraUsers
 from .guacamole_users import GuacamoleUsers
 from .research_user import ResearchUser
 
@@ -21,7 +21,7 @@ class UserHandler:
         pulumi_config: DSHPulumiConfig,
         graph_api: GraphApi,
     ):
-        self.entra_id_users = EntraIDUsers(graph_api)
+        self.entra_id_users = EntraUsers(graph_api)
         self.context = context
         self.config = config
         self.pulumi_config = pulumi_config
@@ -29,7 +29,7 @@ class UserHandler:
         self.sre_guacamole_users_: dict[str, GuacamoleUsers] = {}
 
     def add(self, users_csv_path: pathlib.Path) -> None:
-        """Add Entra ID and Guacamole users
+        """Add users to Entra ID and Guacamole
 
         Raises:
             DataSafeHavenUserHandlingError if the users could not be added
@@ -75,7 +75,7 @@ class UserHandler:
     def get_usernames(self) -> dict[str, list[str]]:
         """Load usernames from all sources"""
         usernames = {}
-        usernames["Azure AD"] = self.get_usernames_azure_ad()
+        usernames["Entra ID"] = self.get_usernames_entra_id()
         for sre_name in self.config.sre_names:
             usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
                 sre_name,
@@ -83,8 +83,8 @@ class UserHandler:
             )
         return usernames
 
-    def get_usernames_azure_ad(self) -> list[str]:
-        """Load usernames from Azure AD"""
+    def get_usernames_entra_id(self) -> list[str]:
+        """Load usernames from Entra ID"""
         return [user.username for user in self.entra_id_users.list()]
 
     def get_usernames_guacamole(

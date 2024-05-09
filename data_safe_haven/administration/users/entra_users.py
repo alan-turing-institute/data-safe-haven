@@ -15,7 +15,7 @@ from data_safe_haven.utility import LoggingSingleton
 from .research_user import ResearchUser
 
 
-class EntraIDUsers:
+class EntraUsers:
     """Interact with users in Entra ID."""
 
     def __init__(
@@ -71,7 +71,7 @@ class EntraIDUsers:
 
     def list(self) -> Sequence[ResearchUser]:
         """
-        List available Entra ID users
+        List available Entra users
 
         Raises:
             DataSafeHavenEntraIDError if users could not be loaded
@@ -104,7 +104,7 @@ class EntraIDUsers:
 
     def register(self, sre_name: str, usernames: Sequence[str]) -> None:
         """
-        Add usernames to SRE group
+        Add usernames to SRE group in Entra ID
 
         Raises:
             DataSafeHavenEntraIDError if any user could not be added to the group.
@@ -137,7 +137,7 @@ class EntraIDUsers:
 
     def set(self, users: Sequence[ResearchUser]) -> None:
         """
-        Set Entra ID users to specified list
+        Set Entra users to specified list
 
         Raises:
             DataSafeHavenEntraIDError if user list could not be set
@@ -153,7 +153,7 @@ class EntraIDUsers:
 
     def unregister(self, sre_name: str, usernames: Sequence[str]) -> None:
         """
-        Remove usernames from SRE group
+        Remove usernames from SRE group in Entra ID
 
         Raises:
             DataSafeHavenEntraIDError if any user could not be added to the group.
