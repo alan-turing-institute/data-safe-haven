@@ -28,9 +28,9 @@ jobs:
       - name: Install hatch
         run: pip install hatch
       - name: Test Python
-        run: hatch run test:cov
+        run: hatch run test:test-coverage
 
-      - name: Coverage comment
+      - name: Add coverage summary to pull request
         id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@v3
         with:
