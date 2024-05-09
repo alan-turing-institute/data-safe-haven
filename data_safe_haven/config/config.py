@@ -35,18 +35,18 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
-    entra_id_tenant_id: Guid
     admin_email_address: EmailAddress
     admin_ip_addresses: list[IpAddress]
+    entra_id_tenant_id: Guid
     fqdn: Fqdn
     timezone: TimeZone
 
     def update(
         self,
         *,
-        entra_id_tenant_id: str | None = None,
         admin_email_address: str | None = None,
         admin_ip_addresses: list[str] | None = None,
+        entra_id_tenant_id: str | None = None,
         fqdn: str | None = None,
         timezone: TimeZone | None = None,
     ) -> None:
@@ -60,12 +60,6 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
             timezone: Timezone in pytz format (eg. Europe/London)
         """
         logger = LoggingSingleton()
-        # Set Entra ID tenant ID
-        if entra_id_tenant_id:
-            self.entra_id_tenant_id = entra_id_tenant_id
-        logger.info(
-            f"[bold]Entra ID tenant ID[/] will be [green]{self.entra_id_tenant_id}[/]."
-        )
         # Set admin email address
         if admin_email_address:
             self.admin_email_address = admin_email_address
@@ -77,6 +71,12 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
             self.admin_ip_addresses = admin_ip_addresses
         logger.info(
             f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
+        )
+        # Set Entra ID tenant ID
+        if entra_id_tenant_id:
+            self.entra_id_tenant_id = entra_id_tenant_id
+        logger.info(
+            f"[bold]Entra ID tenant ID[/] will be [green]{self.entra_id_tenant_id}[/]."
         )
         # Set fully-qualified domain name
         if fqdn:
@@ -237,9 +237,9 @@ class Config(AzureSerialisableModel):
                 tenant_id="Azure tenant ID",
             ),
             shm=ConfigSectionSHM.model_construct(
-                entra_id_tenant_id="Entra ID tenant ID",
                 admin_email_address="Admin email address",
                 admin_ip_addresses=["Admin IP addresses"],
+                entra_id_tenant_id="Entra ID tenant ID",
                 fqdn="TRE domain name",
                 timezone="Timezone",
             ),
