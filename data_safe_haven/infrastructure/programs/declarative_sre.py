@@ -179,8 +179,13 @@ class DeclarativeSRE:
                 location=self.context.location,
                 resource_group_name=networking.resource_group.name,
                 route_table_name=networking.route_table_name,
+                subnet_apt_proxy_server=networking.subnet_apt_proxy_server,
                 subnet_firewall=networking.subnet_firewall,
                 subnet_firewall_management=networking.subnet_firewall_management,
+                subnet_guacamole_containers=networking.subnet_guacamole_containers,
+                subnet_identity_containers=networking.subnet_identity_containers,
+                subnet_user_services_software_repositories=networking.subnet_user_services_software_repositories,
+                subnet_workspaces=networking.subnet_workspaces,
             ),
             tags=self.tags,
         )

@@ -5,7 +5,15 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
-from data_safe_haven.infrastructure.common import get_id_from_subnet
+from data_safe_haven.infrastructure.common import (
+    get_address_prefixes_from_subnet,
+    get_id_from_subnet,
+)
+from data_safe_haven.types import (
+    FirewallPriorities,
+    PermittedDomains,
+    Ports,
+)
 
 
 class SREFirewallProps:
@@ -16,18 +24,38 @@ class SREFirewallProps:
         location: Input[str],
         resource_group_name: Input[str],
         route_table_name: Input[str],
+        subnet_apt_proxy_server: Input[network.GetSubnetResult],
         subnet_firewall: Input[network.GetSubnetResult],
         subnet_firewall_management: Input[network.GetSubnetResult],
+        subnet_guacamole_containers: Input[network.GetSubnetResult],
+        subnet_identity_containers: Input[network.GetSubnetResult],
+        subnet_user_services_software_repositories: Input[network.GetSubnetResult],
+        subnet_workspaces: Input[network.GetSubnetResult],
     ) -> None:
         self.location = location
         self.resource_group_name = resource_group_name
         self.route_table_name = route_table_name
+        self.subnet_apt_proxy_server_prefixes = Output.from_input(
+            subnet_apt_proxy_server
+        ).apply(get_address_prefixes_from_subnet)
+        self.subnet_identity_containers_prefixes = Output.from_input(
+            subnet_identity_containers
+        ).apply(get_address_prefixes_from_subnet)
         self.subnet_firewall_id = Output.from_input(subnet_firewall).apply(
             get_id_from_subnet
         )
         self.subnet_firewall_management_id = Output.from_input(
             subnet_firewall_management
         ).apply(get_id_from_subnet)
+        self.subnet_guacamole_containers_prefixes = Output.from_input(
+            subnet_guacamole_containers
+        ).apply(get_address_prefixes_from_subnet)
+        self.subnet_user_services_software_repositories_prefixes = Output.from_input(
+            subnet_user_services_software_repositories
+        ).apply(get_address_prefixes_from_subnet)
+        self.subnet_workspaces_prefixes = Output.from_input(subnet_workspaces).apply(
+            get_address_prefixes_from_subnet
+        )
 
 
 class SREFirewallComponent(ComponentResource):
@@ -75,6 +103,129 @@ class SREFirewallComponent(ComponentResource):
         # traffic for communicating updates and health metrics to and from Microsoft.
         firewall = network.AzureFirewall(
             f"{self._name}_firewall",
+            application_rule_collections=[
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(
+                        type=network.AzureFirewallRCActionType.ALLOW
+                    ),
+                    name="apt-proxy-server",
+                    priority=FirewallPriorities.SRE_APT_PROXY_SERVER,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external apt repository requests",
+                            name="AllowAptRepositories",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTP),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
+                                ),
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                ),
+                            ],
+                            source_addresses=props.subnet_apt_proxy_server_prefixes,
+                            target_fqdns=PermittedDomains.APT_REPOSITORIES,
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(
+                        type=network.AzureFirewallRCActionType.ALLOW
+                    ),
+                    name="identity-server",
+                    priority=FirewallPriorities.SRE_IDENTITY_CONTAINERS,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow Microsoft OAuth login requests",
+                            name="AllowMicrosoftOAuthLogin",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                )
+                            ],
+                            source_addresses=props.subnet_identity_containers_prefixes,
+                            target_fqdns=PermittedDomains.MICROSOFT_IDENTITY,
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(
+                        type=network.AzureFirewallRCActionType.ALLOW
+                    ),
+                    name="remote-desktop-gateway",
+                    priority=FirewallPriorities.SRE_GUACAMOLE_CONTAINERS,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow Microsoft OAuth login requests",
+                            name="AllowMicrosoftOAuthLogin",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                )
+                            ],
+                            source_addresses=props.subnet_guacamole_containers_prefixes,
+                            target_fqdns=PermittedDomains.MICROSOFT_LOGIN,
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(
+                        type=network.AzureFirewallRCActionType.ALLOW
+                    ),
+                    name="software-repositories",
+                    priority=FirewallPriorities.SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external CRAN package requests",
+                            name="AllowCRANPackageDownload",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                )
+                            ],
+                            source_addresses=props.subnet_user_services_software_repositories_prefixes,
+                            target_fqdns=PermittedDomains.SOFTWARE_REPOSITORIES_R,
+                        ),
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external PyPI package requests",
+                            name="AllowPyPIPackageDownload",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                )
+                            ],
+                            source_addresses=props.subnet_user_services_software_repositories_prefixes,
+                            target_fqdns=PermittedDomains.SOFTWARE_REPOSITORIES_PYTHON,
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(
+                        type=network.AzureFirewallRCActionType.ALLOW
+                    ),
+                    name="workspaces",
+                    priority=FirewallPriorities.SRE_WORKSPACES,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external Ubuntu keyserver requests",
+                            name="AllowUbuntuKeyserver",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.CLAMAV),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
+                                ),
+                            ],
+                            source_addresses=props.subnet_workspaces_prefixes,
+                            target_fqdns=PermittedDomains.UBUNTU_KEYSERVER,
+                        ),
+                    ],
+                ),
+            ],
             azure_firewall_name=f"{stack_name}-firewall",
             ip_configurations=[
                 network.AzureFirewallIPConfigurationArgs(
