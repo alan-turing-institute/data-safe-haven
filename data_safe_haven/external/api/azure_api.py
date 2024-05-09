@@ -992,34 +992,6 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to set ACL '{desired_acl}' on container '{container_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
-    def set_keyvault_secret(
-        self, key_vault_name: str, secret_name: str, secret_value: str
-    ) -> KeyVaultSecret:
-        """Ensure that a KeyVault secret has the desired value
-
-        Returns:
-            str: The secret value
-
-        Raises:
-            DataSafeHavenAzureError if the secret could not be set
-        """
-        try:
-            # Connect to Azure clients
-            secret_client = SecretClient(
-                f"https://{key_vault_name}.vault.azure.net", self.credential
-            )
-            # Set the secret to the desired value
-            try:
-                existing_value = secret_client.get_secret(secret_name).value
-            except ResourceNotFoundError:
-                existing_value = None
-            if (not existing_value) or (existing_value != secret_value):
-                secret_client.set_secret(secret_name, secret_value)
-            return secret_client.get_secret(secret_name)
-        except Exception as exc:
-            msg = f"Failed to set secret '{secret_name}'.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
-
     def upload_blob(
         self,
         blob_data: bytes | str,
