@@ -1,6 +1,4 @@
 from .composite import (
-    AutomationDscNode,
-    AutomationDscNodeProps,
     LinuxVMComponentProps,
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
@@ -33,8 +31,6 @@ from .wrapped import (
 )
 
 __all__ = [
-    "AutomationDscNode",
-    "AutomationDscNodeProps",
     "BlobContainerAcl",
     "BlobContainerAclProps",
     "CompiledDsc",
