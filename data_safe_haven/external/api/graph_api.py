@@ -137,7 +137,7 @@ class GraphApi:
         """Add a user to a group
 
         Raises:
-            DataSafeHavenMicrosoftGraphError if the token could not be created
+            DataSafeHavenMicrosoftGraphError if the user could not be added to the group.
         """
         try:
             user_id = self.get_id_from_username(username)

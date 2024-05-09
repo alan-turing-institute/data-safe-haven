@@ -10,6 +10,10 @@ class DataSafeHavenConfigError(DataSafeHavenError):
     pass
 
 
+class DataSafeHavenEntraIDError(DataSafeHavenCloudError):
+    pass
+
+
 class DataSafeHavenInputError(DataSafeHavenError):
     pass
 
