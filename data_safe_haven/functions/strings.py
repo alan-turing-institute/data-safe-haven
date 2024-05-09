@@ -38,11 +38,6 @@ def password(length: int) -> str:
     return password_
 
 
-def random_letters(length: int) -> str:
-    """Generate a string of 'length' random letters."""
-    return "".join(secrets.choice(string.ascii_letters) for _ in range(length))
-
-
 def replace_separators(input_string: str, separator: str = "") -> str:
     """Return a string using underscores as a separator"""
     return (
