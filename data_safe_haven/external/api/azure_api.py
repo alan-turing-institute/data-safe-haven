@@ -859,29 +859,6 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to remove resource group {resource_group_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
-    def restart_virtual_machine(self, resource_group_name: str, vm_name: str) -> None:
-        try:
-            self.logger.debug(
-                f"Attempting to restart virtual machine '[green]{vm_name}[/]'"
-                f" in resource group '[green]{resource_group_name}[/]'...",
-            )
-            # Connect to Azure clients
-            compute_client = ComputeManagementClient(
-                self.credential, self.subscription_id
-            )
-            poller = compute_client.virtual_machines.begin_restart(
-                resource_group_name, vm_name
-            )
-            _ = (
-                poller.result()
-            )  # returns 'None' on success or raises an exception on failure
-            self.logger.info(
-                f"Restarted virtual machine '[green]{vm_name}[/]' in resource group '[green]{resource_group_name}[/]'.",
-            )
-        except Exception as exc:
-            msg = f"Failed to restart virtual machine '{vm_name}' in resource group '{resource_group_name}'.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
-
     def run_remote_script(
         self,
         resource_group_name: str,
