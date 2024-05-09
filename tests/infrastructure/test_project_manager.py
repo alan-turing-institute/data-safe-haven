@@ -122,7 +122,8 @@ class TestSHMProjectManager:
             context_no_secrets, config_sres, pulumi_config_empty, create_project=False
         )
         with raises(
-            DataSafeHavenConfigError, match="No SHM/SRE named acmedeployment is defined."
+            DataSafeHavenConfigError,
+            match="No SHM/SRE named acmedeployment is defined.",
         ):
             _ = shm.pulumi_project
 
