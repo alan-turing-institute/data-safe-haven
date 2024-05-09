@@ -1,5 +1,6 @@
 from .ip_ranges import SREDnsIpRanges, SREIpRanges
 from .transformations import (
+    get_address_prefixes_from_subnet,
     get_available_ips_from_subnet,
     get_id_from_rg,
     get_id_from_subnet,
@@ -13,6 +14,7 @@ from .transformations import (
 )
 
 __all__ = [
+    "get_address_prefixes_from_subnet",
     "get_available_ips_from_subnet",
     "get_id_from_rg",
     "get_id_from_subnet",
