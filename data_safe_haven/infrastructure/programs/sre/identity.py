@@ -10,8 +10,8 @@ from data_safe_haven.infrastructure.common import (
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
-    AzureADApplication,
-    AzureADApplicationProps,
+    EntraApplication,
+    EntraApplicationProps,
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
 )
@@ -22,10 +22,11 @@ class SREIdentityProps:
 
     def __init__(
         self,
-        aad_application_name: Input[str],
-        aad_auth_token: Input[str],
-        aad_tenant_id: Input[str],
         dns_resource_group_name: Input[str],
+        dns_server_ip: Input[str],
+        entra_application_name: Input[str],
+        entra_auth_token: Input[str],
+        entra_tenant_id: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         shm_fqdn: Input[str],
@@ -35,10 +36,11 @@ class SREIdentityProps:
         storage_account_resource_group_name: Input[str],
         subnet_containers: Input[network.GetSubnetResult],
     ) -> None:
-        self.aad_application_name = aad_application_name
-        self.aad_auth_token = aad_auth_token
-        self.aad_tenant_id = aad_tenant_id
         self.dns_resource_group_name = dns_resource_group_name
+        self.dns_server_ip = dns_server_ip
+        self.entra_application_name = entra_application_name
+        self.entra_auth_token = entra_auth_token
+        self.entra_tenant_id = entra_tenant_id
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.shm_fqdn = shm_fqdn
@@ -78,26 +80,26 @@ class SREIdentityComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Define configuration file shares
-        file_share_redis = storage.FileShare(
-            f"{self._name}_file_share_redis",
-            access_tier="TransactionOptimized",
+        # Define configuration file share
+        file_share = storage.FileShare(
+            f"{self._name}_file_share",
+            access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
             share_name="identity-redis",
-            share_quota=5120,
+            share_quota=5,
             signed_identifiers=[],
             opts=child_opts,
         )
 
-        # Define AzureAD application
-        aad_application = AzureADApplication(
-            f"{self._name}_aad_application",
-            AzureADApplicationProps(
-                application_name=props.aad_application_name,
+        # Define Entra ID application
+        entra_application = EntraApplication(
+            f"{self._name}_entra_application",
+            EntraApplicationProps(
+                application_name=props.entra_application_name,
                 application_role_assignments=["User.Read.All", "GroupMember.Read.All"],
                 application_secret_name="Apricot Authentication Secret",
-                auth_token=props.aad_auth_token,
+                auth_token=props.entra_auth_token,
                 delegated_role_assignments=["User.Read.All"],
                 public_client_redirect_uri="urn:ietf:wg:oauth:2.0:oob",
             ),
@@ -119,11 +121,11 @@ class SREIdentityComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CLIENT_ID",
-                            value=aad_application.application_id,
+                            value=entra_application.application_id,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CLIENT_SECRET",
-                            secure_value=aad_application.application_secret,
+                            secure_value=entra_application.application_secret,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="DEBUG",
@@ -135,7 +137,7 @@ class SREIdentityComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="ENTRA_TENANT_ID",
-                            value=props.aad_tenant_id,
+                            value=props.entra_tenant_id,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="REDIS_HOST",
@@ -187,6 +189,9 @@ class SREIdentityComponent(ComponentResource):
                     ],
                 ),
             ],
+            dns_config=containerinstance.DnsConfigurationArgs(
+                name_servers=[props.dns_server_ip],
+            ),
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(
@@ -212,7 +217,7 @@ class SREIdentityComponent(ComponentResource):
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share_redis.name,
+                        share_name=file_share.name,
                         storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),

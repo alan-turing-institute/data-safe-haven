@@ -8,7 +8,7 @@ from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.utility import LoggingSingleton
 
-from .azure_ad_users import AzureADUsers
+from .entra_users import EntraUsers
 from .guacamole_users import GuacamoleUsers
 from .research_user import ResearchUser
 
@@ -21,7 +21,7 @@ class UserHandler:
         pulumi_config: DSHPulumiConfig,
         graph_api: GraphApi,
     ):
-        self.azure_ad_users = AzureADUsers(graph_api)
+        self.entra_users = EntraUsers(graph_api)
         self.context = context
         self.config = config
         self.pulumi_config = pulumi_config
@@ -29,7 +29,7 @@ class UserHandler:
         self.sre_guacamole_users_: dict[str, GuacamoleUsers] = {}
 
     def add(self, users_csv_path: pathlib.Path) -> None:
-        """Add AzureAD and Guacamole users
+        """Add users to Entra ID and Guacamole
 
         Raises:
             DataSafeHavenUserHandlingError if the users could not be added
@@ -66,8 +66,8 @@ class UserHandler:
             for user in users:
                 self.logger.debug(f"Processing new user: {user}")
 
-            # Add users to AzureAD
-            self.azure_ad_users.add(users)
+            # Add users to Entra ID
+            self.entra_users.add(users)
         except Exception as exc:
             msg = f"Could not add users from '{users_csv_path}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -75,7 +75,7 @@ class UserHandler:
     def get_usernames(self) -> dict[str, list[str]]:
         """Load usernames from all sources"""
         usernames = {}
-        usernames["Azure AD"] = self.get_usernames_azure_ad()
+        usernames["Entra ID"] = self.get_usernames_entra_id()
         for sre_name in self.config.sre_names:
             usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
                 sre_name,
@@ -83,9 +83,9 @@ class UserHandler:
             )
         return usernames
 
-    def get_usernames_azure_ad(self) -> list[str]:
-        """Load usernames from Azure AD"""
-        return [user.username for user in self.azure_ad_users.list()]
+    def get_usernames_entra_id(self) -> list[str]:
+        """Load usernames from Entra ID"""
+        return [user.username for user in self.entra_users.list()]
 
     def get_usernames_guacamole(
         self, sre_name: str, pulumi_config: DSHPulumiConfig
@@ -104,7 +104,7 @@ class UserHandler:
             return []
 
     def list(self) -> None:
-        """List Active Directory, AzureAD and Guacamole users
+        """List Entra ID and Guacamole users
 
         Raises:
             DataSafeHavenUserHandlingError if the users could not be listed
@@ -140,13 +140,13 @@ class UserHandler:
         """
         try:
             # Add users to the SRE security group
-            self.azure_ad_users.register(sre_name, user_names)
+            self.entra_users.register(sre_name, user_names)
         except Exception as exc:
             msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def remove(self, user_names: Sequence[str]) -> None:
-        """Remove AzureAD and Guacamole users
+        """Remove Entra ID and Guacamole users
 
         Raises:
             DataSafeHavenUserHandlingError if the users could not be removed
@@ -154,23 +154,21 @@ class UserHandler:
         try:
             # Construct user lists
             self.logger.info(f"Attempting to remove {len(user_names)} user(s).")
-            azuread_users_to_remove = [
-                user
-                for user in self.azure_ad_users.list()
-                if user.username in user_names
+            entra_users_to_remove = [
+                user for user in self.entra_users.list() if user.username in user_names
             ]
 
             # Commit changes
             self.logger.info(
-                f"Found {len(azuread_users_to_remove)} valid user(s) to remove."
+                f"Found {len(entra_users_to_remove)} valid user(s) to remove."
             )
-            self.azure_ad_users.remove(azuread_users_to_remove)
+            self.entra_users.remove(entra_users_to_remove)
         except Exception as exc:
             msg = f"Could not remove users: {user_names}.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def set(self, users_csv_path: str) -> None:
-        """Set AzureAD and Guacamole users
+        """Set Entra ID and Guacamole users
 
         Raises:
             DataSafeHavenUserHandlingError if the users could not be set to the desired list
@@ -199,19 +197,19 @@ class UserHandler:
                 self.logger.debug(f"Processing user: {user}")
 
             # Keep existing users with the same username
-            azuread_desired_users = [
+            entra_desired_users = [
                 user
-                for user in self.azure_ad_users.list()
+                for user in self.entra_users.list()
                 if user.username in [u.username for u in desired_users]
             ]
 
             # Construct list of new users
-            azuread_desired_users = [
-                user for user in desired_users if user not in azuread_desired_users
+            entra_desired_users = [
+                user for user in desired_users if user not in entra_desired_users
             ]
 
             # Commit changes
-            self.azure_ad_users.set(azuread_desired_users)
+            self.entra_users.set(entra_desired_users)
         except Exception as exc:
             msg = f"Could not set users from '{users_csv_path}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -224,7 +222,7 @@ class UserHandler:
         """
         try:
             # Remove users from the SRE security group
-            self.azure_ad_users.unregister(sre_name, user_names)
+            self.entra_users.unregister(sre_name, user_names)
         except Exception as exc:
             msg = f"Could not unregister {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc

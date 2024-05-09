@@ -35,9 +35,9 @@ def shm(
     )
 
     try:
-        # Add the SHM domain to AzureAD as a custom domain
+        # Connect to GraphAPI interactively
         graph_api = GraphApi(
-            tenant_id=config.shm.aad_tenant_id,
+            tenant_id=config.shm.entra_tenant_id,
             default_scopes=[
                 "Application.ReadWrite.All",
                 "Domain.ReadWrite.All",
@@ -72,7 +72,7 @@ def shm(
         else:
             stack.deploy(force=force)
 
-        # Add the SHM domain as a custom domain in AzureAD
+        # Add the SHM domain to Entra ID as a custom domain
         graph_api.verify_custom_domain(
             config.shm.fqdn,
             stack.output("networking")["fqdn_nameservers"],
@@ -118,7 +118,7 @@ def sre(
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(
-            tenant_id=config.shm.aad_tenant_id,
+            tenant_id=config.shm.entra_tenant_id,
             default_scopes=[
                 "Application.ReadWrite.All",
                 "AppRoleAssignment.ReadWrite.All",

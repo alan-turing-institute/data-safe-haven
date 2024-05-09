@@ -133,7 +133,7 @@ class ProjectManager:
                 try:
                     self._pulumi_project = self.pulumi_config[self.pulumi_project_name]
                 except (KeyError, TypeError) as exc:
-                    msg = f"No SHM/SRE named {self.pulumi_project_name} is defined."
+                    msg = f"No SHM/SRE named {self.pulumi_project_name} is defined.\n{exc}"
                     raise DataSafeHavenConfigError(msg) from exc
         return self._pulumi_project
 
