@@ -12,8 +12,6 @@ from .composite import (
 from .dynamic import (
     BlobContainerAcl,
     BlobContainerAclProps,
-    CompiledDsc,
-    CompiledDscProps,
     EntraApplication,
     EntraApplicationProps,
     FileShareFile,
@@ -33,8 +31,6 @@ from .wrapped import (
 __all__ = [
     "BlobContainerAcl",
     "BlobContainerAclProps",
-    "CompiledDsc",
-    "CompiledDscProps",
     "EntraApplication",
     "EntraApplicationProps",
     "FileShareFile",
