@@ -155,9 +155,7 @@ class UserHandler:
             # Construct user lists
             self.logger.info(f"Attempting to remove {len(user_names)} user(s).")
             entra_users_to_remove = [
-                user
-                for user in self.entra_users.list()
-                if user.username in user_names
+                user for user in self.entra_users.list() if user.username in user_names
             ]
 
             # Commit changes
