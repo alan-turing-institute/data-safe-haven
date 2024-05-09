@@ -10,8 +10,8 @@ from data_safe_haven.infrastructure.common import (
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
-    EntraIDApplication,
-    EntraIDApplicationProps,
+    EntraApplication,
+    EntraApplicationProps,
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
 )
@@ -24,8 +24,8 @@ class SREIdentityProps:
         self,
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
-        entra_id_application_name: Input[str],
-        entra_id_auth_token: Input[str],
+        entra_application_name: Input[str],
+        entra_auth_token: Input[str],
         entra_tenant_id: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
@@ -38,8 +38,8 @@ class SREIdentityProps:
     ) -> None:
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
-        self.entra_id_application_name = entra_id_application_name
-        self.entra_id_auth_token = entra_id_auth_token
+        self.entra_application_name = entra_application_name
+        self.entra_auth_token = entra_auth_token
         self.entra_tenant_id = entra_tenant_id
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
@@ -93,13 +93,13 @@ class SREIdentityComponent(ComponentResource):
         )
 
         # Define Entra ID application
-        entra_id_application = EntraIDApplication(
-            f"{self._name}_entra_id_application",
-            EntraIDApplicationProps(
-                application_name=props.entra_id_application_name,
+        entra_application = EntraApplication(
+            f"{self._name}_entra_application",
+            EntraApplicationProps(
+                application_name=props.entra_application_name,
                 application_role_assignments=["User.Read.All", "GroupMember.Read.All"],
                 application_secret_name="Apricot Authentication Secret",
-                auth_token=props.entra_id_auth_token,
+                auth_token=props.entra_auth_token,
                 delegated_role_assignments=["User.Read.All"],
                 public_client_redirect_uri="urn:ietf:wg:oauth:2.0:oob",
             ),
@@ -121,11 +121,11 @@ class SREIdentityComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CLIENT_ID",
-                            value=entra_id_application.application_id,
+                            value=entra_application.application_id,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="CLIENT_SECRET",
-                            secure_value=entra_id_application.application_secret,
+                            secure_value=entra_application.application_secret,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="DEBUG",

@@ -15,8 +15,8 @@ from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
 )
 from data_safe_haven.infrastructure.components import (
-    EntraIDApplication,
-    EntraIDApplicationProps,
+    EntraApplication,
+    EntraApplicationProps,
     FileShareFile,
     FileShareFileProps,
     PostgresqlDatabaseComponent,
@@ -35,9 +35,9 @@ class SRERemoteDesktopProps:
         allow_paste: Input[bool],
         database_password: Input[str],
         dns_server_ip: Input[str],
-        entra_id_application_fqdn: Input[str],
-        entra_id_application_name: Input[str],
-        entra_id_auth_token: Input[str],
+        entra_application_fqdn: Input[str],
+        entra_application_name: Input[str],
+        entra_auth_token: Input[str],
         entra_tenant_id: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
@@ -60,11 +60,9 @@ class SRERemoteDesktopProps:
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.dns_server_ip = dns_server_ip
-        self.entra_id_application_name = entra_id_application_name
-        self.entra_id_application_url = Output.concat(
-            "https://", entra_id_application_fqdn
-        )
-        self.entra_id_auth_token = entra_id_auth_token
+        self.entra_application_name = entra_application_name
+        self.entra_application_url = Output.concat("https://", entra_application_fqdn)
+        self.entra_auth_token = entra_auth_token
         self.entra_tenant_id = entra_tenant_id
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
@@ -133,12 +131,12 @@ class SRERemoteDesktopComponent(ComponentResource):
         )
 
         # Define Entra ID application
-        entra_id_application = EntraIDApplication(
-            f"{self._name}_entra_id_application",
-            EntraIDApplicationProps(
-                application_name=props.entra_id_application_name,
-                auth_token=props.entra_id_auth_token,
-                web_redirect_url=props.entra_id_application_url,
+        entra_application = EntraApplication(
+            f"{self._name}_entra_application",
+            EntraApplicationProps(
+                application_name=props.entra_application_name,
+                auth_token=props.entra_auth_token,
+                web_redirect_url=props.entra_application_url,
             ),
             opts=child_opts,
         )
@@ -236,7 +234,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_CLIENT_ID",
-                            value=entra_id_application.application_id,
+                            value=entra_application.application_id,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_ISSUER",
@@ -256,7 +254,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_REDIRECT_URI",
-                            value=props.entra_id_application_url,
+                            value=props.entra_application_url,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_USERNAME_CLAIM_TYPE",
