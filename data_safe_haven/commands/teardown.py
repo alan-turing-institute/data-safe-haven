@@ -24,12 +24,15 @@ def shm() -> None:
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
-    pulumi_project = pulumi_config[context.shm_name]
 
     try:
         # Remove infrastructure deployed with Pulumi
         try:
-            stack = SHMProjectManager(context, config, pulumi_project)
+            stack = SHMProjectManager(
+                context=context,
+                config=config,
+                pulumi_config=pulumi_config,
+            )
             stack.teardown()
         except Exception as exc:
             msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
@@ -54,24 +57,23 @@ def sre(
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
-    pulumi_project = pulumi_config[name]
 
     sre_name = sanitise_sre_name(name)
     try:
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(
-            tenant_id=config.shm.aad_tenant_id,
+            tenant_id=config.shm.entra_tenant_id,
             default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
         )
 
         # Remove infrastructure deployed with Pulumi
         try:
             stack = SREProjectManager(
-                context,
-                config,
-                pulumi_project,
-                sre_name,
+                context=context,
+                config=config,
+                pulumi_config=pulumi_config,
+                sre_name=sre_name,
                 graph_api_token=graph_api.token,
             )
             stack.teardown()

@@ -15,8 +15,8 @@ from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
 )
 from data_safe_haven.infrastructure.components import (
-    AzureADApplication,
-    AzureADApplicationProps,
+    EntraApplication,
+    EntraApplicationProps,
     FileShareFile,
     FileShareFileProps,
     PostgresqlDatabaseComponent,
@@ -31,14 +31,14 @@ class SRERemoteDesktopProps:
 
     def __init__(
         self,
-        aad_application_name: Input[str],
-        aad_application_fqdn: Input[str],
-        aad_auth_token: Input[str],
-        aad_tenant_id: Input[str],
         allow_copy: Input[bool],
         allow_paste: Input[bool],
         database_password: Input[str],
         dns_server_ip: Input[str],
+        entra_application_fqdn: Input[str],
+        entra_application_name: Input[str],
+        entra_auth_token: Input[str],
+        entra_tenant_id: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
         ldap_server_hostname: Input[str],
@@ -53,10 +53,6 @@ class SRERemoteDesktopProps:
         subnet_guacamole_containers_support: Input[network.GetSubnetResult],
         database_username: Input[str] | None = "postgresadmin",
     ) -> None:
-        self.aad_application_name = aad_application_name
-        self.aad_application_url = Output.concat("https://", aad_application_fqdn)
-        self.aad_auth_token = aad_auth_token
-        self.aad_tenant_id = aad_tenant_id
         self.database_password = database_password
         self.database_username = (
             database_username if database_username else "postgresadmin"
@@ -64,6 +60,10 @@ class SRERemoteDesktopProps:
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.dns_server_ip = dns_server_ip
+        self.entra_application_name = entra_application_name
+        self.entra_application_url = Output.concat("https://", entra_application_fqdn)
+        self.entra_auth_token = entra_auth_token
+        self.entra_tenant_id = entra_tenant_id
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
         self.ldap_server_hostname = ldap_server_hostname
@@ -130,13 +130,13 @@ class SRERemoteDesktopComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Define AzureAD application
-        aad_application = AzureADApplication(
-            f"{self._name}_aad_application",
-            AzureADApplicationProps(
-                application_name=props.aad_application_name,
-                auth_token=props.aad_auth_token,
-                web_redirect_url=props.aad_application_url,
+        # Define Entra ID application
+        entra_application = EntraApplication(
+            f"{self._name}_entra_application",
+            EntraApplicationProps(
+                application_name=props.entra_application_name,
+                auth_token=props.entra_auth_token,
+                web_redirect_url=props.entra_application_url,
             ),
             opts=child_opts,
         )
@@ -228,19 +228,19 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="OPENID_AUTHORIZATION_ENDPOINT",
                             value=Output.concat(
                                 "https://login.microsoftonline.com/",
-                                props.aad_tenant_id,
+                                props.entra_tenant_id,
                                 "/oauth2/v2.0/authorize",
                             ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_CLIENT_ID",
-                            value=aad_application.application_id,
+                            value=entra_application.application_id,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_ISSUER",
                             value=Output.concat(
                                 "https://login.microsoftonline.com/",
-                                props.aad_tenant_id,
+                                props.entra_tenant_id,
                                 "/v2.0",
                             ),
                         ),
@@ -248,12 +248,13 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="OPENID_JWKS_ENDPOINT",
                             value=Output.concat(
                                 "https://login.microsoftonline.com/",
-                                props.aad_tenant_id,
+                                props.entra_tenant_id,
                                 "/discovery/v2.0/keys",
                             ),
                         ),
                         containerinstance.EnvironmentVariableArgs(
-                            name="OPENID_REDIRECT_URI", value=props.aad_application_url
+                            name="OPENID_REDIRECT_URI",
+                            value=props.entra_application_url,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="OPENID_USERNAME_CLAIM_TYPE",

@@ -1,4 +1,4 @@
-"""Pulumi dynamic component for AzureAD applications."""
+"""Pulumi dynamic component for Entra applications."""
 
 from contextlib import suppress
 from typing import Any
@@ -12,8 +12,8 @@ from data_safe_haven.external import GraphApi
 from .dsh_resource_provider import DshResourceProvider
 
 
-class AzureADApplicationProps:
-    """Props for the AzureADApplication class"""
+class EntraApplicationProps:
+    """Props for the EntraApplication class"""
 
     def __init__(
         self,
@@ -34,7 +34,7 @@ class AzureADApplicationProps:
         self.web_redirect_url = web_redirect_url
 
 
-class AzureADApplicationProvider(DshResourceProvider):
+class EntraApplicationProvider(DshResourceProvider):
     @staticmethod
     def refresh(props: dict[str, Any]) -> dict[str, Any]:
         try:
@@ -61,11 +61,11 @@ class AzureADApplicationProvider(DshResourceProvider):
                 )
             return outs
         except Exception as exc:
-            msg = f"Failed to refresh application [green]{props['application_name']}[/] in AzureAD.\n{exc}"
+            msg = f"Failed to refresh application [green]{props['application_name']}[/] in Entra ID.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create(self, props: dict[str, Any]) -> CreateResult:
-        """Create new AzureAD application."""
+        """Create new Entra application."""
         outs = dict(**props)
         try:
             graph_api = GraphApi(auth_token=props["auth_token"], disable_logging=True)
@@ -112,22 +112,22 @@ class AzureADApplicationProvider(DshResourceProvider):
                 else ""
             )
         except Exception as exc:
-            msg = f"Failed to create application [green]{props['application_name']}[/] in AzureAD.\n{exc}"
+            msg = f"Failed to create application [green]{props['application_name']}[/] in Entra ID.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
         return CreateResult(
-            f"AzureADApplication-{props['application_name']}",
+            f"EntraApplication-{props['application_name']}",
             outs=outs,
         )
 
     def delete(self, id_: str, props: dict[str, Any]) -> None:
-        """Delete an AzureAD application."""
+        """Delete an Entra application."""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         try:
             graph_api = GraphApi(auth_token=props["auth_token"], disable_logging=True)
             graph_api.delete_application(props["application_name"])
         except Exception as exc:
-            msg = f"Failed to delete application [green]{props['application_name']}[/] from AzureAD.\n{exc}"
+            msg = f"Failed to delete application [green]{props['application_name']}[/] from Entra ID.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def diff(
@@ -158,24 +158,24 @@ class AzureADApplicationProvider(DshResourceProvider):
             updated = self.create(new_props)
             return UpdateResult(outs=updated.outs)
         except Exception as exc:
-            msg = f"Failed to update application [green]{new_props['application_name']}[/] in AzureAD.\n{exc}"
+            msg = f"Failed to update application [green]{new_props['application_name']}[/] in Entra ID.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
 
-class AzureADApplication(Resource):
+class EntraApplication(Resource):
     application_id: Output[str]
     application_secret: Output[str]
     object_id: Output[str]
-    _resource_type_name = "dsh:common:AzureADApplication"  # set resource type
+    _resource_type_name = "dsh:common:EntraApplication"  # set resource type
 
     def __init__(
         self,
         name: str,
-        props: AzureADApplicationProps,
+        props: EntraApplicationProps,
         opts: ResourceOptions | None = None,
     ):
         super().__init__(
-            AzureADApplicationProvider(),
+            EntraApplicationProvider(),
             name,
             {
                 "application_id": None,

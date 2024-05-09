@@ -21,8 +21,6 @@ def admin_unregister_users(
     shm_name = context.shm_name
     sre_name = sanitise_sre_name(sre)
 
-    # sre_pulumi_project = pulumi_config.create_or_select_project(sre_name)
-
     try:
         # Check that SRE option has been provided
         if not sre_name:
@@ -34,13 +32,13 @@ def admin_unregister_users(
 
         # Load GraphAPI
         graph_api = GraphApi(
-            tenant_id=config.shm.aad_tenant_id,
+            tenant_id=config.shm.entra_tenant_id,
             default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
         )
 
         # List users
         users = UserHandler(context, config, pulumi_config, graph_api)
-        available_usernames = users.get_usernames_azure_ad()
+        available_usernames = users.get_usernames_entra_id()
         usernames_to_unregister = []
         for username in usernames:
             if username in available_usernames:
