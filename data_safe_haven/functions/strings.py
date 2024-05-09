@@ -16,11 +16,6 @@ def sanitise_sre_name(name: str) -> str:
     return alphanumeric(name).lower()
 
 
-def b64decode(input_string: str) -> str:
-    """Decode a Base64 string into a normal string."""
-    return base64.b64decode(input_string.encode("utf-8")).decode()
-
-
 def b64encode(input_string: str) -> str:
     """Encode a normal string into a Base64 string."""
     return base64.b64encode(input_string.encode("utf-8")).decode()
