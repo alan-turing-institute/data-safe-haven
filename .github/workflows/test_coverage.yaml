@@ -1,9 +1,10 @@
+---
 name: Comment with test coverage
 
 # Run workflow after test_code has completed
 on:  # yamllint disable-line rule:truthy
   workflow_run:
-    workflows: ["test_code"]
+    workflows: ["Test code"]
     types:
       - completed
 
