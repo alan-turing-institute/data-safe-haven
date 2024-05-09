@@ -120,7 +120,7 @@ class EntraIDApplicationProvider(DshResourceProvider):
         )
 
     def delete(self, id_: str, props: dict[str, Any]) -> None:
-        """Delete an Entra ID application."""
+        """Delete an Entra application."""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         try:

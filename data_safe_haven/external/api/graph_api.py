@@ -173,7 +173,7 @@ class GraphApi:
         delegated_scopes: Sequence[str] = [],
         request_json: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """Create an Entra ID application if it does not already exist
+        """Create an Entra application if it does not already exist
 
         Raises:
             DataSafeHavenMicrosoftGraphError if the application could not be created
@@ -257,7 +257,7 @@ class GraphApi:
                     msg = "Maximum attempts to validate service principle permissions exceeded"
                     raise DataSafeHavenMicrosoftGraphError(msg)
 
-            # Return JSON representation of the Entra ID application
+            # Return JSON representation of the Entra application
             return json_response
         except Exception as exc:
             msg = f"Could not create application '{application_name}'.\n{exc}"
@@ -266,7 +266,7 @@ class GraphApi:
     def create_application_secret(
         self, application_name: str, application_secret_name: str
     ) -> str:
-        """Add a secret to an existing Entra ID application
+        """Add a secret to an existing Entra application
 
         Returns:
             str: Contents of newly-created secret
@@ -312,7 +312,7 @@ class GraphApi:
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_group(self, group_name: str) -> None:
-        """Create an Entra ID group if it does not already exist
+        """Create an Entra group if it does not already exist
 
         Raises:
             DataSafeHavenMicrosoftGraphError if the group could not be created
@@ -320,11 +320,11 @@ class GraphApi:
         try:
             if self.get_id_from_groupname(group_name):
                 self.logger.info(
-                    f"Found existing Entra ID group '[green]{group_name}[/]'.",
+                    f"Found existing Entra group '[green]{group_name}[/]'.",
                 )
                 return
             self.logger.debug(
-                f"Creating Entra ID group '[green]{group_name}[/]'...",
+                f"Creating Entra group '[green]{group_name}[/]'...",
             )
             request_json = {
                 "description": group_name,
@@ -339,16 +339,16 @@ class GraphApi:
                 json=request_json,
             ).json()
             self.logger.info(
-                f"Created Entra ID group '[green]{group_name}[/]'.",
+                f"Created Entra group '[green]{group_name}[/]'.",
             )
         except Exception as exc:
-            msg = f"Could not create Entra ID group '{group_name}'.\n{exc}"
+            msg = f"Could not create Entra group '{group_name}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def ensure_application_service_principal(
         self, application_name: str
     ) -> dict[str, Any]:
-        """Create a service principal for an Entra ID application if it does not already exist
+        """Create a service principal for an Entra application if it does not already exist
 
         Raises:
             DataSafeHavenMicrosoftGraphError if the service principal could not be created
@@ -470,7 +470,7 @@ class GraphApi:
         email_address: str,
         phone_number: str,
     ) -> None:
-        """Create an Entra ID user if it does not already exist
+        """Create an Entra user if it does not already exist
 
         Raises:
             DataSafeHavenMicrosoftGraphError if the user could not be created
@@ -482,12 +482,12 @@ class GraphApi:
             user_id = self.get_id_from_username(username)
             if user_id:
                 self.logger.debug(
-                    f"Updating Entra ID user '[green]{username}[/]'...",
+                    f"Updating Entra user '[green]{username}[/]'...",
                 )
                 final_verb = "Update"
             else:
                 self.logger.debug(
-                    f"Creating Entra ID user '[green]{username}[/]'...",
+                    f"Creating Entra user '[green]{username}[/]'...",
                 )
                 final_verb = "Create"
                 # If they do not then create them
@@ -523,7 +523,7 @@ class GraphApi:
                 json={"accountEnabled": True},
             )
             self.logger.info(
-                f"{final_verb}d Entra ID user '[green]{username}[/]'.",
+                f"{final_verb}d Entra user '[green]{username}[/]'.",
             )
         except DataSafeHavenMicrosoftGraphError as exc:
             msg = f"Could not {final_verb.lower()} user {username}.\n{exc}"
@@ -917,10 +917,10 @@ class GraphApi:
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def read_domains(self) -> Sequence[dict[str, Any]]:
-        """Get details of Entra ID domains
+        """Get details of Entra domains
 
         Returns:
-            JSON: A JSON list of Entra ID domains
+            JSON: A JSON list of Entra domains
 
         Raises:
             DataSafeHavenMicrosoftGraphError if domains could not be loaded
@@ -936,7 +936,7 @@ class GraphApi:
         self,
         attributes: Sequence[str] | None = None,
     ) -> Sequence[dict[str, Any]]:
-        """Get details of Entra ID groups
+        """Get details of Entra groups
 
         Returns:
             JSON: A JSON list of Entra ID groups
@@ -969,10 +969,10 @@ class GraphApi:
     def read_users(
         self, attributes: Sequence[str] | None = None
     ) -> Sequence[dict[str, Any]]:
-        """Get details of Entra ID users
+        """Get details of Entra users
 
         Returns:
-            JSON: A JSON list of Entra ID users
+            JSON: A JSON list of Entra users
 
         Raises:
             DataSafeHavenMicrosoftGraphError if users could not be loaded
@@ -1041,7 +1041,7 @@ class GraphApi:
         username: str,
         group_name: str,
     ) -> None:
-        """Remove a user from an Entra ID group
+        """Remove a user from an Entra group
 
         Raises:
             DataSafeHavenMicrosoftGraphError if the user could not be removed
@@ -1076,13 +1076,13 @@ class GraphApi:
     def verify_custom_domain(
         self, domain_name: str, expected_nameservers: Sequence[str]
     ) -> None:
-        """Verify Entra ID custom domain
+        """Verify Entra custom domain
 
         Raises:
             DataSafeHavenMicrosoftGraphError if domain could not be verified
         """
         try:
-            # Create the Entra ID custom domain if it does not already exist
+            # Create the Entra custom domain if it does not already exist
             domains = self.read_domains()
             if not any(d["id"] == domain_name for d in domains):
                 msg = f"Domain {domain_name} has not been added to Entra ID."
