@@ -6,7 +6,6 @@ from .miscellaneous import (
 from .strings import (
     alphanumeric,
     b64encode,
-    hex_string,
     password,
     random_letters,
     replace_separators,
@@ -20,7 +19,6 @@ __all__ = [
     "allowed_dns_lookups",
     "alphanumeric",
     "b64encode",
-    "hex_string",
     "ordered_private_dns_zones",
     "password",
     "random_letters",

@@ -21,11 +21,6 @@ def b64encode(input_string: str) -> str:
     return base64.b64encode(input_string.encode("utf-8")).decode()
 
 
-def hex_string(length: int) -> str:
-    """Generate a string of 'length' random hexadecimal characters."""
-    return secrets.token_hex(length)
-
-
 def password(length: int) -> str:
     """
     Generate a string of 'length' random alphanumeric characters.
