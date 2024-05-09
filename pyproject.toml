@@ -122,10 +122,9 @@ source = [
 relative_files = true
 
 [tool.hatch.envs.test.scripts]
-test = "pytest {args:-vvv tests}"
-test-coverage = "coverage run -m pytest tests"
-test-report = "coverage report"
-cov = ["test-coverage", "test-report"]
+test = "coverage run -m pytest {args:-vvv tests}"
+test-report = "coverage report {args:}"
+test-coverage = ["test", "test-report"]
 
 [tool.black]
 target-version = ["py312"]
@@ -216,4 +215,5 @@ ignore_missing_imports = true
 addopts = [
     "--import-mode=importlib",
     "--disable-warnings",
+    "--ignore=tests/*",
 ]
