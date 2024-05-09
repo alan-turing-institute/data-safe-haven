@@ -36,6 +36,7 @@ docs/venv
 # Files produced during testing
 .mustache_config.json
 expanded.yaml
+.coverage
 
 # Lychee cache
 .lycheecache

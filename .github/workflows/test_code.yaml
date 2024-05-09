@@ -1,7 +1,7 @@
 ---
 name: Test code
 
-# Run workflow on pushes to matching branches
+# Run workflow on PRs and pushes to matching branches
 on:  # yamllint disable-line rule:truthy
   push:
     branches: [develop, latest]
@@ -29,10 +29,12 @@ jobs:
         run: pip install hatch
       - name: Test Python
         run: hatch run test:test-coverage
-      - name: Add coverage summary PR
-        uses: py-cov-action/python-coverage-comment-action@v3
+      - name: Save coverage output as an artifact
+        uses: actions/upload-artifact@v4
         with:
-          GITHUB_TOKEN: ${{ github.token }}
+          name: python-coverage-data
+          path: .coverage
+          if-no-files-found: error
 
   test_markdown_links:
     runs-on: ubuntu-latest
