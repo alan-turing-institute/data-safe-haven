@@ -72,11 +72,11 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
         logger.info(
             f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
         )
-        # Set Entra ID tenant ID
+        # Set Entra tenant ID
         if entra_tenant_id:
             self.entra_tenant_id = entra_tenant_id
         logger.info(
-            f"[bold]Entra ID tenant ID[/] will be [green]{self.entra_tenant_id}[/]."
+            f"[bold]Entra tenant ID[/] will be [green]{self.entra_tenant_id}[/]."
         )
         # Set fully-qualified domain name
         if fqdn:
@@ -239,7 +239,7 @@ class Config(AzureSerialisableModel):
             shm=ConfigSectionSHM.model_construct(
                 admin_email_address="Admin email address",
                 admin_ip_addresses=["Admin IP addresses"],
-                entra_tenant_id="Entra ID tenant ID",
+                entra_tenant_id="Entra tenant ID",
                 fqdn="TRE domain name",
                 timezone="Timezone",
             ),

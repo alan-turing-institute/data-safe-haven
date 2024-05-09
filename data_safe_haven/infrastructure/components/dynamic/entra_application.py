@@ -1,4 +1,4 @@
-"""Pulumi dynamic component for Entra ID applications."""
+"""Pulumi dynamic component for Entra applications."""
 
 from contextlib import suppress
 from typing import Any
@@ -65,7 +65,7 @@ class EntraApplicationProvider(DshResourceProvider):
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create(self, props: dict[str, Any]) -> CreateResult:
-        """Create new Entra ID application."""
+        """Create new Entra application."""
         outs = dict(**props)
         try:
             graph_api = GraphApi(auth_token=props["auth_token"], disable_logging=True)
