@@ -37,7 +37,7 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
     admin_email_address: EmailAddress
     admin_ip_addresses: list[IpAddress]
-    entra_id_tenant_id: Guid
+    entra_tenant_id: Guid
     fqdn: Fqdn
     timezone: TimeZone
 
@@ -46,14 +46,14 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
         *,
         admin_email_address: str | None = None,
         admin_ip_addresses: list[str] | None = None,
-        entra_id_tenant_id: str | None = None,
+        entra_tenant_id: str | None = None,
         fqdn: str | None = None,
         timezone: TimeZone | None = None,
     ) -> None:
         """Update SHM settings
 
         Args:
-            entra_id_tenant_id: Entra ID tenant containing users
+            entra_tenant_id: Entra ID tenant containing users
             admin_email_address: Email address shared by all administrators
             admin_ip_addresses: List of IP addresses belonging to administrators
             fqdn: Fully-qualified domain name to use for this SHM
@@ -73,10 +73,10 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
             f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
         )
         # Set Entra ID tenant ID
-        if entra_id_tenant_id:
-            self.entra_id_tenant_id = entra_id_tenant_id
+        if entra_tenant_id:
+            self.entra_tenant_id = entra_tenant_id
         logger.info(
-            f"[bold]Entra ID tenant ID[/] will be [green]{self.entra_id_tenant_id}[/]."
+            f"[bold]Entra ID tenant ID[/] will be [green]{self.entra_tenant_id}[/]."
         )
         # Set fully-qualified domain name
         if fqdn:
@@ -239,7 +239,7 @@ class Config(AzureSerialisableModel):
             shm=ConfigSectionSHM.model_construct(
                 admin_email_address="Admin email address",
                 admin_ip_addresses=["Admin IP addresses"],
-                entra_id_tenant_id="Entra ID tenant ID",
+                entra_tenant_id="Entra ID tenant ID",
                 fqdn="TRE domain name",
                 timezone="Timezone",
             ),

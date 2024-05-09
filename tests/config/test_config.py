@@ -29,7 +29,7 @@ class TestConfigSectionSHM:
         ConfigSectionSHM(
             admin_email_address="admin@example.com",
             admin_ip_addresses=["0.0.0.0"],  # noqa: S104
-            entra_id_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+            entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             fqdn="shm.acme.com",
             timezone="UTC",
         )

@@ -38,7 +38,7 @@ class SRERemoteDesktopProps:
         entra_id_application_fqdn: Input[str],
         entra_id_application_name: Input[str],
         entra_id_auth_token: Input[str],
-        entra_id_tenant_id: Input[str],
+        entra_tenant_id: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
         ldap_server_hostname: Input[str],
@@ -65,7 +65,7 @@ class SRERemoteDesktopProps:
             "https://", entra_id_application_fqdn
         )
         self.entra_id_auth_token = entra_id_auth_token
-        self.entra_id_tenant_id = entra_id_tenant_id
+        self.entra_tenant_id = entra_tenant_id
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
         self.ldap_server_hostname = ldap_server_hostname
@@ -230,7 +230,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="OPENID_AUTHORIZATION_ENDPOINT",
                             value=Output.concat(
                                 "https://login.microsoftonline.com/",
-                                props.entra_id_tenant_id,
+                                props.entra_tenant_id,
                                 "/oauth2/v2.0/authorize",
                             ),
                         ),
@@ -242,7 +242,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="OPENID_ISSUER",
                             value=Output.concat(
                                 "https://login.microsoftonline.com/",
-                                props.entra_id_tenant_id,
+                                props.entra_tenant_id,
                                 "/v2.0",
                             ),
                         ),
@@ -250,7 +250,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                             name="OPENID_JWKS_ENDPOINT",
                             value=Output.concat(
                                 "https://login.microsoftonline.com/",
-                                props.entra_id_tenant_id,
+                                props.entra_tenant_id,
                                 "/discovery/v2.0/keys",
                             ),
                         ),

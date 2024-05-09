@@ -26,7 +26,7 @@ class SREIdentityProps:
         dns_server_ip: Input[str],
         entra_id_application_name: Input[str],
         entra_id_auth_token: Input[str],
-        entra_id_tenant_id: Input[str],
+        entra_tenant_id: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
         shm_fqdn: Input[str],
@@ -40,7 +40,7 @@ class SREIdentityProps:
         self.dns_server_ip = dns_server_ip
         self.entra_id_application_name = entra_id_application_name
         self.entra_id_auth_token = entra_id_auth_token
-        self.entra_id_tenant_id = entra_id_tenant_id
+        self.entra_tenant_id = entra_tenant_id
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.shm_fqdn = shm_fqdn
@@ -137,7 +137,7 @@ class SREIdentityComponent(ComponentResource):
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="ENTRA_TENANT_ID",
-                            value=props.entra_id_tenant_id,
+                            value=props.entra_tenant_id,
                         ),
                         containerinstance.EnvironmentVariableArgs(
                             name="REDIS_HOST",
