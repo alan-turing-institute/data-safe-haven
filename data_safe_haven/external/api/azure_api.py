@@ -290,55 +290,6 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to create key {key_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
-    def ensure_keyvault_self_signed_certificate(
-        self,
-        certificate_name: str,
-        certificate_url: str,
-        key_vault_name: str,
-    ) -> KeyVaultCertificate:
-        """Ensure that a self-signed certificate exists in the KeyVault
-
-        Returns:
-            KeyVaultCertificate: The self-signed certificate
-
-        Raises:
-            DataSafeHavenAzureError if the existence of the certificate could not be verified
-        """
-        try:
-            # Connect to Azure clients
-            certificate_client = CertificateClient(
-                vault_url=f"https://{key_vault_name}.vault.azure.net",
-                credential=self.credential,
-            )
-
-            # Ensure that certificate exists
-            self.logger.debug(
-                f"Ensuring that certificate [green]{certificate_url}[/] exists...",
-            )
-            policy = CertificatePolicy(
-                issuer_name="Self",
-                subject=f"CN={certificate_url}",
-                exportable=True,
-                key_type="RSA",
-                key_size=2048,
-                reuse_key=False,
-                enhanced_key_usage=["1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2"],
-                validity_in_months=12,
-            )
-            poller: LROPoller[KeyVaultCertificate] = (
-                certificate_client.begin_create_certificate(
-                    certificate_name=certificate_name, policy=policy
-                )
-            )
-            certificate = poller.result()
-            self.logger.info(
-                f"Ensured that certificate [green]{certificate_url}[/] exists.",
-            )
-            return certificate
-        except Exception as exc:
-            msg = f"Failed to create certificate '{certificate_url}'.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
-
     def ensure_managed_identity(
         self,
         identity_name: str,
