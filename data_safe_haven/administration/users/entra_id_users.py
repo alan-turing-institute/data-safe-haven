@@ -1,4 +1,4 @@
-"""Interact with users in an Azure Active Directory"""
+"""Interact with users in Entra ID."""
 
 from collections.abc import Sequence
 from typing import Any
@@ -12,7 +12,7 @@ from .research_user import ResearchUser
 
 
 class EntraIDUsers:
-    """Interact with users in an Entra ID directory."""
+    """Interact with users in Entra ID."""
 
     def __init__(
         self,

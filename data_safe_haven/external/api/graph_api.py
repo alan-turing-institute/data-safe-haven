@@ -411,11 +411,11 @@ class GraphApi:
                     msg = f"Could not initiate device login for scopes {self.default_scopes}."
                     raise DataSafeHavenMicrosoftGraphError(msg)
                 self.logger.info(
-                    "Administrator approval is needed in order to interact with Azure Active Directory."
+                    "Administrator approval is needed in order to interact with Entra ID."
                 )
                 self.logger.info(
                     "Please sign-in with [bold]global administrator[/] credentials for"
-                    f" Azure Active Directory [green]{self.tenant_id}[/]."
+                    f" Entra ID tenant [green]{self.tenant_id}[/]."
                 )
                 self.logger.info(
                     "Note that the sign-in screen will prompt you to sign-in to"
