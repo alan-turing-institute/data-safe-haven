@@ -1,7 +1,6 @@
 """Interface to the Azure Python SDK"""
 
 import time
-from collections.abc import Sequence
 from contextlib import suppress
 from typing import Any, cast
 
@@ -11,20 +10,12 @@ from azure.core.exceptions import (
     ResourceNotFoundError,
     ServiceRequestError,
 )
-from azure.core.polling import LROPoller
 from azure.keyvault.certificates import (
     CertificateClient,
-    CertificatePolicy,
     KeyVaultCertificate,
 )
 from azure.keyvault.keys import KeyClient, KeyVaultKey
-from azure.keyvault.secrets import KeyVaultSecret, SecretClient
-from azure.mgmt.automation import AutomationClient
-from azure.mgmt.automation.models import (
-    DscCompilationJobCreateParameters,
-    DscConfigurationAssociationProperty,
-    Module,
-)
+from azure.keyvault.secrets import SecretClient
 from azure.mgmt.compute.v2021_07_01 import ComputeManagementClient
 from azure.mgmt.compute.v2021_07_01.models import (
     ResourceSkuCapabilities,
@@ -105,6 +96,24 @@ class AzureApi(AzureAuthenticator):
         )
 
         return blob_client
+
+    def blob_exists(
+        self,
+        blob_name: str,
+        resource_group_name: str,
+        storage_account_name: str,
+        storage_container_name: str,
+    ) -> bool:
+        blob_client = self.blob_client(
+            resource_group_name, storage_account_name, storage_container_name, blob_name
+        )
+        # Upload the created file
+        exists: bool = blob_client.exists()
+        response = "exists" if exists else "does not exist"
+        self.logger.info(
+            f"File [green]{blob_name}[/] {response} in blob storage.",
+        )
+        return exists
 
     def download_blob(
         self,
@@ -1023,21 +1032,3 @@ class AzureApi(AzureAuthenticator):
         except Exception as exc:
             msg = f"Blob file '{blob_name}' could not be uploaded to '{storage_account_name}'\n{exc}."
             raise DataSafeHavenAzureError(msg) from exc
-
-    def blob_exists(
-        self,
-        blob_name: str,
-        resource_group_name: str,
-        storage_account_name: str,
-        storage_container_name: str,
-    ) -> bool:
-        blob_client = self.blob_client(
-            resource_group_name, storage_account_name, storage_container_name, blob_name
-        )
-        # Upload the created file
-        exists: bool = blob_client.exists()
-        response = "exists" if exists else "does not exist"
-        self.logger.info(
-            f"File [green]{blob_name}[/] {response} in blob storage.",
-        )
-        return exists
