@@ -290,41 +290,6 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to create key {key_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
-    def ensure_keyvault_secret(
-        self, key_vault_name: str, secret_name: str, secret_value: str
-    ) -> KeyVaultSecret:
-        """Ensure that a secret exists in the KeyVault
-
-        Returns:
-            str: The secret value
-
-        Raises:
-            DataSafeHavenAzureError if the existence of the secret could not be verified
-        """
-        # Ensure that key exists
-        self.logger.debug(
-            f"Ensuring that secret [green]{secret_name}[/] exists...",
-        )
-        try:
-            # Connect to Azure clients
-            secret_client = SecretClient(
-                f"https://{key_vault_name}.vault.azure.net", self.credential
-            )
-            try:
-                secret = secret_client.get_secret(secret_name)
-            except DataSafeHavenAzureError:
-                secret = None
-            if not secret:
-                self.set_keyvault_secret(key_vault_name, secret_name, secret_value)
-                secret = secret_client.get_secret(secret_name)
-            self.logger.info(
-                f"Ensured that secret [green]{secret_name}[/] exists.",
-            )
-            return secret
-        except Exception as exc:
-            msg = f"Failed to create secret {secret_name}.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
-
     def ensure_keyvault_self_signed_certificate(
         self,
         certificate_name: str,
