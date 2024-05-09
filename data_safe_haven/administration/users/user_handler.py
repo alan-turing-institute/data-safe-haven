@@ -21,7 +21,7 @@ class UserHandler:
         pulumi_config: DSHPulumiConfig,
         graph_api: GraphApi,
     ):
-        self.entra_id_users = EntraUsers(graph_api)
+        self.entra_users = EntraUsers(graph_api)
         self.context = context
         self.config = config
         self.pulumi_config = pulumi_config
@@ -67,7 +67,7 @@ class UserHandler:
                 self.logger.debug(f"Processing new user: {user}")
 
             # Add users to Entra ID
-            self.entra_id_users.add(users)
+            self.entra_users.add(users)
         except Exception as exc:
             msg = f"Could not add users from '{users_csv_path}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -85,7 +85,7 @@ class UserHandler:
 
     def get_usernames_entra_id(self) -> list[str]:
         """Load usernames from Entra ID"""
-        return [user.username for user in self.entra_id_users.list()]
+        return [user.username for user in self.entra_users.list()]
 
     def get_usernames_guacamole(
         self, sre_name: str, sre_pulumi_project: DSHPulumiProject
@@ -140,7 +140,7 @@ class UserHandler:
         """
         try:
             # Add users to the SRE security group
-            self.entra_id_users.register(sre_name, user_names)
+            self.entra_users.register(sre_name, user_names)
         except Exception as exc:
             msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -154,17 +154,17 @@ class UserHandler:
         try:
             # Construct user lists
             self.logger.info(f"Attempting to remove {len(user_names)} user(s).")
-            entra_id_users_to_remove = [
+            entra_users_to_remove = [
                 user
-                for user in self.entra_id_users.list()
+                for user in self.entra_users.list()
                 if user.username in user_names
             ]
 
             # Commit changes
             self.logger.info(
-                f"Found {len(entra_id_users_to_remove)} valid user(s) to remove."
+                f"Found {len(entra_users_to_remove)} valid user(s) to remove."
             )
-            self.entra_id_users.remove(entra_id_users_to_remove)
+            self.entra_users.remove(entra_users_to_remove)
         except Exception as exc:
             msg = f"Could not remove users: {user_names}.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -199,19 +199,19 @@ class UserHandler:
                 self.logger.debug(f"Processing user: {user}")
 
             # Keep existing users with the same username
-            entra_id_desired_users = [
+            entra_desired_users = [
                 user
-                for user in self.entra_id_users.list()
+                for user in self.entra_users.list()
                 if user.username in [u.username for u in desired_users]
             ]
 
             # Construct list of new users
-            entra_id_desired_users = [
-                user for user in desired_users if user not in entra_id_desired_users
+            entra_desired_users = [
+                user for user in desired_users if user not in entra_desired_users
             ]
 
             # Commit changes
-            self.entra_id_users.set(entra_id_desired_users)
+            self.entra_users.set(entra_desired_users)
         except Exception as exc:
             msg = f"Could not set users from '{users_csv_path}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
@@ -224,7 +224,7 @@ class UserHandler:
         """
         try:
             # Remove users from the SRE security group
-            self.entra_id_users.unregister(sre_name, user_names)
+            self.entra_users.unregister(sre_name, user_names)
         except Exception as exc:
             msg = f"Could not unregister {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
