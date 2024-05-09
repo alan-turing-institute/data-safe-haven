@@ -5,11 +5,13 @@ from typing import Annotated
 
 import typer
 
-from .admin_add_users import admin_add_users
-from .admin_list_users import admin_list_users
-from .admin_register_users import admin_register_users
-from .admin_remove_users import admin_remove_users
-from .admin_unregister_users import admin_unregister_users
+from data_safe_haven.administration.users import UserHandler
+from data_safe_haven.config import Config, DSHPulumiConfig
+from data_safe_haven.context import ContextSettings
+from data_safe_haven.exceptions import DataSafeHavenError
+from data_safe_haven.external import GraphApi
+from data_safe_haven.functions import sanitise_sre_name
+from data_safe_haven.utility import LoggingSingleton
 
 admin_command_group = typer.Typer()
 
@@ -23,12 +25,54 @@ def add_users(
         ),
     ],
 ) -> None:
-    admin_add_users(csv)
+    """Add users to a deployed Data Safe Haven"""
+    context = ContextSettings.from_file().assert_context()
+    config = Config.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
+
+    shm_name = context.shm_name
+
+    try:
+        # Load GraphAPI
+        graph_api = GraphApi(
+            tenant_id=config.shm.aad_tenant_id,
+            default_scopes=[
+                "Group.Read.All",
+                "User.ReadWrite.All",
+                "UserAuthenticationMethod.ReadWrite.All",
+            ],
+        )
+
+        # Add users to SHM
+        users = UserHandler(context, config, pulumi_config, graph_api)
+        users.add(csv)
+    except DataSafeHavenError as exc:
+        msg = f"Could not add users to Data Safe Haven '{shm_name}'.\n{exc}"
+        raise DataSafeHavenError(msg) from exc
 
 
 @admin_command_group.command(help="List users from a deployed Data Safe Haven.")
 def list_users() -> None:
-    admin_list_users()
+    """List users from a deployed Data Safe Haven"""
+    context = ContextSettings.from_file().assert_context()
+    config = Config.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
+
+    shm_name = context.shm_name
+
+    try:
+        # Load GraphAPI
+        graph_api = GraphApi(
+            tenant_id=config.shm.aad_tenant_id,
+            default_scopes=["Directory.Read.All", "Group.Read.All"],
+        )
+
+        # List users from all sources
+        users = UserHandler(context, config, pulumi_config, graph_api)
+        users.list()
+    except DataSafeHavenError as exc:
+        msg = f"Could not list users for Data Safe Haven '{shm_name}'.\n{exc}"
+        raise DataSafeHavenError(msg) from exc
 
 
 @admin_command_group.command(
@@ -50,7 +94,46 @@ def register_users(
         ),
     ],
 ) -> None:
-    admin_register_users(usernames, sre)
+    """Register existing users with a deployed SRE"""
+    context = ContextSettings.from_file().assert_context()
+    config = Config.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
+
+    shm_name = context.shm_name
+    # Use a JSON-safe SRE name
+    sre_name = sanitise_sre_name(sre)
+
+    try:
+        # Check that SRE option has been provided
+        if not sre_name:
+            msg = "SRE name must be specified."
+            raise DataSafeHavenError(msg)
+        LoggingSingleton().info(
+            f"Preparing to register {len(usernames)} user(s) with SRE '{sre_name}'"
+        )
+
+        # Load GraphAPI
+        graph_api = GraphApi(
+            tenant_id=config.shm.aad_tenant_id,
+            default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
+        )
+
+        # List users
+        users = UserHandler(context, config, pulumi_config, graph_api)
+        available_usernames = users.get_usernames_azure_ad()
+        usernames_to_register = []
+        for username in usernames:
+            if username in available_usernames:
+                usernames_to_register.append(username)
+            else:
+                LoggingSingleton().error(
+                    f"Username '{username}' does not belong to this Data Safe Haven deployment."
+                    " Please use 'dsh users add' to create it."
+                )
+        users.register(sre_name, usernames_to_register)
+    except DataSafeHavenError as exc:
+        msg = f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc}"
+        raise DataSafeHavenError(msg) from exc
 
 
 @admin_command_group.command(
@@ -66,7 +149,27 @@ def remove_users(
         ),
     ],
 ) -> None:
-    admin_remove_users(usernames)
+    """Remove existing users from a deployed Data Safe Haven"""
+    context = ContextSettings.from_file().assert_context()
+    config = Config.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
+
+    shm_name = context.shm_name
+
+    try:
+        # Load GraphAPI
+        graph_api = GraphApi(
+            tenant_id=config.shm.aad_tenant_id,
+            default_scopes=["User.ReadWrite.All"],
+        )
+
+        # Remove users from SHM
+        if usernames:
+            users = UserHandler(context, config, pulumi_config, graph_api)
+            users.remove(usernames)
+    except DataSafeHavenError as exc:
+        msg = f"Could not remove users from Data Safe Haven '{shm_name}'.\n{exc}"
+        raise DataSafeHavenError(msg) from exc
 
 
 @admin_command_group.command(help="Unregister existing users from a deployed SRE.")
@@ -86,4 +189,49 @@ def unregister_users(
         ),
     ],
 ) -> None:
-    admin_unregister_users(usernames, sre)
+    """Unregister existing users from a deployed SRE"""
+    context = ContextSettings.from_file().assert_context()
+    config = Config.from_remote(context)
+    pulumi_config = DSHPulumiConfig.from_remote(context)
+
+    shm_name = context.shm_name
+    sre_name = sanitise_sre_name(sre)
+
+    # sre_pulumi_project = pulumi_config.create_or_select_project(sre_name)
+
+    try:
+        # Check that SRE option has been provided
+        if not sre_name:
+            msg = "SRE name must be specified."
+            raise DataSafeHavenError(msg)
+        LoggingSingleton().info(
+            f"Preparing to unregister {len(usernames)} users with SRE '{sre_name}'"
+        )
+
+        # Load GraphAPI
+        graph_api = GraphApi(
+            tenant_id=config.shm.aad_tenant_id,
+            default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
+        )
+
+        # List users
+        users = UserHandler(context, config, pulumi_config, graph_api)
+        available_usernames = users.get_usernames_azure_ad()
+        usernames_to_unregister = []
+        for username in usernames:
+            if username in available_usernames:
+                usernames_to_unregister.append(username)
+            else:
+                LoggingSingleton().error(
+                    f"Username '{username}' does not belong to this Data Safe Haven deployment."
+                    " Please use 'dsh users add' to create it."
+                )
+        for group_name in (
+            f"{sre_name} Users",
+            f"{sre_name} Privileged Users",
+            f"{sre_name} Administrators",
+        ):
+            users.unregister(group_name, usernames_to_unregister)
+    except DataSafeHavenError as exc:
+        msg = f"Could not unregister users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc}"
+        raise DataSafeHavenError(msg) from exc
