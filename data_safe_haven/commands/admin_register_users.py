@@ -33,13 +33,13 @@ def admin_register_users(
 
         # Load GraphAPI
         graph_api = GraphApi(
-            tenant_id=config.shm.aad_tenant_id,
+            tenant_id=config.shm.entra_tenant_id,
             default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
         )
 
         # List users
         users = UserHandler(context, config, pulumi_config, graph_api)
-        available_usernames = users.get_usernames_azure_ad()
+        available_usernames = users.get_usernames_entra_id()
         usernames_to_register = []
         for username in usernames:
             if username in available_usernames:
