@@ -2,7 +2,7 @@ import csv
 import pathlib
 from collections.abc import Sequence
 
-from data_safe_haven.config import Config, DSHPulumiConfig, DSHPulumiProject
+from data_safe_haven.config import Config, DSHPulumiConfig
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
@@ -79,7 +79,7 @@ class UserHandler:
         for sre_name in self.config.sre_names:
             usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
                 sre_name,
-                self.pulumi_config[sre_name],
+                self.pulumi_config,
             )
         return usernames
 
@@ -88,13 +88,13 @@ class UserHandler:
         return [user.username for user in self.entra_users.list()]
 
     def get_usernames_guacamole(
-        self, sre_name: str, sre_pulumi_project: DSHPulumiProject
+        self, sre_name: str, pulumi_config: DSHPulumiConfig
     ) -> list[str]:
         """Lazy-load usernames from Guacamole"""
         try:
             if sre_name not in self.sre_guacamole_users_.keys():
                 self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
-                    self.context, self.config, sre_pulumi_project, sre_name
+                    self.context, self.config, pulumi_config, sre_name
                 )
             return [
                 user.username for user in self.sre_guacamole_users_[sre_name].list()

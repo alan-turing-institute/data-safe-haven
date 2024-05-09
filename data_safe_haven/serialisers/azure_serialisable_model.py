@@ -30,7 +30,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
 
     @classmethod
     def from_remote_or_create(
-        cls: type[T], context: ContextBase, **default_args: dict[Any, Any]
+        cls: type[T], context: ContextBase, **default_args: Any
     ) -> T:
         """
         Construct an AzureSerialisableModel from a YAML file in Azure storage, or from

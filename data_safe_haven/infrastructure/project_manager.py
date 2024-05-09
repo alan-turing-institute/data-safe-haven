@@ -11,9 +11,13 @@ from typing import Any
 from pulumi import automation
 from pulumi.automation import ConfigValue
 
-from data_safe_haven.config import Config, DSHPulumiProject
+from data_safe_haven.config import Config, DSHPulumiConfig, DSHPulumiProject
 from data_safe_haven.context import Context
-from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenPulumiError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
+    DataSafeHavenConfigError,
+    DataSafeHavenPulumiError,
+)
 from data_safe_haven.external import AzureApi, AzureCliSingleton
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.utility import LoggingSingleton
@@ -68,20 +72,28 @@ class ProjectManager:
         self,
         context: Context,
         config: Config,
-        pulumi_project: DSHPulumiProject,
+        pulumi_config: DSHPulumiConfig,
+        pulumi_project_name: str,
         program: DeclarativeSHM | DeclarativeSRE,
+        *,
+        create_project: bool,
     ) -> None:
-        self.account = PulumiAccount(context, config)
         self.context = context
         self.cfg = config
-        self.pulumi_project = pulumi_project
+        self.pulumi_config = pulumi_config
+        self.pulumi_project_name = pulumi_project_name
+        self.program = program
+        self.create_project = create_project
+
+        self.account = PulumiAccount(context, config)
         self.logger = LoggingSingleton()
         self._stack: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}
-        self.program = program
         self.project_name = replace_separators(context.tags["project"].lower(), "-")
+        self._pulumi_project: DSHPulumiProject | None = None
         self.stack_name = self.program.stack_name
+
         self.install_plugins()
 
     @property
@@ -105,9 +117,25 @@ class ProjectManager:
     def stack_settings(self) -> automation.StackSettings:
         return automation.StackSettings(
             config=self.pulumi_project.stack_config,
-            encrypted_key=self.pulumi_project.encrypted_key,
+            encrypted_key=self.pulumi_config.encrypted_key,
             secrets_provider=self.context.pulumi_secrets_provider_url,
         )
+
+    @property
+    def pulumi_project(self) -> DSHPulumiProject:
+        if not self._pulumi_project:
+            # Create DSH Pulumi Project if it does not exist, otherwise use existing
+            if self.create_project:
+                self._pulumi_project = self.pulumi_config.create_or_select_project(
+                    self.pulumi_project_name
+                )
+            else:
+                try:
+                    self._pulumi_project = self.pulumi_config[self.pulumi_project_name]
+                except (KeyError, TypeError) as exc:
+                    msg = f"No SHM/SRE named {self.pulumi_project_name} is defined.\n{exc}"
+                    raise DataSafeHavenConfigError(msg) from exc
+        return self._pulumi_project
 
     @property
     def stack(self) -> automation.Stack:
@@ -127,6 +155,8 @@ class ProjectManager:
                     stack_name=self.stack_name,
                 )
                 self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
+                # Ensure encrypted key is stored in the Pulumi configuration
+                self.update_dsh_pulumi_config()
             except automation.CommandError as exc:
                 msg = f"Could not load Pulumi stack {self.stack_name}.\n{exc}"
                 raise DataSafeHavenPulumiError(msg) from exc
@@ -365,24 +395,40 @@ class ProjectManager:
         all_config_dict = {
             key: item.value for key, item in self.stack_all_config.items()
         }
-        self.pulumi_project.encrypted_key = self.stack.workspace.stack_settings(
+        self.pulumi_project.stack_config = all_config_dict
+
+    def update_dsh_pulumi_config(self) -> None:
+        """Update persistent data in the DSHPulumiProject object"""
+        stack_key = self.stack.workspace.stack_settings(
             stack_name=self.stack_name
         ).encrypted_key
-        self.pulumi_project.stack_config = all_config_dict
+
+        if self.pulumi_config.encrypted_key is None:
+            self.pulumi_config.encrypted_key = stack_key
+        elif self.pulumi_config.encrypted_key != stack_key:
+            msg = "Stack encrypted key does not match project encrypted key"
+            raise DataSafeHavenPulumiError(msg)
 
 
 class SHMProjectManager(ProjectManager):
     """Interact with an SHM using Pulumi"""
 
     def __init__(
-        self, context: Context, config: Config, pulumi_project: DSHPulumiProject
+        self,
+        context: Context,
+        config: Config,
+        pulumi_config: DSHPulumiConfig,
+        *,
+        create_project: bool = False,
     ) -> None:
         """Constructor"""
         super().__init__(
             context,
             config,
-            pulumi_project,
+            pulumi_config,
+            context.shm_name,
             DeclarativeSHM(context, config, context.shm_name),
+            create_project=create_project,
         )
 
 
@@ -393,9 +439,10 @@ class SREProjectManager(ProjectManager):
         self,
         context: Context,
         config: Config,
-        pulumi_project: DSHPulumiProject,
-        sre_name: str,
+        pulumi_config: DSHPulumiConfig,
         *,
+        create_project: bool = False,
+        sre_name: str,
         graph_api_token: str | None = None,
     ) -> None:
         """Constructor"""
@@ -403,6 +450,8 @@ class SREProjectManager(ProjectManager):
         super().__init__(
             context,
             config,
-            pulumi_project,
+            pulumi_config,
+            sre_name,
             DeclarativeSRE(context, config, context.shm_name, sre_name, token),
+            create_project=create_project,
         )
