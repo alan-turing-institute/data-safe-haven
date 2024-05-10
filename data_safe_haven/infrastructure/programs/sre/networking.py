@@ -7,13 +7,15 @@ from pulumi_azure_native import network, resources
 
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.infrastructure.common import (
-    AzureDnsZoneNames,
-    NetworkingPriorities,
-    Ports,
     SREDnsIpRanges,
     SREIpRanges,
     get_id_from_vnet,
     get_name_from_vnet,
+)
+from data_safe_haven.types import (
+    AzureDnsZoneNames,
+    NetworkingPriorities,
+    Ports,
 )
 
 

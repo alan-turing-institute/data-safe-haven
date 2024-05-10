@@ -23,7 +23,6 @@ from data_safe_haven.functions import (
     truncate_tokens,
 )
 from data_safe_haven.infrastructure.common import (
-    AzureDnsZoneNames,
     get_id_from_subnet,
     get_name_from_rg,
 )
@@ -33,6 +32,7 @@ from data_safe_haven.infrastructure.components import (
     SSLCertificate,
     SSLCertificateProps,
 )
+from data_safe_haven.types import AzureDnsZoneNames
 
 
 class SREDataProps:

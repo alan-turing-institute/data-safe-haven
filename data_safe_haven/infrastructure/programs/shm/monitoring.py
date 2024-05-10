@@ -16,14 +16,12 @@ from data_safe_haven.functions import (
     replace_separators,
     time_as_string,
 )
-from data_safe_haven.infrastructure.common import (
-    AzureDnsZoneNames,
-    get_id_from_subnet,
-)
+from data_safe_haven.infrastructure.common import get_id_from_subnet
 from data_safe_haven.infrastructure.components import (
     WrappedAutomationAccount,
     WrappedLogAnalyticsWorkspace,
 )
+from data_safe_haven.types import AzureDnsZoneNames
 
 
 class SHMMonitoringProps:

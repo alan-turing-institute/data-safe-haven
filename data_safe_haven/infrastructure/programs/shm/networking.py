@@ -6,7 +6,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 from data_safe_haven.external import AzureIPv4Range
-from data_safe_haven.infrastructure.common import AzureDnsZoneNames
+from data_safe_haven.types import AzureDnsZoneNames
 
 
 class SHMNetworkingProps:

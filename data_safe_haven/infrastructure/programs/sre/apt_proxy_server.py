@@ -4,7 +4,6 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, resources, storage
 
 from data_safe_haven.infrastructure.common import (
-    PermittedDomains,
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
@@ -14,6 +13,7 @@ from data_safe_haven.infrastructure.components import (
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
 )
+from data_safe_haven.types import PermittedDomains
 
 
 class SREAptProxyServerProps:

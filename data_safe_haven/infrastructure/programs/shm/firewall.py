@@ -6,11 +6,13 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
 from data_safe_haven.infrastructure.common import (
+    SREIpRanges,
+    get_id_from_subnet,
+)
+from data_safe_haven.types import (
     FirewallPriorities,
     PermittedDomains,
     Ports,
-    SREIpRanges,
-    get_id_from_subnet,
 )
 
 
