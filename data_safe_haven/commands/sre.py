@@ -144,12 +144,11 @@ def deploy(
         pulumi_config.upload(context)
 
 
-@sre_command_group.command(
-    help="Tear down a deployed a Secure Research Environment component."
-)
+@sre_command_group.command()
 def teardown(
     name: Annotated[str, typer.Argument(help="Name of SRE to teardown.")],
 ) -> None:
+    """Tear down a deployed a Secure Research Environment component."""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)

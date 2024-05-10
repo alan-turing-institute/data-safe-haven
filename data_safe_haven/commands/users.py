@@ -16,7 +16,7 @@ from data_safe_haven.utility import LoggingSingleton
 users_command_group = typer.Typer()
 
 
-@users_command_group.command(help="Add users to a deployed Data Safe Haven.")
+@users_command_group.command()
 def add(
     csv: Annotated[
         pathlib.Path,
@@ -25,7 +25,7 @@ def add(
         ),
     ],
 ) -> None:
-    """Add users to a deployed Data Safe Haven"""
+    """Add users to a deployed Data Safe Haven."""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
@@ -51,9 +51,9 @@ def add(
         raise DataSafeHavenError(msg) from exc
 
 
-@users_command_group.command("list", help="List users from a deployed Data Safe Haven.")
+@users_command_group.command("list")
 def list_users() -> None:
-    """List users from a deployed Data Safe Haven"""
+    """List users from a deployed Data Safe Haven."""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
@@ -75,9 +75,7 @@ def list_users() -> None:
         raise DataSafeHavenError(msg) from exc
 
 
-@users_command_group.command(
-    help="Register existing users with a deployed Secure Research Environment."
-)
+@users_command_group.command()
 def register(
     usernames: Annotated[
         list[str],
@@ -94,7 +92,7 @@ def register(
         ),
     ],
 ) -> None:
-    """Register existing users with a deployed SRE"""
+    """Register existing users with a deployed SRE."""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
@@ -136,9 +134,7 @@ def register(
         raise DataSafeHavenError(msg) from exc
 
 
-@users_command_group.command(
-    help="Remove existing users from a deployed Data Safe Haven."
-)
+@users_command_group.command()
 def remove(
     usernames: Annotated[
         list[str],
@@ -149,7 +145,7 @@ def remove(
         ),
     ],
 ) -> None:
-    """Remove existing users from a deployed Data Safe Haven"""
+    """Remove existing users from a deployed Data Safe Haven."""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
@@ -172,7 +168,7 @@ def remove(
         raise DataSafeHavenError(msg) from exc
 
 
-@users_command_group.command(help="Unregister existing users from a deployed SRE.")
+@users_command_group.command()
 def unregister(
     usernames: Annotated[
         list[str],
@@ -189,7 +185,7 @@ def unregister(
         ),
     ],
 ) -> None:
-    """Unregister existing users from a deployed SRE"""
+    """Unregister existing users from a deployed SRE."""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)

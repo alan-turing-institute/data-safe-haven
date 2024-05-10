@@ -85,10 +85,9 @@ def deploy(
         pulumi_config.upload(context)
 
 
-@shm_command_group.command(
-    help="Tear down a deployed a Safe Haven Management component."
-)
+@shm_command_group.command()
 def teardown() -> None:
+    """Tear down a deployed a Safe Haven Management component."""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
