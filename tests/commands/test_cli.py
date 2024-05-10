@@ -12,7 +12,7 @@ class TestHelp:
         assert "│ --install-completion" in result.stdout
         assert "│ --show-completion" in result.stdout
         assert "│ --help" in result.stdout
-        assert "│ admin" in result.stdout
+        assert "│ users" in result.stdout
         assert "│ config" in result.stdout
         assert "│ context" in result.stdout
         assert "│ shm" in result.stdout

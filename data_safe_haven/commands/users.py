@@ -13,11 +13,11 @@ from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.utility import LoggingSingleton
 
-admin_command_group = typer.Typer()
+users_command_group = typer.Typer()
 
 
-@admin_command_group.command(help="Add users to a deployed Data Safe Haven.")
-def add_users(
+@users_command_group.command(help="Add users to a deployed Data Safe Haven.")
+def add(
     csv: Annotated[
         pathlib.Path,
         typer.Argument(
@@ -51,7 +51,7 @@ def add_users(
         raise DataSafeHavenError(msg) from exc
 
 
-@admin_command_group.command(help="List users from a deployed Data Safe Haven.")
+@users_command_group.command("list", help="List users from a deployed Data Safe Haven.")
 def list_users() -> None:
     """List users from a deployed Data Safe Haven"""
     context = ContextSettings.from_file().assert_context()
@@ -75,10 +75,10 @@ def list_users() -> None:
         raise DataSafeHavenError(msg) from exc
 
 
-@admin_command_group.command(
+@users_command_group.command(
     help="Register existing users with a deployed Secure Research Environment."
 )
-def register_users(
+def register(
     usernames: Annotated[
         list[str],
         typer.Option(
@@ -136,10 +136,10 @@ def register_users(
         raise DataSafeHavenError(msg) from exc
 
 
-@admin_command_group.command(
+@users_command_group.command(
     help="Remove existing users from a deployed Data Safe Haven."
 )
-def remove_users(
+def remove(
     usernames: Annotated[
         list[str],
         typer.Option(
@@ -172,8 +172,8 @@ def remove_users(
         raise DataSafeHavenError(msg) from exc
 
 
-@admin_command_group.command(help="Unregister existing users from a deployed SRE.")
-def unregister_users(
+@users_command_group.command(help="Unregister existing users from a deployed SRE.")
+def unregister(
     usernames: Annotated[
         list[str],
         typer.Option(
