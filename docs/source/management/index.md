@@ -11,13 +11,13 @@ You will need a full name, phone number, email address and country for each user
 2. Alternatively, you can add multiple users from a CSV file with columns named (`GivenName`, `Surname`, `Phone`, `Email`, `CountryCode`).
 
 ```{code} shell
-$ dsh admin add-users <my CSV users file>
+$ dsh users add <my CSV users file>
 ```
 
 :::{warning}
 
 - the phone number must be in full international format.
-- the country code is the two letter `ISO 3166-1 Alpha-2` code.
+- the country code is the two letter  ISO 3166-1 Alpha-2  code.
 
 :::
 
@@ -28,10 +28,10 @@ $ dsh admin add-users <my CSV users file>
 2. Alternatively, you can add multiple users from the command line:
 
 ```{code} shell
-$ dsh admin register-users -s <SRE name> <username1> <username2>
+$ dsh users register -s <SRE name> <username1> <username2>
 ```
 
-where you must specify the usernames for each user you want to add to this SRE
+where you must specify the usernames for each user you want to add to this SRE.
 
 ## Listing available users
 
@@ -40,7 +40,7 @@ where you must specify the usernames for each user you want to add to this SRE
 2. You can do this at the command line by running the following command:
 
 ```{code} shell
-$ dsh admin list-users
+$ dsh users list
 ```
 
 ## Removing a deployed Data Safe Haven
@@ -48,13 +48,13 @@ $ dsh admin list-users
 - Run the following if you want to teardown a deployed SRE:
 
 ```{code} shell
-$ dsh teardown sre <SRE name>
+$ dsh sre teardown <SRE name>
 ```
 
 - Run the following if you want to teardown the deployed SHM:
 
 ```{code} shell
-$ dsh teardown shm
+$ dsh shm teardown
 ```
 
 - Run the following if you want to teardown the deployed Data Safe Haven context:
