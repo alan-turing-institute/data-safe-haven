@@ -40,6 +40,10 @@ class DataSafeHavenInternalError(DataSafeHavenError):
 
 
 class DataSafeHavenIPRangeError(DataSafeHavenError):
+    """
+    Exception class for errors relating to the generation of IP ranges during SRE creation
+    """
+
     pass
 
 
