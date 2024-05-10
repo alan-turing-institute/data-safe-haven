@@ -12,17 +12,12 @@
 | data\_safe\_haven/administration/users/research\_user.py                          |       30 |       19 |     37% |16-23, 27, 31-33, 37-39, 42-49, 52 |
 | data\_safe\_haven/administration/users/user\_handler.py                           |      105 |       83 |     21% |24-29, 37-73, 77-84, 88, 94-104, 112-133, 141-146, 154-168, 176-215, 223-228 |
 | data\_safe\_haven/commands/\_\_init\_\_.py                                        |        2 |        0 |    100% |           |
-| data\_safe\_haven/commands/admin.py                                               |       24 |        5 |     79% |26, 31, 53, 69, 89 |
-| data\_safe\_haven/commands/admin\_add\_users.py                                   |       18 |       11 |     39% |     14-36 |
-| data\_safe\_haven/commands/admin\_list\_users.py                                  |       17 |       11 |     35% |     12-30 |
-| data\_safe\_haven/commands/admin\_register\_users.py                              |       30 |       22 |     27% |     17-55 |
-| data\_safe\_haven/commands/admin\_remove\_users.py                                |       18 |       12 |     33% |     14-33 |
-| data\_safe\_haven/commands/admin\_unregister\_users.py                            |       31 |       23 |     26% |     17-59 |
 | data\_safe\_haven/commands/cli.py                                                 |       34 |       14 |     59% |55-62, 93-98 |
 | data\_safe\_haven/commands/config.py                                              |       29 |        0 |    100% |           |
 | data\_safe\_haven/commands/context.py                                             |       64 |        0 |    100% |           |
-| data\_safe\_haven/commands/deploy.py                                              |       67 |       45 |     33% |47-76, 86-87, 106-220 |
-| data\_safe\_haven/commands/teardown.py                                            |       45 |       32 |     29% |24-48, 57-91 |
+| data\_safe\_haven/commands/shm.py                                                 |       46 |       27 |     41% |44-73, 83-84, 93-117 |
+| data\_safe\_haven/commands/sre.py                                                 |       65 |       50 |     23% |32-146, 154-188 |
+| data\_safe\_haven/commands/users.py                                               |      100 |       79 |     21% |29-51, 57-75, 96-134, 149-168, 189-231 |
 | data\_safe\_haven/config/\_\_init\_\_.py                                          |        4 |        0 |    100% |           |
 | data\_safe\_haven/config/config.py                                                |      104 |        7 |     93% |71, 77, 89, 166, 216, 228-229 |
 | data\_safe\_haven/config/pulumi.py                                                |       40 |        0 |    100% |           |
@@ -119,7 +114,7 @@
 | tests/commands/test\_cli.py                                                       |       23 |        0 |    100% |           |
 | tests/commands/test\_config.py                                                    |       44 |        0 |    100% |           |
 | tests/commands/test\_context.py                                                   |      100 |        0 |    100% |           |
-| tests/commands/test\_deploy.py                                                    |       13 |        1 |     92% |        15 |
+| tests/commands/test\_shm.py                                                       |       13 |        1 |     92% |        15 |
 | tests/config/test\_config.py                                                      |      105 |        1 |     99% |       158 |
 | tests/config/test\_pulumi.py                                                      |      116 |        0 |    100% |           |
 | tests/conftest.py                                                                 |       86 |        2 |     98% |     54-55 |
@@ -130,7 +125,7 @@
 | tests/serialisers/test\_yaml\_serialisable\_model.py                              |       63 |        0 |    100% |           |
 | tests/validators/test\_typer\_validators.py                                       |       13 |        0 |    100% |           |
 | tests/validators/test\_validators.py                                              |       34 |        0 |    100% |           |
-|                                                                         **TOTAL** | **5558** | **2771** | **50%** |           |
+|                                                                         **TOTAL** | **5519** | **2766** | **50%** |           |
 
 
 ## Setup coverage badge
