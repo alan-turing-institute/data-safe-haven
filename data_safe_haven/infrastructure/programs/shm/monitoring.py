@@ -13,11 +13,13 @@ from pulumi_azure_native import (
 )
 
 from data_safe_haven.functions import (
-    ordered_private_dns_zones,
     replace_separators,
     time_as_string,
 )
-from data_safe_haven.infrastructure.common import get_id_from_subnet
+from data_safe_haven.infrastructure.common import (
+    azure_dns_zone_names,
+    get_id_from_subnet,
+)
 from data_safe_haven.infrastructure.components import (
     WrappedAutomationAccount,
     WrappedLogAnalyticsWorkspace,
@@ -153,7 +155,7 @@ class SHMMonitoringComponent(ComponentResource):
                         props.private_dns_zone_base_id, dns_zone_name
                     ),
                 )
-                for dns_zone_name in ordered_private_dns_zones("Azure Automation")
+                for dns_zone_name in azure_dns_zone_names("Azure Automation")
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-aa",
             private_endpoint_name=automation_account_private_endpoint.name,
@@ -237,7 +239,7 @@ class SHMMonitoringComponent(ComponentResource):
                         props.private_dns_zone_base_id, dns_zone_name
                     ),
                 )
-                for dns_zone_name in ordered_private_dns_zones("Azure Monitor")
+                for dns_zone_name in azure_dns_zone_names("Azure Monitor")
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-log",
             private_endpoint_name=log_analytics_private_endpoint.name,

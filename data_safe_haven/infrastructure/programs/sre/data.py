@@ -17,13 +17,13 @@ from pulumi_azure_native import (
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import (
     alphanumeric,
-    ordered_private_dns_zones,
     replace_separators,
     seeded_uuid,
     sha256hash,
     truncate_tokens,
 )
 from data_safe_haven.infrastructure.common import (
+    azure_dns_zone_names,
     get_id_from_subnet,
     get_name_from_rg,
 )
@@ -453,7 +453,7 @@ class SREDataComponent(ComponentResource):
                         props.private_dns_zone_base_id, dns_zone_name
                     ),
                 )
-                for dns_zone_name in ordered_private_dns_zones("Storage account")
+                for dns_zone_name in azure_dns_zone_names("Storage account")
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-configuration",
             private_endpoint_name=storage_account_data_configuration_private_endpoint.name,
@@ -634,7 +634,7 @@ class SREDataComponent(ComponentResource):
                         props.private_dns_zone_base_id, dns_zone_name
                     ),
                 )
-                for dns_zone_name in ordered_private_dns_zones("Storage account")
+                for dns_zone_name in azure_dns_zone_names("Storage account")
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-private-sensitive",
             private_endpoint_name=storage_account_data_private_sensitive_endpoint.name,
@@ -742,7 +742,7 @@ class SREDataComponent(ComponentResource):
                         props.private_dns_zone_base_id, dns_zone_name
                     ),
                 )
-                for dns_zone_name in ordered_private_dns_zones("Storage account")
+                for dns_zone_name in azure_dns_zone_names("Storage account")
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-private-user",
             private_endpoint_name=storage_account_data_private_user_endpoint.name,
