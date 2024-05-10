@@ -9,11 +9,11 @@ from data_safe_haven import __version__
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.utility import LoggingSingleton
 
-from .admin import admin_command_group
 from .config import config_command_group
 from .context import context_command_group
-from .deploy import deploy_command_group
-from .teardown import teardown_command_group
+from .shm import shm_command_group
+from .sre import sre_command_group
+from .users import users_command_group
 
 # Create the application
 application = typer.Typer(
@@ -64,9 +64,9 @@ def callback(
 
 # Register command groups
 application.add_typer(
-    admin_command_group,
-    name="admin",
-    help="Perform administrative tasks for a Data Safe Haven deployment.",
+    users_command_group,
+    name="users",
+    help="Manage the users of a Data Safe Haven deployment.",
 )
 application.add_typer(
     config_command_group,
@@ -77,14 +77,14 @@ application.add_typer(
     context_command_group, name="context", help="Manage Data Safe Haven contexts."
 )
 application.add_typer(
-    deploy_command_group,
-    name="deploy",
-    help="Deploy a Data Safe Haven component.",
+    shm_command_group,
+    name="shm",
+    help="Manage Data Safe Haven SHM infrastructure.",
 )
 application.add_typer(
-    teardown_command_group,
-    name="teardown",
-    help="Tear down a Data Safe Haven component.",
+    sre_command_group,
+    name="sre",
+    help="Manage Data Safe Haven SRE infrastructure.",
 )
 
 
