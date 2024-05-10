@@ -8,12 +8,12 @@ from pulumi_azure_native import containerinstance, network, resources
 
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
+    AzureDnsZoneNames,
     NetworkingPriorities,
     PermittedDomains,
     Ports,
     SREDnsIpRanges,
     SREIpRanges,
-    azure_dns_zone_names,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.resources import resources_path
@@ -282,7 +282,7 @@ class SREDnsServerComponent(ComponentResource):
         )
 
         # Link virtual network to SHM private DNS zones
-        for dns_zone_name in azure_dns_zone_names():
+        for dns_zone_name in AzureDnsZoneNames.ALL:
             network.VirtualNetworkLink(
                 f"{self._name}_private_zone_{dns_zone_name}_vnet_dns_link",
                 location="Global",

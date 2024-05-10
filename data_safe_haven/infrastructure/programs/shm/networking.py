@@ -6,7 +6,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 from data_safe_haven.external import AzureIPv4Range
-from data_safe_haven.infrastructure.common import azure_dns_zone_names
+from data_safe_haven.infrastructure.common import AzureDnsZoneNames
 
 
 class SHMNetworkingProps:
@@ -164,7 +164,7 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Set up private link domains
         private_zone_ids: list[Output[str]] = []
-        for dns_zone_name in azure_dns_zone_names():
+        for dns_zone_name in AzureDnsZoneNames.ALL:
             private_zone = network.PrivateZone(
                 f"{self._name}_private_zone_{dns_zone_name}",
                 location="Global",

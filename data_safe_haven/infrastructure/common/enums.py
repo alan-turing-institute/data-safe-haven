@@ -1,6 +1,23 @@
 from enum import UNIQUE, Enum, verify
 
-from .networking import azure_dns_zone_names
+
+@verify(UNIQUE)
+class AzureDnsZoneNames(tuple[str, ...], Enum):
+    """
+    Return a list of DNS zones used by a given Azure resource type.
+    See https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns for details.
+    """
+
+    AZURE_AUTOMATION = ("azure-automation.net",)
+    AZURE_MONITOR = (
+        "agentsvc.azure-automation.net",
+        "blob.core.windows.net",
+        "monitor.azure.com",
+        "ods.opinsights.azure.com",
+        "oms.opinsights.azure.com",
+    )
+    STORAGE_ACCOUNT = ("blob.core.windows.net", "file.core.windows.net")
+    ALL = tuple(sorted(set(AZURE_AUTOMATION + AZURE_MONITOR + STORAGE_ACCOUNT)))
 
 
 @verify(UNIQUE)
@@ -22,7 +39,7 @@ class PermittedDomains(tuple[str, ...], Enum):
         "security.ubuntu.com",
         # "ubuntu.qgis.org"
     )
-    AZURE_DNS_ZONES = azure_dns_zone_names()
+    AZURE_DNS_ZONES = AzureDnsZoneNames.ALL
     CLAMAV_UPDATES = (
         "clamav.net",
         "current.cvd.clamav.net",

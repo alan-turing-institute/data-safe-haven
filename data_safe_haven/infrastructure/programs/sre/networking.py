@@ -7,11 +7,11 @@ from pulumi_azure_native import network, resources
 
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.infrastructure.common import (
+    AzureDnsZoneNames,
     NetworkingPriorities,
     Ports,
     SREDnsIpRanges,
     SREIpRanges,
-    azure_dns_zone_names,
     get_id_from_vnet,
     get_name_from_vnet,
 )
@@ -1698,7 +1698,7 @@ class SRENetworkingComponent(ComponentResource):
         # Azure Container Instances do not have an IP address during deployment and so
         # must use default Azure DNS when setting up file mounts. This means that we
         # need to be able to resolve the "Storage Account" private DNS zones.
-        for dns_zone_name in azure_dns_zone_names("Storage account"):
+        for dns_zone_name in AzureDnsZoneNames.STORAGE_ACCOUNT:
             network.VirtualNetworkLink(
                 f"{self._name}_private_zone_{dns_zone_name}_vnet_link",
                 location="Global",

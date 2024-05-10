@@ -17,7 +17,7 @@ from data_safe_haven.functions import (
     time_as_string,
 )
 from data_safe_haven.infrastructure.common import (
-    azure_dns_zone_names,
+    AzureDnsZoneNames,
     get_id_from_subnet,
 )
 from data_safe_haven.infrastructure.components import (
@@ -155,7 +155,7 @@ class SHMMonitoringComponent(ComponentResource):
                         props.private_dns_zone_base_id, dns_zone_name
                     ),
                 )
-                for dns_zone_name in azure_dns_zone_names("Azure Automation")
+                for dns_zone_name in AzureDnsZoneNames.AZURE_AUTOMATION
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-aa",
             private_endpoint_name=automation_account_private_endpoint.name,
@@ -239,7 +239,7 @@ class SHMMonitoringComponent(ComponentResource):
                         props.private_dns_zone_base_id, dns_zone_name
                     ),
                 )
-                for dns_zone_name in azure_dns_zone_names("Azure Monitor")
+                for dns_zone_name in AzureDnsZoneNames.AZURE_MONITOR
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-log",
             private_endpoint_name=log_analytics_private_endpoint.name,

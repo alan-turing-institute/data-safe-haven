@@ -1,11 +1,11 @@
 from .enums import (
+    AzureDnsZoneNames,
     FirewallPriorities,
     NetworkingPriorities,
     PermittedDomains,
     Ports,
 )
 from .ip_ranges import SREDnsIpRanges, SREIpRanges
-from .networking import azure_dns_zone_names
 from .transformations import (
     get_available_ips_from_subnet,
     get_id_from_rg,
@@ -20,7 +20,7 @@ from .transformations import (
 )
 
 __all__ = [
-    "azure_dns_zone_names",
+    "AzureDnsZoneNames",
     "FirewallPriorities",
     "get_available_ips_from_subnet",
     "get_id_from_rg",
