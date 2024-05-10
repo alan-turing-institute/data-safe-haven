@@ -1,10 +1,13 @@
 import base64
+import datetime
 import hashlib
 import random
 import secrets
 import string
 import uuid
 from collections.abc import Sequence
+
+import pytz
 
 
 def alphanumeric(input_string: str) -> str:
@@ -58,6 +61,18 @@ def seeded_uuid(seed: str) -> uuid.UUID:
 def sha256hash(input_string: str) -> str:
     """Return the SHA256 hash of a string as a string."""
     return hashlib.sha256(input_string.encode("utf-8")).hexdigest()
+
+
+def time_as_string(hour: int, minute: int, timezone: str) -> str:
+    """Get the next occurence of a repeating daily time as a string"""
+    dt = datetime.datetime.now(datetime.UTC).replace(
+        hour=hour,
+        minute=minute,
+        second=0,
+        microsecond=0,
+        tzinfo=pytz.timezone(timezone),
+    ) + datetime.timedelta(days=1)
+    return dt.isoformat()
 
 
 def truncate_tokens(tokens: Sequence[str], max_length: int) -> list[str]:
