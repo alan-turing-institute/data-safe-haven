@@ -114,13 +114,6 @@ class PermittedDomains(tuple[str, ...], Enum):
     )
     SOFTWARE_REPOSITORIES_R = ("cran.r-project.org",)
     SOFTWARE_REPOSITORIES = SOFTWARE_REPOSITORIES_PYTHON + SOFTWARE_REPOSITORIES_R
-    TIME_SERVERS = (
-        "time.google.com",
-        "time1.google.com",
-        "time2.google.com",
-        "time3.google.com",
-        "time4.google.com",
-    )
     UBUNTU_KEYSERVER = ("keyserver.ubuntu.com",)
     ALL = tuple(
         sorted(
@@ -132,7 +125,6 @@ class PermittedDomains(tuple[str, ...], Enum):
                 + MICROSOFT_LOGIN
                 + SOFTWARE_REPOSITORIES_PYTHON
                 + SOFTWARE_REPOSITORIES_R
-                + TIME_SERVERS
                 + UBUNTU_KEYSERVER
             )
         )
