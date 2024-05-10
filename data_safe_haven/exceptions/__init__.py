@@ -7,13 +7,20 @@ class DataSafeHavenCloudError(DataSafeHavenError):
 
 
 class DataSafeHavenConfigError(DataSafeHavenError):
+    """
+    This is a custom exception class for handling errors related to configuration files.
+    Examples include missing configuration files or invalid configuration values.
+    """
+
     pass
+
 
 class DataSafeHavenEntraIDError(DataSafeHavenCloudError):
     """
     This is a custom exception class for handling errors when interacting with Entra ID.
     For example, when adding users to an Entra group fails.
     """
+
     pass
 
 
