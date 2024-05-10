@@ -2,6 +2,21 @@ from enum import UNIQUE, Enum, verify
 
 
 @verify(UNIQUE)
+class PermittedDomainCategories(int, Enum):
+    """Categories for permitted domains."""
+
+    ALL = 0
+    APT_REPOSITORIES = 1
+    AZURE_DNS_ZONES = 2
+    CLAMAV_UPDATES = 3
+    MICROSOFT_GRAPH_API = 4
+    MICROSOFT_LOGIN = 5
+    MICROSOFT_IDENTITY = 6
+    SOFTWARE_REPOSITORIES = 7
+    UBUNTU_KEYSERVER = 8
+
+
+@verify(UNIQUE)
 class FirewallPriorities(int, Enum):
     """Priorities for firewall rules."""
 
