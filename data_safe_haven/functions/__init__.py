@@ -1,7 +1,4 @@
-from .miscellaneous import (
-    allowed_dns_lookups,
-    time_as_string,
-)
+from .miscellaneous import time_as_string
 from .strings import (
     alphanumeric,
     b64encode,
@@ -14,7 +11,6 @@ from .strings import (
 )
 
 __all__ = [
-    "allowed_dns_lookups",
     "alphanumeric",
     "b64encode",
     "password",

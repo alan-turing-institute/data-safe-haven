@@ -5,12 +5,13 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network
 
-from data_safe_haven.functions import allowed_dns_lookups
 from data_safe_haven.infrastructure.common import (
     FirewallPriorities,
+    PermittedDomainCategories,
     Ports,
     SREIpRanges,
     get_id_from_subnet,
+    permitted_domains,
 )
 
 
@@ -57,13 +58,6 @@ class SHMFirewallComponent(ComponentResource):
             "216.239.35.4",
             "216.239.35.8",
             "216.239.35.12",
-        ]
-        ntp_fqdns = [
-            "time.google.com",
-            "time1.google.com",
-            "time2.google.com",
-            "time3.google.com",
-            "time4.google.com",
         ]
         sre_identity_server_subnets = [
             str(SREIpRanges(idx).identity_containers)
@@ -132,7 +126,9 @@ class SHMFirewallComponent(ComponentResource):
                                 )
                             ],
                             source_addresses=["*"],
-                            target_fqdns=ntp_fqdns,
+                            target_fqdns=permitted_domains(
+                                PermittedDomainCategories.TIME_SERVERS
+                            ),
                         ),
                     ],
                 ),
@@ -151,10 +147,9 @@ class SHMFirewallComponent(ComponentResource):
                                 )
                             ],
                             source_addresses=sre_identity_server_subnets,
-                            target_fqdns=[
-                                "graph.microsoft.com",
-                                "login.microsoftonline.com",
-                            ],
+                            target_fqdns=permitted_domains(
+                                PermittedDomainCategories.MICROSOFT_LOGIN
+                            ),
                         ),
                     ],
                 ),
@@ -173,7 +168,9 @@ class SHMFirewallComponent(ComponentResource):
                                 )
                             ],
                             source_addresses=sre_package_repositories_subnets,
-                            target_fqdns=["cran.r-project.org"],
+                            target_fqdns=permitted_domains(
+                                PermittedDomainCategories.SOFTWARE_REPOSITORIES_R
+                            ),
                         ),
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external PyPI package requests",
@@ -185,7 +182,9 @@ class SHMFirewallComponent(ComponentResource):
                                 )
                             ],
                             source_addresses=sre_package_repositories_subnets,
-                            target_fqdns=["files.pythonhosted.org", "pypi.org"],
+                            target_fqdns=permitted_domains(
+                                PermittedDomainCategories.SOFTWARE_REPOSITORIES_PYTHON
+                            ),
                         ),
                     ],
                 ),
@@ -204,7 +203,9 @@ class SHMFirewallComponent(ComponentResource):
                                 )
                             ],
                             source_addresses=sre_remote_desktop_gateway_subnets,
-                            target_fqdns=["login.microsoftonline.com"],
+                            target_fqdns=permitted_domains(
+                                PermittedDomainCategories.MICROSOFT_LOGIN
+                            ),
                         ),
                     ],
                 ),
@@ -227,7 +228,9 @@ class SHMFirewallComponent(ComponentResource):
                                 ),
                             ],
                             source_addresses=sre_apt_proxy_servers,
-                            target_fqdns=allowed_dns_lookups("apt_repositories"),
+                            target_fqdns=permitted_domains(
+                                PermittedDomainCategories.APT_REPOSITORIES
+                            ),
                         ),
                     ],
                 ),
@@ -250,11 +253,9 @@ class SHMFirewallComponent(ComponentResource):
                                 ),
                             ],
                             source_addresses=sre_workspaces_subnets,
-                            target_fqdns=[
-                                "current.cvd.clamav.net",
-                                "database.clamav.net.cdn.cloudflare.net",
-                                "database.clamav.net",
-                            ],
+                            target_fqdns=permitted_domains(
+                                PermittedDomainCategories.CLAMAV_UPDATES
+                            ),
                         ),
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Linux ClamAV update requests",
@@ -266,9 +267,9 @@ class SHMFirewallComponent(ComponentResource):
                                 ),
                             ],
                             source_addresses=sre_workspaces_subnets,
-                            target_fqdns=[
-                                "keyserver.ubuntu.com",
-                            ],
+                            target_fqdns=permitted_domains(
+                                PermittedDomainCategories.UBUNTU_KEYSERVER
+                            ),
                         ),
                     ],
                 ),
@@ -342,7 +343,7 @@ class SHMFirewallComponent(ComponentResource):
 
         # Register outputs
         self.external_dns_resolver = external_dns_resolver
-        self.ntp_fqdns = ntp_fqdns
+        self.ntp_fqdns = permitted_domains(PermittedDomainCategories.TIME_SERVERS)
         self.ntp_ip_addresses = ntp_ip_addresses
         self.public_ip_id = public_ip.id
 

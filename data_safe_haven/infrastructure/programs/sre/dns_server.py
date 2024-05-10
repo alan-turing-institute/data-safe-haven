@@ -6,17 +6,16 @@ import pulumi_random
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources
 
-from data_safe_haven.functions import (
-    allowed_dns_lookups,
-    b64encode,
-)
+from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
     NetworkingPriorities,
+    PermittedDomainCategories,
     Ports,
     SREDnsIpRanges,
     SREIpRanges,
     azure_dns_zone_names,
     get_ip_address_from_container_group,
+    permitted_domains,
 )
 from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
@@ -89,7 +88,10 @@ class SREDnsServerComponent(ComponentResource):
             # This server is aware of private DNS zones
             upstream_dns="168.63.129.16",
             filter_allow=Output.from_input(props.shm_fqdn).apply(
-                lambda fqdn: [f"*.{fqdn}", *allowed_dns_lookups()]
+                lambda fqdn: [
+                    f"*.{fqdn}",
+                    *permitted_domains(PermittedDomainCategories.ALL),
+                ]
             ),
         ).apply(
             lambda mustache_values: adguard_adguardhome_yaml_reader.file_contents(

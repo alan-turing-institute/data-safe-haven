@@ -45,7 +45,9 @@ def permitted_domains(category: PermittedDomainCategories) -> list[str]:
         PermittedDomainCategories.AZURE_DNS_ZONES: azure_dns_zone_names(),
         PermittedDomainCategories.CLAMAV_UPDATES: [
             "clamav.net",
+            "current.cvd.clamav.net",
             "database.clamav.net.cdn.cloudflare.net",
+            "database.clamav.net",
         ],
         PermittedDomainCategories.MICROSOFT_GRAPH_API: [
             "graph.microsoft.com",
@@ -53,22 +55,31 @@ def permitted_domains(category: PermittedDomainCategories) -> list[str]:
         PermittedDomainCategories.MICROSOFT_LOGIN: [
             "login.microsoftonline.com",
         ],
-        PermittedDomainCategories.SOFTWARE_REPOSITORIES: [
+        PermittedDomainCategories.SOFTWARE_REPOSITORIES_R: [
             "cran.r-project.org",
+        ],
+        PermittedDomainCategories.SOFTWARE_REPOSITORIES_PYTHON: [
             "files.pythonhosted.org",
             "pypi.org",
+        ],
+        PermittedDomainCategories.TIME_SERVERS: [
+            "time.google.com",
+            "time1.google.com",
+            "time2.google.com",
+            "time3.google.com",
+            "time4.google.com",
         ],
         PermittedDomainCategories.UBUNTU_KEYSERVER: [
             "keyserver.ubuntu.com",
         ],
     }
+    # Add categories that are combinations of others
+    domains[PermittedDomainCategories.SOFTWARE_REPOSITORIES] = (
+        domains[PermittedDomainCategories.SOFTWARE_REPOSITORIES_R]
+        + domains[PermittedDomainCategories.SOFTWARE_REPOSITORIES_PYTHON]
+    )
     if category in domains:
         fqdns = domains[category]
-    elif category == PermittedDomainCategories.MICROSOFT_IDENTITY:
-        fqdns = (
-            domains[PermittedDomainCategories.MICROSOFT_GRAPH_API]
-            + domains[PermittedDomainCategories.MICROSOFT_LOGIN]
-        )
     elif category == PermittedDomainCategories.ALL:
         fqdns = list(domains.values())  # type: ignore
     return sorted({domain for domains in fqdns for domain in domains})
