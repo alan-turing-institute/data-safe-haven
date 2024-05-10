@@ -140,6 +140,7 @@ class LinuxVMComponentProps(VMComponentProps):
             linux_configuration=compute.LinuxConfigurationArgs(
                 patch_settings=compute.LinuxPatchSettingsArgs(
                     assessment_mode=compute.LinuxPatchAssessmentMode.AUTOMATIC_BY_PLATFORM,
+                    patch_mode=compute.LinuxVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
                 ),
                 provision_vm_agent=True,
             ),
