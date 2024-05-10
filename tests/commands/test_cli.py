@@ -15,8 +15,8 @@ class TestHelp:
         assert "│ admin" in result.stdout
         assert "│ config" in result.stdout
         assert "│ context" in result.stdout
-        assert "│ deploy" in result.stdout
-        assert "│ teardown" in result.stdout
+        assert "│ shm" in result.stdout
+        assert "│ sre" in result.stdout
 
     def test_help(self, runner):
         result = runner.invoke(application, ["--help"])
