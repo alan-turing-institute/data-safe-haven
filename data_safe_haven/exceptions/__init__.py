@@ -1,4 +1,8 @@
 class DataSafeHavenError(Exception):
+    """
+    Parent class for all DataSafeHaven exceptions.
+    """
+
     pass
 
 
@@ -59,7 +63,6 @@ class DataSafeHavenSSLError(DataSafeHavenError):
     """
     Exception class for handling errors related to administration of SSL certificates.
     E.g. errors refreshing or creating SSL certificates
-
     """
 
     pass
@@ -68,8 +71,9 @@ class DataSafeHavenSSLError(DataSafeHavenError):
 class DataSafeHavenAzureError(DataSafeHavenCloudError):
     """
     Exception class for handling errors when interacting with Azure.
-    For example
+    For example, when creating resources in Azure fails
     """
+
     pass
 
 
