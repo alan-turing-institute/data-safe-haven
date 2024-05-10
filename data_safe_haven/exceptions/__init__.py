@@ -64,8 +64,9 @@ class DataSafeHavenParameterError(DataSafeHavenError):
 
 class DataSafeHavenSSLError(DataSafeHavenError):
     """
-    Exception class for handling errors related to administration of SSL certificates.
-    E.g. errors refreshing or creating SSL certificates
+    Exception class for handling errors related to administration of SSL certificates
+
+    For example, errors refreshing or creating SSL certificates
     """
 
     pass
@@ -73,7 +74,8 @@ class DataSafeHavenSSLError(DataSafeHavenError):
 
 class DataSafeHavenAzureError(DataSafeHavenCloudError):
     """
-    Exception class for handling errors when interacting with Azure.
+    Exception class for handling errors when interacting with Azure
+
     For example, when creating resources in Azure fails
     """
 
