@@ -1,3 +1,4 @@
+"""Command-line application for managing SHM infrastructure."""
 from typing import Annotated, Optional
 
 import typer

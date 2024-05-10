@@ -1,4 +1,4 @@
-"""Command-line application for performing administrative tasks"""
+"""Command-line application for performing user management tasks."""
 
 import pathlib
 from typing import Annotated
