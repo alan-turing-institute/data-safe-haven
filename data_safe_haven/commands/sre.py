@@ -148,7 +148,7 @@ def deploy(
 def teardown(
     name: Annotated[str, typer.Argument(help="Name of SRE to teardown.")],
 ) -> None:
-    """Tear down a deployed a Secure Research Environment component."""
+    """Tear down a deployed a Secure Research Environment."""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)

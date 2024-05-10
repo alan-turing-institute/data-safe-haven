@@ -22,7 +22,7 @@ def deploy(
         ),
     ] = None,
 ) -> None:
-    """Deploy a Safe Haven Management component"""
+    """Deploy a Safe Haven Management environment."""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote_or_create(
@@ -87,7 +87,7 @@ def deploy(
 
 @shm_command_group.command()
 def teardown() -> None:
-    """Tear down a deployed a Safe Haven Management component."""
+    """Tear down a deployed a Safe Haven Management environment."""
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
@@ -111,5 +111,5 @@ def teardown() -> None:
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
-        msg = f"Could not teardown Safe Haven Management component.\n{exc}"
+        msg = f"Could not teardown Safe Haven Management environment.\n{exc}"
         raise DataSafeHavenError(msg) from exc
