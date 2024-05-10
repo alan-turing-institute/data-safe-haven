@@ -1,6 +1,6 @@
 class DataSafeHavenError(Exception):
     """
-    Parent class for all DataSafeHaven exceptions.
+    Parent class for all DataSafeHaven exceptions
     """
 
     pass
@@ -9,6 +9,7 @@ class DataSafeHavenError(Exception):
 class DataSafeHavenCloudError(DataSafeHavenError):
     """
     Exception class for handling errors when interacting with the cloud.
+
     This is a parent class for the cloud-related exception classes
     `DataSafeHavenAzureError`, `DataSafeHavenEntraIDError` and
     `DataSafeHavenPulumiError`.
@@ -20,6 +21,7 @@ class DataSafeHavenCloudError(DataSafeHavenError):
 class DataSafeHavenConfigError(DataSafeHavenError):
     """
     Exception class for handling errors related to configuration files.
+
     Examples include missing configuration files or invalid configuration values.
     """
 
@@ -29,6 +31,7 @@ class DataSafeHavenConfigError(DataSafeHavenError):
 class DataSafeHavenEntraIDError(DataSafeHavenCloudError):
     """
     Exception class for handling errors when interacting with Entra ID.
+
     For example, when adding users to an Entra group fails.
     """
 
@@ -82,6 +85,10 @@ class DataSafeHavenUserHandlingError(DataSafeHavenInternalError):
 
 
 class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
+    """
+    Exception
+    """
+
     pass
 
 
