@@ -148,7 +148,7 @@ class SHMFirewallComponent(ComponentResource):
                             ],
                             source_addresses=sre_identity_server_subnets,
                             target_fqdns=permitted_domains(
-                                PermittedDomainCategories.MICROSOFT_LOGIN
+                                PermittedDomainCategories.MICROSOFT_IDENTITY
                             ),
                         ),
                     ],

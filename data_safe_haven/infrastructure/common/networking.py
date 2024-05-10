@@ -74,6 +74,10 @@ def permitted_domains(category: PermittedDomainCategories) -> list[str]:
         ],
     }
     # Add categories that are combinations of others
+    domains[PermittedDomainCategories.MICROSOFT_IDENTITY] = (
+        domains[PermittedDomainCategories.MICROSOFT_GRAPH_API]
+        + domains[PermittedDomainCategories.MICROSOFT_LOGIN]
+    )
     domains[PermittedDomainCategories.SOFTWARE_REPOSITORIES] = (
         domains[PermittedDomainCategories.SOFTWARE_REPOSITORIES_R]
         + domains[PermittedDomainCategories.SOFTWARE_REPOSITORIES_PYTHON]
