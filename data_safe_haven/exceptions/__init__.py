@@ -3,6 +3,11 @@ class DataSafeHavenError(Exception):
 
 
 class DataSafeHavenCloudError(DataSafeHavenError):
+    """
+    Exception class for handling errors when interacting with the cloud.
+    This is a parent class for all cloud-related exceptions.
+    """
+
     pass
 
 
