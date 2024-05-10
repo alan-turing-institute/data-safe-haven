@@ -576,15 +576,6 @@ class GraphApi:
         except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
 
-    def get_id_from_application_name(self, application_name: str) -> str | None:
-        try:
-            application = self.get_application_by_name(application_name)
-            if not application:
-                return None
-            return str(application["appId"])
-        except DataSafeHavenMicrosoftGraphError:
-            return None
-
     def get_id_from_groupname(self, group_name: str) -> str | None:
         try:
             return str(

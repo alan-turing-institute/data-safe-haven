@@ -5,11 +5,8 @@ from .miscellaneous import (
 )
 from .strings import (
     alphanumeric,
-    b64decode,
     b64encode,
-    hex_string,
     password,
-    random_letters,
     replace_separators,
     sanitise_sre_name,
     seeded_uuid,
@@ -20,12 +17,9 @@ from .strings import (
 __all__ = [
     "allowed_dns_lookups",
     "alphanumeric",
-    "b64decode",
     "b64encode",
-    "hex_string",
     "ordered_private_dns_zones",
     "password",
-    "random_letters",
     "replace_separators",
     "sanitise_sre_name",
     "seeded_uuid",
