@@ -9,13 +9,12 @@ from pulumi_azure_native import containerinstance, network, resources
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
     NetworkingPriorities,
-    PermittedDomainCategories,
+    PermittedDomains,
     Ports,
     SREDnsIpRanges,
     SREIpRanges,
     azure_dns_zone_names,
     get_ip_address_from_container_group,
-    permitted_domains,
 )
 from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
@@ -90,7 +89,7 @@ class SREDnsServerComponent(ComponentResource):
             filter_allow=Output.from_input(props.shm_fqdn).apply(
                 lambda fqdn: [
                     f"*.{fqdn}",
-                    *permitted_domains(PermittedDomainCategories.ALL),
+                    *PermittedDomains.ALL,
                 ]
             ),
         ).apply(

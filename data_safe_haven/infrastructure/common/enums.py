@@ -1,22 +1,66 @@
 from enum import UNIQUE, Enum, verify
 
+from .networking import azure_dns_zone_names
+
 
 @verify(UNIQUE)
-class PermittedDomainCategories(int, Enum):
-    """Categories for permitted domains."""
+class PermittedDomains(tuple[str, ...], Enum):
+    """Permitted domains for outbound connections."""
 
-    ALL = 0
-    APT_REPOSITORIES = 1
-    AZURE_DNS_ZONES = 2
-    CLAMAV_UPDATES = 3
-    MICROSOFT_GRAPH_API = 4
-    MICROSOFT_LOGIN = 5
-    MICROSOFT_IDENTITY = 6
-    SOFTWARE_REPOSITORIES_R = 7
-    SOFTWARE_REPOSITORIES_PYTHON = 8
-    SOFTWARE_REPOSITORIES = 9
-    TIME_SERVERS = 10
-    UBUNTU_KEYSERVER = 11
+    APT_REPOSITORIES = (
+        # "apt.postgresql.org",
+        "archive.ubuntu.com",
+        "azure.archive.ubuntu.com",
+        "changelogs.ubuntu.com",
+        "cloudapp.azure.com",  # this is where azure.archive.ubuntu.com is hosted
+        "deb.debian.org",
+        # "d20rj4el6vkp4c.cloudfront.net",
+        # "dbeaver.io",
+        # "packages.gitlab.com",
+        "packages.microsoft.com",
+        # "qgis.org",
+        "security.ubuntu.com",
+        # "ubuntu.qgis.org"
+    )
+    AZURE_DNS_ZONES = azure_dns_zone_names()
+    CLAMAV_UPDATES = (
+        "clamav.net",
+        "current.cvd.clamav.net",
+        "database.clamav.net.cdn.cloudflare.net",
+        "database.clamav.net",
+    )
+    MICROSOFT_GRAPH_API = ("graph.microsoft.com",)
+    MICROSOFT_LOGIN = ("login.microsoftonline.com",)
+    MICROSOFT_IDENTITY = MICROSOFT_GRAPH_API + MICROSOFT_LOGIN
+    SOFTWARE_REPOSITORIES_PYTHON = (
+        "files.pythonhosted.org",
+        "pypi.org",
+    )
+    SOFTWARE_REPOSITORIES_R = ("cran.r-project.org",)
+    SOFTWARE_REPOSITORIES = SOFTWARE_REPOSITORIES_PYTHON + SOFTWARE_REPOSITORIES_R
+    TIME_SERVERS = (
+        "time.google.com",
+        "time1.google.com",
+        "time2.google.com",
+        "time3.google.com",
+        "time4.google.com",
+    )
+    UBUNTU_KEYSERVER = ("keyserver.ubuntu.com",)
+    ALL = tuple(
+        sorted(
+            set(
+                APT_REPOSITORIES
+                + AZURE_DNS_ZONES
+                + CLAMAV_UPDATES
+                + MICROSOFT_GRAPH_API
+                + MICROSOFT_LOGIN
+                + SOFTWARE_REPOSITORIES_PYTHON
+                + SOFTWARE_REPOSITORIES_R
+                + TIME_SERVERS
+                + UBUNTU_KEYSERVER
+            )
+        )
+    )
 
 
 @verify(UNIQUE)

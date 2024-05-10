@@ -4,10 +4,9 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, resources, storage
 
 from data_safe_haven.infrastructure.common import (
-    PermittedDomainCategories,
+    PermittedDomains,
     get_id_from_subnet,
     get_ip_address_from_container_group,
-    permitted_domains,
 )
 from data_safe_haven.infrastructure.components import (
     FileShareFile,
@@ -82,9 +81,7 @@ class SREAptProxyServerComponent(ComponentResource):
         )
 
         # Upload allowed repositories
-        repositories = "\n".join(
-            permitted_domains(PermittedDomainCategories.APT_REPOSITORIES)
-        )
+        repositories = "\n".join(PermittedDomains.APT_REPOSITORIES)
         file_share_apt_proxy_server_repositories = FileShareFile(
             f"{self._name}_file_share_apt_proxy_server_repositories",
             FileShareFileProps(
