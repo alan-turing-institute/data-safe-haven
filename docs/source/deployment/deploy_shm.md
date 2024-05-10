@@ -41,10 +41,8 @@ $ dsh config upload config.yaml
 - Next deploy the Safe Haven Management (SHM) infrastructure [approx 30 minutes]:
 
 ```{code} shell
-$ dsh deploy shm
+$ dsh shm deploy
 ```
-
-Run `dsh deploy shm -h` to see the necessary command line flags and provide them as arguments.
 
 :::{important}
 You may be asked to delegate your domain name to Azure. To do this, you'll need to know details about the parent domain. For example, if you are deploying to `dsh.example.com` then the parent name is `example.com`.
