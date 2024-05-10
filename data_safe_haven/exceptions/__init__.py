@@ -45,6 +45,12 @@ class DataSafeHavenParameterError(DataSafeHavenError):
 
 
 class DataSafeHavenSSLError(DataSafeHavenError):
+    """
+    Exception class for handling errors related to administration of SSL certificates.
+    E.g. errors refreshing or creating SSL certificates
+
+    """
+
     pass
 
 
