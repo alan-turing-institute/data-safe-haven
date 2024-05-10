@@ -86,6 +86,9 @@ class SREFirewallComponent(ComponentResource):
             tags=child_tags,
         )
 
+        # Note that a Basic SKU firewall needs a separate management IP address and
+        # subnet to handle traffic for communicating updates and health metrics to and
+        # from Microsoft.
         public_ip_management = network.PublicIPAddress(
             f"{self._name}_pip_firewall_management",
             public_ip_address_name=f"{stack_name}-pip-firewall-management",
@@ -99,8 +102,6 @@ class SREFirewallComponent(ComponentResource):
         )
 
         # Deploy firewall
-        # Note that a Basic SKU firewall needs a separate management subnet to handle
-        # traffic for communicating updates and health metrics to and from Microsoft.
         firewall = network.AzureFirewall(
             f"{self._name}_firewall",
             application_rule_collections=[
@@ -252,9 +253,7 @@ class SREFirewallComponent(ComponentResource):
         # Retrieve the private IP address for the firewall
         private_ip_address = firewall.ip_configurations.apply(
             lambda cfgs: (
-                ""
-                if not cfgs
-                else next(filter(lambda _: _, [cfg.private_ip_address for cfg in cfgs]))
+                "" if not cfgs else next(cfg.private_ip_address for cfg in cfgs)
             )
         )
 
