@@ -5,7 +5,9 @@ class DataSafeHavenError(Exception):
 class DataSafeHavenCloudError(DataSafeHavenError):
     """
     Exception class for handling errors when interacting with the cloud.
-    This is a parent class for all cloud-related exceptions.
+    This is a parent class for the cloud-related exception classes
+    `DataSafeHavenAzureError`, `DataSafeHavenEntraIDError` and
+    `DataSafeHavenPulumiError`.
     """
 
     pass
@@ -60,6 +62,10 @@ class DataSafeHavenSSLError(DataSafeHavenError):
 
 
 class DataSafeHavenAzureError(DataSafeHavenCloudError):
+    """
+    Exception class for handling errors when interacting with Azure.
+    For example
+    """
     pass
 
 
