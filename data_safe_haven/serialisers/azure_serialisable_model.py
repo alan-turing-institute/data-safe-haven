@@ -50,6 +50,16 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         return cls.from_yaml(config_yaml)
 
     @classmethod
+    def remote_exists(cls: type[T], context: ContextBase) -> bool:
+        azure_api = AzureApi(subscription_name=context.subscription_name)
+        return azure_api.blob_exists(
+            cls.filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
+
+    @classmethod
     def from_remote_or_create(
         cls: type[T], context: ContextBase, **default_args: Any
     ) -> T:
@@ -57,13 +67,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         Construct an AzureSerialisableModel from a YAML file in Azure storage, or from
         default arguments if no such file exists.
         """
-        azure_api = AzureApi(subscription_name=context.subscription_name)
-        if azure_api.blob_exists(
-            cls.filename,
-            context.resource_group_name,
-            context.storage_account_name,
-            context.storage_container_name,
-        ):
+        if cls.remote_exists(context):
             return cls.from_remote(context)
         else:
             return cls(**default_args)
