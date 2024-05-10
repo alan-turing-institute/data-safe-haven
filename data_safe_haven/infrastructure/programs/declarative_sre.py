@@ -380,7 +380,7 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
-        # Deploy backup service
+        # Deploy maintenance configuration
         SREMaintenanceComponent(
             "sre_maintenance",
             self.stack_name,
