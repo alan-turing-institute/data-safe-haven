@@ -141,6 +141,10 @@ class LinuxVMComponentProps(VMComponentProps):
                 patch_settings=compute.LinuxPatchSettingsArgs(
                     assessment_mode=compute.LinuxPatchAssessmentMode.AUTOMATIC_BY_PLATFORM,
                     patch_mode=compute.LinuxVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
+                    automatic_by_platform_settings=compute.LinuxVMGuestPatchAutomaticByPlatformSettingsArgs(
+                                            bypass_platform_safety_checks_on_user_schedule=True,
+                                            reboot_setting=compute.LinuxVMGuestPatchAutomaticByPlatformRebootSetting.IF_REQUIRED,
+                                            )
                 ),
                 provision_vm_agent=True,
             ),
