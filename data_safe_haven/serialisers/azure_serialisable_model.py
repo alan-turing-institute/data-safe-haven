@@ -1,6 +1,5 @@
 """A YAMLSerialisableModel that can be serialised to and from Azure"""
 
-from difflib import unified_diff
 from typing import Any, ClassVar, TypeVar
 
 from data_safe_haven.external import AzureApi
@@ -17,25 +16,10 @@ class AzureSerialisableModel(YAMLSerialisableModel):
     config_type: ClassVar[str] = "AzureSerialisableModel"
     filename: ClassVar[str] = "config.yaml"
 
-    def diff(self, context: ContextBase) -> list[str]:
-        azure_api = AzureApi(subscription_name=context.subscription_name)
-        remote_yaml = azure_api.download_blob(
-            self.filename,
-            context.resource_group_name,
-            context.storage_account_name,
-            context.storage_container_name,
-        )
+    def remote_yaml_diff(self, context: ContextBase) -> list[str]:
+        remote_model = self.from_remote(context)
 
-        local_yaml = self.to_yaml()
-
-        return list(
-            unified_diff(
-                remote_yaml.split(),
-                local_yaml.split(),
-                fromfile="remote",
-                tofile="local",
-            )
-        )
+        return self.yaml_diff(remote_model)
 
     @classmethod
     def from_remote(cls: type[T], context: ContextBase) -> T:

@@ -1,5 +1,6 @@
 """A pydantic BaseModel that can be serialised to and from YAML"""
 
+from difflib import unified_diff
 from pathlib import Path
 from typing import ClassVar, TypeVar
 
@@ -21,6 +22,16 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
     """
 
     config_type: ClassVar[str] = "YAMLSerialisableModel"
+
+    def yaml_diff(self, other: T) -> list[str]:
+        return list(
+            unified_diff(
+                other.to_yaml().split(),
+                self.to_yaml().split(),
+                fromfile="remote",
+                tofile="local",
+            )
+        )
 
     @classmethod
     def from_filepath(cls: type[T], config_file_path: PathType) -> T:

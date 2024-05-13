@@ -34,22 +34,22 @@ class TestAzureSerialisableModel:
         assert isinstance(example_config_class, AzureSerialisableModel)
         assert example_config_class.string == "hello"
 
-    def test_diff(self, mocker, example_config_class, context):
+    def test_remote_yaml_diff(self, mocker, example_config_class, context):
         mocker.patch.object(
             AzureApi, "download_blob", return_value=example_config_class.to_yaml()
         )
-        diff = example_config_class.diff(context)
-        assert not example_config_class.diff(context)
+        diff = example_config_class.remote_yaml_diff(context)
+        assert not diff
         assert diff == []
 
-    def test_diff_difference(self, mocker, example_config_class, context):
+    def test_remote_yaml_diff_difference(self, mocker, example_config_class, context):
         mocker.patch.object(
             AzureApi, "download_blob", return_value=example_config_class.to_yaml()
         )
         example_config_class.integer = 0
         example_config_class.string = "abc"
 
-        diff = example_config_class.diff(context)
+        diff = example_config_class.remote_yaml_diff(context)
 
         assert isinstance(diff, list)
         assert diff == [

@@ -44,12 +44,12 @@ def upload(
 
     # Present diff to user
     if Config.remote_exists(context):
-        if diff := config.diff(context):
+        if diff := config.remote_yaml_diff(context):
             print(diff)
             if not logger.confirm(
                 (
-                    "Configuration has changed, ",
-                    "do you want to overwrite the remote configuration?",
+                    "Configuration has changed, "
+                    "do you want to overwrite the remote configuration?"
                 ),
                 default_to_yes=False,
             ):
