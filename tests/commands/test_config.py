@@ -76,6 +76,8 @@ class TestUpload:
         mock_from_remote.assert_called_once_with(context)
         mock_upload.assert_not_called()
 
+        assert "No changes, won't upload configuration." in result.stdout
+
     def test_upload_changes(
         self, mocker, context, runner, config_no_sres, config_file, config_yaml
     ):
