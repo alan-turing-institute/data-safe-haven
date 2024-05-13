@@ -74,17 +74,17 @@ azure-mgmt-network==25.3.0
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-rdbms==10.1.0
     # via data-safe-haven (pyproject.toml)
-azure-mgmt-resource==23.0.1
+azure-mgmt-resource==23.1.1
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-storage==21.1.0
     # via data-safe-haven (pyproject.toml)
-azure-storage-blob==12.19.1
+azure-storage-blob==12.20.0
     # via
     #   azure-storage-file-datalake
     #   data-safe-haven (pyproject.toml)
-azure-storage-file-datalake==12.14.0
+azure-storage-file-datalake==12.15.0
     # via data-safe-haven (pyproject.toml)
-azure-storage-file-share==12.15.0
+azure-storage-file-share==12.16.0
     # via data-safe-haven (pyproject.toml)
 certifi==2024.2.2
     # via
@@ -98,7 +98,7 @@ chevron==0.14.0
     # via data-safe-haven (pyproject.toml)
 click==8.1.7
     # via typer
-cryptography==42.0.6
+cryptography==42.0.7
     # via
     #   acme
     #   azure-identity
@@ -168,14 +168,14 @@ portalocker==2.8.2
     # via msal-extensions
 protobuf==4.25.3
     # via pulumi
-psycopg==3.1.18
+psycopg==3.1.19
     # via data-safe-haven (pyproject.toml)
-pulumi==3.115.0
+pulumi==3.115.2
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.39.0
+pulumi-azure-native==2.40.0
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.1
     # via data-safe-haven (pyproject.toml)
