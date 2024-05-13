@@ -45,7 +45,7 @@ def upload(
     # Present diff to user
     if Config.remote_exists(context):
         if diff := config.remote_yaml_diff(context):
-            print(diff)
+            print("".join(diff))
             if not logger.confirm(
                 (
                     "Configuration has changed, "
