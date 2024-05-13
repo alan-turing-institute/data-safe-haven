@@ -76,8 +76,8 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
         """
         return list(
             unified_diff(
-                other.to_yaml().split(),
-                self.to_yaml().split(),
+                other.to_yaml().splitlines(keepends=True),
+                self.to_yaml().splitlines(keepends=True),
                 fromfile=from_name,
                 tofile=to_name,
             )

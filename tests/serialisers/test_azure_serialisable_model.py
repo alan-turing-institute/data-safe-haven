@@ -55,19 +55,15 @@ class TestAzureSerialisableModel:
         assert diff == [
             "--- remote\n",
             "+++ local\n",
-            "@@ -1,5 +1,5 @@\n",
-            " integer:",
-            "-5",
-            "+0",
-            " list_of_integers:",
-            " -",
-            " 1",
-            "@@ -8,4 +8,4 @@\n",
-            " -",
-            " 3",
-            " string:",
-            "-hello",
-            "+abc",
+            "@@ -1,6 +1,6 @@\n",
+            "-integer: 5\n",
+            "+integer: 0\n",
+            " list_of_integers:\n",
+            " - 1\n",
+            " - 2\n",
+            " - 3\n",
+            "-string: hello\n",
+            "+string: abc\n",
         ]
 
     def test_to_yaml(self, example_config_class):
