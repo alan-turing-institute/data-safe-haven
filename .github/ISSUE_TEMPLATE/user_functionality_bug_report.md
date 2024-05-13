@@ -20,9 +20,9 @@ Before reporting a problem please check the following. Replace the empty checkbo
 
 ## :computer: System information
 
-- **Data Safe Haven version:** <!-- Which version of the Data Safe Haven are you using: 3.0.0, 3.1.1 etc. -->
+- **Operating System:** <!-- Which operating system you are using: Windows, Linux, macOS etc. -->
+- **Data Safe Haven version:** <!-- Which version of the Data Safe Haven you are using: 3.0.0, 3.1.1 etc. If this is on a branch use `branch name @ 7-letter commit-id` -->
 - **Browser details:** <!-- Which browser are you using? Which version of that browser? -->
-- **Operating system details:** <!-- Which operating system are you using: Windows, Linux, macOS etc.? Which version of that OS? -->
 
 ## :no_entry_sign: Describe the problem
 
