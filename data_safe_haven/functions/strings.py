@@ -16,19 +16,9 @@ def sanitise_sre_name(name: str) -> str:
     return alphanumeric(name).lower()
 
 
-def b64decode(input_string: str) -> str:
-    """Decode a Base64 string into a normal string."""
-    return base64.b64decode(input_string.encode("utf-8")).decode()
-
-
 def b64encode(input_string: str) -> str:
     """Encode a normal string into a Base64 string."""
     return base64.b64encode(input_string.encode("utf-8")).decode()
-
-
-def hex_string(length: int) -> str:
-    """Generate a string of 'length' random hexadecimal characters."""
-    return secrets.token_hex(length)
 
 
 def password(length: int) -> str:
@@ -46,11 +36,6 @@ def password(length: int) -> str:
         ):
             break
     return password_
-
-
-def random_letters(length: int) -> str:
-    """Generate a string of 'length' random letters."""
-    return "".join(secrets.choice(string.ascii_letters) for _ in range(length))
 
 
 def replace_separators(input_string: str, separator: str = "") -> str:

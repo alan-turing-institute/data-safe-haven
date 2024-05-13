@@ -1,7 +1,6 @@
 """Interface to the Azure Python SDK"""
 
 import time
-from collections.abc import Sequence
 from contextlib import suppress
 from typing import Any, cast
 
@@ -11,20 +10,12 @@ from azure.core.exceptions import (
     ResourceNotFoundError,
     ServiceRequestError,
 )
-from azure.core.polling import LROPoller
 from azure.keyvault.certificates import (
     CertificateClient,
-    CertificatePolicy,
     KeyVaultCertificate,
 )
 from azure.keyvault.keys import KeyClient, KeyVaultKey
-from azure.keyvault.secrets import KeyVaultSecret, SecretClient
-from azure.mgmt.automation import AutomationClient
-from azure.mgmt.automation.models import (
-    DscCompilationJobCreateParameters,
-    DscConfigurationAssociationProperty,
-    Module,
-)
+from azure.keyvault.secrets import SecretClient
 from azure.mgmt.compute.v2021_07_01 import ComputeManagementClient
 from azure.mgmt.compute.v2021_07_01.models import (
     ResourceSkuCapabilities,
@@ -106,90 +97,23 @@ class AzureApi(AzureAuthenticator):
 
         return blob_client
 
-    def compile_desired_state(
+    def blob_exists(
         self,
-        automation_account_name: str,
-        configuration_name: str,
-        location: str,
-        parameters: dict[str, str],
+        blob_name: str,
         resource_group_name: str,
-        required_modules: Sequence[str],
-    ) -> None:
-        """Ensure that a Powershell Desired State Configuration is compiled
-
-        Raises:
-            DataSafeHavenAzureError if the configuration could not be compiled
-        """
-        # Connect to Azure clients
-        automation_client = AutomationClient(self.credential, self.subscription_id)
-        # Wait until all modules are available
-        while True:
-            # Cast to correct spurious type hint in Azure libraries
-            available_modules = cast(
-                list[Module],
-                automation_client.module.list_by_automation_account(
-                    resource_group_name, automation_account_name
-                ),
-            )
-            available_module_names = [
-                module.name
-                for module in available_modules
-                if module.provisioning_state == "Succeeded"
-            ]
-            if all(
-                module_name in available_module_names
-                for module_name in required_modules
-            ):
-                break
-            time.sleep(10)
-        # Wait until configuration is available
-        while True:
-            try:
-                automation_client.dsc_configuration.get(
-                    resource_group_name=resource_group_name,
-                    automation_account_name=automation_account_name,
-                    configuration_name=configuration_name,
-                )
-                break
-            except ResourceNotFoundError:
-                self.logger.debug(
-                    f"Could not load configuration {configuration_name}, retrying."
-                )
-                time.sleep(10)
-        # Begin creation
-        compilation_job_name = f"{configuration_name}-{time.time_ns()}"
-        with suppress(ResourceExistsError):
-            automation_client.dsc_compilation_job.begin_create(
-                resource_group_name=resource_group_name,
-                automation_account_name=automation_account_name,
-                compilation_job_name=compilation_job_name,
-                parameters=DscCompilationJobCreateParameters(
-                    name=compilation_job_name,
-                    location=location,
-                    configuration=DscConfigurationAssociationProperty(
-                        name=configuration_name
-                    ),
-                    parameters=parameters,
-                ),
-            )
-        # Poll until creation succeeds or fails
-        while True:
-            result = automation_client.dsc_compilation_job.get(
-                resource_group_name=resource_group_name,
-                automation_account_name=automation_account_name,
-                compilation_job_name=compilation_job_name,
-            )
-            time.sleep(10)
-            with suppress(AttributeError):
-                if (result.provisioning_state == "Succeeded") and (
-                    result.status == "Completed"
-                ):
-                    break
-                if (result.provisioning_state == "Suspended") and (
-                    result.status == "Suspended"
-                ):
-                    msg = f"Could not compile DSC '{configuration_name}'\n{result.exception}."
-                    raise DataSafeHavenAzureError(msg)
+        storage_account_name: str,
+        storage_container_name: str,
+    ) -> bool:
+        blob_client = self.blob_client(
+            resource_group_name, storage_account_name, storage_container_name, blob_name
+        )
+        # Upload the created file
+        exists: bool = blob_client.exists()
+        response = "exists" if exists else "does not exist"
+        self.logger.info(
+            f"File [green]{blob_name}[/] {response} in blob storage.",
+        )
+        return exists
 
     def download_blob(
         self,
@@ -373,90 +297,6 @@ class AzureApi(AzureAuthenticator):
             return key
         except Exception as exc:
             msg = f"Failed to create key {key_name}.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
-
-    def ensure_keyvault_secret(
-        self, key_vault_name: str, secret_name: str, secret_value: str
-    ) -> KeyVaultSecret:
-        """Ensure that a secret exists in the KeyVault
-
-        Returns:
-            str: The secret value
-
-        Raises:
-            DataSafeHavenAzureError if the existence of the secret could not be verified
-        """
-        # Ensure that key exists
-        self.logger.debug(
-            f"Ensuring that secret [green]{secret_name}[/] exists...",
-        )
-        try:
-            # Connect to Azure clients
-            secret_client = SecretClient(
-                f"https://{key_vault_name}.vault.azure.net", self.credential
-            )
-            try:
-                secret = secret_client.get_secret(secret_name)
-            except DataSafeHavenAzureError:
-                secret = None
-            if not secret:
-                self.set_keyvault_secret(key_vault_name, secret_name, secret_value)
-                secret = secret_client.get_secret(secret_name)
-            self.logger.info(
-                f"Ensured that secret [green]{secret_name}[/] exists.",
-            )
-            return secret
-        except Exception as exc:
-            msg = f"Failed to create secret {secret_name}.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
-
-    def ensure_keyvault_self_signed_certificate(
-        self,
-        certificate_name: str,
-        certificate_url: str,
-        key_vault_name: str,
-    ) -> KeyVaultCertificate:
-        """Ensure that a self-signed certificate exists in the KeyVault
-
-        Returns:
-            KeyVaultCertificate: The self-signed certificate
-
-        Raises:
-            DataSafeHavenAzureError if the existence of the certificate could not be verified
-        """
-        try:
-            # Connect to Azure clients
-            certificate_client = CertificateClient(
-                vault_url=f"https://{key_vault_name}.vault.azure.net",
-                credential=self.credential,
-            )
-
-            # Ensure that certificate exists
-            self.logger.debug(
-                f"Ensuring that certificate [green]{certificate_url}[/] exists...",
-            )
-            policy = CertificatePolicy(
-                issuer_name="Self",
-                subject=f"CN={certificate_url}",
-                exportable=True,
-                key_type="RSA",
-                key_size=2048,
-                reuse_key=False,
-                enhanced_key_usage=["1.3.6.1.5.5.7.3.1", "1.3.6.1.5.5.7.3.2"],
-                validity_in_months=12,
-            )
-            poller: LROPoller[KeyVaultCertificate] = (
-                certificate_client.begin_create_certificate(
-                    certificate_name=certificate_name, policy=policy
-                )
-            )
-            certificate = poller.result()
-            self.logger.info(
-                f"Ensured that certificate [green]{certificate_url}[/] exists.",
-            )
-            return certificate
-        except Exception as exc:
-            msg = f"Failed to create certificate '{certificate_url}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_managed_identity(
@@ -740,28 +580,6 @@ class AzureApi(AzureAuthenticator):
         except Exception as exc:
             msg = f"Keys could not be loaded for {msg_sa} in {msg_rg}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
-
-    def get_vm_sku_details(self, sku: str) -> tuple[str, str, str]:
-        # Connect to Azure client
-        cpus, gpus, ram = None, None, None
-        compute_client = ComputeManagementClient(self.credential, self.subscription_id)
-        for resource_sku in compute_client.resource_skus.list():
-            if resource_sku.name == sku:
-                if resource_sku.capabilities:
-                    # Cast to correct spurious type hint in Azure libraries
-                    for capability in cast(
-                        list[ResourceSkuCapabilities], resource_sku.capabilities
-                    ):
-                        if capability.name == "vCPUs":
-                            cpus = capability.value
-                        if capability.name == "GPUs":
-                            gpus = capability.value
-                        if capability.name == "MemoryGB":
-                            ram = capability.value
-        if cpus and gpus and ram:
-            return (cpus, gpus, ram)
-        msg = f"Could not find information for VM SKU {sku}."
-        raise DataSafeHavenAzureError(msg)
 
     def import_keyvault_certificate(
         self,
@@ -1050,29 +868,6 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to remove resource group {resource_group_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
-    def restart_virtual_machine(self, resource_group_name: str, vm_name: str) -> None:
-        try:
-            self.logger.debug(
-                f"Attempting to restart virtual machine '[green]{vm_name}[/]'"
-                f" in resource group '[green]{resource_group_name}[/]'...",
-            )
-            # Connect to Azure clients
-            compute_client = ComputeManagementClient(
-                self.credential, self.subscription_id
-            )
-            poller = compute_client.virtual_machines.begin_restart(
-                resource_group_name, vm_name
-            )
-            _ = (
-                poller.result()
-            )  # returns 'None' on success or raises an exception on failure
-            self.logger.info(
-                f"Restarted virtual machine '[green]{vm_name}[/]' in resource group '[green]{resource_group_name}[/]'.",
-            )
-        except Exception as exc:
-            msg = f"Failed to restart virtual machine '{vm_name}' in resource group '{resource_group_name}'.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
-
     def run_remote_script(
         self,
         resource_group_name: str,
@@ -1206,34 +1001,6 @@ class AzureApi(AzureAuthenticator):
             msg = f"Failed to set ACL '{desired_acl}' on container '{container_name}'.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
-    def set_keyvault_secret(
-        self, key_vault_name: str, secret_name: str, secret_value: str
-    ) -> KeyVaultSecret:
-        """Ensure that a KeyVault secret has the desired value
-
-        Returns:
-            str: The secret value
-
-        Raises:
-            DataSafeHavenAzureError if the secret could not be set
-        """
-        try:
-            # Connect to Azure clients
-            secret_client = SecretClient(
-                f"https://{key_vault_name}.vault.azure.net", self.credential
-            )
-            # Set the secret to the desired value
-            try:
-                existing_value = secret_client.get_secret(secret_name).value
-            except ResourceNotFoundError:
-                existing_value = None
-            if (not existing_value) or (existing_value != secret_value):
-                secret_client.set_secret(secret_name, secret_value)
-            return secret_client.get_secret(secret_name)
-        except Exception as exc:
-            msg = f"Failed to set secret '{secret_name}'.\n{exc}"
-            raise DataSafeHavenAzureError(msg) from exc
-
     def upload_blob(
         self,
         blob_data: bytes | str,
@@ -1265,21 +1032,3 @@ class AzureApi(AzureAuthenticator):
         except Exception as exc:
             msg = f"Blob file '{blob_name}' could not be uploaded to '{storage_account_name}'\n{exc}."
             raise DataSafeHavenAzureError(msg) from exc
-
-    def blob_exists(
-        self,
-        blob_name: str,
-        resource_group_name: str,
-        storage_account_name: str,
-        storage_container_name: str,
-    ) -> bool:
-        blob_client = self.blob_client(
-            resource_group_name, storage_account_name, storage_container_name, blob_name
-        )
-        # Upload the created file
-        exists: bool = blob_client.exists()
-        response = "exists" if exists else "does not exist"
-        self.logger.info(
-            f"File [green]{blob_name}[/] {response} in blob storage.",
-        )
-        return exists

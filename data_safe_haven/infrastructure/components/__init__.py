@@ -1,6 +1,4 @@
 from .composite import (
-    AutomationDscNode,
-    AutomationDscNodeProps,
     LinuxVMComponentProps,
     LocalDnsRecordComponent,
     LocalDnsRecordProps,
@@ -14,16 +12,12 @@ from .composite import (
 from .dynamic import (
     BlobContainerAcl,
     BlobContainerAclProps,
-    CompiledDsc,
-    CompiledDscProps,
     EntraApplication,
     EntraApplicationProps,
     FileShareFile,
     FileShareFileProps,
     FileUpload,
     FileUploadProps,
-    RemoteScript,
-    RemoteScriptProps,
     SSLCertificate,
     SSLCertificateProps,
 )
@@ -33,12 +27,8 @@ from .wrapped import (
 )
 
 __all__ = [
-    "AutomationDscNode",
-    "AutomationDscNodeProps",
     "BlobContainerAcl",
     "BlobContainerAclProps",
-    "CompiledDsc",
-    "CompiledDscProps",
     "EntraApplication",
     "EntraApplicationProps",
     "FileShareFile",
@@ -52,8 +42,6 @@ __all__ = [
     "MicrosoftSQLDatabaseProps",
     "PostgresqlDatabaseComponent",
     "PostgresqlDatabaseProps",
-    "RemoteScript",
-    "RemoteScriptProps",
     "SSLCertificate",
     "SSLCertificateProps",
     "VMComponent",

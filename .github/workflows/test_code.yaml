@@ -1,7 +1,7 @@
 ---
 name: Test code
 
-# Run workflow on pushes to matching branches
+# Run workflow on PRs and pushes to matching branches
 on:  # yamllint disable-line rule:truthy
   push:
     branches: [develop, latest]
@@ -10,6 +10,14 @@ on:  # yamllint disable-line rule:truthy
 jobs:
   test_python:
     runs-on: ubuntu-latest
+    permissions:
+      # Gives the action the necessary permissions for publishing new
+      # comments in pull requests.
+      pull-requests: write
+      # Gives the action the necessary permissions for pushing data to the
+      # python-coverage-comment-action branch, and for editing existing
+      # comments (to avoid publishing multiple comments in the same PR)
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,7 +28,23 @@ jobs:
       - name: Install hatch
         run: pip install hatch
       - name: Test Python
-        run: hatch run test:test
+        run: hatch run test:test-coverage
+      # For security reasons, PRs created from forks cannot generate PR comments directly
+      # (see https://securitylab.github.com/research/github-actions-preventing-pwn-requests/).
+      # Instead we need to trigger another workflow after this one completes.
+      - name: Generate coverage comment
+        id: coverage_comment
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+      # Save the coverage comment for later use
+      # See https://github.com/py-cov-action/python-coverage-comment-action/blob/main/README.md
+      - name: Save coverage comment as an artifact
+        uses: actions/upload-artifact@v4
+        if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
+        with:
+          name: python-coverage-comment-action
+          path: python-coverage-comment-action.txt
 
   test_markdown_links:
     runs-on: ubuntu-latest
