@@ -2,8 +2,8 @@
 
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, ResourceOptions
-from pulumi_azure_native import resources, maintenance
+from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi_azure_native import maintenance, resources
 
 
 class SREMaintenanceProps:
@@ -12,8 +12,10 @@ class SREMaintenanceProps:
     def __init__(
         self,
         location: Input[str],
+        workspaces_resource_group_name: Input[str],
     ) -> None:
-        self.location = location
+        self.location = Output.from_input(location)
+        self.workspaces_resource_group_name = workspaces_resource_group_name
 
 
 class SREMaintenanceComponent(ComponentResource):
@@ -40,10 +42,10 @@ class SREMaintenanceComponent(ComponentResource):
             tags=child_tags,
         )
 
+        # Deploy maintenance configuration
         maintenance_configuration = maintenance.MaintenanceConfiguration(
             f"{self._name}_maintenance_configuration",
             duration="03:55",
-            #expiration_date_time="9999-12-31 00:00",
             extension_properties={"InGuestPatchMode": "User"},
             install_patches=maintenance.InputPatchConfigurationArgs(
                 linux_parameters=maintenance.InputLinuxParametersArgs(
@@ -53,10 +55,13 @@ class SREMaintenanceComponent(ComponentResource):
             ),
             location=props.location,
             maintenance_scope=maintenance.MaintenanceScope.IN_GUEST_PATCH,
-            #namespace="Microsoft.Maintenance",
             recur_every="1Day",
             resource_group_name=resource_group.name,
             resource_name_=f"{stack_name}-maintenance-configuration",
             start_date_time="2020-04-30 01:00",
             time_zone="GMT Standard Time",
-            visibility=maintenance.Visibility.CUSTOM)
+            visibility=maintenance.Visibility.CUSTOM,
+        )
+
+        # Register outputs
+        self.maintenance_configuration_id: Output[str] = maintenance_configuration.id
