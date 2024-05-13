@@ -3,14 +3,20 @@
 <!--
 Thank you for your pull request!
 
-Before going any further, please review the [guidelines for contributing](../CONTRIBUTING.md) to this repository.
-Replace the empty checkboxes [ ] below with checked ones [x] accordingly.
+- Before going any further, please review the [guidelines for contributing](../CONTRIBUTING.md) to this repository.
+- If you're not yet ready to merge, please mark this pull request as a **draft** and add `'[WIP]'` to the title
+- Replace the empty checkboxes [ ] below with checked ones [x] accordingly.
 -->
 
 - [ ] You have given your pull request a meaningful title (_e.g._ `Enable foobar integration` rather than `515 foobar`).
 - [ ] You are targeting the appropriate branch. If you're not certain which one this is, it should be **`develop`**.
 - [ ] Your branch is up-to-date with the **target branch** (it probably was when you started, but it may have changed since then).
-- [ ] You have marked this pull request as a **draft** and added `'[WIP]'` to the title if needed (if you're not yet ready to merge).
+
+### :vertical_traffic_light: Depends on
+
+<!--
+List any other PRs that must be merged before this one
+-->
 
 ### :arrow_heading_up: Summary
 
