@@ -27,10 +27,6 @@ from .sre.identity import (
     SREIdentityComponent,
     SREIdentityProps,
 )
-from .sre.maintenance import (
-    SREMaintenanceComponent,
-    SREMaintenanceProps,
-)
 from .sre.monitoring import (
     SREMonitoringComponent,
     SREMonitoringProps,
@@ -376,16 +372,6 @@ class DeclarativeSRE:
                 location=self.context.location,
                 storage_account_data_private_sensitive_id=data.storage_account_data_private_sensitive_id,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
-            ),
-            tags=self.tags,
-        )
-
-        # Deploy maintenance configuration
-        SREMaintenanceComponent(
-            "sre_maintenance",
-            self.stack_name,
-            SREMaintenanceProps(
-                location=self.context.location,
             ),
             tags=self.tags,
         )
