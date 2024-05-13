@@ -13,8 +13,8 @@ from pulumi_azure_native import (
 )
 
 from data_safe_haven.functions import (
+    next_occurrence,
     replace_separators,
-    time_as_string,
 )
 from data_safe_haven.infrastructure.common import get_id_from_subnet
 from data_safe_haven.infrastructure.components import (
@@ -305,7 +305,7 @@ class SHMMonitoringComponent(ComponentResource):
                 interval=1,
                 is_enabled=True,
                 start_time=Output.from_input(props.timezone).apply(
-                    lambda tz: time_as_string(hour=1, minute=1, timezone=tz)
+                    lambda tz: next_occurrence(hour=1, minute=1, timezone=tz)
                 ),
                 time_zone=props.timezone,
             ),
@@ -344,7 +344,7 @@ class SHMMonitoringComponent(ComponentResource):
                 interval=1,
                 is_enabled=True,
                 start_time=Output.from_input(props.timezone).apply(
-                    lambda tz: time_as_string(hour=2, minute=2, timezone=tz)
+                    lambda tz: next_occurrence(hour=2, minute=2, timezone=tz)
                 ),
                 time_zone=props.timezone,
             ),
@@ -398,7 +398,7 @@ class SHMMonitoringComponent(ComponentResource):
                 interval=1,
                 is_enabled=True,
                 start_time=Output.from_input(props.timezone).apply(
-                    lambda tz: time_as_string(hour=2, minute=2, timezone=tz)
+                    lambda tz: next_occurrence(hour=2, minute=2, timezone=tz)
                 ),
                 time_zone=props.timezone,
             ),
