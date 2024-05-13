@@ -60,6 +60,22 @@ class TestUpload:
             context.storage_container_name,
         )
 
+    def test_upload_no_changes(self, mocker, context, runner, config_sres, config_file):
+        mock_exists = mocker.patch.object(Config, "remote_exists", return_value=True)
+        mock_from_remote = mocker.patch.object(
+            Config, "from_remote", return_value=config_sres
+        )
+        mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        result = runner.invoke(
+            config_command_group,
+            ["upload", str(config_file)],
+        )
+        assert result.exit_code == 0
+
+        mock_exists.assert_called_once_with(context)
+        mock_from_remote.assert_called_once_with(context)
+        mock_upload.assert_not_called()
+
     def test_upload_no_file(self, mocker, runner):
         mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
