@@ -138,7 +138,7 @@ class SREWorkspacesComponent(ComponentResource):
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
 
         # Deploy maintenance configuration
-        maintenance_component = SREMaintenanceComponent(
+        maintenance_configuration = SREMaintenanceComponent(
             "sre_maintenance",
             stack_name,
             SREMaintenanceProps(
@@ -160,7 +160,7 @@ class SREWorkspacesComponent(ComponentResource):
                     location=props.location,
                     log_analytics_workspace_id=props.log_analytics_workspace_id,
                     log_analytics_workspace_key=props.log_analytics_workspace_key,
-                    maintenance_configuration_id=maintenance_component.maintenance_configuration_id,
+                    maintenance_configuration_id=maintenance_configuration.maintenance_configuration_id,
                     resource_group_name=resource_group.name,
                     subnet_name=props.subnet_workspaces_name,
                     virtual_network_name=props.virtual_network_name,
