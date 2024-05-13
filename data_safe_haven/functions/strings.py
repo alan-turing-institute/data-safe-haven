@@ -9,6 +9,8 @@ from collections.abc import Sequence
 
 import pytz
 
+from data_safe_haven.exceptions import DataSafeHavenInputError
+
 
 def alphanumeric(input_string: str) -> str:
     """Strip any characters that are not letters or numbers from a string."""
@@ -25,15 +27,26 @@ def b64encode(input_string: str) -> str:
 
 
 def next_occurrence(hour: int, minute: int, timezone: str) -> str:
-    """Get the next occurence of a repeating daily time as a string"""
-    dt = datetime.datetime.now(datetime.UTC).replace(
-        hour=hour,
-        minute=minute,
-        second=0,
-        microsecond=0,
-        tzinfo=pytz.timezone(timezone),
-    ) + datetime.timedelta(days=1)
-    return dt.isoformat()
+    """
+    Get an ISO-formatted string representing the next occurence in UTC of a daily
+    repeating time in the local timezone.
+    """
+    try:
+        local_tz = pytz.timezone(timezone)
+        local_dt = datetime.datetime.now(local_tz).replace(
+            hour=hour,
+            minute=minute,
+            second=0,
+            microsecond=0,
+        ) + datetime.timedelta(days=1)
+        utc_dt = local_dt.astimezone(pytz.utc)
+        return utc_dt.isoformat()
+    except pytz.exceptions.UnknownTimeZoneError as exc:
+        msg = f"Timezone '{timezone}' was not recognised.\n{exc}"
+        raise DataSafeHavenInputError(msg) from exc
+    except ValueError as exc:
+        msg = f"Time '{hour}:{minute}' was not recognised.\n{exc}"
+        raise DataSafeHavenInputError(msg) from exc
 
 
 def password(length: int) -> str:
