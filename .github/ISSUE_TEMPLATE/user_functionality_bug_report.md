@@ -28,6 +28,13 @@ Before reporting a problem please check the following. Replace the empty checkbo
 
 <!--
 What happens now and (if relevant) an explanation of why this is incorrect
+
+Optionally include specific tasks (if any) in the order in which they need to be done.
+- [ ] Task 1
+- [ ] Task 2
+- [ ] Task 3
+
+Include a clear and concise description of what the behaviour should be when this issue is closed if this is not obvious.
 -->
 
 ## :steam_locomotive: Workarounds or solutions
