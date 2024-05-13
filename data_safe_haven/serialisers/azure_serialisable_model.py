@@ -16,11 +16,6 @@ class AzureSerialisableModel(YAMLSerialisableModel):
     config_type: ClassVar[str] = "AzureSerialisableModel"
     filename: ClassVar[str] = "config.yaml"
 
-    def remote_yaml_diff(self, context: ContextBase) -> list[str]:
-        remote_model = self.from_remote(context)
-
-        return self.yaml_diff(remote_model)
-
     @classmethod
     def from_remote(cls: type[T], context: ContextBase) -> T:
         """Construct an AzureSerialisableModel from a YAML file in Azure storage."""
@@ -34,16 +29,6 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         return cls.from_yaml(config_yaml)
 
     @classmethod
-    def remote_exists(cls: type[T], context: ContextBase) -> bool:
-        azure_api = AzureApi(subscription_name=context.subscription_name)
-        return azure_api.blob_exists(
-            cls.filename,
-            context.resource_group_name,
-            context.storage_account_name,
-            context.storage_container_name,
-        )
-
-    @classmethod
     def from_remote_or_create(
         cls: type[T], context: ContextBase, **default_args: Any
     ) -> T:
@@ -55,6 +40,27 @@ class AzureSerialisableModel(YAMLSerialisableModel):
             return cls.from_remote(context)
         else:
             return cls(**default_args)
+
+    @classmethod
+    def remote_exists(cls: type[T], context: ContextBase) -> bool:
+        """Check whether a remote instance of this model exists."""
+        azure_api = AzureApi(subscription_name=context.subscription_name)
+        return azure_api.blob_exists(
+            cls.filename,
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
+
+    def remote_yaml_diff(self, context: ContextBase) -> list[str]:
+        """
+        Determine the diff of YAML output from the remote model to `self`.
+
+        The diff is given in unified diff format.
+        """
+        remote_model = self.from_remote(context)
+
+        return self.yaml_diff(remote_model, from_name="remote", to_name="local")
 
     def upload(self, context: ContextBase) -> None:
         """Serialise an AzureSerialisableModel to a YAML file in Azure storage."""

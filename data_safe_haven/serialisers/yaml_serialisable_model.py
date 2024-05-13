@@ -23,16 +23,6 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
 
     config_type: ClassVar[str] = "YAMLSerialisableModel"
 
-    def yaml_diff(self, other: T) -> list[str]:
-        return list(
-            unified_diff(
-                other.to_yaml().split(),
-                self.to_yaml().split(),
-                fromfile="remote",
-                tofile="local",
-            )
-        )
-
     @classmethod
     def from_filepath(cls: type[T], config_file_path: PathType) -> T:
         """Construct a YAMLSerialisableModel from a YAML file"""
@@ -75,3 +65,18 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
     def to_yaml(self) -> str:
         """Serialise a YAMLSerialisableModel to a YAML string"""
         return yaml.dump(self.model_dump(by_alias=True, mode="json"), indent=2)
+
+    def yaml_diff(self, other: T, from_name: str = "other", to_name: str = "self") -> list[str]:
+        """
+        Determine the diff of YAML output from `other` to `self`.
+
+        The diff is given in unified diff format.
+        """
+        return list(
+            unified_diff(
+                other.to_yaml().split(),
+                self.to_yaml().split(),
+                fromfile=from_name,
+                tofile=to_name,
+            )
+        )

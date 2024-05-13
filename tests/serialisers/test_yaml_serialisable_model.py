@@ -109,8 +109,8 @@ class TestYAMLSerialisableModel:
         diff = example_config_class.yaml_diff(other)
         assert isinstance(diff, list)
         assert diff == [
-            "--- remote\n",
-            "+++ local\n",
+            "--- other\n",
+            "+++ self\n",
             "@@ -1,5 +1,5 @@\n",
             " integer:",
             "-3",
