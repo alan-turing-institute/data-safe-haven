@@ -54,6 +54,9 @@ def upload(
                 default_to_yes=False,
             ):
                 raise typer.Exit()
+        else:
+            print("No changes, won't upload configuration.")
+            raise typer.Exit()
 
     config.upload(context)
 
