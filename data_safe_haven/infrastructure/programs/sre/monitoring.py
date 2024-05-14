@@ -5,7 +5,7 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import automation
 
-from data_safe_haven.functions import time_as_string
+from data_safe_haven.functions import next_occurrence
 
 
 class SREMonitoringProps:
@@ -56,7 +56,7 @@ class SREMonitoringComponent(ComponentResource):
                 start_time=Output.all(
                     timezone=props.timezone, minute=props.sre_index
                 ).apply(
-                    lambda kwargs: time_as_string(
+                    lambda kwargs: next_occurrence(
                         hour=3,
                         minute=int(kwargs["minute"]),
                         timezone=str(kwargs["timezone"]),
