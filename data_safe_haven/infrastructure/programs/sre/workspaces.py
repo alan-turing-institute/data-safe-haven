@@ -143,7 +143,7 @@ class SREWorkspacesComponent(ComponentResource):
             stack_name,
             SREMaintenanceProps(
                 location=props.location,
-                workspaces_resource_group_name=resource_group.name,
+                resource_group_name=resource_group.name,
             ),
             tags=child_tags,
         )

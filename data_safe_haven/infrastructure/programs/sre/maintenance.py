@@ -12,10 +12,10 @@ class SREMaintenanceProps:
     def __init__(
         self,
         location: Input[str],
-        workspaces_resource_group_name: Input[str],
+        resource_group_name: Input[str],
     ) -> None:
-        self.location = Output.from_input(location)
-        self.workspaces_resource_group_name = workspaces_resource_group_name
+        self.location = location
+        self.resource_group_name = resource_group_name
 
 
 class SREMaintenanceComponent(ComponentResource):
@@ -33,15 +33,6 @@ class SREMaintenanceComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-maintenance",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Deploy maintenance configuration
         maintenance_configuration = maintenance.MaintenanceConfiguration(
             f"{self._name}_maintenance_configuration",
@@ -56,7 +47,7 @@ class SREMaintenanceComponent(ComponentResource):
             location=props.location,
             maintenance_scope=maintenance.MaintenanceScope.IN_GUEST_PATCH,
             recur_every="1Day",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             resource_name_=f"{stack_name}-maintenance-configuration",
             start_date_time="2020-04-30 01:00",
             time_zone="GMT Standard Time",
