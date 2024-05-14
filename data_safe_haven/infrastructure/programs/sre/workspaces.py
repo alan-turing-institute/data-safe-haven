@@ -193,13 +193,17 @@ class SREWorkspacesComponent(ComponentResource):
         file_uploads = [
             (FileReader(resources_path / "workspace" / "run_all_tests.bats"), "0444")
         ]
+        vm_index = 0
         for test_file in pathlib.Path(resources_path / "workspace").glob("test*"):
             file_uploads.append((FileReader(test_file), "0444"))
         for vm, vm_output in zip(vms, vm_outputs, strict=True):
+            vm_index += 1
             outputs: dict[str, Output[str]] = {}
             for file_upload, file_permissions in file_uploads:
                 file_smoke_test = FileUpload(
-                    replace_separators(f"{self._name}_file_{file_upload.name}", "_"),
+                    replace_separators(
+                        f"workspace_{vm_index:02d}_file_{file_upload.name}", "_"
+                    ),
                     FileUploadProps(
                         file_contents=file_upload.file_contents(
                             mustache_values=mustache_values
