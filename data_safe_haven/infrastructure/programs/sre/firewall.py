@@ -252,9 +252,7 @@ class SREFirewallComponent(ComponentResource):
 
         # Retrieve the private IP address for the firewall
         private_ip_address = firewall.ip_configurations.apply(
-            lambda cfgs: (
-                "" if not cfgs else next(cfg.private_ip_address for cfg in cfgs)
-            )
+            lambda cfgs: "" if not cfgs else cfgs[0].private_ip_address
         )
 
         # Route all external traffic through the firewall.
