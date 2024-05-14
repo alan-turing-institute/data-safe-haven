@@ -198,7 +198,6 @@ class SREWorkspacesComponent(ComponentResource):
         for vm_index, (vm, vm_output) in enumerate(
             zip(vms, vm_outputs, strict=True), start=1
         ):
-            vm_index += 1
             outputs: dict[str, Output[str]] = {}
             for file_upload, file_permissions in file_uploads:
                 file_smoke_test = FileUpload(
