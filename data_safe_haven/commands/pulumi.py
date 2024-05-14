@@ -43,7 +43,6 @@ def run(
     if project_type == ProjectType.SRE and not sre_name:
         print("--sre-name is required.")
         raise typer.Exit(1)
-    print(project_type, sre_name, command, sep="\n")
 
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
