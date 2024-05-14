@@ -193,10 +193,11 @@ class SREWorkspacesComponent(ComponentResource):
         file_uploads = [
             (FileReader(resources_path / "workspace" / "run_all_tests.bats"), "0444")
         ]
-        vm_index = 0
         for test_file in pathlib.Path(resources_path / "workspace").glob("test*"):
             file_uploads.append((FileReader(test_file), "0444"))
-        for vm_index, (vm, vm_output) in enumerate(zip(vms, vm_outputs, strict=True), start=1):
+        for vm_index, (vm, vm_output) in enumerate(
+            zip(vms, vm_outputs, strict=True), start=1
+        ):
             vm_index += 1
             outputs: dict[str, Output[str]] = {}
             for file_upload, file_permissions in file_uploads:
