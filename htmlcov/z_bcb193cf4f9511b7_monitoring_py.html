@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for data_safe_haven/infrastructure/programs/shm/monitoring.py: 22%</title>
+    <title>Coverage for data_safe_haven/infrastructure/programs/shm/monitoring.py: 24%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
     <link rel="stylesheet" href="style_cb_8e611ae1.css" type="text/css">
     <script src="coverage_html_cb_da166b87.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>data_safe_haven/infrastructure/programs/shm/monitoring.py</b>:
-            <span class="pc_cov">22%</span>
+            <span class="pc_cov">24%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -54,8 +54,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">45 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">10<span class="text"> run</span></button>
+            <span class="text">46 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">11<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">35<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_bcb193cf4f9511b7_networking_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.1">coverage.py v7.5.1</a>,
-            created at 2024-05-13 08:28 +0000
+            created at 2024-05-14 08:23 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -95,15 +95,15 @@
     <p class="pln"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">functions</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t">    <span class="nam">ordered_private_dns_zones</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t">    <span class="nam">next_occurrence</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t17" href="#t17">17</a></span><span class="t">    <span class="nam">replace_separators</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t18" href="#t18">18</a></span><span class="t">    <span class="nam">time_as_string</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t19" href="#t19">19</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t20" href="#t20">20</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">infrastructure</span><span class="op">.</span><span class="nam">common</span> <span class="key">import</span> <span class="nam">get_id_from_subnet</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t21" href="#t21">21</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">infrastructure</span><span class="op">.</span><span class="nam">components</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t22" href="#t22">22</a></span><span class="t">    <span class="nam">WrappedAutomationAccount</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t23" href="#t23">23</a></span><span class="t">    <span class="nam">WrappedLogAnalyticsWorkspace</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t24" href="#t24">24</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t18" href="#t18">18</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t19" href="#t19">19</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">infrastructure</span><span class="op">.</span><span class="nam">common</span> <span class="key">import</span> <span class="nam">get_id_from_subnet</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t20" href="#t20">20</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">infrastructure</span><span class="op">.</span><span class="nam">components</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t21" href="#t21">21</a></span><span class="t">    <span class="nam">WrappedAutomationAccount</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t22" href="#t22">22</a></span><span class="t">    <span class="nam">WrappedLogAnalyticsWorkspace</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t23" href="#t23">23</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t24" href="#t24">24</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">types</span> <span class="key">import</span> <span class="nam">AzureDnsZoneNames</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t25" href="#t25">25</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t26" href="#t26">26</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t27" href="#t27">27</a></span><span class="t"><span class="key">class</span> <span class="nam">SHMMonitoringProps</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -235,7 +235,7 @@
     <p class="pln"><span class="n"><a id="t153" href="#t153">153</a></span><span class="t">                        <span class="nam">props</span><span class="op">.</span><span class="nam">private_dns_zone_base_id</span><span class="op">,</span> <span class="nam">dns_zone_name</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t154" href="#t154">154</a></span><span class="t">                    <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t155" href="#t155">155</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t156" href="#t156">156</a></span><span class="t">                <span class="key">for</span> <span class="nam">dns_zone_name</span> <span class="key">in</span> <span class="nam">ordered_private_dns_zones</span><span class="op">(</span><span class="str">"Azure Automation"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t156" href="#t156">156</a></span><span class="t">                <span class="key">for</span> <span class="nam">dns_zone_name</span> <span class="key">in</span> <span class="nam">AzureDnsZoneNames</span><span class="op">.</span><span class="nam">AZURE_AUTOMATION</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t157" href="#t157">157</a></span><span class="t">            <span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t158" href="#t158">158</a></span><span class="t">            <span class="nam">private_dns_zone_group_name</span><span class="op">=</span><span class="fst">f"</span><span class="op">{</span><span class="nam">stack_name</span><span class="op">}</span><span class="fst">-dzg-aa</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t159" href="#t159">159</a></span><span class="t">            <span class="nam">private_endpoint_name</span><span class="op">=</span><span class="nam">automation_account_private_endpoint</span><span class="op">.</span><span class="nam">name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -319,7 +319,7 @@
     <p class="pln"><span class="n"><a id="t237" href="#t237">237</a></span><span class="t">                        <span class="nam">props</span><span class="op">.</span><span class="nam">private_dns_zone_base_id</span><span class="op">,</span> <span class="nam">dns_zone_name</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t238" href="#t238">238</a></span><span class="t">                    <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t239" href="#t239">239</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t240" href="#t240">240</a></span><span class="t">                <span class="key">for</span> <span class="nam">dns_zone_name</span> <span class="key">in</span> <span class="nam">ordered_private_dns_zones</span><span class="op">(</span><span class="str">"Azure Monitor"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t240" href="#t240">240</a></span><span class="t">                <span class="key">for</span> <span class="nam">dns_zone_name</span> <span class="key">in</span> <span class="nam">AzureDnsZoneNames</span><span class="op">.</span><span class="nam">AZURE_MONITOR</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t241" href="#t241">241</a></span><span class="t">            <span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t242" href="#t242">242</a></span><span class="t">            <span class="nam">private_dns_zone_group_name</span><span class="op">=</span><span class="fst">f"</span><span class="op">{</span><span class="nam">stack_name</span><span class="op">}</span><span class="fst">-dzg-log</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t243" href="#t243">243</a></span><span class="t">            <span class="nam">private_endpoint_name</span><span class="op">=</span><span class="nam">log_analytics_private_endpoint</span><span class="op">.</span><span class="nam">name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -387,7 +387,7 @@
     <p class="pln"><span class="n"><a id="t305" href="#t305">305</a></span><span class="t">                <span class="nam">interval</span><span class="op">=</span><span class="num">1</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t306" href="#t306">306</a></span><span class="t">                <span class="nam">is_enabled</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t307" href="#t307">307</a></span><span class="t">                <span class="nam">start_time</span><span class="op">=</span><span class="nam">Output</span><span class="op">.</span><span class="nam">from_input</span><span class="op">(</span><span class="nam">props</span><span class="op">.</span><span class="nam">timezone</span><span class="op">)</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t308" href="#t308">308</a></span><span class="t">                    <span class="key">lambda</span> <span class="nam">tz</span><span class="op">:</span> <span class="nam">time_as_string</span><span class="op">(</span><span class="nam">hour</span><span class="op">=</span><span class="num">1</span><span class="op">,</span> <span class="nam">minute</span><span class="op">=</span><span class="num">1</span><span class="op">,</span> <span class="nam">timezone</span><span class="op">=</span><span class="nam">tz</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t308" href="#t308">308</a></span><span class="t">                    <span class="key">lambda</span> <span class="nam">tz</span><span class="op">:</span> <span class="nam">next_occurrence</span><span class="op">(</span><span class="nam">hour</span><span class="op">=</span><span class="num">1</span><span class="op">,</span> <span class="nam">minute</span><span class="op">=</span><span class="num">1</span><span class="op">,</span> <span class="nam">timezone</span><span class="op">=</span><span class="nam">tz</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t309" href="#t309">309</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t310" href="#t310">310</a></span><span class="t">                <span class="nam">time_zone</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">timezone</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t311" href="#t311">311</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -426,7 +426,7 @@
     <p class="pln"><span class="n"><a id="t344" href="#t344">344</a></span><span class="t">                <span class="nam">interval</span><span class="op">=</span><span class="num">1</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t345" href="#t345">345</a></span><span class="t">                <span class="nam">is_enabled</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t346" href="#t346">346</a></span><span class="t">                <span class="nam">start_time</span><span class="op">=</span><span class="nam">Output</span><span class="op">.</span><span class="nam">from_input</span><span class="op">(</span><span class="nam">props</span><span class="op">.</span><span class="nam">timezone</span><span class="op">)</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t347" href="#t347">347</a></span><span class="t">                    <span class="key">lambda</span> <span class="nam">tz</span><span class="op">:</span> <span class="nam">time_as_string</span><span class="op">(</span><span class="nam">hour</span><span class="op">=</span><span class="num">2</span><span class="op">,</span> <span class="nam">minute</span><span class="op">=</span><span class="num">2</span><span class="op">,</span> <span class="nam">timezone</span><span class="op">=</span><span class="nam">tz</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t347" href="#t347">347</a></span><span class="t">                    <span class="key">lambda</span> <span class="nam">tz</span><span class="op">:</span> <span class="nam">next_occurrence</span><span class="op">(</span><span class="nam">hour</span><span class="op">=</span><span class="num">2</span><span class="op">,</span> <span class="nam">minute</span><span class="op">=</span><span class="num">2</span><span class="op">,</span> <span class="nam">timezone</span><span class="op">=</span><span class="nam">tz</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t348" href="#t348">348</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t349" href="#t349">349</a></span><span class="t">                <span class="nam">time_zone</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">timezone</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t350" href="#t350">350</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -480,7 +480,7 @@
     <p class="pln"><span class="n"><a id="t398" href="#t398">398</a></span><span class="t">                <span class="nam">interval</span><span class="op">=</span><span class="num">1</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t399" href="#t399">399</a></span><span class="t">                <span class="nam">is_enabled</span><span class="op">=</span><span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t400" href="#t400">400</a></span><span class="t">                <span class="nam">start_time</span><span class="op">=</span><span class="nam">Output</span><span class="op">.</span><span class="nam">from_input</span><span class="op">(</span><span class="nam">props</span><span class="op">.</span><span class="nam">timezone</span><span class="op">)</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t401" href="#t401">401</a></span><span class="t">                    <span class="key">lambda</span> <span class="nam">tz</span><span class="op">:</span> <span class="nam">time_as_string</span><span class="op">(</span><span class="nam">hour</span><span class="op">=</span><span class="num">2</span><span class="op">,</span> <span class="nam">minute</span><span class="op">=</span><span class="num">2</span><span class="op">,</span> <span class="nam">timezone</span><span class="op">=</span><span class="nam">tz</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t401" href="#t401">401</a></span><span class="t">                    <span class="key">lambda</span> <span class="nam">tz</span><span class="op">:</span> <span class="nam">next_occurrence</span><span class="op">(</span><span class="nam">hour</span><span class="op">=</span><span class="num">2</span><span class="op">,</span> <span class="nam">minute</span><span class="op">=</span><span class="num">2</span><span class="op">,</span> <span class="nam">timezone</span><span class="op">=</span><span class="nam">tz</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t402" href="#t402">402</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t403" href="#t403">403</a></span><span class="t">                <span class="nam">time_zone</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">timezone</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t404" href="#t404">404</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -544,7 +544,7 @@
             <a class="nav" href="z_bcb193cf4f9511b7_networking_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.1">coverage.py v7.5.1</a>,
-            created at 2024-05-13 08:28 +0000
+            created at 2024-05-14 08:23 +0000
         </p>
     </div>
 </footer>

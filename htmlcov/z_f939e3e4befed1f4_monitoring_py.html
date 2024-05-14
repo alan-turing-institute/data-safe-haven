@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_f939e3e4befed1f4_networking_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.1">coverage.py v7.5.1</a>,
-            created at 2024-05-13 08:28 +0000
+            created at 2024-05-14 08:23 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -87,7 +87,7 @@
     <p class="run"><span class="n"><a id="t5" href="#t5">5</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi</span> <span class="key">import</span> <span class="nam">ComponentResource</span><span class="op">,</span> <span class="nam">Input</span><span class="op">,</span> <span class="nam">Output</span><span class="op">,</span> <span class="nam">ResourceOptions</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi_azure_native</span> <span class="key">import</span> <span class="nam">automation</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">functions</span> <span class="key">import</span> <span class="nam">time_as_string</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">functions</span> <span class="key">import</span> <span class="nam">next_occurrence</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t"><span class="key">class</span> <span class="nam">SREMonitoringProps</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -138,7 +138,7 @@
     <p class="pln"><span class="n"><a id="t56" href="#t56">56</a></span><span class="t">                <span class="nam">start_time</span><span class="op">=</span><span class="nam">Output</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t57" href="#t57">57</a></span><span class="t">                    <span class="nam">timezone</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">timezone</span><span class="op">,</span> <span class="nam">minute</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">sre_index</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t58" href="#t58">58</a></span><span class="t">                <span class="op">)</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t59" href="#t59">59</a></span><span class="t">                    <span class="key">lambda</span> <span class="nam">kwargs</span><span class="op">:</span> <span class="nam">time_as_string</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t59" href="#t59">59</a></span><span class="t">                    <span class="key">lambda</span> <span class="nam">kwargs</span><span class="op">:</span> <span class="nam">next_occurrence</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t60" href="#t60">60</a></span><span class="t">                        <span class="nam">hour</span><span class="op">=</span><span class="num">3</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t61" href="#t61">61</a></span><span class="t">                        <span class="nam">minute</span><span class="op">=</span><span class="nam">int</span><span class="op">(</span><span class="nam">kwargs</span><span class="op">[</span><span class="str">"minute"</span><span class="op">]</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t62" href="#t62">62</a></span><span class="t">                        <span class="nam">timezone</span><span class="op">=</span><span class="nam">str</span><span class="op">(</span><span class="nam">kwargs</span><span class="op">[</span><span class="str">"timezone"</span><span class="op">]</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -190,7 +190,7 @@
             <a class="nav" href="z_f939e3e4befed1f4_networking_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.1">coverage.py v7.5.1</a>,
-            created at 2024-05-13 08:28 +0000
+            created at 2024-05-14 08:23 +0000
         </p>
     </div>
 </footer>
