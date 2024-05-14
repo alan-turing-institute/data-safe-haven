@@ -2,7 +2,7 @@ import pytest
 
 from data_safe_haven.exceptions import DataSafeHavenParameterError
 from data_safe_haven.external import AzureIPv4Range
-from data_safe_haven.infrastructure.common import SREIpRanges
+from data_safe_haven.infrastructure.common import SREDnsIpRanges, SREIpRanges
 
 
 class TestSREIpRanges:
@@ -40,3 +40,9 @@ class TestSREIpRanges:
             "10.5.1.200", "10.5.1.207"
         )
         assert ips.workspaces == AzureIPv4Range("10.5.2.0", "10.5.2.255")
+
+
+class TestSREDnsIpRanges:
+    def test_vnet(self):
+        ips = SREDnsIpRanges()
+        assert ips.vnet == AzureIPv4Range("192.168.0.0", "192.168.0.7")
