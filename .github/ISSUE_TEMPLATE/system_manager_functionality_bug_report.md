@@ -23,7 +23,7 @@ Before reporting a problem please check the following. Replace the empty checkbo
 - **Operating System:** <!-- Which operating system you are using: Windows, Linux, macOS etc. -->
 - **Data Safe Haven version:** <!-- Which version of the Data Safe Haven you are using: 3.0.0, 3.1.1 etc. If this is on a branch use `branch name @ 7-letter commit-id` -->
 
-## :cactus: Package dependencies
+## :package: Packages
 
 <details>
 <summary>List of packages</summary>
