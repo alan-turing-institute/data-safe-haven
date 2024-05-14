@@ -285,10 +285,10 @@ class VMComponent(ComponentResource):
 
         # Add VM to maintenance configuration
         self.configuration_assignment_resource = maintenance.ConfigurationAssignment(
-            "configurationAssignmentResource",
+            f"{name_underscored}_configurationAssignment",
             provider_name="Microsoft.Compute",
             resource_group_name=props.resource_group_name,
-            resource_name_=props.vm_name,
+            resource_name_=virtual_machine.name,
             resource_type="VirtualMachines",
             location=props.location,
             maintenance_configuration_id=props.maintenance_configuration_id,
