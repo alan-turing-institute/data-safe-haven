@@ -11,6 +11,7 @@ from data_safe_haven.utility import LoggingSingleton
 
 from .config import config_command_group
 from .context import context_command_group
+from .pulumi import pulumi_command_group
 from .shm import shm_command_group
 from .sre import sre_command_group
 from .users import users_command_group
@@ -75,6 +76,9 @@ application.add_typer(
 )
 application.add_typer(
     context_command_group, name="context", help="Manage Data Safe Haven contexts."
+)
+application.add_typer(
+    pulumi_command_group, name="pulumi", help="Interact with the Pulumi CLI."
 )
 application.add_typer(
     shm_command_group,

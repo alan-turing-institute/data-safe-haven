@@ -346,6 +346,15 @@ class ProjectManager:
             msg = f"Pulumi refresh failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
 
+    def run_pulumi_command(self, command: str) -> None:
+        # command = automation.PulumiCommand()
+        # result = command.run(
+        #     command.split(),
+        #     self.stack.workspace.work_dir,
+        #     self.env_vars
+        # )
+        self.stack._run_pulumi_cmd_sync(command.split())
+
     def secret(self, name: str) -> str:
         """Read a secret from the Pulumi stack."""
         try:
