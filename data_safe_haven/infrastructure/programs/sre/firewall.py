@@ -257,7 +257,13 @@ class SREFirewallComponent(ComponentResource):
             )
         )
 
-        # Route all connected traffic through the firewall
+        # Route all external traffic through the firewall.
+        #
+        # We use the system default route "0.0.0.0/0" as this will be overruled by
+        # anything more specific, such as VNet <-> VNet traffic which we do not want to
+        # send via the firewall.
+        #
+        # See https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-udr-overview
         network.Route(
             f"{self._name}_route_via_firewall",
             address_prefix="0.0.0.0/0",
