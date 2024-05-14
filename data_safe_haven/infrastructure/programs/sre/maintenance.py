@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import maintenance, resources
+from pulumi_azure_native import maintenance
 
 
 class SREMaintenanceProps:
@@ -30,7 +30,6 @@ class SREMaintenanceComponent(ComponentResource):
         tags: Input[Mapping[str, Input[str]]] | None = None,
     ) -> None:
         super().__init__("dsh:sre:MaintenanceComponent", name, {}, opts)
-        child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
         # Deploy maintenance configuration
@@ -52,6 +51,7 @@ class SREMaintenanceComponent(ComponentResource):
             start_date_time="2020-04-30 01:00",
             time_zone="GMT Standard Time",
             visibility=maintenance.Visibility.CUSTOM,
+            tags=child_tags,
         )
 
         # Register outputs
