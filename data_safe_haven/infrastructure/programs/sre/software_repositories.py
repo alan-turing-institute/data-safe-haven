@@ -6,7 +6,6 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.infrastructure.common import (
-    Ports,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -16,7 +15,7 @@ from data_safe_haven.infrastructure.components import (
     LocalDnsRecordProps,
 )
 from data_safe_haven.resources import resources_path
-from data_safe_haven.types import SoftwarePackageCategory
+from data_safe_haven.types import Ports, SoftwarePackageCategory
 from data_safe_haven.utility import FileReader
 
 

@@ -5,7 +5,6 @@ from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
-    Ports,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -17,6 +16,7 @@ from data_safe_haven.infrastructure.components import (
     PostgresqlDatabaseProps,
 )
 from data_safe_haven.resources import resources_path
+from data_safe_haven.types import Ports
 from data_safe_haven.utility import FileReader
 
 

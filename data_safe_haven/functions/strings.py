@@ -1,10 +1,15 @@
 import base64
+import datetime
 import hashlib
 import random
 import secrets
 import string
 import uuid
 from collections.abc import Sequence
+
+import pytz
+
+from data_safe_haven.exceptions import DataSafeHavenInputError
 
 
 def alphanumeric(input_string: str) -> str:
@@ -19,6 +24,29 @@ def sanitise_sre_name(name: str) -> str:
 def b64encode(input_string: str) -> str:
     """Encode a normal string into a Base64 string."""
     return base64.b64encode(input_string.encode("utf-8")).decode()
+
+
+def next_occurrence(hour: int, minute: int, timezone: str) -> str:
+    """
+    Get an ISO-formatted string representing the next occurence in UTC of a daily
+    repeating time in the local timezone.
+    """
+    try:
+        local_tz = pytz.timezone(timezone)
+        local_dt = datetime.datetime.now(local_tz).replace(
+            hour=hour,
+            minute=minute,
+            second=0,
+            microsecond=0,
+        ) + datetime.timedelta(days=1)
+        utc_dt = local_dt.astimezone(pytz.utc)
+        return utc_dt.isoformat()
+    except pytz.exceptions.UnknownTimeZoneError as exc:
+        msg = f"Timezone '{timezone}' was not recognised.\n{exc}"
+        raise DataSafeHavenInputError(msg) from exc
+    except ValueError as exc:
+        msg = f"Time '{hour}:{minute}' was not recognised.\n{exc}"
+        raise DataSafeHavenInputError(msg) from exc
 
 
 def password(length: int) -> str:
