@@ -350,7 +350,7 @@ class ProjectManager:
         """Run a Pulumi CLI command using this project and stack."""
         try:
             result = self.stack._run_pulumi_cmd_sync(command.split())
-            return result.stdout
+            return str(result.stdout)
         except automation.CommandError as exc:
             msg = f"Failed to run command.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc

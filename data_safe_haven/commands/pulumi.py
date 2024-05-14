@@ -49,6 +49,8 @@ def run(
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
 
+    project: SHMProjectManager | SREProjectManager
+
     if project_type == ProjectType.SHM:
         project = SHMProjectManager(
             context=context,

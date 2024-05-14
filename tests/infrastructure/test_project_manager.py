@@ -10,7 +10,10 @@ from pulumi.automation import (
 from pytest import fixture, raises
 
 from data_safe_haven.config import DSHPulumiProject
-from data_safe_haven.exceptions import DataSafeHavenConfigError
+from data_safe_haven.exceptions import (
+    DataSafeHavenConfigError,
+    DataSafeHavenPulumiError,
+)
 from data_safe_haven.infrastructure import SHMProjectManager
 from data_safe_haven.infrastructure.project_manager import (
     AzureCliSingleton,
@@ -149,6 +152,17 @@ class TestSHMProjectManager:
 
     def test_pulumi_project(self, shm_stack_manager, pulumi_project):
         assert shm_stack_manager.pulumi_project == pulumi_project
+
+    def test_run_pulumi_command(self, shm_stack_manager):
+        stdout = shm_stack_manager.run_pulumi_command("stack ls")
+        assert "shm-acmedeployment*" in stdout
+
+    def test_run_pulumi_command_command_error(self, shm_stack_manager):
+        with raises(
+            DataSafeHavenPulumiError,
+            match="Failed to run command.",
+        ):
+            shm_stack_manager.run_pulumi_command("notapulumicommand")
 
     def test_stack(self, shm_stack_manager):
         stack = shm_stack_manager.stack
