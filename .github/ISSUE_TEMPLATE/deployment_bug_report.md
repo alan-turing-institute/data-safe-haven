@@ -30,7 +30,7 @@ Before reporting a problem please check the following. Replace the empty checkbo
 
 <!--
 Powershell: Run `deployment/CheckRequirements.ps1` and paste the output below
-Python: Run `pip freeze` and paste the output below
+Python: Run `hatch run pip freeze` and paste the output below
 -->
 
 ```none
