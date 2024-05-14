@@ -75,4 +75,5 @@ def run(
             graph_api_token=graph_api.token,
         )
 
-    project.run_pulumi_command(command)
+    stdout = project.run_pulumi_command(command)
+    print(stdout)
