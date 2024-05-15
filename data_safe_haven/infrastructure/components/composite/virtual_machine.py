@@ -292,6 +292,10 @@ class VMComponent(ComponentResource):
             resource_group_name=props.resource_group_name,
             resource_name_=virtual_machine.name,
             resource_type="VirtualMachines",
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=virtual_machine),
+            ),
         )
 
         # Register outputs
