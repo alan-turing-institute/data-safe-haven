@@ -1,5 +1,6 @@
 """A pydantic BaseModel that can be serialised to and from YAML"""
 
+from difflib import unified_diff
 from pathlib import Path
 from typing import ClassVar, TypeVar
 
@@ -64,3 +65,20 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
     def to_yaml(self) -> str:
         """Serialise a YAMLSerialisableModel to a YAML string"""
         return yaml.dump(self.model_dump(by_alias=True, mode="json"), indent=2)
+
+    def yaml_diff(
+        self, other: T, from_name: str = "other", to_name: str = "self"
+    ) -> list[str]:
+        """
+        Determine the diff of YAML output from `other` to `self`.
+
+        The diff is given in unified diff format.
+        """
+        return list(
+            unified_diff(
+                other.to_yaml().splitlines(keepends=True),
+                self.to_yaml().splitlines(keepends=True),
+                fromfile=from_name,
+                tofile=to_name,
+            )
+        )

@@ -8,6 +8,7 @@ from rich import print
 
 from data_safe_haven.config import Config
 from data_safe_haven.context import ContextSettings
+from data_safe_haven.utility import LoggingSingleton
 
 config_command_group = typer.Typer()
 
@@ -34,9 +35,29 @@ def upload(
 ) -> None:
     """Upload a configuration to the Data Safe Haven context"""
     context = ContextSettings.from_file().assert_context()
+    logger = LoggingSingleton()
+
+    # Create configuration object from file
     with open(file) as config_file:
         config_yaml = config_file.read()
     config = Config.from_yaml(config_yaml)
+
+    # Present diff to user
+    if Config.remote_exists(context):
+        if diff := config.remote_yaml_diff(context):
+            print("".join(diff))
+            if not logger.confirm(
+                (
+                    "Configuration has changed, "
+                    "do you want to overwrite the remote configuration?"
+                ),
+                default_to_yes=False,
+            ):
+                raise typer.Exit()
+        else:
+            print("No changes, won't upload configuration.")
+            raise typer.Exit()
+
     config.upload(context)
 
 
