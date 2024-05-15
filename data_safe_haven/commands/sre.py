@@ -6,7 +6,7 @@ import typer
 
 from data_safe_haven.config import Config, DSHPulumiConfig
 from data_safe_haven.context import ContextSettings
-from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputError
+from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenPulumiError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
@@ -176,7 +176,7 @@ def teardown(
             stack.teardown()
         except Exception as exc:
             msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
-            raise DataSafeHavenInputError(msg) from exc
+            raise DataSafeHavenPulumiError(msg) from exc
 
         # Remove Pulumi project from Pulumi config file
         del pulumi_config[name]
