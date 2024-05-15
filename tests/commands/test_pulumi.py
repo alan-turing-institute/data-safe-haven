@@ -30,3 +30,11 @@ class TestRun:
     ):
         result = runner.invoke(pulumi_command_group, ["shm", "not a pulumi command"])
         assert result.exit_code == 1
+
+    def test_run_sre_no_name(
+        self,
+        runner,
+    ):
+        result = runner.invoke(pulumi_command_group, ["sre", "stack ls"])
+        assert result.exit_code == 1
+        assert "--sre-name is required." in result.stdout
