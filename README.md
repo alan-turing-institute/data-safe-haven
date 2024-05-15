@@ -13,7 +13,7 @@
 | data\_safe\_haven/administration/users/user\_handler.py                           |      105 |       83 |     21% |24-29, 37-73, 77-84, 88, 94-104, 112-133, 141-146, 154-168, 176-215, 223-228 |
 | data\_safe\_haven/commands/\_\_init\_\_.py                                        |        2 |        0 |    100% |           |
 | data\_safe\_haven/commands/cli.py                                                 |       34 |       14 |     59% |55-62, 93-98 |
-| data\_safe\_haven/commands/config.py                                              |       29 |        0 |    100% |           |
+| data\_safe\_haven/commands/config.py                                              |       38 |        0 |    100% |           |
 | data\_safe\_haven/commands/context.py                                             |       64 |        0 |    100% |           |
 | data\_safe\_haven/commands/shm.py                                                 |       46 |       27 |     41% |44-73, 83-84, 93-117 |
 | data\_safe\_haven/commands/sre.py                                                 |       65 |       50 |     23% |32-146, 154-188 |
@@ -88,9 +88,9 @@
 | data\_safe\_haven/provisioning/sre\_provisioning\_manager.py                      |       48 |       34 |     29% |29-57, 69-72, 76-77, 81-86, 90-126, 136-138 |
 | data\_safe\_haven/resources/\_\_init\_\_.py                                       |        3 |        0 |    100% |           |
 | data\_safe\_haven/serialisers/\_\_init\_\_.py                                     |        4 |        0 |    100% |           |
-| data\_safe\_haven/serialisers/azure\_serialisable\_model.py                       |       22 |        0 |    100% |           |
+| data\_safe\_haven/serialisers/azure\_serialisable\_model.py                       |       28 |        0 |    100% |           |
 | data\_safe\_haven/serialisers/context\_base.py                                    |       14 |        2 |     86% |    14, 19 |
-| data\_safe\_haven/serialisers/yaml\_serialisable\_model.py                        |       40 |        0 |    100% |           |
+| data\_safe\_haven/serialisers/yaml\_serialisable\_model.py                        |       43 |        0 |    100% |           |
 | data\_safe\_haven/types/\_\_init\_\_.py                                           |        4 |        0 |    100% |           |
 | data\_safe\_haven/types/annotated\_types.py                                       |       16 |        0 |    100% |           |
 | data\_safe\_haven/types/enums.py                                                  |       80 |        0 |    100% |           |
@@ -98,7 +98,7 @@
 | data\_safe\_haven/utility/\_\_init\_\_.py                                         |        5 |        0 |    100% |           |
 | data\_safe\_haven/utility/directories.py                                          |        8 |        0 |    100% |           |
 | data\_safe\_haven/utility/file\_reader.py                                         |       20 |        9 |     55% |16-17, 21, 25-30, 33 |
-| data\_safe\_haven/utility/logger.py                                               |      108 |       60 |     44% |28-30, 35-37, 41-42, 87-88, 92-93, 117-120, 129-132, 136-137, 141-159, 167-180, 184-190, 194, 200-201, 215-223, 232-234 |
+| data\_safe\_haven/utility/logger.py                                               |      108 |       54 |     50% |28-30, 35-37, 41-42, 87-88, 92-93, 117-120, 129-132, 159, 167-180, 184-190, 194, 200-201, 215-223, 232-234 |
 | data\_safe\_haven/utility/singleton.py                                            |        8 |        0 |    100% |           |
 | data\_safe\_haven/validators/\_\_init\_\_.py                                      |        3 |        0 |    100% |           |
 | data\_safe\_haven/validators/typer.py                                             |       19 |        0 |    100% |           |
@@ -106,7 +106,7 @@
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
 | tests/commands/conftest.py                                                        |       38 |        0 |    100% |           |
 | tests/commands/test\_cli.py                                                       |       23 |        0 |    100% |           |
-| tests/commands/test\_config.py                                                    |       44 |        0 |    100% |           |
+| tests/commands/test\_config.py                                                    |       78 |        0 |    100% |           |
 | tests/commands/test\_context.py                                                   |      100 |        0 |    100% |           |
 | tests/commands/test\_shm.py                                                       |       13 |        1 |     92% |        15 |
 | tests/config/test\_config.py                                                      |      105 |        1 |     99% |       158 |
@@ -115,11 +115,11 @@
 | tests/context/test\_context\_settings.py                                          |      184 |        0 |    100% |           |
 | tests/functions/test\_strings.py                                                  |       32 |        0 |    100% |           |
 | tests/infrastructure/test\_project\_manager.py                                    |       85 |        0 |    100% |           |
-| tests/serialisers/test\_azure\_serialisable\_model.py                             |       56 |        0 |    100% |           |
-| tests/serialisers/test\_yaml\_serialisable\_model.py                              |       63 |        0 |    100% |           |
+| tests/serialisers/test\_azure\_serialisable\_model.py                             |       68 |        0 |    100% |           |
+| tests/serialisers/test\_yaml\_serialisable\_model.py                              |       75 |        0 |    100% |           |
 | tests/validators/test\_typer\_validators.py                                       |       13 |        0 |    100% |           |
 | tests/validators/test\_validators.py                                              |       34 |        0 |    100% |           |
-|                                                                         **TOTAL** | **5289** | **2558** | **52%** |           |
+|                                                                         **TOTAL** | **5365** | **2552** | **52%** |           |
 
 
 ## Setup coverage badge
