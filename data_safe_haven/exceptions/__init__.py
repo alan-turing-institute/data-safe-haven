@@ -39,6 +39,12 @@ class DataSafeHavenEntraIDError(DataSafeHavenCloudError):
 
 
 class DataSafeHavenInputError(DataSafeHavenError):
+    """
+    Exception class for handling errors related to input validation
+
+
+    """
+
     pass
 
 
@@ -49,6 +55,7 @@ class DataSafeHavenInternalError(DataSafeHavenError):
 class DataSafeHavenIPRangeError(DataSafeHavenError):
     """
     Exception class for errors relating to the generation of IP ranges during SRE creation
+
     """
 
     pass
@@ -102,4 +109,10 @@ class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
 
 
 class DataSafeHavenPulumiError(DataSafeHavenCloudError):
+    """
+    Exception class for handling errors when interacting with Pulumi
+
+    For example, when a Pulumi operation such as a deployment fails
+    """
+
     pass
