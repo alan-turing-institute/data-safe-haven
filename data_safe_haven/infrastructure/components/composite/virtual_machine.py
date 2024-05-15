@@ -283,7 +283,7 @@ class VMComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Add VM to maintenance configuration
+        # Register with maintenance configuration
         self.configuration_assignment_resource = maintenance.ConfigurationAssignment(
             f"{name_underscored}_configurationAssignment",
             provider_name="Microsoft.Compute",
