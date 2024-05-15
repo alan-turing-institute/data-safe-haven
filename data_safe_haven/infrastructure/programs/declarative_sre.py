@@ -4,7 +4,6 @@ import pulumi
 
 from data_safe_haven.config import Config
 from data_safe_haven.context import Context
-from data_safe_haven.infrastructure.common import get_subscription_id_from_rg
 
 from .sre.application_gateway import (
     SREApplicationGatewayComponent,
@@ -26,10 +25,6 @@ from .sre.dns_server import (
 from .sre.identity import (
     SREIdentityComponent,
     SREIdentityProps,
-)
-from .sre.monitoring import (
-    SREMonitoringComponent,
-    SREMonitoringProps,
 )
 from .sre.networking import (
     SRENetworkingComponent,
@@ -163,27 +158,6 @@ class DeclarativeSRE:
                 user_public_ip_ranges=self.cfg.sre(
                     self.sre_name
                 ).research_user_ip_addresses,
-            ),
-            tags=self.tags,
-        )
-
-        # Deploy automated monitoring
-        SREMonitoringComponent(
-            "sre_monitoring",
-            self.stack_name,
-            SREMonitoringProps(
-                automation_account_name=self.pulumi_opts.require(
-                    "shm-monitoring-automation_account_name"
-                ),
-                location=self.context.location,
-                subscription_resource_id=get_subscription_id_from_rg(
-                    dns.resource_group
-                ),
-                resource_group_name=self.pulumi_opts.require(
-                    "shm-monitoring-resource_group_name"
-                ),
-                sre_index=self.cfg.sre(self.sre_name).index,
-                timezone=self.cfg.shm.timezone,
             ),
             tags=self.tags,
         )
