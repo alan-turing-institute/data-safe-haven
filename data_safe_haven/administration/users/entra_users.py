@@ -33,6 +33,7 @@ class EntraUsers:
         Add list of users to Entra ID
 
         Raises:
+            DataSafeHavenInputError if any user is missing required information
             DataSafeHavenEntraIDError if any user could not be created
         """
         try:
