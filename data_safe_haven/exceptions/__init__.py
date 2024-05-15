@@ -83,12 +83,19 @@ class DataSafeHavenAzureError(DataSafeHavenCloudError):
 
 
 class DataSafeHavenUserHandlingError(DataSafeHavenInternalError):
+    """
+    Exception class for handling errors related to user handling
+
+    For example, when listing or registering users fails
+    """
+
     pass
 
 
 class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
     """
-    Exception
+    Exception class for handling errors when interacting with the Microsoft Graph API
+
     """
 
     pass
