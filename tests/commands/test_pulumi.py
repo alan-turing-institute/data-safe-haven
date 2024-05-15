@@ -6,7 +6,7 @@ class TestRun:
         self,
         runner,
         mock_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
         mock_key_vault_key,  # noqa: ARG002
@@ -21,7 +21,7 @@ class TestRun:
         self,
         runner,
         mock_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
         mock_key_vault_key,  # noqa: ARG002

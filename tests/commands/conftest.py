@@ -93,3 +93,10 @@ def mock_config_from_remote(mocker, config_sres):
 @fixture
 def mock_pulumi_config_from_remote(mocker, pulumi_config):
     mocker.patch.object(DSHPulumiConfig, "from_remote", return_value=pulumi_config)
+
+
+@fixture
+def mock_pulumi_config_no_key_from_remote(mocker, pulumi_config_no_key):
+    mocker.patch.object(
+        DSHPulumiConfig, "from_remote", return_value=pulumi_config_no_key
+    )
