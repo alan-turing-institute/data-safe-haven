@@ -286,12 +286,12 @@ class VMComponent(ComponentResource):
         # Register with maintenance configuration
         self.configuration_assignment_resource = maintenance.ConfigurationAssignment(
             f"{name_underscored}_configurationAssignment",
+            location=props.location,
+            maintenance_configuration_id=props.maintenance_configuration_id,
             provider_name="Microsoft.Compute",
             resource_group_name=props.resource_group_name,
             resource_name_=virtual_machine.name,
             resource_type="VirtualMachines",
-            location=props.location,
-            maintenance_configuration_id=props.maintenance_configuration_id,
         )
 
         # Register outputs
