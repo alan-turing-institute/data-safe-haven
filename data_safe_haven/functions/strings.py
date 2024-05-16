@@ -46,8 +46,12 @@ def next_occurrence(
             minute=minute,
             second=0,
             microsecond=0,
-        ) + datetime.timedelta(days=1)
+        )
         utc_dt = local_dt.astimezone(pytz.utc)
+        # Add one day until this datetime is in the future
+        utc_now = datetime.datetime.now(pytz.utc) + datetime.timedelta(minutes=1)
+        while utc_dt < utc_now:
+            utc_dt += datetime.timedelta(days=1)
         if time_format == "iso":
             return utc_dt.isoformat()
         elif time_format == "iso_minute":
