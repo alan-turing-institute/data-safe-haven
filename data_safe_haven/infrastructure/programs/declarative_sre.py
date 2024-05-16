@@ -23,6 +23,10 @@ from .sre.dns_server import (
     SREDnsServerComponent,
     SREDnsServerProps,
 )
+from .sre.firewall import (
+    SREFirewallComponent,
+    SREFirewallProps,
+)
 from .sre.identity import (
     SREIdentityComponent,
     SREIdentityProps,
@@ -143,9 +147,6 @@ class DeclarativeSRE:
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 dns_virtual_network=dns.virtual_network,
-                firewall_ip_address=self.pulumi_opts.require(
-                    "shm-firewall-private-ip-address"
-                ),
                 location=self.context.location,
                 shm_fqdn=self.cfg.shm.fqdn,
                 shm_networking_resource_group_name=self.pulumi_opts.require(
@@ -163,6 +164,25 @@ class DeclarativeSRE:
                 user_public_ip_ranges=self.cfg.sre(
                     self.sre_name
                 ).research_user_ip_addresses,
+            ),
+            tags=self.tags,
+        )
+
+        # Deploy SRE firewall
+        SREFirewallComponent(
+            "sre_firewall",
+            self.stack_name,
+            SREFirewallProps(
+                location=self.context.location,
+                resource_group_name=networking.resource_group.name,
+                route_table_name=networking.route_table_name,
+                subnet_apt_proxy_server=networking.subnet_apt_proxy_server,
+                subnet_firewall=networking.subnet_firewall,
+                subnet_firewall_management=networking.subnet_firewall_management,
+                subnet_guacamole_containers=networking.subnet_guacamole_containers,
+                subnet_identity_containers=networking.subnet_identity_containers,
+                subnet_user_services_software_repositories=networking.subnet_user_services_software_repositories,
+                subnet_workspaces=networking.subnet_workspaces,
             ),
             tags=self.tags,
         )

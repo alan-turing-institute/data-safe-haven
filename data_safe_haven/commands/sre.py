@@ -77,11 +77,6 @@ def deploy(
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
         # Load SHM stack outputs
         stack.add_option(
-            "shm-firewall-private-ip-address",
-            shm_stack.output("firewall")["private_ip_address"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-monitoring-automation_account_name",
             shm_stack.output("monitoring")["automation_account_name"],
             replace=True,

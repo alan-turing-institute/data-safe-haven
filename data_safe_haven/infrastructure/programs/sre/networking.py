@@ -27,7 +27,6 @@ class SRENetworkingProps:
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
         dns_virtual_network: Input[network.VirtualNetwork],
-        firewall_ip_address: Input[str],
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
@@ -52,6 +51,10 @@ class SRENetworkingProps:
             lambda s: s.data_configuration
         )
         self.subnet_data_private_iprange = subnet_ranges.apply(lambda s: s.data_private)
+        self.subnet_firewall_iprange = subnet_ranges.apply(lambda s: s.firewall)
+        self.subnet_firewall_management_iprange = subnet_ranges.apply(
+            lambda s: s.firewall_management
+        )
         self.subnet_guacamole_containers_iprange = subnet_ranges.apply(
             lambda s: s.guacamole_containers
         )
@@ -83,7 +86,6 @@ class SRENetworkingProps:
             get_name_from_vnet
         )
         self.dns_server_ip = dns_server_ip
-        self.firewall_ip_address = firewall_ip_address
         self.location = location
         self.user_public_ip_ranges = user_public_ip_ranges
         self.shm_fqdn = shm_fqdn
@@ -123,16 +125,14 @@ class SRENetworkingComponent(ComponentResource):
             f"{self._name}_route_table",
             location=props.location,
             resource_group_name=resource_group.name,
-            route_table_name=f"{stack_name}-route",
-            routes=[
-                network.RouteArgs(
-                    address_prefix="0.0.0.0/0",
-                    name="ViaFirewall",
-                    next_hop_ip_address=props.firewall_ip_address,
-                    next_hop_type=network.RouteNextHopType.VIRTUAL_APPLIANCE,
-                ),
-            ],
-            opts=child_opts,
+            route_table_name=f"{stack_name}-route-table",
+            routes=[],
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    ignore_changes=["routes"]
+                ),  # allow routes to be created outside this definition
+            ),
             tags=child_tags,
         )
 
@@ -148,6 +148,10 @@ class SRENetworkingComponent(ComponentResource):
             props.subnet_data_configuration_iprange.apply(str)
         )
         subnet_data_private_prefix = props.subnet_data_private_iprange.apply(str)
+        subnet_firewall_prefix = props.subnet_firewall_iprange.apply(str)
+        subnet_firewall_management_prefix = (
+            props.subnet_firewall_management_iprange.apply(str)
+        )
         subnet_guacamole_containers_prefix = (
             props.subnet_guacamole_containers_iprange.apply(str)
         )
@@ -1356,10 +1360,13 @@ class SRENetworkingComponent(ComponentResource):
         )
 
         # Define the virtual network and its subnets
+        # Note that these names for AzureFirewall subnets are required by Azure
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
         subnet_apt_proxy_server_name = "AptProxyServerSubnet"
         subnet_data_configuration_name = "DataConfigurationSubnet"
         subnet_data_private_name = "DataPrivateSubnet"
+        subnet_firewall_name = "AzureFirewallSubnet"
+        subnet_firewall_management_name = "AzureFirewallManagementSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
         subnet_identity_containers_name = "IdentityContainersSubnet"
@@ -1435,6 +1442,18 @@ class SRENetworkingComponent(ComponentResource):
                             service="Microsoft.Storage",
                         )
                     ],
+                ),
+                # Firewall
+                network.SubnetArgs(
+                    address_prefix=subnet_firewall_prefix,
+                    name=subnet_firewall_name,
+                    # Note that NSGs cannot be attached to a subnet containing a firewall
+                ),
+                # Firewall management
+                network.SubnetArgs(
+                    address_prefix=subnet_firewall_management_prefix,
+                    name=subnet_firewall_management_name,
+                    # Note that NSGs cannot be attached to a subnet containing a firewall
                 ),
                 # Guacamole containers
                 network.SubnetArgs(
@@ -1719,6 +1738,7 @@ class SRENetworkingComponent(ComponentResource):
 
         # Register outputs
         self.resource_group = resource_group
+        self.route_table_name = route_table.name
         self.shm_ns_record = shm_ns_record
         self.sre_fqdn = sre_dns_zone.name
         self.sre_private_dns_zone_id = sre_private_dns_zone.id
@@ -1735,6 +1755,16 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_data_configuration = network.get_subnet_output(
             subnet_name=subnet_data_configuration_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_firewall = network.get_subnet_output(
+            subnet_name=subnet_firewall_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_firewall_management = network.get_subnet_output(
+            subnet_name=subnet_firewall_management_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

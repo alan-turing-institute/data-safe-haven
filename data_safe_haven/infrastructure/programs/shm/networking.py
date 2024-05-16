@@ -21,8 +21,6 @@ class SHMNetworkingProps:
     ) -> None:
         # Virtual network and subnet IP ranges
         self.vnet_iprange = AzureIPv4Range("10.0.0.0", "10.0.255.255")
-        # Firewall subnet must be at least /26 in size (64 addresses)
-        self.subnet_firewall_iprange = self.vnet_iprange.next_subnet(64)
         # Monitoring subnet needs 2 IP addresses for automation and 13 for log analytics
         self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(32)
         # Other variables
@@ -83,7 +81,6 @@ class SHMNetworkingComponent(ComponentResource):
         )
 
         # Define the virtual network and its subnets
-        subnet_firewall_name = "AzureFirewallSubnet"  # this name is forced by https://docs.microsoft.com/en-us/azure/firewall/tutorial-firewall-deploy-portal
         subnet_monitoring_name = "MonitoringSubnet"
         virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
@@ -92,13 +89,6 @@ class SHMNetworkingComponent(ComponentResource):
             ),
             resource_group_name=resource_group.name,
             subnets=[  # Note that we define subnets inline to avoid creation order issues
-                # AzureFirewall subnet
-                network.SubnetArgs(
-                    address_prefix=str(props.subnet_firewall_iprange),
-                    name=subnet_firewall_name,
-                    network_security_group=None,  # the firewall subnet must NOT have an NSG
-                    route_table=None,  # the firewall subnet must NOT be attached to the route table
-                ),
                 # Monitoring subnet
                 network.SubnetArgs(
                     address_prefix=str(props.subnet_monitoring_iprange),
@@ -201,11 +191,6 @@ class SHMNetworkingComponent(ComponentResource):
         self.private_dns_zone_base_id = private_zone_ids[0]
         self.resource_group_name = Output.from_input(resource_group.name)
         self.route_table = route_table
-        self.subnet_firewall = network.get_subnet_output(
-            subnet_name=subnet_firewall_name,
-            resource_group_name=resource_group.name,
-            virtual_network_name=virtual_network.name,
-        )
         self.subnet_monitoring = network.get_subnet_output(
             subnet_name=subnet_monitoring_name,
             resource_group_name=resource_group.name,
