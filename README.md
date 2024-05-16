@@ -12,9 +12,10 @@
 | data\_safe\_haven/administration/users/research\_user.py                          |       30 |       19 |     37% |16-23, 27, 31-33, 37-39, 42-49, 52 |
 | data\_safe\_haven/administration/users/user\_handler.py                           |      105 |       83 |     21% |24-29, 37-73, 77-84, 88, 94-104, 112-133, 141-146, 154-168, 176-215, 223-228 |
 | data\_safe\_haven/commands/\_\_init\_\_.py                                        |        2 |        0 |    100% |           |
-| data\_safe\_haven/commands/cli.py                                                 |       34 |       14 |     59% |55-62, 93-98 |
+| data\_safe\_haven/commands/cli.py                                                 |       36 |       14 |     61% |56-63, 99-104 |
 | data\_safe\_haven/commands/config.py                                              |       38 |        0 |    100% |           |
 | data\_safe\_haven/commands/context.py                                             |       64 |        0 |    100% |           |
+| data\_safe\_haven/commands/pulumi.py                                              |       30 |        4 |     87% |     56-68 |
 | data\_safe\_haven/commands/shm.py                                                 |       46 |       27 |     41% |44-73, 83-84, 93-117 |
 | data\_safe\_haven/commands/sre.py                                                 |       62 |       47 |     24% |32-131, 139-173 |
 | data\_safe\_haven/commands/users.py                                               |      100 |       79 |     21% |29-51, 57-75, 96-134, 149-168, 189-231 |
@@ -83,7 +84,7 @@
 | data\_safe\_haven/infrastructure/programs/sre/software\_repositories.py           |       42 |       30 |     29% |40-55, 69-330 |
 | data\_safe\_haven/infrastructure/programs/sre/user\_services.py                   |       47 |       34 |     28% |48-77, 93-204 |
 | data\_safe\_haven/infrastructure/programs/sre/workspaces.py                       |       69 |       51 |     26% |54-88, 91-97, 111-214, 231-248 |
-| data\_safe\_haven/infrastructure/project\_manager.py                              |      241 |      135 |     44% |37-38, 47-58, 101-106, 110, 160-162, 167, 171, 175-185, 189-195, 201, 205, 209-218, 222-281, 285-288, 292-297, 301-311, 315-317, 321-337, 341-347, 351-355, 364-370, 374-386, 408-410, 449-450 |
+| data\_safe\_haven/infrastructure/project\_manager.py                              |      248 |      135 |     46% |37-38, 47-58, 101-106, 110, 160-162, 167, 171, 175-185, 189-195, 201, 205, 209-218, 222-281, 285-288, 292-297, 301-311, 315-317, 321-337, 341-347, 360-364, 373-379, 383-395, 417-419, 458-459 |
 | data\_safe\_haven/provisioning/\_\_init\_\_.py                                    |        2 |        0 |    100% |           |
 | data\_safe\_haven/provisioning/sre\_provisioning\_manager.py                      |       48 |       34 |     29% |29-57, 69-72, 76-77, 81-86, 90-126, 136-138 |
 | data\_safe\_haven/resources/\_\_init\_\_.py                                       |        3 |        0 |    100% |           |
@@ -104,23 +105,24 @@
 | data\_safe\_haven/validators/typer.py                                             |       19 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       49 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-| tests/commands/conftest.py                                                        |       38 |        0 |    100% |           |
+| tests/commands/conftest.py                                                        |       44 |        1 |     98% |        95 |
 | tests/commands/test\_cli.py                                                       |       23 |        0 |    100% |           |
 | tests/commands/test\_config.py                                                    |       78 |        0 |    100% |           |
 | tests/commands/test\_context.py                                                   |      100 |        0 |    100% |           |
+| tests/commands/test\_pulumi.py                                                    |       13 |        0 |    100% |           |
 | tests/commands/test\_shm.py                                                       |       13 |        1 |     92% |        15 |
 | tests/config/test\_config.py                                                      |      105 |        1 |     99% |       158 |
 | tests/config/test\_pulumi.py                                                      |      116 |        0 |    100% |           |
-| tests/conftest.py                                                                 |       86 |        2 |     98% |     54-55 |
+| tests/conftest.py                                                                 |      104 |        2 |     98% |     61-62 |
 | tests/context/test\_context\_settings.py                                          |      184 |        0 |    100% |           |
 | tests/functions/test\_strings.py                                                  |       40 |        0 |    100% |           |
 | tests/infrastructure/common/test\_ip\_ranges.py                                   |       34 |        0 |    100% |           |
-| tests/infrastructure/test\_project\_manager.py                                    |       85 |        0 |    100% |           |
+| tests/infrastructure/test\_project\_manager.py                                    |       76 |        0 |    100% |           |
 | tests/serialisers/test\_azure\_serialisable\_model.py                             |       68 |        0 |    100% |           |
 | tests/serialisers/test\_yaml\_serialisable\_model.py                              |       75 |        0 |    100% |           |
 | tests/validators/test\_typer\_validators.py                                       |       13 |        0 |    100% |           |
 | tests/validators/test\_validators.py                                              |       34 |        0 |    100% |           |
-|                                                                         **TOTAL** | **5418** | **2524** | **53%** |           |
+|                                                                         **TOTAL** | **5485** | **2529** | **54%** |           |
 
 
 ## Setup coverage badge
