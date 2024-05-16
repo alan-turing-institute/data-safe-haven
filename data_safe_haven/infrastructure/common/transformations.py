@@ -7,6 +7,16 @@ from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.external import AzureIPv4Range
 
 
+def get_address_prefixes_from_subnet(subnet: network.GetSubnetResult) -> list[str]:
+    """Get list of CIDRs belonging to this subnet"""
+    if address_prefixes := subnet.address_prefixes:
+        return [str(p) for p in address_prefixes]
+    if address_prefix := subnet.address_prefix:
+        return [address_prefix]
+    msg = f"Subnet '{subnet.name}' has no address prefix."
+    raise DataSafeHavenPulumiError(msg)
+
+
 def get_available_ips_from_subnet(subnet: network.GetSubnetResult) -> list[str]:
     """Get list of available IP addresses from a subnet"""
     if address_prefix := subnet.address_prefix:

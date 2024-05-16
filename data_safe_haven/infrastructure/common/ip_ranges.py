@@ -1,5 +1,6 @@
 """Calculate SRE IP address ranges for a given SRE index"""
 
+from data_safe_haven.exceptions import DataSafeHavenParameterError
 from data_safe_haven.external import AzureIPv4Range
 
 
@@ -10,11 +11,16 @@ class SREIpRanges:
 
     def __init__(self, index: int) -> None:
         """Constructor"""
+        if index < 1 or index > self.max_index:
+            msg = f"Index '{index}' must be between 1 and {self.max_index}"
+            raise DataSafeHavenParameterError(msg)
         self.vnet = AzureIPv4Range(f"10.{index}.0.0", f"10.{index}.255.255")
         self.application_gateway = self.vnet.next_subnet(256)
         self.apt_proxy_server = self.vnet.next_subnet(8)
         self.data_configuration = self.vnet.next_subnet(8)
         self.data_private = self.vnet.next_subnet(8)
+        self.firewall = self.vnet.next_subnet(64)  # 64 address minimum
+        self.firewall_management = self.vnet.next_subnet(64)  # 64 address minimum
         self.guacamole_containers = self.vnet.next_subnet(8)
         self.guacamole_containers_support = self.vnet.next_subnet(8)
         self.identity_containers = self.vnet.next_subnet(8)

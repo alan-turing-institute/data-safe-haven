@@ -5,7 +5,6 @@ import pulumi
 from data_safe_haven.config import Config
 from data_safe_haven.context import Context
 
-from .shm.firewall import SHMFirewallComponent, SHMFirewallProps
 from .shm.monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .shm.networking import SHMNetworkingComponent, SHMNetworkingProps
 
@@ -40,20 +39,6 @@ class DeclarativeSHM:
             tags=self.tags,
         )
 
-        # Deploy firewall and routing
-        firewall = SHMFirewallComponent(
-            "shm_firewall",
-            self.stack_name,
-            SHMFirewallProps(
-                dns_zone=networking.dns_zone,
-                location=self.context.location,
-                resource_group_name=networking.resource_group_name,
-                route_table_name=networking.route_table.name,
-                subnet_firewall=networking.subnet_firewall,
-            ),
-            tags=self.tags,
-        )
-
         # Deploy automated monitoring
         monitoring = SHMMonitoringComponent(
             "shm_monitoring",
@@ -69,6 +54,5 @@ class DeclarativeSHM:
         )
 
         # Export values for later use
-        pulumi.export("firewall", firewall.exports)
         pulumi.export("monitoring", monitoring.exports)
         pulumi.export("networking", networking.exports)
