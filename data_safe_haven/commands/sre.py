@@ -77,11 +77,6 @@ def deploy(
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
         # Load SHM stack outputs
         stack.add_option(
-            "shm-monitoring-automation_account_name",
-            shm_stack.output("monitoring")["automation_account_name"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-monitoring-log_analytics_workspace_id",
             shm_stack.output("monitoring")["log_analytics_workspace_id"],
             replace=True,
@@ -89,11 +84,6 @@ def deploy(
         stack.add_secret(
             "shm-monitoring-log_analytics_workspace_key",
             shm_stack.output("monitoring")["log_analytics_workspace_key"],
-            replace=True,
-        )
-        stack.add_option(
-            "shm-monitoring-resource_group_name",
-            shm_stack.output("monitoring")["resource_group_name"],
             replace=True,
         )
         stack.add_option(
