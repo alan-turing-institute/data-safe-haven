@@ -7,69 +7,17 @@ from pulumi.automation import (
     Stack,
     StackSettings,
 )
-from pytest import fixture, raises
+from pytest import raises
 
 from data_safe_haven.config import DSHPulumiProject
-from data_safe_haven.exceptions import DataSafeHavenConfigError
+from data_safe_haven.exceptions import (
+    DataSafeHavenConfigError,
+    DataSafeHavenPulumiError,
+)
 from data_safe_haven.infrastructure import SHMProjectManager
 from data_safe_haven.infrastructure.project_manager import (
-    AzureCliSingleton,
     ProjectManager,
-    PulumiAccount,
 )
-
-
-@fixture
-def mock_azure_cli_confirm(monkeypatch):
-    """Always pass AzureCliSingleton.confirm without attempting login"""
-    monkeypatch.setattr(AzureCliSingleton, "confirm", lambda self: None)  # noqa: ARG005
-
-
-@fixture
-def mock_install_plugins(monkeypatch):
-    """Skip installing Pulumi plugins"""
-    monkeypatch.setattr(
-        ProjectManager, "install_plugins", lambda self: None  # noqa: ARG005
-    )
-
-
-@fixture
-def offline_pulumi_account(monkeypatch, mock_azure_cli_confirm):  # noqa: ARG001
-    """Overwrite PulumiAccount so that it runs locally"""
-    monkeypatch.setattr(
-        PulumiAccount, "env", {"PULUMI_CONFIG_PASSPHRASE": "passphrase"}
-    )
-
-
-@fixture
-def local_project_settings(context_no_secrets, mocker):  # noqa: ARG001
-    """Overwrite adjust project settings to work locally, no secrets"""
-    mocker.patch.object(
-        ProjectManager,
-        "project_settings",
-        ProjectSettings(
-            name="data-safe-haven",
-            runtime="python",
-        ),
-    )
-
-
-@fixture
-def shm_stack_manager(
-    context_no_secrets,
-    config_sres,
-    pulumi_config_no_key,
-    mock_azure_cli_confirm,  # noqa: ARG001
-    mock_install_plugins,  # noqa: ARG001
-    mock_key_vault_key,  # noqa: ARG001
-    offline_pulumi_account,  # noqa: ARG001
-    local_project_settings,  # noqa: ARG001
-):
-    return SHMProjectManager(
-        context=context_no_secrets,
-        config=config_sres,
-        pulumi_config=pulumi_config_no_key,
-    )
 
 
 class TestSHMProjectManager:
@@ -149,6 +97,17 @@ class TestSHMProjectManager:
 
     def test_pulumi_project(self, shm_stack_manager, pulumi_project):
         assert shm_stack_manager.pulumi_project == pulumi_project
+
+    def test_run_pulumi_command(self, shm_stack_manager):
+        stdout = shm_stack_manager.run_pulumi_command("stack ls")
+        assert "shm-acmedeployment*" in stdout
+
+    def test_run_pulumi_command_command_error(self, shm_stack_manager):
+        with raises(
+            DataSafeHavenPulumiError,
+            match="Failed to run command.",
+        ):
+            shm_stack_manager.run_pulumi_command("notapulumicommand")
 
     def test_stack(self, shm_stack_manager):
         stack = shm_stack_manager.stack
