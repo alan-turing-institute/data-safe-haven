@@ -26,7 +26,6 @@ def run(
     project_type: Annotated[
         ProjectType,
         typer.Argument(
-            # metavar="{SHM|SRE}",
             help="DSH project type, SHM or SRE"
         ),
     ],
