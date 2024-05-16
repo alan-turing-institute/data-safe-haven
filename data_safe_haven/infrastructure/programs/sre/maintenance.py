@@ -55,4 +55,4 @@ class SREMaintenanceComponent(ComponentResource):
         )
 
         # Register outputs
-        self.maintenance_configuration_id: Output[str] = maintenance_configuration.id
+        self.configuration_id: Output[str] = maintenance_configuration.id

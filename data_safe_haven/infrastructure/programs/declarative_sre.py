@@ -4,6 +4,10 @@ import pulumi
 
 from data_safe_haven.config import Config
 from data_safe_haven.context import Context
+from data_safe_haven.infrastructure.programs.sre.maintenance import (
+    SREMaintenanceComponent,
+    SREMaintenanceProps,
+)
 
 from .sre.application_gateway import (
     SREApplicationGatewayComponent,
@@ -325,6 +329,17 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
+        # Deploy maintenance configuration
+        maintenance = SREMaintenanceComponent(
+            "sre_maintenance",
+            self.stack_name,
+            SREMaintenanceProps(
+                location=self.context.location,
+                resource_group_name=data.resource_group_name,
+            ),
+            tags=self.tags,
+        )
+
         # Deploy workspaces
         workspaces = SREWorkspacesComponent(
             "sre_workspaces",
@@ -345,6 +360,7 @@ class DeclarativeSRE:
                 log_analytics_workspace_key=self.pulumi_opts.require(
                     "shm-monitoring-log_analytics_workspace_key"
                 ),
+                maintenance_configuration_id=maintenance.configuration_id,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.sre_name,
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,

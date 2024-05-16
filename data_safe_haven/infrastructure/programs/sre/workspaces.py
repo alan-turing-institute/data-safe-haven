@@ -20,10 +20,6 @@ from data_safe_haven.infrastructure.components import (
     LinuxVMComponentProps,
     VMComponent,
 )
-from data_safe_haven.infrastructure.programs.sre.maintenance import (
-    SREMaintenanceComponent,
-    SREMaintenanceProps,
-)
 from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
 
@@ -44,6 +40,7 @@ class SREWorkspacesProps:
         location: Input[str],
         log_analytics_workspace_id: Input[str],
         log_analytics_workspace_key: Input[str],
+        maintenance_configuration_id: Input[str],
         software_repository_hostname: Input[str],
         sre_name: Input[str],
         storage_account_data_private_user_name: Input[str],
@@ -66,6 +63,7 @@ class SREWorkspacesProps:
         self.location = location
         self.log_analytics_workspace_id = log_analytics_workspace_id
         self.log_analytics_workspace_key = log_analytics_workspace_key
+        self.maintenance_configuration_id = maintenance_configuration_id
         self.software_repository_hostname = software_repository_hostname
         self.sre_name = sre_name
         self.storage_account_data_private_user_name = (
@@ -137,17 +135,6 @@ class SREWorkspacesComponent(ComponentResource):
             storage_account_data_private_sensitive_name=props.storage_account_data_private_sensitive_name,
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
 
-        # Deploy maintenance configuration
-        maintenance_configuration = SREMaintenanceComponent(
-            "sre_maintenance",
-            stack_name,
-            SREMaintenanceProps(
-                location=props.location,
-                resource_group_name=resource_group.name,
-            ),
-            tags=child_tags,
-        )
-
         # Deploy a variable number of VMs depending on the input parameters
         vms = [
             VMComponent(
@@ -160,7 +147,7 @@ class SREWorkspacesComponent(ComponentResource):
                     location=props.location,
                     log_analytics_workspace_id=props.log_analytics_workspace_id,
                     log_analytics_workspace_key=props.log_analytics_workspace_key,
-                    maintenance_configuration_id=maintenance_configuration.maintenance_configuration_id,
+                    maintenance_configuration_id=props.maintenance_configuration_id,
                     resource_group_name=resource_group.name,
                     subnet_name=props.subnet_workspaces_name,
                     virtual_network_name=props.virtual_network_name,
