@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_c422d80e3d5eb082_microsoft_sql_database_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.1">coverage.py v7.5.1</a>,
-            created at 2024-05-16 08:13 +0000
+            created at 2024-05-16 10:54 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -147,7 +147,9 @@
     <p class="pln"><span class="n"><a id="t65" href="#t65">65</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t66" href="#t66">66</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t67" href="#t67">67</a></span><span class="t">        <span class="com"># Register outputs</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">hostname</span> <span class="op">=</span> <span class="nam">public_dns_record_set</span><span class="op">.</span><span class="nam">fqdn</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">hostname</span> <span class="op">=</span> <span class="nam">public_dns_record_set</span><span class="op">.</span><span class="nam">fqdn</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t69" href="#t69">69</a></span><span class="t">            <span class="key">lambda</span> <span class="nam">s</span><span class="op">:</span> <span class="nam">s</span><span class="op">.</span><span class="nam">strip</span><span class="op">(</span><span class="str">"."</span><span class="op">)</span>  <span class="com"># strip trailing "."</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -157,7 +159,7 @@
             <a class="nav" href="z_c422d80e3d5eb082_microsoft_sql_database_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.1">coverage.py v7.5.1</a>,
-            created at 2024-05-16 08:13 +0000
+            created at 2024-05-16 10:54 +0000
         </p>
     </div>
 </footer>
