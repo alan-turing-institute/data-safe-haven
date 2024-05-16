@@ -234,18 +234,6 @@ def mock_key_vault_key(monkeypatch):
     monkeypatch.setattr(AzureApi, "get_keyvault_key", mock_get_keyvault_key)
 
 
-# @fixture
-# def mock_get_storage_account_keys(monkeypatch):
-#     class MockStorageAccountKey:
-#         def __init__(self, value):
-#             self.value = value
-
-#     def mock_get_storage_account_keys(self, resource_group_name, storage_account_name, *, attempts=3):
-#         return [MockStorageAccountKey("key1"), MockStorageAccountKey("key2")]
-
-#     monkeypatch.setattr(AzureApi, "get_storage_account_keys", mock_get_storage_account_keys)
-
-
 @fixture
 def mock_azure_cli_confirm(monkeypatch):
     """Always pass AzureCliSingleton.confirm without attempting login"""

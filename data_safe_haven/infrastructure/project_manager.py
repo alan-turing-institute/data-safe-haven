@@ -347,7 +347,7 @@ class ProjectManager:
             raise DataSafeHavenPulumiError(msg) from exc
 
     def run_pulumi_command(self, command: str) -> str:
-        """Run a Pulumi CLI command using this project and stack."""
+        """Run a Pulumi non-interactive CLI command using this project and stack."""
         try:
             result = self.stack._run_pulumi_cmd_sync(command.split())
             return str(result.stdout)

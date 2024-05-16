@@ -25,9 +25,7 @@ class ProjectType(StrEnum):
 def run(
     project_type: Annotated[
         ProjectType,
-        typer.Argument(
-            help="DSH project type, SHM or SRE"
-        ),
+        typer.Argument(help="DSH project type, SHM or SRE"),
     ],
     command: Annotated[
         str,

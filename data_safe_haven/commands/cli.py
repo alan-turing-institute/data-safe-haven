@@ -78,7 +78,9 @@ application.add_typer(
     context_command_group, name="context", help="Manage Data Safe Haven contexts."
 )
 application.add_typer(
-    pulumi_command_group, name="pulumi", help="(Advanced) interact directly with the Pulumi CLI."
+    pulumi_command_group,
+    name="pulumi",
+    help="(Advanced) interact directly with the Pulumi CLI.",
 )
 application.add_typer(
     shm_command_group,
