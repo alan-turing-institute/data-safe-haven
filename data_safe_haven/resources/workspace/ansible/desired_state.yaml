@@ -1,0 +1,17 @@
+---
+name: Desired state configuration
+hosts: localhost
+become: true
+
+tasks:
+  - name: Update package cache
+    ansible.builtin.apt:
+      update_cache: true
+      cache_valid_time: 600
+
+  - name: Install apt packages
+    ansible.builtin.apt:
+      name: "{{ apt_packages.common | union(apt_packages[ansible_facts['distribution_release']]) }}"
+      state: present
+      async: 3600
+      poll: 30

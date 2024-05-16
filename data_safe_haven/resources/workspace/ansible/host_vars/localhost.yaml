@@ -1,0 +1,99 @@
+---
+
+# Packages by category
+# Each category has 'common' packages for when the package name is identical
+# for all releases
+# Other packages are listed in dicts with the name of the release as given by
+# `ansible_facts['distribution_release']`
+package_categories:
+  - category: admin
+    common:
+      - auditd
+      - clamav
+    focal:
+    jammy:
+    noble:
+  - category: browsers
+    common:
+      - firefox
+    focal:
+    jammy:
+    noble:
+  - category: development
+    common:
+      - build-essential
+      - cargo
+      - cmake
+      - g++
+      - gcc
+      - gfortran
+      - git
+      - golang
+      - ninja-build
+      - octave
+      - r-base
+    focal:
+      - julia
+      - python3.8
+      - python3.9
+    jammy:
+      - python3.10
+      - python-is-python3
+    noble:
+      - python3.12
+      - python-is-python3
+  - category: editors
+    common:
+      - emacs
+      - neovim
+      - vim
+      - vim-airline
+      - vim-airline-themes
+      - vim-fugitive
+      - vim-gtk3
+      - vim-julia
+      - vim-latexsuite
+      - vim-syntastic
+    focal:
+    jammy:
+    noble:
+  - category: office
+    common:
+      - libreoffice
+    focal:
+    jammy:
+    noble:
+  - category: shells
+    common:
+      - bash
+      - fish
+      - zsh
+      - zsh-syntax-highlighting
+      - zsh-autosuggestions
+    focal:
+    jammy:
+    noble:
+  - category: utilities
+    common:
+      - bat
+      - fzf
+      - htop
+      - httpie
+      - nvtop
+      - ripgrep
+      - rsync
+      - tmux
+      - wget
+    focal:
+    jammy:
+    noble:
+      - eza
+      - nvtop
+
+# Collect packages for releases
+# It is important that the dict names for releases match `ansible_facts['distribution_relesase']`
+apt_packages:
+  common: "{{ package_categories | map(attribute='common') | flatten }}"
+  focal: "{{ package_categories | map(attribute='focal') | flatten }}"
+  jammy: "{{ package_categories | map(attribute='jammy') | flatten }}"
+  noble: "{{ package_categories | map(attribute='noble') | flatten }}"
