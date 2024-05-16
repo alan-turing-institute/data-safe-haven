@@ -37,9 +37,10 @@ class SREMaintenanceComponent(ComponentResource):
         child_tags = tags if tags else {}
 
         # Deploy maintenance configuration
+        # See https://learn.microsoft.com/en-us/azure/update-manager/scheduled-patching
         maintenance_configuration = maintenance.MaintenanceConfiguration(
             f"{self._name}_maintenance_configuration",
-            duration="03:55",
+            duration="03:55",  # Maximum allowed value for this parameter
             extension_properties={"InGuestPatchMode": "User"},
             install_patches=maintenance.InputPatchConfigurationArgs(
                 linux_parameters=maintenance.InputLinuxParametersArgs(
