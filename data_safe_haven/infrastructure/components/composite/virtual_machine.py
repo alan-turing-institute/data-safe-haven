@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import compute, network
+from pulumi_azure_native import compute, maintenance, network
 
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.infrastructure.components.wrapped import (
@@ -36,6 +36,7 @@ class VMComponentProps:
         log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace] | None = None,
         log_analytics_workspace_id: Input[str] | None = None,
         log_analytics_workspace_key: Input[str] | None = None,
+        maintenance_configuration_id: Input[str] | None = None,
     ) -> None:
         self.admin_password = admin_password
         self.admin_username = admin_username if admin_username else "dshvmadmin"
@@ -43,6 +44,7 @@ class VMComponentProps:
         self.ip_address_private = ip_address_private
         self.ip_address_public = ip_address_public
         self.location = location
+        self.maintenance_configuration_id = maintenance_configuration_id
         if log_analytics_workspace:
             self.log_analytics_workspace_id = Output.from_input(
                 log_analytics_workspace
@@ -140,6 +142,11 @@ class LinuxVMComponentProps(VMComponentProps):
             linux_configuration=compute.LinuxConfigurationArgs(
                 patch_settings=compute.LinuxPatchSettingsArgs(
                     assessment_mode=compute.LinuxPatchAssessmentMode.AUTOMATIC_BY_PLATFORM,
+                    patch_mode=compute.LinuxVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
+                    automatic_by_platform_settings=compute.LinuxVMGuestPatchAutomaticByPlatformSettingsArgs(
+                        bypass_platform_safety_checks_on_user_schedule=True,
+                        reboot_setting=compute.LinuxVMGuestPatchAutomaticByPlatformRebootSetting.IF_REQUIRED,
+                    ),
                 ),
                 provision_vm_agent=True,
             ),
@@ -274,6 +281,21 @@ class VMComponent(ComponentResource):
                 ResourceOptions(parent=virtual_machine),
             ),
             tags=child_tags,
+        )
+
+        # Register with maintenance configuration
+        maintenance.ConfigurationAssignment(
+            f"{name_underscored}_configurationAssignment",
+            location=props.location,
+            maintenance_configuration_id=props.maintenance_configuration_id,
+            provider_name="Microsoft.Compute",
+            resource_group_name=props.resource_group_name,
+            resource_name_=virtual_machine.name,
+            resource_type="VirtualMachines",
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=virtual_machine),
+            ),
         )
 
         # Register outputs

@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import pytest
 import pytz
@@ -23,6 +24,11 @@ def test_next_occurrence_has_correct_time():
     assert dt_as_local.minute == 13
 
 
+def test_next_occurrence_timeformat():
+    next_time = next_occurrence(5, 13, "Australia/Perth", time_format="iso_minute")
+    assert re.match(r"\d\d\d\d-\d\d-\d\d \d\d:13", next_time)
+
+
 def test_next_occurrence_invalid_hour():
     with pytest.raises(DataSafeHavenInputError) as exc_info:
         next_occurrence(99, 13, "Europe/London")
@@ -39,6 +45,12 @@ def test_next_occurrence_invalid_timezone():
     with pytest.raises(DataSafeHavenInputError) as exc_info:
         next_occurrence(5, 13, "Mars/OlympusMons")
     assert exc_info.match(r"Timezone 'Mars/OlympusMons' was not recognised.")
+
+
+def test_next_occurrence_invalid_timeformat():
+    with pytest.raises(DataSafeHavenInputError) as exc_info:
+        next_occurrence(5, 13, "Australia/Perth", time_format="invalid")
+    assert exc_info.match(r"Time format 'invalid' was not recognised.")
 
 
 @pytest.mark.parametrize(

@@ -26,10 +26,18 @@ def b64encode(input_string: str) -> str:
     return base64.b64encode(input_string.encode("utf-8")).decode()
 
 
-def next_occurrence(hour: int, minute: int, timezone: str) -> str:
+def next_occurrence(
+    hour: int, minute: int, timezone: str, *, time_format: str = "iso"
+) -> str:
     """
     Get an ISO-formatted string representing the next occurence in UTC of a daily
     repeating time in the local timezone.
+
+    Args:
+        hour: hour in the local timezone
+        minute: minute in the local timezone
+        timezone: string representation of the local timezone
+        time_format: either 'iso' (YYYY-MM-DDTHH:MM:SS.mmmmmm) or 'iso_minute' (YYYY-MM-DD HH:MM)
     """
     try:
         local_tz = pytz.timezone(timezone)
@@ -40,7 +48,13 @@ def next_occurrence(hour: int, minute: int, timezone: str) -> str:
             microsecond=0,
         ) + datetime.timedelta(days=1)
         utc_dt = local_dt.astimezone(pytz.utc)
-        return utc_dt.isoformat()
+        if time_format == "iso":
+            return utc_dt.isoformat()
+        elif time_format == "iso_minute":
+            return utc_dt.strftime(r"%Y-%m-%d %H:%M")
+        else:
+            msg = f"Time format '{time_format}' was not recognised."
+            raise DataSafeHavenInputError(msg)
     except pytz.exceptions.UnknownTimeZoneError as exc:
         msg = f"Timezone '{timezone}' was not recognised.\n{exc}"
         raise DataSafeHavenInputError(msg) from exc

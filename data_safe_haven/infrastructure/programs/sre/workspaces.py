@@ -40,6 +40,7 @@ class SREWorkspacesProps:
         location: Input[str],
         log_analytics_workspace_id: Input[str],
         log_analytics_workspace_key: Input[str],
+        maintenance_configuration_id: Input[str],
         software_repository_hostname: Input[str],
         sre_name: Input[str],
         storage_account_data_private_user_name: Input[str],
@@ -62,6 +63,7 @@ class SREWorkspacesProps:
         self.location = location
         self.log_analytics_workspace_id = log_analytics_workspace_id
         self.log_analytics_workspace_key = log_analytics_workspace_key
+        self.maintenance_configuration_id = maintenance_configuration_id
         self.software_repository_hostname = software_repository_hostname
         self.sre_name = sre_name
         self.storage_account_data_private_user_name = (
@@ -145,6 +147,7 @@ class SREWorkspacesComponent(ComponentResource):
                     location=props.location,
                     log_analytics_workspace_id=props.log_analytics_workspace_id,
                     log_analytics_workspace_key=props.log_analytics_workspace_key,
+                    maintenance_configuration_id=props.maintenance_configuration_id,
                     resource_group_name=resource_group.name,
                     subnet_name=props.subnet_workspaces_name,
                     virtual_network_name=props.virtual_network_name,
@@ -179,11 +182,15 @@ class SREWorkspacesComponent(ComponentResource):
         ]
         for test_file in pathlib.Path(resources_path / "workspace").glob("test*"):
             file_uploads.append((FileReader(test_file), "0444"))
-        for vm, vm_output in zip(vms, vm_outputs, strict=True):
+        for vm_index, (vm, vm_output) in enumerate(
+            zip(vms, vm_outputs, strict=True), start=1
+        ):
             outputs: dict[str, Output[str]] = {}
             for file_upload, file_permissions in file_uploads:
                 file_smoke_test = FileUpload(
-                    replace_separators(f"{self._name}_file_{file_upload.name}", "_"),
+                    replace_separators(
+                        f"workspace_{vm_index:02d}_file_{file_upload.name}", "_"
+                    ),
                     FileUploadProps(
                         file_contents=file_upload.file_contents(
                             mustache_values=mustache_values

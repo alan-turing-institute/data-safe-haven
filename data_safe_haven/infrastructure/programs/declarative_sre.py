@@ -4,7 +4,10 @@ import pulumi
 
 from data_safe_haven.config import Config
 from data_safe_haven.context import Context
-from data_safe_haven.infrastructure.common import get_subscription_id_from_rg
+from data_safe_haven.infrastructure.programs.sre.maintenance import (
+    SREMaintenanceComponent,
+    SREMaintenanceProps,
+)
 
 from .sre.application_gateway import (
     SREApplicationGatewayComponent,
@@ -30,10 +33,6 @@ from .sre.firewall import (
 from .sre.identity import (
     SREIdentityComponent,
     SREIdentityProps,
-)
-from .sre.monitoring import (
-    SREMonitoringComponent,
-    SREMonitoringProps,
 )
 from .sre.networking import (
     SRENetworkingComponent,
@@ -187,27 +186,6 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
-        # Deploy automated monitoring
-        SREMonitoringComponent(
-            "sre_monitoring",
-            self.stack_name,
-            SREMonitoringProps(
-                automation_account_name=self.pulumi_opts.require(
-                    "shm-monitoring-automation_account_name"
-                ),
-                location=self.context.location,
-                subscription_resource_id=get_subscription_id_from_rg(
-                    dns.resource_group
-                ),
-                resource_group_name=self.pulumi_opts.require(
-                    "shm-monitoring-resource_group_name"
-                ),
-                sre_index=self.cfg.sre(self.sre_name).index,
-                timezone=self.cfg.shm.timezone,
-            ),
-            tags=self.tags,
-        )
-
         # Deploy data storage
         data = SREDataComponent(
             "sre_data",
@@ -351,6 +329,18 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
+        # Deploy maintenance configuration
+        maintenance = SREMaintenanceComponent(
+            "sre_maintenance",
+            self.stack_name,
+            SREMaintenanceProps(
+                location=self.context.location,
+                resource_group_name=data.resource_group_name,
+                timezone=self.cfg.shm.timezone,
+            ),
+            tags=self.tags,
+        )
+
         # Deploy workspaces
         workspaces = SREWorkspacesComponent(
             "sre_workspaces",
@@ -371,6 +361,7 @@ class DeclarativeSRE:
                 log_analytics_workspace_key=self.pulumi_opts.require(
                     "shm-monitoring-log_analytics_workspace_key"
                 ),
+                maintenance_configuration_id=maintenance.configuration_id,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.sre_name,
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
@@ -386,7 +377,7 @@ class DeclarativeSRE:
 
         # Deploy backup service
         SREBackupComponent(
-            "sre_user_services",
+            "sre_backup",
             self.stack_name,
             SREBackupProps(
                 location=self.context.location,
