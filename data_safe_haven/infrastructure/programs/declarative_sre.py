@@ -336,6 +336,7 @@ class DeclarativeSRE:
             SREMaintenanceProps(
                 location=self.context.location,
                 resource_group_name=data.resource_group_name,
+                timezone=self.cfg.shm.timezone,
             ),
             tags=self.tags,
         )

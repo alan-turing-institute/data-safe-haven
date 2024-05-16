@@ -284,7 +284,7 @@ class VMComponent(ComponentResource):
         )
 
         # Register with maintenance configuration
-        self.configuration_assignment_resource = maintenance.ConfigurationAssignment(
+        maintenance.ConfigurationAssignment(
             f"{name_underscored}_configurationAssignment",
             location=props.location,
             maintenance_configuration_id=props.maintenance_configuration_id,
