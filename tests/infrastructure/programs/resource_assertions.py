@@ -7,7 +7,7 @@ def assert_equal(target, source):
     try:
         assert source == target
     except AssertionError as exc:
-        msg = f"'{source}' and '{target}' are not equal."
+        msg = f"'{source}' {type(source)} and '{target}' {type(target)} are not equal."
         raise ValueError(msg) from exc
 
 

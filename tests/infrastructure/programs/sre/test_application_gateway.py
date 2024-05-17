@@ -44,6 +44,52 @@ def application_gateway_component(
     )
 
 
+class TestSREApplicationGatewayProps:
+    @pulumi.runtime.test
+    def test_props(self, application_gateway_props: SREApplicationGatewayProps):
+        assert isinstance(application_gateway_props, SREApplicationGatewayProps)
+
+    @pulumi.runtime.test
+    def test_props_key_vault_certificate_id(
+        self, application_gateway_props: SREApplicationGatewayProps
+    ):
+        pulumi.Output.from_input(
+            application_gateway_props.key_vault_certificate_id
+        ).apply(partial(assert_equal, "key_vault_certificate_id"))
+
+    @pulumi.runtime.test
+    def test_props_resource_group_name(
+        self, application_gateway_props: SREApplicationGatewayProps
+    ):
+        application_gateway_props.resource_group_name.apply(
+            partial(assert_equal, "None")
+        )
+
+    @pulumi.runtime.test
+    def test_props_sre_fqdn(
+        self, application_gateway_props: SREApplicationGatewayProps, sre_fqdn
+    ):
+        pulumi.Output.from_input(application_gateway_props.sre_fqdn).apply(
+            partial(assert_equal, sre_fqdn)
+        )
+
+    @pulumi.runtime.test
+    def test_props_subnet_application_gateway_id(
+        self, application_gateway_props: SREApplicationGatewayProps
+    ):
+        application_gateway_props.subnet_application_gateway_id.apply(
+            partial(assert_equal, "subnet_application_gateway_id")
+        )
+
+    @pulumi.runtime.test
+    def test_props_subnet_guacamole_containers_ip_addresses(
+        self, application_gateway_props: SREApplicationGatewayProps
+    ):
+        application_gateway_props.subnet_guacamole_containers_ip_addresses.apply(
+            partial(assert_equal, ["10.1.1.28", "10.1.1.29", "10.1.1.30"])
+        )
+
+
 class TestSREApplicationGatewayComponent:
     @pulumi.runtime.test
     def test_application_gateway(
