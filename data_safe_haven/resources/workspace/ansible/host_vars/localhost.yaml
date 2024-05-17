@@ -76,6 +76,7 @@ package_categories:
   - category: utilities
     common:
       - bat
+      - fd-find
       - fzf
       - htop
       - httpie
