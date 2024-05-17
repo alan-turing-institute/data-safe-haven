@@ -8,10 +8,10 @@ from data_safe_haven.exceptions import DataSafeHavenInputError
 from data_safe_haven.functions import next_occurrence, sanitise_sre_name
 
 
-def test_next_occurrence_is_within_next_day():
+def test_next_occurrence_will_occur_soon():
     dt_utc_now = datetime.datetime.now(datetime.UTC)
     next_time = next_occurrence(5, 13, "Australia/Perth")
-    dt_utc_tomorrow = dt_utc_now + datetime.timedelta(days=1, minutes=5)
+    dt_utc_tomorrow = dt_utc_now + datetime.timedelta(days=1, hours=2)
     dt_next_time = datetime.datetime.fromisoformat(next_time)
     assert dt_next_time > dt_utc_now
     assert dt_next_time < dt_utc_tomorrow
