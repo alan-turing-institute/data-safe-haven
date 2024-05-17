@@ -55,14 +55,27 @@ class TestSREApplicationGatewayProps:
     ):
         pulumi.Output.from_input(
             application_gateway_props.key_vault_certificate_id
-        ).apply(partial(assert_equal, "key_vault_certificate_id"))
+        ).apply(
+            partial(assert_equal, "key_vault_certificate_id"),
+            run_with_unknowns=True,
+        )
+
+    @pulumi.runtime.test
+    def test_props_resource_group_id(
+        self, application_gateway_props: SREApplicationGatewayProps
+    ):
+        application_gateway_props.resource_group_id.apply(
+            partial(assert_equal, pulumi.UNKNOWN),
+            run_with_unknowns=True,
+        )
 
     @pulumi.runtime.test
     def test_props_resource_group_name(
         self, application_gateway_props: SREApplicationGatewayProps
     ):
         application_gateway_props.resource_group_name.apply(
-            partial(assert_equal, "None")
+            partial(assert_equal, "None"),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -70,7 +83,8 @@ class TestSREApplicationGatewayProps:
         self, application_gateway_props: SREApplicationGatewayProps, sre_fqdn
     ):
         pulumi.Output.from_input(application_gateway_props.sre_fqdn).apply(
-            partial(assert_equal, sre_fqdn)
+            partial(assert_equal, sre_fqdn),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -78,7 +92,8 @@ class TestSREApplicationGatewayProps:
         self, application_gateway_props: SREApplicationGatewayProps
     ):
         application_gateway_props.subnet_application_gateway_id.apply(
-            partial(assert_equal, "subnet_application_gateway_id")
+            partial(assert_equal, "subnet_application_gateway_id"),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -86,7 +101,17 @@ class TestSREApplicationGatewayProps:
         self, application_gateway_props: SREApplicationGatewayProps
     ):
         application_gateway_props.subnet_guacamole_containers_ip_addresses.apply(
-            partial(assert_equal, ["10.1.1.28", "10.1.1.29", "10.1.1.30"])
+            partial(assert_equal, ["10.1.1.28", "10.1.1.29", "10.1.1.30"]),
+            run_with_unknowns=True,
+        )
+
+    @pulumi.runtime.test
+    def test_props_user_assigned_identities(
+        self, application_gateway_props: SREApplicationGatewayProps
+    ):
+        application_gateway_props.user_assigned_identities.apply(
+            partial(assert_equal, pulumi.UNKNOWN),
+            run_with_unknowns=True,
         )
 
 
@@ -105,7 +130,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.authentication_certificates.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -113,7 +139,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.autoscale_configuration.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -137,7 +164,8 @@ class TestSREApplicationGatewayComponent:
                         "name": "appGatewayBackendGuacamole",
                     }
                 ],
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -159,7 +187,8 @@ class TestSREApplicationGatewayComponent:
                         "request_timeout": 30,
                     }
                 ],
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -167,7 +196,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.backend_settings_collection.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -175,7 +205,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.custom_error_configurations.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -183,7 +214,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.default_predefined_ssl_policy.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -191,7 +223,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.enable_fips.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -199,7 +232,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.enable_http2.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -207,7 +241,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.etag.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -215,7 +250,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.firewall_policy.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -223,7 +259,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.force_firewall_policy_association.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -243,7 +280,8 @@ class TestSREApplicationGatewayComponent:
                         "public_ip_address": {"id": None},
                     }
                 ],
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -269,7 +307,8 @@ class TestSREApplicationGatewayComponent:
                         "port": 443,
                     },
                 ],
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -288,7 +327,8 @@ class TestSREApplicationGatewayComponent:
                         "subnet": {"id": "subnet_application_gateway_id"},
                     }
                 ],
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -296,7 +336,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.global_configuration.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -329,7 +370,8 @@ class TestSREApplicationGatewayComponent:
                         "ssl_certificate": {"id": None},
                     },
                 ],
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -340,7 +382,8 @@ class TestSREApplicationGatewayComponent:
             partial(
                 assert_equal_json,
                 {"principal_id": None, "tenant_id": None, "type": "UserAssigned"},
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -348,7 +391,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.listeners.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -356,7 +400,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.load_distribution_policies.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -364,7 +409,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.location.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -372,7 +418,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.name.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -380,7 +427,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.operational_state.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -388,7 +436,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.private_endpoint_connections.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -396,7 +445,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.private_link_configurations.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -404,7 +454,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.probes.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -412,7 +463,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.provisioning_state.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -434,7 +486,8 @@ class TestSREApplicationGatewayComponent:
                         "target_listener": {"id": None},
                     }
                 ],
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -467,7 +520,8 @@ class TestSREApplicationGatewayComponent:
                         "rule_type": "Basic",
                     },
                 ],
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -475,7 +529,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.resource_guid.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -483,7 +538,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.rewrite_rule_sets.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -491,14 +547,15 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.routing_rules.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
     def test_application_gateway_sku(
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
-        assert application_gateway_component.application_gateway.sku.apply(
+        application_gateway_component.application_gateway.sku.apply(
             partial(
                 assert_equal,
                 network.outputs.ApplicationGatewaySkuResponse(
@@ -506,7 +563,8 @@ class TestSREApplicationGatewayComponent:
                     name="Standard_v2",
                     tier="Standard_v2",
                 ),
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -526,7 +584,8 @@ class TestSREApplicationGatewayComponent:
                         "name": "letsencryptcertificate",
                     }
                 ],
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -546,7 +605,8 @@ class TestSREApplicationGatewayComponent:
                     "min_protocol_version": "TLSv1_2",
                     "policy_type": "CustomV2",
                 },
-            )
+            ),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -554,7 +614,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.ssl_profiles.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -562,7 +623,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.tags.apply(
-            partial(assert_equal, {"key": "value"})
+            partial(assert_equal, {"key": "value"}),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -570,7 +632,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.trusted_client_certificates.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -578,7 +641,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.type.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -586,7 +650,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.url_path_maps.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -594,7 +659,8 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.web_application_firewall_configuration.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
 
     @pulumi.runtime.test
@@ -602,5 +668,6 @@ class TestSREApplicationGatewayComponent:
         self, application_gateway_component: SREApplicationGatewayComponent
     ):
         application_gateway_component.application_gateway.zones.apply(
-            partial(assert_equal, None)
+            partial(assert_equal, None),
+            run_with_unknowns=True,
         )
