@@ -28,3 +28,8 @@ tasks:
               . /etc/bash_completion
           fi
         fi
+
+  - name: Set bashrc skeleton
+    ansible.builtin.copy:
+      src: etc/skel/bashrc
+      dest: /etc/skel/.bashrc
