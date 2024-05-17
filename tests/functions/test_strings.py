@@ -17,6 +17,18 @@ def test_next_occurrence_will_occur_soon():
     assert dt_next_time < dt_utc_tomorrow
 
 
+def test_next_occurrence_day_shift():
+    dt_utc_now = datetime.datetime.now(datetime.UTC)
+    dt_perth_now = dt_utc_now.astimezone(pytz.timezone("Australia/Perth"))
+    next_time = next_occurrence(
+        dt_perth_now.hour, dt_perth_now.minute, "Australia/Perth"
+    )
+    dt_utc_tomorrow = dt_utc_now + datetime.timedelta(days=1, hours=2)
+    dt_next_time = datetime.datetime.fromisoformat(next_time)
+    assert dt_next_time > dt_utc_now
+    assert dt_next_time < dt_utc_tomorrow
+
+
 def test_next_occurrence_has_correct_time():
     next_time = next_occurrence(5, 13, "Australia/Perth")
     dt_as_utc = datetime.datetime.fromisoformat(next_time)
