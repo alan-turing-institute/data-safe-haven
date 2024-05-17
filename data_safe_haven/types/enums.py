@@ -8,7 +8,6 @@ class AzureDnsZoneNames(tuple[str, ...], Enum):
     See https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns for details.
     """
 
-    AZURE_AUTOMATION = ("azure-automation.net",)
     AZURE_MONITOR = (
         "agentsvc.azure-automation.net",
         "blob.core.windows.net",
@@ -17,7 +16,7 @@ class AzureDnsZoneNames(tuple[str, ...], Enum):
         "oms.opinsights.azure.com",
     )
     STORAGE_ACCOUNT = ("blob.core.windows.net", "file.core.windows.net")
-    ALL = tuple(sorted(set(AZURE_AUTOMATION + AZURE_MONITOR + STORAGE_ACCOUNT)))
+    ALL = tuple(sorted(set(AZURE_MONITOR + STORAGE_ACCOUNT)))
 
 
 @verify(UNIQUE)

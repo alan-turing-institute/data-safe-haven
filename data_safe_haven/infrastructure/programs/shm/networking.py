@@ -21,7 +21,7 @@ class SHMNetworkingProps:
     ) -> None:
         # Virtual network and subnet IP ranges
         self.vnet_iprange = AzureIPv4Range("10.0.0.0", "10.0.255.255")
-        # Monitoring subnet needs 2 IP addresses for automation and 13 for log analytics
+        # Monitoring subnet needs 13 IP addresses for log analytics
         self.subnet_monitoring_iprange = self.vnet_iprange.next_subnet(32)
         # Other variables
         self.admin_ip_addresses = admin_ip_addresses
