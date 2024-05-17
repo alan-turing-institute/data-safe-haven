@@ -2,7 +2,7 @@
 name: Deployment bug report
 about: Report a bug that occurs during deployment
 title: "<short description of issue>"
-labels: "type: deployment bug"
+labels: "bug"
 assignees: ""
 ---
 

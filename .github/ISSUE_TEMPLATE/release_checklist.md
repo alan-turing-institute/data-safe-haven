@@ -2,7 +2,7 @@
 name: Release checklist
 about: Log completion of required actions for release testing
 title: "Release: <version number>"
-labels: "type: release-candidate"
+labels: "release candidate"
 assignees: ""
 ---
 

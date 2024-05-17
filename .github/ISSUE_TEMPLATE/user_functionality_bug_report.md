@@ -2,7 +2,7 @@
 name: End-user functionality bug report
 about: Report a bug that occurs when you are using the Data Safe Haven
 title: "<short description of issue>"
-labels: "type: functionality bug"
+labels: "bug"
 assignees: ""
 ---
 
