@@ -170,12 +170,12 @@ protobuf==4.25.3
     # via pulumi
 psycopg==3.1.19
     # via data-safe-haven (pyproject.toml)
-pulumi==3.115.2
+pulumi==3.116.1
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.40.0
+pulumi-azure-native==2.41.0
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.1
     # via data-safe-haven (pyproject.toml)
