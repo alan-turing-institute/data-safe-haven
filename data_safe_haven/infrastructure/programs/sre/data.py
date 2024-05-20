@@ -463,6 +463,18 @@ class SREDataComponent(ComponentResource):
             ),
         )
 
+        # Deploy desired state share
+        storage.FileShare(
+            f"{storage_account_data_configuration._name}_desired_state",
+            access_tier=storage.ShareAccessTier.COOL,
+            account_name=storage_account_data_configuration.name,
+            enabled_protocols=storage.EnabledProtocols.NFS,
+            resource_group_name=resource_group.name,
+            root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
+            share_name="desired_state",
+            share_quota=1,
+        )
+
         # Deploy sensitive data blob storage account
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
         # - Store the /data and /output folders here
