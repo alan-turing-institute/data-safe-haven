@@ -37,14 +37,14 @@
 | data\_safe\_haven/external/interface/\_\_init\_\_.py                              |        0 |        0 |    100% |           |
 | data\_safe\_haven/external/interface/azure\_authenticator.py                      |       47 |       28 |     40% |27-31, 35-40, 44-49, 54-70 |
 | data\_safe\_haven/external/interface/azure\_container\_instance.py                |       56 |       39 |     30% |26-29, 33-34, 38-47, 52-92, 102-127 |
-| data\_safe\_haven/external/interface/azure\_ipv4\_range.py                        |       34 |        8 |     76% |23-24, 30-31, 35, 39, 44-45 |
+| data\_safe\_haven/external/interface/azure\_ipv4\_range.py                        |       34 |        4 |     88% |23-24, 44-45 |
 | data\_safe\_haven/external/interface/azure\_postgresql\_database.py               |      117 |       81 |     31% |45-57, 64-65, 69, 83-87, 93-97, 101-114, 120-127, 135-170, 174-235 |
 | data\_safe\_haven/functions/\_\_init\_\_.py                                       |        2 |        0 |    100% |           |
 | data\_safe\_haven/functions/strings.py                                            |       58 |       20 |     66% |26, 71-80, 95-97, 102, 112-120 |
 | data\_safe\_haven/infrastructure/\_\_init\_\_.py                                  |        2 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/common/\_\_init\_\_.py                           |        3 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/common/ip\_ranges.py                             |       26 |        0 |    100% |           |
-| data\_safe\_haven/infrastructure/common/transformations.py                        |       57 |       42 |     26% |12-17, 22-24, 29-32, 37-40, 45-48, 55, 66-81, 86-89, 94-97, 102-105, 110-113 |
+| data\_safe\_haven/infrastructure/common/transformations.py                        |       57 |       34 |     40% |12-17, 24, 31-32, 39-40, 45-48, 55, 66-81, 88-89, 94-97, 102-105, 110-113 |
 | data\_safe\_haven/infrastructure/components/\_\_init\_\_.py                       |        4 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/components/composite/\_\_init\_\_.py             |        5 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/components/composite/local\_dns\_record.py       |       16 |       10 |     38% |16-20, 32-68 |
@@ -68,7 +68,7 @@
 | data\_safe\_haven/infrastructure/programs/shm/monitoring.py                       |       46 |       35 |     24% |38-44, 58-450 |
 | data\_safe\_haven/infrastructure/programs/shm/networking.py                       |       38 |       29 |     24% |23-30, 44-202 |
 | data\_safe\_haven/infrastructure/programs/sre/\_\_init\_\_.py                     |        0 |        0 |    100% |           |
-| data\_safe\_haven/infrastructure/programs/sre/application\_gateway.py             |       24 |       14 |     42% |31-44, 60-93 |
+| data\_safe\_haven/infrastructure/programs/sre/application\_gateway.py             |       24 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/apt\_proxy\_server.py               |       29 |       19 |     34% |34-44, 58-200 |
 | data\_safe\_haven/infrastructure/programs/sre/backup.py                           |       18 |       11 |     39% |18-22, 38-173 |
 | data\_safe\_haven/infrastructure/programs/sre/data.py                             |       85 |       69 |     19% |59-87, 90, 108-797 |
@@ -105,7 +105,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       19 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       49 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4365** | **2524** | **42%** |           |
+|                                                                         **TOTAL** | **4365** | **2498** | **43%** |           |
 
 
 ## Setup coverage badge
