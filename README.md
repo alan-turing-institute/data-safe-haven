@@ -105,24 +105,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       19 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       49 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-| tests/commands/conftest.py                                                        |       44 |        1 |     98% |        95 |
-| tests/commands/test\_cli.py                                                       |       23 |        0 |    100% |           |
-| tests/commands/test\_config.py                                                    |       78 |        0 |    100% |           |
-| tests/commands/test\_context.py                                                   |      100 |        0 |    100% |           |
-| tests/commands/test\_pulumi.py                                                    |       13 |        0 |    100% |           |
-| tests/commands/test\_shm.py                                                       |       13 |        1 |     92% |        15 |
-| tests/config/test\_config.py                                                      |      105 |        1 |     99% |       158 |
-| tests/config/test\_pulumi.py                                                      |      116 |        0 |    100% |           |
-| tests/conftest.py                                                                 |      104 |        2 |     98% |     61-62 |
-| tests/context/test\_context\_settings.py                                          |      184 |        0 |    100% |           |
-| tests/functions/test\_strings.py                                                  |       40 |        0 |    100% |           |
-| tests/infrastructure/common/test\_ip\_ranges.py                                   |       34 |        0 |    100% |           |
-| tests/infrastructure/test\_project\_manager.py                                    |       76 |        0 |    100% |           |
-| tests/serialisers/test\_azure\_serialisable\_model.py                             |       68 |        0 |    100% |           |
-| tests/serialisers/test\_yaml\_serialisable\_model.py                              |       75 |        0 |    100% |           |
-| tests/validators/test\_typer\_validators.py                                       |       13 |        0 |    100% |           |
-| tests/validators/test\_validators.py                                              |       34 |        0 |    100% |           |
-|                                                                         **TOTAL** | **5485** | **2529** | **54%** |           |
+|                                                                         **TOTAL** | **4365** | **2524** | **42%** |           |
 
 
 ## Setup coverage badge
