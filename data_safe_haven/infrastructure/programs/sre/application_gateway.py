@@ -90,7 +90,7 @@ class SREApplicationGatewayComponent(ComponentResource):
 
         # Define application gateway
         application_gateway_name = f"{stack_name}-ag-entrypoint"
-        network.ApplicationGateway(
+        self.application_gateway = network.ApplicationGateway(
             f"{self._name}_application_gateway",
             application_gateway_name=application_gateway_name,
             backend_address_pools=[
