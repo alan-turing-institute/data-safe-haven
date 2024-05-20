@@ -131,7 +131,7 @@ class LinuxVMComponentProps(VMComponentProps):
         self.image_reference_args = compute.ImageReferenceArgs(
             offer="0001-com-ubuntu-server-focal",
             publisher="Canonical",
-            sku="20_04-LTS",
+            sku="20_04-LTS-gen2",
             version="latest",
         )
         self.os_profile_args = compute.OSProfileArgs(
