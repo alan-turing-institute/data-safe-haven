@@ -206,7 +206,7 @@ pyyaml==6.0.1
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi
-requests==2.31.0
+requests==2.32.0
     # via
     #   acme
     #   azure-core
