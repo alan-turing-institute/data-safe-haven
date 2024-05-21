@@ -1,45 +1,28 @@
 import datetime
-import re
 
 import pytest
-import pytz
+from freezegun import freeze_time
 
 from data_safe_haven.exceptions import DataSafeHavenInputError
 from data_safe_haven.functions import next_occurrence, sanitise_sre_name
 
 
-def test_next_occurrence_will_occur_soon():
-    dt_utc_now = datetime.datetime.now(datetime.UTC)
+@freeze_time(datetime.datetime(2024, 1, 2, 1, 0, tzinfo=datetime.timezone.utc))
+def test_next_occurrence():
     next_time = next_occurrence(5, 13, "Australia/Perth")
-    dt_utc_26_hours_time = dt_utc_now + datetime.timedelta(hours=26)
-    dt_next_time = datetime.datetime.fromisoformat(next_time)
-    assert dt_next_time > dt_utc_now
-    assert dt_next_time < dt_utc_26_hours_time
+    assert next_time == "2024-01-02T21:13:00+00:00"
 
 
-def test_next_occurrence_day_shift():
-    dt_utc_now = datetime.datetime.now(datetime.UTC)
-    dt_perth_now = dt_utc_now.astimezone(pytz.timezone("Australia/Perth"))
-    next_time = next_occurrence(
-        dt_perth_now.hour, dt_perth_now.minute, "Australia/Perth"
-    )
-    dt_utc_tomorrow = dt_utc_now + datetime.timedelta(days=1, hours=2)
-    dt_next_time = datetime.datetime.fromisoformat(next_time)
-    assert dt_next_time > dt_utc_now
-    assert dt_next_time < dt_utc_tomorrow
-
-
-def test_next_occurrence_has_correct_time():
-    next_time = next_occurrence(5, 13, "Australia/Perth")
-    dt_as_utc = datetime.datetime.fromisoformat(next_time)
-    dt_as_local = dt_as_utc.astimezone(pytz.timezone("Australia/Perth"))
-    assert dt_as_local.hour == 5
-    assert dt_as_local.minute == 13
-
-
+@freeze_time(datetime.datetime(2024, 1, 2, 1, 0, tzinfo=datetime.timezone.utc))
 def test_next_occurrence_timeformat():
     next_time = next_occurrence(5, 13, "Australia/Perth", time_format="iso_minute")
-    assert re.match(r"\d\d\d\d-\d\d-\d\d \d\d:13", next_time)
+    assert next_time == "2024-01-02 21:13"
+
+
+@freeze_time(datetime.datetime(2024, 1, 2, 23, 0, tzinfo=datetime.timezone.utc))
+def test_next_occurrence_is_tomorrow():
+    next_time = next_occurrence(5, 13, "Australia/Perth")
+    assert next_time == "2024-01-03T21:13:00+00:00"
 
 
 def test_next_occurrence_invalid_hour():
