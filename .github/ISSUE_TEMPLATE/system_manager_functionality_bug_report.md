@@ -2,7 +2,7 @@
 name: System manager functionality bug report
 about: Report a bug that occurs when managing a Data Safe Haven
 title: "<short description of issue>"
-labels: "type: functionality bug"
+labels: "bug"
 assignees: ""
 ---
 

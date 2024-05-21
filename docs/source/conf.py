@@ -18,16 +18,23 @@ development_branch = "develop"
 # -- Customisation  -----------------------------------------------------------
 
 # Construct list of emoji substitutions
-emoji_codes = set(
-    [
-        emoji_code.replace(":", "")
-        for emoji_list in (
-            emoji.unicode_codes.get_emoji_unicode_dict("en").keys(),
-            emoji.unicode_codes.get_aliases_unicode_dict().keys(),
-        )
-        for emoji_code in emoji_list
-    ]
-)
+# This code reproduces the library functions
+# - get_emoji_unicode_dict()
+# - get_aliases_unicode_dict()
+emoji_codes = set()
+for emj, data in emoji.unicode_codes.EMOJI_DATA.items():
+    # Only accept fully qualified or component emoji
+    # See https://www.unicode.org/reports/tr51/#def_emoji_sequence
+    if data["status"] <= emoji.unicode_codes.STATUS["fully_qualified"]:
+        # Add the English language name (if any)
+        if "en" in data:
+            emoji_codes.add(data["en"])
+        # Add each of the list of aliases (if any)
+        if "alias" in data:
+            for alias in data["alias"]:
+                emoji_codes.add(alias)
+# Strip leading and trailing colons and sort
+emoji_codes = sorted(map(lambda s: s.strip(":"), emoji_codes))
 
 # Set sidebar variables
 if "html_context" not in globals():

@@ -6,6 +6,7 @@ from pulumi.config import (
 from pulumi.output import (
     Input,
     Output,
+    UNKNOWN,
 )
 from pulumi.resource import (
     ComponentResource,
@@ -24,4 +25,5 @@ __all__ = [
     "Output",
     "Resource",
     "ResourceOptions",
+    "UNKNOWN",
 ]

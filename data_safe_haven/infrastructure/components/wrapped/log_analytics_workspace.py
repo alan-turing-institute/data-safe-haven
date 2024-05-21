@@ -34,7 +34,7 @@ class WrappedLogAnalyticsWorkspace(operationalinsights.Workspace):
     @property
     def resource_group_name(self) -> pulumi.Output[str]:
         """
-        Gets the name of the resource group where this automation account is deployed.
+        Gets the name of the resource group where this log analytics workspace is deployed.
         """
         return self.resource_group_name_
 
