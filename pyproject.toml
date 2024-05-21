@@ -114,6 +114,7 @@ all = [
 [tool.hatch.envs.test]
 dependencies = [
   "coverage>=7.5.1",
+  "freezegun>=1.5",
   "pytest>=8.1",
   "pytest-mock>=3.14",
 ]
