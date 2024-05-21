@@ -7,19 +7,19 @@ from data_safe_haven.exceptions import DataSafeHavenInputError
 from data_safe_haven.functions import next_occurrence, sanitise_sre_name
 
 
-@freeze_time(datetime.datetime(2024, 1, 2, 1, 0, tzinfo=datetime.timezone.utc))
+@freeze_time(datetime.datetime(2024, 1, 2, 1, 0, tzinfo=datetime.UTC))
 def test_next_occurrence():
     next_time = next_occurrence(5, 13, "Australia/Perth")
     assert next_time == "2024-01-02T21:13:00+00:00"
 
 
-@freeze_time(datetime.datetime(2024, 1, 2, 1, 0, tzinfo=datetime.timezone.utc))
+@freeze_time(datetime.datetime(2024, 1, 2, 1, 0, tzinfo=datetime.UTC))
 def test_next_occurrence_timeformat():
     next_time = next_occurrence(5, 13, "Australia/Perth", time_format="iso_minute")
     assert next_time == "2024-01-02 21:13"
 
 
-@freeze_time(datetime.datetime(2024, 1, 2, 23, 0, tzinfo=datetime.timezone.utc))
+@freeze_time(datetime.datetime(2024, 1, 2, 23, 0, tzinfo=datetime.UTC))
 def test_next_occurrence_is_tomorrow():
     next_time = next_occurrence(5, 13, "Australia/Perth")
     assert next_time == "2024-01-03T21:13:00+00:00"
