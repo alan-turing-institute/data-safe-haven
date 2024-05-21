@@ -42,6 +42,24 @@ def mock_blob_client(monkeypatch):  # noqa: ARG001
             else:
                 return False
 
+    def mock_blob_client(
+        self,
+        resource_group_name,
+        storage_account_name,
+        storage_container_name,
+        blob_name,
+    ):
+        return MockBlobClient(
+            resource_group_name,
+            storage_account_name,
+            storage_container_name,
+            blob_name,
+        )
+
+    monkeypatch.setattr(
+        data_safe_haven.external.api.azure_api.AzureApi, "blob_client", mock_blob_client
+    )
+
 
 class TestAzureApi:
     def test_get_keyvault_key(self, mock_key_client):  # noqa: ARG002
