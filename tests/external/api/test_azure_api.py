@@ -76,12 +76,16 @@ class TestAzureApi:
 
     def test_blob_exists(self, mock_blob_client):  # noqa: ARG002
         api = AzureApi("subscription name")
-        assert api.blob_exists(
-            "resource_group", "storage_account", "storage_container", "exists"
+        exists = api.blob_exists(
+            "exists", "resource_group", "storage_account", "storage_container"
         )
+        assert isinstance(exists, bool)
+        assert exists
 
     def test_blob_does_not_exist(self, mock_blob_client):  # noqa: ARG002
         api = AzureApi("subscription name")
-        assert not api.blob_exists(
-            "resource_group", "storage_account", "storage_container", "abc.txt"
+        exists = api.blob_exists(
+            "abc.txt", "resource_group", "storage_account", "storage_container"
         )
+        assert isinstance(exists, bool)
+        assert not exists
