@@ -22,7 +22,6 @@ from .dynamic import (
     SSLCertificateProps,
 )
 from .wrapped import (
-    WrappedAutomationAccount,
     WrappedLogAnalyticsWorkspace,
 )
 
@@ -46,6 +45,5 @@ __all__ = [
     "SSLCertificateProps",
     "VMComponent",
     "WindowsVMComponentProps",
-    "WrappedAutomationAccount",
     "WrappedLogAnalyticsWorkspace",
 ]
