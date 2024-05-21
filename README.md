@@ -58,14 +58,13 @@
 | data\_safe\_haven/infrastructure/components/dynamic/file\_share\_file.py          |       72 |       48 |     33% |27-31, 37-40, 49-62, 71-80, 84-99, 107-122, 132-134, 147 |
 | data\_safe\_haven/infrastructure/components/dynamic/file\_upload.py               |       48 |       30 |     38% |29-38, 44-77, 85-95, 110-118, 128-130, 143 |
 | data\_safe\_haven/infrastructure/components/dynamic/ssl\_certificate.py           |       91 |       66 |     27% |37-42, 48-62, 66-145, 153-171, 181-182, 195 |
-| data\_safe\_haven/infrastructure/components/wrapped/\_\_init\_\_.py               |        3 |        0 |    100% |           |
-| data\_safe\_haven/infrastructure/components/wrapped/automation\_account.py        |       20 |        7 |     65% |22-23, 39, 54, 63-71, 80 |
+| data\_safe\_haven/infrastructure/components/wrapped/\_\_init\_\_.py               |        2 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/components/wrapped/log\_analytics\_workspace.py  |       17 |        6 |     65% |22-23, 39, 46, 53-59 |
 | data\_safe\_haven/infrastructure/programs/\_\_init\_\_.py                         |        3 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/declarative\_shm.py                     |       19 |        5 |     74% |     25-58 |
 | data\_safe\_haven/infrastructure/programs/declarative\_sre.py                     |       51 |       33 |     35% |66-73, 77-394 |
 | data\_safe\_haven/infrastructure/programs/shm/\_\_init\_\_.py                     |        0 |        0 |    100% |           |
-| data\_safe\_haven/infrastructure/programs/shm/monitoring.py                       |       46 |       35 |     24% |38-44, 58-450 |
+| data\_safe\_haven/infrastructure/programs/shm/monitoring.py                       |       32 |       21 |     34% |35-41, 55-184 |
 | data\_safe\_haven/infrastructure/programs/shm/networking.py                       |       38 |       29 |     24% |23-30, 44-202 |
 | data\_safe\_haven/infrastructure/programs/sre/\_\_init\_\_.py                     |        0 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/application\_gateway.py             |       24 |        0 |    100% |           |
@@ -94,7 +93,7 @@
 | data\_safe\_haven/serialisers/yaml\_serialisable\_model.py                        |       43 |        0 |    100% |           |
 | data\_safe\_haven/types/\_\_init\_\_.py                                           |        4 |        0 |    100% |           |
 | data\_safe\_haven/types/annotated\_types.py                                       |       16 |        0 |    100% |           |
-| data\_safe\_haven/types/enums.py                                                  |       79 |        0 |    100% |           |
+| data\_safe\_haven/types/enums.py                                                  |       78 |        0 |    100% |           |
 | data\_safe\_haven/types/types.py                                                  |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/\_\_init\_\_.py                                         |        5 |        0 |    100% |           |
 | data\_safe\_haven/utility/directories.py                                          |        8 |        0 |    100% |           |
@@ -105,7 +104,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       19 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       49 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4365** | **2498** | **43%** |           |
+|                                                                         **TOTAL** | **4329** | **2477** | **43%** |           |
 
 
 ## Setup coverage badge
