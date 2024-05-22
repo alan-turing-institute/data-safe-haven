@@ -40,7 +40,7 @@
 | data\_safe\_haven/external/interface/azure\_ipv4\_range.py                        |       34 |        4 |     88% |23-24, 44-45 |
 | data\_safe\_haven/external/interface/azure\_postgresql\_database.py               |      117 |       81 |     31% |45-57, 64-65, 69, 83-87, 93-97, 101-114, 120-127, 135-170, 174-235 |
 | data\_safe\_haven/functions/\_\_init\_\_.py                                       |        2 |        0 |    100% |           |
-| data\_safe\_haven/functions/strings.py                                            |       58 |       20 |     66% |26, 71-80, 95-97, 102, 112-120 |
+| data\_safe\_haven/functions/strings.py                                            |       61 |       20 |     67% |26, 77-86, 101-103, 108, 118-126 |
 | data\_safe\_haven/infrastructure/\_\_init\_\_.py                                  |        2 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/common/\_\_init\_\_.py                           |        3 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/common/ip\_ranges.py                             |       26 |        0 |    100% |           |
@@ -104,7 +104,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       19 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       49 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4329** | **2463** | **43%** |           |
+|                                                                         **TOTAL** | **4332** | **2463** | **43%** |           |
 
 
 ## Setup coverage badge
