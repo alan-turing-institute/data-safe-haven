@@ -35,7 +35,7 @@ services:
 
     guacd:
         container_name: guacd_guacamole_compose
-        image: guacamole/guacd:1.5.4
+        image: guacamole/guacd:1.5.5
         networks:
             - network_private
         volumes:
@@ -47,7 +47,7 @@ services:
 
     guacamole:
         container_name: guacamole_guacamole_compose
-        image: guacamole/guacamole:1.5.4
+        image: guacamole/guacamole:1.5.5
         depends_on:
             guacd:
                 condition: service_started
