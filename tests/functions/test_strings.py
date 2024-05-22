@@ -8,12 +8,15 @@ from data_safe_haven.functions import next_occurrence, sanitise_sre_name
 
 
 class TestNextOccurance:
-    @pytest.mark.parametrize("hour,minute,timezone,expected", [
-        (5, 13, "Australia/Perth", "2024-01-02T21:13:00+00:00"),
-        (0, 13, "Australia/Perth", "2024-01-02T16:13:00+00:00"),
-        (20, 13, "Australia/Perth", "2024-01-02T12:13:00+00:00"),
-        (20, 13, "Europe/London", "2024-01-02T20:13:00+00:00"),
-    ])
+    @pytest.mark.parametrize(
+        "hour,minute,timezone,expected",
+        [
+            (5, 13, "Australia/Perth", "2024-01-02T21:13:00+00:00"),
+            (0, 13, "Australia/Perth", "2024-01-02T16:13:00+00:00"),
+            (20, 13, "Australia/Perth", "2024-01-02T12:13:00+00:00"),
+            (20, 13, "Europe/London", "2024-01-02T20:13:00+00:00"),
+        ],
+    )
     @freeze_time(datetime.datetime(2024, 1, 2, 1, 0, tzinfo=datetime.UTC))
     def test_next_occurrence(self, hour, minute, timezone, expected):
         next_time = next_occurrence(hour, minute, timezone)
