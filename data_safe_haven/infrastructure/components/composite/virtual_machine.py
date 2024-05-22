@@ -129,7 +129,7 @@ class LinuxVMComponentProps(VMComponentProps):
     ):
         super().__init__(*args, **kwargs)
         self.image_reference_args = compute.ImageReferenceArgs(
-            offer="0001-com-ubuntu-server-focal",
+            offer="0001-com-ubuntu-server-jammy",
             publisher="Canonical",
             sku="22_04-LTS-gen2",
             version="latest",
