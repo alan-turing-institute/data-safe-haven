@@ -18,6 +18,10 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
 - [ ] Create a release branch called e.g. `release-v0.0.1`
 - [ ] Draft a changelog for the release similar to our previous releases, see https://github.com/alan-turing-institute/data-safe-haven/releases
 
+### For patch releases only
+
+- [ ] Confirm that the resource to which the patch applies can be successfully deployed
+
 ### For minor releases and above
 
 - [ ] Deploy an SHM from this branch and save a transcript of the deployment logs
@@ -34,10 +38,6 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
   1. ability to exfiltrate data from the system
   1. ability to transfer data between SREs
   1. ability to escalate privileges on the SRD.
-
-### For patch releases
-
-- [ ] Confirm that the resource to which the patch applies can be successfully deployed
 
 ### Update documentation
 
