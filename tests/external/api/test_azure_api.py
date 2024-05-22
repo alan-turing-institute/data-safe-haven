@@ -25,7 +25,7 @@ def mock_key_client(monkeypatch):
 
 
 @fixture
-def mock_blob_client(monkeypatch):  # noqa: ARG001
+def mock_blob_client(monkeypatch):
     class MockBlobClient:
         def __init__(
             self,
@@ -43,7 +43,7 @@ def mock_blob_client(monkeypatch):  # noqa: ARG001
                 return False
 
     def mock_blob_client(
-        self,
+        self,  # noqa: ARG001
         resource_group_name,
         storage_account_name,
         storage_container_name,
