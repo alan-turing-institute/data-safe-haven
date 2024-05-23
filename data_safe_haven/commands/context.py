@@ -186,7 +186,7 @@ def remove(
 def create() -> None:
     """Create Data Safe Haven context infrastructure."""
     try:
-        settings = ContextSettings.from_file().assert_context()
+        context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
         print("No context configuration file. Run `dsh context add` before creating infrastructure.")
         raise typer.Exit(code=1) from exc
@@ -198,6 +198,10 @@ def create() -> None:
 @context_command_group.command()
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure."""
-    context = ContextSettings.from_file().assert_context()
+    try:
+        context = ContextSettings.from_file().assert_context()
+    except DataSafeHavenConfigError as exc:
+        print("No context configuration file. A context must be found before it can be torn down infrastructure.")
+        raise typer.Exit(code=1) from exc
     context_infra = ContextInfrastructure(context)
     context_infra.teardown()
