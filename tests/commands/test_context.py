@@ -84,7 +84,7 @@ class TestAdd:
                 "--location",
                 "uksouth",
                 "--subscription-name",
-                "Data Safe Haven (Acme)",
+                "Data Safe Haven Acme",
             ],
         )
         assert result.exit_code == 1
@@ -104,7 +104,7 @@ class TestAdd:
                 "--location",
                 "uksouth",
                 "--subscription-name",
-                "Data Safe Haven (Example)",
+                "Data Safe Haven Example",
             ],
         )
         assert result.exit_code == 2
@@ -158,7 +158,7 @@ class TestAdd:
                 "--location",
                 "uksouth",
                 "--subscription-name",
-                "Data Safe Haven (Acme)",
+                "Data Safe Haven Acme",
             ],
         )
         assert result.exit_code == 0

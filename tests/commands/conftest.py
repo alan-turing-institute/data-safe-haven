@@ -14,12 +14,12 @@ def context_settings():
             name: Acme Deployment
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             location: uksouth
-            subscription_name: Data Safe Haven (Acme)
+            subscription_name: Data Safe Haven Acme
         gems:
             name: Gems
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             location: uksouth
-            subscription_name: Data Safe Haven (Gems)"""
+            subscription_name: Data Safe Haven Gems"""
 
 
 @fixture

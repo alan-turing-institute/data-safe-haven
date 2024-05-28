@@ -108,12 +108,12 @@ def context_yaml():
                 name: Acme Deployment
                 admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
                 location: uksouth
-                subscription_name: Data Safe Haven (Acme)
+                subscription_name: Data Safe Haven Acme
             gems:
                 name: Gems
                 admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
                 location: uksouth
-                subscription_name: Data Safe Haven (Gems)"""
+                subscription_name: Data Safe Haven Gems"""
     return context_yaml
 
 
@@ -131,7 +131,7 @@ class TestContextSettings:
                     name="Acme Deployment",
                     admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                     location="uksouth",
-                    subscription_name="Data Safe Haven (Acme)",
+                    subscription_name="Data Safe Haven Acme",
                 )
             },
         )
@@ -261,14 +261,14 @@ class TestContextSettings:
         context_settings.add(
             key="example",
             name="Example",
-            subscription_name="Data Safe Haven (Example)",
+            subscription_name="Data Safe Haven Example",
             admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             location="uksouth",
         )
         context_settings.selected = "example"
         assert context_settings.selected == "example"
         assert context_settings.context.name == "Example"
-        assert context_settings.context.subscription_name == "Data Safe Haven (Example)"
+        assert context_settings.context.subscription_name == "Data Safe Haven Example"
 
     def test_invalid_add(self, context_settings):
         with pytest.raises(
@@ -278,7 +278,7 @@ class TestContextSettings:
             context_settings.add(
                 key="acme_deployment",
                 name="Acme Deployment",
-                subscription_name="Data Safe Haven (Acme)",
+                subscription_name="Data Safe Haven Acme",
                 admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 location="uksouth",
             )
