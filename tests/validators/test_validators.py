@@ -31,7 +31,7 @@ class TestAzureSubscriptionName:
     @pytest.mark.parametrize(
         "subscription_name",
         [
-            "MySubscription",
+            "My Subscription",
             "Example-Subscription",
             "Subscription5",
         ],
@@ -43,8 +43,9 @@ class TestAzureSubscriptionName:
         "subscription_name",
         [
             "My_Subscription",
+            "Your Subscription ",
             "%^*",
-            "A subscription",
+            "1A subscription",
             "sübscríptìőn",
             "🙂",
         ],
