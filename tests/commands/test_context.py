@@ -111,6 +111,26 @@ class TestAdd:
         # This works because the context_command_group Typer writes this error
         assert "Invalid value for '--admin-group': Expected GUID" in result.stderr
 
+    def test_add_invalid_subscription_name(self, runner):
+        result = runner.invoke(
+            context_command_group,
+            [
+                "add",
+                "example",
+                "--name",
+                "Example",
+                "--admin-group",
+                "not a uuid",
+                "--location",
+                "uksouth",
+                "--subscription-name",
+                "Invalid Subscription Name  ",
+            ],
+        )
+        assert result.exit_code == 2
+        # This works because the context_command_group Typer writes this error
+        assert "Invalid value for '--subscription-name':" in result.stderr
+
     def test_add_missing_ags(self, runner):
         result = runner.invoke(
             context_command_group,
