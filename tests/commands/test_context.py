@@ -64,7 +64,7 @@ class TestAdd:
                 "--location",
                 "uksouth",
                 "--subscription-name",
-                "Data Safe Haven (Example)",
+                "Data Safe Haven Example",
             ],
         )
         assert result.exit_code == 0
