@@ -26,7 +26,7 @@ def azure_location(azure_location: str) -> str:
 
 def azure_subscription_name(subscription_name: str) -> str:
     # https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules
-    if not re.match(r"[a-zA-Z0-9\-]+", subscription_name):
+    if not re.match(r"^[a-zA-Z0-9\-]+$", subscription_name):
         msg = "Azure subscription names can only contain alphanumeric characters and hyphens."
         raise ValueError(msg)
     return subscription_name
