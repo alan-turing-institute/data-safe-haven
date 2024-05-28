@@ -204,7 +204,7 @@ def teardown() -> None:
         context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
         print(
-            "No context configuration file. A context must be found before it can be torn down infrastructure."
+            "No context configuration file. A context must be configured before it can be torn down."
         )
         raise typer.Exit(code=1) from exc
     context_infra = ContextInfrastructure(context)
