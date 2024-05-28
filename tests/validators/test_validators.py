@@ -37,7 +37,9 @@ class TestAzureSubscriptionName:
         ],
     )
     def test_subscription_name(self, subscription_name):
-        assert validators.azure_subscription_name(subscription_name) == subscription_name
+        assert (
+            validators.azure_subscription_name(subscription_name) == subscription_name
+        )
 
     @pytest.mark.parametrize(
         "subscription_name",

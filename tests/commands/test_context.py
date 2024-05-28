@@ -120,7 +120,7 @@ class TestAdd:
                 "--name",
                 "Example",
                 "--admin-group",
-                "not a uuid",
+                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--location",
                 "uksouth",
                 "--subscription-name",
