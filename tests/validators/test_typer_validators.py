@@ -49,8 +49,9 @@ class TestTyperAzureSubscriptionName:
         "subscription_name",
         [
             "My_Subscription",
+            "Your Subscription ",
             "%^*",
-            "A subscription",
+            "1A subscription",
             "sübscríptìőn",
             "🙂",
         ],
