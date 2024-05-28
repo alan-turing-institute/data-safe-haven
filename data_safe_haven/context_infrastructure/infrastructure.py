@@ -14,7 +14,7 @@ class ContextInfrastructure:
             if self.azure_api.subscription_id:
                 pass
         except Exception as exc:
-            msg = "Not logged in. \nAuthenticate using az login before creating or tearing down context infrastructure."
+            msg = "Not logged in or login has expired. \nAuthenticate using az login before creating or tearing down context infrastructure."
             raise DataSafeHavenAzureError(msg) from exc
 
     @property
