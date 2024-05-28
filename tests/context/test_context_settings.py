@@ -37,9 +37,9 @@ class TestContext:
             Context(**context_dict)
 
     def test_invalid_subscription_name(self, context_dict):
-        context_dict["subscription_name"] = "very " * 12 + "long name"
+        context_dict["subscription_name"] = "very " * 15 + "long name"
         with pytest.raises(
-            ValidationError, match="String should have at most 64 characters"
+            ValidationError, match="String should have at most 80 characters"
         ):
             Context(**context_dict)
 
