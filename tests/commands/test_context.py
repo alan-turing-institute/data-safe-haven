@@ -63,7 +63,7 @@ class TestAdd:
                 "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--location",
                 "uksouth",
-                "--subscription",
+                "--subscription-name",
                 "Data Safe Haven (Example)",
             ],
         )
@@ -83,7 +83,7 @@ class TestAdd:
                 "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--location",
                 "uksouth",
-                "--subscription",
+                "--subscription-name",
                 "Data Safe Haven (Acme)",
             ],
         )
@@ -103,7 +103,7 @@ class TestAdd:
                 "not a uuid",
                 "--location",
                 "uksouth",
-                "--subscription",
+                "--subscription-name",
                 "Data Safe Haven (Example)",
             ],
         )
@@ -137,7 +137,7 @@ class TestAdd:
                 "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--location",
                 "uksouth",
-                "--subscription",
+                "--subscription-name",
                 "Data Safe Haven (Acme)",
             ],
         )
