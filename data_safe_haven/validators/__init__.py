@@ -1,5 +1,6 @@
 from .typer import (
     typer_aad_guid,
+    typer_azure_subscription_name,
     typer_azure_vm_sku,
     typer_email_address,
     typer_ip_address,
@@ -8,6 +9,7 @@ from .typer import (
 from .validators import (
     aad_guid,
     azure_location,
+    azure_subscription_name,
     azure_vm_sku,
     email_address,
     fqdn,
@@ -19,6 +21,7 @@ from .validators import (
 __all__ = [
     "aad_guid",
     "azure_location",
+    "azure_subscription_name",
     "azure_vm_sku",
     "email_address",
     "fqdn",
@@ -26,6 +29,7 @@ __all__ = [
     "timezone",
     "unique_list",
     "typer_aad_guid",
+    "typer_azure_subscription_name",
     "typer_email_address",
     "typer_ip_address",
     "typer_azure_vm_sku",

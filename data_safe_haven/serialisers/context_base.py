@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
-from data_safe_haven.types import AzureLongName
+from data_safe_haven.types import AzureSubscriptionName
 
 
 class ContextBase(ABC):
-    subscription_name: AzureLongName
+    subscription_name: AzureSubscriptionName
     storage_container_name: ClassVar[str]
 
     @property

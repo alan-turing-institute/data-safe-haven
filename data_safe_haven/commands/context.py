@@ -87,6 +87,7 @@ def add(
         str,
         typer.Option(
             help="The name of an Azure subscription to deploy resources into.",
+            callback=validators.typer_azure_subscription_name,
         ),
     ],
 ) -> None:
