@@ -114,6 +114,11 @@ class PermittedDomains(tuple[str, ...], Enum):
     SOFTWARE_REPOSITORIES_R = ("cran.r-project.org",)
     SOFTWARE_REPOSITORIES = SOFTWARE_REPOSITORIES_PYTHON + SOFTWARE_REPOSITORIES_R
     UBUNTU_KEYSERVER = ("keyserver.ubuntu.com",)
+    UBUNTU_SNAPCRAFT = (
+        "api.snapcraft.io",
+        "*.snapcraftcontent.com",
+        "dashboard.snapcraft.io",
+        "login.ubuntu.com",)
     ALL = tuple(
         sorted(
             set(
@@ -125,6 +130,7 @@ class PermittedDomains(tuple[str, ...], Enum):
                 + SOFTWARE_REPOSITORIES_PYTHON
                 + SOFTWARE_REPOSITORIES_R
                 + UBUNTU_KEYSERVER
+                + UBUNTU_SNAPCRAFT
             )
         )
     )
