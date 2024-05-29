@@ -118,7 +118,8 @@ class PermittedDomains(tuple[str, ...], Enum):
         "api.snapcraft.io",
         "*.snapcraftcontent.com",
         "dashboard.snapcraft.io",
-        "login.ubuntu.com",)
+        "login.ubuntu.com",
+    )
     ALL = tuple(
         sorted(
             set(
