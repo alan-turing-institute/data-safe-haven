@@ -224,6 +224,18 @@ class SREFirewallComponent(ComponentResource):
                             source_addresses=props.subnet_workspaces_prefixes,
                             target_fqdns=PermittedDomains.UBUNTU_KEYSERVER,
                         ),
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external Ubuntu Snap Store access",
+                            name="AllowUbuntuSnapcraft",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                ),
+                            ],
+                            source_addresses=props.subnet_workspaces_prefixes,
+                            target_fqdns=PermittedDomains.UBUNTU_SNAPCRAFT,
+                        ),
                     ],
                 ),
             ],
