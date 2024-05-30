@@ -101,10 +101,10 @@
 | data\_safe\_haven/utility/logger.py                                               |      108 |       54 |     50% |28-30, 35-37, 41-42, 87-88, 92-93, 117-120, 129-132, 159, 167-180, 184-190, 194, 200-201, 215-223, 232-234 |
 | data\_safe\_haven/utility/singleton.py                                            |        8 |        0 |    100% |           |
 | data\_safe\_haven/validators/\_\_init\_\_.py                                      |        3 |        0 |    100% |           |
-| data\_safe\_haven/validators/typer.py                                             |       19 |        0 |    100% |           |
-| data\_safe\_haven/validators/validators.py                                        |       49 |        0 |    100% |           |
+| data\_safe\_haven/validators/typer.py                                             |       20 |        0 |    100% |           |
+| data\_safe\_haven/validators/validators.py                                        |       54 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4353** | **2435** | **44%** |           |
+|                                                                         **TOTAL** | **4359** | **2435** | **44%** |           |
 
 
 ## Setup coverage badge
