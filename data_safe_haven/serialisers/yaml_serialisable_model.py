@@ -62,9 +62,11 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
         with open(_config_file_path, "w", encoding="utf-8") as f_yaml:
             f_yaml.write(self.to_yaml())
 
-    def to_yaml(self) -> str:
+    def to_yaml(self, *, warnings: bool = True) -> str:
         """Serialise a YAMLSerialisableModel to a YAML string"""
-        return yaml.dump(self.model_dump(by_alias=True, mode="json"), indent=2)
+        return yaml.dump(
+            self.model_dump(by_alias=True, mode="json", warnings=warnings), indent=2
+        )
 
     def yaml_diff(
         self, other: T, from_name: str = "other", to_name: str = "self"
