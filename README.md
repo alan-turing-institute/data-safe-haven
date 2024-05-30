@@ -13,7 +13,7 @@
 | data\_safe\_haven/administration/users/user\_handler.py                           |      105 |       83 |     21% |24-29, 37-73, 77-84, 88, 94-104, 112-133, 141-146, 154-168, 176-215, 223-228 |
 | data\_safe\_haven/commands/\_\_init\_\_.py                                        |        2 |        0 |    100% |           |
 | data\_safe\_haven/commands/cli.py                                                 |       36 |       14 |     61% |56-63, 99-104 |
-| data\_safe\_haven/commands/config.py                                              |       38 |        0 |    100% |           |
+| data\_safe\_haven/commands/config.py                                              |       39 |        0 |    100% |           |
 | data\_safe\_haven/commands/context.py                                             |       64 |        0 |    100% |           |
 | data\_safe\_haven/commands/pulumi.py                                              |       30 |        4 |     87% |     56-68 |
 | data\_safe\_haven/commands/shm.py                                                 |       46 |       27 |     41% |44-73, 83-84, 93-117 |
@@ -104,7 +104,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       19 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       49 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4332** | **2463** | **43%** |           |
+|                                                                         **TOTAL** | **4333** | **2463** | **43%** |           |
 
 
 ## Setup coverage badge
