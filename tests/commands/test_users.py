@@ -4,7 +4,6 @@ from data_safe_haven.commands.users import users_command_group
 class TestAdd:
     def test_invalid_shm(
         self,
-        mocker,
         runner,
         tmp_contexts_gems,  # noqa: ARG002
         mock_config_from_remote,  # noqa: ARG002
