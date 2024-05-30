@@ -10,7 +10,7 @@ from data_safe_haven.external import (
     GraphApi,
 )
 from data_safe_haven.infrastructure import SREProjectManager
-from data_safe_haven.types import AzureLocation, AzureLongName
+from data_safe_haven.types import AzureLocation, AzureSubscriptionName
 from data_safe_haven.utility import LoggingSingleton
 
 
@@ -23,7 +23,7 @@ class SREProvisioningManager:
         location: AzureLocation,
         sre_name: str,
         sre_stack: SREProjectManager,
-        subscription_name: AzureLongName,
+        subscription_name: AzureSubscriptionName,
         timezone: str,
     ):
         self._available_vm_skus: dict[str, dict[str, Any]] | None = None
