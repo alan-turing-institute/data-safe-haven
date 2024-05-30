@@ -13,3 +13,83 @@ class TestAdd:
 
         assert result.exit_code == 1
         assert "Have you deployed the SHM?" in result.stdout
+
+
+class TestListUsers:
+    def test_invalid_shm(
+        self,
+        runner,
+        tmp_contexts_gems,  # noqa: ARG002
+        mock_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+    ):
+        result = runner.invoke(users_command_group, ["list"])
+
+        assert result.exit_code == 1
+        assert "Have you deployed the SHM?" in result.stdout
+
+
+class TestRegister:
+    def test_invalid_shm(
+        self,
+        runner,
+        tmp_contexts_gems,  # noqa: ARG002
+        mock_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+    ):
+        result = runner.invoke(users_command_group, ["register", "-u", "Harry Lime", "my_sre"])
+
+        assert result.exit_code == 1
+        assert "Have you deployed the SHM?" in result.stdout
+
+    def test_invalid_sre(
+        self,
+        runner,
+        tmp_contexts,  # noqa: ARG002
+        mock_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+    ):
+        result = runner.invoke(users_command_group, ["register", "-u", "Harry Lime", "my_sre"])
+
+        assert result.exit_code == 1
+        assert "Have you deployed the SRE?" in result.stdout
+
+
+class TestRemove:
+    def test_invalid_shm(
+        self,
+        runner,
+        tmp_contexts_gems,  # noqa: ARG002
+        mock_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+    ):
+        result = runner.invoke(users_command_group, ["remove", "-u", "Harry Lime"])
+
+        assert result.exit_code == 1
+        assert "Have you deployed the SHM?" in result.stdout
+
+
+class TestUnregister:
+    def test_invalid_shm(
+        self,
+        runner,
+        tmp_contexts_gems,  # noqa: ARG002
+        mock_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+    ):
+        result = runner.invoke(users_command_group, ["unregister", "-u", "Harry Lime", "my_sre"])
+
+        assert result.exit_code == 1
+        assert "Have you deployed the SHM?" in result.stdout
+
+    def test_invalid_sre(
+        self,
+        runner,
+        tmp_contexts,  # noqa: ARG002
+        mock_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+    ):
+        result = runner.invoke(users_command_group, ["unregister", "-u", "Harry Lime", "my_sre"])
+
+        assert result.exit_code == 1
+        assert "Have you deployed the SRE?" in result.stdout
