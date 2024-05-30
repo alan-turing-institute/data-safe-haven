@@ -36,6 +36,17 @@ def tmp_contexts(tmp_path, context_settings):
 
 
 @fixture
+def tmp_contexts_gems(tmp_path, context_settings):
+    context_settings = context_settings.replace(
+        "selected: acme_deployment", "selected: gems"
+    )
+    config_file_path = tmp_path / "contexts.yaml"
+    with open(config_file_path, "w") as f:
+        f.write(context_settings)
+    return tmp_path
+
+
+@fixture
 def tmp_contexts_none(tmp_path, context_settings):
     context_settings = context_settings.replace(
         "selected: acme_deployment", "selected: null"
