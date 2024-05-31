@@ -89,7 +89,7 @@ class ContextInfrastructure:
         Raises:
             DataSafeHavenAzureError if any resources cannot be destroyed
         """
-        logger = LoggingSingleton
+        logger = LoggingSingleton()
         try:
             logger.info(
                 f"Removing context {self.context.name} resource group {self.context.resource_group_name}"
