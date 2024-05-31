@@ -8,8 +8,8 @@ from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.resource.subscriptions.models import Subscription
 
 from data_safe_haven.exceptions import (
-    DataSafeHavenAzureError,
     DataSafeHavenAzureAPIAuthenticationError,
+    DataSafeHavenAzureError,
     DataSafeHavenInputError,
 )
 

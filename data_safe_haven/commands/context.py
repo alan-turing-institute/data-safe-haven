@@ -11,7 +11,10 @@ from data_safe_haven.context import (
     ContextSettings,
 )
 from data_safe_haven.context_infrastructure import ContextInfrastructure
-from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError, DataSafeHavenConfigError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureAPIAuthenticationError,
+    DataSafeHavenConfigError,
+)
 
 context_command_group = typer.Typer()
 
@@ -23,7 +26,7 @@ def show() -> None:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError:
         print("No context configuration file. Run `dsh context add` to create one.")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     current_context_key = settings.selected
     current_context = settings.context
@@ -43,7 +46,7 @@ def available() -> None:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError:
         print("No context configuration file. Run `dsh context add` to create one.")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     current_context_key = settings.selected
     available = settings.available
@@ -64,7 +67,7 @@ def switch(
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError:
         print("No context configuration file. Run `dsh context add` to create one.")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
     settings.selected = key
     settings.write()
 
@@ -157,7 +160,7 @@ def update(
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError:
         print("No context configuration file. Run `dsh context add` to create one.")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     settings.update(
         admin_group_id=admin_group,
@@ -177,7 +180,7 @@ def remove(
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError:
         print("No context configuration file, so no contexts to remove.")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
     settings.remove(key)
     settings.write()
 
@@ -194,14 +197,16 @@ def create() -> None:
             print(
                 "No context configuration file. Run `dsh context add` before creating infrastructure."
             )
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     context_infra = ContextInfrastructure(context)
     try:
         context_infra.create()
     except DataSafeHavenAzureAPIAuthenticationError:
-        print("Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`.")
-        raise typer.Exit(1)
+        print(
+            "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
+        )
+        raise typer.Exit(1) from None
 
 
 @context_command_group.command()
@@ -216,10 +221,12 @@ def teardown() -> None:
             print(
                 "No context configuration file. Run `dsh context add` before creating infrastructure."
             )
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
     context_infra = ContextInfrastructure(context)
     try:
         context_infra.teardown()
     except DataSafeHavenAzureAPIAuthenticationError:
-        print("Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`.")
-        raise typer.Exit(1)
+        print(
+            "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
+        )
+        raise typer.Exit(1) from None
