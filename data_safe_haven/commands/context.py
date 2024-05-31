@@ -189,7 +189,7 @@ def create() -> None:
         context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
         if exc.args[0] == "No context selected":
-            print("No context selected. Use `dsh context switch KEY` to select one.")
+            print("No context selected. Run `dsh context switch` to select one.")
         else:
             print(
                 "No context configuration file. Run `dsh context add` before creating infrastructure."
@@ -207,7 +207,7 @@ def teardown() -> None:
         context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
         if exc.args[0] == "No context selected":
-            print("No context selected. Use `dsh context switch KEY` to select one.")
+            print("No context selected. Run `dsh context switch` to select one.")
         else:
             print(
                 "No context configuration file. Run `dsh context add` before creating infrastructure."
