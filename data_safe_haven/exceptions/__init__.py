@@ -42,6 +42,14 @@ class DataSafeHavenAzureError(DataSafeHavenCloudError):
     pass
 
 
+class DataSafeHavenAzureAPIError(DataSafeHavenAzureError):
+    pass
+
+
+class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenAzureAPIError):
+    pass
+
+
 class DataSafeHavenUserHandlingError(DataSafeHavenInternalError):
     pass
 

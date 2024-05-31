@@ -11,12 +11,6 @@ class ContextInfrastructure:
         self.azure_api_: AzureApi | None = None
         self.context = context
         self.tags = {"component": "context"} | context.tags
-        try:
-            if self.azure_api.subscription_id:
-                pass
-        except Exception as exc:
-            msg = "Not logged in or login has expired. \nAuthenticate using az login before creating or tearing down context infrastructure."
-            raise DataSafeHavenAzureError(msg) from exc
 
     @property
     def azure_api(self) -> AzureApi:

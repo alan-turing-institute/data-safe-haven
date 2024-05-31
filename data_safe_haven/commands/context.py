@@ -11,7 +11,7 @@ from data_safe_haven.context import (
     ContextSettings,
 )
 from data_safe_haven.context_infrastructure import ContextInfrastructure
-from data_safe_haven.exceptions import DataSafeHavenConfigError
+from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError, DataSafeHavenConfigError
 
 context_command_group = typer.Typer()
 
@@ -197,7 +197,11 @@ def create() -> None:
         raise typer.Exit(code=1)
 
     context_infra = ContextInfrastructure(context)
-    context_infra.create()
+    try:
+        context_infra.create()
+    except DataSafeHavenAzureAPIAuthenticationError:
+        print("Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`.")
+        raise typer.Exit(1)
 
 
 @context_command_group.command()
@@ -214,4 +218,8 @@ def teardown() -> None:
             )
         raise typer.Exit(code=1)
     context_infra = ContextInfrastructure(context)
-    context_infra.teardown()
+    try:
+        context_infra.teardown()
+    except DataSafeHavenAzureAPIAuthenticationError:
+        print("Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`.")
+        raise typer.Exit(1)
