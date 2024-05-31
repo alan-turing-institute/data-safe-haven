@@ -21,9 +21,9 @@ def show() -> None:
     """Show information about the selected context."""
     try:
         settings = ContextSettings.from_file()
-    except DataSafeHavenConfigError as exc:
+    except DataSafeHavenConfigError:
         print("No context configuration file. Run `dsh context add` to create one.")
-        raise typer.Exit(code=1) from exc
+        raise typer.Exit(code=1)
 
     current_context_key = settings.selected
     current_context = settings.context
@@ -41,9 +41,9 @@ def available() -> None:
     """Show the available contexts."""
     try:
         settings = ContextSettings.from_file()
-    except DataSafeHavenConfigError as exc:
+    except DataSafeHavenConfigError:
         print("No context configuration file. Run `dsh context add` to create one.")
-        raise typer.Exit(code=1) from exc
+        raise typer.Exit(code=1)
 
     current_context_key = settings.selected
     available = settings.available
@@ -62,9 +62,9 @@ def switch(
     """Switch the selected context."""
     try:
         settings = ContextSettings.from_file()
-    except DataSafeHavenConfigError as exc:
+    except DataSafeHavenConfigError:
         print("No context configuration file. Run `dsh context add` to create one.")
-        raise typer.Exit(code=1) from exc
+        raise typer.Exit(code=1)
     settings.selected = key
     settings.write()
 
@@ -155,9 +155,9 @@ def update(
     """Update the selected context settings."""
     try:
         settings = ContextSettings.from_file()
-    except DataSafeHavenConfigError as exc:
+    except DataSafeHavenConfigError:
         print("No context configuration file. Run `dsh context add` to create one.")
-        raise typer.Exit(code=1) from exc
+        raise typer.Exit(code=1)
 
     settings.update(
         admin_group_id=admin_group,
@@ -175,9 +175,9 @@ def remove(
     """Removes a context."""
     try:
         settings = ContextSettings.from_file()
-    except DataSafeHavenConfigError as exc:
+    except DataSafeHavenConfigError:
         print("No context configuration file, so no contexts to remove.")
-        raise typer.Exit(code=1) from exc
+        raise typer.Exit(code=1)
     settings.remove(key)
     settings.write()
 
@@ -194,7 +194,7 @@ def create() -> None:
             print(
                 "No context configuration file. Run `dsh context add` before creating infrastructure."
             )
-        raise typer.Exit(code=1) from exc
+        raise typer.Exit(code=1)
 
     context_infra = ContextInfrastructure(context)
     context_infra.create()
@@ -212,6 +212,6 @@ def teardown() -> None:
             print(
                 "No context configuration file. Run `dsh context add` before creating infrastructure."
             )
-        raise typer.Exit(code=1) from exc
+        raise typer.Exit(code=1)
     context_infra = ContextInfrastructure(context)
     context_infra.teardown()
