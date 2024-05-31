@@ -55,7 +55,9 @@ class TestSwitch:
         # assert "Context 'invalid' is not defined " in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
-        result = runner_no_context_file.invoke(context_command_group, ["switch", "context"])
+        result = runner_no_context_file.invoke(
+            context_command_group, ["switch", "context"]
+        )
         assert result.exit_code == 1
         assert "No context configuration file." in result.stdout
 
@@ -171,7 +173,9 @@ class TestUpdate:
         assert "Name: New Name" in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
-        result = runner_no_context_file.invoke(context_command_group, ["update", "--name", "New Name"])
+        result = runner_no_context_file.invoke(
+            context_command_group, ["update", "--name", "New Name"]
+        )
         assert result.exit_code == 1
         assert "No context configuration file." in result.stdout
 
@@ -191,7 +195,9 @@ class TestRemove:
         # assert "No context with key 'invalid'." in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
-        result = runner_no_context_file.invoke(context_command_group, ["remove", "gems"])
+        result = runner_no_context_file.invoke(
+            context_command_group, ["remove", "gems"]
+        )
         assert result.exit_code == 1
         assert "No context configuration file." in result.stdout
 
