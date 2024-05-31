@@ -492,7 +492,7 @@ class AzureApi(AzureAuthenticator):
         # Ensure that certificate exists
         try:
             return key_client.get_key(key_name)
-        except DataSafeHavenAzureError as exc:
+        except (ResourceNotFoundError, HttpResponseError) as exc:
             msg = f"Failed to retrieve key {key_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
