@@ -841,15 +841,15 @@ class AzureApi(AzureAuthenticator):
                 self.credential, self.subscription_id
             )
 
-            # Ensure that resource group exists
-            self.logger.debug(
-                f"Removing resource group [green]{resource_group_name}[/] if it exists...",
-            )
             if not resource_client.resource_groups.check_existence(resource_group_name):
-                self.logger.error(
-                    f"Resource group [green]{resource_group_name}[/] does not exist. There is no context infrastructure to teardown.",
+                self.logger.warning(
+                    f"Resource group [green]{resource_group_name}[/] does not exist.",
                 )
                 return
+            # Ensure that resource group exists
+            self.logger.debug(
+                f"Attempting to remove resource group [green]{resource_group_name}[/]",
+            )
             poller = resource_client.resource_groups.begin_delete(
                 resource_group_name,
             )

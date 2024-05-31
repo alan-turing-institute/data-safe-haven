@@ -1,6 +1,7 @@
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
+from data_safe_haven.utility import LoggingSingleton
 
 
 class ContextInfrastructure:
@@ -94,7 +95,11 @@ class ContextInfrastructure:
         Raises:
             DataSafeHavenAzureError if any resources cannot be destroyed
         """
+        logger = LoggingSingleton
         try:
+            logger.info(
+                f"Removing context {self.context.name} resource group {self.context.resource_group_name}"
+            )
             self.azure_api.remove_resource_group(self.context.resource_group_name)
         except Exception as exc:
             msg = f"Failed to destroy context resources.\n{exc}"
