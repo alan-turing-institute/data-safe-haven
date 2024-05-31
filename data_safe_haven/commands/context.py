@@ -222,7 +222,9 @@ def teardown() -> None:
                 "No context configuration file. Run `dsh context add` before creating infrastructure."
             )
         raise typer.Exit(code=1) from None
+
     context_infra = ContextInfrastructure(context)
+
     try:
         context_infra.teardown()
     except DataSafeHavenAzureAPIAuthenticationError:

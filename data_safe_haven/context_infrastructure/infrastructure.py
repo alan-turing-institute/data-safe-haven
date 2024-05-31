@@ -79,7 +79,7 @@ class ContextInfrastructure:
                 key_name=self.context.pulumi_encryption_key_name,
                 key_vault_name=keyvault.name,
             )
-        except Exception as exc:
+        except DataSafeHavenAzureError as exc:
             msg = f"Failed to create context resources.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
@@ -95,6 +95,6 @@ class ContextInfrastructure:
                 f"Removing context {self.context.name} resource group {self.context.resource_group_name}"
             )
             self.azure_api.remove_resource_group(self.context.resource_group_name)
-        except Exception as exc:
+        except DataSafeHavenAzureError as exc:
             msg = f"Failed to destroy context resources.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc

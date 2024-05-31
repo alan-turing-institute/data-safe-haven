@@ -1,5 +1,7 @@
 from data_safe_haven.commands.context import context_command_group
 from data_safe_haven.context_infrastructure import ContextInfrastructure
+from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError
+from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
 
 
 class TestShow:
@@ -223,6 +225,16 @@ class TestCreate:
         assert result.exit_code == 1
         assert "No context selected." in result.stdout
 
+    def test_auth_failure(self, runner, mocker):
+        def mock_login(self):  # noqa: ARG001
+            raise DataSafeHavenAzureAPIAuthenticationError
+
+        mocker.patch.object(AzureAuthenticator, "login", mock_login)
+
+        result = runner.invoke(context_command_group, ["create"])
+        assert result.exit_code == 1
+        assert "Failed to authenticate with the Azure API." in result.stdout
+
 
 class TestTeardown:
     def test_teardown(self, runner, monkeypatch):
@@ -244,3 +256,13 @@ class TestTeardown:
         result = runner_none.invoke(context_command_group, ["teardown"])
         assert result.exit_code == 1
         assert "No context selected." in result.stdout
+
+    def test_auth_failure(self, runner, mocker):
+        def mock_login(self):  # noqa: ARG001
+            raise DataSafeHavenAzureAPIAuthenticationError
+
+        mocker.patch.object(AzureAuthenticator, "login", mock_login)
+
+        result = runner.invoke(context_command_group, ["teardown"])
+        assert result.exit_code == 1
+        assert "Failed to authenticate with the Azure API." in result.stdout

@@ -42,7 +42,7 @@ class DataSafeHavenAzureError(DataSafeHavenCloudError):
     pass
 
 
-class DataSafeHavenAzureAPIError(DataSafeHavenAzureError):
+class DataSafeHavenAzureAPIError(DataSafeHavenError):
     pass
 
 
