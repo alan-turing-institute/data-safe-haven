@@ -1615,42 +1615,6 @@ class SRENetworkingComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Peer the SRE virtual network to the SHM virtual network
-        shm_virtual_network = Output.all(
-            resource_group_name=props.shm_networking_resource_group_name,
-            virtual_network_name=props.shm_virtual_network_name,
-        ).apply(
-            lambda kwargs: network.get_virtual_network(
-                resource_group_name=kwargs["resource_group_name"],
-                virtual_network_name=kwargs["virtual_network_name"],
-            )
-        )
-        network.VirtualNetworkPeering(
-            f"{self._name}_sre_to_shm_peering",
-            remote_virtual_network=network.SubResourceArgs(id=shm_virtual_network.id),
-            resource_group_name=resource_group.name,
-            virtual_network_name=sre_virtual_network.name,
-            virtual_network_peering_name=Output.concat(
-                "peer_sre_", props.sre_name, "_to_shm"
-            ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=sre_virtual_network)
-            ),
-        )
-        network.VirtualNetworkPeering(
-            f"{self._name}_shm_to_sre_peering",
-            allow_gateway_transit=True,
-            remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
-            resource_group_name=props.shm_networking_resource_group_name,
-            virtual_network_name=shm_virtual_network.name,
-            virtual_network_peering_name=Output.concat(
-                "peer_shm_to_sre_", props.sre_name
-            ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=sre_virtual_network)
-            ),
-        )
-
         # Peer the SRE virtual network to the DNS virtual network
         network.VirtualNetworkPeering(
             f"{self._name}_sre_to_dns_peering",
