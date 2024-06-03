@@ -41,7 +41,7 @@ def context_dict():
         "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         "location": "uksouth",
         "name": "Acme Deployment",
-        "subscription_name": "Data Safe Haven (Acme)",
+        "subscription_name": "Data Safe Haven Acme",
     }
 
 

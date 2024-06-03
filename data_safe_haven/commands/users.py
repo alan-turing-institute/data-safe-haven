@@ -32,6 +32,11 @@ def add(
 
     shm_name = context.shm_name
 
+    logger = LoggingSingleton()
+    if shm_name not in pulumi_config.project_names:
+        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
+        raise typer.Exit(1)
+
     try:
         # Load GraphAPI
         graph_api = GraphApi(
@@ -59,6 +64,11 @@ def list_users() -> None:
     pulumi_config = DSHPulumiConfig.from_remote(context)
 
     shm_name = context.shm_name
+
+    logger = LoggingSingleton()
+    if shm_name not in pulumi_config.project_names:
+        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
+        raise typer.Exit(1)
 
     try:
         # Load GraphAPI
@@ -101,12 +111,17 @@ def register(
     # Use a JSON-safe SRE name
     sre_name = sanitise_sre_name(sre)
 
+    logger = LoggingSingleton()
+    if shm_name not in pulumi_config.project_names:
+        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
+        raise typer.Exit(1)
+
+    if sre_name not in pulumi_config.project_names:
+        logger.fatal(f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?")
+        raise typer.Exit(1)
+
     try:
-        # Check that SRE option has been provided
-        if not sre_name:
-            msg = "SRE name must be specified."
-            raise DataSafeHavenError(msg)
-        LoggingSingleton().info(
+        logger.info(
             f"Preparing to register {len(usernames)} user(s) with SRE '{sre_name}'"
         )
 
@@ -124,7 +139,7 @@ def register(
             if username in available_usernames:
                 usernames_to_register.append(username)
             else:
-                LoggingSingleton().error(
+                logger.error(
                     f"Username '{username}' does not belong to this Data Safe Haven deployment."
                     " Please use 'dsh users add' to create it."
                 )
@@ -151,6 +166,11 @@ def remove(
     pulumi_config = DSHPulumiConfig.from_remote(context)
 
     shm_name = context.shm_name
+
+    logger = LoggingSingleton()
+    if shm_name not in pulumi_config.project_names:
+        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
+        raise typer.Exit(1)
 
     try:
         # Load GraphAPI
@@ -193,12 +213,17 @@ def unregister(
     shm_name = context.shm_name
     sre_name = sanitise_sre_name(sre)
 
+    logger = LoggingSingleton()
+    if shm_name not in pulumi_config.project_names:
+        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
+        raise typer.Exit(1)
+
+    if sre_name not in pulumi_config.project_names:
+        logger.fatal(f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?")
+        raise typer.Exit(1)
+
     try:
-        # Check that SRE option has been provided
-        if not sre_name:
-            msg = "SRE name must be specified."
-            raise DataSafeHavenError(msg)
-        LoggingSingleton().info(
+        logger.info(
             f"Preparing to unregister {len(usernames)} users with SRE '{sre_name}'"
         )
 
@@ -216,7 +241,7 @@ def unregister(
             if username in available_usernames:
                 usernames_to_unregister.append(username)
             else:
-                LoggingSingleton().error(
+                logger.error(
                     f"Username '{username}' does not belong to this Data Safe Haven deployment."
                     " Please use 'dsh users add' to create it."
                 )

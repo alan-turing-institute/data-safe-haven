@@ -25,6 +25,9 @@ def typer_validator_factory(validator: Callable[[Any], Any]) -> Callable[[Any], 
 
 
 typer_aad_guid = typer_validator_factory(validators.aad_guid)
+typer_azure_subscription_name = typer_validator_factory(
+    validators.azure_subscription_name
+)
 typer_azure_vm_sku = typer_validator_factory(validators.azure_vm_sku)
 typer_email_address = typer_validator_factory(validators.email_address)
 typer_ip_address = typer_validator_factory(validators.ip_address)

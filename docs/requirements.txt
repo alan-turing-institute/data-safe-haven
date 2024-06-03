@@ -14,7 +14,7 @@ babel==2.15.0
     #   sphinx
 beautifulsoup4==4.12.3
     # via pydata-sphinx-theme
-certifi==2024.2.2
+certifi==2024.6.2
     # via requests
 charset-normalizer==3.3.2
     # via requests
@@ -23,7 +23,7 @@ docutils==0.21.2
     #   myst-parser
     #   pydata-sphinx-theme
     #   sphinx
-emoji==2.11.1
+emoji==2.12.1
     # via -r -
 idna==3.7
     # via requests
@@ -49,7 +49,7 @@ packaging==24.0
     # via
     #   pydata-sphinx-theme
     #   sphinx
-pydata-sphinx-theme==0.15.2
+pydata-sphinx-theme==0.15.3
     # via -r -
 pygments==2.18.0
     # via
@@ -58,7 +58,7 @@ pygments==2.18.0
     #   sphinx
 pyyaml==6.0.1
     # via myst-parser
-requests==2.32.0
+requests==2.32.3
     # via sphinx
 snowballstemmer==2.2.0
     # via sphinx
@@ -81,7 +81,9 @@ sphinxcontrib-qthelp==1.0.7
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.10
     # via sphinx
-typing-extensions==4.11.0
-    # via pydata-sphinx-theme
+typing-extensions==4.12.1
+    # via
+    #   emoji
+    #   pydata-sphinx-theme
 urllib3==2.2.1
     # via requests

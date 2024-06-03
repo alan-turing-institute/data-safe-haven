@@ -14,12 +14,12 @@ def context_settings():
             name: Acme Deployment
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             location: uksouth
-            subscription_name: Data Safe Haven (Acme)
+            subscription_name: Data Safe Haven Acme
         gems:
             name: Gems
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             location: uksouth
-            subscription_name: Data Safe Haven (Gems)"""
+            subscription_name: Data Safe Haven Gems"""
 
 
 @fixture
@@ -29,6 +29,17 @@ def context(context_settings):
 
 @fixture
 def tmp_contexts(tmp_path, context_settings):
+    config_file_path = tmp_path / "contexts.yaml"
+    with open(config_file_path, "w") as f:
+        f.write(context_settings)
+    return tmp_path
+
+
+@fixture
+def tmp_contexts_gems(tmp_path, context_settings):
+    context_settings = context_settings.replace(
+        "selected: acme_deployment", "selected: gems"
+    )
     config_file_path = tmp_path / "contexts.yaml"
     with open(config_file_path, "w") as f:
         f.write(context_settings)

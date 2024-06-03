@@ -22,11 +22,15 @@ def template(
 ) -> None:
     """Write a template Data Safe Haven configuration."""
     config = Config.template()
+    # The template uses explanatory strings in place of the expected types.
+    # Serialisation warnings are therefore suppressed to avoid misleading the users into
+    # thinking there is a problem and contaminating the output.
+    config_yaml = config.to_yaml(warnings=False)
     if file:
         with open(file, "w") as outfile:
-            outfile.write(config.to_yaml())
+            outfile.write(config_yaml)
     else:
-        print(config.to_yaml())
+        print(config_yaml)
 
 
 @config_command_group.command()

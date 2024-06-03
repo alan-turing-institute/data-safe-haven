@@ -27,6 +27,36 @@ class TestValidateAadGuid:
             validators.aad_guid(guid)
 
 
+class TestAzureSubscriptionName:
+    @pytest.mark.parametrize(
+        "subscription_name",
+        [
+            "My Subscription",
+            "Example-Subscription",
+            "Subscription5",
+        ],
+    )
+    def test_subscription_name(self, subscription_name):
+        assert (
+            validators.azure_subscription_name(subscription_name) == subscription_name
+        )
+
+    @pytest.mark.parametrize(
+        "subscription_name",
+        [
+            "My_Subscription",
+            "Your Subscription ",
+            "%^*",
+            "1A subscription",
+            "sübscríptìőn",
+            "🙂",
+        ],
+    )
+    def test_subscription_name_fail(self, subscription_name):
+        with pytest.raises(ValueError, match="can only contain alphanumeric"):
+            validators.azure_subscription_name(subscription_name)
+
+
 class TestValidateFqdn:
     @pytest.mark.parametrize(
         "fqdn",

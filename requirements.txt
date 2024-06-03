@@ -4,9 +4,9 @@
 #
 #    pip-compile --output-file=requirements.txt pyproject.toml
 #
-acme==2.6.0
+acme==2.10.0
     # via simple-acme-dns
-annotated-types==0.6.0
+annotated-types==0.7.0
     # via pydantic
 appdirs==1.4.4
     # via data-safe-haven (pyproject.toml)
@@ -70,7 +70,7 @@ azure-mgmt-keyvault==10.3.0
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-msi==7.0.0
     # via data-safe-haven (pyproject.toml)
-azure-mgmt-network==25.3.0
+azure-mgmt-network==25.4.0
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-rdbms==10.1.0
     # via data-safe-haven (pyproject.toml)
@@ -86,7 +86,7 @@ azure-storage-file-datalake==12.15.0
     # via data-safe-haven (pyproject.toml)
 azure-storage-file-share==12.16.0
     # via data-safe-haven (pyproject.toml)
-certifi==2024.2.2
+certifi==2024.6.2
     # via
     #   msrest
     #   requests
@@ -112,7 +112,7 @@ cryptography==42.0.7
     #   pyopenssl
 dill==0.3.8
     # via pulumi
-dnspython==2.4.2
+dnspython==2.6.1
     # via
     #   data-safe-haven (pyproject.toml)
     #   simple-acme-dns
@@ -170,20 +170,20 @@ protobuf==4.25.3
     # via pulumi
 psycopg==3.1.19
     # via data-safe-haven (pyproject.toml)
-pulumi==3.116.1
+pulumi==3.118.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.41.0
+pulumi-azure-native==2.43.1
     # via data-safe-haven (pyproject.toml)
-pulumi-random==4.16.1
+pulumi-random==4.16.2
     # via data-safe-haven (pyproject.toml)
 pycparser==2.22
     # via cffi
-pydantic==2.7.1
+pydantic==2.7.2
     # via data-safe-haven (pyproject.toml)
-pydantic-core==2.18.2
+pydantic-core==2.18.3
     # via pydantic
 pygments==2.18.0
     # via rich
@@ -206,7 +206,7 @@ pyyaml==6.0.1
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi
-requests==2.32.0
+requests==2.32.3
     # via
     #   acme
     #   azure-core
@@ -226,7 +226,7 @@ semver==2.13.0
     #   pulumi-random
 shellingham==1.5.4
     # via typer
-simple-acme-dns==3.0.0
+simple-acme-dns==3.1.0
     # via data-safe-haven (pyproject.toml)
 six==1.16.0
     # via
@@ -235,7 +235,7 @@ six==1.16.0
     #   pulumi
 typer==0.12.3
     # via data-safe-haven (pyproject.toml)
-typing-extensions==4.11.0
+typing-extensions==4.12.1
     # via
     #   azure-core
     #   azure-keyvault-certificates
@@ -250,7 +250,7 @@ typing-extensions==4.11.0
     #   typer
 urllib3==2.2.1
     # via requests
-validators==0.22.0
+validators==0.28.3
     # via simple-acme-dns
 websocket-client==1.8.0
     # via data-safe-haven (pyproject.toml)
