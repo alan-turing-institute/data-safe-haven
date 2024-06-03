@@ -70,7 +70,7 @@ azure-mgmt-keyvault==10.3.0
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-msi==7.0.0
     # via data-safe-haven (pyproject.toml)
-azure-mgmt-network==25.3.0
+azure-mgmt-network==25.4.0
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-rdbms==10.1.0
     # via data-safe-haven (pyproject.toml)
@@ -86,7 +86,7 @@ azure-storage-file-datalake==12.15.0
     # via data-safe-haven (pyproject.toml)
 azure-storage-file-share==12.16.0
     # via data-safe-haven (pyproject.toml)
-certifi==2024.2.2
+certifi==2024.6.2
     # via
     #   msrest
     #   requests
@@ -170,20 +170,20 @@ protobuf==4.25.3
     # via pulumi
 psycopg==3.1.19
     # via data-safe-haven (pyproject.toml)
-pulumi==3.117.0
+pulumi==3.118.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.42.1
+pulumi-azure-native==2.43.1
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.2
     # via data-safe-haven (pyproject.toml)
 pycparser==2.22
     # via cffi
-pydantic==2.7.1
+pydantic==2.7.2
     # via data-safe-haven (pyproject.toml)
-pydantic-core==2.18.2
+pydantic-core==2.18.3
     # via pydantic
 pygments==2.18.0
     # via rich
@@ -206,7 +206,7 @@ pyyaml==6.0.1
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi
-requests==2.32.2
+requests==2.32.3
     # via
     #   acme
     #   azure-core
@@ -235,7 +235,7 @@ six==1.16.0
     #   pulumi
 typer==0.12.3
     # via data-safe-haven (pyproject.toml)
-typing-extensions==4.12.0
+typing-extensions==4.12.1
     # via
     #   azure-core
     #   azure-keyvault-certificates
