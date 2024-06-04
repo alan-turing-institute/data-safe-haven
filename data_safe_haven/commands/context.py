@@ -159,9 +159,9 @@ def update(
     """Update the selected context settings."""
     try:
         settings = ContextSettings.from_file()
-    except DataSafeHavenConfigError:
+    except DataSafeHavenConfigError as exc:
         print("No context configuration file. Use `dsh context add` to create one.")
-        raise typer.Exit(code=1) from None
+        raise typer.Exit(code=1) from exc
 
     settings.update(
         admin_group_id=admin_group,
