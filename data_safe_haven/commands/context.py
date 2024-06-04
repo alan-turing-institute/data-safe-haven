@@ -228,8 +228,8 @@ def teardown() -> None:
 
     try:
         context_infra.teardown()
-    except DataSafeHavenAzureAPIAuthenticationError:
+    except DataSafeHavenAzureAPIAuthenticationError as exc:
         print(
             "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
         )
-        raise typer.Exit(1) from None
+        raise typer.Exit(1) from exc
