@@ -284,24 +284,26 @@ class SREDnsServerComponent(ComponentResource):
         )
 
         # Create a private DNS zone for each Azure DNS zone name
-        for dns_zone_name in AzureDnsZoneNames.ALL:
-            network.PrivateZone(
-                f"{self._name}_private_zone_{dns_zone_name}",
+        self.private_zones = {
+            dns_zone_name: network.PrivateZone(
+                replace_separators(f"{self._name}_private_zone_{dns_zone_name}", "_"),
                 location="Global",
                 private_zone_name=f"privatelink.{dns_zone_name}",
                 resource_group_name=resource_group.name,
                 opts=child_opts,
                 tags=child_tags,
             )
+            for dns_zone_name in AzureDnsZoneNames.ALL
+        }
 
         # Link Azure private DNS zones to virtual network
-        for dns_zone_name in AzureDnsZoneNames.ALL:
+        for dns_zone_name, private_dns_zone in self.private_zones.items():
             network.VirtualNetworkLink(
                 replace_separators(
                     f"{self._name}_private_zone_{dns_zone_name}_vnet_dns_link", "_"
                 ),
                 location="Global",
-                private_zone_name=f"privatelink.{dns_zone_name}",
+                private_zone_name=private_dns_zone.name,
                 registration_enabled=False,
                 resource_group_name=resource_group.name,
                 virtual_network=network.SubResourceArgs(id=virtual_network.id),

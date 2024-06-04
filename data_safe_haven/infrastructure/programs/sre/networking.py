@@ -13,7 +13,6 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_vnet,
 )
 from data_safe_haven.types import (
-    AzureDnsZoneNames,
     NetworkingPriorities,
     Ports,
 )
@@ -24,6 +23,7 @@ class SRENetworkingProps:
 
     def __init__(
         self,
+        dns_private_zones: Input[dict[str, network.PrivateZone]],
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
         dns_virtual_network: Input[network.VirtualNetwork],
@@ -79,6 +79,7 @@ class SRENetworkingProps:
         )
         self.subnet_workspaces_iprange = subnet_ranges.apply(lambda s: s.workspaces)
         # Other variables
+        self.dns_private_zones = dns_private_zones
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_virtual_network_id = Output.from_input(dns_virtual_network).apply(
             get_id_from_vnet
@@ -1732,13 +1733,13 @@ class SRENetworkingComponent(ComponentResource):
         # Azure Container Instances do not have an IP address during deployment and so
         # must use default Azure DNS when setting up file mounts. This means that we
         # need to be able to resolve the "Storage Account" private DNS zones.
-        for dns_zone_name in AzureDnsZoneNames.ALL:
+        for dns_zone_name, private_dns_zone in props.dns_private_zones.items():
             network.VirtualNetworkLink(
                 replace_separators(
                     f"{self._name}_private_zone_{dns_zone_name}_vnet_link", "_"
                 ),
                 location="Global",
-                private_zone_name=f"privatelink.{dns_zone_name}",
+                private_zone_name=private_dns_zone.name,
                 registration_enabled=False,
                 resource_group_name=props.dns_resource_group_name,
                 virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),

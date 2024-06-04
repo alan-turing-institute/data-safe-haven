@@ -143,6 +143,7 @@ class DeclarativeSRE:
             "sre_networking",
             self.stack_name,
             SRENetworkingProps(
+                dns_private_zones=dns.private_zones,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 dns_virtual_network=dns.virtual_network,
