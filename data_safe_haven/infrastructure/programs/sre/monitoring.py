@@ -3,9 +3,20 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import maintenance, resources
+from pulumi_azure_native import (
+    insights,
+    maintenance,
+    network,
+    operationalinsights,
+    resources,
+)
 
-from data_safe_haven.functions import next_occurrence
+from data_safe_haven.functions import next_occurrence, replace_separators
+from data_safe_haven.infrastructure.common import get_id_from_subnet
+from data_safe_haven.infrastructure.components import (
+    WrappedLogAnalyticsWorkspace,
+)
+from data_safe_haven.types import AzureDnsZoneNames
 
 
 class SREMonitoringProps:
@@ -13,10 +24,14 @@ class SREMonitoringProps:
 
     def __init__(
         self,
+        dns_private_zones: Input[dict[str, network.PrivateZone]],
         location: Input[str],
+        subnet: Input[network.GetSubnetResult],
         timezone: Input[str],
     ) -> None:
+        self.dns_private_zones = dns_private_zones
         self.location = location
+        self.subnet_id = Output.from_input(subnet).apply(get_id_from_subnet)
         self.timezone = timezone
 
 
@@ -72,4 +87,86 @@ class SREMonitoringComponent(ComponentResource):
             time_zone="UTC",  # Our start time is given in UTC
             visibility=maintenance.Visibility.CUSTOM,
             tags=child_tags,
+        )
+
+        # Deploy log analytics workspace and get workspace keys
+        log_analytics = WrappedLogAnalyticsWorkspace(
+            f"{self._name}_log_analytics",
+            location=props.location,
+            resource_group_name=resource_group.name,
+            retention_in_days=30,
+            sku=operationalinsights.WorkspaceSkuArgs(
+                name=operationalinsights.WorkspaceSkuNameEnum.PER_GB2018,
+            ),
+            workspace_name=f"{stack_name}-log",
+            opts=child_opts,
+            tags=child_tags,
+        )
+
+        # Set up a private linkscope and endpoint for the log analytics workspace
+        log_analytics_private_link_scope = insights.PrivateLinkScope(
+            f"{self._name}_log_analytics_private_link_scope",
+            access_mode_settings=insights.AccessModeSettingsArgs(
+                ingestion_access_mode=insights.AccessMode.PRIVATE_ONLY,
+                query_access_mode=insights.AccessMode.PRIVATE_ONLY,
+            ),
+            location="Global",
+            resource_group_name=resource_group.name,
+            scope_name=f"{stack_name}-ampls-log",
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=log_analytics)
+            ),
+            tags=child_tags,
+        )
+        log_analytics_private_endpoint = network.PrivateEndpoint(
+            f"{self._name}_log_analytics_private_endpoint",
+            location=props.location,
+            private_endpoint_name=f"{stack_name}-pep-log",
+            private_link_service_connections=[
+                network.PrivateLinkServiceConnectionArgs(
+                    group_ids=["azuremonitor"],
+                    name=f"{stack_name}-cnxn-pep-log-to-ampls-log",
+                    private_link_service_id=log_analytics_private_link_scope.id,
+                )
+            ],
+            resource_group_name=resource_group.name,
+            subnet=network.SubnetArgs(id=props.subnet_id),
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    ignore_changes=["custom_dns_configs"],
+                    parent=log_analytics_private_link_scope,
+                ),
+            ),
+            tags=child_tags,
+        )
+        insights.PrivateLinkScopedResource(
+            f"{self._name}_log_analytics_ampls_connection",
+            linked_resource_id=log_analytics.id,
+            name=f"{stack_name}-cnxn-ampls-log-to-log",
+            resource_group_name=resource_group.name,
+            scope_name=log_analytics_private_link_scope.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
+            ),
+        )
+
+        # Add a private DNS record for each log analytics workspace custom DNS config
+        network.PrivateDnsZoneGroup(
+            f"{self._name}_log_analytics_private_dns_zone_group",
+            private_dns_zone_configs=[
+                network.PrivateDnsZoneConfigArgs(
+                    name=replace_separators(
+                        f"{stack_name}-log-to-{dns_zone_name}", "-"
+                    ),
+                    private_dns_zone_id=props.dns_private_zones[dns_zone_name].id,
+                )
+                for dns_zone_name in AzureDnsZoneNames.AZURE_MONITOR
+            ],
+            private_dns_zone_group_name=f"{stack_name}-dzg-log",
+            private_endpoint_name=log_analytics_private_endpoint.name,
+            resource_group_name=resource_group.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=log_analytics_private_endpoint)
+            ),
         )

@@ -335,7 +335,9 @@ class DeclarativeSRE:
             "sre_monitoring",
             self.stack_name,
             SREMonitoringProps(
+                dns_private_zones=dns.private_zones,
                 location=self.context.location,
+                subnet=networking.subnet_monitoring,
                 timezone=self.cfg.shm.timezone,
             ),
             tags=self.tags,
