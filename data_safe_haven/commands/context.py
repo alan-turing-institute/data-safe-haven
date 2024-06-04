@@ -24,9 +24,9 @@ def show() -> None:
     """Show information about the selected context."""
     try:
         settings = ContextSettings.from_file()
-    except DataSafeHavenConfigError:
+    except DataSafeHavenConfigError as exc:
         print("No context configuration file. Use `dsh context add` to create one.")
-        raise typer.Exit(code=1) from None
+        raise typer.Exit(code=1) from exc
 
     current_context_key = settings.selected
     current_context = settings.context
