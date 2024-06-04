@@ -8,6 +8,7 @@ from pulumi_azure_native import (
     maintenance,
     network,
     operationalinsights,
+    operationsmanagement,
     resources,
 )
 
@@ -114,7 +115,11 @@ class SREMonitoringComponent(ComponentResource):
             resource_group_name=resource_group.name,
             scope_name=f"{stack_name}-ampls-log",
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=log_analytics)
+                child_opts,
+                ResourceOptions(
+                    depends_on=log_analytics,
+                    parent=log_analytics,
+                ),
             ),
             tags=child_tags,
         )
@@ -170,3 +175,33 @@ class SREMonitoringComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=log_analytics_private_endpoint)
             ),
         )
+
+        # Deploy log analytics solutions
+        solutions = {
+            "AgentHealthAssessment": "Agent Health",  # for tracking heartbeats from connected VMs
+        }
+        for product, description in solutions.items():
+            solution_name = Output.concat(product, "(", log_analytics.name, ")")
+            operationsmanagement.Solution(
+                replace_separators(f"{self._name}_soln_{description.lower()}", "_"),
+                location=props.location,
+                plan=operationsmanagement.SolutionPlanArgs(
+                    name=solution_name,
+                    product=f"OMSGallery/{product}",
+                    promotion_code="",
+                    publisher="Microsoft",
+                ),
+                properties=operationsmanagement.SolutionPropertiesArgs(
+                    workspace_resource_id=log_analytics.id,
+                ),
+                resource_group_name=resource_group.name,
+                solution_name=solution_name,
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=log_analytics)
+                ),
+                tags=child_tags,
+            )
+
+        # Register outputs
+        self.log_analytics_workspace_id = log_analytics.workspace_id
+        self.log_analytics_workspace_key = log_analytics.workspace_key
