@@ -222,7 +222,7 @@ def teardown() -> None:
             print(
                 "No context configuration file. Use `dsh context add` before creating infrastructure."
             )
-        raise typer.Exit(code=1) from None
+        raise typer.Exit(code=1) from exc
 
     context_infra = ContextInfrastructure(context)
 
