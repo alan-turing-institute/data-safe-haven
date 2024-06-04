@@ -30,7 +30,6 @@ class SRENetworkingProps:
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
-        shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
         sre_index: Input[int],
         sre_name: Input[str],
@@ -91,7 +90,6 @@ class SRENetworkingProps:
         self.user_public_ip_ranges = user_public_ip_ranges
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
-        self.shm_virtual_network_name = shm_virtual_network_name
         self.shm_zone_name = shm_zone_name
         self.sre_name = sre_name
 

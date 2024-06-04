@@ -86,11 +86,6 @@ def deploy(
             shm_stack.output("networking")["resource_group_name"],
             replace=True,
         )
-        stack.add_option(
-            "shm-networking-virtual_network_name",
-            shm_stack.output("networking")["virtual_network_name"],
-            replace=True,
-        )
 
         # Deploy Azure infrastructure with Pulumi
         if force is None:

@@ -152,9 +152,6 @@ class DeclarativeSRE:
                 shm_networking_resource_group_name=self.pulumi_opts.require(
                     "shm-networking-resource_group_name"
                 ),
-                shm_virtual_network_name=self.pulumi_opts.require(
-                    "shm-networking-virtual_network_name"
-                ),
                 shm_zone_name=self.cfg.shm.fqdn,
                 sre_index=self.cfg.sre(self.sre_name).index,
                 sre_name=self.sre_name,
