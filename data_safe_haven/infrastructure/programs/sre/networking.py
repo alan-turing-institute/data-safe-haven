@@ -5,7 +5,7 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-from data_safe_haven.functions import alphanumeric
+from data_safe_haven.functions import alphanumeric, replace_separators
 from data_safe_haven.infrastructure.common import (
     SREDnsIpRanges,
     SREIpRanges,
@@ -1710,6 +1710,8 @@ class SRENetworkingComponent(ComponentResource):
             ),
             tags=child_tags,
         )
+
+        # Link SRE private DNS zone to DNS virtual network
         network.VirtualNetworkLink(
             f"{self._name}_private_zone_internal_vnet_link",
             location="Global",
@@ -1725,18 +1727,20 @@ class SRENetworkingComponent(ComponentResource):
             ),
         )
 
-        # Link virtual network to SHM private DNS zones
-        # Note that although the DNS virtual network is already linked to the SHM zones,
+        # Link Azure private DNS zones to virtual network
+        # Note that although the DNS virtual network is already linked to these zones,
         # Azure Container Instances do not have an IP address during deployment and so
         # must use default Azure DNS when setting up file mounts. This means that we
         # need to be able to resolve the "Storage Account" private DNS zones.
-        for dns_zone_name in AzureDnsZoneNames.STORAGE_ACCOUNT:
+        for dns_zone_name in AzureDnsZoneNames.ALL:
             network.VirtualNetworkLink(
-                f"{self._name}_private_zone_{dns_zone_name}_vnet_link",
+                replace_separators(
+                    f"{self._name}_private_zone_{dns_zone_name}_vnet_link", "_"
+                ),
                 location="Global",
                 private_zone_name=f"privatelink.{dns_zone_name}",
                 registration_enabled=False,
-                resource_group_name=props.shm_networking_resource_group_name,
+                resource_group_name=props.dns_resource_group_name,
                 virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
                 virtual_network_link_name=Output.concat(
                     "link-to-", sre_virtual_network.name
