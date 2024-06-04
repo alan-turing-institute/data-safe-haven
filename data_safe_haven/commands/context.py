@@ -25,7 +25,7 @@ def show() -> None:
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError:
-        print("No context configuration file. Run `dsh context add` to create one.")
+        print("No context configuration file. Use `dsh context add` to create one.")
         raise typer.Exit(code=1) from None
 
     current_context_key = settings.selected
@@ -45,7 +45,7 @@ def available() -> None:
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError:
-        print("No context configuration file. Run `dsh context add` to create one.")
+        print("No context configuration file. Use `dsh context add` to create one.")
         raise typer.Exit(code=1) from None
 
     current_context_key = settings.selected
@@ -66,7 +66,7 @@ def switch(
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError:
-        print("No context configuration file. Run `dsh context add` to create one.")
+        print("No context configuration file. Use `dsh context add` to create one.")
         raise typer.Exit(code=1) from None
     settings.selected = key
     settings.write()
@@ -160,7 +160,7 @@ def update(
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError:
-        print("No context configuration file. Run `dsh context add` to create one.")
+        print("No context configuration file. Use `dsh context add` to create one.")
         raise typer.Exit(code=1) from None
 
     settings.update(
@@ -193,10 +193,10 @@ def create() -> None:
         context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
         if exc.args[0] == "No context selected":
-            print("No context selected. Run `dsh context switch` to select one.")
+            print("No context selected. Use `dsh context switch` to select one.")
         else:
             print(
-                "No context configuration file. Run `dsh context add` before creating infrastructure."
+                "No context configuration file. Use `dsh context add` before creating infrastructure."
             )
         raise typer.Exit(code=1) from None
 
@@ -217,10 +217,10 @@ def teardown() -> None:
         context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
         if exc.args[0] == "No context selected":
-            print("No context selected. Run `dsh context switch` to select one.")
+            print("No context selected. Use `dsh context switch` to select one.")
         else:
             print(
-                "No context configuration file. Run `dsh context add` before creating infrastructure."
+                "No context configuration file. Use `dsh context add` before creating infrastructure."
             )
         raise typer.Exit(code=1) from None
 
