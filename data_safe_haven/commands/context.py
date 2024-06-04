@@ -179,9 +179,9 @@ def remove(
     """Removes a context."""
     try:
         settings = ContextSettings.from_file()
-    except DataSafeHavenConfigError:
+    except DataSafeHavenConfigError as exc:
         print("No context configuration file.")
-        raise typer.Exit(code=1) from None
+        raise typer.Exit(code=1) from exc
     settings.remove(key)
     settings.write()
 
