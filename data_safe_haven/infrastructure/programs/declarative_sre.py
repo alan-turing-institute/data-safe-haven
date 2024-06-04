@@ -318,7 +318,6 @@ class DeclarativeSRE:
                 nexus_admin_password=data.password_nexus_admin,
                 software_packages=self.cfg.sre(self.sre_name).software_packages,
                 sre_fqdn=networking.sre_fqdn,
-                sre_private_dns_zone_id=networking.sre_private_dns_zone_id,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 storage_account_resource_group_name=data.resource_group_name,

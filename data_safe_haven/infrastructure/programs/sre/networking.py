@@ -1757,7 +1757,6 @@ class SRENetworkingComponent(ComponentResource):
         self.route_table_name = route_table.name
         self.shm_ns_record = shm_ns_record
         self.sre_fqdn = sre_dns_zone.name
-        self.sre_private_dns_zone_id = sre_private_dns_zone.id
         self.sre_private_dns_zone = sre_private_dns_zone
         self.subnet_application_gateway = network.get_subnet_output(
             subnet_name=subnet_application_gateway_name,
