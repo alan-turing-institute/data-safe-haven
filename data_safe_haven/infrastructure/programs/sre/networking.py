@@ -30,7 +30,6 @@ class SRENetworkingProps:
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
-        shm_subnet_monitoring_prefix: Input[str],
         shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
         sre_index: Input[int],
@@ -92,7 +91,6 @@ class SRENetworkingProps:
         self.user_public_ip_ranges = user_public_ip_ranges
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
-        self.shm_subnet_monitoring_prefix = shm_subnet_monitoring_prefix
         self.shm_virtual_network_name = shm_virtual_network_name
         self.shm_zone_name = shm_zone_name
         self.sre_name = sre_name
@@ -1280,18 +1278,6 @@ class SRENetworkingComponent(ComponentResource):
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowIdentityServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to SHM monitoring tools.",
-                    destination_address_prefix=str(props.shm_subnet_monitoring_prefix),
-                    destination_port_ranges=[Ports.HTTPS],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowMonitoringToolsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_MONITORING_TOOLS,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",

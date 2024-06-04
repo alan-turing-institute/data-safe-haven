@@ -87,11 +87,6 @@ def deploy(
             replace=True,
         )
         stack.add_option(
-            "shm-networking-subnet_subnet_monitoring_prefix",
-            shm_stack.output("networking")["subnet_monitoring_prefix"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-networking-virtual_network_name",
             shm_stack.output("networking")["virtual_network_name"],
             replace=True,
