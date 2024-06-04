@@ -192,11 +192,11 @@ class DeclarativeSRE:
                 data_provider_ip_addresses=self.cfg.sre(
                     self.sre_name
                 ).data_provider_ip_addresses,
+                dns_private_zones=dns.private_zones,
                 dns_record=networking.shm_ns_record,
                 dns_server_admin_password=dns.password_admin,
                 location=self.context.location,
                 networking_resource_group=networking.resource_group,
-                pulumi_opts=self.pulumi_opts,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_data_configuration=networking.subnet_data_configuration,
                 subnet_data_private=networking.subnet_data_private,
