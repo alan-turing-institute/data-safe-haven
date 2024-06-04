@@ -6,7 +6,6 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
 from data_safe_haven.external import AzureIPv4Range
-from data_safe_haven.types import AzureDnsZoneNames
 
 
 class SHMNetworkingProps:
@@ -152,43 +151,8 @@ class SHMNetworkingComponent(ComponentResource):
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=dns_zone)),
         )
 
-        # Set up private link domains
-        private_zone_ids: list[Output[str]] = []
-        for dns_zone_name in AzureDnsZoneNames.ALL:
-            private_zone = network.PrivateZone(
-                f"{self._name}_private_zone_{dns_zone_name}",
-                location="Global",
-                private_zone_name=f"privatelink.{dns_zone_name}",
-                resource_group_name=resource_group.name,
-                opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=dns_zone)
-                ),
-                tags=child_tags,
-            )
-            network.VirtualNetworkLink(
-                f"{self._name}_private_zone_{dns_zone_name}_vnet_link",
-                location="Global",
-                private_zone_name=private_zone.name,
-                registration_enabled=False,
-                resource_group_name=resource_group.name,
-                virtual_network=network.SubResourceArgs(id=virtual_network.id),
-                virtual_network_link_name=Output.concat(
-                    "link-to-", virtual_network.name
-                ),
-                opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=private_zone)
-                ),
-                tags=child_tags,
-            )
-            private_zone_ids.append(
-                private_zone.id.apply(
-                    lambda zone_id: "".join(zone_id.partition("privatelink.")[:-1])
-                )
-            )
-
         # Register outputs
         self.dns_zone = dns_zone
-        self.private_dns_zone_base_id = private_zone_ids[0]
         self.resource_group_name = Output.from_input(resource_group.name)
         self.route_table = route_table
         self.subnet_monitoring = network.get_subnet_output(
@@ -201,7 +165,6 @@ class SHMNetworkingComponent(ComponentResource):
         # Register exports
         self.exports = {
             "fqdn_nameservers": self.dns_zone.name_servers,
-            "private_dns_zone_base_id": self.private_dns_zone_base_id,
             "resource_group_name": resource_group.name,
             "subnet_monitoring_prefix": self.subnet_monitoring.apply(
                 lambda s: str(s.address_prefix) if s.address_prefix else ""

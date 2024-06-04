@@ -77,11 +77,6 @@ def deploy(
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
         # Load SHM stack outputs
         stack.add_option(
-            "shm-networking-private_dns_zone_base_id",
-            shm_stack.output("networking")["private_dns_zone_base_id"],
-            replace=True,
-        )
-        stack.add_option(
             "shm-networking-resource_group_name",
             shm_stack.output("networking")["resource_group_name"],
             replace=True,
