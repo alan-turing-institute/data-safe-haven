@@ -53,65 +53,6 @@ class SHMNetworkingComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Define NSGs
-        nsg_monitoring = network.NetworkSecurityGroup(
-            f"{self._name}_nsg_monitoring",
-            network_security_group_name=f"{stack_name}-nsg-monitoring",
-            resource_group_name=resource_group.name,
-            security_rules=[],
-            opts=child_opts,
-            tags=child_tags,
-        )
-
-        # Define route table
-        route_table = network.RouteTable(
-            f"{self._name}_route_table",
-            location=props.location,
-            resource_group_name=resource_group.name,
-            route_table_name=f"{stack_name}-route",
-            routes=[],
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(
-                    ignore_changes=["routes"]
-                ),  # allow routes to be created outside this definition
-            ),
-            tags=child_tags,
-        )
-
-        # Define the virtual network and its subnets
-        subnet_monitoring_name = "MonitoringSubnet"
-        virtual_network = network.VirtualNetwork(
-            f"{self._name}_virtual_network",
-            address_space=network.AddressSpaceArgs(
-                address_prefixes=[str(props.vnet_iprange)],
-            ),
-            resource_group_name=resource_group.name,
-            subnets=[  # Note that we define subnets inline to avoid creation order issues
-                # Monitoring subnet
-                network.SubnetArgs(
-                    address_prefix=str(props.subnet_monitoring_iprange),
-                    name=subnet_monitoring_name,
-                    network_security_group=network.NetworkSecurityGroupArgs(
-                        id=nsg_monitoring.id
-                    ),
-                    route_table=network.RouteTableArgs(id=route_table.id),
-                ),
-            ],
-            virtual_network_name=f"{stack_name}-vnet",
-            virtual_network_peerings=[],
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(
-                    ignore_changes=[
-                        "subnets",
-                        "virtual_network_peerings",
-                    ]
-                ),  # allow SRE virtual networks to peer to this
-            ),
-            tags=child_tags,
-        )
-
         # Define SHM DNS zone
         dns_zone = network.Zone(
             f"{self._name}_dns_zone",
@@ -154,20 +95,9 @@ class SHMNetworkingComponent(ComponentResource):
         # Register outputs
         self.dns_zone = dns_zone
         self.resource_group_name = Output.from_input(resource_group.name)
-        self.route_table = route_table
-        self.subnet_monitoring = network.get_subnet_output(
-            subnet_name=subnet_monitoring_name,
-            resource_group_name=resource_group.name,
-            virtual_network_name=virtual_network.name,
-        )
-        self.virtual_network = virtual_network
 
         # Register exports
         self.exports = {
             "fqdn_nameservers": self.dns_zone.name_servers,
             "resource_group_name": resource_group.name,
-            "subnet_monitoring_prefix": self.subnet_monitoring.apply(
-                lambda s: str(s.address_prefix) if s.address_prefix else ""
-            ),
-            "virtual_network_name": virtual_network.name,
         }
