@@ -91,7 +91,7 @@ class SREMonitoringComponent(ComponentResource):
         )
 
         # Deploy log analytics workspace and get workspace keys
-        log_analytics = WrappedLogAnalyticsWorkspace(
+        self.log_analytics = WrappedLogAnalyticsWorkspace(
             f"{self._name}_log_analytics",
             location=props.location,
             resource_group_name=resource_group.name,
@@ -117,8 +117,8 @@ class SREMonitoringComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
-                    depends_on=log_analytics,
-                    parent=log_analytics,
+                    depends_on=self.log_analytics,
+                    parent=self.log_analytics,
                 ),
             ),
             tags=child_tags,
@@ -147,7 +147,7 @@ class SREMonitoringComponent(ComponentResource):
         )
         insights.PrivateLinkScopedResource(
             f"{self._name}_log_analytics_ampls_connection",
-            linked_resource_id=log_analytics.id,
+            linked_resource_id=self.log_analytics.id,
             name=f"{stack_name}-cnxn-ampls-log-to-log",
             resource_group_name=resource_group.name,
             scope_name=log_analytics_private_link_scope.name,
@@ -181,7 +181,7 @@ class SREMonitoringComponent(ComponentResource):
             "AgentHealthAssessment": "Agent Health",  # for tracking heartbeats from connected VMs
         }
         for product, description in solutions.items():
-            solution_name = Output.concat(product, "(", log_analytics.name, ")")
+            solution_name = Output.concat(product, "(", self.log_analytics.name, ")")
             operationsmanagement.Solution(
                 replace_separators(f"{self._name}_soln_{description.lower()}", "_"),
                 location=props.location,
@@ -192,16 +192,12 @@ class SREMonitoringComponent(ComponentResource):
                     publisher="Microsoft",
                 ),
                 properties=operationsmanagement.SolutionPropertiesArgs(
-                    workspace_resource_id=log_analytics.id,
+                    workspace_resource_id=self.log_analytics.id,
                 ),
                 resource_group_name=resource_group.name,
                 solution_name=solution_name,
                 opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=log_analytics)
+                    child_opts, ResourceOptions(parent=self.log_analytics)
                 ),
                 tags=child_tags,
             )
-
-        # Register outputs
-        self.log_analytics_workspace_id = log_analytics.workspace_id
-        self.log_analytics_workspace_key = log_analytics.workspace_key

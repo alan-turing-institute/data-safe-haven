@@ -356,12 +356,8 @@ class DeclarativeSRE:
                 ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.context.location,
-                log_analytics_workspace_id=self.pulumi_opts.require(
-                    "shm-monitoring-log_analytics_workspace_id"
-                ),
-                log_analytics_workspace_key=self.pulumi_opts.require(
-                    "shm-monitoring-log_analytics_workspace_key"
-                ),
+                log_analytics_workspace_id=monitoring.log_analytics.workspace_id,
+                log_analytics_workspace_key=monitoring.log_analytics.workspace_key,
                 maintenance_configuration_id=monitoring.maintenance_configuration.id,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.sre_name,
