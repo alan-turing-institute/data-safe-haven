@@ -179,6 +179,7 @@ class SREMonitoringComponent(ComponentResource):
         # Deploy log analytics solutions
         solutions = {
             "AgentHealthAssessment": "Agent Health",  # for tracking heartbeats from connected VMs
+            "LogManagement": "Log Management",  # to provide an interface to logs inside the workspace
         }
         for product, description in solutions.items():
             solution_name = Output.concat(product, "(", self.log_analytics.name, ")")
