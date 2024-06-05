@@ -7,9 +7,6 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import compute, maintenance, network
 
 from data_safe_haven.functions import replace_separators
-from data_safe_haven.infrastructure.components.wrapped import (
-    WrappedLogAnalyticsWorkspace,
-)
 
 
 class VMComponentProps:
@@ -33,9 +30,6 @@ class VMComponentProps:
         vm_size: Input[str],
         admin_username: Input[str] | None = None,
         ip_address_public: Input[bool] | None = None,
-        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace] | None = None,
-        log_analytics_workspace_id: Input[str] | None = None,
-        log_analytics_workspace_key: Input[str] | None = None,
         maintenance_configuration_id: Input[str] | None = None,
     ) -> None:
         self.admin_password = admin_password
@@ -45,28 +39,6 @@ class VMComponentProps:
         self.ip_address_public = ip_address_public
         self.location = location
         self.maintenance_configuration_id = maintenance_configuration_id
-        if log_analytics_workspace:
-            self.log_analytics_workspace_id = Output.from_input(
-                log_analytics_workspace
-            ).apply(lambda workspace: workspace.workspace_id)
-        elif log_analytics_workspace_id:
-            self.log_analytics_workspace_id = Output.from_input(
-                log_analytics_workspace_id
-            )
-        else:
-            msg = "No value provided for 'log_analytics_workspace_id'"
-            raise ValueError(msg)
-        if log_analytics_workspace:
-            self.log_analytics_workspace_key = Output.from_input(
-                log_analytics_workspace
-            ).apply(lambda workspace: workspace.workspace_key)
-        elif log_analytics_workspace_key:
-            self.log_analytics_workspace_key = Output.from_input(
-                log_analytics_workspace_key
-            )
-        else:
-            msg = "No value provided for 'log_analytics_workspace_key'"
-            raise ValueError(msg)
         self.os_profile_args = None
         self.resource_group_name = resource_group_name
         self.subnet_name = subnet_name
