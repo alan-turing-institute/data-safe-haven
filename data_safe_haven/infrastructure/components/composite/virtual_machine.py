@@ -16,8 +16,8 @@ class VMComponentProps:
     """Properties for WindowsVMComponent"""
 
     image_reference_args: compute.ImageReferenceArgs | None
-    log_analytics_extension_name: str
-    log_analytics_extension_version: str
+    azure_monitor_extension_name: str
+    azure_monitor_extension_version: str
     os_profile_args: compute.OSProfileArgs | None
 
     def __init__(
@@ -114,8 +114,8 @@ class WindowsVMComponentProps(VMComponentProps):
                 provision_vm_agent=True,
             ),
         )
-        self.log_analytics_extension_name = "MicrosoftMonitoringAgent"
-        self.log_analytics_extension_version = "1.0"
+        self.azure_monitor_extension_name = "AzureMonitorWindowsAgent"
+        self.azure_monitor_extension_version = "1.0"
 
 
 class LinuxVMComponentProps(VMComponentProps):
@@ -151,8 +151,8 @@ class LinuxVMComponentProps(VMComponentProps):
                 provision_vm_agent=True,
             ),
         )
-        self.log_analytics_extension_name = "OmsAgentForLinux"
-        self.log_analytics_extension_version = "1.0"
+        self.azure_monitor_extension_name = "AzureMonitorLinuxAgent"
+        self.azure_monitor_extension_version = "1.0"
 
 
 class VMComponent(ComponentResource):
@@ -259,22 +259,16 @@ class VMComponent(ComponentResource):
         )
 
         # Register with Log Analytics workspace
-        log_analytics_extension = compute.VirtualMachineExtension(
-            f"{name_underscored}_log_analytics_extension",
+        compute.VirtualMachineExtension(
+            f"{name_underscored}_azure_monitor_extension",
             auto_upgrade_minor_version=True,
-            enable_automatic_upgrade=False,
+            enable_automatic_upgrade=True,
             location=props.location,
-            publisher="Microsoft.EnterpriseCloud.Monitoring",
-            protected_settings=props.log_analytics_workspace_key.apply(
-                lambda key: {"workspaceKey": key}
-            ),
+            publisher="Microsoft.Azure.Monitor",
             resource_group_name=props.resource_group_name,
-            settings=props.log_analytics_workspace_id.apply(
-                lambda id_: {"workspaceId": id_}
-            ),
-            type=props.log_analytics_extension_name,
-            type_handler_version=props.log_analytics_extension_version,
-            vm_extension_name=props.log_analytics_extension_name,
+            type=props.azure_monitor_extension_name,
+            type_handler_version=props.azure_monitor_extension_version,
+            vm_extension_name=props.azure_monitor_extension_name,
             vm_name=virtual_machine.name,
             opts=ResourceOptions.merge(
                 child_opts,
@@ -302,7 +296,6 @@ class VMComponent(ComponentResource):
         self.ip_address_private: Output[str] = Output.from_input(
             props.ip_address_private
         )
-        self.log_analytics_extension = log_analytics_extension
         self.resource_group_name: Output[str] = Output.from_input(
             props.resource_group_name
         )
