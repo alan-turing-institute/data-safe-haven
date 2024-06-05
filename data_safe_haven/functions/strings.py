@@ -46,8 +46,14 @@ def next_occurrence(
             minute=minute,
             second=0,
             microsecond=0,
-        ) + datetime.timedelta(days=1)
+        )
         utc_dt = local_dt.astimezone(pytz.utc)
+        # Add one day until this datetime is at least 1 hour in the future.
+        # This ensures that any Azure functions which depend on this datetime being in
+        # the future should treat it as valid.
+        utc_near_future = datetime.datetime.now(pytz.utc) + datetime.timedelta(hours=1)
+        while utc_dt < utc_near_future:
+            utc_dt += datetime.timedelta(days=1)
         if time_format == "iso":
             return utc_dt.isoformat()
         elif time_format == "iso_minute":

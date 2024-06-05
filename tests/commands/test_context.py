@@ -63,8 +63,8 @@ class TestAdd:
                 "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--location",
                 "uksouth",
-                "--subscription",
-                "Data Safe Haven (Example)",
+                "--subscription-name",
+                "Data Safe Haven Example",
             ],
         )
         assert result.exit_code == 0
@@ -83,8 +83,8 @@ class TestAdd:
                 "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--location",
                 "uksouth",
-                "--subscription",
-                "Data Safe Haven (Acme)",
+                "--subscription-name",
+                "Data Safe Haven Acme",
             ],
         )
         assert result.exit_code == 1
@@ -103,13 +103,33 @@ class TestAdd:
                 "not a uuid",
                 "--location",
                 "uksouth",
-                "--subscription",
-                "Data Safe Haven (Example)",
+                "--subscription-name",
+                "Data Safe Haven Example",
             ],
         )
         assert result.exit_code == 2
         # This works because the context_command_group Typer writes this error
         assert "Invalid value for '--admin-group': Expected GUID" in result.stderr
+
+    def test_add_invalid_subscription_name(self, runner):
+        result = runner.invoke(
+            context_command_group,
+            [
+                "add",
+                "example",
+                "--name",
+                "Example",
+                "--admin-group",
+                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+                "--location",
+                "uksouth",
+                "--subscription-name",
+                "Invalid Subscription Name  ",
+            ],
+        )
+        assert result.exit_code == 2
+        # This works because the context_command_group Typer writes this error
+        assert "Invalid value for '--subscription-name':" in result.stderr
 
     def test_add_missing_ags(self, runner):
         result = runner.invoke(
@@ -137,8 +157,8 @@ class TestAdd:
                 "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--location",
                 "uksouth",
-                "--subscription",
-                "Data Safe Haven (Acme)",
+                "--subscription-name",
+                "Data Safe Haven Acme",
             ],
         )
         assert result.exit_code == 0

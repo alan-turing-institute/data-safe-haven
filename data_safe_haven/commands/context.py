@@ -83,10 +83,11 @@ def add(
             help="The human friendly name to give this Data Safe Haven deployment.",
         ),
     ],
-    subscription: Annotated[
+    subscription_name: Annotated[
         str,
         typer.Option(
             help="The name of an Azure subscription to deploy resources into.",
+            callback=validators.typer_azure_subscription_name,
         ),
     ],
 ) -> None:
@@ -98,7 +99,7 @@ def add(
             admin_group_id=admin_group,
             location=location,
             name=name,
-            subscription_name=subscription,
+            subscription_name=subscription_name,
         )
     else:
         # Bootstrap context settings file
@@ -109,7 +110,7 @@ def add(
                     admin_group_id=admin_group,
                     location=location,
                     name=name,
-                    subscription_name=subscription,
+                    subscription_name=subscription_name,
                 )
             },
         )
