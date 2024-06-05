@@ -8,7 +8,6 @@ from pulumi_azure_native import (
     maintenance,
     network,
     operationalinsights,
-    operationsmanagement,
     resources,
 )
 
@@ -175,30 +174,3 @@ class SREMonitoringComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=log_analytics_private_endpoint)
             ),
         )
-
-        # Deploy log analytics solutions
-        solutions = {
-            "AgentHealthAssessment": "Agent Health",  # for tracking heartbeats from connected VMs
-            "LogManagement": "Log Management",  # to provide an interface to logs inside the workspace
-        }
-        for product, description in solutions.items():
-            solution_name = Output.concat(product, "(", self.log_analytics.name, ")")
-            operationsmanagement.Solution(
-                replace_separators(f"{self._name}_soln_{description.lower()}", "_"),
-                location=props.location,
-                plan=operationsmanagement.SolutionPlanArgs(
-                    name=solution_name,
-                    product=f"OMSGallery/{product}",
-                    promotion_code="",
-                    publisher="Microsoft",
-                ),
-                properties=operationsmanagement.SolutionPropertiesArgs(
-                    workspace_resource_id=self.log_analytics.id,
-                ),
-                resource_group_name=resource_group.name,
-                solution_name=solution_name,
-                opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=self.log_analytics)
-                ),
-                tags=child_tags,
-            )
