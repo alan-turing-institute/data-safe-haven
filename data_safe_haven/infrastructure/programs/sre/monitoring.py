@@ -227,20 +227,58 @@ class SREMonitoringComponent(ComponentResource):
                 insights.DataFlowArgs(
                     destinations=[self.log_analytics.name],
                     streams=[
-                        # insights.KnownDataFlowStreams.MICROSOFT_PERF,
+                        insights.KnownDataFlowStreams.MICROSOFT_PERF,
+                    ],
+                    transform_kql="source",
+                    output_stream=insights.KnownDataFlowStreams.MICROSOFT_PERF,
+                ),
+                insights.DataFlowArgs(
+                    destinations=[self.log_analytics.name],
+                    streams=[
                         insights.KnownDataFlowStreams.MICROSOFT_SYSLOG,
                     ],
                     transform_kql="source",
                     output_stream=insights.KnownDataFlowStreams.MICROSOFT_SYSLOG,
-                )
+                ),
             ],
             data_sources=insights.DataCollectionRuleDataSourcesArgs(
+                performance_counters=[
+                    insights.PerfCounterDataSourceArgs(
+                        counter_specifiers=[
+                            "Processor(*)\\% Processor Time",
+                            "Memory(*)\\% Used Memory",
+                            "Logical Disk(*)\\% Used Space",
+                            "System(*)\\Unique Users",
+                        ],
+                        name="LinuxPerfCounters",
+                        sampling_frequency_in_seconds=60,
+                        streams=[
+                            insights.KnownPerfCounterDataSourceStreams.MICROSOFT_PERF,
+                        ],
+                    ),
+                ],
                 syslog=[
                     insights.SyslogDataSourceArgs(
                         facility_names=[
                             # Note that ASTERISK is not currently working
+                            insights.KnownSyslogDataSourceFacilityNames.ALERT,
                             insights.KnownSyslogDataSourceFacilityNames.AUDIT,
                             insights.KnownSyslogDataSourceFacilityNames.AUTH,
+                            insights.KnownSyslogDataSourceFacilityNames.AUTHPRIV,
+                            insights.KnownSyslogDataSourceFacilityNames.CLOCK,
+                            insights.KnownSyslogDataSourceFacilityNames.CRON,
+                            insights.KnownSyslogDataSourceFacilityNames.DAEMON,
+                            insights.KnownSyslogDataSourceFacilityNames.FTP,
+                            insights.KnownSyslogDataSourceFacilityNames.KERN,
+                            insights.KnownSyslogDataSourceFacilityNames.LPR,
+                            insights.KnownSyslogDataSourceFacilityNames.MAIL,
+                            insights.KnownSyslogDataSourceFacilityNames.MARK,
+                            insights.KnownSyslogDataSourceFacilityNames.NEWS,
+                            insights.KnownSyslogDataSourceFacilityNames.NOPRI,
+                            insights.KnownSyslogDataSourceFacilityNames.NTP,
+                            insights.KnownSyslogDataSourceFacilityNames.SYSLOG,
+                            insights.KnownSyslogDataSourceFacilityNames.USER,
+                            insights.KnownSyslogDataSourceFacilityNames.UUCP,
                         ],
                         log_levels=[
                             # Note that ASTERISK is not currently working
