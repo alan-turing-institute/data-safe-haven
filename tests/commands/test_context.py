@@ -1,5 +1,7 @@
 from data_safe_haven.commands.context import context_command_group
 from data_safe_haven.context_infrastructure import ContextInfrastructure
+from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError
+from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
 
 
 class TestShow:
@@ -33,6 +35,11 @@ class TestAvailable:
         assert "acme_deployment" in result.stdout
         assert "gems" in result.stdout
 
+    def test_no_context_file(self, runner_no_context_file):
+        result = runner_no_context_file.invoke(context_command_group, ["available"])
+        assert result.exit_code == 1
+        assert "No context configuration file." in result.stdout
+
 
 class TestSwitch:
     def test_switch(self, runner):
@@ -48,6 +55,13 @@ class TestSwitch:
         assert result.exit_code == 1
         # Unable to check error as this is written outside of any Typer
         # assert "Context 'invalid' is not defined " in result.stdout
+
+    def test_no_context_file(self, runner_no_context_file):
+        result = runner_no_context_file.invoke(
+            context_command_group, ["switch", "context"]
+        )
+        assert result.exit_code == 1
+        assert "No context configuration file." in result.stdout
 
 
 class TestAdd:
@@ -180,6 +194,13 @@ class TestUpdate:
         assert result.exit_code == 0
         assert "Name: New Name" in result.stdout
 
+    def test_no_context_file(self, runner_no_context_file):
+        result = runner_no_context_file.invoke(
+            context_command_group, ["update", "--name", "New Name"]
+        )
+        assert result.exit_code == 1
+        assert "No context configuration file." in result.stdout
+
 
 class TestRemove:
     def test_remove(self, runner):
@@ -195,6 +216,13 @@ class TestRemove:
         # Unable to check error as this is written outside of any Typer
         # assert "No context with key 'invalid'." in result.stdout
 
+    def test_no_context_file(self, runner_no_context_file):
+        result = runner_no_context_file.invoke(
+            context_command_group, ["remove", "gems"]
+        )
+        assert result.exit_code == 1
+        assert "No context configuration file." in result.stdout
+
 
 class TestCreate:
     def test_create(self, runner, monkeypatch):
@@ -207,6 +235,26 @@ class TestCreate:
         assert "mock create" in result.stdout
         assert result.exit_code == 0
 
+    def test_no_context_file(self, runner_no_context_file):
+        result = runner_no_context_file.invoke(context_command_group, ["create"])
+        assert result.exit_code == 1
+        assert "No context configuration file." in result.stdout
+
+    def test_show_none(self, runner_none):
+        result = runner_none.invoke(context_command_group, ["create"])
+        assert result.exit_code == 1
+        assert "No context selected." in result.stdout
+
+    def test_auth_failure(self, runner, mocker):
+        def mock_login(self):  # noqa: ARG001
+            raise DataSafeHavenAzureAPIAuthenticationError
+
+        mocker.patch.object(AzureAuthenticator, "login", mock_login)
+
+        result = runner.invoke(context_command_group, ["create"])
+        assert result.exit_code == 1
+        assert "Failed to authenticate with the Azure API." in result.stdout
+
 
 class TestTeardown:
     def test_teardown(self, runner, monkeypatch):
@@ -218,3 +266,23 @@ class TestTeardown:
         result = runner.invoke(context_command_group, ["teardown"])
         assert "mock teardown" in result.stdout
         assert result.exit_code == 0
+
+    def test_no_context_file(self, runner_no_context_file):
+        result = runner_no_context_file.invoke(context_command_group, ["teardown"])
+        assert result.exit_code == 1
+        assert "No context configuration file." in result.stdout
+
+    def test_show_none(self, runner_none):
+        result = runner_none.invoke(context_command_group, ["teardown"])
+        assert result.exit_code == 1
+        assert "No context selected." in result.stdout
+
+    def test_auth_failure(self, runner, mocker):
+        def mock_login(self):  # noqa: ARG001
+            raise DataSafeHavenAzureAPIAuthenticationError
+
+        mocker.patch.object(AzureAuthenticator, "login", mock_login)
+
+        result = runner.invoke(context_command_group, ["teardown"])
+        assert result.exit_code == 1
+        assert "Failed to authenticate with the Azure API." in result.stdout

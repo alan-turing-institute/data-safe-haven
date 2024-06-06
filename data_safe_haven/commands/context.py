@@ -3,7 +3,6 @@
 from typing import Annotated, Optional
 
 import typer
-from rich import print
 
 from data_safe_haven import validators
 from data_safe_haven.context import (
@@ -11,9 +10,14 @@ from data_safe_haven.context import (
     ContextSettings,
 )
 from data_safe_haven.context_infrastructure import ContextInfrastructure
-from data_safe_haven.exceptions import DataSafeHavenConfigError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureAPIAuthenticationError,
+    DataSafeHavenConfigError,
+)
+from data_safe_haven.utility import LoggingSingleton
 
 context_command_group = typer.Typer()
+logger = LoggingSingleton()
 
 
 @context_command_group.command()
@@ -22,24 +26,32 @@ def show() -> None:
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
-        print("No context configuration file.")
+        logger.critical(
+            "No context configuration file. Use `dsh context add` to create one."
+        )
         raise typer.Exit(code=1) from exc
 
     current_context_key = settings.selected
     current_context = settings.context
 
-    print(f"Current context: [green]{current_context_key}")
+    logger.info(f"Current context: [green]{current_context_key}")
     if current_context is not None:
-        print(f"\tName: {current_context.name}")
-        print(f"\tAdmin Group ID: {current_context.admin_group_id}")
-        print(f"\tSubscription name: {current_context.subscription_name}")
-        print(f"\tLocation: {current_context.location}")
+        logger.info(f"\tName: {current_context.name}")
+        logger.info(f"\tAdmin Group ID: {current_context.admin_group_id}")
+        logger.info(f"\tSubscription name: {current_context.subscription_name}")
+        logger.info(f"\tLocation: {current_context.location}")
 
 
 @context_command_group.command()
 def available() -> None:
     """Show the available contexts."""
-    settings = ContextSettings.from_file()
+    try:
+        settings = ContextSettings.from_file()
+    except DataSafeHavenConfigError as exc:
+        logger.critical(
+            "No context configuration file. Use `dsh context add` to create one."
+        )
+        raise typer.Exit(code=1) from exc
 
     current_context_key = settings.selected
     available = settings.available
@@ -48,7 +60,7 @@ def available() -> None:
         available.remove(current_context_key)
         available = [f"[green]{current_context_key}*[/]", *available]
 
-    print("\n".join(available))
+    logger.info("\n".join(available))
 
 
 @context_command_group.command()
@@ -56,7 +68,13 @@ def switch(
     key: Annotated[str, typer.Argument(help="Key of the context to switch to.")]
 ) -> None:
     """Switch the selected context."""
-    settings = ContextSettings.from_file()
+    try:
+        settings = ContextSettings.from_file()
+    except DataSafeHavenConfigError as exc:
+        logger.critical(
+            "No context configuration file. Use `dsh context add` to create one."
+        )
+        raise typer.Exit(code=1) from exc
     settings.selected = key
     settings.write()
 
@@ -146,7 +164,14 @@ def update(
     ] = None,
 ) -> None:
     """Update the selected context settings."""
-    settings = ContextSettings.from_file()
+    try:
+        settings = ContextSettings.from_file()
+    except DataSafeHavenConfigError as exc:
+        logger.critical(
+            "No context configuration file. Use `dsh context add` to create one."
+        )
+        raise typer.Exit(code=1) from exc
+
     settings.update(
         admin_group_id=admin_group,
         location=location,
@@ -161,7 +186,11 @@ def remove(
     key: Annotated[str, typer.Argument(help="Name of the context to remove.")],
 ) -> None:
     """Removes a context."""
-    settings = ContextSettings.from_file()
+    try:
+        settings = ContextSettings.from_file()
+    except DataSafeHavenConfigError as exc:
+        logger.critical("No context configuration file.")
+        raise typer.Exit(code=1) from exc
     settings.remove(key)
     settings.write()
 
@@ -169,14 +198,51 @@ def remove(
 @context_command_group.command()
 def create() -> None:
     """Create Data Safe Haven context infrastructure."""
-    context = ContextSettings.from_file().assert_context()
+    try:
+        context = ContextSettings.from_file().assert_context()
+    except DataSafeHavenConfigError as exc:
+        if exc.args[0] == "No context selected":
+            logger.critical(
+                "No context selected. Use `dsh context switch` to select one."
+            )
+        else:
+            logger.critical(
+                "No context configuration file. Use `dsh context add` before creating infrastructure."
+            )
+        raise typer.Exit(code=1) from exc
+
     context_infra = ContextInfrastructure(context)
-    context_infra.create()
+    try:
+        context_infra.create()
+    except DataSafeHavenAzureAPIAuthenticationError as exc:
+        logger.critical(
+            "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
+        )
+        raise typer.Exit(1) from exc
 
 
 @context_command_group.command()
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure."""
-    context = ContextSettings.from_file().assert_context()
+    try:
+        context = ContextSettings.from_file().assert_context()
+    except DataSafeHavenConfigError as exc:
+        if exc.args[0] == "No context selected":
+            logger.critical(
+                "No context selected. Use `dsh context switch` to select one."
+            )
+        else:
+            logger.critical(
+                "No context configuration file. Use `dsh context add` before creating infrastructure."
+            )
+        raise typer.Exit(code=1) from exc
+
     context_infra = ContextInfrastructure(context)
-    context_infra.teardown()
+
+    try:
+        context_infra.teardown()
+    except DataSafeHavenAzureAPIAuthenticationError as exc:
+        logger.critical(
+            "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
+        )
+        raise typer.Exit(1) from exc

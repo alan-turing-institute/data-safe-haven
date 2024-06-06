@@ -1,4 +1,5 @@
 import pytest
+from azure.core.exceptions import ResourceNotFoundError
 from pytest import fixture
 
 import data_safe_haven.external.api.azure_api
@@ -17,7 +18,7 @@ def mock_key_client(monkeypatch):
             if key_name == "exists":
                 return f"key: {key_name}"
             else:
-                raise Exception
+                raise ResourceNotFoundError
 
     monkeypatch.setattr(
         data_safe_haven.external.api.azure_api, "KeyClient", MockKeyClient
