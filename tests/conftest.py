@@ -78,7 +78,6 @@ sres:
   sre1:
     data_provider_ip_addresses: []
     databases: []
-    index: 1
     remote_desktop:
       allow_copy: false
       allow_paste: false
@@ -88,10 +87,9 @@ sres:
   sre2:
     data_provider_ip_addresses: []
     databases: []
-    index: 2
     remote_desktop:
-      allow_copy: false
-      allow_paste: false
+      allow_copy: true
+      allow_paste: true
     research_user_ip_addresses: []
     software_packages: none
     workspace_skus: []
@@ -140,8 +138,12 @@ def config_no_sres(azure_config, shm_config):
 
 @fixture
 def config_sres(azure_config, shm_config):
-    sre_config_1 = ConfigSectionSRE(index=1)
-    sre_config_2 = ConfigSectionSRE(index=2)
+    sre_config_1 = ConfigSectionSRE()
+    sre_config_2 = ConfigSectionSRE(
+        remote_desktop=ConfigSubsectionRemoteDesktopOpts(
+            allow_copy=True, allow_paste=True
+        )
+    )
     return Config(
         azure=azure_config,
         shm=shm_config,
