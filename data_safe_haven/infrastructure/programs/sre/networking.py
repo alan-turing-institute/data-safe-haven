@@ -854,6 +854,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Inbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from own subnet.",
+                    destination_address_prefix=subnet_monitoring_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowMonitoringToolsInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_MONITORING_TOOLS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_monitoring_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from workspaces.",
                     destination_address_prefix=subnet_monitoring_prefix,
                     destination_port_ranges=[Ports.HTTPS],
@@ -877,6 +889,18 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to own subnet.",
+                    destination_address_prefix=subnet_monitoring_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowMonitoringToolsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_MONITORING_TOOLS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_monitoring_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to workspaces.",
