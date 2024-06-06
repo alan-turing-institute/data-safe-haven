@@ -152,7 +152,6 @@ class DeclarativeSRE:
                     "shm-networking-resource_group_name"
                 ),
                 shm_zone_name=self.cfg.shm.fqdn,
-                sre_index=self.cfg.sre(self.sre_name).index,
                 sre_name=self.sre_name,
                 user_public_ip_ranges=self.cfg.sre(
                     self.sre_name

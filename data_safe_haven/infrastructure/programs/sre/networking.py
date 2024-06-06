@@ -31,51 +31,9 @@ class SRENetworkingProps:
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
         shm_zone_name: Input[str],
-        sre_index: Input[int],
         sre_name: Input[str],
         user_public_ip_ranges: Input[list[str]],
     ) -> None:
-        # Virtual network and subnet IP ranges
-        subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
-        self.dns_servers_iprange = SREDnsIpRanges().vnet
-        self.vnet_iprange = subnet_ranges.apply(lambda s: s.vnet)
-        self.subnet_application_gateway_iprange = subnet_ranges.apply(
-            lambda s: s.application_gateway
-        )
-        self.subnet_apt_proxy_server_iprange = subnet_ranges.apply(
-            lambda s: s.apt_proxy_server
-        )
-        self.subnet_data_configuration_iprange = subnet_ranges.apply(
-            lambda s: s.data_configuration
-        )
-        self.subnet_data_private_iprange = subnet_ranges.apply(lambda s: s.data_private)
-        self.subnet_firewall_iprange = subnet_ranges.apply(lambda s: s.firewall)
-        self.subnet_firewall_management_iprange = subnet_ranges.apply(
-            lambda s: s.firewall_management
-        )
-        self.subnet_guacamole_containers_iprange = subnet_ranges.apply(
-            lambda s: s.guacamole_containers
-        )
-        self.subnet_guacamole_containers_support_iprange = subnet_ranges.apply(
-            lambda s: s.guacamole_containers_support
-        )
-        self.subnet_identity_containers_iprange = subnet_ranges.apply(
-            lambda s: s.identity_containers
-        )
-        self.subnet_monitoring_iprange = subnet_ranges.apply(lambda s: s.monitoring)
-        self.subnet_user_services_containers_iprange = subnet_ranges.apply(
-            lambda s: s.user_services_containers
-        )
-        self.subnet_user_services_containers_support_iprange = subnet_ranges.apply(
-            lambda s: s.user_services_containers_support
-        )
-        self.subnet_user_services_databases_iprange = subnet_ranges.apply(
-            lambda s: s.user_services_databases
-        )
-        self.subnet_user_services_software_repositories_iprange = subnet_ranges.apply(
-            lambda s: s.user_services_software_repositories
-        )
-        self.subnet_workspaces_iprange = subnet_ranges.apply(lambda s: s.workspaces)
         # Other variables
         self.dns_private_zones = dns_private_zones
         self.dns_resource_group_name = dns_resource_group_name
@@ -134,46 +92,6 @@ class SRENetworkingComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Set address prefixes from ranges
-        dns_servers_prefix = str(props.dns_servers_iprange)
-        subnet_application_gateway_prefix = (
-            props.subnet_application_gateway_iprange.apply(str)
-        )
-        subnet_apt_proxy_server_prefix = props.subnet_apt_proxy_server_iprange.apply(
-            str
-        )
-        subnet_data_configuration_prefix = (
-            props.subnet_data_configuration_iprange.apply(str)
-        )
-        subnet_data_private_prefix = props.subnet_data_private_iprange.apply(str)
-        subnet_firewall_prefix = props.subnet_firewall_iprange.apply(str)
-        subnet_firewall_management_prefix = (
-            props.subnet_firewall_management_iprange.apply(str)
-        )
-        subnet_guacamole_containers_prefix = (
-            props.subnet_guacamole_containers_iprange.apply(str)
-        )
-        subnet_guacamole_containers_support_prefix = (
-            props.subnet_guacamole_containers_support_iprange.apply(str)
-        )
-        subnet_identity_containers_prefix = (
-            props.subnet_identity_containers_iprange.apply(str)
-        )
-        subnet_monitoring_prefix = props.subnet_monitoring_iprange.apply(str)
-        subnet_user_services_containers_prefix = (
-            props.subnet_user_services_containers_iprange.apply(str)
-        )
-        subnet_user_services_containers_support_prefix = (
-            props.subnet_user_services_containers_support_iprange.apply(str)
-        )
-        subnet_user_services_databases_prefix = (
-            props.subnet_user_services_databases_iprange.apply(str)
-        )
-        subnet_user_services_software_repositories_prefix = (
-            props.subnet_user_services_software_repositories_iprange.apply(str)
-        )
-        subnet_workspaces_prefix = props.subnet_workspaces_iprange.apply(str)
-
         # Define NSGs
         nsg_application_gateway = network.NetworkSecurityGroup(
             f"{self._name}_nsg_application_gateway",
@@ -208,7 +126,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from users over the internet.",
-                    destination_address_prefix=subnet_application_gateway_prefix,
+                    destination_address_prefix=SREIpRanges.application_gateway.prefix,
                     destination_port_ranges=[Ports.HTTP, Ports.HTTPS],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowUsersInternetInbound",
@@ -220,7 +138,7 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from from ssllabs.com for SSL quality reporting.",
-                    destination_address_prefix=subnet_application_gateway_prefix,
+                    destination_address_prefix=SREIpRanges.application_gateway.prefix,
                     destination_port_ranges=[Ports.HTTPS],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowSslLabsInternetInbound",
@@ -248,25 +166,25 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
-                    destination_address_prefix=dns_servers_prefix,
+                    destination_address_prefix=SREDnsIpRanges.vnet.prefix,
                     destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDNSServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_application_gateway_prefix,
+                    source_address_prefix=SREIpRanges.application_gateway.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to the Guacamole remote desktop gateway.",
-                    destination_address_prefix=subnet_guacamole_containers_prefix,
+                    destination_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     destination_port_ranges=[Ports.HTTP],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowGuacamoleContainersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_application_gateway_prefix,
+                    source_address_prefix=SREIpRanges.application_gateway.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -297,13 +215,13 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from SRE workspaces.",
-                    destination_address_prefix=subnet_apt_proxy_server_prefix,
+                    destination_address_prefix=SREIpRanges.apt_proxy_server.prefix,
                     destination_port_ranges=[Ports.LINUX_UPDATE],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowWorkspacesInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -334,25 +252,25 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
-                    destination_address_prefix=dns_servers_prefix,
+                    destination_address_prefix=SREDnsIpRanges.vnet.prefix,
                     destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDNSServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_apt_proxy_server_prefix,
+                    source_address_prefix=SREIpRanges.apt_proxy_server.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_apt_proxy_server_prefix,
+                    source_address_prefix=SREIpRanges.apt_proxy_server.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -364,7 +282,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowPackagesInternetOutbound",
                     priority=NetworkingPriorities.EXTERNAL_INTERNET,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_apt_proxy_server_prefix,
+                    source_address_prefix=SREIpRanges.apt_proxy_server.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -392,49 +310,49 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from Guacamole remote desktop gateway.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGuacamoleContainersInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from identity containers.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowIdentityServersInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_identity_containers_prefix,
+                    source_address_prefix=SREIpRanges.identity_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from user services containers.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowUserServicesContainersInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_address_prefix=SREIpRanges.user_services_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from user services software repositories.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowUserServicesSoftwareRepositoriesInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_software_repositories_prefix,
+                    source_address_prefix=SREIpRanges.user_services_software_repositories.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -487,13 +405,13 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from SRE workspaces.",
-                    destination_address_prefix=subnet_data_private_prefix,
+                    destination_address_prefix=SREIpRanges.data_private.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowWorkspacesInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -546,13 +464,13 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from the Application Gateway.",
-                    destination_address_prefix=subnet_guacamole_containers_prefix,
+                    destination_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     destination_port_ranges=[Ports.HTTP],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowApplicationGatewayInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_APPLICATION_GATEWAY,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_application_gateway_prefix,
+                    source_address_prefix=SREIpRanges.application_gateway.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -583,61 +501,61 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
-                    destination_address_prefix=dns_servers_prefix,
+                    destination_address_prefix=SREDnsIpRanges.vnet.prefix,
                     destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDNSServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to Guacamole support services.",
-                    destination_address_prefix=subnet_guacamole_containers_support_prefix,
+                    destination_address_prefix=SREIpRanges.guacamole_containers_support.prefix,
                     destination_port_ranges=[Ports.POSTGRESQL],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowGuacamoleContainersSupportOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS_SUPPORT,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over TCP.",
-                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_address_prefix=SREIpRanges.identity_containers.prefix,
                     destination_port_ranges=[Ports.LDAP_APRICOT],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowIdentityServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to SRE workspaces.",
-                    destination_address_prefix=subnet_workspaces_prefix,
+                    destination_address_prefix=SREIpRanges.workspaces.prefix,
                     destination_port_ranges=[Ports.SSH, Ports.RDP],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowWorkspacesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -649,7 +567,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowOAuthInternetOutbound",
                     priority=NetworkingPriorities.EXTERNAL_INTERNET,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -677,13 +595,13 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from Guacamole remote desktop gateway.",
-                    destination_address_prefix=subnet_guacamole_containers_support_prefix,
+                    destination_address_prefix=SREIpRanges.guacamole_containers_support.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGuacamoleContainersInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -736,37 +654,37 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests from Guacamole over TCP.",
-                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_address_prefix=SREIpRanges.identity_containers.prefix,
                     destination_port_ranges=[Ports.LDAP_APRICOT],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGuacamoleLDAPClientTCPInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests from user services over TCP.",
-                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_address_prefix=SREIpRanges.identity_containers.prefix,
                     destination_port_ranges=[Ports.LDAP_APRICOT],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowUserServicesLDAPClientTCPInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_address_prefix=SREIpRanges.user_services_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests from workspaces over TCP.",
-                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_address_prefix=SREIpRanges.identity_containers.prefix,
                     destination_port_ranges=[Ports.LDAP_APRICOT],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowWorkspaceLDAPClientTCPInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -797,25 +715,25 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
-                    destination_address_prefix=dns_servers_prefix,
+                    destination_address_prefix=SREDnsIpRanges.vnet.prefix,
                     destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDNSServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_identity_containers_prefix,
+                    source_address_prefix=SREIpRanges.identity_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_identity_containers_prefix,
+                    source_address_prefix=SREIpRanges.identity_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -827,7 +745,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowOAuthInternetOutbound",
                     priority=NetworkingPriorities.EXTERNAL_INTERNET,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_identity_containers_prefix,
+                    source_address_prefix=SREIpRanges.identity_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -855,25 +773,25 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from own subnet.",
-                    destination_address_prefix=subnet_monitoring_prefix,
+                    destination_address_prefix=SREIpRanges.monitoring.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowMonitoringToolsInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_SELF,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_monitoring_prefix,
+                    source_address_prefix=SREIpRanges.monitoring.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from workspaces.",
-                    destination_address_prefix=subnet_monitoring_prefix,
+                    destination_address_prefix=SREIpRanges.monitoring.prefix,
                     destination_port_ranges=[Ports.HTTPS],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowWorkspacesInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -892,25 +810,25 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to own subnet.",
-                    destination_address_prefix=subnet_monitoring_prefix,
+                    destination_address_prefix=SREIpRanges.monitoring.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowMonitoringToolsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_SELF,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_monitoring_prefix,
+                    source_address_prefix=SREIpRanges.monitoring.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to workspaces.",
-                    destination_address_prefix=subnet_workspaces_prefix,
+                    destination_address_prefix=SREIpRanges.workspaces.prefix,
                     destination_port_ranges=[Ports.AZURE_MONITORING],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowWorkspacesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_monitoring_prefix,
+                    source_address_prefix=SREIpRanges.monitoring.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -938,13 +856,13 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from SRE workspaces.",
-                    destination_address_prefix=subnet_user_services_containers_prefix,
+                    destination_address_prefix=SREIpRanges.user_services_containers.prefix,
                     destination_port_ranges=[Ports.SSH, Ports.HTTP, Ports.HTTPS],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowWorkspacesInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -975,49 +893,49 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
-                    destination_address_prefix=dns_servers_prefix,
+                    destination_address_prefix=SREDnsIpRanges.vnet.prefix,
                     destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDNSServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_address_prefix=SREIpRanges.user_services_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_address_prefix=SREIpRanges.user_services_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over TCP.",
-                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_address_prefix=SREIpRanges.identity_containers.prefix,
                     destination_port_ranges=[Ports.LDAP_APRICOT],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowIdentityServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_address_prefix=SREIpRanges.user_services_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to container support services.",
-                    destination_address_prefix=subnet_user_services_containers_support_prefix,
+                    destination_address_prefix=SREIpRanges.user_services_containers_support.prefix,
                     destination_port_ranges=[Ports.POSTGRESQL],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowUserServicesContainersSupportOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS_SUPPORT,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_address_prefix=SREIpRanges.user_services_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1045,13 +963,13 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from user services containers.",
-                    destination_address_prefix=subnet_user_services_containers_support_prefix,
+                    destination_address_prefix=SREIpRanges.user_services_containers_support.prefix,
                     destination_port_ranges=[Ports.POSTGRESQL],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowUserServicesContainersInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_user_services_containers_prefix,
+                    source_address_prefix=SREIpRanges.user_services_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1104,13 +1022,13 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from SRE workspaces.",
-                    destination_address_prefix=subnet_user_services_databases_prefix,
+                    destination_address_prefix=SREIpRanges.user_services_databases.prefix,
                     destination_port_ranges=[Ports.MSSQL, Ports.POSTGRESQL],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowWorkspacesInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1141,25 +1059,25 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
-                    destination_address_prefix=dns_servers_prefix,
+                    destination_address_prefix=SREDnsIpRanges.vnet.prefix,
                     destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDNSServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_databases_prefix,
+                    source_address_prefix=SREIpRanges.user_services_databases.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_databases_prefix,
+                    source_address_prefix=SREIpRanges.user_services_databases.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1187,13 +1105,13 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from SRE workspaces.",
-                    destination_address_prefix=subnet_user_services_software_repositories_prefix,
+                    destination_address_prefix=SREIpRanges.user_services_software_repositories.prefix,
                     destination_port_ranges=[Ports.HTTP, Ports.HTTPS, Ports.SQUID],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowWorkspacesInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1224,25 +1142,25 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
-                    destination_address_prefix=dns_servers_prefix,
+                    destination_address_prefix=SREDnsIpRanges.vnet.prefix,
                     destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDNSServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_software_repositories_prefix,
+                    source_address_prefix=SREIpRanges.user_services_software_repositories.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to configuration data endpoints.",
-                    destination_address_prefix=subnet_data_configuration_prefix,
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDataConfigurationEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_user_services_software_repositories_prefix,
+                    source_address_prefix=SREIpRanges.user_services_software_repositories.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1254,7 +1172,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowPackagesInternetOutbound",
                     priority=NetworkingPriorities.EXTERNAL_INTERNET,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_user_services_software_repositories_prefix,
+                    source_address_prefix=SREIpRanges.user_services_software_repositories.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1282,25 +1200,25 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from monitoring tools.",
-                    destination_address_prefix=subnet_workspaces_prefix,
+                    destination_address_prefix=SREIpRanges.workspaces.prefix,
                     destination_port_ranges=[Ports.AZURE_MONITORING],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowMonitoringToolsInbound",
                     priority=NetworkingPriorities.AZURE_MONITORING_SOURCES,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_monitoring_prefix,
+                    source_address_prefix=SREIpRanges.monitoring.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from Guacamole remote desktop gateway.",
-                    destination_address_prefix=subnet_workspaces_prefix,
+                    destination_address_prefix=SREIpRanges.workspaces.prefix,
                     destination_port_ranges=[Ports.SSH, Ports.RDP],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGuacamoleContainersInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_GUACAMOLE_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_guacamole_containers_prefix,
+                    source_address_prefix=SREIpRanges.guacamole_containers.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1331,97 +1249,97 @@ class SRENetworkingComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow LDAP client requests over TCP.",
-                    destination_address_prefix=subnet_identity_containers_prefix,
+                    destination_address_prefix=SREIpRanges.identity_containers.prefix,
                     destination_port_ranges=[Ports.LDAP_APRICOT],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowIdentityServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_IDENTITY_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
-                    destination_address_prefix=dns_servers_prefix,
+                    destination_address_prefix=SREDnsIpRanges.vnet.prefix,
                     destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDNSServersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DNS_SERVERS,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to private data endpoints.",
-                    destination_address_prefix=subnet_data_private_prefix,
+                    destination_address_prefix=SREIpRanges.data_private.prefix,
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDataPrivateEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to monitoring tools.",
-                    destination_address_prefix=subnet_monitoring_prefix,
+                    destination_address_prefix=SREIpRanges.monitoring.prefix,
                     destination_port_ranges=[Ports.HTTPS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowMonitoringToolsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_MONITORING_TOOLS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to user services containers.",
-                    destination_address_prefix=subnet_user_services_containers_prefix,
+                    destination_address_prefix=SREIpRanges.user_services_containers.prefix,
                     destination_port_ranges=[Ports.SSH, Ports.HTTP, Ports.HTTPS],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowUserServicesContainersOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_CONTAINERS,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to user services databases.",
-                    destination_address_prefix=subnet_user_services_databases_prefix,
+                    destination_address_prefix=SREIpRanges.user_services_databases.prefix,
                     destination_port_ranges=[Ports.MSSQL, Ports.POSTGRESQL],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowUserServicesDatabasesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_DATABASES,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to user services software repositories.",
-                    destination_address_prefix=subnet_user_services_software_repositories_prefix,
+                    destination_address_prefix=SREIpRanges.user_services_software_repositories.prefix,
                     destination_port_ranges=[Ports.HTTP, Ports.HTTPS, Ports.SQUID],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowUserServicesSoftwareRepositoriesOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_USER_SERVICES_SOFTWARE_REPOSITORIES,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to apt proxy server.",
-                    destination_address_prefix=subnet_apt_proxy_server_prefix,
+                    destination_address_prefix=SREIpRanges.apt_proxy_server.prefix,
                     destination_port_ranges=[Ports.LINUX_UPDATE],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowAptProxyServerOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_APT_PROXY_SERVER,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1433,7 +1351,7 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowConfigurationInternetOutbound",
                     priority=NetworkingPriorities.EXTERNAL_INTERNET,
                     protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -1477,7 +1395,7 @@ class SRENetworkingComponent(ComponentResource):
         sre_virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
-                address_prefixes=[props.vnet_iprange.apply(str)],
+                address_prefixes=[SREIpRanges.vnet.prefix],
             ),
             dhcp_options=network.DhcpOptionsArgs(dns_servers=[props.dns_server_ip]),
             resource_group_name=resource_group.name,
@@ -1485,7 +1403,7 @@ class SRENetworkingComponent(ComponentResource):
             subnets=[
                 # Application gateway subnet
                 network.SubnetArgs(
-                    address_prefix=subnet_application_gateway_prefix,
+                    address_prefix=SREIpRanges.application_gateway.prefix,
                     name=subnet_application_gateway_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_application_gateway.id
@@ -1494,7 +1412,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # apt proxy server
                 network.SubnetArgs(
-                    address_prefix=subnet_apt_proxy_server_prefix,
+                    address_prefix=SREIpRanges.apt_proxy_server.prefix,
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -1510,7 +1428,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Configuration data subnet
                 network.SubnetArgs(
-                    address_prefix=subnet_data_configuration_prefix,
+                    address_prefix=SREIpRanges.data_configuration.prefix,
                     name=subnet_data_configuration_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_data_configuration.id
@@ -1525,7 +1443,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Private data
                 network.SubnetArgs(
-                    address_prefix=subnet_data_private_prefix,
+                    address_prefix=SREIpRanges.data_private.prefix,
                     name=subnet_data_private_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_data_private.id
@@ -1540,19 +1458,19 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Firewall
                 network.SubnetArgs(
-                    address_prefix=subnet_firewall_prefix,
+                    address_prefix=SREIpRanges.firewall.prefix,
                     name=subnet_firewall_name,
                     # Note that NSGs cannot be attached to a subnet containing a firewall
                 ),
                 # Firewall management
                 network.SubnetArgs(
-                    address_prefix=subnet_firewall_management_prefix,
+                    address_prefix=SREIpRanges.firewall_management.prefix,
                     name=subnet_firewall_management_name,
                     # Note that NSGs cannot be attached to a subnet containing a firewall
                 ),
                 # Guacamole containers
                 network.SubnetArgs(
-                    address_prefix=subnet_guacamole_containers_prefix,
+                    address_prefix=SREIpRanges.guacamole_containers.prefix,
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -1568,7 +1486,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Guacamole containers support
                 network.SubnetArgs(
-                    address_prefix=subnet_guacamole_containers_support_prefix,
+                    address_prefix=SREIpRanges.guacamole_containers_support.prefix,
                     name=subnet_guacamole_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_guacamole_containers_support.id
@@ -1578,7 +1496,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Identity containers
                 network.SubnetArgs(
-                    address_prefix=subnet_identity_containers_prefix,
+                    address_prefix=SREIpRanges.identity_containers.prefix,
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -1594,7 +1512,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Monitoring
                 network.SubnetArgs(
-                    address_prefix=subnet_monitoring_prefix,
+                    address_prefix=SREIpRanges.monitoring.prefix,
                     name=subnet_monitoring_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_monitoring.id
@@ -1603,7 +1521,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # User services containers
                 network.SubnetArgs(
-                    address_prefix=subnet_user_services_containers_prefix,
+                    address_prefix=SREIpRanges.user_services_containers.prefix,
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -1619,7 +1537,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # User services containers support
                 network.SubnetArgs(
-                    address_prefix=subnet_user_services_containers_support_prefix,
+                    address_prefix=SREIpRanges.user_services_containers_support.prefix,
                     name=subnet_user_services_containers_support_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_containers_support.id
@@ -1628,7 +1546,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # User services databases
                 network.SubnetArgs(
-                    address_prefix=subnet_user_services_databases_prefix,
+                    address_prefix=SREIpRanges.user_services_databases.prefix,
                     name=subnet_user_services_databases_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_databases.id
@@ -1637,7 +1555,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # User services software repositories
                 network.SubnetArgs(
-                    address_prefix=subnet_user_services_software_repositories_prefix,
+                    address_prefix=SREIpRanges.user_services_software_repositories.prefix,
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -1653,7 +1571,7 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 # Workspaces
                 network.SubnetArgs(
-                    address_prefix=subnet_workspaces_prefix,
+                    address_prefix=SREIpRanges.workspaces.prefix,
                     name=subnet_workspaces_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_workspaces.id
