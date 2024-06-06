@@ -190,7 +190,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-remote-desktop",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="caddy:2.7.6",
+                    image="caddy:2.8.4",
                     name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
