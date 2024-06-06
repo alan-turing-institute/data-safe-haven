@@ -56,7 +56,7 @@ class TestUpload:
         assert result.exit_code == 0
 
         mock_exists.assert_called_once_with(context)
-        mock_from_remote.assert_called_once_with(context)
+        mock_from_remote.assert_called_once_with(context, filename=None)
         mock_upload.assert_not_called()
 
         assert "No changes, won't upload configuration." in result.stdout
@@ -77,7 +77,7 @@ class TestUpload:
         assert result.exit_code == 0
 
         mock_exists.assert_called_once_with(context)
-        mock_from_remote.assert_called_once_with(context)
+        mock_from_remote.assert_called_once_with(context, filename=None)
         mock_upload.assert_called_once_with(
             config_yaml,
             Config.filename,
@@ -105,7 +105,7 @@ class TestUpload:
         assert result.exit_code == 0
 
         mock_exists.assert_called_once_with(context)
-        mock_from_remote.assert_called_once_with(context)
+        mock_from_remote.assert_called_once_with(context, filename=None)
         mock_upload.assert_not_called()
 
         assert "--- remote" in result.stdout

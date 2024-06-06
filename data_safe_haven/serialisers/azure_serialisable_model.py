@@ -17,11 +17,13 @@ class AzureSerialisableModel(YAMLSerialisableModel):
     filename: ClassVar[str] = "config.yaml"
 
     @classmethod
-    def from_remote(cls: type[T], context: ContextBase) -> T:
+    def from_remote(
+        cls: type[T], context: ContextBase, *, filename: str | None = None
+    ) -> T:
         """Construct an AzureSerialisableModel from a YAML file in Azure storage."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
         config_yaml = azure_api.download_blob(
-            cls.filename,
+            filename or cls.filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -42,32 +44,36 @@ class AzureSerialisableModel(YAMLSerialisableModel):
             return cls(**default_args)
 
     @classmethod
-    def remote_exists(cls: type[T], context: ContextBase) -> bool:
+    def remote_exists(
+        cls: type[T], context: ContextBase, *, filename: str | None = None
+    ) -> bool:
         """Check whether a remote instance of this model exists."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
         return azure_api.blob_exists(
-            cls.filename,
+            filename or cls.filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
         )
 
-    def remote_yaml_diff(self, context: ContextBase) -> list[str]:
+    def remote_yaml_diff(
+        self, context: ContextBase, *, filename: str | None = None
+    ) -> list[str]:
         """
         Determine the diff of YAML output from the remote model to `self`.
 
         The diff is given in unified diff format.
         """
-        remote_model = self.from_remote(context)
+        remote_model = self.from_remote(context, filename=filename)
 
         return self.yaml_diff(remote_model, from_name="remote", to_name="local")
 
-    def upload(self, context: ContextBase) -> None:
+    def upload(self, context: ContextBase, *, filename: str | None = None) -> None:
         """Serialise an AzureSerialisableModel to a YAML file in Azure storage."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
         azure_api.upload_blob(
             self.to_yaml(),
-            self.filename,
+            filename or self.filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
