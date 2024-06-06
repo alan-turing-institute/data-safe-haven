@@ -103,7 +103,7 @@ class SREMonitoringComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Set up a private linkscope and endpoint for the log analytics workspace
+        # Create a private linkscope
         log_analytics_private_link_scope = insights.PrivateLinkScope(
             f"{self._name}_log_analytics_private_link_scope",
             access_mode_settings=insights.AccessModeSettingsArgs(
@@ -112,24 +112,37 @@ class SREMonitoringComponent(ComponentResource):
             ),
             location="Global",
             resource_group_name=resource_group.name,
-            scope_name=f"{stack_name}-ampls-log",
+            scope_name=f"{stack_name}-ampls",
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
-                    depends_on=self.log_analytics,
                     parent=self.log_analytics,
                 ),
             ),
             tags=child_tags,
         )
+        # Link the private linkscope to the log analytics workspace
+        insights.PrivateLinkScopedResource(
+            f"{self._name}_log_analytics_ampls_connection",
+            linked_resource_id=self.log_analytics.id,
+            name=f"{stack_name}-cnxn-ampls-to-log-analytics",
+            resource_group_name=resource_group.name,
+            scope_name=log_analytics_private_link_scope.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
+            ),
+        )
+
+        # Create a private endpoint for the log analytics workspace
         log_analytics_private_endpoint = network.PrivateEndpoint(
             f"{self._name}_log_analytics_private_endpoint",
+            custom_network_interface_name=f"{stack_name}-pep-log-analytics-nic",
             location=props.location,
-            private_endpoint_name=f"{stack_name}-pep-log",
+            private_endpoint_name=f"{stack_name}-pep-log-analytics",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["azuremonitor"],
-                    name=f"{stack_name}-cnxn-pep-log-to-ampls-log",
+                    name=f"{stack_name}-cnxn-ampls-to-pep-log-analytics",
                     private_link_service_id=log_analytics_private_link_scope.id,
                 )
             ],
@@ -138,21 +151,12 @@ class SREMonitoringComponent(ComponentResource):
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
+                    depends_on=[log_analytics_private_link_scope, self.log_analytics],
                     ignore_changes=["custom_dns_configs"],
-                    parent=log_analytics_private_link_scope,
+                    parent=self.log_analytics,
                 ),
             ),
             tags=child_tags,
-        )
-        insights.PrivateLinkScopedResource(
-            f"{self._name}_log_analytics_ampls_connection",
-            linked_resource_id=self.log_analytics.id,
-            name=f"{stack_name}-cnxn-ampls-log-to-log",
-            resource_group_name=resource_group.name,
-            scope_name=log_analytics_private_link_scope.name,
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
-            ),
         )
 
         # Add a private DNS record for each log analytics workspace custom DNS config
@@ -171,6 +175,96 @@ class SREMonitoringComponent(ComponentResource):
             private_endpoint_name=log_analytics_private_endpoint.name,
             resource_group_name=resource_group.name,
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=log_analytics_private_endpoint)
+                child_opts,
+                ResourceOptions(
+                    depends_on=log_analytics_private_endpoint,
+                    parent=log_analytics_private_endpoint,
+                ),
             ),
+        )
+
+        # Create a data collection endpoint
+        self.data_collection_endpoint = insights.DataCollectionEndpoint(
+            f"{self._name}_data_collection_endpoint",
+            data_collection_endpoint_name=f"{stack_name}-dce",
+            location=props.location,
+            network_acls=insights.DataCollectionEndpointNetworkAclsArgs(
+                public_network_access=insights.KnownPublicNetworkAccessOptions.DISABLED,
+            ),
+            resource_group_name=resource_group.name,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=self.log_analytics),
+            ),
+            tags=child_tags,
+        )
+        # Link the private linkscope to the data collection endpoint
+        insights.PrivateLinkScopedResource(
+            f"{self._name}_data_collection_endpoint_ampls_connection",
+            linked_resource_id=self.data_collection_endpoint.id,
+            name=f"{stack_name}-cnxn-ampls-to-dce",
+            resource_group_name=resource_group.name,
+            scope_name=log_analytics_private_link_scope.name,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
+            ),
+        )
+
+        # Create a data collection rule for VM logs
+        self.data_collection_rule_vms = insights.DataCollectionRule(
+            f"{self._name}_data_collection_rule_vms",
+            data_collection_rule_name=f"{stack_name}-dcr-vms",
+            data_collection_endpoint_id=self.data_collection_endpoint.id,  # used by Logs Ingestion API
+            destinations=insights.DataCollectionRuleDestinationsArgs(
+                log_analytics=[
+                    insights.LogAnalyticsDestinationArgs(
+                        name=self.log_analytics.name,
+                        workspace_resource_id=self.log_analytics.id,
+                    )
+                ],
+            ),
+            data_flows=[
+                insights.DataFlowArgs(
+                    destinations=[self.log_analytics.name],
+                    streams=[
+                        # insights.KnownDataFlowStreams.MICROSOFT_PERF,
+                        insights.KnownDataFlowStreams.MICROSOFT_SYSLOG,
+                    ],
+                    transform_kql="source",
+                    output_stream=insights.KnownDataFlowStreams.MICROSOFT_SYSLOG,
+                )
+            ],
+            data_sources=insights.DataCollectionRuleDataSourcesArgs(
+                syslog=[
+                    insights.SyslogDataSourceArgs(
+                        facility_names=[
+                            # Note that ASTERISK is not currently working
+                            insights.KnownSyslogDataSourceFacilityNames.AUDIT,
+                            insights.KnownSyslogDataSourceFacilityNames.AUTH,
+                        ],
+                        log_levels=[
+                            # Note that ASTERISK is not currently working
+                            insights.KnownSyslogDataSourceLogLevels.DEBUG,
+                            insights.KnownSyslogDataSourceLogLevels.INFO,
+                            insights.KnownSyslogDataSourceLogLevels.NOTICE,
+                            insights.KnownSyslogDataSourceLogLevels.WARNING,
+                            insights.KnownSyslogDataSourceLogLevels.ERROR,
+                            insights.KnownSyslogDataSourceLogLevels.CRITICAL,
+                            insights.KnownSyslogDataSourceLogLevels.ALERT,
+                            insights.KnownSyslogDataSourceLogLevels.EMERGENCY,
+                        ],
+                        name="LinuxSyslog",
+                        streams=[
+                            insights.KnownSyslogDataSourceStreams.MICROSOFT_SYSLOG
+                        ],
+                    ),
+                ],
+            ),
+            location=props.location,
+            resource_group_name=resource_group.name,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=self.log_analytics),
+            ),
+            tags=child_tags,
         )

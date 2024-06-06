@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import compute, maintenance, network
+from pulumi_azure_native import compute, insights, maintenance, network
 
 from data_safe_haven.functions import replace_separators
 
@@ -20,6 +20,8 @@ class VMComponentProps:
     def __init__(
         self,
         admin_password: Input[str],
+        data_collection_rule_id: Input[str],
+        data_collection_endpoint_id: Input[str],
         ip_address_private: Input[str],
         location: Input[str],
         resource_group_name: Input[str],
@@ -34,6 +36,11 @@ class VMComponentProps:
     ) -> None:
         self.admin_password = admin_password
         self.admin_username = admin_username if admin_username else "dshvmadmin"
+        self.data_collection_rule_id = data_collection_rule_id
+        self.data_collection_rule_name = Output.from_input(
+            data_collection_rule_id
+        ).apply(lambda rule_id: str(rule_id).split("/")[-1])
+        self.data_collection_endpoint_id = data_collection_endpoint_id
         self.image_reference_args = None
         self.ip_address_private = ip_address_private
         self.ip_address_public = ip_address_public
@@ -251,13 +258,42 @@ class VMComponent(ComponentResource):
 
         # Register with maintenance configuration
         maintenance.ConfigurationAssignment(
-            f"{name_underscored}_configurationAssignment",
+            f"{name_underscored}_configuration_assignment",
+            configuration_assignment_name=Output.concat(
+                props.vm_name, "-maintenance-configuration"
+            ),
             location=props.location,
             maintenance_configuration_id=props.maintenance_configuration_id,
             provider_name="Microsoft.Compute",
             resource_group_name=props.resource_group_name,
             resource_name_=virtual_machine.name,
             resource_type="VirtualMachines",
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=virtual_machine),
+            ),
+        )
+
+        # Register with data collection rule
+        insights.DataCollectionRuleAssociation(
+            f"{name_underscored}_dcra_to_dcr",
+            association_name=Output.concat(
+                props.data_collection_rule_name, "-association"  # this name is required
+            ),
+            data_collection_rule_id=props.data_collection_rule_id,
+            resource_uri=virtual_machine.id,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=virtual_machine),
+            ),
+        )
+
+        # Register with data collection endpoint
+        insights.DataCollectionRuleAssociation(
+            f"{name_underscored}_dcra_to_dce",
+            association_name="configurationAccessEndpoint",  # this name is required
+            data_collection_endpoint_id=props.data_collection_endpoint_id,
+            resource_uri=virtual_machine.id,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=virtual_machine),
