@@ -185,7 +185,7 @@ class SRENetworkingComponent(ComponentResource):
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound gateway management service traffic.",
                     destination_address_prefix="*",
-                    destination_port_range="65200-65535",
+                    destination_port_ranges=["65200-65535"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGatewayManagerServiceInbound",
                     priority=NetworkingPriorities.AZURE_GATEWAY_MANAGER,
@@ -858,7 +858,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_address_prefix=subnet_monitoring_prefix,
                     destination_port_ranges=[Ports.HTTPS],
                     direction=network.SecurityRuleDirection.INBOUND,
-                    name="AllowWorkspacesTCPInbound",
+                    name="AllowWorkspacesInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
@@ -877,6 +877,18 @@ class SRENetworkingComponent(ComponentResource):
                     source_port_range="*",
                 ),
                 # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to workspaces.",
+                    destination_address_prefix=subnet_workspaces_prefix,
+                    destination_port_ranges=[Ports.AZURE_MONITORING],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowWorkspacesOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_monitoring_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other outbound traffic.",
@@ -1243,6 +1255,18 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             security_rules=[
                 # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from monitoring tools.",
+                    destination_address_prefix=subnet_workspaces_prefix,
+                    destination_port_ranges=[Ports.AZURE_MONITORING],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowMonitoringToolsInbound",
+                    priority=NetworkingPriorities.AZURE_MONITORING_SOURCES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_monitoring_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from Guacamole remote desktop gateway.",

@@ -48,7 +48,8 @@ class NetworkingPriorities(int, Enum):
     # Azure services: 100 - 999
     AZURE_GATEWAY_MANAGER = 100
     AZURE_LOAD_BALANCER = 200
-    AZURE_PLATFORM_DNS = 300
+    AZURE_MONITORING_SOURCES = 300
+    AZURE_PLATFORM_DNS = 400
     # SHM connections: 1000-1299
     INTERNAL_SELF = 1000
     INTERNAL_SHM_MONITORING_TOOLS = 1100
@@ -133,6 +134,7 @@ class PermittedDomains(tuple[str, ...], Enum):
 
 @verify(UNIQUE)
 class Ports(str, Enum):
+    AZURE_MONITORING = "514"
     CLAMAV = "11371"
     DNS = "53"
     HTTP = "80"
