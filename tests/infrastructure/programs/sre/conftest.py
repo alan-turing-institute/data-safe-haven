@@ -62,16 +62,16 @@ def identity_key_vault_reader(
 
 
 @fixture
-def subnet_application_gateway(sre_index) -> network.GetSubnetResult:
+def subnet_application_gateway() -> network.GetSubnetResult:
     return network.GetSubnetResult(
-        address_prefix=str(SREIpRanges(sre_index).application_gateway),
+        address_prefix=SREIpRanges.application_gateway.prefix,
         id="subnet_application_gateway_id",
     )
 
 
 @fixture
-def subnet_guacamole_containers(sre_index) -> network.GetSubnetResult:
+def subnet_guacamole_containers() -> network.GetSubnetResult:
     return network.GetSubnetResult(
-        address_prefix=str(SREIpRanges(sre_index).guacamole_containers),
+        address_prefix=SREIpRanges.guacamole_containers.prefix,
         id="subnet_guacamole_containers_id",
     )
