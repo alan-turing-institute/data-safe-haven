@@ -31,13 +31,14 @@ class TestSREIpRanges:
             "10.5.1.32", "10.5.1.39"
         )
         assert ips.identity_containers == AzureIPv4Range("10.5.1.40", "10.5.1.47")
+        assert ips.monitoring == AzureIPv4Range("10.5.1.192", "10.5.1.223")
         assert ips.user_services_containers == AzureIPv4Range("10.5.1.48", "10.5.1.55")
         assert ips.user_services_containers_support == AzureIPv4Range(
             "10.5.1.56", "10.5.1.63"
         )
-        assert ips.user_services_databases == AzureIPv4Range("10.5.1.192", "10.5.1.199")
+        assert ips.user_services_databases == AzureIPv4Range("10.5.1.224", "10.5.1.231")
         assert ips.user_services_software_repositories == AzureIPv4Range(
-            "10.5.1.200", "10.5.1.207"
+            "10.5.1.232", "10.5.1.239"
         )
         assert ips.workspaces == AzureIPv4Range("10.5.2.0", "10.5.2.255")
 

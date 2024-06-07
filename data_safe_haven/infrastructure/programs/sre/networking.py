@@ -5,7 +5,7 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-from data_safe_haven.functions import alphanumeric
+from data_safe_haven.functions import alphanumeric, replace_separators
 from data_safe_haven.infrastructure.common import (
     SREDnsIpRanges,
     SREIpRanges,
@@ -13,7 +13,6 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_vnet,
 )
 from data_safe_haven.types import (
-    AzureDnsZoneNames,
     NetworkingPriorities,
     Ports,
 )
@@ -24,14 +23,13 @@ class SRENetworkingProps:
 
     def __init__(
         self,
+        dns_private_zones: Input[dict[str, network.PrivateZone]],
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
         dns_virtual_network: Input[network.VirtualNetwork],
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
-        shm_subnet_monitoring_prefix: Input[str],
-        shm_virtual_network_name: Input[str],
         shm_zone_name: Input[str],
         sre_index: Input[int],
         sre_name: Input[str],
@@ -64,6 +62,7 @@ class SRENetworkingProps:
         self.subnet_identity_containers_iprange = subnet_ranges.apply(
             lambda s: s.identity_containers
         )
+        self.subnet_monitoring_iprange = subnet_ranges.apply(lambda s: s.monitoring)
         self.subnet_user_services_containers_iprange = subnet_ranges.apply(
             lambda s: s.user_services_containers
         )
@@ -78,6 +77,7 @@ class SRENetworkingProps:
         )
         self.subnet_workspaces_iprange = subnet_ranges.apply(lambda s: s.workspaces)
         # Other variables
+        self.dns_private_zones = dns_private_zones
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_virtual_network_id = Output.from_input(dns_virtual_network).apply(
             get_id_from_vnet
@@ -90,8 +90,6 @@ class SRENetworkingProps:
         self.user_public_ip_ranges = user_public_ip_ranges
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
-        self.shm_subnet_monitoring_prefix = shm_subnet_monitoring_prefix
-        self.shm_virtual_network_name = shm_virtual_network_name
         self.shm_zone_name = shm_zone_name
         self.sre_name = sre_name
 
@@ -161,6 +159,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_identity_containers_prefix = (
             props.subnet_identity_containers_iprange.apply(str)
         )
+        subnet_monitoring_prefix = props.subnet_monitoring_iprange.apply(str)
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(str)
         )
@@ -186,7 +185,7 @@ class SRENetworkingComponent(ComponentResource):
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound gateway management service traffic.",
                     destination_address_prefix="*",
-                    destination_port_range="65200-65535",
+                    destination_port_ranges=["65200-65535"],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowGatewayManagerServiceInbound",
                     priority=NetworkingPriorities.AZURE_GATEWAY_MANAGER,
@@ -847,6 +846,89 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
+        nsg_monitoring = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_monitoring",
+            network_security_group_name=f"{stack_name}-nsg-monitoring",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from own subnet.",
+                    destination_address_prefix=subnet_monitoring_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowMonitoringToolsInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_SELF,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_monitoring_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from workspaces.",
+                    destination_address_prefix=subnet_monitoring_prefix,
+                    destination_port_ranges=[Ports.HTTPS],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.TCP,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to own subnet.",
+                    destination_address_prefix=subnet_monitoring_prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowMonitoringToolsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_SELF,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_monitoring_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to workspaces.",
+                    destination_address_prefix=subnet_workspaces_prefix,
+                    destination_port_ranges=[Ports.AZURE_MONITORING],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowWorkspacesOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_monitoring_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
         nsg_user_services_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers",
             network_security_group_name=f"{stack_name}-nsg-user-services-containers",
@@ -1199,6 +1281,18 @@ class SRENetworkingComponent(ComponentResource):
                 # Inbound
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from monitoring tools.",
+                    destination_address_prefix=subnet_workspaces_prefix,
+                    destination_port_ranges=[Ports.AZURE_MONITORING],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowMonitoringToolsInbound",
+                    priority=NetworkingPriorities.AZURE_MONITORING_SOURCES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_monitoring_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from Guacamole remote desktop gateway.",
                     destination_address_prefix=subnet_workspaces_prefix,
                     destination_port_ranges=[Ports.SSH, Ports.RDP],
@@ -1248,18 +1342,6 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
-                    description="Allow outbound connections to SHM monitoring tools.",
-                    destination_address_prefix=str(props.shm_subnet_monitoring_prefix),
-                    destination_port_ranges=[Ports.HTTPS],
-                    direction=network.SecurityRuleDirection.OUTBOUND,
-                    name="AllowMonitoringToolsOutbound",
-                    priority=NetworkingPriorities.INTERNAL_SHM_MONITORING_TOOLS,
-                    protocol=network.SecurityRuleProtocol.TCP,
-                    source_address_prefix=subnet_workspaces_prefix,
-                    source_port_range="*",
-                ),
-                network.SecurityRuleArgs(
-                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to DNS servers.",
                     destination_address_prefix=dns_servers_prefix,
                     destination_port_ranges=[Ports.DNS],
@@ -1279,6 +1361,18 @@ class SRENetworkingComponent(ComponentResource):
                     name="AllowDataPrivateEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_PRIVATE,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=subnet_workspaces_prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to monitoring tools.",
+                    destination_address_prefix=subnet_monitoring_prefix,
+                    destination_port_ranges=[Ports.HTTPS],
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowMonitoringToolsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_MONITORING_TOOLS,
+                    protocol=network.SecurityRuleProtocol.TCP,
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
@@ -1370,6 +1464,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
         subnet_identity_containers_name = "IdentityContainersSubnet"
+        subnet_monitoring_name = "MonitoringSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
         subnet_user_services_containers_support_name = (
             "UserServicesContainersSupportSubnet"
@@ -1497,6 +1592,15 @@ class SRENetworkingComponent(ComponentResource):
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
+                # Monitoring
+                network.SubnetArgs(
+                    address_prefix=subnet_monitoring_prefix,
+                    name=subnet_monitoring_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_monitoring.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),
                 # User services containers
                 network.SubnetArgs(
                     address_prefix=subnet_user_services_containers_prefix,
@@ -1566,42 +1670,6 @@ class SRENetworkingComponent(ComponentResource):
                 ),  # allow peering to SHM virtual network
             ),
             tags=child_tags,
-        )
-
-        # Peer the SRE virtual network to the SHM virtual network
-        shm_virtual_network = Output.all(
-            resource_group_name=props.shm_networking_resource_group_name,
-            virtual_network_name=props.shm_virtual_network_name,
-        ).apply(
-            lambda kwargs: network.get_virtual_network(
-                resource_group_name=kwargs["resource_group_name"],
-                virtual_network_name=kwargs["virtual_network_name"],
-            )
-        )
-        network.VirtualNetworkPeering(
-            f"{self._name}_sre_to_shm_peering",
-            remote_virtual_network=network.SubResourceArgs(id=shm_virtual_network.id),
-            resource_group_name=resource_group.name,
-            virtual_network_name=sre_virtual_network.name,
-            virtual_network_peering_name=Output.concat(
-                "peer_sre_", props.sre_name, "_to_shm"
-            ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=sre_virtual_network)
-            ),
-        )
-        network.VirtualNetworkPeering(
-            f"{self._name}_shm_to_sre_peering",
-            allow_gateway_transit=True,
-            remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
-            resource_group_name=props.shm_networking_resource_group_name,
-            virtual_network_name=shm_virtual_network.name,
-            virtual_network_peering_name=Output.concat(
-                "peer_shm_to_sre_", props.sre_name
-            ),
-            opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=sre_virtual_network)
-            ),
         )
 
         # Peer the SRE virtual network to the DNS virtual network
@@ -1699,6 +1767,8 @@ class SRENetworkingComponent(ComponentResource):
             ),
             tags=child_tags,
         )
+
+        # Link SRE private DNS zone to DNS virtual network
         network.VirtualNetworkLink(
             f"{self._name}_private_zone_internal_vnet_link",
             location="Global",
@@ -1714,18 +1784,20 @@ class SRENetworkingComponent(ComponentResource):
             ),
         )
 
-        # Link virtual network to SHM private DNS zones
-        # Note that although the DNS virtual network is already linked to the SHM zones,
+        # Link Azure private DNS zones to virtual network
+        # Note that although the DNS virtual network is already linked to these zones,
         # Azure Container Instances do not have an IP address during deployment and so
         # must use default Azure DNS when setting up file mounts. This means that we
         # need to be able to resolve the "Storage Account" private DNS zones.
-        for dns_zone_name in AzureDnsZoneNames.STORAGE_ACCOUNT:
+        for dns_zone_name, private_dns_zone in props.dns_private_zones.items():
             network.VirtualNetworkLink(
-                f"{self._name}_private_zone_{dns_zone_name}_vnet_link",
+                replace_separators(
+                    f"{self._name}_private_zone_{dns_zone_name}_vnet_link", "_"
+                ),
                 location="Global",
-                private_zone_name=f"privatelink.{dns_zone_name}",
+                private_zone_name=private_dns_zone.name,
                 registration_enabled=False,
-                resource_group_name=props.shm_networking_resource_group_name,
+                resource_group_name=props.dns_resource_group_name,
                 virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
                 virtual_network_link_name=Output.concat(
                     "link-to-", sre_virtual_network.name
@@ -1741,7 +1813,6 @@ class SRENetworkingComponent(ComponentResource):
         self.route_table_name = route_table.name
         self.shm_ns_record = shm_ns_record
         self.sre_fqdn = sre_dns_zone.name
-        self.sre_private_dns_zone_id = sre_private_dns_zone.id
         self.sre_private_dns_zone = sre_private_dns_zone
         self.subnet_application_gateway = network.get_subnet_output(
             subnet_name=subnet_application_gateway_name,
@@ -1780,6 +1851,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_identity_containers = network.get_subnet_output(
             subnet_name=subnet_identity_containers_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_monitoring = network.get_subnet_output(
+            subnet_name=subnet_monitoring_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

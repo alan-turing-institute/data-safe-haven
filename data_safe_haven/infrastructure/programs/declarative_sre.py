@@ -4,10 +4,6 @@ import pulumi
 
 from data_safe_haven.config import Config
 from data_safe_haven.context import Context
-from data_safe_haven.infrastructure.programs.sre.maintenance import (
-    SREMaintenanceComponent,
-    SREMaintenanceProps,
-)
 
 from .sre.application_gateway import (
     SREApplicationGatewayComponent,
@@ -33,6 +29,10 @@ from .sre.firewall import (
 from .sre.identity import (
     SREIdentityComponent,
     SREIdentityProps,
+)
+from .sre.monitoring import (
+    SREMonitoringComponent,
+    SREMonitoringProps,
 )
 from .sre.networking import (
     SRENetworkingComponent,
@@ -143,6 +143,7 @@ class DeclarativeSRE:
             "sre_networking",
             self.stack_name,
             SRENetworkingProps(
+                dns_private_zones=dns.private_zones,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 dns_virtual_network=dns.virtual_network,
@@ -150,12 +151,6 @@ class DeclarativeSRE:
                 shm_fqdn=self.cfg.shm.fqdn,
                 shm_networking_resource_group_name=self.pulumi_opts.require(
                     "shm-networking-resource_group_name"
-                ),
-                shm_subnet_monitoring_prefix=self.pulumi_opts.require(
-                    "shm-networking-subnet_subnet_monitoring_prefix",
-                ),
-                shm_virtual_network_name=self.pulumi_opts.require(
-                    "shm-networking-virtual_network_name"
                 ),
                 shm_zone_name=self.cfg.shm.fqdn,
                 sre_index=self.cfg.sre(self.sre_name).index,
@@ -197,11 +192,11 @@ class DeclarativeSRE:
                 data_provider_ip_addresses=self.cfg.sre(
                     self.sre_name
                 ).data_provider_ip_addresses,
+                dns_private_zones=dns.private_zones,
                 dns_record=networking.shm_ns_record,
                 dns_server_admin_password=dns.password_admin,
                 location=self.context.location,
                 networking_resource_group=networking.resource_group,
-                pulumi_opts=self.pulumi_opts,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_data_configuration=networking.subnet_data_configuration,
                 subnet_data_private=networking.subnet_data_private,
@@ -317,7 +312,6 @@ class DeclarativeSRE:
                 nexus_admin_password=data.password_nexus_admin,
                 software_packages=self.cfg.sre(self.sre_name).software_packages,
                 sre_fqdn=networking.sre_fqdn,
-                sre_private_dns_zone_id=networking.sre_private_dns_zone_id,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 storage_account_resource_group_name=data.resource_group_name,
@@ -329,13 +323,14 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
-        # Deploy maintenance configuration
-        maintenance = SREMaintenanceComponent(
-            "sre_maintenance",
+        # Deploy monitoring
+        monitoring = SREMonitoringComponent(
+            "sre_monitoring",
             self.stack_name,
-            SREMaintenanceProps(
+            SREMonitoringProps(
+                dns_private_zones=dns.private_zones,
                 location=self.context.location,
-                resource_group_name=data.resource_group_name,
+                subnet=networking.subnet_monitoring,
                 timezone=self.cfg.shm.timezone,
             ),
             tags=self.tags,
@@ -348,6 +343,8 @@ class DeclarativeSRE:
             SREWorkspacesProps(
                 admin_password=data.password_workspace_admin,
                 apt_proxy_server_hostname=apt_proxy_server.hostname,
+                data_collection_rule_id=monitoring.data_collection_rule_vms.id,
+                data_collection_endpoint_id=monitoring.data_collection_endpoint.id,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
                 ldap_server_hostname=identity.hostname,
@@ -355,13 +352,7 @@ class DeclarativeSRE:
                 ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.context.location,
-                log_analytics_workspace_id=self.pulumi_opts.require(
-                    "shm-monitoring-log_analytics_workspace_id"
-                ),
-                log_analytics_workspace_key=self.pulumi_opts.require(
-                    "shm-monitoring-log_analytics_workspace_key"
-                ),
-                maintenance_configuration_id=maintenance.configuration_id,
+                maintenance_configuration_id=monitoring.maintenance_configuration.id,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.sre_name,
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,

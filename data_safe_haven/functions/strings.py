@@ -87,7 +87,7 @@ def password(length: int) -> str:
 
 
 def replace_separators(input_string: str, separator: str = "") -> str:
-    """Return a string using underscores as a separator"""
+    """Return a string replacing all instances of [ _-.] with the desired separator."""
     return (
         input_string.replace(" ", separator)
         .replace("_", separator)

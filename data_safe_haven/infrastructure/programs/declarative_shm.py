@@ -5,7 +5,6 @@ import pulumi
 from data_safe_haven.config import Config
 from data_safe_haven.context import Context
 
-from .shm.monitoring import SHMMonitoringComponent, SHMMonitoringProps
 from .shm.networking import SHMNetworkingComponent, SHMNetworkingProps
 
 
@@ -39,20 +38,5 @@ class DeclarativeSHM:
             tags=self.tags,
         )
 
-        # Deploy automated monitoring
-        monitoring = SHMMonitoringComponent(
-            "shm_monitoring",
-            self.stack_name,
-            SHMMonitoringProps(
-                dns_resource_group_name=networking.resource_group_name,
-                location=self.context.location,
-                private_dns_zone_base_id=networking.private_dns_zone_base_id,
-                subnet_monitoring=networking.subnet_monitoring,
-                timezone=self.cfg.shm.timezone,
-            ),
-            tags=self.tags,
-        )
-
         # Export values for later use
-        pulumi.export("monitoring", monitoring.exports)
         pulumi.export("networking", networking.exports)
