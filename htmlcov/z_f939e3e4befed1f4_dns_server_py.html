@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for data_safe_haven/infrastructure/programs/sre/dns_server.py: 33%</title>
+    <title>Coverage for data_safe_haven/infrastructure/programs/sre/dns_server.py: 32%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
     <link rel="stylesheet" href="style_cb_8e611ae1.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>data_safe_haven/infrastructure/programs/sre/dns_server.py</b>:
-            <span class="pc_cov">33%</span>
+            <span class="pc_cov">32%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -54,9 +54,9 @@
             </div>
         </aside>
         <h2>
-            <span class="text">39 statements &nbsp;</span>
+            <span class="text">40 statements &nbsp;</span>
             <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">13<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">26<span class="text"> missing</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">27<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_f939e3e4befed1f4_firewall_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.3">coverage.py v7.5.3</a>,
-            created at 2024-06-06 13:15 +0000
+            created at 2024-06-07 10:21 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -88,7 +88,7 @@
     <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi</span> <span class="key">import</span> <span class="nam">ComponentResource</span><span class="op">,</span> <span class="nam">Input</span><span class="op">,</span> <span class="nam">Output</span><span class="op">,</span> <span class="nam">ResourceOptions</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">pulumi_azure_native</span> <span class="key">import</span> <span class="nam">containerinstance</span><span class="op">,</span> <span class="nam">network</span><span class="op">,</span> <span class="nam">resources</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">functions</span> <span class="key">import</span> <span class="nam">b64encode</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">functions</span> <span class="key">import</span> <span class="nam">b64encode</span><span class="op">,</span> <span class="nam">replace_separators</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">infrastructure</span><span class="op">.</span><span class="nam">common</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t">    <span class="nam">SREDnsIpRanges</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t">    <span class="nam">SREIpRanges</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -365,29 +365,44 @@
     <p class="pln"><span class="n"><a id="t283" href="#t283">283</a></span><span class="t">            <span class="nam">tags</span><span class="op">=</span><span class="nam">child_tags</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t284" href="#t284">284</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t285" href="#t285">285</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t286" href="#t286">286</a></span><span class="t">        <span class="com"># Link virtual network to SHM private DNS zones</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t287" href="#t287">287</a></span><span class="t">        <span class="key">for</span> <span class="nam">dns_zone_name</span> <span class="key">in</span> <span class="nam">AzureDnsZoneNames</span><span class="op">.</span><span class="nam">ALL</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t288" href="#t288">288</a></span><span class="t">            <span class="nam">network</span><span class="op">.</span><span class="nam">VirtualNetworkLink</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t289" href="#t289">289</a></span><span class="t">                <span class="fst">f"</span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">_name</span><span class="op">}</span><span class="fst">_private_zone_</span><span class="op">{</span><span class="nam">dns_zone_name</span><span class="op">}</span><span class="fst">_vnet_dns_link</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t286" href="#t286">286</a></span><span class="t">        <span class="com"># Create a private DNS zone for each Azure DNS zone name</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t287" href="#t287">287</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">private_zones</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t288" href="#t288">288</a></span><span class="t">            <span class="nam">dns_zone_name</span><span class="op">:</span> <span class="nam">network</span><span class="op">.</span><span class="nam">PrivateZone</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t289" href="#t289">289</a></span><span class="t">                <span class="nam">replace_separators</span><span class="op">(</span><span class="fst">f"</span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">_name</span><span class="op">}</span><span class="fst">_private_zone_</span><span class="op">{</span><span class="nam">dns_zone_name</span><span class="op">}</span><span class="fst">"</span><span class="op">,</span> <span class="str">"_"</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t290" href="#t290">290</a></span><span class="t">                <span class="nam">location</span><span class="op">=</span><span class="str">"Global"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t291" href="#t291">291</a></span><span class="t">                <span class="nam">private_zone_name</span><span class="op">=</span><span class="fst">f"</span><span class="fst">privatelink.</span><span class="op">{</span><span class="nam">dns_zone_name</span><span class="op">}</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t292" href="#t292">292</a></span><span class="t">                <span class="nam">registration_enabled</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t293" href="#t293">293</a></span><span class="t">                <span class="nam">resource_group_name</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">shm_networking_resource_group_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t294" href="#t294">294</a></span><span class="t">                <span class="nam">virtual_network</span><span class="op">=</span><span class="nam">network</span><span class="op">.</span><span class="nam">SubResourceArgs</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">virtual_network</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t295" href="#t295">295</a></span><span class="t">                <span class="nam">virtual_network_link_name</span><span class="op">=</span><span class="nam">Output</span><span class="op">.</span><span class="nam">concat</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t296" href="#t296">296</a></span><span class="t">                    <span class="str">"link-to-"</span><span class="op">,</span> <span class="nam">virtual_network</span><span class="op">.</span><span class="nam">name</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t297" href="#t297">297</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t298" href="#t298">298</a></span><span class="t">                <span class="nam">opts</span><span class="op">=</span><span class="nam">ResourceOptions</span><span class="op">.</span><span class="nam">merge</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t299" href="#t299">299</a></span><span class="t">                    <span class="nam">child_opts</span><span class="op">,</span> <span class="nam">ResourceOptions</span><span class="op">(</span><span class="nam">parent</span><span class="op">=</span><span class="nam">virtual_network</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t300" href="#t300">300</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t301" href="#t301">301</a></span><span class="t">                <span class="nam">tags</span><span class="op">=</span><span class="nam">child_tags</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t302" href="#t302">302</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t303" href="#t303">303</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t304" href="#t304">304</a></span><span class="t">        <span class="com"># Register outputs</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t305" href="#t305">305</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">ip_address</span> <span class="op">=</span> <span class="nam">get_ip_address_from_container_group</span><span class="op">(</span><span class="nam">container_group</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t306" href="#t306">306</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">password_admin</span> <span class="op">=</span> <span class="nam">password_admin</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t307" href="#t307">307</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">resource_group</span> <span class="op">=</span> <span class="nam">resource_group</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t308" href="#t308">308</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">virtual_network</span> <span class="op">=</span> <span class="nam">virtual_network</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t292" href="#t292">292</a></span><span class="t">                <span class="nam">resource_group_name</span><span class="op">=</span><span class="nam">resource_group</span><span class="op">.</span><span class="nam">name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t293" href="#t293">293</a></span><span class="t">                <span class="nam">opts</span><span class="op">=</span><span class="nam">child_opts</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t294" href="#t294">294</a></span><span class="t">                <span class="nam">tags</span><span class="op">=</span><span class="nam">child_tags</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t295" href="#t295">295</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t296" href="#t296">296</a></span><span class="t">            <span class="key">for</span> <span class="nam">dns_zone_name</span> <span class="key">in</span> <span class="nam">AzureDnsZoneNames</span><span class="op">.</span><span class="nam">ALL</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t297" href="#t297">297</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t298" href="#t298">298</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t299" href="#t299">299</a></span><span class="t">        <span class="com"># Link Azure private DNS zones to virtual network</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t300" href="#t300">300</a></span><span class="t">        <span class="key">for</span> <span class="nam">dns_zone_name</span><span class="op">,</span> <span class="nam">private_dns_zone</span> <span class="key">in</span> <span class="nam">self</span><span class="op">.</span><span class="nam">private_zones</span><span class="op">.</span><span class="nam">items</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t301" href="#t301">301</a></span><span class="t">            <span class="nam">network</span><span class="op">.</span><span class="nam">VirtualNetworkLink</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t302" href="#t302">302</a></span><span class="t">                <span class="nam">replace_separators</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t303" href="#t303">303</a></span><span class="t">                    <span class="fst">f"</span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">_name</span><span class="op">}</span><span class="fst">_private_zone_</span><span class="op">{</span><span class="nam">dns_zone_name</span><span class="op">}</span><span class="fst">_vnet_dns_link</span><span class="fst">"</span><span class="op">,</span> <span class="str">"_"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t304" href="#t304">304</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t305" href="#t305">305</a></span><span class="t">                <span class="nam">location</span><span class="op">=</span><span class="str">"Global"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t306" href="#t306">306</a></span><span class="t">                <span class="nam">private_zone_name</span><span class="op">=</span><span class="nam">private_dns_zone</span><span class="op">.</span><span class="nam">name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t307" href="#t307">307</a></span><span class="t">                <span class="nam">registration_enabled</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t308" href="#t308">308</a></span><span class="t">                <span class="nam">resource_group_name</span><span class="op">=</span><span class="nam">resource_group</span><span class="op">.</span><span class="nam">name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t309" href="#t309">309</a></span><span class="t">                <span class="nam">virtual_network</span><span class="op">=</span><span class="nam">network</span><span class="op">.</span><span class="nam">SubResourceArgs</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">virtual_network</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t310" href="#t310">310</a></span><span class="t">                <span class="nam">virtual_network_link_name</span><span class="op">=</span><span class="nam">Output</span><span class="op">.</span><span class="nam">concat</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t311" href="#t311">311</a></span><span class="t">                    <span class="str">"link-to-"</span><span class="op">,</span> <span class="nam">virtual_network</span><span class="op">.</span><span class="nam">name</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t312" href="#t312">312</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t313" href="#t313">313</a></span><span class="t">                <span class="nam">opts</span><span class="op">=</span><span class="nam">ResourceOptions</span><span class="op">.</span><span class="nam">merge</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t314" href="#t314">314</a></span><span class="t">                    <span class="nam">child_opts</span><span class="op">,</span> <span class="nam">ResourceOptions</span><span class="op">(</span><span class="nam">parent</span><span class="op">=</span><span class="nam">virtual_network</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t315" href="#t315">315</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t316" href="#t316">316</a></span><span class="t">                <span class="nam">tags</span><span class="op">=</span><span class="nam">child_tags</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t317" href="#t317">317</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t318" href="#t318">318</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t319" href="#t319">319</a></span><span class="t">        <span class="com"># Register outputs</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t320" href="#t320">320</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">ip_address</span> <span class="op">=</span> <span class="nam">get_ip_address_from_container_group</span><span class="op">(</span><span class="nam">container_group</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t321" href="#t321">321</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">password_admin</span> <span class="op">=</span> <span class="nam">password_admin</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t322" href="#t322">322</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">resource_group</span> <span class="op">=</span> <span class="nam">resource_group</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t323" href="#t323">323</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">virtual_network</span> <span class="op">=</span> <span class="nam">virtual_network</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -397,7 +412,7 @@
             <a class="nav" href="z_f939e3e4befed1f4_firewall_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.3">coverage.py v7.5.3</a>,
-            created at 2024-06-06 13:15 +0000
+            created at 2024-06-07 10:21 +0000
         </p>
     </div>
 </footer>
