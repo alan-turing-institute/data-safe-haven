@@ -28,8 +28,15 @@ from .programs import DeclarativeSHM, DeclarativeSRE
 class PulumiAccount:
     """Manage and interact with Pulumi backend account"""
 
-    def __init__(self, context: Context):
-        self.context = context
+    def __init__(
+        self,
+        resource_group_name: str,
+        storage_account_name: str,
+        subscription_name: str,
+    ):
+        self.resource_group_name = resource_group_name
+        self.storage_account_name = storage_account_name
+        self.subscription_name = subscription_name
         self.env_: dict[str, Any] | None = None
         path = which("pulumi")
         if path is None:
@@ -44,14 +51,14 @@ class PulumiAccount:
     def env(self) -> dict[str, Any]:
         """Get necessary Pulumi environment variables"""
         if not self.env_:
-            azure_api = AzureApi(self.context.subscription_name)
-            backend_storage_account_keys = azure_api.get_storage_account_keys(
-                self.context.resource_group_name,
-                self.context.storage_account_name,
+            azure_api = AzureApi(self.subscription_name)
+            storage_account_keys = azure_api.get_storage_account_keys(
+                self.resource_group_name,
+                self.storage_account_name,
             )
             self.env_ = {
-                "AZURE_STORAGE_ACCOUNT": self.context.storage_account_name,
-                "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
+                "AZURE_STORAGE_ACCOUNT": self.storage_account_name,
+                "AZURE_STORAGE_KEY": str(storage_account_keys[0].value),
                 "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
             }
         return self.env_
@@ -82,7 +89,11 @@ class ProjectManager:
         self.program = program
         self.create_project = create_project
 
-        self.account = PulumiAccount(context)
+        self.account = PulumiAccount(
+            resource_group_name=context.resource_group_name,
+            storage_account_name=context.storage_account_name,
+            subscription_name=context.subscription_name,
+        )
         self.logger = LoggingSingleton()
         self._stack: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
