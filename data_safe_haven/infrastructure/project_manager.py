@@ -1,11 +1,10 @@
-"""Deploy with Pulumi"""
+"""Manage Pulumi projects"""
 
 import logging
 import time
 from collections.abc import MutableMapping
 from contextlib import suppress
 from importlib import metadata
-from shutil import which
 from typing import Any
 
 from pulumi import automation
@@ -18,50 +17,11 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenPulumiError,
 )
-from data_safe_haven.external import AzureApi, AzureCliSingleton
+from data_safe_haven.external import AzureApi, PulumiAccount
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.utility import LoggingSingleton
 
 from .programs import DeclarativeSHM, DeclarativeSRE
-
-
-class PulumiAccount:
-    """Manage and interact with Pulumi backend account"""
-
-    def __init__(
-        self,
-        resource_group_name: str,
-        storage_account_name: str,
-        subscription_name: str,
-    ):
-        self.resource_group_name = resource_group_name
-        self.storage_account_name = storage_account_name
-        self.subscription_name = subscription_name
-        self.env_: dict[str, Any] | None = None
-        path = which("pulumi")
-        if path is None:
-            msg = "Unable to find Pulumi CLI executable in your path.\nPlease ensure that Pulumi is installed"
-            raise DataSafeHavenPulumiError(msg)
-
-        # Ensure Azure CLI account is correct
-        # This will be needed to populate env
-        AzureCliSingleton().confirm()
-
-    @property
-    def env(self) -> dict[str, Any]:
-        """Get necessary Pulumi environment variables"""
-        if not self.env_:
-            azure_api = AzureApi(self.subscription_name)
-            storage_account_keys = azure_api.get_storage_account_keys(
-                self.resource_group_name,
-                self.storage_account_name,
-            )
-            self.env_ = {
-                "AZURE_STORAGE_ACCOUNT": self.storage_account_name,
-                "AZURE_STORAGE_KEY": str(storage_account_keys[0].value),
-                "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
-            }
-        return self.env_
 
 
 class ProjectManager:

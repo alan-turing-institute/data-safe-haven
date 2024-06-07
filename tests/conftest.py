@@ -18,13 +18,9 @@ from data_safe_haven.config.config import (
     ConfigSubsectionRemoteDesktopOpts,
 )
 from data_safe_haven.context import Context
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureApi, AzureCliSingleton, PulumiAccount
 from data_safe_haven.infrastructure import SHMProjectManager
-from data_safe_haven.infrastructure.project_manager import (
-    AzureCliSingleton,
-    ProjectManager,
-    PulumiAccount,
-)
+from data_safe_haven.infrastructure.project_manager import ProjectManager
 
 
 @fixture(autouse=True, scope="session")
