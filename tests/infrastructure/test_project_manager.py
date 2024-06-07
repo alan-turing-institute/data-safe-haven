@@ -34,7 +34,6 @@ class TestSHMProjectManager:
         assert isinstance(shm, SHMProjectManager)
         assert isinstance(shm, ProjectManager)
         assert shm.context == context_no_secrets
-        assert shm.cfg == config_sres
         assert shm.pulumi_project == pulumi_project
 
     def test_new_project(
@@ -51,7 +50,6 @@ class TestSHMProjectManager:
         assert isinstance(shm, SHMProjectManager)
         assert isinstance(shm, ProjectManager)
         assert shm.context == context_no_secrets
-        assert shm.cfg == config_sres
         # Ensure a project was created
         assert isinstance(shm.pulumi_project, DSHPulumiProject)
         assert "acmedeployment" in pulumi_config_empty.project_names

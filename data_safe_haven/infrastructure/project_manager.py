@@ -28,9 +28,8 @@ from .programs import DeclarativeSHM, DeclarativeSRE
 class PulumiAccount:
     """Manage and interact with Pulumi backend account"""
 
-    def __init__(self, context: Context, config: Config):
+    def __init__(self, context: Context):
         self.context = context
-        self.cfg = config
         self.env_: dict[str, Any] | None = None
         path = which("pulumi")
         if path is None:
@@ -71,7 +70,6 @@ class ProjectManager:
     def __init__(
         self,
         context: Context,
-        config: Config,
         pulumi_config: DSHPulumiConfig,
         pulumi_project_name: str,
         program: DeclarativeSHM | DeclarativeSRE,
@@ -79,13 +77,12 @@ class ProjectManager:
         create_project: bool,
     ) -> None:
         self.context = context
-        self.cfg = config
         self.pulumi_config = pulumi_config
         self.pulumi_project_name = pulumi_project_name
         self.program = program
         self.create_project = create_project
 
-        self.account = PulumiAccount(context, config)
+        self.account = PulumiAccount(context)
         self.logger = LoggingSingleton()
         self._stack: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
@@ -433,7 +430,6 @@ class SHMProjectManager(ProjectManager):
         """Constructor"""
         super().__init__(
             context,
-            config,
             pulumi_config,
             context.shm_name,
             DeclarativeSHM(context, config, context.shm_name),
@@ -458,7 +454,6 @@ class SREProjectManager(ProjectManager):
         token = graph_api_token if graph_api_token else ""
         super().__init__(
             context,
-            config,
             pulumi_config,
             sre_name,
             DeclarativeSRE(context, config, context.shm_name, sre_name, token),
