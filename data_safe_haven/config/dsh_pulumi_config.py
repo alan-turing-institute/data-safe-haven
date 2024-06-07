@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from data_safe_haven.serialisers import AzureSerialisableModel
 
-from .pulumi_project import DSHPulumiProject
+from .dsh_pulumi_project import DSHPulumiProject
 
 
 class DSHPulumiConfig(AzureSerialisableModel):
