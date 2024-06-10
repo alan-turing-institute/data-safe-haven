@@ -45,7 +45,7 @@ mdurl==0.1.2
     # via markdown-it-py
 myst-parser==3.0.1
     # via -r -
-packaging==24.0
+packaging==24.1
     # via
     #   pydata-sphinx-theme
     #   sphinx
@@ -81,7 +81,7 @@ sphinxcontrib-qthelp==1.0.7
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.10
     # via sphinx
-typing-extensions==4.12.1
+typing-extensions==4.12.2
     # via
     #   emoji
     #   pydata-sphinx-theme
