@@ -38,7 +38,7 @@ azure-core==1.30.2
     #   azure-storage-file-share
     #   data-safe-haven (pyproject.toml)
     #   msrest
-azure-identity==1.16.0
+azure-identity==1.16.1
     # via data-safe-haven (pyproject.toml)
 azure-keyvault-certificates==4.8.0
     # via data-safe-haven (pyproject.toml)
