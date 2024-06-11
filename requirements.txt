@@ -26,7 +26,7 @@ azure-common==1.1.28
     #   azure-mgmt-rdbms
     #   azure-mgmt-resource
     #   azure-mgmt-storage
-azure-core==1.30.1
+azure-core==1.30.2
     # via
     #   azure-identity
     #   azure-keyvault-certificates
@@ -98,7 +98,7 @@ chevron==0.14.0
     # via data-safe-haven (pyproject.toml)
 click==8.1.7
     # via typer
-cryptography==42.0.7
+cryptography==42.0.8
     # via
     #   acme
     #   azure-identity
@@ -158,7 +158,7 @@ msrest==0.7.1
     #   azure-mgmt-rdbms
 oauthlib==3.2.2
     # via requests-oauthlib
-packaging==24.0
+packaging==24.1
     # via msal-extensions
 parver==0.5
     # via
@@ -170,20 +170,20 @@ protobuf==4.25.3
     # via pulumi
 psycopg==3.1.19
     # via data-safe-haven (pyproject.toml)
-pulumi==3.118.0
+pulumi==3.119.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.43.1
+pulumi-azure-native==2.44.1
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.2
     # via data-safe-haven (pyproject.toml)
 pycparser==2.22
     # via cffi
-pydantic==2.7.2
+pydantic==2.7.3
     # via data-safe-haven (pyproject.toml)
-pydantic-core==2.18.3
+pydantic-core==2.18.4
     # via pydantic
 pygments==2.18.0
     # via rich
@@ -235,7 +235,7 @@ six==1.16.0
     #   pulumi
 typer==0.12.3
     # via data-safe-haven (pyproject.toml)
-typing-extensions==4.12.1
+typing-extensions==4.12.2
     # via
     #   azure-core
     #   azure-keyvault-certificates
