@@ -72,7 +72,6 @@ class TestConfigSectionSRE:
         sre_config = ConfigSectionSRE(
             databases=[DatabaseSystem.POSTGRESQL],
             data_provider_ip_addresses=["0.0.0.0"],  # noqa: S104
-            index=1,
             remote_desktop=remote_desktop_config,
             workspace_skus=["Standard_D2s_v4"],
             research_user_ip_addresses=["0.0.0.0"],  # noqa: S104
@@ -81,7 +80,7 @@ class TestConfigSectionSRE:
         assert sre_config.data_provider_ip_addresses[0] == "0.0.0.0/32"
 
     def test_constructor_defaults(self, remote_desktop_config):
-        sre_config = ConfigSectionSRE(index=1)
+        sre_config = ConfigSectionSRE()
         assert sre_config.databases == []
         assert sre_config.data_provider_ip_addresses == []
         assert sre_config.remote_desktop == remote_desktop_config
@@ -92,12 +91,11 @@ class TestConfigSectionSRE:
     def test_all_databases_must_be_unique(self):
         with pytest.raises(ValueError, match="All items must be unique."):
             ConfigSectionSRE(
-                index=1,
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
             )
 
     def test_update(self):
-        sre_config = ConfigSectionSRE(index=1)
+        sre_config = ConfigSectionSRE()
         assert sre_config.databases == []
         assert sre_config.data_provider_ip_addresses == []
         assert sre_config.workspace_skus == []
@@ -125,19 +123,6 @@ class TestConfig:
         )
         assert not config.sres
 
-    def test_all_sre_indices_must_be_unique(self, azure_config, shm_config):
-        with pytest.raises(ValueError, match="All items must be unique."):
-            sre_config_1 = ConfigSectionSRE(index=1)
-            sre_config_2 = ConfigSectionSRE(index=1)
-            Config(
-                azure=azure_config,
-                shm=shm_config,
-                sres={
-                    "sre1": sre_config_1,
-                    "sre2": sre_config_2,
-                },
-            )
-
     @pytest.mark.parametrize("require_sres,expected", [(False, True), (True, False)])
     def test_is_complete_no_sres(self, config_no_sres, require_sres, expected):
         assert config_no_sres.is_complete(require_sres=require_sres) is expected
@@ -148,8 +133,6 @@ class TestConfig:
 
     def test_sre(self, config_sres):
         sre1, sre2 = config_sres.sre("sre1"), config_sres.sre("sre2")
-        assert sre1.index == 1
-        assert sre2.index == 2
         assert sre1 != sre2
 
     def test_sre_invalid(self, config_sres):

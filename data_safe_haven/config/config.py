@@ -7,10 +7,8 @@ from typing import ClassVar
 from pydantic import (
     BaseModel,
     Field,
-    field_validator,
 )
 
-from data_safe_haven import validators
 from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.serialisers import AzureSerialisableModel
 from data_safe_haven.types import (
@@ -124,7 +122,6 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     data_provider_ip_addresses: list[IpAddress] = Field(
         ..., default_factory=list[IpAddress]
     )
-    index: int = Field(..., ge=1, le=256)
     remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
         ..., default_factory=ConfigSubsectionRemoteDesktopOpts
     )
@@ -194,15 +191,6 @@ class Config(AzureSerialisableModel):
         ..., default_factory=dict[str, ConfigSectionSRE]
     )
 
-    @field_validator("sres")
-    @classmethod
-    def all_sre_indices_must_be_unique(
-        cls, v: dict[str, ConfigSectionSRE]
-    ) -> dict[str, ConfigSectionSRE]:
-        indices = [s.index for s in v.values()]
-        validators.unique_list(indices)
-        return v
-
     @property
     def sre_names(self) -> list[str]:
         """Names of all SREs"""
@@ -247,7 +235,6 @@ class Config(AzureSerialisableModel):
                 "example": ConfigSectionSRE.model_construct(
                     databases=["List of database systems to enable"],
                     data_provider_ip_addresses=["Data provider IP addresses"],
-                    index="Unique index integer for this SRE",
                     remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
                         allow_copy="Whether to allow copying text out of the environment",
                         allow_paste="Whether to allow pasting text into the environment",

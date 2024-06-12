@@ -30,6 +30,10 @@ class AzureIPv4Range(ipaddress.IPv4Network):
         network = ipaddress.IPv4Network(ip_cidr)
         return cls(network[0], network[-1])
 
+    @property
+    def prefix(self) -> str:
+        return str(self)
+
     def all_ips(self) -> list[ipaddress.IPv4Address]:
         """All IP addresses in the range"""
         return list(self.hosts())

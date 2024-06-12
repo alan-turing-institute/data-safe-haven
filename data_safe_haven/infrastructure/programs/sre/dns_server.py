@@ -30,15 +30,11 @@ class SREDnsServerProps:
         location: Input[str],
         shm_fqdn: Input[str],
         shm_networking_resource_group_name: Input[str],
-        sre_index: Input[int],
     ) -> None:
-        subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
         self.admin_username = "dshadmin"
-        self.ip_range_prefix = str(SREDnsIpRanges().vnet)
         self.location = location
         self.shm_fqdn = shm_fqdn
         self.shm_networking_resource_group_name = shm_networking_resource_group_name
-        self.sre_vnet_prefix = subnet_ranges.apply(lambda r: str(r.vnet))
 
 
 class SREDnsServerComponent(ComponentResource):
@@ -110,13 +106,13 @@ class SREDnsServerComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from attached.",
-                    destination_address_prefix=props.ip_range_prefix,
+                    destination_address_prefix=SREDnsIpRanges.vnet.prefix,
                     destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowSREInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_ANY,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=props.sre_vnet_prefix,
+                    source_address_prefix=SREIpRanges.vnet.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -141,7 +137,7 @@ class SREDnsServerComponent(ComponentResource):
                     name="AllowDnsInternetOutbound",
                     priority=NetworkingPriorities.EXTERNAL_INTERNET,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=props.ip_range_prefix,
+                    source_address_prefix=SREDnsIpRanges.vnet.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -166,13 +162,13 @@ class SREDnsServerComponent(ComponentResource):
         virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
-                address_prefixes=[props.ip_range_prefix],
+                address_prefixes=[SREDnsIpRanges.vnet.prefix],
             ),
             resource_group_name=resource_group.name,
             subnets=[  # Note that we define subnets inline to avoid creation order issues
                 # DNS subnet
                 network.SubnetArgs(
-                    address_prefix=props.ip_range_prefix,
+                    address_prefix=SREDnsIpRanges.vnet.prefix,
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
