@@ -53,10 +53,12 @@ class RichStringAdaptor:
 
 console_handler = RichHandler(
     level=logging.INFO,
+    markup=True,
     rich_tracebacks=True,
     show_time=False,
     show_path=False,
     show_level=False,
+    tracebacks_show_locals=True,
 )
 console_handler.setFormatter(logging.Formatter(r"%(message)s"))
 
@@ -159,11 +161,6 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
             return self.debug(remainder)
         else:
             return self.info(message.strip())
-
-    def style(self, message: str) -> str:
-        """Apply logging style to a string"""
-        markup = self.format_msg(message)
-        return RichStringAdaptor(coloured=True).to_string(markup)
 
     def tabulate(
         self, header: list[str] | None = None, rows: list[list[str]] | None = None
