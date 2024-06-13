@@ -96,6 +96,7 @@ application.add_typer(
 
 def main() -> None:
     """Run the application and log any exceptions"""
+    # application()
     try:
         application()
     except DataSafeHavenError as exc:

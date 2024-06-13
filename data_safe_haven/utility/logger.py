@@ -2,32 +2,25 @@
 
 import io
 import logging
-from typing import Any, ClassVar
+from typing import Any
 
 from rich.console import Console
-from rich.highlighter import RegexHighlighter
 from rich.logging import RichHandler
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.text import Text
 
-from data_safe_haven.types import PathType
-
 from .singleton import Singleton
 
 
-class LoggingHandlerPlainFile(logging.FileHandler):
+class PlainFileHandler(logging.FileHandler):
     """
     Logging handler that cleans messages before sending them to a log file.
     """
 
-    def __init__(
-        self, fmt: str, datefmt: str, filename: str, *args: Any, **kwargs: Any
-    ):
+    def __init__(self, *args: Any, **kwargs: Any):
         """Constructor"""
-        kwargs["filename"] = filename
         super().__init__(*args, **kwargs)
-        self.setFormatter(logging.Formatter(self.strip_formatting(fmt), datefmt))
 
     @staticmethod
     def strip_formatting(input_string: str) -> str:
@@ -40,41 +33,6 @@ class LoggingHandlerPlainFile(logging.FileHandler):
         """Emit a record without formatting"""
         record.msg = self.strip_formatting(record.msg)
         super().emit(record)
-
-
-class LoggingHandlerRichConsole(RichHandler):
-    """
-    Logging handler that uses Rich.
-    """
-
-    def __init__(self, fmt: str, datefmt: str, *args: Any, **kwargs: Any):
-        super().__init__(
-            *args,
-            highlighter=LogLevelHighlighter(),
-            markup=True,
-            omit_repeated_times=False,
-            rich_tracebacks=True,
-            show_level=False,
-            show_time=False,
-            tracebacks_show_locals=True,
-            **kwargs,
-        )
-        self.setFormatter(logging.Formatter(fmt, datefmt))
-
-
-class LogLevelHighlighter(RegexHighlighter):
-    """
-    Highlighter that looks for [level-name] and applies default formatting.
-    """
-
-    base_style = "logging.level."
-    highlights: ClassVar[list[str]] = [
-        r"(?P<critical>\[CRITICAL\])",
-        r"(?P<debug>\[   DEBUG\])",
-        r"(?P<error>\[   ERROR\])",
-        r"(?P<info>\[    INFO\])",
-        r"(?P<warning>\[ WARNING\])",
-    ]
 
 
 class RichStringAdaptor:
@@ -93,18 +51,41 @@ class RichStringAdaptor:
         return self.string_io.getvalue()
 
 
+console_handler = RichHandler(
+    level=logging.INFO,
+    rich_tracebacks=True,
+    show_time=False,
+    show_path=False,
+    show_level=False,
+)
+console_handler.setFormatter(logging.Formatter(r"%(message)s"))
+
+file_handler = PlainFileHandler(
+    "test_log",
+    delay=True,
+    encoding="utf8",
+    mode="w",
+    # mode="a",
+)
+file_handler.setFormatter(
+    logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+)
+file_handler.setLevel("NOTSET")
+
+
 class LoggingSingleton(logging.Logger, metaclass=Singleton):
     """
     Logging singleton that can be used by anything needing logging
     """
 
-    date_fmt = r"%Y-%m-%d %H:%M:%S"
-    rich_format = r"[log.time]%(asctime)s[/] [%(levelname)8s] %(message)s"
-
     def __init__(self) -> None:
-        super().__init__(name="data_safe_haven", level=logging.INFO)
-        # Initialise console handler
-        self.addHandler(LoggingHandlerRichConsole(self.rich_format, self.date_fmt))
+        # Construct logger object
+        super().__init__(name="data_safe_haven", level=logging.NOTSET)
+
+        # Add handlers
+        self.addHandler(console_handler)
+        self.addHandler(file_handler)
+
         # Disable unnecessarily verbose external logging
         logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
         logging.getLogger("azure.identity._credentials").setLevel(logging.ERROR)
@@ -178,22 +159,6 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
             return self.debug(remainder)
         else:
             return self.info(message.strip())
-
-    def set_log_file(self, file_path: PathType) -> None:
-        """Set a log file handler"""
-        file_handler = LoggingHandlerPlainFile(
-            self.rich_format, self.date_fmt, str(file_path)
-        )
-        for h in self.handlers:
-            if isinstance(h, LoggingHandlerPlainFile):
-                self.removeHandler(h)
-        self.addHandler(file_handler)
-
-    def set_verbosity(self, verbosity: int) -> None:
-        """Set verbosity"""
-        self.setLevel(
-            max(logging.INFO - 10 * (verbosity if verbosity else 0), logging.NOTSET)
-        )
 
     def style(self, message: str) -> str:
         """Apply logging style to a string"""
