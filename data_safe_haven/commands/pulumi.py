@@ -6,7 +6,7 @@ from typing import Annotated
 import typer
 from rich import print
 
-from data_safe_haven.config import Config, DSHPulumiConfig
+from data_safe_haven.config import Config, DSHPulumiConfig, SHMConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
@@ -42,18 +42,23 @@ def run(
         raise typer.Exit(1)
 
     context = ContextSettings.from_file().assert_context()
-    config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
 
+    # These are needed to avoid linting errors from mypy
+    config: Config | SHMConfig
     project: SHMProjectManager | SREProjectManager
 
     if project_type == ProjectType.SHM:
+        config = SHMConfig.from_remote(context)
         project = SHMProjectManager(
             context=context,
             config=config,
             pulumi_config=pulumi_config,
         )
     elif project_type == ProjectType.SRE:
+        sre_name = sanitise_sre_name(sre_name)
+        config = Config.sre_from_remote(context, sre_name)
+
         graph_api = GraphApi(
             tenant_id=config.shm.entra_tenant_id,
             default_scopes=[
@@ -64,7 +69,6 @@ def run(
             ],
         )
 
-        sre_name = sanitise_sre_name(sre_name)
         project = SREProjectManager(
             context=context,
             config=config,

@@ -41,15 +41,15 @@ def config_file(config_yaml, tmp_path):
 
 
 @fixture
-def config_no_sres(azure_config, shm_config):
+def config_no_sres(azure_config, shm_config_section):
     return Config(
         azure=azure_config,
-        shm=shm_config,
+        shm=shm_config_section,
     )
 
 
 @fixture
-def config_sres(azure_config, shm_config):
+def config_sres(azure_config, shm_config_section):
     sre_config_1 = ConfigSectionSRE()
     sre_config_2 = ConfigSectionSRE(
         remote_desktop=ConfigSubsectionRemoteDesktopOpts(
@@ -58,7 +58,7 @@ def config_sres(azure_config, shm_config):
     )
     return Config(
         azure=azure_config,
-        shm=shm_config,
+        shm=shm_config_section,
         sres={
             "sre1": sre_config_1,
             "sre2": sre_config_2,
@@ -272,13 +272,31 @@ def remote_desktop_config():
 
 
 @fixture
-def shm_config():
+def shm_config_section():
     return ConfigSectionSHM(
         admin_email_address="admin@example.com",
         admin_ip_addresses=["0.0.0.0"],  # noqa: S104
         entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         fqdn="shm.acme.com",
         timezone="UTC",
+    )
+
+
+@fixture
+def shm_config(azure_config, shm_config_section):
+    sre_config_1 = ConfigSectionSRE()
+    sre_config_2 = ConfigSectionSRE(
+        remote_desktop=ConfigSubsectionRemoteDesktopOpts(
+            allow_copy=True, allow_paste=True
+        )
+    )
+    return Config(
+        azure=azure_config,
+        shm=shm_config_section,
+        sres={
+            "sre1": sre_config_1,
+            "sre2": sre_config_2,
+        },
     )
 
 

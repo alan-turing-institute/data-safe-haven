@@ -34,17 +34,17 @@ class TestConfigSectionSHM:
             timezone="UTC",
         )
 
-    def test_update(self, shm_config):
-        assert shm_config.fqdn == "shm.acme.com"
-        shm_config.update(fqdn="shm.example.com")
-        assert shm_config.fqdn == "shm.example.com"
+    def test_update(self, shm_config_section):
+        assert shm_config_section.fqdn == "shm.acme.com"
+        shm_config_section.update(fqdn="shm.example.com")
+        assert shm_config_section.fqdn == "shm.example.com"
 
-    def test_update_validation(self, shm_config):
+    def test_update_validation(self, shm_config_section):
         with pytest.raises(
             ValidationError,
             match="Value error, Expected valid email address.*not an email address",
         ):
-            shm_config.update(admin_email_address="not an email address")
+            shm_config_section.update(admin_email_address="not an email address")
 
 
 class TestConfigSubsectionRemoteDesktopOpts:
@@ -116,10 +116,10 @@ class TestConfigSectionSRE:
 
 
 class TestConfig:
-    def test_constructor(self, azure_config, shm_config):
+    def test_constructor(self, azure_config, shm_config_section):
         config = Config(
             azure=azure_config,
-            shm=shm_config,
+            shm=shm_config_section,
         )
         assert not config.sres
 

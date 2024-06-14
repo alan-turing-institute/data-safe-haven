@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 
 import typer
 
-from data_safe_haven.config import Config, DSHPulumiConfig
+from data_safe_haven.config import Config, DSHPulumiConfig, SHMConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputError
 from data_safe_haven.external import GraphApi
@@ -31,6 +31,7 @@ def deploy(
     context = ContextSettings.from_file().assert_context()
     config = Config.sre_from_remote(context, name)
     pulumi_config = DSHPulumiConfig.from_remote(context)
+    shm_config = SHMConfig.from_remote(context)
     sre_name = sanitise_sre_name(name)
 
     try:
@@ -49,7 +50,7 @@ def deploy(
         # Initialise Pulumi stack
         shm_stack = SHMProjectManager(
             context=context,
-            config=config,
+            config=shm_config,
             pulumi_config=pulumi_config,
         )
         stack = SREProjectManager(

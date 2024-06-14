@@ -28,6 +28,11 @@ def mock_pulumi_config_no_key_from_remote(mocker, pulumi_config_no_key):
 
 
 @fixture
+def mock_shm_config_from_remote(mocker, shm_config):
+    mocker.patch.object(Config, "from_remote", return_value=shm_config)
+
+
+@fixture
 def runner(tmp_contexts):
     runner = CliRunner(
         env={
