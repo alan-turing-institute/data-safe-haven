@@ -64,7 +64,7 @@ class ContextSettings(YAMLSerialisableModel):
     def selected(self, context_name: str | None) -> None:
         if context_name in self.available or context_name is None:
             self.selected_ = context_name
-            self.logger.info(f"Switched context to '{context_name}'.")
+            self.logger.debug(f"Switched context to '{context_name}'.")
         else:
             msg = f"Context '{context_name}' is not defined."
             raise DataSafeHavenParameterError(msg)

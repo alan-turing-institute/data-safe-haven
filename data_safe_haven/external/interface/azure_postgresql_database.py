@@ -148,7 +148,7 @@ class AzurePostgreSQLDatabase:
             # Apply the Guacamole initialisation script
             for filepath in filepaths:
                 _filepath = pathlib.Path(filepath)
-                self.logger.info(f"Running SQL script: [green]{_filepath.name}[/].")
+                self.logger.debug(f"Running SQL script: [green]{_filepath.name}[/].")
                 commands = self.load_sql(_filepath, mustache_values)
                 cursor.execute(query=commands.encode())
                 if cursor.statusmessage and "SELECT" in cursor.statusmessage:
@@ -156,7 +156,7 @@ class AzurePostgreSQLDatabase:
 
             # Commit changes
             connection.commit()
-            self.logger.info(f"Finished running {len(filepaths)} SQL scripts.")
+            self.logger.debug(f"Finished running {len(filepaths)} SQL scripts.")
         except (Exception, psycopg.Error) as exc:
             msg = f"Error while connecting to PostgreSQL.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc

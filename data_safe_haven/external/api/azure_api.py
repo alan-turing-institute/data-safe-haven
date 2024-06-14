@@ -752,7 +752,7 @@ class AzureApi(AzureAuthenticator):
                     zone_name=zone_name,
                 )
             except ResourceNotFoundError:
-                self.logger.info(
+                self.logger.warning(
                     f"DNS record [green]{record_name}[/] does not exist in zone [green]{zone_name}[/].",
                 )
                 return

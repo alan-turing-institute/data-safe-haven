@@ -152,13 +152,13 @@ class UserHandler:
         """
         try:
             # Construct user lists
-            self.logger.info(f"Attempting to remove {len(user_names)} user(s).")
+            self.logger.debug(f"Attempting to remove {len(user_names)} user(s).")
             entra_users_to_remove = [
                 user for user in self.entra_users.list() if user.username in user_names
             ]
 
             # Commit changes
-            self.logger.info(
+            self.logger.debug(
                 f"Found {len(entra_users_to_remove)} valid user(s) to remove."
             )
             self.entra_users.remove(entra_users_to_remove)

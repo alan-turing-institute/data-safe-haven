@@ -3,6 +3,7 @@
 from typing import Annotated, Optional
 
 import typer
+from rich import print as rprint
 
 from data_safe_haven import validators
 from data_safe_haven.context import (
@@ -34,12 +35,15 @@ def show() -> None:
     current_context_key = settings.selected
     current_context = settings.context
 
-    logger.info(f"Current context: [green]{current_context_key}")
+    rprint(f"Current context: [green]{current_context_key}")
     if current_context is not None:
-        logger.info(f"\tName: {current_context.name}")
-        logger.info(f"\tAdmin Group ID: {current_context.admin_group_id}")
-        logger.info(f"\tSubscription name: {current_context.subscription_name}")
-        logger.info(f"\tLocation: {current_context.location}")
+        rprint(
+            f"\tName: {current_context.name}",
+            f"\tAdmin Group ID: {current_context.admin_group_id}",
+            f"\tSubscription name: {current_context.subscription_name}",
+            f"\tLocation: {current_context.location}",
+            sep="\n",
+        )
 
 
 @context_command_group.command()
@@ -60,7 +64,7 @@ def available() -> None:
         available.remove(current_context_key)
         available = [f"[green]{current_context_key}*[/]", *available]
 
-    logger.info("\n".join(available))
+    rprint("\n".join(available))
 
 
 @context_command_group.command()

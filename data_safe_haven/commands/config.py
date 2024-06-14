@@ -4,10 +4,11 @@ from pathlib import Path
 from typing import Annotated, Optional
 
 import typer
-from rich import print
+from rich import print as rprint
 
 from data_safe_haven.config import Config
 from data_safe_haven.context import ContextSettings
+from data_safe_haven.logging import LoggingSingleton
 from data_safe_haven.utility import prompts
 
 config_command_group = typer.Typer()
@@ -30,7 +31,7 @@ def template(
         with open(file, "w") as outfile:
             outfile.write(config_yaml)
     else:
-        print(config_yaml)
+        rprint(config_yaml)
 
 
 @config_command_group.command()
@@ -45,10 +46,13 @@ def upload(
         config_yaml = config_file.read()
     config = Config.from_yaml(config_yaml)
 
+    logger = LoggingSingleton()
+
     # Present diff to user
     if Config.remote_exists(context):
         if diff := config.remote_yaml_diff(context):
-            print("".join(diff))
+            for line in "".join(diff):
+                logger.info(line)
             if not prompts.confirm(
                 (
                     "Configuration has changed, "
@@ -58,7 +62,7 @@ def upload(
             ):
                 raise typer.Exit()
         else:
-            print("No changes, won't upload configuration.")
+            rprint("No changes, won't upload configuration.")
             raise typer.Exit()
 
     config.upload(context)
@@ -78,4 +82,4 @@ def show(
         with open(file, "w") as outfile:
             outfile.write(config.to_yaml())
     else:
-        print(config.to_yaml())
+        rprint(config.to_yaml())

@@ -1084,7 +1084,7 @@ class GraphApi:
             while True:
                 # Check whether all expected nameservers are active
                 with suppress(resolver.NXDOMAIN):
-                    self.logger.info(
+                    self.logger.debug(
                         f"Checking [green]{domain_name}[/] domain verification status ..."
                     )
                     active_nameservers = [

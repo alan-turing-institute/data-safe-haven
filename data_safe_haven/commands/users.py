@@ -113,15 +113,19 @@ def register(
 
     logger = LoggingSingleton()
     if shm_name not in pulumi_config.project_names:
-        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
+        logger.critical(
+            f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
+        )
         raise typer.Exit(1)
 
     if sre_name not in pulumi_config.project_names:
-        logger.fatal(f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?")
+        logger.critical(
+            f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?"
+        )
         raise typer.Exit(1)
 
     try:
-        logger.info(
+        logger.debug(
             f"Preparing to register {len(usernames)} user(s) with SRE '{sre_name}'"
         )
 
@@ -223,7 +227,7 @@ def unregister(
         raise typer.Exit(1)
 
     try:
-        logger.info(
+        logger.debug(
             f"Preparing to unregister {len(usernames)} users with SRE '{sre_name}'"
         )
 

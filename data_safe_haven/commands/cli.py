@@ -3,6 +3,7 @@
 from typing import Annotated, Optional
 
 import typer
+from rich import print as rprint
 
 from data_safe_haven import __version__
 from data_safe_haven.logging import LoggingSingleton
@@ -59,7 +60,7 @@ def callback(
         LoggingSingleton.show_console_level()
 
     if version:
-        print(f"Data Safe Haven {__version__}")  # noqa: T201
+        rprint(f"Data Safe Haven {__version__}")
         raise typer.Exit()
 
 

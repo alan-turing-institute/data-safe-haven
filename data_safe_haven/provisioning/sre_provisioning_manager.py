@@ -114,7 +114,7 @@ class SREProvisioningManager:
             "user_group_name": self.security_group_params["user_group_name"],
         }
         for details in connection_data["connections"]:
-            self.logger.info(
+            self.logger.debug(
                 f"Adding connection [bold]{details['connection_name']}[/] at [green]{details['ip_address']}[/]."
             )
         postgres_script_path = (
