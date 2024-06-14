@@ -10,8 +10,8 @@ from data_safe_haven.external import (
     GraphApi,
 )
 from data_safe_haven.infrastructure import SREProjectManager
-from data_safe_haven.types import AzureLocation, AzureSubscriptionName
 from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.types import AzureLocation, AzureSubscriptionName
 
 
 class SREProvisioningManager:

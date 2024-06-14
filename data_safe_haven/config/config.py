@@ -10,6 +10,7 @@ from pydantic import (
 )
 
 from data_safe_haven.exceptions import DataSafeHavenConfigError
+from data_safe_haven.logging import LoggingSingleton
 from data_safe_haven.serialisers import AzureSerialisableModel
 from data_safe_haven.types import (
     AzureVmSku,
@@ -22,7 +23,6 @@ from data_safe_haven.types import (
     TimeZone,
     UniqueList,
 )
-from data_safe_haven.logging import LoggingSingleton
 
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):

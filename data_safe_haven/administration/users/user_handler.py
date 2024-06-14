@@ -6,8 +6,8 @@ from data_safe_haven.config import Config, DSHPulumiConfig
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.utility import console
 from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.utility import console
 
 from .entra_users import EntraUsers
 from .guacamole_users import GuacamoleUsers

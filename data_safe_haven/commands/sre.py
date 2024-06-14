@@ -10,8 +10,8 @@ from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputErr
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
-from data_safe_haven.provisioning import SREProvisioningManager
 from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.provisioning import SREProvisioningManager
 
 sre_command_group = typer.Typer()
 

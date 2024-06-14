@@ -9,8 +9,8 @@ import typer
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.logging import LoggingSingleton
-from data_safe_haven.utility import prompts
 from data_safe_haven.singleton import Singleton
+from data_safe_haven.utility import prompts
 
 
 @dataclass
