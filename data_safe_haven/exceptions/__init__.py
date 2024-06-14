@@ -2,7 +2,7 @@ from data_safe_haven.logging import LoggingSingleton
 
 
 class DataSafeHavenError(Exception):
-    def __init__(self, message: str):
+    def __init__(self, message: str | bytes):
         super().__init__(message)
 
         logger = LoggingSingleton()
