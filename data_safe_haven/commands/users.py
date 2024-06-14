@@ -11,7 +11,7 @@ from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import LoggingSingleton
 
 users_command_group = typer.Typer()
 

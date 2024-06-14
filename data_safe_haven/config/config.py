@@ -22,9 +22,7 @@ from data_safe_haven.types import (
     TimeZone,
     UniqueList,
 )
-from data_safe_haven.utility import (
-    LoggingSingleton,
-)
+from data_safe_haven.logging import LoggingSingleton
 
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):

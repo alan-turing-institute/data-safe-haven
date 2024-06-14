@@ -6,7 +6,7 @@ from typing import Any
 from rich.logging import RichHandler
 from rich.text import Text
 
-from .singleton import Singleton
+from data_safe_haven.singleton import Singleton
 
 
 class PlainFileHandler(logging.FileHandler):

@@ -1,6 +1,6 @@
 from rich.prompt import Confirm
 
-from .logger import LoggingSingleton
+from data_safe_haven.logging import LoggingSingleton
 
 
 def confirm(message: str, *, default_to_yes: bool) -> bool:

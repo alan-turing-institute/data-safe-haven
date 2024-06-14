@@ -20,7 +20,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi, AzureCliSingleton
 from data_safe_haven.functions import replace_separators
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import LoggingSingleton
 
 from .programs import DeclarativeSHM, DeclarativeSRE
 

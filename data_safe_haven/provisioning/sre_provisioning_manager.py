@@ -11,7 +11,7 @@ from data_safe_haven.external import (
 )
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.types import AzureLocation, AzureSubscriptionName
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import LoggingSingleton
 
 
 class SREProvisioningManager:

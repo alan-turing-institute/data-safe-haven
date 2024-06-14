@@ -1,7 +1,7 @@
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import LoggingSingleton
 
 
 class ContextInfrastructure:

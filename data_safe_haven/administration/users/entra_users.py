@@ -10,7 +10,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import LoggingSingleton
 
 from .research_user import ResearchUser
 

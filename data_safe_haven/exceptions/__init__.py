@@ -1,4 +1,4 @@
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import LoggingSingleton
 
 
 class DataSafeHavenError(Exception):

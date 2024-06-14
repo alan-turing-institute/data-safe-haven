@@ -5,7 +5,7 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import __version__
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import LoggingSingleton
 
 from .config import config_command_group
 from .context import context_command_group

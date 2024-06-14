@@ -60,7 +60,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalError,
 )
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
-from data_safe_haven.utility import LoggingSingleton, NonLoggingSingleton
+from data_safe_haven.logging import LoggingSingleton, NonLoggingSingleton
 
 
 class AzureApi(AzureAuthenticator):

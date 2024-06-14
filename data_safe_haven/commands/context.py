@@ -14,7 +14,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenConfigError,
 )
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import LoggingSingleton
 
 context_command_group = typer.Typer()
 logger = LoggingSingleton()

@@ -23,7 +23,8 @@ from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
 )
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.utility import LoggingSingleton, NonLoggingSingleton, prompts
+from data_safe_haven.logging import LoggingSingleton, NonLoggingSingleton
+from data_safe_haven.utility import prompts
 
 
 class LocalTokenCache(SerializableTokenCache):
