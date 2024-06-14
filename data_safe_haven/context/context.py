@@ -16,7 +16,7 @@ from data_safe_haven.types import (
     AzureSubscriptionName,
     Guid,
 )
-from data_safe_haven.utility import config_dir
+from data_safe_haven.directories import config_dir
 
 
 class Context(ContextBase, BaseModel, validate_assignment=True):

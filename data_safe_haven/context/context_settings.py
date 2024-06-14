@@ -16,7 +16,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.logging import LoggingSingleton
 from data_safe_haven.serialisers import YAMLSerialisableModel
-from data_safe_haven.utility import config_dir
+from data_safe_haven.directories import config_dir
 
 from .context import Context
 
