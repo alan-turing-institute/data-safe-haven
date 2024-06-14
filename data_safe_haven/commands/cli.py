@@ -5,7 +5,6 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import __version__
-from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.utility import LoggingSingleton
 
 from .config import config_command_group
@@ -97,10 +96,4 @@ application.add_typer(
 
 def main() -> None:
     """Run the application and log any exceptions"""
-    # application()
-    try:
-        application()
-    except DataSafeHavenError as exc:
-        logger = LoggingSingleton()
-        for line in str(exc).split("\n"):
-            logger.error(line)
+    application()

@@ -1,5 +1,12 @@
+from data_safe_haven.utility import LoggingSingleton
+
+
 class DataSafeHavenError(Exception):
-    pass
+    def __init__(self, message: str):
+        super().__init__(message)
+
+        logger = LoggingSingleton()
+        logger.error(message)
 
 
 class DataSafeHavenCloudError(DataSafeHavenError):
