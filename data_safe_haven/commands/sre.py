@@ -11,7 +11,6 @@ from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
 from data_safe_haven.provisioning import SREProvisioningManager
-from data_safe_haven.utility import LoggingSingleton
 
 sre_command_group = typer.Typer()
 
@@ -29,18 +28,12 @@ def deploy(
     ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
-    logger = LoggingSingleton()
     context = ContextSettings.from_file().assert_context()
-    config = Config.from_remote(context)
+    config = Config.sre_from_remote(context, name)
     pulumi_config = DSHPulumiConfig.from_remote(context)
     sre_name = sanitise_sre_name(name)
 
     try:
-        # Exit if SRE name is not recognised
-        if sre_name not in config.sre_names:
-            logger.fatal(f"Could not find configuration details for SRE '{sre_name}'.")
-            raise typer.Exit(1)
-
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(

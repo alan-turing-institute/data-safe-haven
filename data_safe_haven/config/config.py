@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import ClassVar, Self
 
 from pydantic import (
     BaseModel,
@@ -10,7 +10,8 @@ from pydantic import (
 )
 
 from data_safe_haven.exceptions import DataSafeHavenConfigError
-from data_safe_haven.serialisers import AzureSerialisableModel
+from data_safe_haven.functions import sanitise_sre_name
+from data_safe_haven.serialisers import AzureSerialisableModel, ContextBase
 from data_safe_haven.types import (
     AzureVmSku,
     DatabaseSystem,
@@ -217,8 +218,18 @@ class Config(AzureSerialisableModel):
             del self.sres[name]
 
     @classmethod
+    def sre_from_remote(cls: type[Self], context: ContextBase, sre_name: str) -> Self:
+        """Load a Config from Azure storage."""
+        return cls.from_remote(context, filename=cls.sre_filename_from_name(sre_name))
+
+    @classmethod
+    def sre_filename_from_name(cls: type[Self], sre_name: str) -> str:
+        """Construct a canonical filename."""
+        return f"sre-{sanitise_sre_name(sre_name)}.yaml"
+
+    @classmethod
     def template(cls) -> Config:
-        # Create object without validation to allow "replace me" prompts
+        """Create object without validation to allow "replace me" prompts."""
         return Config.model_construct(
             azure=ConfigSectionAzure.model_construct(
                 subscription_id="Azure subscription ID",
