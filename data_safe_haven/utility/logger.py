@@ -51,40 +51,39 @@ class RichStringAdaptor:
         return self.string_io.getvalue()
 
 
-console_handler = RichHandler(
-    level=logging.INFO,
-    rich_tracebacks=True,
-    show_time=False,
-    show_path=False,
-    show_level=False,
-)
-console_handler.setFormatter(logging.Formatter(r"%(message)s"))
-
-file_handler = PlainFileHandler(
-    "test_log",
-    delay=True,
-    encoding="utf8",
-    mode="w",
-    # mode="a",
-)
-file_handler.setFormatter(
-    logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-)
-file_handler.setLevel("NOTSET")
-
-
 class LoggingSingleton(logging.Logger, metaclass=Singleton):
     """
     Logging singleton that can be used by anything needing logging
     """
+    console_handler = RichHandler(
+        level=logging.INFO,
+        markup=True,
+        rich_tracebacks=True,
+        show_time=False,
+        show_path=False,
+        show_level=False,
+    )
+    console_handler.setFormatter(logging.Formatter(r"%(message)s"))
+
+    file_handler = PlainFileHandler(
+        "test_log",
+        delay=True,
+        encoding="utf8",
+        mode="w",
+        # mode="a",
+    )
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    )
+    file_handler.setLevel("NOTSET")
 
     def __init__(self) -> None:
         # Construct logger object
         super().__init__(name="data_safe_haven", level=logging.NOTSET)
 
         # Add handlers
-        self.addHandler(console_handler)
-        self.addHandler(file_handler)
+        self.addHandler(self.console_handler)
+        self.addHandler(self.file_handler)
 
         # Disable unnecessarily verbose external logging
         logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
@@ -92,6 +91,10 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
         logging.getLogger("azure.identity._internal").setLevel(logging.ERROR)
         logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
         logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
+
+    @classmethod
+    def set_console_level(cls, level: int | str) -> None:
+        cls.console_handler.setLevel(level)
 
     def ask(self, message: str, default: str | None = None) -> str:
         """Ask user a question, formatted as a log message"""

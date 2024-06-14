@@ -149,7 +149,7 @@ class ContextSettings(YAMLSerialisableModel):
     def from_file(cls, config_file_path: Path | None = None) -> ContextSettings:
         if config_file_path is None:
             config_file_path = cls.default_config_file_path()
-        cls.logger.info(
+        cls.logger.debug(
             f"Reading project settings from '[green]{config_file_path}[/]'."
         )
         return cls.from_filepath(config_file_path)
@@ -159,4 +159,4 @@ class ContextSettings(YAMLSerialisableModel):
         if config_file_path is None:
             config_file_path = self.default_config_file_path()
         self.to_filepath(config_file_path)
-        self.logger.info(f"Saved context settings to '[green]{config_file_path}[/]'.")
+        self.logger.debug(f"Saved context settings to '[green]{config_file_path}[/]'.")

@@ -28,16 +28,14 @@ application = typer.Typer(
 # This is executed before
 @application.callback()
 def callback(
-    verbosity: Annotated[
-        Optional[int],  # noqa: UP007
+    verbose: Annotated[
+        bool,
         typer.Option(
-            "--verbosity",
+            "--verbose",
             "-v",
-            help="Increase the verbosity of messages: each '-v' will increase by one step.",
-            count=True,
-            is_eager=True,
+            help="Increase the verbosity of console output.",
         ),
-    ] = None,
+    ] = False,
     version: Annotated[
         Optional[bool],  # noqa: UP007
         typer.Option(
@@ -46,10 +44,9 @@ def callback(
     ] = None,
 ) -> None:
     """Arguments to the main executable"""
-    logger = LoggingSingleton()
 
-    if verbosity:
-        logger.set_verbosity(verbosity)
+    if verbose:
+        LoggingSingleton.set_console_level("DEBUG")
 
     if version:
         print(f"Data Safe Haven {__version__}")  # noqa: T201
