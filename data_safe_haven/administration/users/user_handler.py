@@ -6,7 +6,7 @@ from data_safe_haven.config import Config, DSHPulumiConfig
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.utility import LoggingSingleton, console
 
 from .entra_users import EntraUsers
 from .guacamole_users import GuacamoleUsers
@@ -125,9 +125,7 @@ class UserHandler:
                     )
                 user_data.append(user_memberships)
 
-            # Write user information as a table
-            for line in self.logger.tabulate(user_headers, user_data):
-                self.logger.info(line)
+            console.tabulate(user_headers, user_data)
         except Exception as exc:
             msg = f"Could not list users.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
