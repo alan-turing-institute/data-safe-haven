@@ -1,3 +1,4 @@
+from . import prompts
 from .directories import config_dir
 from .file_reader import FileReader
 from .logger import LoggingSingleton, NonLoggingSingleton
@@ -8,5 +9,6 @@ __all__ = [
     "FileReader",
     "LoggingSingleton",
     "NonLoggingSingleton",
+    "prompts",
     "Singleton",
 ]

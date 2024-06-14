@@ -1,12 +1,9 @@
 """Standalone logging class implemented as a singleton"""
 
-import io
 import logging
 from typing import Any
 
-from rich.console import Console
 from rich.logging import RichHandler
-from rich.prompt import Confirm, Prompt
 from rich.table import Table
 from rich.text import Text
 
@@ -35,26 +32,11 @@ class PlainFileHandler(logging.FileHandler):
         super().emit(record)
 
 
-class RichStringAdaptor:
-    """
-    A wrapper to convert Rich objects into strings.
-    """
-
-    def __init__(self, *, coloured: bool):
-        """Constructor"""
-        self.string_io = io.StringIO()
-        self.console = Console(file=self.string_io, force_terminal=coloured)
-
-    def to_string(self, *renderables: Any) -> str:
-        """Convert Rich renderables into a string"""
-        self.console.print(*renderables)
-        return self.string_io.getvalue()
-
-
 class LoggingSingleton(logging.Logger, metaclass=Singleton):
     """
     Logging singleton that can be used by anything needing logging
     """
+
     console_handler = RichHandler(
         level=logging.INFO,
         markup=True,
@@ -99,52 +81,6 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
     @classmethod
     def show_console_level(cls) -> None:
         cls.console_handler._log_render.show_level = True
-
-    def ask(self, message: str, default: str | None = None) -> str:
-        """Ask user a question, formatted as a log message"""
-        formatted = self.format_msg(message, logging.INFO)
-        if default:
-            return str(Prompt.ask(formatted, default=default))
-        return str(Prompt.ask(formatted))
-
-    def choose(
-        self,
-        message: str,
-        choices: list[str] | None = None,
-        default: str | None = None,
-    ) -> str:
-        """Ask a user to choose among options, formatted as a log message"""
-        formatted = self.format_msg(message, logging.INFO)
-        if default:
-            return str(Prompt.ask(formatted, choices=choices, default=default))
-        return str(Prompt.ask(formatted, choices=choices))
-
-    def confirm(self, message: str, *, default_to_yes: bool) -> bool:
-        """Ask a user to confirm an action, formatted as a log message"""
-        formatted = self.format_msg(message, logging.INFO)
-        return bool(Confirm.ask(formatted, default=default_to_yes))
-
-    def format_msg(self, message: str, level: int = logging.INFO) -> str:
-        """Format a message using rich handler"""
-        for handler in self.handlers:
-            if isinstance(handler, RichHandler):
-                fn, lno, func, sinfo = self.findCaller(stack_info=False, stacklevel=1)
-                return str(
-                    handler.format(
-                        self.makeRecord(
-                            name=self.name,
-                            level=level,
-                            fn=fn,
-                            lno=lno,
-                            msg=message,
-                            args={},
-                            exc_info=None,
-                            func=func,
-                            sinfo=sinfo,
-                        )
-                    )
-                )
-        return message
 
     def parse(self, message: str) -> None:
         """

@@ -9,6 +9,7 @@ from io import UnsupportedOperation
 from typing import Any, ClassVar
 
 import requests
+import typer
 from dns import resolver
 from msal import (
     ConfidentialClientApplication,
@@ -22,7 +23,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
 )
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.utility import LoggingSingleton, NonLoggingSingleton
+from data_safe_haven.utility import LoggingSingleton, NonLoggingSingleton, prompts
 
 
 class LocalTokenCache(SerializableTokenCache):
@@ -1108,14 +1109,14 @@ class GraphApi:
                 self.logger.info(
                     f"You will need to create an NS record pointing to: {ns_list}"
                 )
-                if isinstance(self.logger, LoggingSingleton):
-                    self.logger.confirm(
-                        f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
-                        default_to_yes=True,
+                if not prompts.confirm(
+                    f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
+                    default_to_yes=True,
+                ):
+                    self.logger.error(
+                        "Please use `az login` to connect to the correct Azure CLI account"
                     )
-                else:
-                    msg = "Unable to confirm Azure nameserver delegation."
-                    raise NotImplementedError(msg)
+                    raise typer.Exit(1)
             # Send verification request if needed
             if not any((d["id"] == domain_name and d["isVerified"]) for d in domains):
                 response = self.http_post(

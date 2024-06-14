@@ -28,7 +28,7 @@ application = typer.Typer(
 # This is executed before
 @application.callback()
 def callback(
-    verbose: Annotated[
+    verbose: Annotated[  # noqa: FBT002
         bool,
         typer.Option(
             "--verbose",
@@ -36,7 +36,7 @@ def callback(
             help="Increase the verbosity of console output.",
         ),
     ] = False,
-    show_level: Annotated[
+    show_level: Annotated[  # noqa: FBT002
         bool,
         typer.Option(
             "--show-level",

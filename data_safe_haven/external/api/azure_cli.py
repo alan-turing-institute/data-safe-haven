@@ -8,7 +8,7 @@ from shutil import which
 import typer
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.utility import LoggingSingleton, Singleton
+from data_safe_haven.utility import LoggingSingleton, Singleton, prompts
 
 
 @dataclass
@@ -70,7 +70,7 @@ class AzureCliSingleton(metaclass=Singleton):
         account = self.account
         self.logger.info(f"Azure user: {account.name} ({account.id_})")
         self.logger.info(f"Azure tenant ID: {account.tenant_id})")
-        if not self.logger.confirm(
+        if not prompts.confirm(
             "Is this the Azure account you expect?", default_to_yes=False
         ):
             self.logger.error(
