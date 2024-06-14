@@ -36,6 +36,14 @@ def callback(
             help="Increase the verbosity of console output.",
         ),
     ] = False,
+    show_level: Annotated[
+        bool,
+        typer.Option(
+            "--show-level",
+            "-l",
+            help="Show Log level.",
+        ),
+    ] = False,
     version: Annotated[
         Optional[bool],  # noqa: UP007
         typer.Option(
@@ -47,6 +55,9 @@ def callback(
 
     if verbose:
         LoggingSingleton.set_console_level("DEBUG")
+
+    if show_level:
+        LoggingSingleton.show_console_level()
 
     if version:
         print(f"Data Safe Haven {__version__}")  # noqa: T201

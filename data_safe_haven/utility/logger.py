@@ -96,6 +96,10 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
     def set_console_level(cls, level: int | str) -> None:
         cls.console_handler.setLevel(level)
 
+    @classmethod
+    def show_console_level(cls) -> None:
+        cls.console_handler._log_render.show_level = True
+
     def ask(self, message: str, default: str | None = None) -> str:
         """Ask user a question, formatted as a log message"""
         formatted = self.format_msg(message, logging.INFO)
