@@ -53,12 +53,10 @@ class RichStringAdaptor:
 
 console_handler = RichHandler(
     level=logging.INFO,
-    markup=True,
     rich_tracebacks=True,
     show_time=False,
     show_path=False,
     show_level=False,
-    tracebacks_show_locals=True,
 )
 console_handler.setFormatter(logging.Formatter(r"%(message)s"))
 

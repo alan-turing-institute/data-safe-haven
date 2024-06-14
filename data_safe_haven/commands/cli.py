@@ -1,6 +1,5 @@
 """Command line entrypoint for Data Safe Haven application"""
 
-import pathlib
 from typing import Annotated, Optional
 
 import typer
@@ -29,12 +28,6 @@ application = typer.Typer(
 # This is executed before
 @application.callback()
 def callback(
-    output: Annotated[
-        Optional[pathlib.Path],  # noqa: UP007
-        typer.Option(
-            "--output", "-o", resolve_path=True, help="Path to an output log file"
-        ),
-    ] = None,
     verbosity: Annotated[
         Optional[int],  # noqa: UP007
         typer.Option(
@@ -54,10 +47,10 @@ def callback(
 ) -> None:
     """Arguments to the main executable"""
     logger = LoggingSingleton()
-    if output:
-        logger.set_log_file(output)
+
     if verbosity:
         logger.set_verbosity(verbosity)
+
     if version:
         print(f"Data Safe Haven {__version__}")  # noqa: T201
         raise typer.Exit()
