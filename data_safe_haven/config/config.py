@@ -34,7 +34,6 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
-    admin_ip_addresses: list[IpAddress]
     entra_tenant_id: Guid
     fqdn: Fqdn
     timezone: TimeZone
@@ -42,7 +41,6 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
     def update(
         self,
         *,
-        admin_ip_addresses: list[str] | None = None,
         entra_tenant_id: str | None = None,
         fqdn: str | None = None,
         timezone: TimeZone | None = None,
@@ -51,17 +49,10 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
 
         Args:
             entra_tenant_id: Entra ID tenant containing users
-            admin_ip_addresses: List of IP addresses belonging to administrators
             fqdn: Fully-qualified domain name to use for this SHM
             timezone: Timezone in pytz format (eg. Europe/London)
         """
         logger = LoggingSingleton()
-        # Set admin IP addresses
-        if admin_ip_addresses:
-            self.admin_ip_addresses = admin_ip_addresses
-        logger.info(
-            f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
-        )
         # Set Entra tenant ID
         if entra_tenant_id:
             self.entra_tenant_id = entra_tenant_id
@@ -109,6 +100,7 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
     admin_email_address: EmailAddress
+    admin_ip_addresses: list[IpAddress] = Field(..., default_factory=list[IpAddress])
     databases: UniqueList[DatabaseSystem] = Field(
         ..., default_factory=list[DatabaseSystem]
     )
@@ -128,6 +120,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         self,
         *,
         admin_email_address: str | None = None,
+        admin_ip_addresses: list[str] | None = None,
         data_provider_ip_addresses: list[IpAddress] | None = None,
         databases: list[DatabaseSystem] | None = None,
         workspace_skus: list[AzureVmSku] | None = None,
@@ -138,6 +131,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
 
         Args:
             admin_email_address: Email address shared by all administrators
+            admin_ip_addresses: List of IP addresses belonging to administrators
             databases: List of database systems to deploy
             data_provider_ip_addresses: List of IP addresses belonging to data providers
             workspace_skus: List of VM SKUs for workspaces
@@ -150,6 +144,12 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
             self.admin_email_address = admin_email_address
         logger.info(
             f"[bold]Admin email address[/] will be [green]{self.admin_email_address}[/]."
+        )
+        # Set admin IP addresses
+        if admin_ip_addresses:
+            self.admin_ip_addresses = admin_ip_addresses
+        logger.info(
+            f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
         )
         # Set data provider IP addresses
         if data_provider_ip_addresses:

@@ -51,9 +51,13 @@ def config_no_sres(azure_config, shm_config_section):
 
 @fixture
 def config_sres(azure_config, shm_config_section):
-    sre_config_1 = ConfigSectionSRE(admin_email_address="admin@example.com")
+    sre_config_1 = ConfigSectionSRE(
+        admin_email_address="admin@example.com",
+        admin_ip_addresses=["1.2.3.4"],
+    )
     sre_config_2 = ConfigSectionSRE(
         admin_email_address="admin@example.com",
+        admin_ip_addresses=["2.3.4.5"],
         remote_desktop=ConfigSubsectionRemoteDesktopOpts(
             allow_copy=True, allow_paste=True
         ),
@@ -75,14 +79,14 @@ def config_yaml():
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
     shm:
-        admin_ip_addresses:
-        - 0.0.0.0/32
         entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         fqdn: shm.acme.com
         timezone: UTC
     sres:
         sre1:
             admin_email_address: admin@example.com
+            admin_ip_addresses:
+            - 1.2.3.4/32
             data_provider_ip_addresses: []
             databases: []
             remote_desktop:
@@ -93,6 +97,8 @@ def config_yaml():
             workspace_skus: []
         sre2:
             admin_email_address: admin@example.com
+            admin_ip_addresses:
+            - 2.3.4.5/32
             data_provider_ip_addresses: []
             databases: []
             remote_desktop:
@@ -324,8 +330,6 @@ def shm_config_yaml():
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
     shm:
-        admin_ip_addresses:
-        - 0.0.0.0/32
         entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         fqdn: shm.acme.com
         timezone: UTC

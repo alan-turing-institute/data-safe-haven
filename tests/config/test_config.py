@@ -27,7 +27,6 @@ class TestConfigSectionAzure:
 class TestConfigSectionSHM:
     def test_constructor(self):
         ConfigSectionSHM(
-            admin_ip_addresses=["0.0.0.0"],  # noqa: S104
             entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             fqdn="shm.acme.com",
             timezone="UTC",
@@ -70,18 +69,28 @@ class TestConfigSectionSRE:
     def test_constructor(self, remote_desktop_config):
         sre_config = ConfigSectionSRE(
             admin_email_address="admin@example.com",
+            admin_ip_addresses=["1.2.3.4"],
             databases=[DatabaseSystem.POSTGRESQL],
-            data_provider_ip_addresses=["0.0.0.0"],  # noqa: S104
+            data_provider_ip_addresses=["2.3.4.5"],
             remote_desktop=remote_desktop_config,
             workspace_skus=["Standard_D2s_v4"],
-            research_user_ip_addresses=["0.0.0.0"],  # noqa: S104
+            research_user_ip_addresses=["3.4.5.6"],
             software_packages=SoftwarePackageCategory.ANY,
         )
-        assert sre_config.data_provider_ip_addresses[0] == "0.0.0.0/32"
+        assert sre_config.admin_email_address == "admin@example.com"
+        assert sre_config.admin_ip_addresses[0] == "1.2.3.4/32"
+        assert sre_config.databases[0] == DatabaseSystem.POSTGRESQL
+        assert sre_config.data_provider_ip_addresses[0] == "2.3.4.5/32"
+        assert sre_config.remote_desktop == remote_desktop_config
+        assert sre_config.workspace_skus[0] == "Standard_D2s_v4"
+        assert sre_config.research_user_ip_addresses[0] == "3.4.5.6/32"
+        assert sre_config.software_packages == SoftwarePackageCategory.ANY
+
 
     def test_constructor_defaults(self, remote_desktop_config):
         sre_config = ConfigSectionSRE(admin_email_address="admin@example.com")
         assert sre_config.admin_email_address == "admin@example.com"
+        assert sre_config.admin_ip_addresses == []
         assert sre_config.databases == []
         assert sre_config.data_provider_ip_addresses == []
         assert sre_config.remote_desktop == remote_desktop_config
@@ -98,6 +107,7 @@ class TestConfigSectionSRE:
     def test_update(self):
         sre_config = ConfigSectionSRE(admin_email_address="admin@example.com")
         assert sre_config.admin_email_address == "admin@example.com"
+        assert sre_config.admin_ip_addresses == []
         assert sre_config.databases == []
         assert sre_config.data_provider_ip_addresses == []
         assert sre_config.workspace_skus == []
@@ -105,17 +115,19 @@ class TestConfigSectionSRE:
         assert sre_config.software_packages == SoftwarePackageCategory.NONE
         sre_config.update(
             admin_email_address="admin@example.org",
-            data_provider_ip_addresses=["0.0.0.0"],  # noqa: S104
+            admin_ip_addresses=["1.2.3.4"],
+            data_provider_ip_addresses=["2.3.4.5"],
             databases=[DatabaseSystem.MICROSOFT_SQL_SERVER],
             workspace_skus=["Standard_D8s_v4"],
             software_packages=SoftwarePackageCategory.ANY,
-            user_ip_addresses=["0.0.0.0"],  # noqa: S104
+            user_ip_addresses=["3.4.5.6"],
         )
         assert sre_config.admin_email_address == "admin@example.org"
+        assert sre_config.admin_ip_addresses == ["1.2.3.4/32"]
         assert sre_config.databases == [DatabaseSystem.MICROSOFT_SQL_SERVER]
-        assert sre_config.data_provider_ip_addresses == ["0.0.0.0/32"]
+        assert sre_config.data_provider_ip_addresses == ["2.3.4.5/32"]
         assert sre_config.workspace_skus == ["Standard_D8s_v4"]
-        assert sre_config.research_user_ip_addresses == ["0.0.0.0/32"]
+        assert sre_config.research_user_ip_addresses == ["3.4.5.6/32"]
         assert sre_config.software_packages == SoftwarePackageCategory.ANY
 
 
