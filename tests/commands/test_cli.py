@@ -1,5 +1,5 @@
-from data_safe_haven.version import __version__
 from data_safe_haven.commands import application
+from data_safe_haven.version import __version__
 
 
 class TestHelp:
