@@ -144,7 +144,7 @@ markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-msal==1.28.0
+msal==1.28.1
     # via
     #   azure-identity
     #   data-safe-haven (pyproject.toml)
@@ -170,18 +170,18 @@ protobuf==4.25.3
     # via pulumi
 psycopg==3.1.19
     # via data-safe-haven (pyproject.toml)
-pulumi==3.119.0
+pulumi==3.120.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.44.1
+pulumi-azure-native==2.45.0
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.2
     # via data-safe-haven (pyproject.toml)
 pycparser==2.22
     # via cffi
-pydantic==2.7.3
+pydantic==2.7.4
     # via data-safe-haven (pyproject.toml)
 pydantic-core==2.18.4
     # via pydantic
