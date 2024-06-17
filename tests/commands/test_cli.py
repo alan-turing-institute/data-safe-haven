@@ -1,3 +1,4 @@
+from data_safe_haven.version import __version__
 from data_safe_haven.commands import application
 
 
@@ -25,3 +26,10 @@ class TestHelp:
     def test_help_short_code(self, runner):
         result = runner.invoke(application, ["-h"])
         self.result_checker(result)
+
+
+class TestVersion:
+    def test_version(self, runner):
+        result = runner.invoke(application, ["--version"])
+        assert result.exit_code == 0
+        assert f"Data Safe Haven {__version__}" in result.stdout
