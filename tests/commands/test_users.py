@@ -24,7 +24,7 @@ class TestListUsers:
         runner,
         tmp_contexts_gems,  # noqa: ARG002
     ):
-        result = runner.invoke(users_command_group, ["list"])
+        result = runner.invoke(users_command_group, ["list", "my_sre"])
 
         assert result.exit_code == 1
         assert "Have you deployed the SHM?" in result.stdout

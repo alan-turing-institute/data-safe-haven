@@ -57,7 +57,14 @@ def add(
 
 
 @users_command_group.command("list")
-def list_users() -> None:
+def list_users(
+    sre: Annotated[
+        str,
+        typer.Argument(
+            help="The name of the SRE to list users from.",
+        ),
+    ],
+) -> None:
     """List users from a deployed Data Safe Haven."""
     context = ContextSettings.from_file().assert_context()
     shm_config = SHMConfig.from_remote(context)
@@ -79,7 +86,7 @@ def list_users() -> None:
 
         # List users from all sources
         users = UserHandler(context, pulumi_config, graph_api)
-        users.list()
+        users.list(sre)
     except DataSafeHavenError as exc:
         msg = f"Could not list users for Data Safe Haven '{shm_name}'.\n{exc}"
         raise DataSafeHavenError(msg) from exc

@@ -2,7 +2,7 @@ import csv
 import pathlib
 from collections.abc import Sequence
 
-from data_safe_haven.config import Config, DSHPulumiConfig, SHMConfig
+from data_safe_haven.config import Config, DSHPulumiConfig
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
@@ -70,16 +70,14 @@ class UserHandler:
             msg = f"Could not add users from '{users_csv_path}'.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc
 
-    def get_usernames(self) -> dict[str, list[str]]:
+    def get_usernames(self, sre_name: str) -> dict[str, list[str]]:
         """Load usernames from all sources"""
         usernames = {}
-        shm_config = SHMConfig.from_remote(self.context)
         usernames["Entra ID"] = self.get_usernames_entra_id()
-        for sre_name in shm_config.sre_names:
-            usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
-                sre_name,
-                self.pulumi_config,
-            )
+        usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
+            sre_name,
+            self.pulumi_config,
+        )
         return usernames
 
     def get_usernames_entra_id(self) -> list[str]:
@@ -103,7 +101,7 @@ class UserHandler:
             self.logger.error(f"Could not load users for SRE '{sre_name}'.")
             return []
 
-    def list(self) -> None:
+    def list(self, sre_name: str) -> None:
         """List Entra ID and Guacamole users
 
         Raises:
@@ -111,7 +109,7 @@ class UserHandler:
         """
         try:
             # Load usernames
-            usernames = self.get_usernames()
+            usernames = self.get_usernames(sre_name)
             # Fill user information as a table
             user_headers = ["username", *list(usernames.keys())]
             user_data = []
