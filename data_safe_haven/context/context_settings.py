@@ -10,13 +10,13 @@ from typing import ClassVar
 
 from pydantic import Field, model_validator
 
+from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
 from data_safe_haven.logging import LoggingSingleton
 from data_safe_haven.serialisers import YAMLSerialisableModel
-from data_safe_haven.directories import config_dir
 
 from .context import Context
 

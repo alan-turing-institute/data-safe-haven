@@ -1,14 +1,14 @@
 """Standalone logging class implemented as a singleton"""
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from rich.logging import RichHandler
 from rich.text import Text
 
-from data_safe_haven.singleton import Singleton
 from data_safe_haven.directories import log_dir
+from data_safe_haven.singleton import Singleton
 
 
 class PlainFileHandler(logging.FileHandler):
@@ -49,7 +49,7 @@ class LoggingSingleton(logging.Logger, metaclass=Singleton):
     console_handler.setFormatter(logging.Formatter(r"%(message)s"))
 
     file_handler = PlainFileHandler(
-        f"{log_dir()}/{datetime.now().date()}.log",
+        f"{log_dir()}/{datetime.now(UTC).date()}.log",
         delay=True,
         encoding="utf8",
         mode="a",

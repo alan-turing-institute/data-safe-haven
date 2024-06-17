@@ -10,9 +10,7 @@ def config_dir() -> Path:
     if config_directory_env := getenv("DSH_CONFIG_DIRECTORY"):
         config_directory = Path(config_directory_env).resolve()
     else:
-        config_directory = Path(
-            appdirs.user_config_dir(appname=_appname)
-        ).resolve()
+        config_directory = Path(appdirs.user_config_dir(appname=_appname)).resolve()
 
     return config_directory
 
