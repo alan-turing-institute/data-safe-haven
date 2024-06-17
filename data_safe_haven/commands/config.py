@@ -51,7 +51,7 @@ def upload(
     # Present diff to user
     if Config.remote_exists(context):
         if diff := config.remote_yaml_diff(context):
-            for line in "".join(diff):
+            for line in "".join(diff).splitlines():
                 logger.info(line)
             if not prompts.confirm(
                 (
