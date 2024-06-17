@@ -1,7 +1,7 @@
 from pytest import fixture
 from typer.testing import CliRunner
 
-from data_safe_haven.config import Config, DSHPulumiConfig
+from data_safe_haven.config import Config, DSHPulumiConfig, SHMConfig
 from data_safe_haven.context import ContextSettings
 
 
@@ -12,7 +12,7 @@ def context(context_yaml):
 
 @fixture
 def mock_config_from_remote(mocker, config_sres):
-    mocker.patch.object(Config, "from_remote", return_value=config_sres)
+    mocker.patch.object(Config, "sre_from_remote", return_value=config_sres)
 
 
 @fixture
@@ -29,7 +29,7 @@ def mock_pulumi_config_no_key_from_remote(mocker, pulumi_config_no_key):
 
 @fixture
 def mock_shm_config_from_remote(mocker, shm_config):
-    mocker.patch.object(Config, "from_remote", return_value=shm_config)
+    mocker.patch.object(SHMConfig, "from_remote", return_value=shm_config)
 
 
 @fixture

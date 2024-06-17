@@ -20,7 +20,7 @@ class TestRun:
     def test_run_shm_invalid(
         self,
         runner,
-        mock_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
         mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002

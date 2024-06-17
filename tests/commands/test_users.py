@@ -4,10 +4,10 @@ from data_safe_haven.commands.users import users_command_group
 class TestAdd:
     def test_invalid_shm(
         self,
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
-        mock_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_from_remote,  # noqa: ARG002
     ):
         result = runner.invoke(users_command_group, ["add", "users.csv"])
 
@@ -18,10 +18,11 @@ class TestAdd:
 class TestListUsers:
     def test_invalid_shm(
         self,
-        runner,
-        tmp_contexts_gems,  # noqa: ARG002
         mock_config_from_remote,  # noqa: ARG002
         mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
+        runner,
+        tmp_contexts_gems,  # noqa: ARG002
     ):
         result = runner.invoke(users_command_group, ["list"])
 
@@ -32,10 +33,10 @@ class TestListUsers:
 class TestRegister:
     def test_invalid_shm(
         self,
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
-        mock_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_from_remote,  # noqa: ARG002
     ):
         result = runner.invoke(
             users_command_group, ["register", "-u", "Harry Lime", "my_sre"]
@@ -46,10 +47,10 @@ class TestRegister:
 
     def test_invalid_sre(
         self,
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
         runner,
         tmp_contexts,  # noqa: ARG002
-        mock_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_from_remote,  # noqa: ARG002
     ):
         result = runner.invoke(
             users_command_group, ["register", "-u", "Harry Lime", "my_sre"]
@@ -62,10 +63,10 @@ class TestRegister:
 class TestRemove:
     def test_invalid_shm(
         self,
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
-        mock_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_from_remote,  # noqa: ARG002
     ):
         result = runner.invoke(users_command_group, ["remove", "-u", "Harry Lime"])
 
@@ -76,10 +77,10 @@ class TestRemove:
 class TestUnregister:
     def test_invalid_shm(
         self,
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
-        mock_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_from_remote,  # noqa: ARG002
     ):
         result = runner.invoke(
             users_command_group, ["unregister", "-u", "Harry Lime", "my_sre"]
@@ -90,10 +91,10 @@ class TestUnregister:
 
     def test_invalid_sre(
         self,
+        mock_pulumi_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
         runner,
         tmp_contexts,  # noqa: ARG002
-        mock_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_from_remote,  # noqa: ARG002
     ):
         result = runner.invoke(
             users_command_group, ["unregister", "-u", "Harry Lime", "my_sre"]

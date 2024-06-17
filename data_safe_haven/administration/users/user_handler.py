@@ -2,7 +2,7 @@ import csv
 import pathlib
 from collections.abc import Sequence
 
-from data_safe_haven.config import Config, DSHPulumiConfig
+from data_safe_haven.config import Config, DSHPulumiConfig, SHMConfig
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
@@ -17,13 +17,11 @@ class UserHandler:
     def __init__(
         self,
         context: Context,
-        config: Config,
         pulumi_config: DSHPulumiConfig,
         graph_api: GraphApi,
     ):
         self.entra_users = EntraUsers(graph_api)
         self.context = context
-        self.config = config
         self.pulumi_config = pulumi_config
         self.logger = LoggingSingleton()
         self.sre_guacamole_users_: dict[str, GuacamoleUsers] = {}
@@ -75,8 +73,9 @@ class UserHandler:
     def get_usernames(self) -> dict[str, list[str]]:
         """Load usernames from all sources"""
         usernames = {}
+        shm_config = SHMConfig.from_remote(self.context)
         usernames["Entra ID"] = self.get_usernames_entra_id()
-        for sre_name in self.config.sre_names:
+        for sre_name in shm_config.sre_names:
             usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
                 sre_name,
                 self.pulumi_config,
@@ -92,9 +91,10 @@ class UserHandler:
     ) -> list[str]:
         """Lazy-load usernames from Guacamole"""
         try:
+            sre_config = Config.sre_from_remote(self.context, sre_name)
             if sre_name not in self.sre_guacamole_users_.keys():
                 self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
-                    self.context, self.config, pulumi_config, sre_name
+                    self.context, sre_config, pulumi_config, sre_name
                 )
             return [
                 user.username for user in self.sre_guacamole_users_[sre_name].list()
