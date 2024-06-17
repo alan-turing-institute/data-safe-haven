@@ -21,7 +21,7 @@ def template(
     ] = None
 ) -> None:
     """Write a template Data Safe Haven configuration."""
-    config = Config.template()
+    config = SHMConfig.template()
     # The template uses explanatory strings in place of the expected types.
     # Serialisation warnings are therefore suppressed to avoid misleading the users into
     # thinking there is a problem and contaminating the output.
@@ -87,8 +87,8 @@ def upload(
 
 @config_command_group.command()
 def upload_sre(
-    file: Annotated[Path, typer.Argument(help="Path to configuration file")],
     name: Annotated[str, typer.Argument(help="Name of SRE to upload")],
+    file: Annotated[Path, typer.Argument(help="Path to configuration file")],
 ) -> None:
     """Upload an SRE configuration to the Data Safe Haven context"""
     context = ContextSettings.from_file().assert_context()
