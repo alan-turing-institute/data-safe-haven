@@ -6,8 +6,8 @@ class TestHelp:
         assert result.exit_code == 0
         assert "Usage: dsh [OPTIONS] COMMAND [ARGS]..." in result.stdout
         assert "Arguments to the main executable" in result.stdout
-        assert "│ --output" in result.stdout
-        assert "│ --verbosity" in result.stdout
+        assert "│ --verbose" in result.stdout
+        assert "│ --show-level" in result.stdout
         assert "│ --version" in result.stdout
         assert "│ --install-completion" in result.stdout
         assert "│ --show-completion" in result.stdout
