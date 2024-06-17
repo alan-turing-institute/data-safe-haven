@@ -35,6 +35,11 @@ def local_pulumi_login():
     run([pulumi_path, "logout"], check=False)
 
 
+@fixture(autouse=True)
+def log_directory(monkeypatch, tmp_path):
+    monkeypatch.setenv("DSH_LOG_DIRECTORY", tmp_path)
+
+
 @fixture
 def context_dict():
     return {
