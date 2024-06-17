@@ -11,6 +11,7 @@ from data_safe_haven.config import (
     Config,
     DSHPulumiConfig,
     DSHPulumiProject,
+    SHMConfig,
 )
 from data_safe_haven.config.config import (
     ConfigSectionAzure,
@@ -206,7 +207,9 @@ def offline_pulumi_account(monkeypatch, mock_azure_cli_confirm):  # noqa: ARG001
 
 
 @fixture
-def pulumi_config(pulumi_project, pulumi_project2):
+def pulumi_config(
+    pulumi_project: DSHPulumiProject, pulumi_project2: DSHPulumiProject
+) -> DSHPulumiConfig:
     return DSHPulumiConfig(
         encrypted_key="CALbHybtRdxKjSnr9UYY",
         projects={"acmedeployment": pulumi_project, "other_project": pulumi_project2},
@@ -214,7 +217,7 @@ def pulumi_config(pulumi_project, pulumi_project2):
 
 
 @fixture
-def pulumi_config_empty():
+def pulumi_config_empty() -> DSHPulumiConfig:
     return DSHPulumiConfig(
         encrypted_key=None,
         projects={},
@@ -222,7 +225,9 @@ def pulumi_config_empty():
 
 
 @fixture
-def pulumi_config_no_key(pulumi_project, pulumi_project2):
+def pulumi_config_no_key(
+    pulumi_project: DSHPulumiProject, pulumi_project2: DSHPulumiProject
+) -> DSHPulumiConfig:
     return DSHPulumiConfig(
         encrypted_key=None,
         projects={"acmedeployment": pulumi_project, "other_project": pulumi_project2},
@@ -230,14 +235,14 @@ def pulumi_config_no_key(pulumi_project, pulumi_project2):
 
 
 @fixture
-def pulumi_project(stack_config):
+def pulumi_project(stack_config) -> DSHPulumiProject:
     return DSHPulumiProject(
         stack_config=stack_config,
     )
 
 
 @fixture
-def pulumi_project2():
+def pulumi_project2() -> DSHPulumiProject:
     return DSHPulumiProject(
         stack_config={
             "azure-native:location": "uksouth",
@@ -248,7 +253,7 @@ def pulumi_project2():
 
 
 @fixture
-def pulumi_config_yaml():
+def pulumi_config_yaml() -> str:
     content = """---
     encrypted_key: CALbHybtRdxKjSnr9UYY
     projects:
@@ -267,26 +272,37 @@ def pulumi_config_yaml():
 
 
 @fixture
-def remote_desktop_config():
+def remote_desktop_config() -> ConfigSubsectionRemoteDesktopOpts:
     return ConfigSubsectionRemoteDesktopOpts()
 
 
 @fixture
-def shm_config(azure_config, shm_config_section):
-    sre_config_1 = ConfigSectionSRE()
-    sre_config_2 = ConfigSectionSRE(
-        remote_desktop=ConfigSubsectionRemoteDesktopOpts(
-            allow_copy=True, allow_paste=True
-        )
-    )
-    return Config(
+def shm_config(
+    azure_config: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+) -> SHMConfig:
+    return SHMConfig(
         azure=azure_config,
         shm=shm_config_section,
-        sres={
-            "sre1": sre_config_1,
-            "sre2": sre_config_2,
-        },
     )
+
+
+@fixture
+def shm_config_alternate(
+    azure_config: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+) -> SHMConfig:
+    shm_config_section.admin_email_address = "sherlock@holmes.com"
+    return SHMConfig(
+        azure=azure_config,
+        shm=shm_config_section,
+    )
+
+
+@fixture
+def shm_config_file(shm_config_yaml: str, tmp_path: Path) -> Path:
+    config_file_path = tmp_path / "shm.yaml"
+    with open(config_file_path, "w") as f:
+        f.write(shm_config_yaml)
+    return config_file_path
 
 
 @fixture
@@ -313,25 +329,6 @@ def shm_config_yaml():
         entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         fqdn: shm.acme.com
         timezone: UTC
-    sres:
-        sre1:
-            data_provider_ip_addresses: []
-            databases: []
-            remote_desktop:
-                allow_copy: false
-                allow_paste: false
-            research_user_ip_addresses: []
-            software_packages: none
-            workspace_skus: []
-        sre2:
-            data_provider_ip_addresses: []
-            databases: []
-            remote_desktop:
-                allow_copy: true
-                allow_paste: true
-            research_user_ip_addresses: []
-            software_packages: none
-            workspace_skus: []
     """
     return yaml.dump(yaml.safe_load(content))
 

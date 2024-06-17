@@ -188,34 +188,11 @@ class SHMConfig(AzureSerialisableModel):
     filename: ClassVar[str] = "shm.yaml"
     azure: ConfigSectionAzure
     shm: ConfigSectionSHM
-    sres: dict[str, ConfigSectionSRE] = Field(
-        ..., default_factory=dict[str, ConfigSectionSRE]
-    )
 
-    @property
-    def sre_names(self) -> list[str]:
-        """Names of all SREs"""
-        return list(self.sres.keys())
-
-    def is_complete(self, *, require_sres: bool) -> bool:
-        if require_sres:
-            if not self.sres:
-                return False
+    def is_complete(self) -> bool:
         if not all((self.azure, self.shm)):
             return False
         return True
-
-    def sre(self, name: str) -> ConfigSectionSRE:
-        """Return the config entry for this SRE, raising an exception if it does not exist"""
-        if name not in self.sre_names:
-            msg = f"SRE {name} does not exist"
-            raise DataSafeHavenConfigError(msg)
-        return self.sres[name]
-
-    def remove_sre(self, name: str) -> None:
-        """Remove SRE config section by name"""
-        if name in self.sre_names:
-            del self.sres[name]
 
     @classmethod
     def template(cls) -> Config:
@@ -232,21 +209,6 @@ class SHMConfig(AzureSerialisableModel):
                 fqdn="TRE domain name",
                 timezone="Timezone",
             ),
-            sres={
-                "example": ConfigSectionSRE.model_construct(
-                    databases=["List of database systems to enable"],
-                    data_provider_ip_addresses=["Data provider IP addresses"],
-                    remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
-                        allow_copy="Whether to allow copying text out of the environment",
-                        allow_paste="Whether to allow pasting text into the environment",
-                    ),
-                    workspace_skus=[
-                        "Azure VM SKUs - see cloudprice.net for list of valid SKUs"
-                    ],
-                    research_user_ip_addresses=["Research user IP addresses"],
-                    software_packages=SoftwarePackageCategory.ANY,
-                )
-            },
         )
 
 

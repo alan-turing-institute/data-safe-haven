@@ -9,7 +9,6 @@ class TestTemplate:
         assert result.exit_code == 0
         assert "subscription_id: Azure subscription ID" in result.stdout
         assert "shm:" in result.stdout
-        assert "sres:" in result.stdout
 
     def test_template_file(self, runner, tmp_path):
         template_file = (tmp_path / "template_create.yaml").absolute()
@@ -21,18 +20,19 @@ class TestTemplate:
             template_text = f.read()
         assert "subscription_id: Azure subscription ID" in template_text
         assert "shm:" in template_text
-        assert "sres:" in template_text
 
 
 class TestUpload:
-    def test_upload_new(self, mocker, context, runner, shm_config_yaml, config_file):
+    def test_upload_new(
+        self, mocker, context, runner, shm_config_yaml, shm_config_file
+    ):
         mock_exists = mocker.patch.object(
             SHMConfig, "remote_exists", return_value=False
         )
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload", str(config_file)],
+            ["upload", str(shm_config_file)],
         )
         assert result.exit_code == 0
 
@@ -45,15 +45,17 @@ class TestUpload:
             context.storage_container_name,
         )
 
-    def test_upload_no_changes(self, mocker, context, runner, config_sres, config_file):
+    def test_upload_no_changes(
+        self, mocker, context, runner, shm_config, shm_config_file
+    ):
         mock_exists = mocker.patch.object(SHMConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
-            SHMConfig, "from_remote", return_value=config_sres
+            SHMConfig, "from_remote", return_value=shm_config
         )
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload", str(config_file)],
+            ["upload", str(shm_config_file)],
         )
         assert result.exit_code == 0
 
@@ -64,16 +66,22 @@ class TestUpload:
         assert "No changes, won't upload configuration." in result.stdout
 
     def test_upload_changes(
-        self, mocker, context, runner, config_no_sres, config_file, shm_config_yaml
+        self,
+        mocker,
+        context,
+        runner,
+        shm_config_alternate,
+        shm_config_file,
+        shm_config_yaml,
     ):
         mock_exists = mocker.patch.object(SHMConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
-            SHMConfig, "from_remote", return_value=config_no_sres
+            SHMConfig, "from_remote", return_value=shm_config_alternate
         )
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload", str(config_file)],
+            ["upload", str(shm_config_file)],
             input="y\n",
         )
         assert result.exit_code == 0
@@ -92,16 +100,16 @@ class TestUpload:
         assert "+++ local" in result.stdout
 
     def test_upload_changes_n(
-        self, mocker, context, runner, config_no_sres, config_file
+        self, mocker, context, runner, shm_config_alternate, shm_config_file
     ):
         mock_exists = mocker.patch.object(SHMConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
-            SHMConfig, "from_remote", return_value=config_no_sres
+            SHMConfig, "from_remote", return_value=shm_config_alternate
         )
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload", str(config_file)],
+            ["upload", str(shm_config_file)],
             input="n\n",
         )
         assert result.exit_code == 0
