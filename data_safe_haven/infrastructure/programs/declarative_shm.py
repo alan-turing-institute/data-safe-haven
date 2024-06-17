@@ -28,7 +28,6 @@ class DeclarativeSHM:
             "shm_networking",
             self.stack_name,
             SHMNetworkingProps(
-                admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 fqdn=self.cfg.shm.fqdn,
                 location=self.context.location,
                 record_domain_verification=self.pulumi_opts.require(
