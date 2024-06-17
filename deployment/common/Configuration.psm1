@@ -431,7 +431,7 @@ function Get-ShmConfig {
         hostname                   = $hostname
         hostnameLower              = $hostname.ToLower()
         hostnameUpper              = $hostname.ToUpper()
-        fqdn                       = "${hostname}.$($shm.domain.fqdn)"
+        fqdn                       = "${hostname}.$($shm.domain.fqdn)".ToLower()
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
         installationDirectory      = "C:\Installation"
@@ -451,7 +451,7 @@ function Get-ShmConfig {
     $shm.dcb = [ordered]@{
         vmName   = $hostname
         hostname = $hostname
-        fqdn     = "${hostname}.$($shm.domain.fqdn)"
+        fqdn     = "${hostname}.$($shm.domain.fqdn)".ToLower()
         ip       = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 5
     }
 
@@ -663,7 +663,7 @@ function Get-SreConfig {
     $sreDomain = $sreConfigBase.domain ? $sreConfigBase.domain : "$($config.sre.id).$($config.shm.domain.fqdn)".ToLower()
     $config.sre.domain = [ordered]@{
         dn          = "DC=$($sreDomain.Replace('.',',DC='))"
-        fqdn        = $sreDomain
+        fqdn        = "$sreDomain".ToLower()
         netbiosName = $($config.sre.id).ToUpper() | Limit-StringLength -MaximumLength 15 -FailureIsFatal
     }
     $config.sre.domain.securityGroups = [ordered]@{
@@ -894,7 +894,7 @@ function Get-SreConfig {
     foreach ($server in $config.sre.remoteDesktop.Keys) {
         if (-not $config.sre.remoteDesktop[$server].vmName) { continue }
         $config.sre.remoteDesktop[$server].hostname = $config.sre.remoteDesktop[$server].vmName
-        $config.sre.remoteDesktop[$server].fqdn = "$($config.sre.remoteDesktop[$server].vmName).$($config.shm.domain.fqdn)"
+        $config.sre.remoteDesktop[$server].fqdn = "$($config.sre.remoteDesktop[$server].vmName).$($config.shm.domain.fqdn)".ToLower()
     }
 
     # Set the appropriate tier-dependent network rules for the remote desktop server
@@ -982,7 +982,7 @@ function Get-SreConfig {
     # Construct the hostname and FQDN for each VM
     foreach ($server in $config.sre.webapps.Keys) {
         if ($config.sre.webapps[$server] -IsNot [System.Collections.Specialized.OrderedDictionary]) { continue }
-        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].hostname).$($config.sre.domain.fqdn)"
+        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].hostname).$($config.sre.domain.fqdn)".ToLower()
         $config.sre.webapps[$server].vmName = "$($config.sre.webapps[$server].hostname)-SRE-$($config.sre.id)".ToUpper()
     }
 
