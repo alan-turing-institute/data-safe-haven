@@ -27,7 +27,6 @@ class TestConfigSectionAzure:
 class TestConfigSectionSHM:
     def test_constructor(self):
         ConfigSectionSHM(
-            admin_email_address="admin@example.com",
             admin_ip_addresses=["0.0.0.0"],  # noqa: S104
             entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             fqdn="shm.acme.com",
@@ -42,9 +41,9 @@ class TestConfigSectionSHM:
     def test_update_validation(self, shm_config_section):
         with pytest.raises(
             ValidationError,
-            match="Value error, Expected valid email address.*not an email address",
+            match="Value error, Expected valid fully qualified domain name, for example 'example.com'.*not an FQDN",
         ):
-            shm_config_section.update(admin_email_address="not an email address")
+            shm_config_section.update(fqdn="not an FQDN")
 
 
 class TestConfigSubsectionRemoteDesktopOpts:
@@ -70,6 +69,7 @@ class TestConfigSubsectionRemoteDesktopOpts:
 class TestConfigSectionSRE:
     def test_constructor(self, remote_desktop_config):
         sre_config = ConfigSectionSRE(
+            admin_email_address="admin@example.com",
             databases=[DatabaseSystem.POSTGRESQL],
             data_provider_ip_addresses=["0.0.0.0"],  # noqa: S104
             remote_desktop=remote_desktop_config,
@@ -80,7 +80,8 @@ class TestConfigSectionSRE:
         assert sre_config.data_provider_ip_addresses[0] == "0.0.0.0/32"
 
     def test_constructor_defaults(self, remote_desktop_config):
-        sre_config = ConfigSectionSRE()
+        sre_config = ConfigSectionSRE(admin_email_address="admin@example.com")
+        assert sre_config.admin_email_address == "admin@example.com"
         assert sre_config.databases == []
         assert sre_config.data_provider_ip_addresses == []
         assert sre_config.remote_desktop == remote_desktop_config
@@ -95,19 +96,22 @@ class TestConfigSectionSRE:
             )
 
     def test_update(self):
-        sre_config = ConfigSectionSRE()
+        sre_config = ConfigSectionSRE(admin_email_address="admin@example.com")
+        assert sre_config.admin_email_address == "admin@example.com"
         assert sre_config.databases == []
         assert sre_config.data_provider_ip_addresses == []
         assert sre_config.workspace_skus == []
         assert sre_config.research_user_ip_addresses == []
         assert sre_config.software_packages == SoftwarePackageCategory.NONE
         sre_config.update(
+            admin_email_address="admin@example.org",
             data_provider_ip_addresses=["0.0.0.0"],  # noqa: S104
             databases=[DatabaseSystem.MICROSOFT_SQL_SERVER],
             workspace_skus=["Standard_D8s_v4"],
             software_packages=SoftwarePackageCategory.ANY,
             user_ip_addresses=["0.0.0.0"],  # noqa: S104
         )
+        assert sre_config.admin_email_address == "admin@example.org"
         assert sre_config.databases == [DatabaseSystem.MICROSOFT_SQL_SERVER]
         assert sre_config.data_provider_ip_addresses == ["0.0.0.0/32"]
         assert sre_config.workspace_skus == ["Standard_D8s_v4"]

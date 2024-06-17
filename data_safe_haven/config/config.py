@@ -34,7 +34,6 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
-    admin_email_address: EmailAddress
     admin_ip_addresses: list[IpAddress]
     entra_tenant_id: Guid
     fqdn: Fqdn
@@ -43,7 +42,6 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
     def update(
         self,
         *,
-        admin_email_address: str | None = None,
         admin_ip_addresses: list[str] | None = None,
         entra_tenant_id: str | None = None,
         fqdn: str | None = None,
@@ -53,18 +51,11 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
 
         Args:
             entra_tenant_id: Entra ID tenant containing users
-            admin_email_address: Email address shared by all administrators
             admin_ip_addresses: List of IP addresses belonging to administrators
             fqdn: Fully-qualified domain name to use for this SHM
             timezone: Timezone in pytz format (eg. Europe/London)
         """
         logger = LoggingSingleton()
-        # Set admin email address
-        if admin_email_address:
-            self.admin_email_address = admin_email_address
-        logger.info(
-            f"[bold]Admin email address[/] will be [green]{self.admin_email_address}[/]."
-        )
         # Set admin IP addresses
         if admin_ip_addresses:
             self.admin_ip_addresses = admin_ip_addresses
@@ -117,6 +108,7 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
+    admin_email_address: EmailAddress
     databases: UniqueList[DatabaseSystem] = Field(
         ..., default_factory=list[DatabaseSystem]
     )
@@ -135,6 +127,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     def update(
         self,
         *,
+        admin_email_address: str | None = None,
         data_provider_ip_addresses: list[IpAddress] | None = None,
         databases: list[DatabaseSystem] | None = None,
         workspace_skus: list[AzureVmSku] | None = None,
@@ -144,6 +137,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         """Update SRE settings
 
         Args:
+            admin_email_address: Email address shared by all administrators
             databases: List of database systems to deploy
             data_provider_ip_addresses: List of IP addresses belonging to data providers
             workspace_skus: List of VM SKUs for workspaces
@@ -151,6 +145,12 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
             user_ip_addresses: List of IP addresses belonging to users
         """
         logger = LoggingSingleton()
+        # Set admin email address
+        if admin_email_address:
+            self.admin_email_address = admin_email_address
+        logger.info(
+            f"[bold]Admin email address[/] will be [green]{self.admin_email_address}[/]."
+        )
         # Set data provider IP addresses
         if data_provider_ip_addresses:
             self.data_provider_ip_addresses = data_provider_ip_addresses
@@ -203,7 +203,6 @@ class SHMConfig(AzureSerialisableModel):
                 tenant_id="Azure tenant ID",
             ),
             shm=ConfigSectionSHM.model_construct(
-                admin_email_address="Admin email address",
                 admin_ip_addresses=["Admin IP addresses"],
                 entra_tenant_id="Entra tenant ID",
                 fqdn="TRE domain name",
@@ -265,7 +264,6 @@ class Config(AzureSerialisableModel):
                 tenant_id="Azure tenant ID",
             ),
             shm=ConfigSectionSHM.model_construct(
-                admin_email_address="Admin email address",
                 admin_ip_addresses=["Admin IP addresses"],
                 entra_tenant_id="Entra tenant ID",
                 fqdn="TRE domain name",
@@ -273,6 +271,7 @@ class Config(AzureSerialisableModel):
             ),
             sres={
                 "example": ConfigSectionSRE.model_construct(
+                    admin_email_address="Admin email address",
                     databases=["List of database systems to enable"],
                     data_provider_ip_addresses=["Data provider IP addresses"],
                     remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(

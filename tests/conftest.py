@@ -51,11 +51,12 @@ def config_no_sres(azure_config, shm_config_section):
 
 @fixture
 def config_sres(azure_config, shm_config_section):
-    sre_config_1 = ConfigSectionSRE()
+    sre_config_1 = ConfigSectionSRE(admin_email_address="admin@example.com")
     sre_config_2 = ConfigSectionSRE(
+        admin_email_address="admin@example.com",
         remote_desktop=ConfigSubsectionRemoteDesktopOpts(
             allow_copy=True, allow_paste=True
-        )
+        ),
     )
     return Config(
         azure=azure_config,
@@ -74,7 +75,6 @@ def config_yaml():
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
     shm:
-        admin_email_address: admin@example.com
         admin_ip_addresses:
         - 0.0.0.0/32
         entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
@@ -82,6 +82,7 @@ def config_yaml():
         timezone: UTC
     sres:
         sre1:
+            admin_email_address: admin@example.com
             data_provider_ip_addresses: []
             databases: []
             remote_desktop:
@@ -91,6 +92,7 @@ def config_yaml():
             software_packages: none
             workspace_skus: []
         sre2:
+            admin_email_address: admin@example.com
             data_provider_ip_addresses: []
             databases: []
             remote_desktop:
@@ -290,7 +292,7 @@ def shm_config(
 def shm_config_alternate(
     azure_config: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
 ) -> SHMConfig:
-    shm_config_section.admin_email_address = "sherlock@holmes.com"
+    shm_config_section.fqdn = "shm-alternate.acme.com"
     return SHMConfig(
         azure=azure_config,
         shm=shm_config_section,
@@ -308,7 +310,6 @@ def shm_config_file(shm_config_yaml: str, tmp_path: Path) -> Path:
 @fixture
 def shm_config_section():
     return ConfigSectionSHM(
-        admin_email_address="admin@example.com",
         admin_ip_addresses=["0.0.0.0"],  # noqa: S104
         entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         fqdn="shm.acme.com",
@@ -323,7 +324,6 @@ def shm_config_yaml():
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
     shm:
-        admin_email_address: admin@example.com
         admin_ip_addresses:
         - 0.0.0.0/32
         entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd

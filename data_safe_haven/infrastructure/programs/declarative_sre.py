@@ -184,7 +184,7 @@ class DeclarativeSRE:
             "sre_data",
             self.stack_name,
             SREDataProps(
-                admin_email_address=self.cfg.shm.admin_email_address,
+                admin_email_address=self.cfg.sre(self.sre_name).admin_email_address,
                 admin_group_id=self.context.admin_group_id,
                 admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 data_provider_ip_addresses=self.cfg.sre(
