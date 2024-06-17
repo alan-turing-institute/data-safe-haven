@@ -272,17 +272,6 @@ def remote_desktop_config():
 
 
 @fixture
-def shm_config_section():
-    return ConfigSectionSHM(
-        admin_email_address="admin@example.com",
-        admin_ip_addresses=["0.0.0.0"],  # noqa: S104
-        entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        fqdn="shm.acme.com",
-        timezone="UTC",
-    )
-
-
-@fixture
 def shm_config(azure_config, shm_config_section):
     sre_config_1 = ConfigSectionSRE()
     sre_config_2 = ConfigSectionSRE(
@@ -298,6 +287,53 @@ def shm_config(azure_config, shm_config_section):
             "sre2": sre_config_2,
         },
     )
+
+
+@fixture
+def shm_config_section():
+    return ConfigSectionSHM(
+        admin_email_address="admin@example.com",
+        admin_ip_addresses=["0.0.0.0"],  # noqa: S104
+        entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        fqdn="shm.acme.com",
+        timezone="UTC",
+    )
+
+
+@fixture
+def shm_config_yaml():
+    content = """---
+    azure:
+        subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+        tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+    shm:
+        admin_email_address: admin@example.com
+        admin_ip_addresses:
+        - 0.0.0.0/32
+        entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+        fqdn: shm.acme.com
+        timezone: UTC
+    sres:
+        sre1:
+            data_provider_ip_addresses: []
+            databases: []
+            remote_desktop:
+                allow_copy: false
+                allow_paste: false
+            research_user_ip_addresses: []
+            software_packages: none
+            workspace_skus: []
+        sre2:
+            data_provider_ip_addresses: []
+            databases: []
+            remote_desktop:
+                allow_copy: true
+                allow_paste: true
+            research_user_ip_addresses: []
+            software_packages: none
+            workspace_skus: []
+    """
+    return yaml.dump(yaml.safe_load(content))
 
 
 @fixture

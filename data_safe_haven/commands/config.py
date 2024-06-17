@@ -6,7 +6,7 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.config import Config
+from data_safe_haven.config import Config, SHMConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.utility import LoggingSingleton
 
@@ -64,10 +64,10 @@ def upload(
     # Create configuration object from file
     with open(file) as config_file:
         config_yaml = config_file.read()
-    config = Config.from_yaml(config_yaml)
+    config = SHMConfig.from_yaml(config_yaml)
 
     # Present diff to user
-    if Config.remote_exists(context):
+    if SHMConfig.remote_exists(context):
         if diff := config.remote_yaml_diff(context):
             print("".join(diff))
             if not logger.confirm(
@@ -128,7 +128,25 @@ def show(
 ) -> None:
     """Print the configuration for the selected Data Safe Haven context"""
     context = ContextSettings.from_file().assert_context()
-    config = Config.from_remote(context)
+    config = SHMConfig.from_remote(context)
+    if file:
+        with open(file, "w") as outfile:
+            outfile.write(config.to_yaml())
+    else:
+        print(config.to_yaml())
+
+
+@config_command_group.command()
+def show_sre(
+    name: Annotated[str, typer.Argument(help="Name of SRE to upload")],
+    file: Annotated[
+        Optional[Path],  # noqa: UP007
+        typer.Option(help="File path to write configuration template to."),
+    ] = None,
+) -> None:
+    """Print the configuration for the selected Data Safe Haven context"""
+    context = ContextSettings.from_file().assert_context()
+    config = Config.sre_from_remote(context, name)
     if file:
         with open(file, "w") as outfile:
             outfile.write(config.to_yaml())

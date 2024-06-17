@@ -185,7 +185,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
 
 class SHMConfig(AzureSerialisableModel):
     config_type: ClassVar[str] = "SHMConfig"
-    filename: ClassVar[str] = "config.yaml"
+    filename: ClassVar[str] = "shm.yaml"
     azure: ConfigSectionAzure
     shm: ConfigSectionSHM
     sres: dict[str, ConfigSectionSRE] = Field(
