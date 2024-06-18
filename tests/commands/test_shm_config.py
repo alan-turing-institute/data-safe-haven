@@ -45,7 +45,7 @@ class TestUpload:
         mock_exists.assert_called_once_with(context)
         mock_upload.assert_called_once_with(
             shm_config_yaml,
-            SHMConfig.filename,
+            SHMConfig.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -96,7 +96,7 @@ class TestUpload:
         mock_from_remote.assert_called_once_with(context, filename=None)
         mock_upload.assert_called_once_with(
             shm_config_yaml,
-            SHMConfig.filename,
+            SHMConfig.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -147,7 +147,7 @@ class TestShow:
         assert shm_config_yaml in result.stdout
 
         mock_method.assert_called_once_with(
-            SHMConfig.filename,
+            SHMConfig.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,

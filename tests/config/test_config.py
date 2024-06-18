@@ -176,7 +176,7 @@ class TestConfig:
 
         assert config == sre_config
         mock_method.assert_called_once_with(
-            SREConfig.filename,
+            SREConfig.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -191,7 +191,7 @@ class TestConfig:
 
         mock_method.assert_called_once_with(
             sre_config.to_yaml(),
-            SREConfig.filename,
+            SREConfig.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,

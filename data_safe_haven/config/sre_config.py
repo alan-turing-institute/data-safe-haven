@@ -16,7 +16,7 @@ from .config_sections import (
 
 class SREConfig(AzureSerialisableModel):
     config_type: ClassVar[str] = "SREConfig"
-    filename: ClassVar[str] = "sre.yaml"
+    default_filename: ClassVar[str] = "sre.yaml"
     azure: ConfigSectionAzure
     sre: ConfigSectionSRE
 

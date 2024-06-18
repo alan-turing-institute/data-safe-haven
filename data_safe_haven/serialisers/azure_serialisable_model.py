@@ -14,7 +14,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
     """Base class for configuration that can be written to Azure storage"""
 
     config_type: ClassVar[str] = "AzureSerialisableModel"
-    filename: ClassVar[str] = "config.yaml"
+    default_filename: ClassVar[str] = "config.yaml"
 
     @classmethod
     def from_remote(
@@ -23,7 +23,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         """Construct an AzureSerialisableModel from a YAML file in Azure storage."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
         config_yaml = azure_api.download_blob(
-            filename or cls.filename,
+            filename or cls.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -50,14 +50,14 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         """Check whether a remote instance of this model exists."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
         return azure_api.blob_exists(
-            filename or cls.filename,
+            filename or cls.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
         )
 
     def remote_yaml_diff(
-        self, context: ContextBase, *, filename: str | None = None
+        self: T, context: ContextBase, *, filename: str | None = None
     ) -> list[str]:
         """
         Determine the diff of YAML output from the remote model to `self`.
@@ -68,12 +68,12 @@ class AzureSerialisableModel(YAMLSerialisableModel):
 
         return self.yaml_diff(remote_model, from_name="remote", to_name="local")
 
-    def upload(self, context: ContextBase, *, filename: str | None = None) -> None:
+    def upload(self: T, context: ContextBase, *, filename: str | None = None) -> None:
         """Serialise an AzureSerialisableModel to a YAML file in Azure storage."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
         azure_api.upload_blob(
             self.to_yaml(),
-            filename or self.filename,
+            filename or self.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,

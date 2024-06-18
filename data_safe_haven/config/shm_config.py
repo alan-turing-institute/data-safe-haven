@@ -11,7 +11,7 @@ from .config_sections import ConfigSectionAzure, ConfigSectionSHM
 
 class SHMConfig(AzureSerialisableModel):
     config_type: ClassVar[str] = "SHMConfig"
-    filename: ClassVar[str] = "shm.yaml"
+    default_filename: ClassVar[str] = "shm.yaml"
     azure: ConfigSectionAzure
     shm: ConfigSectionSHM
 
