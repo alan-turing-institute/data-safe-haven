@@ -194,18 +194,16 @@ class SHMConfig(AzureSerialisableModel):
         return True
 
     @classmethod
-    def template(cls) -> Config:
+    def template(cls: type[Self]) -> SHMConfig:
         """Create object without validation to allow "replace me" prompts."""
-        return Config.model_construct(
+        return SHMConfig.model_construct(
             azure=ConfigSectionAzure.model_construct(
                 subscription_id="Azure subscription ID",
                 tenant_id="Azure tenant ID",
             ),
             shm=ConfigSectionSHM.model_construct(
-                admin_ip_addresses=["Admin IP addresses"],
                 entra_tenant_id="Entra tenant ID",
                 fqdn="TRE domain name",
-                timezone="Timezone",
             ),
         )
 
