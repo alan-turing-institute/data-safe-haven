@@ -40,7 +40,9 @@ def local_pulumi_login():
 @fixture(autouse=True)
 def log_directory(mocker, monkeypatch, tmp_path):
     monkeypatch.setenv("DSH_LOG_DIRECTORY", tmp_path)
-    mocker.patch.object(data_safe_haven.logging.logger, "logfile_name", return_value="test.log")
+    mocker.patch.object(
+        data_safe_haven.logging.logger, "logfile_name", return_value="test.log"
+    )
     init_logging()
     return tmp_path
 

@@ -1,11 +1,10 @@
+import logging
 from datetime import datetime
-from os import getenv
 from pathlib import Path
 
 from rich.logging import RichHandler
 
-from data_safe_haven.directories import log_dir
-from data_safe_haven.logging.logger import get_logger, PlainFileHandler, logfile_name
+from data_safe_haven.logging.logger import PlainFileHandler, get_logger, logfile_name
 
 
 class TestPlainFileHandler:
@@ -18,7 +17,16 @@ class TestLogFileName:
         name = logfile_name()
         assert name.endswith(".log")
         date = name.split(".")[0]
-        assert datetime.strptime(date, "%Y-%m-%d")
+        assert datetime.strptime(date, "%Y-%m-%d")  # noqa: DTZ007
+
+
+class TestGetLogger:
+    def test_get_logger(self):
+        logger = get_logger()
+        assert isinstance(logger, logging.Logger)
+        assert logger.name == "root"
+        assert hasattr(logger, "console_handler")
+        assert hasattr(logger, "file_handler")
 
 
 class TestLogger:
@@ -28,10 +36,6 @@ class TestLogger:
         assert isinstance(logger.file_handler, PlainFileHandler)
         assert isinstance(logger.console_handler, RichHandler)
 
-        print(getenv("DSH_LOG_DIRECTORY"))
-        print(log_dir())
-        print(logger.file_handler.baseFilename)
-        print(log_directory)
         assert logger.file_handler.baseFilename == f"{log_directory}/test.log"
         log_file = Path(logger.file_handler.baseFilename)
         logger.info("hello")
