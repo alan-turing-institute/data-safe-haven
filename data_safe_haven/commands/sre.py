@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 
 import typer
 
-from data_safe_haven.config import Config, DSHPulumiConfig, SHMConfig
+from data_safe_haven.config import DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputError
 from data_safe_haven.external import GraphApi
@@ -29,9 +29,9 @@ def deploy(
 ) -> None:
     """Deploy a Secure Research Environment"""
     context = ContextSettings.from_file().assert_context()
-    config = Config.sre_from_remote(context, name)
     pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_config = SHMConfig.from_remote(context)
+    sre_config = SREConfig.sre_from_remote(context, name)
     sre_name = sanitise_sre_name(name)
 
     try:
@@ -55,7 +55,7 @@ def deploy(
         )
         stack = SREProjectManager(
             context=context,
-            config=config,
+            config=sre_config,
             pulumi_config=pulumi_config,
             create_project=True,
             sre_name=sre_name,
@@ -65,10 +65,12 @@ def deploy(
         stack.add_option("azure-native:location", context.location, replace=False)
         stack.add_option(
             "azure-native:subscriptionId",
-            config.azure.subscription_id,
+            sre_config.azure.subscription_id,
             replace=False,
         )
-        stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
+        stack.add_option(
+            "azure-native:tenantId", sre_config.azure.tenant_id, replace=False
+        )
         # Load SHM outputs
         stack.add_option(
             "shm-entra-tenant-id",
@@ -99,7 +101,7 @@ def deploy(
             sre_name=sre_name,
             sre_stack=stack,
             subscription_name=context.subscription_name,
-            timezone=config.sre.timezone,
+            timezone=sre_config.sre.timezone,
         )
         manager.run()
     except DataSafeHavenError as exc:
@@ -116,9 +118,9 @@ def teardown(
 ) -> None:
     """Tear down a deployed a Secure Research Environment."""
     context = ContextSettings.from_file().assert_context()
-    sre_config = Config.sre_from_remote(context, name)
-    shm_config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
+    shm_config = SHMConfig.from_remote(context)
+    sre_config = SREConfig.sre_from_remote(context, name)
 
     sre_name = sanitise_sre_name(name)
     try:

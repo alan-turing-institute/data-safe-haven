@@ -8,10 +8,10 @@ from pytest import fixture
 
 import data_safe_haven.context.context_settings as context_mod
 from data_safe_haven.config import (
-    Config,
     DSHPulumiConfig,
     DSHPulumiProject,
     SHMConfig,
+    SREConfig,
 )
 from data_safe_haven.config.config import (
     ConfigSectionAzure,
@@ -288,8 +288,8 @@ def sre_config(
     azure_config: ConfigSectionAzure,
     shm_config_section: ConfigSectionSHM,
     sre_config_section: ConfigSectionSRE,
-) -> Config:
-    return Config(
+) -> SREConfig:
+    return SREConfig(
         azure=azure_config,
         shm=shm_config_section,
         sre=sre_config_section,
@@ -301,9 +301,9 @@ def sre_config_alternate(
     azure_config: ConfigSectionAzure,
     shm_config_section: ConfigSectionSHM,
     sre_config_section: ConfigSectionSRE,
-) -> Config:
+) -> SREConfig:
     sre_config_section.admin_ip_addresses = ["2.3.4.5"]
-    return Config(
+    return SREConfig(
         azure=azure_config,
         shm=shm_config_section,
         sre=sre_config_section,

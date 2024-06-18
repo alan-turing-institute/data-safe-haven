@@ -6,7 +6,7 @@ from typing import Annotated, Optional
 import typer
 from rich import print
 
-from data_safe_haven.config import Config, SHMConfig
+from data_safe_haven.config import SHMConfig, SREConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.utility import LoggingSingleton
 
@@ -21,11 +21,11 @@ def template(
     ] = None
 ) -> None:
     """Write a template Data Safe Haven configuration."""
-    config = SHMConfig.template()
+    shm_config = SHMConfig.template()
     # The template uses explanatory strings in place of the expected types.
     # Serialisation warnings are therefore suppressed to avoid misleading the users into
     # thinking there is a problem and contaminating the output.
-    config_yaml = config.to_yaml(warnings=False)
+    config_yaml = shm_config.to_yaml(warnings=False)
     if file:
         with open(file, "w") as outfile:
             outfile.write(config_yaml)
@@ -41,11 +41,11 @@ def template_sre(
     ] = None
 ) -> None:
     """Write a template Data Safe Haven SRE configuration."""
-    config = Config.template()
+    sre_config = SREConfig.template()
     # The template uses explanatory strings in place of the expected types.
     # Serialisation warnings are therefore suppressed to avoid misleading the users into
     # thinking there is a problem and contaminating the output.
-    config_yaml = config.to_yaml(warnings=False)
+    config_yaml = sre_config.to_yaml(warnings=False)
     if file:
         with open(file, "w") as outfile:
             outfile.write(config_yaml)
@@ -97,12 +97,12 @@ def upload_sre(
     # Create configuration object from file
     with open(file) as config_file:
         config_yaml = config_file.read()
-    config = Config.from_yaml(config_yaml)
-    filename = Config.sre_filename_from_name(name)
+    sre_config = SREConfig.from_yaml(config_yaml)
+    filename = SREConfig.sre_filename_from_name(name)
 
     # Present diff to user
-    if Config.remote_exists(context, filename=filename):
-        if diff := config.remote_yaml_diff(context, filename=filename):
+    if SREConfig.remote_exists(context, filename=filename):
+        if diff := sre_config.remote_yaml_diff(context, filename=filename):
             print("".join(diff))
             if not logger.confirm(
                 (
@@ -116,7 +116,7 @@ def upload_sre(
             print("No changes, won't upload configuration.")
             raise typer.Exit()
 
-    config.upload(context, filename=filename)
+    sre_config.upload(context, filename=filename)
 
 
 @config_command_group.command()
@@ -146,9 +146,9 @@ def show_sre(
 ) -> None:
     """Print the configuration for the selected Data Safe Haven context"""
     context = ContextSettings.from_file().assert_context()
-    config = Config.sre_from_remote(context, name)
+    sre_config = SREConfig.sre_from_remote(context, name)
     if file:
         with open(file, "w") as outfile:
-            outfile.write(config.to_yaml())
+            outfile.write(sre_config.to_yaml())
     else:
-        print(config.to_yaml())
+        print(sre_config.to_yaml())

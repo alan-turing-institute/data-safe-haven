@@ -208,7 +208,7 @@ class SHMConfig(AzureSerialisableModel):
         )
 
 
-class Config(AzureSerialisableModel):
+class SREConfig(AzureSerialisableModel):
     config_type: ClassVar[str] = "Config"
     filename: ClassVar[str] = "config.yaml"
     azure: ConfigSectionAzure
@@ -220,7 +220,7 @@ class Config(AzureSerialisableModel):
         return True
 
     @classmethod
-    def sre_from_remote(cls: type[Self], context: ContextBase, sre_name: str) -> Self:
+    def sre_from_remote(cls: type[Self], context: ContextBase, sre_name: str) -> SREConfig:
         """Load a Config from Azure storage."""
         return cls.from_remote(context, filename=cls.sre_filename_from_name(sre_name))
 
@@ -230,9 +230,9 @@ class Config(AzureSerialisableModel):
         return f"sre-{sanitise_sre_name(sre_name)}.yaml"
 
     @classmethod
-    def template(cls: type[Self]) -> Config:
+    def template(cls: type[Self]) -> SREConfig:
         """Create object without validation to allow "replace me" prompts."""
-        return Config.model_construct(
+        return SREConfig.model_construct(
             azure=ConfigSectionAzure.model_construct(
                 subscription_id="Azure subscription ID",
                 tenant_id="Azure tenant ID",

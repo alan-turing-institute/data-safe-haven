@@ -2,7 +2,7 @@ import csv
 import pathlib
 from collections.abc import Sequence
 
-from data_safe_haven.config import Config, DSHPulumiConfig
+from data_safe_haven.config import DSHPulumiConfig, SREConfig
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
@@ -89,7 +89,7 @@ class UserHandler:
     ) -> list[str]:
         """Lazy-load usernames from Guacamole"""
         try:
-            sre_config = Config.sre_from_remote(self.context, sre_name)
+            sre_config = SREConfig.sre_from_remote(self.context, sre_name)
             if sre_name not in self.sre_guacamole_users_.keys():
                 self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
                     self.context, sre_config, pulumi_config, sre_name

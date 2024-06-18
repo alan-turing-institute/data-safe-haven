@@ -1,5 +1,5 @@
 from data_safe_haven.commands.config import config_command_group
-from data_safe_haven.config import Config
+from data_safe_haven.config import SREConfig
 from data_safe_haven.external import AzureApi
 
 
@@ -27,8 +27,10 @@ class TestUpload:
         self, mocker, context, runner, sre_config_yaml, sre_config_file
     ):
         sre_name = "sre 1"
-        sre_filename = Config.sre_filename_from_name(sre_name)
-        mock_exists = mocker.patch.object(Config, "remote_exists", return_value=False)
+        sre_filename = SREConfig.sre_filename_from_name(sre_name)
+        mock_exists = mocker.patch.object(
+            SREConfig, "remote_exists", return_value=False
+        )
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
@@ -49,10 +51,10 @@ class TestUpload:
         self, mocker, context, runner, sre_config, sre_config_file
     ):
         sre_name = "sre 1"
-        sre_filename = Config.sre_filename_from_name(sre_name)
-        mock_exists = mocker.patch.object(Config, "remote_exists", return_value=True)
+        sre_filename = SREConfig.sre_filename_from_name(sre_name)
+        mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
-            Config, "from_remote", return_value=sre_config
+            SREConfig, "from_remote", return_value=sre_config
         )
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
@@ -77,10 +79,10 @@ class TestUpload:
         sre_config_yaml,
     ):
         sre_name = "sre 1"
-        sre_filename = Config.sre_filename_from_name(sre_name)
-        mock_exists = mocker.patch.object(Config, "remote_exists", return_value=True)
+        sre_filename = SREConfig.sre_filename_from_name(sre_name)
+        mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
-            Config, "from_remote", return_value=sre_config_alternate
+            SREConfig, "from_remote", return_value=sre_config_alternate
         )
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
@@ -107,10 +109,10 @@ class TestUpload:
         self, mocker, context, runner, sre_config_alternate, sre_config_file
     ):
         sre_name = "sre 1"
-        sre_filename = Config.sre_filename_from_name(sre_name)
-        mock_exists = mocker.patch.object(Config, "remote_exists", return_value=True)
+        sre_filename = SREConfig.sre_filename_from_name(sre_name)
+        mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
-            Config, "from_remote", return_value=sre_config_alternate
+            SREConfig, "from_remote", return_value=sre_config_alternate
         )
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
@@ -148,7 +150,7 @@ class TestShow:
         assert sre_config_yaml in result.stdout
 
         mock_method.assert_called_once_with(
-            Config.sre_filename_from_name(sre_name),
+            SREConfig.sre_filename_from_name(sre_name),
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,

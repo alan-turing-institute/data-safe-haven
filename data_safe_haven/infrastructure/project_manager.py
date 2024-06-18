@@ -10,7 +10,12 @@ from typing import Any
 from pulumi import automation
 from pulumi.automation import ConfigValue
 
-from data_safe_haven.config import Config, DSHPulumiConfig, DSHPulumiProject, SHMConfig
+from data_safe_haven.config import (
+    DSHPulumiConfig,
+    DSHPulumiProject,
+    SHMConfig,
+    SREConfig,
+)
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
@@ -414,7 +419,7 @@ class SREProjectManager(ProjectManager):
     def __init__(
         self,
         context: Context,
-        config: Config,
+        config: SREConfig,
         pulumi_config: DSHPulumiConfig,
         *,
         create_project: bool = False,

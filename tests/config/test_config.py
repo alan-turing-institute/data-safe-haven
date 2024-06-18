@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from data_safe_haven.config import Config
+from data_safe_haven.config import SREConfig
 from data_safe_haven.config.config import (
     ConfigSectionAzure,
     ConfigSectionSHM,
@@ -137,7 +137,7 @@ class TestConfigSectionSRE:
 
 class TestConfig:
     def test_constructor(self, azure_config, sre_config_section):
-        config = Config(
+        config = SREConfig(
             azure=azure_config,
             sre=sre_config_section,
         )
@@ -146,22 +146,22 @@ class TestConfig:
     def test_constructor_invalid(self, azure_config):
         with pytest.raises(
             ValidationError,
-            match=r"1 validation error for Config\nsre\n  Field required.*",
+            match=r"1 validation error for SREConfig\nsre\n  Field required.*",
         ):
-            Config(azure=azure_config)
+            SREConfig(azure=azure_config)
 
     def test_template(self):
-        config = Config.template()
-        assert isinstance(config, Config)
+        config = SREConfig.template()
+        assert isinstance(config, SREConfig)
         assert config.azure.subscription_id == "Azure subscription ID"
 
     def test_template_validation(self):
-        config = Config.template()
+        config = SREConfig.template()
         with pytest.raises(DataSafeHavenParameterError):
-            Config.from_yaml(config.to_yaml())
+            SREConfig.from_yaml(config.to_yaml())
 
     def test_from_yaml(self, sre_config, sre_config_yaml):
-        config = Config.from_yaml(sre_config_yaml)
+        config = SREConfig.from_yaml(sre_config_yaml)
         assert config == sre_config
         assert isinstance(config.sre.software_packages, SoftwarePackageCategory)
 
@@ -169,11 +169,11 @@ class TestConfig:
         mock_method = mocker.patch.object(
             AzureApi, "download_blob", return_value=sre_config_yaml
         )
-        config = Config.from_remote(context)
+        config = SREConfig.from_remote(context)
 
         assert config == sre_config
         mock_method.assert_called_once_with(
-            Config.filename,
+            SREConfig.filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -188,7 +188,7 @@ class TestConfig:
 
         mock_method.assert_called_once_with(
             sre_config.to_yaml(),
-            Config.filename,
+            SREConfig.filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,

@@ -2,7 +2,7 @@
 
 import pulumi
 
-from data_safe_haven.config import Config
+from data_safe_haven.config import SREConfig
 from data_safe_haven.context import Context
 
 from .sre.application_gateway import (
@@ -58,7 +58,7 @@ class DeclarativeSRE:
     def __init__(
         self,
         context: Context,
-        config: Config,
+        config: SREConfig,
         shm_name: str,
         sre_name: str,
         graph_api_token: str,

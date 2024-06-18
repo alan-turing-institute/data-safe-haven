@@ -1,7 +1,7 @@
 from pytest import fixture
 from typer.testing import CliRunner
 
-from data_safe_haven.config import Config, DSHPulumiConfig, SHMConfig
+from data_safe_haven.config import DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.context import ContextSettings
 
 
@@ -12,7 +12,7 @@ def context(context_yaml):
 
 @fixture
 def mock_config_from_remote(mocker, sre_config):
-    mocker.patch.object(Config, "sre_from_remote", return_value=sre_config)
+    mocker.patch.object(SREConfig, "sre_from_remote", return_value=sre_config)
 
 
 @fixture
