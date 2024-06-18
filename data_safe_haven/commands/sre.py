@@ -38,7 +38,7 @@ def deploy(
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(
-            tenant_id=config.shm.entra_tenant_id,
+            tenant_id=shm_config.shm.entra_tenant_id,
             default_scopes=[
                 "Application.ReadWrite.All",
                 "AppRoleAssignment.ReadWrite.All",
@@ -69,7 +69,12 @@ def deploy(
             replace=False,
         )
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
-        # Load SHM stack outputs
+        # Load SHM outputs
+        stack.add_option(
+            "shm-entra-tenant-id",
+            shm_config.shm.entra_tenant_id,
+            replace=True,
+        )
         stack.add_option(
             "shm-fqdn",
             shm_stack.output("networking")["fqdn"],

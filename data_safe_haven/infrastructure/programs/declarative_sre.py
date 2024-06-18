@@ -75,6 +75,7 @@ class DeclarativeSRE:
     def __call__(self) -> None:
         # Load pulumi configuration options
         self.pulumi_opts = pulumi.Config()
+        shm_entra_tenant_id = self.pulumi_opts.require("shm-entra-tenant-id")
         shm_fqdn = self.pulumi_opts.require("shm-fqdn")
         shm_networking_resource_group_name = self.pulumi_opts.require(
             "shm-networking-resource_group_name"
@@ -227,7 +228,7 @@ class DeclarativeSRE:
                 dns_server_ip=dns.ip_address,
                 entra_application_name=f"sre-{self.sre_name}-apricot",
                 entra_auth_token=self.graph_api_token,
-                entra_tenant_id=self.cfg.shm.entra_tenant_id,
+                entra_tenant_id=shm_entra_tenant_id,
                 location=self.context.location,
                 networking_resource_group_name=networking.resource_group.name,
                 shm_fqdn=shm_fqdn,
@@ -267,7 +268,7 @@ class DeclarativeSRE:
                 entra_application_fqdn=networking.sre_fqdn,
                 entra_application_name=f"sre-{self.sre_name}-guacamole",
                 entra_auth_token=self.graph_api_token,
-                entra_tenant_id=self.cfg.shm.entra_tenant_id,
+                entra_tenant_id=shm_entra_tenant_id,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
                 ldap_server_hostname=identity.hostname,
