@@ -49,6 +49,13 @@ class TestSetConsoleLevel:
         set_console_level(logging.DEBUG)
         assert logger.console_handler.level == logging.DEBUG
 
+    def test_set_console_level_stdout(self, capsys):
+        logger = get_logger()
+        set_console_level(logging.DEBUG)
+        logger.debug("hello")
+        out, _ = capsys.readouterr()
+        assert "hello" in out
+
 
 class TestShowConsoleLevel:
     def test_show_console_level(self):
@@ -56,3 +63,10 @@ class TestShowConsoleLevel:
         assert not logger.console_handler._log_render.show_level
         show_console_level()
         assert logger.console_handler._log_render.show_level
+
+    def test_show_console_level_stdout(self, capsys):
+        logger = get_logger()
+        show_console_level()
+        logger.info("hello")
+        out, _ = capsys.readouterr()
+        assert "INFO" in out
