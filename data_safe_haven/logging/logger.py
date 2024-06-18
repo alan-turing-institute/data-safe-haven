@@ -10,6 +10,32 @@ from rich.text import Text
 from data_safe_haven.directories import log_dir
 
 
+class PlainFileHandler(logging.FileHandler):
+    """
+    Logging handler that cleans messages before sending them to a log file.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        """Constructor"""
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def strip_formatting(input_string: str) -> str:
+        """Strip console markup formatting from a string"""
+        text = Text.from_markup(input_string)
+        text.spans = []
+        return str(text)
+
+    def emit(self, record: logging.LogRecord) -> None:
+        """Emit a record without formatting"""
+        record.msg = self.strip_formatting(record.msg)
+        super().emit(record)
+
+
+def get_logger() -> logging.Logger:
+    return logging.getLogger(None)
+
+
 def init_logging() -> None:
     # Configure root handler
     logger = get_logger()
@@ -52,32 +78,6 @@ def init_logging() -> None:
 
 def logfile_name() -> str:
     return f"{datetime.now(UTC).date()}.log"
-
-
-def get_logger() -> logging.Logger:
-    return logging.getLogger(None)
-
-
-class PlainFileHandler(logging.FileHandler):
-    """
-    Logging handler that cleans messages before sending them to a log file.
-    """
-
-    def __init__(self, *args: Any, **kwargs: Any):
-        """Constructor"""
-        super().__init__(*args, **kwargs)
-
-    @staticmethod
-    def strip_formatting(input_string: str) -> str:
-        """Strip console markup formatting from a string"""
-        text = Text.from_markup(input_string)
-        text.spans = []
-        return str(text)
-
-    def emit(self, record: logging.LogRecord) -> None:
-        """Emit a record without formatting"""
-        record.msg = self.strip_formatting(record.msg)
-        super().emit(record)
 
 
 def set_console_level(level: int | str) -> None:
