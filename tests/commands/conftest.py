@@ -11,11 +11,6 @@ def context(context_yaml):
 
 
 @fixture
-def mock_config_from_remote(mocker, sre_config):
-    mocker.patch.object(SREConfig, "from_remote_by_name", return_value=sre_config)
-
-
-@fixture
 def mock_pulumi_config_from_remote(mocker, pulumi_config):
     mocker.patch.object(DSHPulumiConfig, "from_remote", return_value=pulumi_config)
 
@@ -30,6 +25,11 @@ def mock_pulumi_config_no_key_from_remote(mocker, pulumi_config_no_key):
 @fixture
 def mock_shm_config_from_remote(mocker, shm_config):
     mocker.patch.object(SHMConfig, "from_remote", return_value=shm_config)
+
+
+@fixture
+def mock_sre_config_from_remote(mocker, sre_config):
+    mocker.patch.object(SREConfig, "from_remote_by_name", return_value=sre_config)
 
 
 @fixture

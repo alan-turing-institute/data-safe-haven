@@ -18,7 +18,7 @@ class TestAdd:
 class TestListUsers:
     def test_invalid_shm(
         self,
-        mock_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
         mock_pulumi_config_from_remote,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
         runner,
@@ -35,7 +35,7 @@ class TestRegister:
         self,
         mock_pulumi_config_from_remote,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
-        mock_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
     ):
@@ -50,7 +50,7 @@ class TestRegister:
         self,
         mock_pulumi_config_from_remote,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
-        mock_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
         runner,
         tmp_contexts,  # noqa: ARG002
     ):
@@ -81,7 +81,7 @@ class TestUnregister:
         self,
         mock_pulumi_config_from_remote,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
-        mock_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
     ):
@@ -96,7 +96,7 @@ class TestUnregister:
         self,
         mock_pulumi_config_from_remote,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
-        mock_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
         runner,
         tmp_contexts,  # noqa: ARG002
     ):
