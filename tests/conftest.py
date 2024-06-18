@@ -286,12 +286,11 @@ def sre_config_file(sre_config_yaml, tmp_path):
 @fixture
 def sre_config(
     azure_config: ConfigSectionAzure,
-    shm_config_section: ConfigSectionSHM,
     sre_config_section: ConfigSectionSRE,
 ) -> SREConfig:
     return SREConfig(
         azure=azure_config,
-        shm=shm_config_section,
+        name="sandbox",
         sre=sre_config_section,
     )
 
@@ -299,13 +298,12 @@ def sre_config(
 @fixture
 def sre_config_alternate(
     azure_config: ConfigSectionAzure,
-    shm_config_section: ConfigSectionSHM,
     sre_config_section: ConfigSectionSRE,
 ) -> SREConfig:
     sre_config_section.admin_ip_addresses = ["2.3.4.5"]
     return SREConfig(
         azure=azure_config,
-        shm=shm_config_section,
+        name="alternative",
         sre=sre_config_section,
     )
 
@@ -325,6 +323,7 @@ def sre_config_yaml():
     azure:
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+    name: sandbox
     sre:
         admin_email_address: admin@example.com
         admin_ip_addresses:

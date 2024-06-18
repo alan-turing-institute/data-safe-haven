@@ -39,6 +39,17 @@ def azure_vm_sku(azure_vm_sku: str) -> str:
     return azure_vm_sku
 
 
+def config_name(config_name: str) -> str:
+    if (
+        (not re.match(r"^[a-zA-Z0-9 -]+$", config_name))
+        or config_name.startswith((" ", "-"))
+        or config_name.endswith((" ", "-"))
+    ):
+        msg = "DSH config names can only contain alphanumeric characters, spaces and hyphens.\n They must start and end with alphanumeric characters"
+        raise ValueError(msg)
+    return config_name
+
+
 def fqdn(domain: str) -> str:
     trial_fqdn = FQDN(domain)
     if not trial_fqdn.is_valid:

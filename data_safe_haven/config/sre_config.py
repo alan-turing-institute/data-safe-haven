@@ -6,6 +6,7 @@ from typing import ClassVar, Self
 
 from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.serialisers import AzureSerialisableModel, ContextBase
+from data_safe_haven.types import ConfigName
 
 from .config_sections import (
     ConfigSectionAzure,
@@ -18,10 +19,11 @@ class SREConfig(AzureSerialisableModel):
     config_type: ClassVar[str] = "SREConfig"
     default_filename: ClassVar[str] = "sre.yaml"
     azure: ConfigSectionAzure
+    name: ConfigName
     sre: ConfigSectionSRE
 
     def is_complete(self) -> bool:
-        if not all((self.azure, self.sre)):
+        if not all((self.azure, self.name, self.sre)):
             return False
         return True
 
@@ -45,6 +47,7 @@ class SREConfig(AzureSerialisableModel):
                 subscription_id="ID of the Azure subscription that the SRE will be deployed to",
                 tenant_id="Home tenant for the Azure account used to deploy infrastructure: `az account show`",
             ),
+            name="Name of this SRE deployment",
             sre=ConfigSectionSRE.model_construct(
                 admin_email_address="Email address shared by all administrators",
                 admin_ip_addresses=["List of IP addresses belonging to administrators"],
