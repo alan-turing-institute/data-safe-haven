@@ -153,7 +153,10 @@ class TestConfig:
     def test_template(self):
         config = SREConfig.template()
         assert isinstance(config, SREConfig)
-        assert config.azure.subscription_id == "Azure subscription ID"
+        assert (
+            config.azure.subscription_id
+            == "ID of the Azure subscription that the SRE will be deployed to"
+        )
 
     def test_template_validation(self):
         config = SREConfig.template()

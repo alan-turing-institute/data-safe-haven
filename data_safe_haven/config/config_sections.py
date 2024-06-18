@@ -41,8 +41,8 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
         """Update SHM settings
 
         Args:
-            entra_tenant_id: Entra ID tenant containing users
-            fqdn: Fully-qualified domain name to use for this SHM
+            entra_tenant_id: Tenant ID for the Entra ID used to manage TRE users
+            fqdn: Fully-qualified domain name to use for this TRE
         """
         logger = LoggingSingleton()
         # Set Entra tenant ID
@@ -127,7 +127,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
             software_packages: Whether to allow packages from external repositories
             timezone: Timezone in pytz format (eg. Europe/London)
             user_ip_addresses: List of IP addresses belonging to users
-            workspace_skus: List of VM SKUs for workspaces
+            workspace_skus: List of Azure VM SKUs - see cloudprice.net for list of valid SKUs
         """
         logger = LoggingSingleton()
         # Set admin email address

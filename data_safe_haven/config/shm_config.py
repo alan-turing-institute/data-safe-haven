@@ -25,11 +25,11 @@ class SHMConfig(AzureSerialisableModel):
         """Create SHMConfig without validation to allow "replace me" prompts."""
         return SHMConfig.model_construct(
             azure=ConfigSectionAzure.model_construct(
-                subscription_id="Azure subscription ID",
-                tenant_id="Azure tenant ID",
+                subscription_id="ID of the Azure subscription that the TRE will be deployed to",
+                tenant_id="Home tenant for the Azure account used to deploy infrastructure: `az account show`",
             ),
             shm=ConfigSectionSHM.model_construct(
-                entra_tenant_id="Entra tenant ID",
-                fqdn="TRE domain name",
+                entra_tenant_id="Tenant ID for the Entra ID used to manage TRE users",
+                fqdn="Domain you want your users to belong to and where your TRE will be deployed",
             ),
         )

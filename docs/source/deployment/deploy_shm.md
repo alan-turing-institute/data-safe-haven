@@ -21,11 +21,12 @@ However, you may choose to use multiple SHMs if, for example, you want to separa
 - Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.
 
 ```yaml
-- azure
-  - tenant id # your deployment account's home tenant `az account show`
-  - subscription id # the subscription you will deploy to
--  shm
-  - aad_tenant id # the tenant id **of the Entra ID used to manage TRE users**
+azure:
+  subscription_id: # ID of the Azure subscription that the TRE will be deployed to
+  tenant_id: # Home tenant for the Azure account used to deploy infrastructure: `az account show`
+shm:
+  entra_tenant_id: # Tenant ID for the Entra ID used to manage TRE users
+  fqdn: # Domain you want your users to belong to and where your TRE will be deployed
 ```
 
 ## Upload the configuration file

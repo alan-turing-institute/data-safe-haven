@@ -7,7 +7,10 @@ class TestTemplate:
     def test_template(self, runner):
         result = runner.invoke(config_command_group, ["template"])
         assert result.exit_code == 0
-        assert "subscription_id: Azure subscription ID" in result.stdout
+        assert (
+            "subscription_id: ID of the Azure subscription that the TRE will be deployed to"
+            in result.stdout
+        )
         assert "shm:" in result.stdout
 
     def test_template_file(self, runner, tmp_path):
@@ -18,7 +21,10 @@ class TestTemplate:
         assert result.exit_code == 0
         with open(template_file) as f:
             template_text = f.read()
-        assert "subscription_id: Azure subscription ID" in template_text
+        assert (
+            "subscription_id: ID of the Azure subscription that the TRE will be deployed to"
+            in template_text
+        )
         assert "shm:" in template_text
 
 
