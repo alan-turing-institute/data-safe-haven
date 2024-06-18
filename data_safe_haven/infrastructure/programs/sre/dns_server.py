@@ -29,12 +29,10 @@ class SREDnsServerProps:
         self,
         location: Input[str],
         shm_fqdn: Input[str],
-        shm_networking_resource_group_name: Input[str],
     ) -> None:
         self.admin_username = "dshadmin"
         self.location = location
         self.shm_fqdn = shm_fqdn
-        self.shm_networking_resource_group_name = shm_networking_resource_group_name
 
 
 class SREDnsServerComponent(ComponentResource):
