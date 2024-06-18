@@ -56,7 +56,7 @@ def run(
         )
     elif project_type == ProjectType.SRE:
         sre_name = sanitise_sre_name(sre_name)
-        sre_config = SREConfig.sre_from_remote(context, sre_name)
+        sre_config = SREConfig.from_remote_by_name(context, sre_name)
 
         graph_api = GraphApi(
             tenant_id=shm_config.shm.entra_tenant_id,

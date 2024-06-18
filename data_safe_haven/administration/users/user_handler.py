@@ -89,7 +89,7 @@ class UserHandler:
     ) -> list[str]:
         """Lazy-load usernames from Guacamole"""
         try:
-            sre_config = SREConfig.sre_from_remote(self.context, sre_name)
+            sre_config = SREConfig.from_remote_by_name(self.context, sre_name)
             if sre_name not in self.sre_guacamole_users_.keys():
                 self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
                     self.context, sre_config, pulumi_config, sre_name

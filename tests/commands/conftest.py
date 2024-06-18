@@ -12,7 +12,7 @@ def context(context_yaml):
 
 @fixture
 def mock_config_from_remote(mocker, sre_config):
-    mocker.patch.object(SREConfig, "sre_from_remote", return_value=sre_config)
+    mocker.patch.object(SREConfig, "from_remote_by_name", return_value=sre_config)
 
 
 @fixture

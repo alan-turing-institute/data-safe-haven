@@ -86,7 +86,7 @@ def upload_shm(
 # Commands related to an SRE
 @config_command_group.command()
 def show_sre(
-    name: Annotated[str, typer.Argument(help="Name of SRE to upload")],
+    name: Annotated[str, typer.Argument(help="Name of SRE to show")],
     file: Annotated[
         Optional[Path],  # noqa: UP007
         typer.Option(help="File path to write configuration template to."),
@@ -94,7 +94,7 @@ def show_sre(
 ) -> None:
     """Print the SRE configuration for the selected SRE and Data Safe Haven context"""
     context = ContextSettings.from_file().assert_context()
-    sre_config = SREConfig.sre_from_remote(context, name)
+    sre_config = SREConfig.from_remote_by_name(context, name)
     if file:
         with open(file, "w") as outfile:
             outfile.write(sre_config.to_yaml())
@@ -134,12 +134,12 @@ def upload_sre(
     # Create configuration object from file
     with open(file) as config_file:
         config_yaml = config_file.read()
-    sre_config = SREConfig.from_yaml(config_yaml)
+    config = SREConfig.from_yaml(config_yaml)
     filename = SREConfig.filename(name)
 
     # Present diff to user
     if SREConfig.remote_exists(context, filename=filename):
-        if diff := sre_config.remote_yaml_diff(context, filename=filename):
+        if diff := config.remote_yaml_diff(context, filename=filename):
             print("".join(diff))
             if not logger.confirm(
                 (
@@ -153,4 +153,4 @@ def upload_sre(
             print("No changes, won't upload configuration.")
             raise typer.Exit()
 
-    sre_config.upload(context, filename=filename)
+    config.upload(context, filename=filename)

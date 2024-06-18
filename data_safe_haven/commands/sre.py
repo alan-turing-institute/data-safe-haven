@@ -31,7 +31,7 @@ def deploy(
     context = ContextSettings.from_file().assert_context()
     pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_config = SHMConfig.from_remote(context)
-    sre_config = SREConfig.sre_from_remote(context, name)
+    sre_config = SREConfig.from_remote_by_name(context, name)
     sre_name = sanitise_sre_name(name)
 
     try:
@@ -120,7 +120,7 @@ def teardown(
     context = ContextSettings.from_file().assert_context()
     pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_config = SHMConfig.from_remote(context)
-    sre_config = SREConfig.sre_from_remote(context, name)
+    sre_config = SREConfig.from_remote_by_name(context, name)
 
     sre_name = sanitise_sre_name(name)
     try:
