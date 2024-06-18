@@ -76,6 +76,7 @@ class TestConfigSectionSRE:
             workspace_skus=["Standard_D2s_v4"],
             research_user_ip_addresses=["3.4.5.6"],
             software_packages=SoftwarePackageCategory.ANY,
+            timezone="Australia/Perth",
         )
         assert sre_config.admin_email_address == "admin@example.com"
         assert sre_config.admin_ip_addresses[0] == "1.2.3.4/32"
@@ -85,7 +86,7 @@ class TestConfigSectionSRE:
         assert sre_config.workspace_skus[0] == "Standard_D2s_v4"
         assert sre_config.research_user_ip_addresses[0] == "3.4.5.6/32"
         assert sre_config.software_packages == SoftwarePackageCategory.ANY
-
+        assert sre_config.timezone == "Australia/Perth"
 
     def test_constructor_defaults(self, remote_desktop_config):
         sre_config = ConfigSectionSRE(admin_email_address="admin@example.com")
@@ -97,6 +98,7 @@ class TestConfigSectionSRE:
         assert sre_config.workspace_skus == []
         assert sre_config.research_user_ip_addresses == []
         assert sre_config.software_packages == SoftwarePackageCategory.NONE
+        assert sre_config.timezone == "Etc/UTC"
 
     def test_all_databases_must_be_unique(self):
         with pytest.raises(ValueError, match="All items must be unique."):
@@ -113,6 +115,7 @@ class TestConfigSectionSRE:
         assert sre_config.workspace_skus == []
         assert sre_config.research_user_ip_addresses == []
         assert sre_config.software_packages == SoftwarePackageCategory.NONE
+        assert sre_config.timezone == "Etc/UTC"
         sre_config.update(
             admin_email_address="admin@example.org",
             admin_ip_addresses=["1.2.3.4"],
@@ -121,6 +124,7 @@ class TestConfigSectionSRE:
             workspace_skus=["Standard_D8s_v4"],
             software_packages=SoftwarePackageCategory.ANY,
             user_ip_addresses=["3.4.5.6"],
+            timezone="Australia/Perth",
         )
         assert sre_config.admin_email_address == "admin@example.org"
         assert sre_config.admin_ip_addresses == ["1.2.3.4/32"]
@@ -129,6 +133,7 @@ class TestConfigSectionSRE:
         assert sre_config.workspace_skus == ["Standard_D8s_v4"]
         assert sre_config.research_user_ip_addresses == ["3.4.5.6/32"]
         assert sre_config.software_packages == SoftwarePackageCategory.ANY
+        assert sre_config.timezone == "Australia/Perth"
 
 
 class TestConfig:

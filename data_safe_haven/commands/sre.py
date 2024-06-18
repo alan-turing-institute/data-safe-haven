@@ -89,7 +89,7 @@ def deploy(
             sre_name=sre_name,
             sre_stack=stack,
             subscription_name=context.subscription_name,
-            timezone=config.shm.timezone,
+            timezone=config.sre(sre_name).timezone,
         )
         manager.run()
     except DataSafeHavenError as exc:

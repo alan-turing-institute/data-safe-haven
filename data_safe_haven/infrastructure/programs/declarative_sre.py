@@ -329,7 +329,7 @@ class DeclarativeSRE:
                 dns_private_zones=dns.private_zones,
                 location=self.context.location,
                 subnet=networking.subnet_monitoring,
-                timezone=self.cfg.shm.timezone,
+                timezone=self.cfg.sre(self.sre_name).timezone,
             ),
             tags=self.tags,
         )

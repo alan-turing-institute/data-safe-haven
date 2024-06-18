@@ -54,6 +54,7 @@ def config_sres(azure_config, shm_config_section):
     sre_config_1 = ConfigSectionSRE(
         admin_email_address="admin@example.com",
         admin_ip_addresses=["1.2.3.4"],
+        timezone="Europe/London",
     )
     sre_config_2 = ConfigSectionSRE(
         admin_email_address="admin@example.com",
@@ -61,6 +62,7 @@ def config_sres(azure_config, shm_config_section):
         remote_desktop=ConfigSubsectionRemoteDesktopOpts(
             allow_copy=True, allow_paste=True
         ),
+        timezone="Europe/London",
     )
     return Config(
         azure=azure_config,
@@ -81,7 +83,6 @@ def config_yaml():
     shm:
         entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         fqdn: shm.acme.com
-        timezone: UTC
     sres:
         sre1:
             admin_email_address: admin@example.com
@@ -94,6 +95,7 @@ def config_yaml():
                 allow_paste: false
             research_user_ip_addresses: []
             software_packages: none
+            timezone: Europe/London
             workspace_skus: []
         sre2:
             admin_email_address: admin@example.com
@@ -106,6 +108,7 @@ def config_yaml():
                 allow_paste: true
             research_user_ip_addresses: []
             software_packages: none
+            timezone: Europe/London
             workspace_skus: []
     """
     return yaml.dump(yaml.safe_load(content))
@@ -316,10 +319,9 @@ def shm_config_file(shm_config_yaml: str, tmp_path: Path) -> Path:
 @fixture
 def shm_config_section():
     return ConfigSectionSHM(
-        admin_ip_addresses=["0.0.0.0"],  # noqa: S104
+        admin_ip_addresses=["1.2.3.4"],
         entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         fqdn="shm.acme.com",
-        timezone="UTC",
     )
 
 
@@ -332,7 +334,6 @@ def shm_config_yaml():
     shm:
         entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         fqdn: shm.acme.com
-        timezone: UTC
     """
     return yaml.dump(yaml.safe_load(content))
 

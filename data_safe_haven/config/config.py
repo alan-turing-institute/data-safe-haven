@@ -36,21 +36,18 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
     entra_tenant_id: Guid
     fqdn: Fqdn
-    timezone: TimeZone
 
     def update(
         self,
         *,
         entra_tenant_id: str | None = None,
         fqdn: str | None = None,
-        timezone: TimeZone | None = None,
     ) -> None:
         """Update SHM settings
 
         Args:
             entra_tenant_id: Entra ID tenant containing users
             fqdn: Fully-qualified domain name to use for this SHM
-            timezone: Timezone in pytz format (eg. Europe/London)
         """
         logger = LoggingSingleton()
         # Set Entra tenant ID
@@ -65,10 +62,6 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
         logger.info(
             f"[bold]Fully-qualified domain name[/] will be [green]{self.fqdn}[/]."
         )
-        # Set timezone
-        if timezone:
-            self.timezone = timezone
-        logger.info(f"[bold]Timezone[/] will be [green]{self.timezone}[/].")
 
 
 class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
@@ -110,11 +103,12 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
         ..., default_factory=ConfigSubsectionRemoteDesktopOpts
     )
-    workspace_skus: list[AzureVmSku] = Field(..., default_factory=list[AzureVmSku])
     research_user_ip_addresses: list[IpAddress] = Field(
         ..., default_factory=list[IpAddress]
     )
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
+    timezone: TimeZone = "Etc/UTC"
+    workspace_skus: list[AzureVmSku] = Field(..., default_factory=list[AzureVmSku])
 
     def update(
         self,
@@ -123,9 +117,10 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         admin_ip_addresses: list[str] | None = None,
         data_provider_ip_addresses: list[IpAddress] | None = None,
         databases: list[DatabaseSystem] | None = None,
-        workspace_skus: list[AzureVmSku] | None = None,
         software_packages: SoftwarePackageCategory | None = None,
+        timezone: TimeZone | None = None,
         user_ip_addresses: list[IpAddress] | None = None,
+        workspace_skus: list[AzureVmSku] | None = None,
     ) -> None:
         """Update SRE settings
 
@@ -134,9 +129,10 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
             admin_ip_addresses: List of IP addresses belonging to administrators
             databases: List of database systems to deploy
             data_provider_ip_addresses: List of IP addresses belonging to data providers
-            workspace_skus: List of VM SKUs for workspaces
             software_packages: Whether to allow packages from external repositories
+            timezone: Timezone in pytz format (eg. Europe/London)
             user_ip_addresses: List of IP addresses belonging to users
+            workspace_skus: List of VM SKUs for workspaces
         """
         logger = LoggingSingleton()
         # Set admin email address
@@ -165,22 +161,26 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         logger.info(
             f"[bold]Databases available to users[/] will be [green]{[database.value for database in self.databases]}[/]."
         )
-        # Set research desktop SKUs
-        if workspace_skus:
-            self.workspace_skus = workspace_skus
-        logger.info(f"[bold]Workspace SKUs[/] will be [green]{self.workspace_skus}[/].")
         # Select which software packages can be installed by users
         if software_packages:
             self.software_packages = software_packages
         logger.info(
             f"[bold]Software packages[/] from [green]{self.software_packages.value}[/] sources will be installable."
         )
+        # Set timezone
+        if timezone:
+            self.timezone = timezone
+        logger.info(f"[bold]Timezone[/] will be [green]{self.timezone}[/].")
         # Set user IP addresses
         if user_ip_addresses:
             self.research_user_ip_addresses = user_ip_addresses
         logger.info(
             f"[bold]IP addresses used by users[/] will be [green]{self.research_user_ip_addresses}[/]."
         )
+        # Set workspace desktop SKUs
+        if workspace_skus:
+            self.workspace_skus = workspace_skus
+        logger.info(f"[bold]Workspace SKUs[/] will be [green]{self.workspace_skus}[/].")
 
 
 class SHMConfig(AzureSerialisableModel):
