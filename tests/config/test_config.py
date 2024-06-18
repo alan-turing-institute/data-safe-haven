@@ -136,20 +136,19 @@ class TestConfigSectionSRE:
 
 
 class TestConfig:
-    def test_constructor(self, azure_config, shm_config_section, sre_config_section):
+    def test_constructor(self, azure_config, sre_config_section):
         config = Config(
             azure=azure_config,
-            shm=shm_config_section,
             sre=sre_config_section,
         )
         assert config.is_complete()
 
-    def test_constructor_invalid(self, azure_config, shm_config_section):
+    def test_constructor_invalid(self, azure_config):
         with pytest.raises(
             ValidationError,
             match=r"1 validation error for Config\nsre\n  Field required.*",
         ):
-            Config(azure=azure_config, shm=shm_config_section)
+            Config(azure=azure_config)
 
     def test_template(self):
         config = Config.template()

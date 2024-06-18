@@ -116,7 +116,8 @@ def teardown(
 ) -> None:
     """Tear down a deployed a Secure Research Environment."""
     context = ContextSettings.from_file().assert_context()
-    config = Config.from_remote(context)
+    sre_config = Config.sre_from_remote(context, name)
+    shm_config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
 
     sre_name = sanitise_sre_name(name)
@@ -124,7 +125,7 @@ def teardown(
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(
-            tenant_id=config.shm.entra_tenant_id,
+            tenant_id=shm_config.shm.entra_tenant_id,
             default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
         )
 
@@ -132,7 +133,7 @@ def teardown(
         try:
             stack = SREProjectManager(
                 context=context,
-                config=config,
+                config=sre_config,
                 pulumi_config=pulumi_config,
                 sre_name=sre_name,
                 graph_api_token=graph_api.token,

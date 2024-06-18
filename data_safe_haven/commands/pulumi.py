@@ -43,24 +43,23 @@ def run(
 
     context = ContextSettings.from_file().assert_context()
     pulumi_config = DSHPulumiConfig.from_remote(context)
+    shm_config = SHMConfig.from_remote(context)
 
-    # These are needed to avoid linting errors from mypy
-    config: Config | SHMConfig
+    # This is needed to avoid linting errors from mypy
     project: SHMProjectManager | SREProjectManager
 
     if project_type == ProjectType.SHM:
-        config = SHMConfig.from_remote(context)
         project = SHMProjectManager(
             context=context,
-            config=config,
+            config=shm_config,
             pulumi_config=pulumi_config,
         )
     elif project_type == ProjectType.SRE:
         sre_name = sanitise_sre_name(sre_name)
-        config = Config.sre_from_remote(context, sre_name)
+        sre_config = Config.sre_from_remote(context, sre_name)
 
         graph_api = GraphApi(
-            tenant_id=config.shm.entra_tenant_id,
+            tenant_id=shm_config.shm.entra_tenant_id,
             default_scopes=[
                 "Application.ReadWrite.All",
                 "AppRoleAssignment.ReadWrite.All",
@@ -71,7 +70,7 @@ def run(
 
         project = SREProjectManager(
             context=context,
-            config=config,
+            config=sre_config,
             pulumi_config=pulumi_config,
             sre_name=sre_name,
             graph_api_token=graph_api.token,

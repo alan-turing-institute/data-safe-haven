@@ -325,9 +325,6 @@ def sre_config_yaml():
     azure:
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-    shm:
-        entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-        fqdn: shm.acme.com
     sre:
         admin_email_address: admin@example.com
         admin_ip_addresses:

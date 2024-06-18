@@ -8,7 +8,6 @@ class TestTemplate:
         result = runner.invoke(config_command_group, ["template-sre"])
         assert result.exit_code == 0
         assert "subscription_id: Azure subscription ID" in result.stdout
-        assert "shm:" in result.stdout
         assert "sre:" in result.stdout
 
     def test_template_file(self, runner, tmp_path):
@@ -20,7 +19,6 @@ class TestTemplate:
         with open(template_file) as f:
             template_text = f.read()
         assert "subscription_id: Azure subscription ID" in template_text
-        assert "shm:" in template_text
         assert "sre:" in template_text
 
 

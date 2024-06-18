@@ -212,11 +212,10 @@ class Config(AzureSerialisableModel):
     config_type: ClassVar[str] = "Config"
     filename: ClassVar[str] = "config.yaml"
     azure: ConfigSectionAzure
-    shm: ConfigSectionSHM
     sre: ConfigSectionSRE
 
     def is_complete(self) -> bool:
-        if not all((self.azure, self.shm, self.sre)):
+        if not all((self.azure, self.sre)):
             return False
         return True
 
@@ -231,18 +230,12 @@ class Config(AzureSerialisableModel):
         return f"sre-{sanitise_sre_name(sre_name)}.yaml"
 
     @classmethod
-    def template(cls) -> Config:
+    def template(cls: type[Self]) -> Config:
         """Create object without validation to allow "replace me" prompts."""
         return Config.model_construct(
             azure=ConfigSectionAzure.model_construct(
                 subscription_id="Azure subscription ID",
                 tenant_id="Azure tenant ID",
-            ),
-            shm=ConfigSectionSHM.model_construct(
-                admin_ip_addresses=["Admin IP addresses"],
-                entra_tenant_id="Entra tenant ID",
-                fqdn="TRE domain name",
-                timezone="Timezone",
             ),
             sre=ConfigSectionSRE.model_construct(
                 admin_email_address="Admin email address",
