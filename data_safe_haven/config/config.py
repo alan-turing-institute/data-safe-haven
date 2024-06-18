@@ -9,7 +9,6 @@ from pydantic import (
     Field,
 )
 
-from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.serialisers import AzureSerialisableModel, ContextBase
 from data_safe_haven.types import (
@@ -216,34 +215,12 @@ class Config(AzureSerialisableModel):
     filename: ClassVar[str] = "config.yaml"
     azure: ConfigSectionAzure
     shm: ConfigSectionSHM
-    sres: dict[str, ConfigSectionSRE] = Field(
-        ..., default_factory=dict[str, ConfigSectionSRE]
-    )
+    sre: ConfigSectionSRE
 
-    @property
-    def sre_names(self) -> list[str]:
-        """Names of all SREs"""
-        return list(self.sres.keys())
-
-    def is_complete(self, *, require_sres: bool) -> bool:
-        if require_sres:
-            if not self.sres:
-                return False
-        if not all((self.azure, self.shm)):
+    def is_complete(self) -> bool:
+        if not all((self.azure, self.shm, self.sre)):
             return False
         return True
-
-    def sre(self, name: str) -> ConfigSectionSRE:
-        """Return the config entry for this SRE, raising an exception if it does not exist"""
-        if name not in self.sre_names:
-            msg = f"SRE {name} does not exist"
-            raise DataSafeHavenConfigError(msg)
-        return self.sres[name]
-
-    def remove_sre(self, name: str) -> None:
-        """Remove SRE config section by name"""
-        if name in self.sre_names:
-            del self.sres[name]
 
     @classmethod
     def sre_from_remote(cls: type[Self], context: ContextBase, sre_name: str) -> Self:
@@ -269,20 +246,18 @@ class Config(AzureSerialisableModel):
                 fqdn="TRE domain name",
                 timezone="Timezone",
             ),
-            sres={
-                "example": ConfigSectionSRE.model_construct(
-                    admin_email_address="Admin email address",
-                    databases=["List of database systems to enable"],
-                    data_provider_ip_addresses=["Data provider IP addresses"],
-                    remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
-                        allow_copy="Whether to allow copying text out of the environment",
-                        allow_paste="Whether to allow pasting text into the environment",
-                    ),
-                    workspace_skus=[
-                        "Azure VM SKUs - see cloudprice.net for list of valid SKUs"
-                    ],
-                    research_user_ip_addresses=["Research user IP addresses"],
-                    software_packages=SoftwarePackageCategory.ANY,
-                )
-            },
+            sre=ConfigSectionSRE.model_construct(
+                admin_email_address="Admin email address",
+                databases=["List of database systems to enable"],
+                data_provider_ip_addresses=["Data provider IP addresses"],
+                remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
+                    allow_copy="Whether to allow copying text out of the environment",
+                    allow_paste="Whether to allow pasting text into the environment",
+                ),
+                workspace_skus=[
+                    "Azure VM SKUs - see cloudprice.net for list of valid SKUs"
+                ],
+                research_user_ip_addresses=["Research user IP addresses"],
+                software_packages=SoftwarePackageCategory.ANY,
+            ),
         )

@@ -9,7 +9,6 @@ from data_safe_haven.config.config import (
     ConfigSubsectionRemoteDesktopOpts,
 )
 from data_safe_haven.exceptions import (
-    DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
 from data_safe_haven.external import AzureApi
@@ -40,7 +39,7 @@ class TestConfigSectionSHM:
     def test_update_validation(self, shm_config_section):
         with pytest.raises(
             ValidationError,
-            match="Value error, Expected valid fully qualified domain name, for example 'example.com'.*not an FQDN",
+            match=r"Value error, Expected valid fully qualified domain name, for example 'example.com'.*not an FQDN",
         ):
             shm_config_section.update(fqdn="not an FQDN")
 
@@ -101,7 +100,7 @@ class TestConfigSectionSRE:
         assert sre_config.timezone == "Etc/UTC"
 
     def test_all_databases_must_be_unique(self):
-        with pytest.raises(ValueError, match="All items must be unique."):
+        with pytest.raises(ValueError, match=r"All items must be unique."):
             ConfigSectionSRE(
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
             )
@@ -137,29 +136,20 @@ class TestConfigSectionSRE:
 
 
 class TestConfig:
-    def test_constructor(self, azure_config, shm_config_section):
+    def test_constructor(self, azure_config, shm_config_section, sre_config_section):
         config = Config(
             azure=azure_config,
             shm=shm_config_section,
+            sre=sre_config_section,
         )
-        assert not config.sres
+        assert config.is_complete()
 
-    @pytest.mark.parametrize("require_sres,expected", [(False, True), (True, False)])
-    def test_is_complete_no_sres(self, config_no_sres, require_sres, expected):
-        assert config_no_sres.is_complete(require_sres=require_sres) is expected
-
-    @pytest.mark.parametrize("require_sres", [False, True])
-    def test_is_complete_sres(self, config_sres, require_sres):
-        assert config_sres.is_complete(require_sres=require_sres)
-
-    def test_sre(self, config_sres):
-        sre1, sre2 = config_sres.sre("sre1"), config_sres.sre("sre2")
-        assert sre1 != sre2
-
-    def test_sre_invalid(self, config_sres):
-        with pytest.raises(DataSafeHavenConfigError) as exc:
-            config_sres.sre("sre3")
-            assert "SRE sre3 does not exist" in exc
+    def test_constructor_invalid(self, azure_config, shm_config_section):
+        with pytest.raises(
+            ValidationError,
+            match=r"1 validation error for Config\nsre\n  Field required.*",
+        ):
+            Config(azure=azure_config, shm=shm_config_section)
 
     def test_template(self):
         config = Config.template()
@@ -171,20 +161,18 @@ class TestConfig:
         with pytest.raises(DataSafeHavenParameterError):
             Config.from_yaml(config.to_yaml())
 
-    def test_from_yaml(self, config_sres, config_yaml):
-        config = Config.from_yaml(config_yaml)
-        assert config == config_sres
-        assert isinstance(
-            config.sres["sre1"].software_packages, SoftwarePackageCategory
-        )
+    def test_from_yaml(self, sre_config, sre_config_yaml):
+        config = Config.from_yaml(sre_config_yaml)
+        assert config == sre_config
+        assert isinstance(config.sre.software_packages, SoftwarePackageCategory)
 
-    def test_from_remote(self, mocker, context, config_sres, config_yaml):
+    def test_from_remote(self, mocker, context, sre_config, sre_config_yaml):
         mock_method = mocker.patch.object(
-            AzureApi, "download_blob", return_value=config_yaml
+            AzureApi, "download_blob", return_value=sre_config_yaml
         )
         config = Config.from_remote(context)
 
-        assert config == config_sres
+        assert config == sre_config
         mock_method.assert_called_once_with(
             Config.filename,
             context.resource_group_name,
@@ -192,15 +180,15 @@ class TestConfig:
             context.storage_container_name,
         )
 
-    def test_to_yaml(self, config_sres, config_yaml):
-        assert config_sres.to_yaml() == config_yaml
+    def test_to_yaml(self, sre_config, sre_config_yaml):
+        assert sre_config.to_yaml() == sre_config_yaml
 
-    def test_upload(self, mocker, context, config_sres):
+    def test_upload(self, mocker, context, sre_config):
         mock_method = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
-        config_sres.upload(context)
+        sre_config.upload(context)
 
         mock_method.assert_called_once_with(
-            config_sres.to_yaml(),
+            sre_config.to_yaml(),
             Config.filename,
             context.resource_group_name,
             context.storage_account_name,

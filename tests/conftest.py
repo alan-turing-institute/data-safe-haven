@@ -34,87 +34,6 @@ def azure_config():
 
 
 @fixture
-def config_file(config_yaml, tmp_path):
-    config_file_path = tmp_path / "config.yaml"
-    with open(config_file_path, "w") as f:
-        f.write(config_yaml)
-    return config_file_path
-
-
-@fixture
-def config_no_sres(azure_config, shm_config_section):
-    return Config(
-        azure=azure_config,
-        shm=shm_config_section,
-    )
-
-
-@fixture
-def config_sres(azure_config, shm_config_section):
-    sre_config_1 = ConfigSectionSRE(
-        admin_email_address="admin@example.com",
-        admin_ip_addresses=["1.2.3.4"],
-        timezone="Europe/London",
-    )
-    sre_config_2 = ConfigSectionSRE(
-        admin_email_address="admin@example.com",
-        admin_ip_addresses=["2.3.4.5"],
-        remote_desktop=ConfigSubsectionRemoteDesktopOpts(
-            allow_copy=True, allow_paste=True
-        ),
-        timezone="Europe/London",
-    )
-    return Config(
-        azure=azure_config,
-        shm=shm_config_section,
-        sres={
-            "sre1": sre_config_1,
-            "sre2": sre_config_2,
-        },
-    )
-
-
-@fixture
-def config_yaml():
-    content = """---
-    azure:
-        subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-        tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-    shm:
-        entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-        fqdn: shm.acme.com
-    sres:
-        sre1:
-            admin_email_address: admin@example.com
-            admin_ip_addresses:
-            - 1.2.3.4/32
-            data_provider_ip_addresses: []
-            databases: []
-            remote_desktop:
-                allow_copy: false
-                allow_paste: false
-            research_user_ip_addresses: []
-            software_packages: none
-            timezone: Europe/London
-            workspace_skus: []
-        sre2:
-            admin_email_address: admin@example.com
-            admin_ip_addresses:
-            - 2.3.4.5/32
-            data_provider_ip_addresses: []
-            databases: []
-            remote_desktop:
-                allow_copy: true
-                allow_paste: true
-            research_user_ip_addresses: []
-            software_packages: none
-            timezone: Europe/London
-            workspace_skus: []
-    """
-    return yaml.dump(yaml.safe_load(content))
-
-
-@fixture
 def context(context_dict):
     return Context(**context_dict)
 
@@ -341,7 +260,7 @@ def shm_config_yaml():
 @fixture
 def shm_stack_manager(
     context_no_secrets,
-    config_sres,
+    sre_config,
     pulumi_config_no_key,
     mock_azure_cli_confirm,  # noqa: ARG001
     mock_install_plugins,  # noqa: ARG001
@@ -351,9 +270,79 @@ def shm_stack_manager(
 ):
     return SHMProjectManager(
         context=context_no_secrets,
-        config=config_sres,
+        config=sre_config,
         pulumi_config=pulumi_config_no_key,
     )
+
+
+@fixture
+def sre_config_file(sre_config_yaml, tmp_path):
+    config_file_path = tmp_path / "config.yaml"
+    with open(config_file_path, "w") as f:
+        f.write(sre_config_yaml)
+    return config_file_path
+
+
+@fixture
+def sre_config(
+    azure_config: ConfigSectionAzure,
+    shm_config_section: ConfigSectionSHM,
+    sre_config_section: ConfigSectionSRE,
+) -> Config:
+    return Config(
+        azure=azure_config,
+        shm=shm_config_section,
+        sre=sre_config_section,
+    )
+
+
+@fixture
+def sre_config_alternate(
+    azure_config: ConfigSectionAzure,
+    shm_config_section: ConfigSectionSHM,
+    sre_config_section: ConfigSectionSRE,
+) -> Config:
+    sre_config_section.admin_ip_addresses = ["2.3.4.5"]
+    return Config(
+        azure=azure_config,
+        shm=shm_config_section,
+        sre=sre_config_section,
+    )
+
+
+@fixture
+def sre_config_section() -> ConfigSectionSRE:
+    return ConfigSectionSRE(
+        admin_email_address="admin@example.com",
+        admin_ip_addresses=["1.2.3.4"],
+        timezone="Europe/London",
+    )
+
+
+@fixture
+def sre_config_yaml():
+    content = """---
+    azure:
+        subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+        tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+    shm:
+        entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+        fqdn: shm.acme.com
+    sre:
+        admin_email_address: admin@example.com
+        admin_ip_addresses:
+        - 1.2.3.4/32
+        data_provider_ip_addresses: []
+        databases: []
+        remote_desktop:
+            allow_copy: false
+            allow_paste: false
+        research_user_ip_addresses: []
+        software_packages: none
+        timezone: Europe/London
+        workspace_skus: []
+    """
+    return yaml.dump(yaml.safe_load(content))
 
 
 @fixture

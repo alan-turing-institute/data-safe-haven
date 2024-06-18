@@ -152,9 +152,7 @@ class DeclarativeSRE:
                 shm_networking_resource_group_name=shm_networking_resource_group_name,
                 shm_zone_name=shm_fqdn,
                 sre_name=self.sre_name,
-                user_public_ip_ranges=self.cfg.sre(
-                    self.sre_name
-                ).research_user_ip_addresses,
+                user_public_ip_ranges=self.cfg.sre.research_user_ip_addresses,
             ),
             tags=self.tags,
         )
@@ -183,12 +181,10 @@ class DeclarativeSRE:
             "sre_data",
             self.stack_name,
             SREDataProps(
-                admin_email_address=self.cfg.sre(self.sre_name).admin_email_address,
+                admin_email_address=self.cfg.sre.admin_email_address,
                 admin_group_id=self.context.admin_group_id,
-                admin_ip_addresses=self.cfg.sre(self.sre_name).admin_ip_addresses,
-                data_provider_ip_addresses=self.cfg.sre(
-                    self.sre_name
-                ).data_provider_ip_addresses,
+                admin_ip_addresses=self.cfg.sre.admin_ip_addresses,
+                data_provider_ip_addresses=self.cfg.sre.data_provider_ip_addresses,
                 dns_private_zones=dns.private_zones,
                 dns_record=networking.shm_ns_record,
                 dns_server_admin_password=dns.password_admin,
@@ -264,8 +260,8 @@ class DeclarativeSRE:
             "sre_remote_desktop",
             self.stack_name,
             SRERemoteDesktopProps(
-                allow_copy=self.cfg.sre(self.sre_name).remote_desktop.allow_copy,
-                allow_paste=self.cfg.sre(self.sre_name).remote_desktop.allow_paste,
+                allow_copy=self.cfg.sre.remote_desktop.allow_copy,
+                allow_paste=self.cfg.sre.remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
                 dns_server_ip=dns.ip_address,
                 entra_application_fqdn=networking.sre_fqdn,
@@ -294,7 +290,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREUserServicesProps(
                 database_service_admin_password=data.password_database_service_admin,
-                databases=self.cfg.sre(self.sre_name).databases,
+                databases=self.cfg.sre.databases,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 gitea_database_password=data.password_gitea_database_admin,
@@ -307,7 +303,7 @@ class DeclarativeSRE:
                 location=self.context.location,
                 networking_resource_group_name=networking.resource_group.name,
                 nexus_admin_password=data.password_nexus_admin,
-                software_packages=self.cfg.sre(self.sre_name).software_packages,
+                software_packages=self.cfg.sre.software_packages,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
@@ -328,7 +324,7 @@ class DeclarativeSRE:
                 dns_private_zones=dns.private_zones,
                 location=self.context.location,
                 subnet=networking.subnet_monitoring,
-                timezone=self.cfg.sre(self.sre_name).timezone,
+                timezone=self.cfg.sre.timezone,
             ),
             tags=self.tags,
         )
@@ -358,7 +354,7 @@ class DeclarativeSRE:
                 subscription_name=self.context.subscription_name,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
-                vm_details=list(enumerate(self.cfg.sre(self.sre_name).workspace_skus)),
+                vm_details=list(enumerate(self.cfg.sre.workspace_skus)),
             ),
             tags=self.tags,
         )
