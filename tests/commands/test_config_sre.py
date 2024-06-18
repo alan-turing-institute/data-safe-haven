@@ -3,7 +3,38 @@ from data_safe_haven.config import SREConfig
 from data_safe_haven.external import AzureApi
 
 
-class TestTemplate:
+class TestShowSRE:
+    def test_show(self, mocker, runner, context, sre_config_yaml):
+        sre_name = "sre 1"
+        mock_method = mocker.patch.object(
+            AzureApi, "download_blob", return_value=sre_config_yaml
+        )
+        result = runner.invoke(config_command_group, ["show-sre", sre_name])
+
+        assert result.exit_code == 0
+        assert sre_config_yaml in result.stdout
+
+        mock_method.assert_called_once_with(
+            SREConfig.sre_filename_from_name(sre_name),
+            context.resource_group_name,
+            context.storage_account_name,
+            context.storage_container_name,
+        )
+
+    def test_show_file(self, mocker, runner, sre_config_yaml, tmp_path):
+        mocker.patch.object(AzureApi, "download_blob", return_value=sre_config_yaml)
+        template_file = (tmp_path / "template_show.yaml").absolute()
+        result = runner.invoke(
+            config_command_group, ["show-sre", "sre-name", "--file", str(template_file)]
+        )
+
+        assert result.exit_code == 0
+        with open(template_file) as f:
+            template_text = f.read()
+        assert sre_config_yaml in template_text
+
+
+class TestTemplateSRE:
     def test_template(self, runner):
         result = runner.invoke(config_command_group, ["template-sre"])
         assert result.exit_code == 0
@@ -28,7 +59,7 @@ class TestTemplate:
         assert "sre:" in template_text
 
 
-class TestUpload:
+class TestUploadSRE:
     def test_upload_new(
         self, mocker, context, runner, sre_config_yaml, sre_config_file
     ):
@@ -142,34 +173,3 @@ class TestUpload:
             ["upload-sre", "sre-name"],
         )
         assert result.exit_code == 2
-
-
-class TestShow:
-    def test_show(self, mocker, runner, context, sre_config_yaml):
-        sre_name = "sre 1"
-        mock_method = mocker.patch.object(
-            AzureApi, "download_blob", return_value=sre_config_yaml
-        )
-        result = runner.invoke(config_command_group, ["show-sre", sre_name])
-
-        assert result.exit_code == 0
-        assert sre_config_yaml in result.stdout
-
-        mock_method.assert_called_once_with(
-            SREConfig.sre_filename_from_name(sre_name),
-            context.resource_group_name,
-            context.storage_account_name,
-            context.storage_container_name,
-        )
-
-    def test_show_file(self, mocker, runner, sre_config_yaml, tmp_path):
-        mocker.patch.object(AzureApi, "download_blob", return_value=sre_config_yaml)
-        template_file = (tmp_path / "template_show.yaml").absolute()
-        result = runner.invoke(
-            config_command_group, ["show-sre", "sre-name", "--file", str(template_file)]
-        )
-
-        assert result.exit_code == 0
-        with open(template_file) as f:
-            template_text = f.read()
-        assert sre_config_yaml in template_text

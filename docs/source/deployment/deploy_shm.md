@@ -15,7 +15,7 @@ However, you may choose to use multiple SHMs if, for example, you want to separa
 - Create a configuration file
 
 ```console
-> dsh config template --file config.yaml
+> dsh config template-shm --file config.yaml
 ```
 
 - Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.
@@ -34,7 +34,7 @@ shm:
 - Upload the config to Azure. This will validate your file and report any problems.
 
 ```{code} shell
-$ dsh config upload config.yaml
+$ dsh config upload-shm config.yaml
 ```
 
 ## Deployment
