@@ -10,7 +10,7 @@ from pydantic import (
 )
 
 from data_safe_haven.exceptions import DataSafeHavenConfigError
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import AzureSerialisableModel
 from data_safe_haven.types import (
     AzureVmSku,
@@ -55,7 +55,7 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
             fqdn: Fully-qualified domain name to use for this SHM
             timezone: Timezone in pytz format (eg. Europe/London)
         """
-        logger = LoggingSingleton()
+        logger = get_logger()
         # Set admin email address
         if admin_email_address:
             self.admin_email_address = admin_email_address
@@ -102,13 +102,13 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
         # Set whether copying text out of the SRE is allowed
         if allow_copy:
             self.allow_copy = allow_copy
-        LoggingSingleton().debug(
+        get_logger().debug(
             f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
         )
         # Set whether pasting text into the SRE is allowed
         if allow_paste:
             self.allow_paste = allow_paste
-        LoggingSingleton().debug(
+        get_logger().debug(
             f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
         )
 
@@ -147,7 +147,7 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
             software_packages: Whether to allow packages from external repositories
             user_ip_addresses: List of IP addresses belonging to users
         """
-        logger = LoggingSingleton()
+        logger = get_logger()
         # Set data provider IP addresses
         if data_provider_ip_addresses:
             self.data_provider_ip_addresses = data_provider_ip_addresses

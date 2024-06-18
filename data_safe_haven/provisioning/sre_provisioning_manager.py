@@ -10,7 +10,7 @@ from data_safe_haven.external import (
     GraphApi,
 )
 from data_safe_haven.infrastructure import SREProjectManager
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 from data_safe_haven.types import AzureLocation, AzureSubscriptionName
 
 
@@ -29,7 +29,7 @@ class SREProvisioningManager:
         self._available_vm_skus: dict[str, dict[str, Any]] | None = None
         self.location = location
         self.graph_api = GraphApi(auth_token=graph_api_token)
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
         self.sre_name = sre_name
         self.subscription_name = subscription_name
 

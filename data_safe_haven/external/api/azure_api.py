@@ -60,17 +60,15 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInternalError,
 )
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
-from data_safe_haven.logging import LoggingSingleton, NonLoggingSingleton
+from data_safe_haven.logging import get_logger
 
 
 class AzureApi(AzureAuthenticator):
     """Interface to the Azure REST API"""
 
-    def __init__(
-        self, subscription_name: str, *, disable_logging: bool = False
-    ) -> None:
+    def __init__(self, subscription_name: str) -> None:
         super().__init__(subscription_name)
-        self.logger = NonLoggingSingleton() if disable_logging else LoggingSingleton()
+        self.logger = get_logger()
 
     def blob_client(
         self,

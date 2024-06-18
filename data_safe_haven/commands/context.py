@@ -15,15 +15,15 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenConfigError,
 )
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 context_command_group = typer.Typer()
-logger = LoggingSingleton()
 
 
 @context_command_group.command()
 def show() -> None:
     """Show information about the selected context."""
+    logger = get_logger()
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
@@ -49,6 +49,7 @@ def show() -> None:
 @context_command_group.command()
 def available() -> None:
     """Show the available contexts."""
+    logger = get_logger()
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
@@ -72,6 +73,7 @@ def switch(
     key: Annotated[str, typer.Argument(help="Key of the context to switch to.")]
 ) -> None:
     """Switch the selected context."""
+    logger = get_logger()
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
@@ -168,6 +170,7 @@ def update(
     ] = None,
 ) -> None:
     """Update the selected context settings."""
+    logger = get_logger()
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
@@ -190,6 +193,7 @@ def remove(
     key: Annotated[str, typer.Argument(help="Name of the context to remove.")],
 ) -> None:
     """Removes a context."""
+    logger = get_logger()
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
@@ -202,6 +206,7 @@ def remove(
 @context_command_group.command()
 def create() -> None:
     """Create Data Safe Haven context infrastructure."""
+    logger = get_logger()
     try:
         context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
@@ -228,6 +233,7 @@ def create() -> None:
 @context_command_group.command()
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure."""
+    logger = get_logger()
     try:
         context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:

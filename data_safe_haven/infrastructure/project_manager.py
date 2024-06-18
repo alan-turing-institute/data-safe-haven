@@ -20,7 +20,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi, AzureCliSingleton
 from data_safe_haven.functions import replace_separators
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 from .programs import DeclarativeSHM, DeclarativeSRE
 
@@ -86,7 +86,7 @@ class ProjectManager:
         self.create_project = create_project
 
         self.account = PulumiAccount(context, config)
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
         self._stack: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}

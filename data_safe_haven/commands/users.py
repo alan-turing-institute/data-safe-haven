@@ -11,7 +11,7 @@ from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 users_command_group = typer.Typer()
 
@@ -32,7 +32,7 @@ def add(
 
     shm_name = context.shm_name
 
-    logger = LoggingSingleton()
+    logger = get_logger()
     if shm_name not in pulumi_config.project_names:
         logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
         raise typer.Exit(1)
@@ -65,7 +65,7 @@ def list_users() -> None:
 
     shm_name = context.shm_name
 
-    logger = LoggingSingleton()
+    logger = get_logger()
     if shm_name not in pulumi_config.project_names:
         logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
         raise typer.Exit(1)
@@ -111,7 +111,7 @@ def register(
     # Use a JSON-safe SRE name
     sre_name = sanitise_sre_name(sre)
 
-    logger = LoggingSingleton()
+    logger = get_logger()
     if shm_name not in pulumi_config.project_names:
         logger.critical(
             f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
@@ -171,7 +171,7 @@ def remove(
 
     shm_name = context.shm_name
 
-    logger = LoggingSingleton()
+    logger = get_logger()
     if shm_name not in pulumi_config.project_names:
         logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
         raise typer.Exit(1)
@@ -217,7 +217,7 @@ def unregister(
     shm_name = context.shm_name
     sre_name = sanitise_sre_name(sre)
 
-    logger = LoggingSingleton()
+    logger = get_logger()
     if shm_name not in pulumi_config.project_names:
         logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
         raise typer.Exit(1)

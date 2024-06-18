@@ -5,6 +5,7 @@ from __future__ import (
     annotations,
 )
 
+from logging import Logger
 from pathlib import Path
 from typing import ClassVar
 
@@ -15,7 +16,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import YAMLSerialisableModel
 
 from .context import Context
@@ -42,7 +43,7 @@ class ContextSettings(YAMLSerialisableModel):
     config_type: ClassVar[str] = "ContextSettings"
     selected_: str | None = Field(..., alias="selected")
     contexts: dict[str, Context]
-    logger: ClassVar[LoggingSingleton] = LoggingSingleton()
+    logger: ClassVar[Logger] = get_logger()
 
     @model_validator(mode="after")
     def ensure_selected_is_valid(self) -> ContextSettings:

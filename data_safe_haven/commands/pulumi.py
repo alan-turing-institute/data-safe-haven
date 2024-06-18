@@ -11,7 +11,7 @@ from data_safe_haven.context import ContextSettings
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 pulumi_command_group = typer.Typer()
 
@@ -38,7 +38,7 @@ def run(
     ] = "",
 ) -> None:
     """Run arbitrary Pulumi commands in a DSH project"""
-    logger = LoggingSingleton()
+    logger = get_logger()
     if project_type == ProjectType.SRE and not sre_name:
         logger.fatal("--sre-name is required.")
         raise typer.Exit(1)

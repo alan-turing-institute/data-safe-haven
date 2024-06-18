@@ -23,7 +23,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
 )
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.logging import LoggingSingleton, NonLoggingSingleton
+from data_safe_haven.logging import get_logger
 from data_safe_haven.utility import prompts
 
 
@@ -79,13 +79,12 @@ class GraphApi:
         application_secret: str | None = None,
         base_endpoint: str = "",
         default_scopes: Sequence[str] = [],
-        disable_logging: bool = False,
     ):
         self.base_endpoint = (
             base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
         )
         self.default_scopes = list(default_scopes)
-        self.logger = NonLoggingSingleton() if disable_logging else LoggingSingleton()
+        self.logger = get_logger()
         self.tenant_id = tenant_id
         if auth_token:
             self.token = auth_token

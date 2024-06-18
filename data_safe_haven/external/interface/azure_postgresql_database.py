@@ -18,7 +18,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
 )
 from data_safe_haven.external import AzureApi
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 from data_safe_haven.types import PathType
 from data_safe_haven.utility import FileReader
 
@@ -51,7 +51,7 @@ class AzurePostgreSQLDatabase:
         self.db_name = database_name
         self.db_server_ = None
         self.db_server_admin_password = database_server_admin_password
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
         self.port = 5432
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name

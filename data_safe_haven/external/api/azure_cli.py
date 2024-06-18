@@ -8,7 +8,7 @@ from shutil import which
 import typer
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 from data_safe_haven.singleton import Singleton
 from data_safe_haven.utility import prompts
 
@@ -26,7 +26,7 @@ class AzureCliSingleton(metaclass=Singleton):
     """Interface to the Azure CLI"""
 
     def __init__(self) -> None:
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
 
         path = which("az")
         if path is None:

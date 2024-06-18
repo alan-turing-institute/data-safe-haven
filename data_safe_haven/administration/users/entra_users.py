@@ -10,7 +10,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 from .research_user import ResearchUser
 
@@ -26,7 +26,7 @@ class EntraUsers:
     ) -> None:
         super().__init__(*args, **kwargs)
         self.graph_api = graph_api
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
 
     def add(self, new_users: Sequence[ResearchUser]) -> None:
         """

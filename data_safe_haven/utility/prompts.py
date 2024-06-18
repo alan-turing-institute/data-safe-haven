@@ -1,11 +1,11 @@
 from rich.prompt import Confirm
 
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 
 def confirm(message: str, *, default_to_yes: bool) -> bool:
     """Ask a user to confirm an action, formatted as a log message"""
-    logger = LoggingSingleton()
+    logger = get_logger()
 
     logger.debug(f"Prompting user to confirm '{message}'")
     response: bool = Confirm.ask(message, default=default_to_yes)

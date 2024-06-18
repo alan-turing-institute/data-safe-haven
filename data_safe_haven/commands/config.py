@@ -8,7 +8,7 @@ from rich import print as rprint
 
 from data_safe_haven.config import Config
 from data_safe_haven.context import ContextSettings
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import get_logger
 from data_safe_haven.utility import prompts
 
 config_command_group = typer.Typer()
@@ -46,7 +46,7 @@ def upload(
         config_yaml = config_file.read()
     config = Config.from_yaml(config_yaml)
 
-    logger = LoggingSingleton()
+    logger = get_logger()
 
     # Present diff to user
     if Config.remote_exists(context):

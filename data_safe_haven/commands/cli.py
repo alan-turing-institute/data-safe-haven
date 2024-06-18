@@ -6,7 +6,7 @@ import typer
 from rich import print as rprint
 
 from data_safe_haven import __version__
-from data_safe_haven.logging import LoggingSingleton
+from data_safe_haven.logging import set_console_level, show_console_level
 
 from .config import config_command_group
 from .context import context_command_group
@@ -54,10 +54,10 @@ def callback(
     """Arguments to the main executable"""
 
     if verbose:
-        LoggingSingleton.set_console_level("DEBUG")
+        set_console_level("DEBUG")
 
     if show_level:
-        LoggingSingleton.show_console_level()
+        show_console_level()
 
     if version:
         rprint(f"Data Safe Haven {__version__}")
