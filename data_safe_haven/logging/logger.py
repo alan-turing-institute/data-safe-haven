@@ -25,12 +25,8 @@ def init_logging():
     )
     console_handler.setFormatter(logging.Formatter(r"%(message)s"))
 
-    log_directory = str(log_dir())
-    log_file = str(datetime.now(UTC).date()) + ".log"
     file_handler = PlainFileHandler(
-        (log_directory + "/" + log_file),
-        # f"{log_dir()}/{datetime.now(UTC).date()}.log",
-        # f"what.log",
+        f"{log_dir()}/{logfile_name()}",
         delay=True,
         encoding="utf8",
         mode="a",
@@ -52,6 +48,10 @@ def init_logging():
     logging.getLogger("azure.identity._internal").setLevel(logging.ERROR)
     logging.getLogger("azure.mgmt.core.policies").setLevel(logging.ERROR)
     logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
+
+
+def logfile_name() -> str:
+    return f"{datetime.now(UTC).date()}.log"
 
 
 def get_logger() -> logging.Logger:
@@ -81,19 +81,11 @@ class PlainFileHandler(logging.FileHandler):
 
 
 def set_console_level(level: int | str) -> None:
-    # print(get_logger().handlers)
-    # print(get_logger().handlers[0].__dict__)
     get_logger().console_handler.setLevel(level)
-    # for handler in get_logger().handlers:
-    #     if isinstance(handler, RichHandler):
-    #         handler.setLevel(level)
 
 
 def show_console_level() -> None:
     get_logger().console_handler._log_render.show_level = True
-    # for handler in get_logger().handlers:
-    #     if isinstance(handler, RichHandler):
-    #         handler._log_render.show_level = True
 
 
 def parse(message: str) -> None:
