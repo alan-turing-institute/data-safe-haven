@@ -124,7 +124,6 @@ def template_sre(
 
 @config_command_group.command()
 def upload_sre(
-    name: Annotated[str, typer.Argument(help="Name of SRE to upload")],
     file: Annotated[Path, typer.Argument(help="Path to configuration file")],
 ) -> None:
     """Upload an SRE configuration to the Data Safe Haven context"""
@@ -135,11 +134,10 @@ def upload_sre(
     with open(file) as config_file:
         config_yaml = config_file.read()
     config = SREConfig.from_yaml(config_yaml)
-    filename = SREConfig.filename(name)
 
     # Present diff to user
-    if SREConfig.remote_exists(context, filename=filename):
-        if diff := config.remote_yaml_diff(context, filename=filename):
+    if SREConfig.remote_exists(context, filename=config.filename):
+        if diff := config.remote_yaml_diff(context, filename=config.filename):
             print("".join(diff))
             if not logger.confirm(
                 (
@@ -153,4 +151,4 @@ def upload_sre(
             print("No changes, won't upload configuration.")
             raise typer.Exit()
 
-    config.upload(context, filename=filename)
+    config.upload(context, filename=config.filename)

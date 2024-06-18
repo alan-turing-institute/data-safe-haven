@@ -1,11 +1,12 @@
 from data_safe_haven.commands.config import config_command_group
 from data_safe_haven.config import SREConfig
+from data_safe_haven.config.sre_config import sre_config_name
 from data_safe_haven.external import AzureApi
 
 
 class TestShowSRE:
     def test_show(self, mocker, runner, context, sre_config_yaml):
-        sre_name = "sre 1"
+        sre_name = "SandBox"
         mock_method = mocker.patch.object(
             AzureApi, "download_blob", return_value=sre_config_yaml
         )
@@ -15,7 +16,7 @@ class TestShowSRE:
         assert sre_config_yaml in result.stdout
 
         mock_method.assert_called_once_with(
-            SREConfig.filename(sre_name),
+            sre_config_name(sre_name),
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -63,15 +64,15 @@ class TestUploadSRE:
     def test_upload_new(
         self, mocker, context, runner, sre_config_yaml, sre_config_file
     ):
-        sre_name = "sre 1"
-        sre_filename = SREConfig.filename(sre_name)
+        sre_name = "SandBox"
+        sre_filename = sre_config_name(sre_name)
         mock_exists = mocker.patch.object(
             SREConfig, "remote_exists", return_value=False
         )
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload-sre", sre_name, str(sre_config_file)],
+            ["upload-sre", str(sre_config_file)],
         )
         assert result.exit_code == 0
 
@@ -87,8 +88,8 @@ class TestUploadSRE:
     def test_upload_no_changes(
         self, mocker, context, runner, sre_config, sre_config_file
     ):
-        sre_name = "sre 1"
-        sre_filename = SREConfig.filename(sre_name)
+        sre_name = "SandBox"
+        sre_filename = sre_config_name(sre_name)
         mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
             SREConfig, "from_remote", return_value=sre_config
@@ -96,7 +97,7 @@ class TestUploadSRE:
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload-sre", sre_name, str(sre_config_file)],
+            ["upload-sre", str(sre_config_file)],
         )
         assert result.exit_code == 0
 
@@ -115,8 +116,8 @@ class TestUploadSRE:
         sre_config_file,
         sre_config_yaml,
     ):
-        sre_name = "sre 1"
-        sre_filename = SREConfig.filename(sre_name)
+        sre_name = "SandBox"
+        sre_filename = sre_config_name(sre_name)
         mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
             SREConfig, "from_remote", return_value=sre_config_alternate
@@ -124,7 +125,7 @@ class TestUploadSRE:
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload-sre", sre_name, str(sre_config_file)],
+            ["upload-sre", str(sre_config_file)],
             input="y\n",
         )
         assert result.exit_code == 0
@@ -145,8 +146,8 @@ class TestUploadSRE:
     def test_upload_changes_n(
         self, mocker, context, runner, sre_config_alternate, sre_config_file
     ):
-        sre_name = "sre 1"
-        sre_filename = SREConfig.filename(sre_name)
+        sre_name = "SandBox"
+        sre_filename = sre_config_name(sre_name)
         mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
             SREConfig, "from_remote", return_value=sre_config_alternate
@@ -154,7 +155,7 @@ class TestUploadSRE:
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload-sre", sre_name, str(sre_config_file)],
+            ["upload-sre", str(sre_config_file)],
             input="n\n",
         )
         assert result.exit_code == 0
@@ -170,6 +171,6 @@ class TestUploadSRE:
         mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload-sre", "sre-name"],
+            ["upload-sre"],
         )
         assert result.exit_code == 2

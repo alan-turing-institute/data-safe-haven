@@ -15,6 +15,11 @@ from .config_sections import (
 )
 
 
+def sre_config_name(sre_name: str) -> str:
+    """Construct a safe YAML filename given an input SRE name."""
+    return f"sre-{sanitise_sre_name(sre_name)}.yaml"
+
+
 class SREConfig(AzureSerialisableModel):
     config_type: ClassVar[str] = "SREConfig"
     default_filename: ClassVar[str] = "sre.yaml"
@@ -22,22 +27,17 @@ class SREConfig(AzureSerialisableModel):
     name: ConfigName
     sre: ConfigSectionSRE
 
-    def is_complete(self) -> bool:
-        if not all((self.azure, self.name, self.sre)):
-            return False
-        return True
-
-    @classmethod
-    def filename(cls: type[Self], sre_name: str) -> str:
-        """Construct a canonical filename."""
-        return f"sre-{sanitise_sre_name(sre_name)}.yaml"
+    @property
+    def filename(self) -> str:
+        """Construct a canonical filename for this SREConfig."""
+        return sre_config_name(self.name)
 
     @classmethod
     def from_remote_by_name(
         cls: type[Self], context: ContextBase, sre_name: str
     ) -> SREConfig:
         """Load an SREConfig from Azure storage."""
-        return cls.from_remote(context, filename=cls.filename(sre_name))
+        return cls.from_remote(context, filename=sre_config_name(sre_name))
 
     @classmethod
     def template(cls: type[Self]) -> SREConfig:
@@ -67,3 +67,9 @@ class SREConfig(AzureSerialisableModel):
                 ],
             ),
         )
+
+    def is_complete(self) -> bool:
+        """Whether all components of this model are present"""
+        if not all((self.azure, self.name, self.sre)):
+            return False
+        return True
