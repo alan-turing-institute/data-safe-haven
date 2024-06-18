@@ -13,7 +13,7 @@ from data_safe_haven.config import (
     SHMConfig,
     SREConfig,
 )
-from data_safe_haven.config.config import (
+from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
     ConfigSectionSHM,
     ConfigSectionSRE,

@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from data_safe_haven.config import SREConfig
-from data_safe_haven.config.config import (
+from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
     ConfigSectionSHM,
     ConfigSectionSRE,
