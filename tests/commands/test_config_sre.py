@@ -15,7 +15,7 @@ class TestShowSRE:
         assert sre_config_yaml in result.stdout
 
         mock_method.assert_called_once_with(
-            SREConfig.sre_filename_from_name(sre_name),
+            SREConfig.filename(sre_name),
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -64,7 +64,7 @@ class TestUploadSRE:
         self, mocker, context, runner, sre_config_yaml, sre_config_file
     ):
         sre_name = "sre 1"
-        sre_filename = SREConfig.sre_filename_from_name(sre_name)
+        sre_filename = SREConfig.filename(sre_name)
         mock_exists = mocker.patch.object(
             SREConfig, "remote_exists", return_value=False
         )
@@ -88,7 +88,7 @@ class TestUploadSRE:
         self, mocker, context, runner, sre_config, sre_config_file
     ):
         sre_name = "sre 1"
-        sre_filename = SREConfig.sre_filename_from_name(sre_name)
+        sre_filename = SREConfig.filename(sre_name)
         mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
             SREConfig, "from_remote", return_value=sre_config
@@ -116,7 +116,7 @@ class TestUploadSRE:
         sre_config_yaml,
     ):
         sre_name = "sre 1"
-        sre_filename = SREConfig.sre_filename_from_name(sre_name)
+        sre_filename = SREConfig.filename(sre_name)
         mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
             SREConfig, "from_remote", return_value=sre_config_alternate
@@ -146,7 +146,7 @@ class TestUploadSRE:
         self, mocker, context, runner, sre_config_alternate, sre_config_file
     ):
         sre_name = "sre 1"
-        sre_filename = SREConfig.sre_filename_from_name(sre_name)
+        sre_filename = SREConfig.filename(sre_name)
         mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
             SREConfig, "from_remote", return_value=sre_config_alternate

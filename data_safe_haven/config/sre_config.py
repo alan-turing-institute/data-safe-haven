@@ -30,10 +30,10 @@ class SREConfig(AzureSerialisableModel):
         cls: type[Self], context: ContextBase, sre_name: str
     ) -> SREConfig:
         """Load an SREConfig from Azure storage."""
-        return cls.from_remote(context, filename=cls.sre_filename_from_name(sre_name))
+        return cls.from_remote(context, filename=cls.filename(sre_name))
 
     @classmethod
-    def sre_filename_from_name(cls: type[Self], sre_name: str) -> str:
+    def filename(cls: type[Self], sre_name: str) -> str:
         """Construct a canonical filename."""
         return f"sre-{sanitise_sre_name(sre_name)}.yaml"
 

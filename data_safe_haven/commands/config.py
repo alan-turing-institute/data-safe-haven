@@ -135,7 +135,7 @@ def upload_sre(
     with open(file) as config_file:
         config_yaml = config_file.read()
     sre_config = SREConfig.from_yaml(config_yaml)
-    filename = SREConfig.sre_filename_from_name(name)
+    filename = SREConfig.filename(name)
 
     # Present diff to user
     if SREConfig.remote_exists(context, filename=filename):
