@@ -10,7 +10,7 @@ from rich.text import Text
 from data_safe_haven.directories import log_dir
 
 
-def init_logging():
+def init_logging() -> None:
     # Configure root handler
     logger = get_logger()
     logger.setLevel(logging.NOTSET)
@@ -38,9 +38,9 @@ def init_logging():
 
     # Add handlers
     logger.addHandler(console_handler)
-    logger.console_handler = console_handler
+    logger.console_handler = console_handler  # type: ignore [attr-defined]
     logger.addHandler(file_handler)
-    logger.file_handler = file_handler
+    logger.file_handler = file_handler  # type: ignore [attr-defined]
 
     # Disable unnecessarily verbose external logging
     logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
@@ -81,31 +81,8 @@ class PlainFileHandler(logging.FileHandler):
 
 
 def set_console_level(level: int | str) -> None:
-    get_logger().console_handler.setLevel(level)
+    get_logger().console_handler.setLevel(level)  # type: ignore [attr-defined]
 
 
 def show_console_level() -> None:
-    get_logger().console_handler._log_render.show_level = True
-
-
-def parse(message: str) -> None:
-    """
-    Parse a message that starts with a log-level token.
-
-    This function is designed to handle messages from non-Python code inside this package.
-    """
-    logger = get_logger()
-    tokens = message.split(":")
-    level, remainder = tokens[0].upper(), ":".join(tokens[1:]).strip()
-    if level == "CRITICAL":
-        return logger.critical(remainder)
-    elif level == "ERROR":
-        return logger.error(remainder)
-    elif level == "WARNING":
-        return logger.warning(remainder)
-    elif level == "INFO":
-        return logger.info(remainder)
-    elif level == "DEBUG":
-        return logger.debug(remainder)
-    else:
-        return logger.info(message.strip())
+    get_logger().console_handler._log_render.show_level = True  # type: ignore [attr-defined]
