@@ -590,6 +590,15 @@
         "bug",
         "review"
       ]
+    },
+    {
+      "login": "J0shev",
+      "name": "Josh Everett",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17052866?v=4",
+      "profile": "https://github.com/J0shev",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsSortAlphabetically": true,
