@@ -6,6 +6,7 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
     ConfigSectionSRE,
 )
+from data_safe_haven.config.sre_config import sre_config_name
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenParameterError,
@@ -106,3 +107,15 @@ class TestConfig:
             context.storage_account_name,
             context.storage_container_name,
         )
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (r"Test SRE", "sre-testsre.yaml"),
+        (r"*a^b$c", "sre-abc.yaml"),
+        (r";'@-", "sre-.yaml"),
+    ],
+)
+def test_sre_config_name(value, expected):
+    assert sre_config_name(value) == expected

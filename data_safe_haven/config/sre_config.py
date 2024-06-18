@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import ClassVar, Self
 
-from data_safe_haven.functions import sanitise_sre_name
+from data_safe_haven.functions import json_safe
 from data_safe_haven.serialisers import AzureSerialisableModel, ContextBase
 from data_safe_haven.types import ConfigName
 
@@ -17,7 +17,7 @@ from .config_sections import (
 
 def sre_config_name(sre_name: str) -> str:
     """Construct a safe YAML filename given an input SRE name."""
-    return f"sre-{sanitise_sre_name(sre_name)}.yaml"
+    return f"sre-{json_safe(sre_name)}.yaml"
 
 
 class SREConfig(AzureSerialisableModel):
@@ -31,6 +31,11 @@ class SREConfig(AzureSerialisableModel):
     def filename(self) -> str:
         """Construct a canonical filename for this SREConfig."""
         return sre_config_name(self.name)
+
+    @property
+    def safe_name(self) -> str:
+        """Construct a JSON-safe version of the name of this SRE."""
+        return json_safe(self.name)
 
     @classmethod
     def from_remote_by_name(

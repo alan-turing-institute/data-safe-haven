@@ -6,11 +6,10 @@ from typing import Annotated
 import typer
 
 from data_safe_haven.administration.users import UserHandler
-from data_safe_haven.config import DSHPulumiConfig, SHMConfig
+from data_safe_haven.config import DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.utility import LoggingSingleton
 
 users_command_group = typer.Typer()
@@ -111,12 +110,12 @@ def register(
 ) -> None:
     """Register existing users with a deployed SRE."""
     context = ContextSettings.from_file().assert_context()
-    shm_config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
+    shm_config = SHMConfig.from_remote(context)
+    sre_config = SREConfig.from_remote_by_name(context, sre)
 
     shm_name = context.shm_name
-    # Use a JSON-safe SRE name
-    sre_name = sanitise_sre_name(sre)
+    sre_name = sre_config.safe_name
 
     logger = LoggingSingleton()
     if shm_name not in pulumi_config.project_names:
@@ -169,8 +168,8 @@ def remove(
 ) -> None:
     """Remove existing users from a deployed Data Safe Haven."""
     context = ContextSettings.from_file().assert_context()
-    shm_config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
+    shm_config = SHMConfig.from_remote(context)
 
     shm_name = context.shm_name
 
@@ -214,11 +213,12 @@ def unregister(
 ) -> None:
     """Unregister existing users from a deployed SRE."""
     context = ContextSettings.from_file().assert_context()
-    shm_config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
+    shm_config = SHMConfig.from_remote(context)
+    sre_config = SREConfig.from_remote_by_name(context, sre)
 
     shm_name = context.shm_name
-    sre_name = sanitise_sre_name(sre)
+    sre_name = sre_config.safe_name
 
     logger = LoggingSingleton()
     if shm_name not in pulumi_config.project_names:

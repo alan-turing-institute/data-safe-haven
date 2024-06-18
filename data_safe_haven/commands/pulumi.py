@@ -9,7 +9,6 @@ from rich import print
 from data_safe_haven.config import DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.external import GraphApi
-from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
 
 pulumi_command_group = typer.Typer()
@@ -55,7 +54,6 @@ def run(
             pulumi_config=pulumi_config,
         )
     elif project_type == ProjectType.SRE:
-        sre_name = sanitise_sre_name(sre_name)
         sre_config = SREConfig.from_remote_by_name(context, sre_name)
 
         graph_api = GraphApi(
@@ -72,7 +70,7 @@ def run(
             context=context,
             config=sre_config,
             pulumi_config=pulumi_config,
-            sre_name=sre_name,
+            sre_name=sre_config.safe_name,
             graph_api_token=graph_api.token,
         )
 
