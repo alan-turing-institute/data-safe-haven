@@ -4,7 +4,13 @@ from pathlib import Path
 
 from rich.logging import RichHandler
 
-from data_safe_haven.logging.logger import PlainFileHandler, get_logger, logfile_name, set_console_level, show_console_level
+from data_safe_haven.logging.logger import (
+    PlainFileHandler,
+    get_logger,
+    logfile_name,
+    set_console_level,
+    show_console_level,
+)
 
 
 class TestPlainFileHandler:
