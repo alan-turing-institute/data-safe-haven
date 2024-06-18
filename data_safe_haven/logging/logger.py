@@ -33,11 +33,16 @@ class PlainFileHandler(logging.FileHandler):
 
 
 def get_logger() -> logging.Logger:
-    return logging.getLogger(None)
+    return logging.getLogger("data_safe_haven")
 
 
 def init_logging() -> None:
-    # Configure root handler
+    # Configure root logger
+    # By default logging level is WARNING
+    root_logger = logging.getLogger(None)
+    root_logger.setLevel(logging.NOTSET)
+
+    # Configure DSH logger
     logger = get_logger()
     logger.setLevel(logging.NOTSET)
 

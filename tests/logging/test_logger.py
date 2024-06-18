@@ -24,7 +24,7 @@ class TestGetLogger:
     def test_get_logger(self):
         logger = get_logger()
         assert isinstance(logger, logging.Logger)
-        assert logger.name == "root"
+        assert logger.name == "data_safe_haven"
         assert hasattr(logger, "console_handler")
         assert hasattr(logger, "file_handler")
 
