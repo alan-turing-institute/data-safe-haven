@@ -75,9 +75,13 @@ class DeclarativeSRE:
     def __call__(self) -> None:
         # Load pulumi configuration options
         self.pulumi_opts = pulumi.Config()
+        shm_fqdn = self.pulumi_opts.require("shm-fqdn")
+        shm_networking_resource_group_name = self.pulumi_opts.require(
+            "shm-networking-resource_group_name"
+        )
 
         # Construct LDAP paths
-        ldap_root_dn = f"DC={self.cfg.shm.fqdn.replace('.', ',DC=')}"
+        ldap_root_dn = f"DC={shm_fqdn.replace('.', ',DC=')}"
         ldap_group_search_base = f"OU=groups,{ldap_root_dn}"
         ldap_user_search_base = f"OU=users,{ldap_root_dn}"
         ldap_group_name_prefix = f"Data Safe Haven SRE {self.sre_name}"
@@ -129,7 +133,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREDnsServerProps(
                 location=self.context.location,
-                shm_fqdn=self.cfg.shm.fqdn,
+                shm_fqdn=shm_fqdn,
             ),
             tags=self.tags,
         )
@@ -144,11 +148,9 @@ class DeclarativeSRE:
                 dns_server_ip=dns.ip_address,
                 dns_virtual_network=dns.virtual_network,
                 location=self.context.location,
-                shm_fqdn=self.cfg.shm.fqdn,
-                shm_networking_resource_group_name=self.pulumi_opts.require(
-                    "shm-networking-resource_group_name"
-                ),
-                shm_zone_name=self.cfg.shm.fqdn,
+                shm_fqdn=shm_fqdn,
+                shm_networking_resource_group_name=shm_networking_resource_group_name,
+                shm_zone_name=shm_fqdn,
                 sre_name=self.sre_name,
                 user_public_ip_ranges=self.cfg.sre(
                     self.sre_name
@@ -232,7 +234,7 @@ class DeclarativeSRE:
                 entra_tenant_id=self.cfg.shm.entra_tenant_id,
                 location=self.context.location,
                 networking_resource_group_name=networking.resource_group.name,
-                shm_fqdn=self.cfg.shm.fqdn,
+                shm_fqdn=shm_fqdn,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,

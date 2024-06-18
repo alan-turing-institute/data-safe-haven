@@ -71,7 +71,7 @@ def deploy(
 
         # Add the SHM domain to Entra ID as a custom domain
         graph_api.verify_custom_domain(
-            config.shm.fqdn,
+            stack.output("networking")["fqdn"],
             stack.output("networking")["fqdn_nameservers"],
         )
     except DataSafeHavenError as exc:

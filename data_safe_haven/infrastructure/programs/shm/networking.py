@@ -96,6 +96,7 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Register exports
         self.exports = {
+            "fqdn": self.dns_zone.name,
             "fqdn_nameservers": self.dns_zone.name_servers,
             "resource_group_name": resource_group.name,
         }
