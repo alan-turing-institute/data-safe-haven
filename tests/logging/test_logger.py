@@ -4,7 +4,7 @@ from pathlib import Path
 
 from rich.logging import RichHandler
 
-from data_safe_haven.logging.logger import PlainFileHandler, get_logger, logfile_name, set_console_level
+from data_safe_haven.logging.logger import PlainFileHandler, get_logger, logfile_name, set_console_level, show_console_level
 
 
 class TestPlainFileHandler:
@@ -48,3 +48,11 @@ class TestSetConsoleLevel:
         assert logger.console_handler.level == logging.INFO
         set_console_level(logging.DEBUG)
         assert logger.console_handler.level == logging.DEBUG
+
+
+class TestShowConsoleLevel:
+    def test_show_console_level(self):
+        logger = get_logger()
+        assert not logger.console_handler._log_render.show_level
+        show_console_level()
+        assert logger.console_handler._log_render.show_level
