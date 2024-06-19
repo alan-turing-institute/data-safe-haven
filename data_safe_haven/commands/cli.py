@@ -96,5 +96,5 @@ application.add_typer(
 
 
 def main() -> None:
-    """Run the application and log any exceptions"""
+    """Run the application"""
     application()

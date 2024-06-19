@@ -5,6 +5,7 @@ class DataSafeHavenError(Exception):
     def __init__(self, message: str | bytes):
         super().__init__(message)
 
+        # Log exception message as an error
         logger = get_logger()
         logger.error(message)
 

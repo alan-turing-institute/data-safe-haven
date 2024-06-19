@@ -1,4 +1,4 @@
-"""Standalone logging class implemented as a singleton"""
+"""Custom logging classes and functions to interact with Python logging"""
 
 import logging
 from datetime import UTC, datetime
