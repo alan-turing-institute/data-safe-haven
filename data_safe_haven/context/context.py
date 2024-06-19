@@ -8,6 +8,7 @@ from azure.keyvault.keys import KeyVaultKey
 from pydantic import BaseModel
 
 from data_safe_haven import __version__
+from data_safe_haven.directories import config_dir
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.serialisers import ContextBase
@@ -16,7 +17,6 @@ from data_safe_haven.types import (
     AzureSubscriptionName,
     Guid,
 )
-from data_safe_haven.utility import config_dir
 
 
 class Context(ContextBase, BaseModel, validate_assignment=True):

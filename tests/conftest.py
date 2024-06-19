@@ -6,6 +6,7 @@ from pulumi.automation import ProjectSettings
 from pytest import fixture
 
 import data_safe_haven.context.context_settings as context_mod
+import data_safe_haven.logging.logger
 from data_safe_haven.config import (
     Config,
     DSHPulumiConfig,
@@ -25,6 +26,7 @@ from data_safe_haven.infrastructure.project_manager import (
     ProjectManager,
     PulumiAccount,
 )
+from data_safe_haven.logging import init_logging
 
 
 @fixture(autouse=True, scope="session")
@@ -33,6 +35,16 @@ def local_pulumi_login():
     run([pulumi_path, "login", "--local"], check=False)
     yield
     run([pulumi_path, "logout"], check=False)
+
+
+@fixture(autouse=True)
+def log_directory(mocker, monkeypatch, tmp_path):
+    monkeypatch.setenv("DSH_LOG_DIRECTORY", tmp_path)
+    mocker.patch.object(
+        data_safe_haven.logging.logger, "logfile_name", return_value="test.log"
+    )
+    init_logging()
+    return tmp_path
 
 
 @fixture

@@ -9,6 +9,7 @@ from io import UnsupportedOperation
 from typing import Any, ClassVar
 
 import requests
+import typer
 from dns import resolver
 from msal import (
     ConfidentialClientApplication,
@@ -22,7 +23,8 @@ from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
 )
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.utility import LoggingSingleton, NonLoggingSingleton
+from data_safe_haven.logging import get_logger
+from data_safe_haven.utility import prompts
 
 
 class LocalTokenCache(SerializableTokenCache):
@@ -77,13 +79,12 @@ class GraphApi:
         application_secret: str | None = None,
         base_endpoint: str = "",
         default_scopes: Sequence[str] = [],
-        disable_logging: bool = False,
     ):
         self.base_endpoint = (
             base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
         )
         self.default_scopes = list(default_scopes)
-        self.logger = NonLoggingSingleton() if disable_logging else LoggingSingleton()
+        self.logger = get_logger()
         self.tenant_id = tenant_id
         if auth_token:
             self.token = auth_token
@@ -1082,7 +1083,7 @@ class GraphApi:
             while True:
                 # Check whether all expected nameservers are active
                 with suppress(resolver.NXDOMAIN):
-                    self.logger.info(
+                    self.logger.debug(
                         f"Checking [green]{domain_name}[/] domain verification status ..."
                     )
                     active_nameservers = [
@@ -1108,14 +1109,14 @@ class GraphApi:
                 self.logger.info(
                     f"You will need to create an NS record pointing to: {ns_list}"
                 )
-                if isinstance(self.logger, LoggingSingleton):
-                    self.logger.confirm(
-                        f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
-                        default_to_yes=True,
+                if not prompts.confirm(
+                    f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
+                    default_to_yes=True,
+                ):
+                    self.logger.error(
+                        "Please use `az login` to connect to the correct Azure CLI account"
                     )
-                else:
-                    msg = "Unable to confirm Azure nameserver delegation."
-                    raise NotImplementedError(msg)
+                    raise typer.Exit(1)
             # Send verification request if needed
             if not any((d["id"] == domain_name and d["isVerified"]) for d in domains):
                 response = self.http_post(

@@ -3,6 +3,7 @@
 from typing import Annotated, Optional
 
 import typer
+from rich import print as rprint
 
 from data_safe_haven import validators
 from data_safe_haven.context import (
@@ -14,15 +15,15 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenConfigError,
 )
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 context_command_group = typer.Typer()
-logger = LoggingSingleton()
 
 
 @context_command_group.command()
 def show() -> None:
     """Show information about the selected context."""
+    logger = get_logger()
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
@@ -34,17 +35,21 @@ def show() -> None:
     current_context_key = settings.selected
     current_context = settings.context
 
-    logger.info(f"Current context: [green]{current_context_key}")
+    rprint(f"Current context: [green]{current_context_key}")
     if current_context is not None:
-        logger.info(f"\tName: {current_context.name}")
-        logger.info(f"\tAdmin Group ID: {current_context.admin_group_id}")
-        logger.info(f"\tSubscription name: {current_context.subscription_name}")
-        logger.info(f"\tLocation: {current_context.location}")
+        rprint(
+            f"\tName: {current_context.name}",
+            f"\tAdmin Group ID: {current_context.admin_group_id}",
+            f"\tSubscription name: {current_context.subscription_name}",
+            f"\tLocation: {current_context.location}",
+            sep="\n",
+        )
 
 
 @context_command_group.command()
 def available() -> None:
     """Show the available contexts."""
+    logger = get_logger()
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
@@ -60,7 +65,7 @@ def available() -> None:
         available.remove(current_context_key)
         available = [f"[green]{current_context_key}*[/]", *available]
 
-    logger.info("\n".join(available))
+    rprint("\n".join(available))
 
 
 @context_command_group.command()
@@ -68,6 +73,7 @@ def switch(
     key: Annotated[str, typer.Argument(help="Key of the context to switch to.")]
 ) -> None:
     """Switch the selected context."""
+    logger = get_logger()
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
@@ -164,6 +170,7 @@ def update(
     ] = None,
 ) -> None:
     """Update the selected context settings."""
+    logger = get_logger()
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
@@ -186,6 +193,7 @@ def remove(
     key: Annotated[str, typer.Argument(help="Name of the context to remove.")],
 ) -> None:
     """Removes a context."""
+    logger = get_logger()
     try:
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
@@ -198,6 +206,7 @@ def remove(
 @context_command_group.command()
 def create() -> None:
     """Create Data Safe Haven context infrastructure."""
+    logger = get_logger()
     try:
         context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
@@ -224,6 +233,7 @@ def create() -> None:
 @context_command_group.command()
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure."""
+    logger = get_logger()
     try:
         context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:

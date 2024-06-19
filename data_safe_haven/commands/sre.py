@@ -10,8 +10,8 @@ from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputErr
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
 from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
+from data_safe_haven.logging import get_logger
 from data_safe_haven.provisioning import SREProvisioningManager
-from data_safe_haven.utility import LoggingSingleton
 
 sre_command_group = typer.Typer()
 
@@ -29,7 +29,7 @@ def deploy(
     ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
-    logger = LoggingSingleton()
+    logger = get_logger()
     context = ContextSettings.from_file().assert_context()
     config = Config.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)

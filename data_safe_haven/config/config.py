@@ -10,6 +10,7 @@ from pydantic import (
 )
 
 from data_safe_haven.exceptions import DataSafeHavenConfigError
+from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import AzureSerialisableModel
 from data_safe_haven.types import (
     AzureVmSku,
@@ -21,9 +22,6 @@ from data_safe_haven.types import (
     SoftwarePackageCategory,
     TimeZone,
     UniqueList,
-)
-from data_safe_haven.utility import (
-    LoggingSingleton,
 )
 
 
@@ -57,35 +55,35 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
             fqdn: Fully-qualified domain name to use for this SHM
             timezone: Timezone in pytz format (eg. Europe/London)
         """
-        logger = LoggingSingleton()
+        logger = get_logger()
         # Set admin email address
         if admin_email_address:
             self.admin_email_address = admin_email_address
-        logger.info(
+        logger.debug(
             f"[bold]Admin email address[/] will be [green]{self.admin_email_address}[/]."
         )
         # Set admin IP addresses
         if admin_ip_addresses:
             self.admin_ip_addresses = admin_ip_addresses
-        logger.info(
+        logger.debug(
             f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
         )
         # Set Entra tenant ID
         if entra_tenant_id:
             self.entra_tenant_id = entra_tenant_id
-        logger.info(
+        logger.debug(
             f"[bold]Entra tenant ID[/] will be [green]{self.entra_tenant_id}[/]."
         )
         # Set fully-qualified domain name
         if fqdn:
             self.fqdn = fqdn
-        logger.info(
+        logger.debug(
             f"[bold]Fully-qualified domain name[/] will be [green]{self.fqdn}[/]."
         )
         # Set timezone
         if timezone:
             self.timezone = timezone
-        logger.info(f"[bold]Timezone[/] will be [green]{self.timezone}[/].")
+        logger.debug(f"[bold]Timezone[/] will be [green]{self.timezone}[/].")
 
 
 class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
@@ -104,13 +102,13 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
         # Set whether copying text out of the SRE is allowed
         if allow_copy:
             self.allow_copy = allow_copy
-        LoggingSingleton().info(
+        get_logger().debug(
             f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
         )
         # Set whether pasting text into the SRE is allowed
         if allow_paste:
             self.allow_paste = allow_paste
-        LoggingSingleton().info(
+        get_logger().debug(
             f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
         )
 
@@ -149,11 +147,11 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
             software_packages: Whether to allow packages from external repositories
             user_ip_addresses: List of IP addresses belonging to users
         """
-        logger = LoggingSingleton()
+        logger = get_logger()
         # Set data provider IP addresses
         if data_provider_ip_addresses:
             self.data_provider_ip_addresses = data_provider_ip_addresses
-        logger.info(
+        logger.debug(
             f"[bold]IP addresses used by data providers[/] will be [green]{self.data_provider_ip_addresses}[/]."
         )
         # Set which databases to deploy
@@ -161,23 +159,25 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
             self.databases = sorted(set(databases))
             if len(self.databases) != len(databases):
                 logger.warning("Discarding duplicate values for 'database'.")
-        logger.info(
+        logger.debug(
             f"[bold]Databases available to users[/] will be [green]{[database.value for database in self.databases]}[/]."
         )
         # Set research desktop SKUs
         if workspace_skus:
             self.workspace_skus = workspace_skus
-        logger.info(f"[bold]Workspace SKUs[/] will be [green]{self.workspace_skus}[/].")
+        logger.debug(
+            f"[bold]Workspace SKUs[/] will be [green]{self.workspace_skus}[/]."
+        )
         # Select which software packages can be installed by users
         if software_packages:
             self.software_packages = software_packages
-        logger.info(
+        logger.debug(
             f"[bold]Software packages[/] from [green]{self.software_packages.value}[/] sources will be installable."
         )
         # Set user IP addresses
         if user_ip_addresses:
             self.research_user_ip_addresses = user_ip_addresses
-        logger.info(
+        logger.debug(
             f"[bold]IP addresses used by users[/] will be [green]{self.research_user_ip_addresses}[/]."
         )
 

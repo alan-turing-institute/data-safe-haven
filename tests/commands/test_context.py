@@ -247,7 +247,8 @@ class TestCreate:
 
     def test_auth_failure(self, runner, mocker):
         def mock_login(self):  # noqa: ARG001
-            raise DataSafeHavenAzureAPIAuthenticationError
+            msg = "Failed to authenticate with Azure API."
+            raise DataSafeHavenAzureAPIAuthenticationError(msg)
 
         mocker.patch.object(AzureAuthenticator, "login", mock_login)
 
@@ -279,7 +280,8 @@ class TestTeardown:
 
     def test_auth_failure(self, runner, mocker):
         def mock_login(self):  # noqa: ARG001
-            raise DataSafeHavenAzureAPIAuthenticationError
+            msg = "Failed to authenticate with Azure API."
+            raise DataSafeHavenAzureAPIAuthenticationError(msg)
 
         mocker.patch.object(AzureAuthenticator, "login", mock_login)
 
