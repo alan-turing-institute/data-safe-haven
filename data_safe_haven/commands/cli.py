@@ -3,9 +3,9 @@
 from typing import Annotated, Optional
 
 import typer
-from rich import print as rprint
 
 from data_safe_haven import __version__
+from data_safe_haven.console import pretty_print
 from data_safe_haven.logging import set_console_level, show_console_level
 
 from .config import config_command_group
@@ -60,7 +60,7 @@ def callback(
         show_console_level()
 
     if version:
-        rprint(f"Data Safe Haven {__version__}")
+        pretty_print(f"Data Safe Haven {__version__}")
         raise typer.Exit()
 
 

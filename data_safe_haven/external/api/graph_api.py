@@ -17,6 +17,7 @@ from msal import (
     SerializableTokenCache,
 )
 
+from data_safe_haven.console import prompts
 from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
     DataSafeHavenInternalError,
@@ -24,7 +25,6 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger
-from data_safe_haven.utility import prompts
 
 
 class LocalTokenCache(SerializableTokenCache):

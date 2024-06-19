@@ -7,10 +7,10 @@ from shutil import which
 
 import typer
 
+from data_safe_haven.console import prompts
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.logging import get_logger
 from data_safe_haven.singleton import Singleton
-from data_safe_haven.utility import prompts
 
 
 @dataclass
