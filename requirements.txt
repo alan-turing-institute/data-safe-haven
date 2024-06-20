@@ -118,7 +118,6 @@ dill==0.3.8
 dnspython==2.6.1
     # via
     #   -c requirements-constraints.txt
-    #   data-safe-haven (pyproject.toml)
     #   simple-acme-dns
 fqdn==1.5.1
     # via data-safe-haven (pyproject.toml)
