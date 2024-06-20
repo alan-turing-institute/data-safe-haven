@@ -4,7 +4,7 @@ from data_safe_haven.external import AzureApi
 from data_safe_haven.logging import get_logger
 
 
-class ContextInfrastructure:
+class BackendInfrastructure:
     """Azure resources to support Data Safe Haven context"""
 
     def __init__(self, context: Context) -> None:

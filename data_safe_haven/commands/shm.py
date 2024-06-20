@@ -6,7 +6,6 @@ import typer
 
 from data_safe_haven.config import DSHPulumiConfig, SHMConfig
 from data_safe_haven.context import ContextSettings
-from data_safe_haven.context_infrastructure import ContextInfrastructure
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenConfigError,
@@ -14,7 +13,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
 )
 from data_safe_haven.external import GraphApi
-from data_safe_haven.infrastructure import SHMProjectManager
+from data_safe_haven.infrastructure import BackendInfrastructure, SHMProjectManager
 from data_safe_haven.logging import get_logger
 
 shm_command_group = typer.Typer()
@@ -47,7 +46,7 @@ def deploy(
             )
         raise typer.Exit(1) from exc
 
-    context_infra = ContextInfrastructure(context)
+    context_infra = BackendInfrastructure(context)
     try:
         context_infra.create()
     except DataSafeHavenAzureAPIAuthenticationError as exc:
@@ -137,7 +136,7 @@ def teardown() -> None:
         raise typer.Exit(code=1) from exc
 
     try:
-        context_infra = ContextInfrastructure(context)
+        context_infra = BackendInfrastructure(context)
         context_infra.teardown()
     except DataSafeHavenAzureAPIAuthenticationError as exc:
         logger.critical(

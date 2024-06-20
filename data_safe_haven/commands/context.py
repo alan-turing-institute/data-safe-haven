@@ -174,7 +174,7 @@ def update(
         logger.critical(
             "No context configuration file. Use `dsh context add` to create one."
         )
-        raise typer.Exit(code=1) from exc
+        raise typer.Exit(1) from exc
 
     settings.update(
         admin_group_id=admin_group,
@@ -195,6 +195,6 @@ def remove(
         settings = ContextSettings.from_file()
     except DataSafeHavenConfigError as exc:
         logger.critical("No context configuration file.")
-        raise typer.Exit(code=1) from exc
+        raise typer.Exit(1) from exc
     settings.remove(key)
     settings.write()

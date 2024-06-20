@@ -1,9 +1,9 @@
 import data_safe_haven.commands.shm
 from data_safe_haven.commands.shm import shm_command_group
-from data_safe_haven.context_infrastructure import ContextInfrastructure
 from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError
 from data_safe_haven.external import AzureApi
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
+from data_safe_haven.infrastructure import BackendInfrastructure
 
 
 class TestDeploySHM:
@@ -13,7 +13,7 @@ class TestDeploySHM:
             msg = "Failed to authenticate with Azure API."
             raise DataSafeHavenAzureAPIAuthenticationError(msg)
 
-        monkeypatch.setattr(ContextInfrastructure, "create", mock_create_then_exit)
+        monkeypatch.setattr(BackendInfrastructure, "create", mock_create_then_exit)
 
         result = runner.invoke(shm_command_group, ["deploy"])
         assert "mock create" in result.stdout
@@ -54,7 +54,7 @@ class TestDeploySHM:
         def mock_exception():
             raise Exception
 
-        monkeypatch.setattr(ContextInfrastructure, "create", mock_create)
+        monkeypatch.setattr(BackendInfrastructure, "create", mock_create)
 
         # Make the step after DSHPulumi deployment in shm deploy function raise an exception
         mocker.patch.object(
@@ -80,7 +80,7 @@ class TestTeardownSHM:
             msg = "Failed to authenticate with Azure API."
             raise DataSafeHavenAzureAPIAuthenticationError(msg)
 
-        monkeypatch.setattr(ContextInfrastructure, "teardown", mock_teardown_then_exit)
+        monkeypatch.setattr(BackendInfrastructure, "teardown", mock_teardown_then_exit)
 
         result = runner.invoke(shm_command_group, ["teardown"])
         assert "mock teardown" in result.stdout
