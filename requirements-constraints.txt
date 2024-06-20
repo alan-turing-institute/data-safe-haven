@@ -1,0 +1,2 @@
+# Avoid https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/19
+urllib3 !=2.0.*,!=2.1.*,!=2.2.0,!=2.2.1
