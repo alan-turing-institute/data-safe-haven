@@ -121,7 +121,7 @@ dependencies = [
 pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.hatch.envs.test.scripts]
-test = "coverage run --omit=tests/* -m pytest {args:-vvv tests}"
+test = "coverage run --omit=tests/* -m pytest {args: tests}"
 test-report = "coverage report {args:}"
 test-coverage = ["test", "test-report"]
 
@@ -162,6 +162,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 addopts = [
+    "-vvv",
     "--import-mode=importlib",
     "--disable-warnings",
     "--ignore=tests/*",
