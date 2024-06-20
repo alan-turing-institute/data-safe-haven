@@ -81,14 +81,6 @@ def context_yaml():
     return yaml.dump(yaml.safe_load(content))
 
 
-@fixture(autouse=True, scope="session")
-def local_pulumi_login():
-    pulumi_path = which("pulumi")
-    run([pulumi_path, "login", "--local"], check=False)
-    yield
-    run([pulumi_path, "logout"], check=False)
-
-
 @fixture
 def local_project_settings(context_no_secrets, mocker):  # noqa: ARG001
     """Overwrite adjust project settings to work locally, no secrets"""
@@ -102,14 +94,25 @@ def local_project_settings(context_no_secrets, mocker):  # noqa: ARG001
     )
 
 
-@fixture(autouse=True)
-def log_directory(mocker, monkeypatch, tmp_path):
-    monkeypatch.setenv("DSH_LOG_DIRECTORY", tmp_path)
-    mocker.patch.object(
+@fixture(autouse=True, scope="session")
+def local_pulumi_login():
+    pulumi_path = which("pulumi")
+    run([pulumi_path, "login", "--local"], check=False)
+    yield
+    run([pulumi_path, "logout"], check=False)
+
+
+@fixture(autouse=True, scope="session")
+def log_directory(session_mocker, tmp_path_factory):
+    session_mocker.patch.object(
         data_safe_haven.logging.logger, "logfile_name", return_value="test.log"
     )
+    log_dir = tmp_path_factory.mktemp("logs")
+    session_mocker.patch.object(
+        data_safe_haven.logging.logger, "log_dir", return_value=log_dir
+    )
     init_logging()
-    return tmp_path
+    return log_dir
 
 
 @fixture
