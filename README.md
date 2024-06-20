@@ -28,7 +28,7 @@
 | data\_safe\_haven/context/context\_settings.py                                    |       85 |        6 |     93% |102-105, 107-108, 113-116 |
 | data\_safe\_haven/context\_infrastructure/\_\_init\_\_.py                         |        2 |        0 |    100% |           |
 | data\_safe\_haven/context\_infrastructure/infrastructure.py                       |       43 |       19 |     56% |40-78, 83-84, 99-100 |
-| data\_safe\_haven/directories.py                                                  |       15 |        0 |    100% |           |
+| data\_safe\_haven/directories.py                                                  |       15 |        1 |     93% |        20 |
 | data\_safe\_haven/exceptions/\_\_init\_\_.py                                      |       36 |        0 |    100% |           |
 | data\_safe\_haven/external/\_\_init\_\_.py                                        |        7 |        0 |    100% |           |
 | data\_safe\_haven/external/api/\_\_init\_\_.py                                    |        0 |        0 |    100% |           |
@@ -85,7 +85,8 @@
 | data\_safe\_haven/infrastructure/programs/sre/workspaces.py                       |       69 |       51 |     26% |54-88, 91-97, 111-214, 231-248 |
 | data\_safe\_haven/infrastructure/project\_manager.py                              |      250 |      137 |     45% |37-38, 47-58, 101-106, 110, 160-162, 167, 171, 175-185, 189-195, 201, 205, 209-218, 222-285, 289-292, 296-301, 305-315, 319-321, 325-341, 345-351, 364-368, 377-383, 387-399, 421-423, 462-463 |
 | data\_safe\_haven/logging/\_\_init\_\_.py                                         |        2 |        0 |    100% |           |
-| data\_safe\_haven/logging/logger.py                                               |       44 |        0 |    100% |           |
+| data\_safe\_haven/logging/logger.py                                               |       32 |        0 |    100% |           |
+| data\_safe\_haven/logging/plain\_file\_handler.py                                 |       14 |        0 |    100% |           |
 | data\_safe\_haven/provisioning/\_\_init\_\_.py                                    |        2 |        0 |    100% |           |
 | data\_safe\_haven/provisioning/sre\_provisioning\_manager.py                      |       48 |       34 |     29% |29-57, 69-72, 76-77, 81-86, 90-126, 136-138 |
 | data\_safe\_haven/resources/\_\_init\_\_.py                                       |        3 |        0 |    100% |           |
@@ -106,7 +107,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       20 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       54 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4287** | **2285** | **47%** |           |
+|                                                                         **TOTAL** | **4289** | **2286** | **47%** |           |
 
 
 ## Setup coverage badge
