@@ -7,7 +7,9 @@ class DataSafeHavenError(Exception):
 
         # Log exception message as an error
         logger = get_logger()
-        logger.error(message)
+        message_str = message if isinstance(message, str) else message.decode("utf-8")
+        for line in message_str.split("\n"):
+            logger.error(line)
 
 
 class DataSafeHavenCloudError(DataSafeHavenError):
