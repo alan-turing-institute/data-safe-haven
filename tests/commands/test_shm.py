@@ -71,3 +71,38 @@ class TestDeploySHM:
 
         assert result.exit_code == 1
         mock_upload.assert_called_once_with(context)
+
+
+class TestTeardownSHM:
+    def test_teardown(self, runner, monkeypatch):
+        def mock_teardown_then_exit(self):  # noqa: ARG001
+            print("mock teardown")  # noqa: T201
+            msg = "Failed to authenticate with Azure API."
+            raise DataSafeHavenAzureAPIAuthenticationError(msg)
+
+        monkeypatch.setattr(ContextInfrastructure, "teardown", mock_teardown_then_exit)
+
+        result = runner.invoke(shm_command_group, ["teardown"])
+        assert "mock teardown" in result.stdout
+        assert result.exit_code == 1
+
+    def test_no_context_file(self, runner_no_context_file):
+        result = runner_no_context_file.invoke(shm_command_group, ["teardown"])
+        assert result.exit_code == 1
+        assert "No context configuration file." in result.stdout
+
+    def test_show_none(self, runner_none):
+        result = runner_none.invoke(shm_command_group, ["teardown"])
+        assert result.exit_code == 1
+        assert "No context selected." in result.stdout
+
+    def test_auth_failure(self, runner, mocker):
+        def mock_login(self):  # noqa: ARG001
+            msg = "Failed to authenticate with Azure API."
+            raise DataSafeHavenAzureAPIAuthenticationError(msg)
+
+        mocker.patch.object(AzureAuthenticator, "login", mock_login)
+
+        result = runner.invoke(shm_command_group, ["teardown"])
+        assert result.exit_code == 1
+        assert "Failed to authenticate with the Azure API." in result.stdout
