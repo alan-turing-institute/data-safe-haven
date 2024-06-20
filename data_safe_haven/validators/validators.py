@@ -45,7 +45,12 @@ def config_name(config_name: str) -> str:
         or config_name.startswith((" ", "-"))
         or config_name.endswith((" ", "-"))
     ):
-        msg = "DSH config names can only contain alphanumeric characters, spaces and hyphens.\n They must start and end with alphanumeric characters"
+        msg = "\n".join(
+            [
+                "DSH config names can only contain alphanumeric characters, spaces and hyphens.",
+                "They must start and end with alphanumeric characters.",
+            ]
+        )
         raise ValueError(msg)
     return config_name
 
