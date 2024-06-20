@@ -57,13 +57,13 @@ def init_logging() -> None:
     console_handler.setFormatter(logging.Formatter(r"%(message)s"))
 
     file_handler = PlainFileHandler(
-        f"{log_dir()}/{logfile_name()}",
+        log_dir() / logfile_name(),
         delay=True,
         encoding="utf8",
         mode="a",
     )
     file_handler.setFormatter(
-        logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        logging.Formatter(r"%(asctime)s - %(levelname)s - %(message)s")
     )
     file_handler.setLevel(logging.NOTSET)
 
