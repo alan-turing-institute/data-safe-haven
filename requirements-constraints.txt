@@ -1,2 +1,38 @@
-# Avoid https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/19
+# Use this file to specify constraints on packages that we do not directly depend on
+# It will be used by pip-compile when solving the environment, but only if the package is required otherwise
+
+# Exclude requests >= 2.3.0, < 2.31.0 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/3)
+requests !=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,!=2.8.*,!=2.9.*,!=2.10.*,!=2.11.*,!=2.12.*,!=2.13.*,!=2.14.*,!=2.15.*,!=2.16.*,!=2.17.*!=2.18.*!=2.19.*!=2.20.*!=2.21.*!=2.22.*!=2.23.*!=2.24.*!=2.25.*!=2.26.*!=2.27.*!=2.28.*!=2.29.*,!=2.3
+
+# Exclude urllib3 >= 2.0.0, < 2.0.6 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/5)
+urllib3 !=2.0.0,!=2.0.1,!=2.0.2,!=2.0.3,!=2.0.4,!=2.0.5
+
+# Exclude jinja < 3.1.3 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/7)
+jinja >=3.1.3
+
+# Exclude cryptography < 42.0.0 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/8)
+cryptography >=42.0.0
+
+# Exclude cryptography < 42.0.2 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/9)
+cryptography >=42.0.2
+
+# Exclude cryptography >= 38.0.0, < 42.0.4 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/10)
+cryptography !=38.*,!=39.*,!=40.*,!=41.*,!=42.0.1,!=42.0.2,!=42.0.3
+
+# Exclude idna < 3.7 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/11)
+idna >=3.7
+
+# Exclude dnspython < 2.6.1 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/13)
+dnspython >=2.6.1
+
+# Exclude jinja < 3.1.4 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/14)
+jinja >=3.1.4
+
+# Exclude requests < 2.32.0 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/15)
+requests >=2.32.0
+
+# Exclude azure-identity < 1.16.1 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/17)
+azure-identity >=1.16.1
+
+# Exclude urllib3 >= 2.0.0, < 2.2.2 (from https://github.com/alan-turing-institute/data-safe-haven/security/dependabot/18)
 urllib3 !=2.0.*,!=2.1.*,!=2.2.0,!=2.2.1
