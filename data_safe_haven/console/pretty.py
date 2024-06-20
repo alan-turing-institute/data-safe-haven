@@ -1,7 +1,7 @@
 from typing import Any
 
-from rich import Console, Style
-from rich.console import JustifyMethod, OverflowMethod
+from rich.console import Console, JustifyMethod, OverflowMethod
+from rich.style import Style
 
 console = Console()
 

@@ -1,6 +1,6 @@
 from rich.table import Table
 
-from . import pretty_print
+from .pretty import pretty_print
 
 
 def tabulate(
