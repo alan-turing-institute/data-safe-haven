@@ -5,7 +5,7 @@ from data_safe_haven.exceptions import DataSafeHavenInputError
 from data_safe_haven.functions import next_occurrence, sanitise_sre_name
 
 
-class TestNextOccurance:
+class TestNextOccurrence:
     @pytest.mark.parametrize(
         "hour,minute,timezone,expected",
         [

@@ -37,14 +37,17 @@ def local_pulumi_login():
     run([pulumi_path, "logout"], check=False)
 
 
-@fixture(autouse=True)
-def log_directory(mocker, monkeypatch, tmp_path):
-    monkeypatch.setenv("DSH_LOG_DIRECTORY", tmp_path)
-    mocker.patch.object(
+@fixture(autouse=True, scope="session")
+def log_directory(session_mocker, tmp_path_factory):
+    session_mocker.patch.object(
         data_safe_haven.logging.logger, "logfile_name", return_value="test.log"
     )
+    log_dir = tmp_path_factory.mktemp("logs")
+    session_mocker.patch.object(
+        data_safe_haven.logging.logger, "log_dir", return_value=log_dir
+    )
     init_logging()
-    return tmp_path
+    return log_dir
 
 
 @fixture
