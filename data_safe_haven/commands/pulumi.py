@@ -4,12 +4,13 @@ from enum import UNIQUE, StrEnum, auto, verify
 from typing import Annotated
 
 import typer
-from rich import print
+from rich import print as rprint
 
 from data_safe_haven.config import DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
+from data_safe_haven.logging import get_logger
 
 pulumi_command_group = typer.Typer()
 
@@ -36,8 +37,9 @@ def run(
     ] = "",
 ) -> None:
     """Run arbitrary Pulumi commands in a DSH project"""
+    logger = get_logger()
     if project_type == ProjectType.SRE and not sre_name:
-        print("--sre-name is required.")
+        logger.fatal("--sre-name is required.")
         raise typer.Exit(1)
 
     context = ContextSettings.from_file().assert_context()
@@ -75,4 +77,4 @@ def run(
         )
 
     stdout = project.run_pulumi_command(command)
-    print(stdout)
+    rprint(stdout)

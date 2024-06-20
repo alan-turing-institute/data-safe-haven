@@ -4,11 +4,12 @@ from pathlib import Path
 from typing import Annotated, Optional
 
 import typer
-from rich import print
+from rich import print as rprint
 
 from data_safe_haven.config import SHMConfig, SREConfig
 from data_safe_haven.context import ContextSettings
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import get_logger
+from data_safe_haven.utility import prompts
 
 config_command_group = typer.Typer()
 
@@ -24,11 +25,12 @@ def show_shm(
     """Print the SHM configuration for the selected Data Safe Haven context"""
     context = ContextSettings.from_file().assert_context()
     config = SHMConfig.from_remote(context)
+    config_yaml = config.to_yaml()
     if file:
         with open(file, "w") as outfile:
-            outfile.write(config.to_yaml())
+            outfile.write(config_yaml)
     else:
-        print(config.to_yaml())
+        rprint(config_yaml)
 
 
 @config_command_group.command()
@@ -48,7 +50,7 @@ def template_shm(
         with open(file, "w") as outfile:
             outfile.write(config_yaml)
     else:
-        print(config_yaml)
+        rprint(config_yaml)
 
 
 @config_command_group.command()
@@ -57,7 +59,6 @@ def upload_shm(
 ) -> None:
     """Upload an SHM configuration to the Data Safe Haven context"""
     context = ContextSettings.from_file().assert_context()
-    logger = LoggingSingleton()
 
     # Create configuration object from file
     with open(file) as config_file:
@@ -67,8 +68,10 @@ def upload_shm(
     # Present diff to user
     if SHMConfig.remote_exists(context):
         if diff := config.remote_yaml_diff(context):
-            print("".join(diff))
-            if not logger.confirm(
+            logger = get_logger()
+            for line in "".join(diff).splitlines():
+                logger.info(line)
+            if not prompts.confirm(
                 (
                     "Configuration has changed, "
                     "do you want to overwrite the remote configuration?"
@@ -77,7 +80,7 @@ def upload_shm(
             ):
                 raise typer.Exit()
         else:
-            print("No changes, won't upload configuration.")
+            rprint("No changes, won't upload configuration.")
             raise typer.Exit()
 
     config.upload(context)
@@ -95,11 +98,12 @@ def show_sre(
     """Print the SRE configuration for the selected SRE and Data Safe Haven context"""
     context = ContextSettings.from_file().assert_context()
     sre_config = SREConfig.from_remote_by_name(context, name)
+    config_yaml = sre_config.to_yaml()
     if file:
         with open(file, "w") as outfile:
-            outfile.write(sre_config.to_yaml())
+            outfile.write(config_yaml)
     else:
-        print(sre_config.to_yaml())
+        rprint(config_yaml)
 
 
 @config_command_group.command()
@@ -119,7 +123,7 @@ def template_sre(
         with open(file, "w") as outfile:
             outfile.write(config_yaml)
     else:
-        print(config_yaml)
+        rprint(config_yaml)
 
 
 @config_command_group.command()
@@ -128,7 +132,7 @@ def upload_sre(
 ) -> None:
     """Upload an SRE configuration to the Data Safe Haven context"""
     context = ContextSettings.from_file().assert_context()
-    logger = LoggingSingleton()
+    logger = get_logger()
 
     # Create configuration object from file
     with open(file) as config_file:
@@ -138,8 +142,9 @@ def upload_sre(
     # Present diff to user
     if SREConfig.remote_exists(context, filename=config.filename):
         if diff := config.remote_yaml_diff(context, filename=config.filename):
-            print("".join(diff))
-            if not logger.confirm(
+            for line in "".join(diff).splitlines():
+                logger.info(line)
+            if not prompts.confirm(
                 (
                     "Configuration has changed, "
                     "do you want to overwrite the remote configuration?"
@@ -148,7 +153,7 @@ def upload_sre(
             ):
                 raise typer.Exit()
         else:
-            print("No changes, won't upload configuration.")
+            rprint("No changes, won't upload configuration.")
             raise typer.Exit()
 
     config.upload(context, filename=config.filename)

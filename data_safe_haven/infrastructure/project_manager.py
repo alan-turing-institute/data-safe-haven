@@ -24,7 +24,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi, PulumiAccount
 from data_safe_haven.functions import replace_separators
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 from .programs import DeclarativeSHM, DeclarativeSRE
 
@@ -59,7 +59,7 @@ class ProjectManager:
             storage_account_name=context.storage_account_name,
             subscription_name=context.subscription_name,
         )
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
         self._stack: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
         self.options: dict[str, tuple[str, bool, bool]] = {}
@@ -114,7 +114,7 @@ class ProjectManager:
     def stack(self) -> automation.Stack:
         """Load the Pulumi stack, creating if needed."""
         if not self._stack:
-            self.logger.info(f"Creating/loading stack [green]{self.stack_name}[/].")
+            self.logger.debug(f"Creating/loading stack [green]{self.stack_name}[/].")
             try:
                 self._stack = automation.create_or_select_stack(
                     opts=automation.LocalWorkspaceOptions(
@@ -146,7 +146,7 @@ class ProjectManager:
     def apply_config_options(self) -> None:
         """Set Pulumi config options"""
         try:
-            self.logger.info("Updating Pulumi configuration")
+            self.logger.debug("Updating Pulumi configuration")
             for name, (value, is_secret, replace) in self.options.items():
                 if replace:
                     self.set_config(name, value, secret=is_secret)
@@ -221,9 +221,10 @@ class ProjectManager:
                         raise DataSafeHavenPulumiError(msg) from exc
             # Remove stack JSON
             try:
-                self.logger.info(f"Removing Pulumi stack [green]{self.stack_name}[/].")
+                self.logger.debug(f"Removing Pulumi stack [green]{self.stack_name}[/].")
                 if self._stack:
                     self._stack.workspace.remove_stack(self.stack_name)
+                self.logger.info(f"Removed Pulumi stack [green]{self.stack_name}[/].")
             except automation.CommandError as exc:
                 if "no stack named" not in str(exc):
                     msg = f"Pulumi stack could not be removed.\n{exc}"
@@ -231,7 +232,7 @@ class ProjectManager:
             # Remove stack JSON backup
             stack_backup_name = f"{self.stack_name}.json.bak"
             try:
-                self.logger.info(
+                self.logger.debug(
                     f"Removing Pulumi stack backup [green]{stack_backup_name}[/]."
                 )
                 azure_api = AzureApi(self.context.subscription_name)
@@ -240,6 +241,9 @@ class ProjectManager:
                     resource_group_name=self.context.resource_group_name,
                     storage_account_name=self.context.storage_account_name,
                     storage_container_name=self.context.pulumi_storage_container_name,
+                )
+                self.logger.debug(
+                    f"Removed Pulumi stack backup [green]{stack_backup_name}[/]."
                 )
             except DataSafeHavenAzureError as exc:
                 if "blob does not exist" in str(exc):
@@ -272,7 +276,7 @@ class ProjectManager:
     def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
         try:
-            self.logger.info("Installing required Pulumi plugins")
+            self.logger.debug("Installing required Pulumi plugins")
             self.stack.workspace.install_plugin(
                 "azure-native", metadata.version("pulumi-azure-native")
             )

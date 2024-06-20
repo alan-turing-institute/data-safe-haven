@@ -7,6 +7,7 @@ from pulumi.automation import ProjectSettings
 from pytest import fixture
 
 import data_safe_haven.context.context_settings as context_mod
+import data_safe_haven.logging.logger
 from data_safe_haven.config import (
     DSHPulumiConfig,
     DSHPulumiProject,
@@ -23,6 +24,7 @@ from data_safe_haven.context import Context
 from data_safe_haven.external import AzureApi, AzureCliSingleton, PulumiAccount
 from data_safe_haven.infrastructure import SHMProjectManager
 from data_safe_haven.infrastructure.project_manager import ProjectManager
+from data_safe_haven.logging import init_logging
 
 
 @fixture
@@ -98,6 +100,16 @@ def local_project_settings(context_no_secrets, mocker):  # noqa: ARG001
             runtime="python",
         ),
     )
+
+
+@fixture(autouse=True)
+def log_directory(mocker, monkeypatch, tmp_path):
+    monkeypatch.setenv("DSH_LOG_DIRECTORY", tmp_path)
+    mocker.patch.object(
+        data_safe_haven.logging.logger, "logfile_name", return_value="test.log"
+    )
+    init_logging()
+    return tmp_path
 
 
 @fixture

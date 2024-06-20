@@ -10,7 +10,7 @@ from data_safe_haven.config import DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 users_command_group = typer.Typer()
 
@@ -31,7 +31,7 @@ def add(
 
     shm_name = context.shm_name
 
-    logger = LoggingSingleton()
+    logger = get_logger()
     if shm_name not in pulumi_config.project_names:
         logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
         raise typer.Exit(1)
@@ -71,7 +71,7 @@ def list_users(
 
     shm_name = context.shm_name
 
-    logger = LoggingSingleton()
+    logger = get_logger()
     if shm_name not in pulumi_config.project_names:
         logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
         raise typer.Exit(1)
@@ -117,17 +117,21 @@ def register(
     shm_name = context.shm_name
     sre_name = sre_config.safe_name
 
-    logger = LoggingSingleton()
+    logger = get_logger()
     if shm_name not in pulumi_config.project_names:
-        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
+        logger.critical(
+            f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
+        )
         raise typer.Exit(1)
 
     if sre_name not in pulumi_config.project_names:
-        logger.fatal(f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?")
+        logger.critical(
+            f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?"
+        )
         raise typer.Exit(1)
 
     try:
-        logger.info(
+        logger.debug(
             f"Preparing to register {len(usernames)} user(s) with SRE '{sre_name}'"
         )
 
@@ -173,7 +177,7 @@ def remove(
 
     shm_name = context.shm_name
 
-    logger = LoggingSingleton()
+    logger = get_logger()
     if shm_name not in pulumi_config.project_names:
         logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
         raise typer.Exit(1)
@@ -220,7 +224,7 @@ def unregister(
     shm_name = context.shm_name
     sre_name = sre_config.safe_name
 
-    logger = LoggingSingleton()
+    logger = get_logger()
     if shm_name not in pulumi_config.project_names:
         logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
         raise typer.Exit(1)
@@ -230,7 +234,7 @@ def unregister(
         raise typer.Exit(1)
 
     try:
-        logger.info(
+        logger.debug(
             f"Preparing to unregister {len(usernames)} users with SRE '{sre_name}'"
         )
 

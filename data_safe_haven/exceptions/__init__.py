@@ -1,5 +1,13 @@
+from data_safe_haven.logging import get_logger
+
+
 class DataSafeHavenError(Exception):
-    pass
+    def __init__(self, message: str | bytes):
+        super().__init__(message)
+
+        # Log exception message as an error
+        logger = get_logger()
+        logger.error(message)
 
 
 class DataSafeHavenCloudError(DataSafeHavenError):
