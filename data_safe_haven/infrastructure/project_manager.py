@@ -2,13 +2,11 @@
 
 import logging
 import time
-from collections.abc import MutableMapping
 from contextlib import suppress
 from importlib import metadata
 from typing import Any
 
 from pulumi import automation
-from pulumi.automation import ConfigValue
 
 from data_safe_haven.config import (
     DSHPulumiConfig,
@@ -373,15 +371,10 @@ class ProjectManager:
             msg = "Pulumi update failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
-    @property
-    def stack_all_config(self) -> MutableMapping[str, ConfigValue]:
-        stack_all_config: MutableMapping[str, ConfigValue] = self.stack.get_all_config()
-        return stack_all_config
-
     def update_dsh_pulumi_project(self) -> None:
         """Update persistent data in the DSHPulumiProject object"""
         all_config_dict = {
-            key: item.value for key, item in self.stack_all_config.items()
+            key: item.value for key, item in self.stack.get_all_config().items()
         }
         self.pulumi_project.stack_config = all_config_dict
 
