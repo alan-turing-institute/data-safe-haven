@@ -24,7 +24,9 @@ class TestConfig:
             name="sandbox",
             sre=sre_config_section,
         )
-        assert config.is_complete()
+        assert isinstance(config.azure, ConfigSectionAzure)
+        assert isinstance(config.name, str)
+        assert isinstance(config.sre, ConfigSectionSRE)
 
     def test_constructor_invalid(self, azure_config: ConfigSectionAzure) -> None:
         with pytest.raises(

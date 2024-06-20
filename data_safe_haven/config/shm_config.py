@@ -15,11 +15,6 @@ class SHMConfig(AzureSerialisableModel):
     azure: ConfigSectionAzure
     shm: ConfigSectionSHM
 
-    def is_complete(self) -> bool:
-        if not all((self.azure, self.shm)):
-            return False
-        return True
-
     @classmethod
     def template(cls: type[Self]) -> SHMConfig:
         """Create SHMConfig without validation to allow "replace me" prompts."""

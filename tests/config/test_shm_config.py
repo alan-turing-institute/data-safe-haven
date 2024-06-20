@@ -21,7 +21,8 @@ class TestConfig:
             azure=azure_config,
             shm=shm_config_section,
         )
-        assert config.is_complete()
+        assert isinstance(config.azure, ConfigSectionAzure)
+        assert isinstance(config.shm, ConfigSectionSHM)
 
     def test_constructor_invalid(self, azure_config: ConfigSectionAzure) -> None:
         with pytest.raises(

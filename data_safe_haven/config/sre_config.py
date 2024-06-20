@@ -72,9 +72,3 @@ class SREConfig(AzureSerialisableModel):
                 ],
             ),
         )
-
-    def is_complete(self) -> bool:
-        """Whether all components of this model are present"""
-        if not all((self.azure, self.name, self.sre)):
-            return False
-        return True
