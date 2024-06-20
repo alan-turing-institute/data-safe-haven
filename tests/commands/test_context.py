@@ -224,39 +224,6 @@ class TestRemove:
         assert "No context configuration file." in result.stdout
 
 
-class TestCreate:
-    def test_create(self, runner, monkeypatch):
-        def mock_create(self):  # noqa: ARG001
-            print("mock create")  # noqa: T201
-
-        monkeypatch.setattr(ContextInfrastructure, "create", mock_create)
-
-        result = runner.invoke(context_command_group, ["create"])
-        assert "mock create" in result.stdout
-        assert result.exit_code == 0
-
-    def test_no_context_file(self, runner_no_context_file):
-        result = runner_no_context_file.invoke(context_command_group, ["create"])
-        assert result.exit_code == 1
-        assert "No context configuration file." in result.stdout
-
-    def test_show_none(self, runner_none):
-        result = runner_none.invoke(context_command_group, ["create"])
-        assert result.exit_code == 1
-        assert "No context selected." in result.stdout
-
-    def test_auth_failure(self, runner, mocker):
-        def mock_login(self):  # noqa: ARG001
-            msg = "Failed to authenticate with Azure API."
-            raise DataSafeHavenAzureAPIAuthenticationError(msg)
-
-        mocker.patch.object(AzureAuthenticator, "login", mock_login)
-
-        result = runner.invoke(context_command_group, ["create"])
-        assert result.exit_code == 1
-        assert "Failed to authenticate with the Azure API." in result.stdout
-
-
 class TestTeardown:
     def test_teardown(self, runner, monkeypatch):
         def mock_teardown(self):  # noqa: ARG001

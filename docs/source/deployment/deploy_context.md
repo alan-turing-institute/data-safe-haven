@@ -34,11 +34,3 @@ $ dsh context add <KEY> --admin-group <group name> --location <location> --name 
 :::{note}
 If you have multiple contexts defined, you can select which context you want to use with `dsh context switch <KEY>`.
 :::
-
-## Deployment
-
-- Now create the necessary infrastructure with
-
-```{code} shell
-$ dsh context create
-```

@@ -203,33 +203,6 @@ def remove(
 
 
 @context_command_group.command()
-def create() -> None:
-    """Create Data Safe Haven context infrastructure."""
-    logger = get_logger()
-    try:
-        context = ContextSettings.from_file().assert_context()
-    except DataSafeHavenConfigError as exc:
-        if exc.args[0] == "No context selected":
-            logger.critical(
-                "No context selected. Use `dsh context switch` to select one."
-            )
-        else:
-            logger.critical(
-                "No context configuration file. Use `dsh context add` before creating infrastructure."
-            )
-        raise typer.Exit(code=1) from exc
-
-    context_infra = ContextInfrastructure(context)
-    try:
-        context_infra.create()
-    except DataSafeHavenAzureAPIAuthenticationError as exc:
-        logger.critical(
-            "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
-        )
-        raise typer.Exit(1) from exc
-
-
-@context_command_group.command()
 def teardown() -> None:
     """Tear down Data Safe Haven context infrastructure."""
     logger = get_logger()

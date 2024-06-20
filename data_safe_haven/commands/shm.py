@@ -6,9 +6,16 @@ import typer
 
 from data_safe_haven.config import DSHPulumiConfig, SHMConfig
 from data_safe_haven.context import ContextSettings
-from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputError
+from data_safe_haven.context_infrastructure import ContextInfrastructure
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureAPIAuthenticationError,
+    DataSafeHavenConfigError,
+    DataSafeHavenError,
+    DataSafeHavenInputError,
+)
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import SHMProjectManager
+from data_safe_haven.logging import get_logger
 
 shm_command_group = typer.Typer()
 
@@ -25,7 +32,31 @@ def deploy(
     ] = None,
 ) -> None:
     """Deploy a Safe Haven Management environment."""
-    context = ContextSettings.from_file().assert_context()
+    # Create Data Safe Haven context infrastructure.
+    logger = get_logger()
+    try:
+        context = ContextSettings.from_file().assert_context()
+    except DataSafeHavenConfigError as exc:
+        if exc.args[0] == "No context selected":
+            logger.critical(
+                "No context selected. Use `dsh context switch` to select one."
+            )
+        else:
+            logger.critical(
+                "No context configuration file. Use `dsh context add` before creating infrastructure."
+            )
+        raise typer.Exit(1) from exc
+
+    context_infra = ContextInfrastructure(context)
+    try:
+        context_infra.create()
+    except DataSafeHavenAzureAPIAuthenticationError as exc:
+        logger.critical(
+            "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
+        )
+        raise typer.Exit(1) from exc
+
+    # Deploy the Data Safe Haven SHM infrastructure
     config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote_or_create(
         context, encrypted_key=None, projects={}
