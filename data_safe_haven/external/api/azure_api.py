@@ -109,11 +109,13 @@ class AzureApi(AzureAuthenticator):
         storage_account_name: str,
         storage_container_name: str,
     ) -> bool:
-        blob_client = self.blob_client(
-            resource_group_name, storage_account_name, storage_container_name, blob_name
-        )
-        # Upload the created file
-        exists: bool = blob_client.exists()
+        try:
+            blob_client = self.blob_client(
+                resource_group_name, storage_account_name, storage_container_name, blob_name
+            )
+            exists = bool(blob_client.exists())
+        except DataSafeHavenAzureError:
+            exists = False
         response = "exists" if exists else "does not exist"
         self.logger.info(
             f"File [green]{blob_name}[/] {response} in blob storage.",
