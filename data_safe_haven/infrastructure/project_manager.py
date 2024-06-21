@@ -72,10 +72,19 @@ class ProjectManager:
     @property
     def pulumi_extra_args(self) -> dict[str, Any]:
         extra_args: dict[str, Any] = {}
-        if self.logger.isEnabledFor(logging.DEBUG):
+        # Produce verbose Pulumi output if running in verbose mode
+        if self.logger.console_handler.level <= logging.DEBUG:
             extra_args["debug"] = True
             extra_args["log_to_std_err"] = True
             extra_args["log_verbosity"] = 9
+        else:
+            extra_args["debug"] = None
+            extra_args["log_to_std_err"] = None
+            extra_args["log_verbosity"] = None
+
+        extra_args["color"] = "never"
+        extra_args["log_flow"] = True
+        extra_args["on_output"] = self.logger.info
         return extra_args
 
     @property
@@ -198,10 +207,6 @@ class ProjectManager:
             while True:
                 try:
                     result = self.stack.destroy(
-                        color="always",
-                        debug=self.logger.isEnabledFor(logging.DEBUG),
-                        log_flow=True,
-                        on_output=self.logger.info,
                         **self.pulumi_extra_args,
                     )
                     self.evaluate(result.summary.result)
@@ -302,10 +307,7 @@ class ProjectManager:
             with suppress(automation.CommandError):
                 # Note that we disable parallelisation which can cause deadlock
                 self.stack.preview(
-                    color="always",
                     diff=True,
-                    log_flow=True,
-                    on_output=self.logger.info,
                     parallel=1,
                     **self.pulumi_extra_args,
                 )
@@ -360,9 +362,6 @@ class ProjectManager:
         try:
             self.logger.info(f"Applying changes to stack [green]{self.stack.name}[/].")
             result = self.stack.up(
-                color="always",
-                log_flow=True,
-                on_output=self.logger.info,
                 **self.pulumi_extra_args,
             )
             self.evaluate(result.summary.result)
