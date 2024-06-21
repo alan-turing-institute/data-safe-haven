@@ -1,61 +1,32 @@
-"""Deploy with Pulumi"""
+"""Manage Pulumi projects"""
 
 import logging
 import time
 from collections.abc import MutableMapping
 from contextlib import suppress
 from importlib import metadata
-from shutil import which
 from typing import Any
 
 from pulumi import automation
 from pulumi.automation import ConfigValue
 
-from data_safe_haven.config import Config, DSHPulumiConfig, DSHPulumiProject
+from data_safe_haven.config import (
+    DSHPulumiConfig,
+    DSHPulumiProject,
+    SHMConfig,
+    SREConfig,
+)
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenConfigError,
     DataSafeHavenPulumiError,
 )
-from data_safe_haven.external import AzureApi, AzureCliSingleton
+from data_safe_haven.external import AzureApi, PulumiAccount
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.logging import get_logger
 
 from .programs import DeclarativeSHM, DeclarativeSRE
-
-
-class PulumiAccount:
-    """Manage and interact with Pulumi backend account"""
-
-    def __init__(self, context: Context, config: Config):
-        self.context = context
-        self.cfg = config
-        self.env_: dict[str, Any] | None = None
-        path = which("pulumi")
-        if path is None:
-            msg = "Unable to find Pulumi CLI executable in your path.\nPlease ensure that Pulumi is installed"
-            raise DataSafeHavenPulumiError(msg)
-
-        # Ensure Azure CLI account is correct
-        # This will be needed to populate env
-        AzureCliSingleton().confirm()
-
-    @property
-    def env(self) -> dict[str, Any]:
-        """Get necessary Pulumi environment variables"""
-        if not self.env_:
-            azure_api = AzureApi(self.context.subscription_name)
-            backend_storage_account_keys = azure_api.get_storage_account_keys(
-                self.context.resource_group_name,
-                self.context.storage_account_name,
-            )
-            self.env_ = {
-                "AZURE_STORAGE_ACCOUNT": self.context.storage_account_name,
-                "AZURE_STORAGE_KEY": str(backend_storage_account_keys[0].value),
-                "AZURE_KEYVAULT_AUTH_VIA_CLI": "true",
-            }
-        return self.env_
 
 
 class ProjectManager:
@@ -71,7 +42,6 @@ class ProjectManager:
     def __init__(
         self,
         context: Context,
-        config: Config,
         pulumi_config: DSHPulumiConfig,
         pulumi_project_name: str,
         program: DeclarativeSHM | DeclarativeSRE,
@@ -79,13 +49,16 @@ class ProjectManager:
         create_project: bool,
     ) -> None:
         self.context = context
-        self.cfg = config
         self.pulumi_config = pulumi_config
         self.pulumi_project_name = pulumi_project_name
         self.program = program
         self.create_project = create_project
 
-        self.account = PulumiAccount(context, config)
+        self.account = PulumiAccount(
+            resource_group_name=context.resource_group_name,
+            storage_account_name=context.storage_account_name,
+            subscription_name=context.subscription_name,
+        )
         self.logger = get_logger()
         self._stack: automation.Stack | None = None
         self.stack_outputs_: automation.OutputMap | None = None
@@ -429,7 +402,7 @@ class SHMProjectManager(ProjectManager):
     def __init__(
         self,
         context: Context,
-        config: Config,
+        config: SHMConfig,
         pulumi_config: DSHPulumiConfig,
         *,
         create_project: bool = False,
@@ -437,7 +410,6 @@ class SHMProjectManager(ProjectManager):
         """Constructor"""
         super().__init__(
             context,
-            config,
             pulumi_config,
             context.shm_name,
             DeclarativeSHM(context, config, context.shm_name),
@@ -451,7 +423,7 @@ class SREProjectManager(ProjectManager):
     def __init__(
         self,
         context: Context,
-        config: Config,
+        config: SREConfig,
         pulumi_config: DSHPulumiConfig,
         *,
         create_project: bool = False,
@@ -462,7 +434,6 @@ class SREProjectManager(ProjectManager):
         token = graph_api_token if graph_api_token else ""
         super().__init__(
             context,
-            config,
             pulumi_config,
             sre_name,
             DeclarativeSRE(context, config, context.shm_name, sre_name, token),

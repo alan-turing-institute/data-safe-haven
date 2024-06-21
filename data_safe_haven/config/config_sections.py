@@ -1,17 +1,13 @@
-"""Configuration file backed by blob storage"""
+"""Sections for use in configuration files"""
 
 from __future__ import annotations
-
-from typing import ClassVar
 
 from pydantic import (
     BaseModel,
     Field,
 )
 
-from data_safe_haven.exceptions import DataSafeHavenConfigError
 from data_safe_haven.logging import get_logger
-from data_safe_haven.serialisers import AzureSerialisableModel
 from data_safe_haven.types import (
     AzureVmSku,
     DatabaseSystem,
@@ -31,43 +27,22 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
-    admin_email_address: EmailAddress
-    admin_ip_addresses: list[IpAddress]
     entra_tenant_id: Guid
     fqdn: Fqdn
-    timezone: TimeZone
 
     def update(
         self,
         *,
-        admin_email_address: str | None = None,
-        admin_ip_addresses: list[str] | None = None,
         entra_tenant_id: str | None = None,
         fqdn: str | None = None,
-        timezone: TimeZone | None = None,
     ) -> None:
         """Update SHM settings
 
         Args:
-            entra_tenant_id: Entra ID tenant containing users
-            admin_email_address: Email address shared by all administrators
-            admin_ip_addresses: List of IP addresses belonging to administrators
-            fqdn: Fully-qualified domain name to use for this SHM
-            timezone: Timezone in pytz format (eg. Europe/London)
+            entra_tenant_id: Tenant ID for the Entra ID used to manage TRE users
+            fqdn: Fully-qualified domain name to use for this TRE
         """
         logger = get_logger()
-        # Set admin email address
-        if admin_email_address:
-            self.admin_email_address = admin_email_address
-        logger.debug(
-            f"[bold]Admin email address[/] will be [green]{self.admin_email_address}[/]."
-        )
-        # Set admin IP addresses
-        if admin_ip_addresses:
-            self.admin_ip_addresses = admin_ip_addresses
-        logger.debug(
-            f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
-        )
         # Set Entra tenant ID
         if entra_tenant_id:
             self.entra_tenant_id = entra_tenant_id
@@ -80,10 +55,6 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
         logger.debug(
             f"[bold]Fully-qualified domain name[/] will be [green]{self.fqdn}[/]."
         )
-        # Set timezone
-        if timezone:
-            self.timezone = timezone
-        logger.debug(f"[bold]Timezone[/] will be [green]{self.timezone}[/].")
 
 
 class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
@@ -99,21 +70,24 @@ class ConfigSubsectionRemoteDesktopOpts(BaseModel, validate_assignment=True):
             allow_copy: Allow/deny copying text out of the SRE
             allow_paste: Allow/deny pasting text into the SRE
         """
+        logger = get_logger()
         # Set whether copying text out of the SRE is allowed
         if allow_copy:
             self.allow_copy = allow_copy
-        get_logger().debug(
+        logger.debug(
             f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
         )
         # Set whether pasting text into the SRE is allowed
         if allow_paste:
             self.allow_paste = allow_paste
-        get_logger().debug(
+        logger.debug(
             f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
         )
 
 
 class ConfigSectionSRE(BaseModel, validate_assignment=True):
+    admin_email_address: EmailAddress
+    admin_ip_addresses: list[IpAddress] = Field(..., default_factory=list[IpAddress])
     databases: UniqueList[DatabaseSystem] = Field(
         ..., default_factory=list[DatabaseSystem]
     )
@@ -123,31 +97,50 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
     remote_desktop: ConfigSubsectionRemoteDesktopOpts = Field(
         ..., default_factory=ConfigSubsectionRemoteDesktopOpts
     )
-    workspace_skus: list[AzureVmSku] = Field(..., default_factory=list[AzureVmSku])
     research_user_ip_addresses: list[IpAddress] = Field(
         ..., default_factory=list[IpAddress]
     )
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
+    timezone: TimeZone = "Etc/UTC"
+    workspace_skus: list[AzureVmSku] = Field(..., default_factory=list[AzureVmSku])
 
     def update(
         self,
         *,
+        admin_email_address: str | None = None,
+        admin_ip_addresses: list[str] | None = None,
         data_provider_ip_addresses: list[IpAddress] | None = None,
         databases: list[DatabaseSystem] | None = None,
-        workspace_skus: list[AzureVmSku] | None = None,
         software_packages: SoftwarePackageCategory | None = None,
+        timezone: TimeZone | None = None,
         user_ip_addresses: list[IpAddress] | None = None,
+        workspace_skus: list[AzureVmSku] | None = None,
     ) -> None:
         """Update SRE settings
 
         Args:
+            admin_email_address: Email address shared by all administrators
+            admin_ip_addresses: List of IP addresses belonging to administrators
             databases: List of database systems to deploy
             data_provider_ip_addresses: List of IP addresses belonging to data providers
-            workspace_skus: List of VM SKUs for workspaces
             software_packages: Whether to allow packages from external repositories
+            timezone: Timezone in pytz format (eg. Europe/London)
             user_ip_addresses: List of IP addresses belonging to users
+            workspace_skus: List of Azure VM SKUs - see cloudprice.net for list of valid SKUs
         """
         logger = get_logger()
+        # Set admin email address
+        if admin_email_address:
+            self.admin_email_address = admin_email_address
+        logger.debug(
+            f"[bold]Admin email address[/] will be [green]{self.admin_email_address}[/]."
+        )
+        # Set admin IP addresses
+        if admin_ip_addresses:
+            self.admin_ip_addresses = admin_ip_addresses
+        logger.debug(
+            f"[bold]IP addresses used by administrators[/] will be [green]{self.admin_ip_addresses}[/]."
+        )
         # Set data provider IP addresses
         if data_provider_ip_addresses:
             self.data_provider_ip_addresses = data_provider_ip_addresses
@@ -162,88 +155,25 @@ class ConfigSectionSRE(BaseModel, validate_assignment=True):
         logger.debug(
             f"[bold]Databases available to users[/] will be [green]{[database.value for database in self.databases]}[/]."
         )
-        # Set research desktop SKUs
-        if workspace_skus:
-            self.workspace_skus = workspace_skus
-        logger.debug(
-            f"[bold]Workspace SKUs[/] will be [green]{self.workspace_skus}[/]."
-        )
         # Select which software packages can be installed by users
         if software_packages:
             self.software_packages = software_packages
         logger.debug(
             f"[bold]Software packages[/] from [green]{self.software_packages.value}[/] sources will be installable."
         )
+        # Set timezone
+        if timezone:
+            self.timezone = timezone
+        logger.info(f"[bold]Timezone[/] will be [green]{self.timezone}[/].")
         # Set user IP addresses
         if user_ip_addresses:
             self.research_user_ip_addresses = user_ip_addresses
         logger.debug(
             f"[bold]IP addresses used by users[/] will be [green]{self.research_user_ip_addresses}[/]."
         )
-
-
-class Config(AzureSerialisableModel):
-    config_type: ClassVar[str] = "Config"
-    filename: ClassVar[str] = "config.yaml"
-    azure: ConfigSectionAzure
-    shm: ConfigSectionSHM
-    sres: dict[str, ConfigSectionSRE] = Field(
-        ..., default_factory=dict[str, ConfigSectionSRE]
-    )
-
-    @property
-    def sre_names(self) -> list[str]:
-        """Names of all SREs"""
-        return list(self.sres.keys())
-
-    def is_complete(self, *, require_sres: bool) -> bool:
-        if require_sres:
-            if not self.sres:
-                return False
-        if not all((self.azure, self.shm)):
-            return False
-        return True
-
-    def sre(self, name: str) -> ConfigSectionSRE:
-        """Return the config entry for this SRE, raising an exception if it does not exist"""
-        if name not in self.sre_names:
-            msg = f"SRE {name} does not exist"
-            raise DataSafeHavenConfigError(msg)
-        return self.sres[name]
-
-    def remove_sre(self, name: str) -> None:
-        """Remove SRE config section by name"""
-        if name in self.sre_names:
-            del self.sres[name]
-
-    @classmethod
-    def template(cls) -> Config:
-        # Create object without validation to allow "replace me" prompts
-        return Config.model_construct(
-            azure=ConfigSectionAzure.model_construct(
-                subscription_id="Azure subscription ID",
-                tenant_id="Azure tenant ID",
-            ),
-            shm=ConfigSectionSHM.model_construct(
-                admin_email_address="Admin email address",
-                admin_ip_addresses=["Admin IP addresses"],
-                entra_tenant_id="Entra tenant ID",
-                fqdn="TRE domain name",
-                timezone="Timezone",
-            ),
-            sres={
-                "example": ConfigSectionSRE.model_construct(
-                    databases=["List of database systems to enable"],
-                    data_provider_ip_addresses=["Data provider IP addresses"],
-                    remote_desktop=ConfigSubsectionRemoteDesktopOpts.model_construct(
-                        allow_copy="Whether to allow copying text out of the environment",
-                        allow_paste="Whether to allow pasting text into the environment",
-                    ),
-                    workspace_skus=[
-                        "Azure VM SKUs - see cloudprice.net for list of valid SKUs"
-                    ],
-                    research_user_ip_addresses=["Research user IP addresses"],
-                    software_packages=SoftwarePackageCategory.ANY,
-                )
-            },
+        # Set workspace desktop SKUs
+        if workspace_skus:
+            self.workspace_skus = workspace_skus
+        logger.debug(
+            f"[bold]Workspace SKUs[/] will be [green]{self.workspace_skus}[/]."
         )

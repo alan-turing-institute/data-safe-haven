@@ -2,7 +2,7 @@
 
 import pulumi
 
-from data_safe_haven.config import Config
+from data_safe_haven.config import SHMConfig
 from data_safe_haven.context import Context
 
 from .shm.networking import SHMNetworkingComponent, SHMNetworkingProps
@@ -11,7 +11,7 @@ from .shm.networking import SHMNetworkingComponent, SHMNetworkingProps
 class DeclarativeSHM:
     """Deploy Data Safe Haven Management environment with Pulumi"""
 
-    def __init__(self, context: Context, config: Config, shm_name: str) -> None:
+    def __init__(self, context: Context, config: SHMConfig, shm_name: str) -> None:
         self.context = context
         self.cfg = config
         self.shm_name = shm_name
@@ -28,7 +28,6 @@ class DeclarativeSHM:
             "shm_networking",
             self.stack_name,
             SHMNetworkingProps(
-                admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
                 fqdn=self.cfg.shm.fqdn,
                 location=self.context.location,
                 record_domain_verification=self.pulumi_opts.require(

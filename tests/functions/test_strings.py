@@ -2,7 +2,7 @@ import pytest
 from freezegun import freeze_time
 
 from data_safe_haven.exceptions import DataSafeHavenInputError
-from data_safe_haven.functions import next_occurrence, sanitise_sre_name
+from data_safe_haven.functions import json_safe, next_occurrence
 
 
 class TestNextOccurrence:
@@ -58,7 +58,7 @@ class TestNextOccurrence:
 
 @pytest.mark.parametrize(
     "value,expected",
-    [("Test SRE", "testsre"), ("%*aBc", "abc"), ("MY_SRE", "mysre")],
+    [(r"Test SRE", "testsre"), (r"%*aBc", "abc"), (r"MY_SRE", "mysre")],
 )
-def test_sanitise_sre_name(value, expected):
-    assert sanitise_sre_name(value) == expected
+def test_json_safe(value, expected):
+    assert json_safe(value) == expected
