@@ -26,6 +26,7 @@ from azure.mgmt.compute.v2021_07_01.models import (
 )
 from azure.mgmt.dns.v2018_05_01 import DnsManagementClient
 from azure.mgmt.dns.v2018_05_01.models import (
+    CaaRecord,
     RecordSet,
     RecordType,
     TxtRecord,
@@ -157,14 +158,17 @@ class AzureApi(AzureAuthenticator):
             msg = f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'."
             raise DataSafeHavenAzureError(msg) from exc
 
-    def ensure_dns_txt_record(
+    def ensure_dns_caa_record(
         self,
+        record_flags: int,
         record_name: str,
+        record_tag: str,
         record_value: str,
         resource_group_name: str,
         zone_name: str,
+        ttl: int = 30,
     ) -> RecordSet:
-        """Ensure that a DNS record exists in a DNS zone
+        """Ensure that a DNS CAA record exists in a DNS zone
 
         Returns:
             RecordSet: The DNS record set
@@ -178,11 +182,59 @@ class AzureApi(AzureAuthenticator):
 
             # Ensure that record exists
             self.logger.debug(
-                f"Ensuring that DNS record {record_name} exists in zone {zone_name}...",
+                f"Ensuring that DNS record [green]{record_name}[/] exists in zone [bold]{zone_name}[/]...",
             )
             record_set = dns_client.record_sets.create_or_update(
                 parameters=RecordSet(
-                    ttl=30, txt_records=[TxtRecord(value=[record_value])]
+                    ttl=ttl,
+                    caa_records=[
+                        CaaRecord(
+                            flags=record_flags, tag=record_tag, value=record_value
+                        )
+                    ],
+                ),
+                record_type=RecordType.CAA,
+                relative_record_set_name=record_name,
+                resource_group_name=resource_group_name,
+                zone_name=zone_name,
+            )
+            self.logger.info(
+                f"Ensured that DNS record [green]{record_name}[/] exists in zone [bold]{zone_name}[/].",
+            )
+            return record_set
+        except AzureError as exc:
+            msg = (
+                f"Failed to create DNS record {record_name} in zone {zone_name}.\n{exc}"
+            )
+            raise DataSafeHavenAzureError(msg) from exc
+
+    def ensure_dns_txt_record(
+        self,
+        record_name: str,
+        record_value: str,
+        resource_group_name: str,
+        zone_name: str,
+        ttl: int = 30,
+    ) -> RecordSet:
+        """Ensure that a DNS TXT record exists in a DNS zone
+
+        Returns:
+            RecordSet: The DNS record set
+
+        Raises:
+            DataSafeHavenAzureError if the record could not be created
+        """
+        try:
+            # Connect to Azure clients
+            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+
+            # Ensure that record exists
+            self.logger.debug(
+                f"Ensuring that DNS record [green]{record_name}[/] exists in zone [bold]{zone_name}[/]...",
+            )
+            record_set = dns_client.record_sets.create_or_update(
+                parameters=RecordSet(
+                    ttl=ttl, txt_records=[TxtRecord(value=[record_value])]
                 ),
                 record_type=RecordType.TXT,
                 relative_record_set_name=record_name,
@@ -190,7 +242,7 @@ class AzureApi(AzureAuthenticator):
                 zone_name=zone_name,
             )
             self.logger.info(
-                f"Ensured that DNS record {record_name} exists in zone {zone_name}.",
+                f"Ensured that DNS record [green]{record_name}[/] exists in zone [bold]{zone_name}[/].",
             )
             return record_set
         except AzureError as exc:
