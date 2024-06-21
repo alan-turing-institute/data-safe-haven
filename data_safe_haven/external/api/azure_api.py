@@ -137,7 +137,11 @@ class AzureApi(AzureAuthenticator):
                 blob_name,
             )
             # Download the requested file
-            return str(blob_client.download_blob(encoding="utf-8").readall())
+            blob_content = blob_client.download_blob(encoding="utf-8").readall()
+            self.logger.debug(
+                f"Downloaded file [green]{blob_name}[/] from blob storage.",
+            )
+            return str(blob_content)
         except AzureError as exc:
             msg = f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'\n{exc}."
             raise DataSafeHavenAzureError(msg) from exc
@@ -1030,7 +1034,7 @@ class AzureApi(AzureAuthenticator):
             )
             # Upload the created file
             blob_client.upload_blob(blob_data, overwrite=True)
-            self.logger.info(
+            self.logger.debug(
                 f"Uploaded file [green]{blob_name}[/] to blob storage.",
             )
         except AzureError as exc:

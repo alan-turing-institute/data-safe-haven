@@ -1,7 +1,6 @@
-from .project_manager import PulumiAccount, SHMProjectManager, SREProjectManager
+from .project_manager import SHMProjectManager, SREProjectManager
 
 __all__ = [
     "SHMProjectManager",
     "SREProjectManager",
-    "PulumiAccount",
 ]

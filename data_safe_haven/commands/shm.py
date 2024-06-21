@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 
 import typer
 
-from data_safe_haven.config import Config, DSHPulumiConfig
+from data_safe_haven.config import DSHPulumiConfig, SHMConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputError
 from data_safe_haven.external import GraphApi
@@ -26,7 +26,7 @@ def deploy(
 ) -> None:
     """Deploy a Safe Haven Management environment."""
     context = ContextSettings.from_file().assert_context()
-    config = Config.from_remote(context)
+    config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote_or_create(
         context, encrypted_key=None, projects={}
     )
@@ -71,7 +71,7 @@ def deploy(
 
         # Add the SHM domain to Entra ID as a custom domain
         graph_api.verify_custom_domain(
-            config.shm.fqdn,
+            stack.output("networking")["fqdn"],
             stack.output("networking")["fqdn_nameservers"],
         )
     except DataSafeHavenError as exc:
@@ -91,7 +91,7 @@ def deploy(
 def teardown() -> None:
     """Tear down a deployed a Safe Haven Management environment."""
     context = ContextSettings.from_file().assert_context()
-    config = Config.from_remote(context)
+    config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
 
     try:

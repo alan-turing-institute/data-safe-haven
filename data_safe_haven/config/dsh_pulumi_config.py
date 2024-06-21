@@ -4,14 +4,14 @@ from typing import ClassVar
 
 from data_safe_haven.serialisers import AzureSerialisableModel
 
-from .pulumi_project import DSHPulumiProject
+from .dsh_pulumi_project import DSHPulumiProject
 
 
 class DSHPulumiConfig(AzureSerialisableModel):
     """Serialisable container for multiple DSH Pulumi projects."""
 
     config_type: ClassVar[str] = "Pulumi"
-    filename: ClassVar[str] = "pulumi.yaml"
+    default_filename: ClassVar[str] = "pulumi.yaml"
     encrypted_key: str | None
     projects: dict[str, DSHPulumiProject]
 

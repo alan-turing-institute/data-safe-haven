@@ -17,13 +17,14 @@ def alphanumeric(input_string: str) -> str:
     return "".join(filter(str.isalnum, input_string))
 
 
-def sanitise_sre_name(name: str) -> str:
-    return alphanumeric(name).lower()
-
-
 def b64encode(input_string: str) -> str:
     """Encode a normal string into a Base64 string."""
     return base64.b64encode(input_string.encode("utf-8")).decode()
+
+
+def json_safe(name: str) -> str:
+    """Construct a JSON-safe version of an input string"""
+    return alphanumeric(name).lower()
 
 
 def next_occurrence(

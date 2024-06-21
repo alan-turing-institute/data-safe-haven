@@ -2,7 +2,7 @@
 
 import pulumi
 
-from data_safe_haven.config import Config
+from data_safe_haven.config import SREConfig
 from data_safe_haven.context import Context
 
 from .sre.application_gateway import (
@@ -58,7 +58,7 @@ class DeclarativeSRE:
     def __init__(
         self,
         context: Context,
-        config: Config,
+        config: SREConfig,
         shm_name: str,
         sre_name: str,
         graph_api_token: str,
@@ -75,9 +75,14 @@ class DeclarativeSRE:
     def __call__(self) -> None:
         # Load pulumi configuration options
         self.pulumi_opts = pulumi.Config()
+        shm_entra_tenant_id = self.pulumi_opts.require("shm-entra-tenant-id")
+        shm_fqdn = self.pulumi_opts.require("shm-fqdn")
+        shm_networking_resource_group_name = self.pulumi_opts.require(
+            "shm-networking-resource_group_name"
+        )
 
         # Construct LDAP paths
-        ldap_root_dn = f"DC={self.cfg.shm.fqdn.replace('.', ',DC=')}"
+        ldap_root_dn = f"DC={shm_fqdn.replace('.', ',DC=')}"
         ldap_group_search_base = f"OU=groups,{ldap_root_dn}"
         ldap_user_search_base = f"OU=users,{ldap_root_dn}"
         ldap_group_name_prefix = f"Data Safe Haven SRE {self.sre_name}"
@@ -129,10 +134,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREDnsServerProps(
                 location=self.context.location,
-                shm_fqdn=self.cfg.shm.fqdn,
-                shm_networking_resource_group_name=self.pulumi_opts.require(
-                    "shm-networking-resource_group_name"
-                ),
+                shm_fqdn=shm_fqdn,
             ),
             tags=self.tags,
         )
@@ -147,15 +149,11 @@ class DeclarativeSRE:
                 dns_server_ip=dns.ip_address,
                 dns_virtual_network=dns.virtual_network,
                 location=self.context.location,
-                shm_fqdn=self.cfg.shm.fqdn,
-                shm_networking_resource_group_name=self.pulumi_opts.require(
-                    "shm-networking-resource_group_name"
-                ),
-                shm_zone_name=self.cfg.shm.fqdn,
+                shm_fqdn=shm_fqdn,
+                shm_networking_resource_group_name=shm_networking_resource_group_name,
+                shm_zone_name=shm_fqdn,
                 sre_name=self.sre_name,
-                user_public_ip_ranges=self.cfg.sre(
-                    self.sre_name
-                ).research_user_ip_addresses,
+                user_public_ip_ranges=self.cfg.sre.research_user_ip_addresses,
             ),
             tags=self.tags,
         )
@@ -184,12 +182,10 @@ class DeclarativeSRE:
             "sre_data",
             self.stack_name,
             SREDataProps(
-                admin_email_address=self.cfg.shm.admin_email_address,
+                admin_email_address=self.cfg.sre.admin_email_address,
                 admin_group_id=self.context.admin_group_id,
-                admin_ip_addresses=self.cfg.shm.admin_ip_addresses,
-                data_provider_ip_addresses=self.cfg.sre(
-                    self.sre_name
-                ).data_provider_ip_addresses,
+                admin_ip_addresses=self.cfg.sre.admin_ip_addresses,
+                data_provider_ip_addresses=self.cfg.sre.data_provider_ip_addresses,
                 dns_private_zones=dns.private_zones,
                 dns_record=networking.shm_ns_record,
                 dns_server_admin_password=dns.password_admin,
@@ -232,10 +228,10 @@ class DeclarativeSRE:
                 dns_server_ip=dns.ip_address,
                 entra_application_name=f"sre-{self.sre_name}-apricot",
                 entra_auth_token=self.graph_api_token,
-                entra_tenant_id=self.cfg.shm.entra_tenant_id,
+                entra_tenant_id=shm_entra_tenant_id,
                 location=self.context.location,
                 networking_resource_group_name=networking.resource_group.name,
-                shm_fqdn=self.cfg.shm.fqdn,
+                shm_fqdn=shm_fqdn,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
@@ -265,14 +261,14 @@ class DeclarativeSRE:
             "sre_remote_desktop",
             self.stack_name,
             SRERemoteDesktopProps(
-                allow_copy=self.cfg.sre(self.sre_name).remote_desktop.allow_copy,
-                allow_paste=self.cfg.sre(self.sre_name).remote_desktop.allow_paste,
+                allow_copy=self.cfg.sre.remote_desktop.allow_copy,
+                allow_paste=self.cfg.sre.remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
                 dns_server_ip=dns.ip_address,
                 entra_application_fqdn=networking.sre_fqdn,
                 entra_application_name=f"sre-{self.sre_name}-guacamole",
                 entra_auth_token=self.graph_api_token,
-                entra_tenant_id=self.cfg.shm.entra_tenant_id,
+                entra_tenant_id=shm_entra_tenant_id,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
                 ldap_server_hostname=identity.hostname,
@@ -295,7 +291,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREUserServicesProps(
                 database_service_admin_password=data.password_database_service_admin,
-                databases=self.cfg.sre(self.sre_name).databases,
+                databases=self.cfg.sre.databases,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 gitea_database_password=data.password_gitea_database_admin,
@@ -308,7 +304,7 @@ class DeclarativeSRE:
                 location=self.context.location,
                 networking_resource_group_name=networking.resource_group.name,
                 nexus_admin_password=data.password_nexus_admin,
-                software_packages=self.cfg.sre(self.sre_name).software_packages,
+                software_packages=self.cfg.sre.software_packages,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
@@ -329,7 +325,7 @@ class DeclarativeSRE:
                 dns_private_zones=dns.private_zones,
                 location=self.context.location,
                 subnet=networking.subnet_monitoring,
-                timezone=self.cfg.shm.timezone,
+                timezone=self.cfg.sre.timezone,
             ),
             tags=self.tags,
         )
@@ -359,7 +355,7 @@ class DeclarativeSRE:
                 subscription_name=self.context.subscription_name,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
-                vm_details=list(enumerate(self.cfg.sre(self.sre_name).workspace_skus)),
+                vm_details=list(enumerate(self.cfg.sre.workspace_skus)),
             ),
             tags=self.tags,
         )
