@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from data_safe_haven import __version__
 from data_safe_haven.directories import config_dir
 from data_safe_haven.external import AzureApi
-from data_safe_haven.functions import alphanumeric
+from data_safe_haven.functions import json_safe
 from data_safe_haven.serialisers import ContextBase
 from data_safe_haven.types import (
     AzureLocation,
@@ -41,7 +41,7 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
 
     @property
     def shm_name(self) -> str:
-        return alphanumeric(self.name).lower()
+        return json_safe(self.name)
 
     @property
     def work_directory(self) -> Path:
