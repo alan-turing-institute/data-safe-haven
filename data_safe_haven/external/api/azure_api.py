@@ -25,7 +25,13 @@ from azure.mgmt.compute.v2021_07_01.models import (
     RunCommandResult,
 )
 from azure.mgmt.dns.v2018_05_01 import DnsManagementClient
-from azure.mgmt.dns.v2018_05_01.models import RecordSet, RecordType, TxtRecord
+from azure.mgmt.dns.v2018_05_01.models import (
+    RecordSet,
+    RecordType,
+    TxtRecord,
+    Zone,
+    ZoneType,
+)
 from azure.mgmt.keyvault.v2021_06_01_preview import KeyVaultManagementClient
 from azure.mgmt.keyvault.v2021_06_01_preview.models import (
     AccessPolicyEntry,
@@ -184,6 +190,45 @@ class AzureApi(AzureAuthenticator):
             return record_set
         except AzureError as exc:
             msg = f"Failed to create DNS record {record_name} in zone {zone_name}."
+            raise DataSafeHavenAzureError(msg) from exc
+
+    def ensure_dns_zone(
+        self,
+        resource_group_name: str,
+        zone_name: str,
+        tags: Any = None,
+    ) -> Zone:
+        """Ensure that a DNS zone exists
+
+        Returns:
+            Zone: The DNS zone
+
+        Raises:
+            DataSafeHavenAzureError if the zone could not be created
+        """
+        try:
+            # Connect to Azure clients
+            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+
+            # Ensure that record exists
+            self.logger.debug(
+                f"Ensuring that DNS zone {zone_name} exists...",
+            )
+            zone = dns_client.zones.create_or_update(
+                parameters=Zone(
+                    location="Global",
+                    tags=tags,
+                    zone_type=ZoneType.PUBLIC,
+                ),
+                resource_group_name=resource_group_name,
+                zone_name=zone_name,
+            )
+            self.logger.info(
+                f"Ensured that DNS zone [green]{zone_name}[/] exists.",
+            )
+            return zone
+        except AzureError as exc:
+            msg = f"Failed to create DNS zone {zone_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_keyvault(
