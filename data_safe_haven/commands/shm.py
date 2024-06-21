@@ -145,7 +145,8 @@ def deploy(
         msg = "Could not deploy Data Safe Haven Management environment."
         raise DataSafeHavenError(msg) from exc
     finally:
-        # Upload Pulumi config to blob storage
+        # Upload config files to blob storage
+        config.upload(context)
         pulumi_config.upload(context)
 
 
