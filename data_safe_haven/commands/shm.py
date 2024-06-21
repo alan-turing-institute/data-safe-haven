@@ -4,6 +4,7 @@ from typing import Annotated, Optional
 
 import typer
 
+from data_safe_haven import console
 from data_safe_haven.config import ContextSettings, DSHPulumiConfig, SHMConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
@@ -64,6 +65,23 @@ def deploy(
     # Load SHM config from remote if it exists or locally if not
     if SHMConfig.remote_exists(context):
         config = SHMConfig.from_remote(context)
+        # If command line arguments conflict with the remote version then present diff
+        if fqdn:
+            config.shm.fqdn = fqdn
+        if entra_tenant_id:
+            config.shm.entra_tenant_id = entra_tenant_id
+        if diff := config.remote_yaml_diff(context):
+            logger = get_logger()
+            for line in "".join(diff).splitlines():
+                logger.info(line)
+            if not console.confirm(
+                (
+                    "Configuration has changed, "
+                    "do you want to overwrite the remote configuration?"
+                ),
+                default_to_yes=False,
+            ):
+                raise typer.Exit(0)
     else:
         if not fqdn:
             logger.critical(
