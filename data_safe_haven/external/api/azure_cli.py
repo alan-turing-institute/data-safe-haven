@@ -7,10 +7,10 @@ from shutil import which
 
 import typer
 
+from data_safe_haven import console
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.logging import get_logger
 from data_safe_haven.singleton import Singleton
-from data_safe_haven.utility import prompts
 
 
 @dataclass
@@ -72,7 +72,7 @@ class AzureCliSingleton(metaclass=Singleton):
         account = self.account
         self.logger.info(f"Azure user: {account.name} ({account.id_})")
         self.logger.info(f"Azure tenant ID: {account.tenant_id})")
-        if not prompts.confirm(
+        if not console.confirm(
             "Is this the Azure account you expect?", default_to_yes=False
         ):
             self.logger.error(

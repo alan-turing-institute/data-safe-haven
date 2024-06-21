@@ -4,8 +4,8 @@ from enum import UNIQUE, StrEnum, auto, verify
 from typing import Annotated
 
 import typer
-from rich import print as rprint
 
+from data_safe_haven import console
 from data_safe_haven.config import DSHPulumiConfig, SHMConfig, SREConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.external import GraphApi
@@ -77,4 +77,4 @@ def run(
         )
 
     stdout = project.run_pulumi_command(command)
-    rprint(stdout)
+    console.print(stdout)

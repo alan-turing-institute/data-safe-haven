@@ -1,5 +1,6 @@
-from rich import print as rprint
 from rich.table import Table
+
+from .pretty import pretty_print
 
 
 def tabulate(
@@ -22,4 +23,4 @@ def tabulate(
         for row in rows:
             table.add_row(*row)
 
-    rprint(table)
+    pretty_print(table)

@@ -17,6 +17,7 @@ from msal import (
     SerializableTokenCache,
 )
 
+from data_safe_haven import console
 from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
     DataSafeHavenInternalError,
@@ -24,7 +25,6 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger
-from data_safe_haven.utility import prompts
 
 
 class LocalTokenCache(SerializableTokenCache):
@@ -1109,7 +1109,7 @@ class GraphApi:
                 self.logger.info(
                     f"You will need to create an NS record pointing to: {ns_list}"
                 )
-                if not prompts.confirm(
+                if not console.confirm(
                     f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
                     default_to_yes=True,
                 ):

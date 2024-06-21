@@ -4,12 +4,11 @@ from pathlib import Path
 from typing import Annotated, Optional
 
 import typer
-from rich import print as rprint
 
+from data_safe_haven import console
 from data_safe_haven.config import SHMConfig, SREConfig
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.logging import get_logger
-from data_safe_haven.utility import prompts
 
 config_command_group = typer.Typer()
 
@@ -30,7 +29,7 @@ def show_shm(
         with open(file, "w") as outfile:
             outfile.write(config_yaml)
     else:
-        rprint(config_yaml)
+        console.print(config_yaml)
 
 
 @config_command_group.command()
@@ -50,7 +49,7 @@ def template_shm(
         with open(file, "w") as outfile:
             outfile.write(config_yaml)
     else:
-        rprint(config_yaml)
+        console.print(config_yaml)
 
 
 @config_command_group.command()
@@ -71,7 +70,7 @@ def upload_shm(
             logger = get_logger()
             for line in "".join(diff).splitlines():
                 logger.info(line)
-            if not prompts.confirm(
+            if not console.confirm(
                 (
                     "Configuration has changed, "
                     "do you want to overwrite the remote configuration?"
@@ -80,7 +79,7 @@ def upload_shm(
             ):
                 raise typer.Exit()
         else:
-            rprint("No changes, won't upload configuration.")
+            console.print("No changes, won't upload configuration.")
             raise typer.Exit()
 
     config.upload(context)
@@ -103,7 +102,7 @@ def show_sre(
         with open(file, "w") as outfile:
             outfile.write(config_yaml)
     else:
-        rprint(config_yaml)
+        console.print(config_yaml)
 
 
 @config_command_group.command()
@@ -123,7 +122,7 @@ def template_sre(
         with open(file, "w") as outfile:
             outfile.write(config_yaml)
     else:
-        rprint(config_yaml)
+        console.print(config_yaml)
 
 
 @config_command_group.command()
@@ -144,7 +143,7 @@ def upload_sre(
         if diff := config.remote_yaml_diff(context, filename=config.filename):
             for line in "".join(diff).splitlines():
                 logger.info(line)
-            if not prompts.confirm(
+            if not console.confirm(
                 (
                     "Configuration has changed, "
                     "do you want to overwrite the remote configuration?"
@@ -153,7 +152,7 @@ def upload_sre(
             ):
                 raise typer.Exit()
         else:
-            rprint("No changes, won't upload configuration.")
+            console.print("No changes, won't upload configuration.")
             raise typer.Exit()
 
     config.upload(context, filename=config.filename)
