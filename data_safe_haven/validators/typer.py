@@ -30,5 +30,6 @@ typer_azure_subscription_name = typer_validator_factory(
 )
 typer_azure_vm_sku = typer_validator_factory(validators.azure_vm_sku)
 typer_email_address = typer_validator_factory(validators.email_address)
+typer_fqdn = typer_validator_factory(validators.fqdn)
 typer_ip_address = typer_validator_factory(validators.ip_address)
 typer_timezone = typer_validator_factory(validators.timezone)

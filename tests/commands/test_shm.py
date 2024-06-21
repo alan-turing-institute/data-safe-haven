@@ -7,7 +7,13 @@ from data_safe_haven.infrastructure import BackendInfrastructure
 
 
 class TestDeploySHM:
-    def test_context_infrastructure_create(self, runner, monkeypatch):
+    def test_context_infrastructure_create(
+        self,
+        runner,
+        monkeypatch,
+        mock_shm_config_remote_exists,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
+    ):
         def mock_create_then_exit(self):  # noqa: ARG001
             print("mock create")  # noqa: T201
             msg = "Failed to authenticate with Azure API."
@@ -38,25 +44,27 @@ class TestDeploySHM:
 
         result = runner.invoke(shm_command_group, ["deploy"])
         assert result.exit_code == 1
-        assert "Failed to authenticate with the Azure API." in result.stdout
+        assert "Failed to authenticate with Azure API." in result.stdout
 
     def test_pulumi_config_upload(
         self,
         mocker,
         runner,
         context,
+        mock_shm_config_remote_exists,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
         monkeypatch,
     ):
+
         def mock_create(self):  # noqa: ARG001
             print("mock create")  # noqa: T201
-
-        def mock_exception():
-            raise Exception
 
         monkeypatch.setattr(BackendInfrastructure, "create", mock_create)
 
         # Make the step after DSHPulumi deployment in shm deploy function raise an exception
+        def mock_exception():
+            raise Exception
+
         mocker.patch.object(
             data_safe_haven.commands.shm.GraphApi, "__init__", mock_exception
         )

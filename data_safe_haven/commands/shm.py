@@ -14,12 +14,20 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import BackendInfrastructure, SHMProjectManager
 from data_safe_haven.logging import get_logger
+from data_safe_haven.validators import typer_aad_guid, typer_fqdn
 
 shm_command_group = typer.Typer()
 
 
 @shm_command_group.command()
 def deploy(
+    entra_tenant_id: Annotated[
+        Optional[str],  # noqa: UP007
+        typer.Option(
+            help="Tenant ID for the Entra ID used to manage TRE users.",
+            callback=typer_aad_guid,
+        ),
+    ] = None,
     force: Annotated[
         Optional[bool],  # noqa: UP007
         typer.Option(
@@ -28,9 +36,16 @@ def deploy(
             help="Force this operation, cancelling any others that are in progress.",
         ),
     ] = None,
+    fqdn: Annotated[
+        Optional[str],  # noqa: UP007
+        typer.Option(
+            help="Domain name you want your TRE to be accessible at.",
+            callback=typer_fqdn,
+        ),
+    ] = None,
 ) -> None:
     """Deploy a Safe Haven Management environment."""
-    # Create Data Safe Haven context infrastructure.
+    # Load selected context
     logger = get_logger()
     try:
         context = ContextSettings.from_file().assert_context()
@@ -45,6 +60,25 @@ def deploy(
             )
         raise typer.Exit(1) from exc
 
+    # Load SHM config from remote if it exists or locally if not
+    if SHMConfig.remote_exists(context):
+        config = SHMConfig.from_remote(context)
+    else:
+        if not fqdn:
+            logger.critical(
+                "You must provide the --fqdn argument when first deploying an SHM."
+            )
+            raise typer.Exit(1)
+        if not entra_tenant_id:
+            logger.critical(
+                "You must provide the --entra-tenant-id argument when first deploying an SHM."
+            )
+            raise typer.Exit(1)
+        config = SHMConfig.from_local(
+            context, entra_tenant_id=entra_tenant_id, fqdn=fqdn
+        )
+
+    # Create Data Safe Haven context infrastructure.
     context_infra = BackendInfrastructure(context)
     try:
         context_infra.create()
@@ -55,7 +89,6 @@ def deploy(
         raise typer.Exit(1) from exc
 
     # Deploy the Data Safe Haven SHM infrastructure
-    config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote_or_create(
         context, encrypted_key=None, projects={}
     )

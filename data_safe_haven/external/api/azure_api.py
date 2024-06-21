@@ -111,7 +111,10 @@ class AzureApi(AzureAuthenticator):
     ) -> bool:
         try:
             blob_client = self.blob_client(
-                resource_group_name, storage_account_name, storage_container_name, blob_name
+                resource_group_name,
+                storage_account_name,
+                storage_container_name,
+                blob_name,
             )
             exists = bool(blob_client.exists())
         except DataSafeHavenAzureError:

@@ -32,6 +32,11 @@ def mock_shm_config_from_remote(mocker, shm_config):
 
 
 @fixture
+def mock_shm_config_remote_exists(mocker):
+    mocker.patch.object(SHMConfig, "remote_exists", return_value=True)
+
+
+@fixture
 def mock_sre_config_from_remote(mocker, sre_config):
     mocker.patch.object(SREConfig, "from_remote_by_name", return_value=sre_config)
 

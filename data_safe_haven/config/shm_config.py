@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import ClassVar, Self
 
-from data_safe_haven.serialisers import AzureSerialisableModel
+from data_safe_haven.external import AzureApi
+from data_safe_haven.serialisers import AzureSerialisableModel, ContextBase
 
 from .config_sections import ConfigSectionAzure, ConfigSectionSHM
 
@@ -14,6 +15,27 @@ class SHMConfig(AzureSerialisableModel):
     default_filename: ClassVar[str] = "shm.yaml"
     azure: ConfigSectionAzure
     shm: ConfigSectionSHM
+
+    @classmethod
+    def from_local(
+        cls: type[Self],
+        context: ContextBase,
+        *,
+        entra_tenant_id: str,
+        fqdn: str,
+    ) -> SHMConfig:
+        """Construct an AzureSerialisableModel from a YAML file in Azure storage."""
+        azure_api = AzureApi(subscription_name=context.subscription_name)
+        return SHMConfig.model_construct(
+            azure=ConfigSectionAzure.model_construct(
+                subscription_id=azure_api.subscription_id,
+                tenant_id=azure_api.tenant_id,
+            ),
+            shm=ConfigSectionSHM.model_construct(
+                entra_tenant_id=entra_tenant_id,
+                fqdn=fqdn,
+            ),
+        )
 
     @classmethod
     def template(cls: type[Self]) -> SHMConfig:
