@@ -17,6 +17,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
+from data_safe_haven.functions import json_safe
 from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import YAMLSerialisableModel
 
@@ -24,14 +25,14 @@ from data_safe_haven.serialisers import YAMLSerialisableModel
 class ContextSettings(YAMLSerialisableModel):
     """Load available and current contexts from YAML files structured as follows:
 
-    selected: acme_deployment
+    selected: acmedeployment
     contexts:
-        acme_deployment:
+        acmedeployment:
             name: Acme Deployment
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             location: uksouth
             subscription_name: Data Safe Haven (Acme)
-        acme_testing:
+        acmetesting:
             name: Acme Testing
             admin_group_id: 32ebe412-e198-41f3-88f6-bc6687eb471b
             location: ukwest
@@ -117,23 +118,26 @@ class ContextSettings(YAMLSerialisableModel):
     def add(
         self,
         *,
-        key: str,
         name: str,
         admin_group_id: str,
         location: str,
         subscription_name: str,
     ) -> None:
         # Ensure context is not already present
+        key = json_safe(name)
         if key in self.available:
             msg = f"A context with key '{key}' is already defined."
             raise DataSafeHavenParameterError(msg)
 
+        self.logger.info(f"Creating a new context with key '{key}'.")
         self.contexts[key] = Context(
             name=name,
             admin_group_id=admin_group_id,
             location=location,
             subscription_name=subscription_name,
         )
+        if not self.selected:
+            self.selected = key
 
     def remove(self, key: str) -> None:
         if key not in self.available:

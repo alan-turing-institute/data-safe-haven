@@ -9,6 +9,7 @@ from pytest import fixture
 import data_safe_haven.config.context_settings as context_mod
 import data_safe_haven.logging.logger
 from data_safe_haven.config import (
+    ContextSettings,
     DSHPulumiConfig,
     DSHPulumiProject,
     SHMConfig,
@@ -51,23 +52,28 @@ def context_dict():
 
 
 @fixture
-def context_no_secrets(monkeypatch, context_dict):
+def context_no_secrets(monkeypatch, context_dict) -> Context:
     monkeypatch.setattr(Context, "pulumi_secrets_provider_url", None)
     return Context(**context_dict)
 
 
 @fixture
-def context_tmpdir(context_dict, tmpdir, monkeypatch):
+def context_settings(context_yaml) -> ContextSettings:
+    return ContextSettings.from_yaml(context_yaml)
+
+
+@fixture
+def context_tmpdir(context_dict, tmpdir, monkeypatch) -> tuple[Context, Path]:
     monkeypatch.setattr(context_mod, "config_dir", lambda: Path(tmpdir))
-    return Context(**context_dict), tmpdir
+    return (Context(**context_dict), tmpdir)
 
 
 @fixture
 def context_yaml():
     content = """---
-    selected: acme_deployment
+    selected: acmedeployment
     contexts:
-        acme_deployment:
+        acmedeployment:
             name: Acme Deployment
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             location: uksouth

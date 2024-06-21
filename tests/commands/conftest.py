@@ -85,7 +85,7 @@ def tmp_contexts(tmp_path, context_yaml):
 
 @fixture
 def tmp_contexts_gems(tmp_path, context_yaml):
-    context_yaml = context_yaml.replace("selected: acme_deployment", "selected: gems")
+    context_yaml = context_yaml.replace("selected: acmedeployment", "selected: gems")
     config_file_path = tmp_path / "contexts.yaml"
     with open(config_file_path, "w") as f:
         f.write(context_yaml)
@@ -94,7 +94,7 @@ def tmp_contexts_gems(tmp_path, context_yaml):
 
 @fixture
 def tmp_contexts_none(tmp_path, context_yaml):
-    context_yaml = context_yaml.replace("selected: acme_deployment", "selected: null")
+    context_yaml = context_yaml.replace("selected: acmedeployment", "selected: null")
     config_file_path = tmp_path / "contexts.yaml"
     with open(config_file_path, "w") as f:
         f.write(context_yaml)

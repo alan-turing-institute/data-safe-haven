@@ -5,7 +5,7 @@ class TestShow:
     def test_show(self, runner):
         result = runner.invoke(context_command_group, ["show"])
         assert result.exit_code == 0
-        assert "Current context: acme_deployment" in result.stdout
+        assert "Current context: acmedeployment" in result.stdout
         assert "Name: Acme Deployment" in result.stdout
 
     def test_show_none(self, runner_none):
@@ -23,13 +23,13 @@ class TestAvailable:
     def test_available(self, runner):
         result = runner.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
-        assert "acme_deployment*" in result.stdout
+        assert "acmedeployment*" in result.stdout
         assert "gems" in result.stdout
 
     def test_available_none(self, runner_none):
         result = runner_none.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
-        assert "acme_deployment" in result.stdout
+        assert "acmedeployment" in result.stdout
         assert "gems" in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
@@ -67,7 +67,6 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "example",
                 "--name",
                 "Example",
                 "--admin-group",
@@ -87,7 +86,6 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "acme_deployment",
                 "--name",
                 "Acme Deployment",
                 "--admin-group",
@@ -100,14 +98,13 @@ class TestAdd:
         )
         assert result.exit_code == 1
         # Unable to check error as this is written outside of any Typer
-        # assert "A context with key 'acme_deployment' is already defined." in result.stdout
+        # assert "A context with key 'acmedeployment' is already defined." in result.stdout
 
     def test_add_invalid_uuid(self, runner):
         result = runner.invoke(
             context_command_group,
             [
                 "add",
-                "example",
                 "--name",
                 "Example",
                 "--admin-group",
@@ -127,7 +124,6 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "example",
                 "--name",
                 "Example",
                 "--admin-group",
@@ -147,7 +143,6 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "example",
                 "--name",
                 "Example",
             ],
@@ -161,7 +156,6 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "acme_deployment",
                 "--name",
                 "Acme Deployment",
                 "--admin-group",
@@ -179,7 +173,7 @@ class TestAdd:
         assert "Name: Acme Deployment" in result.stdout
         result = runner.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
-        assert "acme_deployment*" in result.stdout
+        assert "acmedeployment*" in result.stdout
         assert "gems" not in result.stdout
 
 

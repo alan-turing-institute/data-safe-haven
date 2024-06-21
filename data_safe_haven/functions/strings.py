@@ -22,9 +22,9 @@ def b64encode(input_string: str) -> str:
     return base64.b64encode(input_string.encode("utf-8")).decode()
 
 
-def json_safe(name: str) -> str:
+def json_safe(input_string: str) -> str:
     """Construct a JSON-safe version of an input string"""
-    return alphanumeric(name).lower()
+    return alphanumeric(input_string).lower()
 
 
 def next_occurrence(

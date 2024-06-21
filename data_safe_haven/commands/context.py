@@ -6,9 +6,6 @@ import typer
 
 from data_safe_haven import console, validators
 from data_safe_haven.config import ContextSettings
-from data_safe_haven.context import (
-    Context,
-)
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
 )
@@ -84,7 +81,6 @@ def switch(
 
 @context_command_group.command()
 def add(
-    key: Annotated[str, typer.Argument(help="Key of the context to add.")],
     admin_group: Annotated[
         str,
         typer.Option(
@@ -113,28 +109,18 @@ def add(
     ],
 ) -> None:
     """Add a new context to the context list."""
+    # Create a new context settings file if none exists
     if ContextSettings.default_config_file_path().exists():
         settings = ContextSettings.from_file()
-        settings.add(
-            key=key,
-            admin_group_id=admin_group,
-            location=location,
-            name=name,
-            subscription_name=subscription_name,
-        )
     else:
-        # Bootstrap context settings file
-        settings = ContextSettings(
-            selected=key,
-            contexts={
-                key: Context(
-                    admin_group_id=admin_group,
-                    location=location,
-                    name=name,
-                    subscription_name=subscription_name,
-                )
-            },
-        )
+        settings = ContextSettings(contexts={}, selected=None)
+    # Add the context to the file and write it
+    settings.add(
+        admin_group_id=admin_group,
+        location=location,
+        name=name,
+        subscription_name=subscription_name,
+    )
     settings.write()
 
 

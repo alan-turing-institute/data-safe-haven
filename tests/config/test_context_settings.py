@@ -1,7 +1,6 @@
 import pytest
 import yaml
 from pydantic import ValidationError
-from pytest import fixture
 
 from data_safe_haven.config import ContextSettings
 from data_safe_haven.context import Context
@@ -100,35 +99,12 @@ class TestContext:
         )
 
 
-@fixture
-def context_yaml():
-    context_yaml = """\
-        selected: acme_deployment
-        contexts:
-            acme_deployment:
-                name: Acme Deployment
-                admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-                location: uksouth
-                subscription_name: Data Safe Haven Acme
-            gems:
-                name: Gems
-                admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-                location: uksouth
-                subscription_name: Data Safe Haven Gems"""
-    return context_yaml
-
-
-@fixture
-def context_settings(context_yaml):
-    return ContextSettings.from_yaml(context_yaml)
-
-
 class TestContextSettings:
     def test_constructor(self):
         settings = ContextSettings(
-            selected="acme_deployment",
+            selected="acmedeployment",
             contexts={
-                "acme_deployment": Context(
+                "acmedeployment": Context(
                     name="Acme Deployment",
                     admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                     location="uksouth",
@@ -140,7 +116,7 @@ class TestContextSettings:
 
     def test_null_selected(self, context_yaml):
         context_yaml = context_yaml.replace(
-            "selected: acme_deployment", "selected: null"
+            "selected: acmedeployment", "selected: null"
         )
 
         settings = ContextSettings.from_yaml(context_yaml)
@@ -150,16 +126,19 @@ class TestContextSettings:
             settings.assert_context()
 
     def test_missing_selected(self, context_yaml):
-        context_yaml = "\n".join(context_yaml.splitlines()[1:])
-        msg = "Could not load ContextSettings configuration."
-        with pytest.raises(DataSafeHavenParameterError, match=msg):
+        context_yaml = "\n".join(
+            [line for line in context_yaml.splitlines() if "selected:" not in line]
+        )
+        with pytest.raises(
+            DataSafeHavenParameterError,
+            match="Could not load ContextSettings configuration.",
+        ):
             ContextSettings.from_yaml(context_yaml)
 
     def test_invalid_selected_input(self, context_yaml):
         context_yaml = context_yaml.replace(
-            "selected: acme_deployment", "selected: invalid"
+            "selected: acmedeployment", "selected: invalid"
         )
-
         with pytest.raises(
             DataSafeHavenParameterError,
             match="Could not load ContextSettings configuration.",
@@ -183,10 +162,10 @@ class TestContextSettings:
             ContextSettings.from_yaml(not_dict)
 
     def test_selected(self, context_settings):
-        assert context_settings.selected == "acme_deployment"
+        assert context_settings.selected == "acmedeployment"
 
     def test_set_selected(self, context_settings):
-        assert context_settings.selected == "acme_deployment"
+        assert context_settings.selected == "acmedeployment"
         context_settings.selected = "gems"
         assert context_settings.selected == "gems"
 
@@ -201,8 +180,8 @@ class TestContextSettings:
         assert isinstance(context_settings.context, Context)
         assert all(
             getattr(context_settings.context, item)
-            == yaml_dict["contexts"]["acme_deployment"][item]
-            for item in yaml_dict["contexts"]["acme_deployment"].keys()
+            == yaml_dict["contexts"]["acmedeployment"][item]
+            for item in yaml_dict["contexts"]["acmedeployment"].keys()
         )
 
     def test_set_context(self, context_yaml, context_settings):
@@ -233,7 +212,7 @@ class TestContextSettings:
         available = context_settings.available
         assert isinstance(available, list)
         assert all(isinstance(item, str) for item in available)
-        assert available == ["acme_deployment", "gems"]
+        assert available == ["acmedeployment", "gems"]
 
     def test_update(self, context_settings):
         assert context_settings.context.name == "Acme Deployment"
@@ -253,7 +232,6 @@ class TestContextSettings:
 
     def test_add(self, context_settings):
         context_settings.add(
-            key="example",
             name="Example",
             subscription_name="Data Safe Haven Example",
             admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
@@ -267,10 +245,9 @@ class TestContextSettings:
     def test_invalid_add(self, context_settings):
         with pytest.raises(
             DataSafeHavenParameterError,
-            match="A context with key 'acme_deployment' is already defined.",
+            match="A context with key 'acmedeployment' is already defined.",
         ):
             context_settings.add(
-                key="acme_deployment",
                 name="Acme Deployment",
                 subscription_name="Data Safe Haven Acme",
                 admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
@@ -280,7 +257,7 @@ class TestContextSettings:
     def test_remove(self, context_settings):
         context_settings.remove("gems")
         assert "gems" not in context_settings.available
-        assert context_settings.selected == "acme_deployment"
+        assert context_settings.selected == "acmedeployment"
 
     def test_invalid_remove(self, context_settings):
         with pytest.raises(
@@ -289,8 +266,8 @@ class TestContextSettings:
             context_settings.remove("invalid")
 
     def test_remove_selected(self, context_settings):
-        context_settings.remove("acme_deployment")
-        assert "acme_deployment" not in context_settings.available
+        context_settings.remove("acmedeployment")
+        assert "acmedeployment" not in context_settings.available
         assert context_settings.selected is None
 
     def test_from_file(self, tmp_path, context_yaml):
