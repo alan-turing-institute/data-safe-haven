@@ -92,6 +92,15 @@ class BackendInfrastructure:
                 msg = f"DNS zone '{self.config.shm.fqdn}' was not created."
                 raise DataSafeHavenAzureError(msg)
             self.nameservers = [str(n) for n in zone.name_servers]
+            self.azure_api.ensure_dns_caa_record(
+                record_flags=0,
+                record_name="@",
+                record_tag="issue",
+                record_value="letsencrypt.org",
+                resource_group_name=resource_group.name,
+                ttl=3600,
+                zone_name=self.config.shm.fqdn,
+            )
         except DataSafeHavenAzureError as exc:
             msg = "Failed to create context resources."
             raise DataSafeHavenAzureError(msg) from exc

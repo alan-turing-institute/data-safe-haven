@@ -45,22 +45,6 @@ class SHMNetworkingComponent(ComponentResource):
 
         # Define SHM DNS zone
         network.RecordSet(
-            f"{self._name}_caa_record",
-            caa_records=[
-                network.CaaRecordArgs(
-                    flags=0,
-                    tag="issue",
-                    value="letsencrypt.org",
-                )
-            ],
-            record_type="CAA",
-            relative_record_set_name="@",
-            resource_group_name=props.resource_group_name,
-            ttl=30,
-            zone_name=props.fqdn,
-            opts=child_opts,
-        )
-        network.RecordSet(
             f"{self._name}_domain_verification_record",
             record_type="TXT",
             relative_record_set_name="@",
