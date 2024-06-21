@@ -1,8 +1,12 @@
 from pytest import fixture
 from typer.testing import CliRunner
 
-from data_safe_haven.config import DSHPulumiConfig, SHMConfig, SREConfig
-from data_safe_haven.context import ContextSettings
+from data_safe_haven.config import (
+    ContextSettings,
+    DSHPulumiConfig,
+    SHMConfig,
+    SREConfig,
+)
 
 
 @fixture

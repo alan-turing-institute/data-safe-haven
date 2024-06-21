@@ -6,7 +6,7 @@ import yaml
 from pulumi.automation import ProjectSettings
 from pytest import fixture
 
-import data_safe_haven.context.context_settings as context_mod
+import data_safe_haven.config.context_settings as context_mod
 import data_safe_haven.logging.logger
 from data_safe_haven.config import (
     DSHPulumiConfig,

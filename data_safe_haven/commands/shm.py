@@ -4,8 +4,7 @@ from typing import Annotated, Optional
 
 import typer
 
-from data_safe_haven.config import DSHPulumiConfig, SHMConfig
-from data_safe_haven.context import ContextSettings
+from data_safe_haven.config import ContextSettings, DSHPulumiConfig, SHMConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenConfigError,

@@ -3,7 +3,8 @@ import yaml
 from pydantic import ValidationError
 from pytest import fixture
 
-from data_safe_haven.context import Context, ContextSettings
+from data_safe_haven.config import ContextSettings
+from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,

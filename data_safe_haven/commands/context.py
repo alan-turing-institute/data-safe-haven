@@ -5,9 +5,9 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import console, validators
+from data_safe_haven.config import ContextSettings
 from data_safe_haven.context import (
     Context,
-    ContextSettings,
 )
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,

@@ -4,8 +4,12 @@ from typing import Annotated, Optional
 
 import typer
 
-from data_safe_haven.config import DSHPulumiConfig, SHMConfig, SREConfig
-from data_safe_haven.context import ContextSettings
+from data_safe_haven.config import (
+    ContextSettings,
+    DSHPulumiConfig,
+    SHMConfig,
+    SREConfig,
+)
 from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager

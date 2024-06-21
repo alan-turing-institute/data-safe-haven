@@ -6,8 +6,7 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import console
-from data_safe_haven.config import SHMConfig, SREConfig
-from data_safe_haven.context import ContextSettings
+from data_safe_haven.config import ContextSettings, SHMConfig, SREConfig
 from data_safe_haven.logging import get_logger
 
 config_command_group = typer.Typer()
