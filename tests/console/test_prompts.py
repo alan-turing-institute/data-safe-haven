@@ -16,9 +16,17 @@ class TestConfirm:
             (False, "n", "y", True),
             (False, "n", "n", False),
             (False, "n", "\n", False),
-        ]
+        ],
     )
-    def test_confirm(self, default_to_yes, default_to_yes_string, response, expected_result, capsys, mocker):
+    def test_confirm(
+        self,
+        default_to_yes,
+        default_to_yes_string,
+        response,
+        expected_result,
+        capsys,
+        mocker,
+    ):
         mocker.patch.object(sys, "stdin", io.StringIO(response))
 
         result = confirm("yes or no?", default_to_yes=default_to_yes)
