@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_83b8c2b6922f1ddf_declarative_sre_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.3">coverage.py v7.5.3</a>,
-            created at 2024-06-20 20:21 +0000
+            created at 2024-06-21 14:14 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -84,7 +84,7 @@
     <p class="pln"><span class="n"><a id="t2" href="#t2">2</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t3" href="#t3">3</a></span><span class="t"><span class="key">import</span> <span class="nam">pulumi</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t4" href="#t4">4</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t5" href="#t5">5</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">config</span> <span class="key">import</span> <span class="nam">Config</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t5" href="#t5">5</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">config</span> <span class="key">import</span> <span class="nam">SHMConfig</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">context</span> <span class="key">import</span> <span class="nam">Context</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">shm</span><span class="op">.</span><span class="nam">networking</span> <span class="key">import</span> <span class="nam">SHMNetworkingComponent</span><span class="op">,</span> <span class="nam">SHMNetworkingProps</span>&nbsp;</span><span class="r"></span></p>
@@ -93,7 +93,7 @@
     <p class="run"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t"><span class="key">class</span> <span class="nam">DeclarativeSHM</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t">    <span class="str">"""Deploy Data Safe Haven Management environment with Pulumi"""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">context</span><span class="op">:</span> <span class="nam">Context</span><span class="op">,</span> <span class="nam">config</span><span class="op">:</span> <span class="nam">Config</span><span class="op">,</span> <span class="nam">shm_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">context</span><span class="op">:</span> <span class="nam">Context</span><span class="op">,</span> <span class="nam">config</span><span class="op">:</span> <span class="nam">SHMConfig</span><span class="op">,</span> <span class="nam">shm_name</span><span class="op">:</span> <span class="nam">str</span><span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">context</span> <span class="op">=</span> <span class="nam">context</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">cfg</span> <span class="op">=</span> <span class="nam">config</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t17" href="#t17">17</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">shm_name</span> <span class="op">=</span> <span class="nam">shm_name</span>&nbsp;</span><span class="r"></span></p>
@@ -110,18 +110,17 @@
     <p class="pln"><span class="n"><a id="t28" href="#t28">28</a></span><span class="t">            <span class="str">"shm_networking"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t29" href="#t29">29</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">stack_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t30" href="#t30">30</a></span><span class="t">            <span class="nam">SHMNetworkingProps</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t31" href="#t31">31</a></span><span class="t">                <span class="nam">admin_ip_addresses</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">cfg</span><span class="op">.</span><span class="nam">shm</span><span class="op">.</span><span class="nam">admin_ip_addresses</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t32" href="#t32">32</a></span><span class="t">                <span class="nam">fqdn</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">cfg</span><span class="op">.</span><span class="nam">shm</span><span class="op">.</span><span class="nam">fqdn</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t33" href="#t33">33</a></span><span class="t">                <span class="nam">location</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">.</span><span class="nam">location</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t34" href="#t34">34</a></span><span class="t">                <span class="nam">record_domain_verification</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">pulumi_opts</span><span class="op">.</span><span class="nam">require</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t35" href="#t35">35</a></span><span class="t">                    <span class="str">"verification-azuread-custom-domain"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t36" href="#t36">36</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t37" href="#t37">37</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t38" href="#t38">38</a></span><span class="t">            <span class="nam">tags</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">tags</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t39" href="#t39">39</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t40" href="#t40">40</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t41" href="#t41">41</a></span><span class="t">        <span class="com"># Export values for later use</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t42" href="#t42">42</a></span><span class="t">        <span class="nam">pulumi</span><span class="op">.</span><span class="nam">export</span><span class="op">(</span><span class="str">"networking"</span><span class="op">,</span> <span class="nam">networking</span><span class="op">.</span><span class="nam">exports</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t31" href="#t31">31</a></span><span class="t">                <span class="nam">fqdn</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">cfg</span><span class="op">.</span><span class="nam">shm</span><span class="op">.</span><span class="nam">fqdn</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t32" href="#t32">32</a></span><span class="t">                <span class="nam">location</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">.</span><span class="nam">location</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t33" href="#t33">33</a></span><span class="t">                <span class="nam">record_domain_verification</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">pulumi_opts</span><span class="op">.</span><span class="nam">require</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t34" href="#t34">34</a></span><span class="t">                    <span class="str">"verification-azuread-custom-domain"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t35" href="#t35">35</a></span><span class="t">                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t36" href="#t36">36</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t37" href="#t37">37</a></span><span class="t">            <span class="nam">tags</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">tags</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t38" href="#t38">38</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t39" href="#t39">39</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t40" href="#t40">40</a></span><span class="t">        <span class="com"># Export values for later use</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t41" href="#t41">41</a></span><span class="t">        <span class="nam">pulumi</span><span class="op">.</span><span class="nam">export</span><span class="op">(</span><span class="str">"networking"</span><span class="op">,</span> <span class="nam">networking</span><span class="op">.</span><span class="nam">exports</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -131,7 +130,7 @@
             <a class="nav" href="z_83b8c2b6922f1ddf_declarative_sre_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.3">coverage.py v7.5.3</a>,
-            created at 2024-06-20 20:21 +0000
+            created at 2024-06-21 14:14 +0000
         </p>
     </div>
 </footer>
