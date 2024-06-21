@@ -5,8 +5,8 @@ from typing import Annotated
 
 import typer
 
+from data_safe_haven import console
 from data_safe_haven.config import Config, DSHPulumiConfig
-from data_safe_haven.console import pretty_print
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import sanitise_sre_name
@@ -76,4 +76,4 @@ def run(
         )
 
     stdout = project.run_pulumi_command(command)
-    pretty_print(stdout)
+    console.print(stdout)

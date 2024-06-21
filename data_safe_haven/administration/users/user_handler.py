@@ -2,8 +2,8 @@ import csv
 import pathlib
 from collections.abc import Sequence
 
+from data_safe_haven import console
 from data_safe_haven.config import Config, DSHPulumiConfig
-from data_safe_haven.console import fmt
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
@@ -126,7 +126,7 @@ class UserHandler:
                     )
                 user_data.append(user_memberships)
 
-            fmt.tabulate(user_headers, user_data)
+            console.tabulate(user_headers, user_data)
         except Exception as exc:
             msg = f"Could not list users.\n{exc}"
             raise DataSafeHavenUserHandlingError(msg) from exc

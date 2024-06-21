@@ -1,4 +1,4 @@
-from data_safe_haven.console.fmt import tabulate
+from data_safe_haven.console.format import tabulate
 
 
 class TestTabulate:

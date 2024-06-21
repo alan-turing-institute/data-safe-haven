@@ -5,8 +5,8 @@ from typing import Annotated, Optional
 
 import typer
 
+from data_safe_haven import console
 from data_safe_haven.config import Config
-from data_safe_haven.console import pretty_print, prompts
 from data_safe_haven.context import ContextSettings
 from data_safe_haven.logging import get_logger
 
@@ -30,7 +30,7 @@ def template(
         with open(file, "w") as outfile:
             outfile.write(config_yaml)
     else:
-        pretty_print(config_yaml)
+        console.print(config_yaml)
 
 
 @config_command_group.command()
@@ -52,7 +52,7 @@ def upload(
         if diff := config.remote_yaml_diff(context):
             for line in "".join(diff).splitlines():
                 logger.info(line)
-            if not prompts.confirm(
+            if not console.confirm(
                 (
                     "Configuration has changed, "
                     "do you want to overwrite the remote configuration?"
@@ -61,7 +61,7 @@ def upload(
             ):
                 raise typer.Exit()
         else:
-            pretty_print("No changes, won't upload configuration.")
+            console.print("No changes, won't upload configuration.")
             raise typer.Exit()
 
     config.upload(context)
@@ -81,4 +81,4 @@ def show(
         with open(file, "w") as outfile:
             outfile.write(config.to_yaml())
     else:
-        pretty_print(config.to_yaml())
+        console.print(config.to_yaml())

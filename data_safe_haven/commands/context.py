@@ -4,8 +4,7 @@ from typing import Annotated, Optional
 
 import typer
 
-from data_safe_haven import validators
-from data_safe_haven.console import pretty_print
+from data_safe_haven import console, validators
 from data_safe_haven.context import (
     Context,
     ContextSettings,
@@ -35,9 +34,9 @@ def show() -> None:
     current_context_key = settings.selected
     current_context = settings.context
 
-    pretty_print(f"Current context: [green]{current_context_key}")
+    console.print(f"Current context: [green]{current_context_key}")
     if current_context is not None:
-        pretty_print(
+        console.print(
             f"\tName: {current_context.name}",
             f"\tAdmin Group ID: {current_context.admin_group_id}",
             f"\tSubscription name: {current_context.subscription_name}",
@@ -65,7 +64,7 @@ def available() -> None:
         available.remove(current_context_key)
         available = [f"[green]{current_context_key}*[/]", *available]
 
-    pretty_print("\n".join(available))
+    console.print("\n".join(available))
 
 
 @context_command_group.command()
