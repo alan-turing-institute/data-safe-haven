@@ -33,6 +33,7 @@ class DeclarativeSHM:
                 record_domain_verification=self.pulumi_opts.require(
                     "verification-azuread-custom-domain"
                 ),
+                resource_group_name=self.context.resource_group_name,
             ),
             tags=self.tags,
         )

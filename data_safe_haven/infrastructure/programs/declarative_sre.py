@@ -77,9 +77,6 @@ class DeclarativeSRE:
         self.pulumi_opts = pulumi.Config()
         shm_entra_tenant_id = self.pulumi_opts.require("shm-entra-tenant-id")
         shm_fqdn = self.pulumi_opts.require("shm-fqdn")
-        shm_networking_resource_group_name = self.pulumi_opts.require(
-            "shm-networking-resource_group_name"
-        )
 
         # Construct LDAP paths
         ldap_root_dn = f"DC={shm_fqdn.replace('.', ',DC=')}"
@@ -150,7 +147,7 @@ class DeclarativeSRE:
                 dns_virtual_network=dns.virtual_network,
                 location=self.context.location,
                 shm_fqdn=shm_fqdn,
-                shm_networking_resource_group_name=shm_networking_resource_group_name,
+                shm_resource_group_name=self.context.resource_group_name,
                 shm_zone_name=shm_fqdn,
                 sre_name=self.sre_name,
                 user_public_ip_ranges=self.cfg.sre.research_user_ip_addresses,
