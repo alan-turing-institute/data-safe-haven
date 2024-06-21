@@ -1,3 +1,4 @@
+from data_safe_haven.config import SHMConfig
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
@@ -7,9 +8,11 @@ from data_safe_haven.logging import get_logger
 class BackendInfrastructure:
     """Azure resources to support Data Safe Haven context"""
 
-    def __init__(self, context: Context) -> None:
+    def __init__(self, context: Context, config: SHMConfig) -> None:
         self.azure_api_: AzureApi | None = None
+        self.config = config
         self.context = context
+        self.nameservers: list[str] = []
         self.tags = {"component": "context"} | context.tags
 
     @property
@@ -32,6 +35,7 @@ class BackendInfrastructure:
             DataSafeHavenAzureError if any resources cannot be created
         """
         try:
+            # Deploy the resources needed by Pulumi
             resource_group = self.azure_api.ensure_resource_group(
                 location=self.context.location,
                 resource_group_name=self.context.resource_group_name,
@@ -79,6 +83,15 @@ class BackendInfrastructure:
                 key_name=self.context.pulumi_encryption_key_name,
                 key_vault_name=keyvault.name,
             )
+            # Deploy common resources that will be needed by SREs
+            zone = self.azure_api.ensure_dns_zone(
+                resource_group_name=resource_group.name,
+                zone_name=self.config.shm.fqdn,
+            )
+            if not zone.name_servers:
+                msg = f"DNS zone '{self.config.shm.fqdn}' was not created."
+                raise DataSafeHavenAzureError(msg)
+            self.nameservers = [str(n) for n in zone.name_servers]
         except DataSafeHavenAzureError as exc:
             msg = "Failed to create context resources."
             raise DataSafeHavenAzureError(msg) from exc

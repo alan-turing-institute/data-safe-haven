@@ -12,7 +12,7 @@ from data_safe_haven.config import (
 )
 from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
+from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.provisioning import SREProvisioningManager
 
 sre_command_group = typer.Typer()
@@ -50,11 +50,6 @@ def deploy(
         )
 
         # Initialise Pulumi stack
-        shm_stack = SHMProjectManager(
-            context=context,
-            config=shm_config,
-            pulumi_config=pulumi_config,
-        )
         stack = SREProjectManager(
             context=context,
             config=sre_config,
@@ -81,7 +76,7 @@ def deploy(
         )
         stack.add_option(
             "shm-fqdn",
-            shm_stack.output("networking")["fqdn"],
+            shm_config.shm.fqdn,
             replace=True,
         )
 

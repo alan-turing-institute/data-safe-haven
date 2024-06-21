@@ -38,22 +38,12 @@ class SHMNetworkingComponent(ComponentResource):
         stack_name: str,  # noqa: ARG002
         props: SHMNetworkingProps,
         opts: ResourceOptions | None = None,
-        tags: Input[Mapping[str, Input[str]]] | None = None,
+        tags: Input[Mapping[str, Input[str]]] | None = None,  # noqa: ARG002
     ) -> None:
         super().__init__("dsh:shm:NetworkingComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
-        child_tags = tags if tags else {}
 
         # Define SHM DNS zone
-        dns_zone = network.Zone(
-            f"{self._name}_dns_zone",
-            location="Global",
-            resource_group_name=props.resource_group_name,
-            zone_name=props.fqdn,
-            zone_type=network.ZoneType.PUBLIC,
-            opts=child_opts,
-            tags=child_tags,
-        )
         network.RecordSet(
             f"{self._name}_caa_record",
             caa_records=[
@@ -67,8 +57,8 @@ class SHMNetworkingComponent(ComponentResource):
             relative_record_set_name="@",
             resource_group_name=props.resource_group_name,
             ttl=30,
-            zone_name=dns_zone.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=dns_zone)),
+            zone_name=props.fqdn,
+            opts=child_opts,
         )
         network.RecordSet(
             f"{self._name}_domain_verification_record",
@@ -79,15 +69,6 @@ class SHMNetworkingComponent(ComponentResource):
             txt_records=[
                 network.TxtRecordArgs(value=[props.record_domain_verification])
             ],
-            zone_name=dns_zone.name,
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=dns_zone)),
+            zone_name=props.fqdn,
+            opts=child_opts,
         )
-
-        # Register outputs
-        self.dns_zone = dns_zone
-
-        # Register exports
-        self.exports = {
-            "fqdn": self.dns_zone.name,
-            "fqdn_nameservers": self.dns_zone.name_servers,
-        }

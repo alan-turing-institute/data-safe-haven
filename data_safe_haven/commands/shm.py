@@ -10,6 +10,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenError,
     DataSafeHavenInputError,
+    DataSafeHavenMicrosoftGraphError,
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import BackendInfrastructure, SHMProjectManager
@@ -78,23 +79,8 @@ def deploy(
             context, entra_tenant_id=entra_tenant_id, fqdn=fqdn
         )
 
-    # Create Data Safe Haven context infrastructure.
-    context_infra = BackendInfrastructure(context)
+    # Add the SHM domain to the Entra ID via interactive GraphAPI
     try:
-        context_infra.create()
-    except DataSafeHavenAzureAPIAuthenticationError as exc:
-        logger.critical(
-            "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
-        )
-        raise typer.Exit(1) from exc
-
-    # Deploy the Data Safe Haven SHM infrastructure
-    pulumi_config = DSHPulumiConfig.from_remote_or_create(
-        context, encrypted_key=None, projects={}
-    )
-
-    try:
-        # Connect to GraphAPI interactively
         graph_api = GraphApi(
             tenant_id=config.shm.entra_tenant_id,
             default_scopes=[
@@ -104,7 +90,26 @@ def deploy(
             ],
         )
         verification_record = graph_api.add_custom_domain(config.shm.fqdn)
+    except DataSafeHavenMicrosoftGraphError as exc:
+        msg = f"Failed to add custom domain '{config.shm.fqdn}' to Entra ID."
+        logger.critical(msg)
+        raise typer.Exit(1) from exc
 
+    # Create Data Safe Haven context infrastructure.
+    try:
+        context_infra = BackendInfrastructure(context, config)
+        context_infra.create()
+    except DataSafeHavenAzureAPIAuthenticationError as exc:
+        msg = "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
+        logger.critical(msg)
+        raise typer.Exit(1) from exc
+
+    # Deploy the Data Safe Haven SHM infrastructure
+    pulumi_config = DSHPulumiConfig.from_remote_or_create(
+        context, encrypted_key=None, projects={}
+    )
+
+    try:
         # Initialise Pulumi stack
         stack = SHMProjectManager(
             context=context,
@@ -133,8 +138,8 @@ def deploy(
 
         # Add the SHM domain to Entra ID as a custom domain
         graph_api.verify_custom_domain(
-            stack.output("networking")["fqdn"],
-            stack.output("networking")["fqdn_nameservers"],
+            config.shm.fqdn,
+            context_infra.nameservers,
         )
     except DataSafeHavenError as exc:
         # Note, would like to exit with a non-zero code here.
@@ -159,17 +164,15 @@ def teardown() -> None:
         context = ContextSettings.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
         if exc.args[0] == "No context selected":
-            logger.critical(
-                "No context selected. Use `dsh context switch` to select one."
-            )
+            msg = "No context selected. Use `dsh context switch` to select one."
         else:
-            logger.critical(
-                "No context configuration file. Use `dsh context add` before creating infrastructure."
-            )
+            msg = "No context configuration file. Use `dsh context add` before creating infrastructure."
+        logger.critical(msg)
         raise typer.Exit(code=1) from exc
 
     try:
-        context_infra = BackendInfrastructure(context)
+        config = SHMConfig.from_remote(context)
+        context_infra = BackendInfrastructure(context, config)
         context_infra.teardown()
     except DataSafeHavenAzureAPIAuthenticationError as exc:
         logger.critical(
