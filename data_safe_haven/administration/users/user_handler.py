@@ -68,7 +68,7 @@ class UserHandler:
             # Add users to Entra ID
             self.entra_users.add(users)
         except Exception as exc:
-            msg = f"Could not add users from '{users_csv_path}'.\n{exc}"
+            msg = f"Could not add users from '{users_csv_path}'."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def get_usernames(self, sre_name: str) -> dict[str, list[str]]:
@@ -126,7 +126,7 @@ class UserHandler:
 
             console.tabulate(user_headers, user_data)
         except Exception as exc:
-            msg = f"Could not list users.\n{exc}"
+            msg = "Could not list users."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def register(self, sre_name: str, user_names: Sequence[str]) -> None:
@@ -139,7 +139,7 @@ class UserHandler:
             # Add users to the SRE security group
             self.entra_users.register(sre_name, user_names)
         except Exception as exc:
-            msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
+            msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def remove(self, user_names: Sequence[str]) -> None:
@@ -161,7 +161,7 @@ class UserHandler:
             )
             self.entra_users.remove(entra_users_to_remove)
         except Exception as exc:
-            msg = f"Could not remove users: {user_names}.\n{exc}"
+            msg = f"Could not remove users: {user_names}."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def set(self, users_csv_path: str) -> None:
@@ -208,7 +208,7 @@ class UserHandler:
             # Commit changes
             self.entra_users.set(entra_desired_users)
         except Exception as exc:
-            msg = f"Could not set users from '{users_csv_path}'.\n{exc}"
+            msg = f"Could not set users from '{users_csv_path}'."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def unregister(self, sre_name: str, user_names: Sequence[str]) -> None:
@@ -221,5 +221,5 @@ class UserHandler:
             # Remove users from the SRE security group
             self.entra_users.unregister(sre_name, user_names)
         except Exception as exc:
-            msg = f"Could not unregister {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
+            msg = f"Could not unregister {len(user_names)} users with SRE '{sre_name}'."
             raise DataSafeHavenUserHandlingError(msg) from exc

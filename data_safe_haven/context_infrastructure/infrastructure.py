@@ -80,7 +80,7 @@ class ContextInfrastructure:
                 key_vault_name=keyvault.name,
             )
         except DataSafeHavenAzureError as exc:
-            msg = f"Failed to create context resources.\n{exc}"
+            msg = "Failed to create context resources."
             raise DataSafeHavenAzureError(msg) from exc
 
     def teardown(self) -> None:
@@ -96,5 +96,5 @@ class ContextInfrastructure:
             )
             self.azure_api.remove_resource_group(self.context.resource_group_name)
         except DataSafeHavenAzureError as exc:
-            msg = f"Failed to destroy context resources.\n{exc}"
+            msg = "Failed to destroy context resources."
             raise DataSafeHavenAzureError(msg) from exc

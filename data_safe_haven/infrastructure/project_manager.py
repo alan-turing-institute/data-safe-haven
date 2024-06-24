@@ -115,7 +115,7 @@ class ProjectManager:
                 try:
                     self._pulumi_project = self.pulumi_config[self.pulumi_project_name]
                 except (KeyError, TypeError) as exc:
-                    msg = f"No SHM/SRE named {self.pulumi_project_name} is defined.\n{exc}"
+                    msg = f"No SHM/SRE named {self.pulumi_project_name} is defined."
                     raise DataSafeHavenConfigError(msg) from exc
         return self._pulumi_project
 
@@ -140,7 +140,7 @@ class ProjectManager:
                 # Ensure encrypted key is stored in the Pulumi configuration
                 self.update_dsh_pulumi_config()
             except automation.CommandError as exc:
-                msg = f"Could not load Pulumi stack {self.stack_name}.\n{exc}"
+                msg = f"Could not load Pulumi stack {self.stack_name}."
                 raise DataSafeHavenPulumiError(msg) from exc
         return self._stack
 
@@ -163,7 +163,7 @@ class ProjectManager:
                     self.ensure_config(name, value, secret=is_secret)
             self.options = {}
         except Exception as exc:
-            msg = f"Applying Pulumi configuration options failed.\n{exc}."
+            msg = "Applying Pulumi configuration options failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def cancel(self) -> None:
@@ -196,7 +196,7 @@ class ProjectManager:
             self.preview()
             self.update()
         except Exception as exc:
-            msg = f"Pulumi deployment failed.\n{exc}"
+            msg = "Pulumi deployment failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def destroy(self) -> None:
@@ -222,7 +222,7 @@ class ProjectManager:
                     ):
                         time.sleep(10)
                     else:
-                        msg = f"Pulumi resource destruction failed.\n{exc}"
+                        msg = "Pulumi resource destruction failed."
                         raise DataSafeHavenPulumiError(msg) from exc
             # Remove stack JSON
             try:
@@ -232,7 +232,7 @@ class ProjectManager:
                 self.logger.info(f"Removed Pulumi stack [green]{self.stack_name}[/].")
             except automation.CommandError as exc:
                 if "no stack named" not in str(exc):
-                    msg = f"Pulumi stack could not be removed.\n{exc}"
+                    msg = "Pulumi stack could not be removed."
                     raise DataSafeHavenPulumiError(msg) from exc
             # Remove stack JSON backup
             stack_backup_name = f"{self.stack_name}.json.bak"
@@ -256,10 +256,10 @@ class ProjectManager:
                         f"Pulumi stack backup [green]{stack_backup_name}[/] could not be found."
                     )
                 else:
-                    msg = f"Pulumi stack backup could not be removed.\n{exc}"
+                    msg = "Pulumi stack backup could not be removed."
                     raise DataSafeHavenPulumiError(msg) from exc
         except DataSafeHavenPulumiError as exc:
-            msg = f"Pulumi destroy failed.\n{exc}"
+            msg = "Pulumi destroy failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def ensure_config(self, name: str, value: str, *, secret: bool) -> None:
@@ -289,7 +289,7 @@ class ProjectManager:
                 "random", metadata.version("pulumi-random")
             )
         except Exception as exc:
-            msg = f"Installing Pulumi plugins failed.\n{exc}."
+            msg = "Installing Pulumi plugins failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def log_message(self, message: str) -> None:
@@ -315,7 +315,7 @@ class ProjectManager:
                     **self.pulumi_extra_args,
                 )
         except Exception as exc:
-            msg = f"Pulumi preview failed.\n{exc}."
+            msg = "Pulumi preview failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def refresh(self) -> None:
@@ -325,7 +325,7 @@ class ProjectManager:
             # Note that we disable parallelisation which can cause deadlock
             self.stack.refresh(parallel=1, **self.pulumi_extra_args)
         except automation.CommandError as exc:
-            msg = f"Pulumi refresh failed.\n{exc}"
+            msg = "Pulumi refresh failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def run_pulumi_command(self, command: str) -> str:
@@ -334,7 +334,7 @@ class ProjectManager:
             result = self.stack._run_pulumi_cmd_sync(command.split())
             return str(result.stdout)
         except automation.CommandError as exc:
-            msg = f"Failed to run command.\n{exc}"
+            msg = "Failed to run command."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def secret(self, name: str) -> str:
@@ -357,7 +357,7 @@ class ProjectManager:
             self.destroy()
             self.update_dsh_pulumi_project()
         except Exception as exc:
-            msg = f"Tearing down Pulumi infrastructure failed.\n{exc}."
+            msg = "Tearing down Pulumi infrastructure failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def update(self) -> None:
@@ -370,7 +370,7 @@ class ProjectManager:
             self.evaluate(result.summary.result)
             self.update_dsh_pulumi_project()
         except automation.CommandError as exc:
-            msg = f"Pulumi update failed.\n{exc}"
+            msg = "Pulumi update failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
     @property

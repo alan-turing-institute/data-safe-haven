@@ -63,10 +63,10 @@ def next_occurrence(
             msg = f"Time format '{time_format}' was not recognised."
             raise DataSafeHavenInputError(msg)
     except pytz.exceptions.UnknownTimeZoneError as exc:
-        msg = f"Timezone '{timezone}' was not recognised.\n{exc}"
+        msg = f"Timezone '{timezone}' was not recognised."
         raise DataSafeHavenInputError(msg) from exc
     except ValueError as exc:
-        msg = f"Time '{hour}:{minute}' was not recognised.\n{exc}"
+        msg = f"Time '{hour}:{minute}' was not recognised."
         raise DataSafeHavenInputError(msg) from exc
 
 
