@@ -11,7 +11,6 @@ from pulumi import automation
 from data_safe_haven.config import (
     DSHPulumiConfig,
     DSHPulumiProject,
-    SHMConfig,
     SREConfig,
 )
 from data_safe_haven.context import Context
@@ -389,27 +388,6 @@ class ProjectManager:
         elif self.pulumi_config.encrypted_key != stack_key:
             msg = "Stack encrypted key does not match project encrypted key"
             raise DataSafeHavenPulumiError(msg)
-
-
-class SHMProjectManager(ProjectManager):
-    """Interact with an SHM using Pulumi"""
-
-    def __init__(
-        self,
-        context: Context,
-        config: SHMConfig,
-        pulumi_config: DSHPulumiConfig,
-        *,
-        create_project: bool = False,
-    ) -> None:
-        """Constructor"""
-        super().__init__(
-            context,
-            pulumi_config,
-            context.shm_name,
-            DeclarativeSHM(context, config, context.shm_name),
-            create_project=create_project,
-        )
 
 
 class SREProjectManager(ProjectManager):

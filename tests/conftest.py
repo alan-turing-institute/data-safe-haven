@@ -23,7 +23,7 @@ from data_safe_haven.config.config_sections import (
 )
 from data_safe_haven.context import Context
 from data_safe_haven.external import AzureApi, AzureCliSingleton, PulumiAccount
-from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
+from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.infrastructure.project_manager import ProjectManager
 from data_safe_haven.logging import init_logging
 
@@ -305,24 +305,6 @@ def shm_config_yaml():
         fqdn: shm.acme.com
     """
     return yaml.dump(yaml.safe_load(content))
-
-
-@fixture
-def shm_stack_manager(
-    context_no_secrets,
-    sre_config,
-    pulumi_config_no_key,
-    mock_azure_cli_confirm,  # noqa: ARG001
-    mock_install_plugins,  # noqa: ARG001
-    mock_key_vault_key,  # noqa: ARG001
-    offline_pulumi_account,  # noqa: ARG001
-    local_project_settings,  # noqa: ARG001
-):
-    return SHMProjectManager(
-        context=context_no_secrets,
-        config=sre_config,
-        pulumi_config=pulumi_config_no_key,
-    )
 
 
 @fixture
