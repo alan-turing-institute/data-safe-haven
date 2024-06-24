@@ -99,7 +99,7 @@ class EntraUsers:
                 for user_details in user_list
             ]
         except DataSafeHavenError as exc:
-            msg = "Unable list Entra ID users."
+            msg = "Unable to list Entra ID users."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def register(self, sre_name: str, usernames: Sequence[str]) -> None:
@@ -114,7 +114,7 @@ class EntraUsers:
             for username in usernames:
                 self.graph_api.add_user_to_group(username, group_name)
         except DataSafeHavenError as exc:
-            msg = f"Unable add users to group '{group_name}'."
+            msg = f"Unable to add users to group '{group_name}'."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
