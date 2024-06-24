@@ -55,7 +55,6 @@ def deploy(
             config=sre_config,
             pulumi_config=pulumi_config,
             create_project=True,
-            sre_name=sre_config.safe_name,
             graph_api_token=graph_api.token,
         )
         # Set Azure options
@@ -128,7 +127,6 @@ def teardown(
                 context=context,
                 config=sre_config,
                 pulumi_config=pulumi_config,
-                sre_name=sre_config.safe_name,
                 graph_api_token=graph_api.token,
             )
             stack.teardown()

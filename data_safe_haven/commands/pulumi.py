@@ -76,7 +76,6 @@ def run(
             context=context,
             config=sre_config,
             pulumi_config=pulumi_config,
-            sre_name=sre_config.safe_name,
             graph_api_token=graph_api.token,
         )
 

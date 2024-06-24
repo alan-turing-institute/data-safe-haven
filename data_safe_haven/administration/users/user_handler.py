@@ -93,7 +93,7 @@ class UserHandler:
             sre_config = SREConfig.from_remote_by_name(self.context, sre_name)
             if sre_name not in self.sre_guacamole_users_.keys():
                 self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
-                    self.context, sre_config, pulumi_config, sre_name
+                    self.context, sre_config, pulumi_config
                 )
             return [
                 user.username for user in self.sre_guacamole_users_[sre_name].list()

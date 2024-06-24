@@ -422,15 +422,14 @@ class SREProjectManager(ProjectManager):
         pulumi_config: DSHPulumiConfig,
         *,
         create_project: bool = False,
-        sre_name: str,
         graph_api_token: str | None = None,
     ) -> None:
         """Constructor"""
-        token = graph_api_token if graph_api_token else ""
+        token = graph_api_token or ""
         super().__init__(
             context,
             pulumi_config,
-            sre_name,
-            DeclarativeSRE(context, config, context.shm_name, sre_name, token),
+            config.safe_name,
+            DeclarativeSRE(context, config, context.shm_name, token),
             create_project=create_project,
         )

@@ -16,7 +16,6 @@ class GuacamoleUsers:
         context: Context,
         config: SREConfig,
         pulumi_config: DSHPulumiConfig,
-        sre_name: str,
         *args: Any,
         **kwargs: Any,
     ):
@@ -25,7 +24,6 @@ class GuacamoleUsers:
             context=context,
             config=config,
             pulumi_config=pulumi_config,
-            sre_name=sre_name,
         )
         # Read the SRE database secret from key vault
         azure_api = AzureApi(context.subscription_name)
@@ -47,8 +45,7 @@ class GuacamoleUsers:
             / "remote_desktop"
             / "postgresql"
         )
-        self.sre_name = sre_name
-        self.group_name = f"Data Safe Haven SRE {sre_name} Users"
+        self.group_name = f"Data Safe Haven SRE {config.safe_name} Users"
 
     def list(self) -> Sequence[ResearchUser]:
         """List all Guacamole users"""
