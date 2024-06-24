@@ -65,4 +65,6 @@ class LocalDnsRecordComponent(ComponentResource):
         )
 
         # Register outputs
-        self.hostname = public_dns_record_set.fqdn
+        self.hostname = public_dns_record_set.fqdn.apply(
+            lambda s: s.strip(".")  # strip trailing "."
+        )

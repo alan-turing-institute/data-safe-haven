@@ -42,7 +42,7 @@ class FileUploadProvider(DshResourceProvider):
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Run a remote script to create a file on a VM"""
         outs = dict(**props)
-        azure_api = AzureApi(props["subscription_name"], disable_logging=True)
+        azure_api = AzureApi(props["subscription_name"])
         script_contents = f"""
         target_dir=$(dirname "$target");
         mkdir -p $target_dir 2> /dev/null;
@@ -83,7 +83,7 @@ class FileUploadProvider(DshResourceProvider):
         """Delete the remote file from the VM"""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
-        azure_api = AzureApi(props["subscription_name"], disable_logging=True)
+        azure_api = AzureApi(props["subscription_name"])
         script_contents = """
         rm -f "$target";
         echo "Removed file at $target";

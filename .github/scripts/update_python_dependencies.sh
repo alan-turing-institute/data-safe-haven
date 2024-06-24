@@ -17,7 +17,7 @@ fi
 
 # Run pip-compile
 if [ "$ENV_NAME" = "default" ]; then
-    pip-compile -U pyproject.toml -o "$TARGET"
+    pip-compile -U pyproject.toml -c requirements-constraints.txt -o "$TARGET"
 else
-    hatch env show --json | jq -r ".${ENV_NAME}.dependencies | .[]" | pip-compile - -U -o "$TARGET"
+    hatch env show --json | jq -r ".${ENV_NAME}.dependencies | .[]" | pip-compile - -U -c requirements-constraints.txt -o "$TARGET"
 fi

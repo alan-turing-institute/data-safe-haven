@@ -4,25 +4,24 @@ from collections.abc import Mapping
 from typing import Any
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import compute, network
+from pulumi_azure_native import compute, insights, maintenance, network
 
 from data_safe_haven.functions import replace_separators
-from data_safe_haven.infrastructure.components.wrapped import (
-    WrappedLogAnalyticsWorkspace,
-)
 
 
 class VMComponentProps:
     """Properties for WindowsVMComponent"""
 
     image_reference_args: compute.ImageReferenceArgs | None
-    log_analytics_extension_name: str
-    log_analytics_extension_version: str
+    azure_monitor_extension_name: str
+    azure_monitor_extension_version: str
     os_profile_args: compute.OSProfileArgs | None
 
     def __init__(
         self,
         admin_password: Input[str],
+        data_collection_rule_id: Input[str],
+        data_collection_endpoint_id: Input[str],
         ip_address_private: Input[str],
         location: Input[str],
         resource_group_name: Input[str],
@@ -33,38 +32,20 @@ class VMComponentProps:
         vm_size: Input[str],
         admin_username: Input[str] | None = None,
         ip_address_public: Input[bool] | None = None,
-        log_analytics_workspace: Input[WrappedLogAnalyticsWorkspace] | None = None,
-        log_analytics_workspace_id: Input[str] | None = None,
-        log_analytics_workspace_key: Input[str] | None = None,
+        maintenance_configuration_id: Input[str] | None = None,
     ) -> None:
         self.admin_password = admin_password
         self.admin_username = admin_username if admin_username else "dshvmadmin"
+        self.data_collection_rule_id = data_collection_rule_id
+        self.data_collection_rule_name = Output.from_input(
+            data_collection_rule_id
+        ).apply(lambda rule_id: str(rule_id).split("/")[-1])
+        self.data_collection_endpoint_id = data_collection_endpoint_id
         self.image_reference_args = None
         self.ip_address_private = ip_address_private
         self.ip_address_public = ip_address_public
         self.location = location
-        if log_analytics_workspace:
-            self.log_analytics_workspace_id = Output.from_input(
-                log_analytics_workspace
-            ).apply(lambda workspace: workspace.workspace_id)
-        elif log_analytics_workspace_id:
-            self.log_analytics_workspace_id = Output.from_input(
-                log_analytics_workspace_id
-            )
-        else:
-            msg = "No value provided for 'log_analytics_workspace_id'"
-            raise ValueError(msg)
-        if log_analytics_workspace:
-            self.log_analytics_workspace_key = Output.from_input(
-                log_analytics_workspace
-            ).apply(lambda workspace: workspace.workspace_key)
-        elif log_analytics_workspace_key:
-            self.log_analytics_workspace_key = Output.from_input(
-                log_analytics_workspace_key
-            )
-        else:
-            msg = "No value provided for 'log_analytics_workspace_key'"
-            raise ValueError(msg)
+        self.maintenance_configuration_id = maintenance_configuration_id
         self.os_profile_args = None
         self.resource_group_name = resource_group_name
         self.subnet_name = subnet_name
@@ -112,8 +93,8 @@ class WindowsVMComponentProps(VMComponentProps):
                 provision_vm_agent=True,
             ),
         )
-        self.log_analytics_extension_name = "MicrosoftMonitoringAgent"
-        self.log_analytics_extension_version = "1.0"
+        self.azure_monitor_extension_name = "AzureMonitorWindowsAgent"
+        self.azure_monitor_extension_version = "1.0"
 
 
 class LinuxVMComponentProps(VMComponentProps):
@@ -140,12 +121,17 @@ class LinuxVMComponentProps(VMComponentProps):
             linux_configuration=compute.LinuxConfigurationArgs(
                 patch_settings=compute.LinuxPatchSettingsArgs(
                     assessment_mode=compute.LinuxPatchAssessmentMode.AUTOMATIC_BY_PLATFORM,
+                    patch_mode=compute.LinuxVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
+                    automatic_by_platform_settings=compute.LinuxVMGuestPatchAutomaticByPlatformSettingsArgs(
+                        bypass_platform_safety_checks_on_user_schedule=True,
+                        reboot_setting=compute.LinuxVMGuestPatchAutomaticByPlatformRebootSetting.IF_REQUIRED,
+                    ),
                 ),
                 provision_vm_agent=True,
             ),
         )
-        self.log_analytics_extension_name = "OmsAgentForLinux"
-        self.log_analytics_extension_version = "1.0"
+        self.azure_monitor_extension_name = "AzureMonitorLinuxAgent"
+        self.azure_monitor_extension_version = "1.0"
 
 
 class VMComponent(ComponentResource):
@@ -252,22 +238,16 @@ class VMComponent(ComponentResource):
         )
 
         # Register with Log Analytics workspace
-        log_analytics_extension = compute.VirtualMachineExtension(
-            f"{name_underscored}_log_analytics_extension",
+        compute.VirtualMachineExtension(
+            f"{name_underscored}_azure_monitor_extension",
             auto_upgrade_minor_version=True,
-            enable_automatic_upgrade=False,
+            enable_automatic_upgrade=True,
             location=props.location,
-            publisher="Microsoft.EnterpriseCloud.Monitoring",
-            protected_settings=props.log_analytics_workspace_key.apply(
-                lambda key: {"workspaceKey": key}
-            ),
+            publisher="Microsoft.Azure.Monitor",
             resource_group_name=props.resource_group_name,
-            settings=props.log_analytics_workspace_id.apply(
-                lambda id_: {"workspaceId": id_}
-            ),
-            type=props.log_analytics_extension_name,
-            type_handler_version=props.log_analytics_extension_version,
-            vm_extension_name=props.log_analytics_extension_name,
+            type=props.azure_monitor_extension_name,
+            type_handler_version=props.azure_monitor_extension_version,
+            vm_extension_name=props.azure_monitor_extension_name,
             vm_name=virtual_machine.name,
             opts=ResourceOptions.merge(
                 child_opts,
@@ -276,11 +256,54 @@ class VMComponent(ComponentResource):
             tags=child_tags,
         )
 
+        # Register with maintenance configuration
+        maintenance.ConfigurationAssignment(
+            f"{name_underscored}_configuration_assignment",
+            configuration_assignment_name=Output.concat(
+                props.vm_name, "-maintenance-configuration"
+            ),
+            location=props.location,
+            maintenance_configuration_id=props.maintenance_configuration_id,
+            provider_name="Microsoft.Compute",
+            resource_group_name=props.resource_group_name,
+            resource_name_=virtual_machine.name,
+            resource_type="VirtualMachines",
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=virtual_machine),
+            ),
+        )
+
+        # Register with data collection rule
+        insights.DataCollectionRuleAssociation(
+            f"{name_underscored}_dcra_to_dcr",
+            association_name=Output.concat(
+                props.data_collection_rule_name, "-association"  # this name is required
+            ),
+            data_collection_rule_id=props.data_collection_rule_id,
+            resource_uri=virtual_machine.id,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=virtual_machine),
+            ),
+        )
+
+        # Register with data collection endpoint
+        insights.DataCollectionRuleAssociation(
+            f"{name_underscored}_dcra_to_dce",
+            association_name="configurationAccessEndpoint",  # this name is required
+            data_collection_endpoint_id=props.data_collection_endpoint_id,
+            resource_uri=virtual_machine.id,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=virtual_machine),
+            ),
+        )
+
         # Register outputs
         self.ip_address_private: Output[str] = Output.from_input(
             props.ip_address_private
         )
-        self.log_analytics_extension = log_analytics_extension
         self.resource_group_name: Output[str] = Output.from_input(
             props.resource_group_name
         )

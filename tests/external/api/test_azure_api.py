@@ -1,4 +1,5 @@
 import pytest
+from azure.core.exceptions import ResourceNotFoundError
 from pytest import fixture
 
 import data_safe_haven.external.api.azure_api
@@ -17,7 +18,7 @@ def mock_key_client(monkeypatch):
             if key_name == "exists":
                 return f"key: {key_name}"
             else:
-                raise Exception
+                raise ResourceNotFoundError
 
     monkeypatch.setattr(
         data_safe_haven.external.api.azure_api, "KeyClient", MockKeyClient
@@ -25,7 +26,7 @@ def mock_key_client(monkeypatch):
 
 
 @fixture
-def mock_blob_client(monkeypatch):  # noqa: ARG001
+def mock_blob_client(monkeypatch):
     class MockBlobClient:
         def __init__(
             self,
@@ -41,6 +42,24 @@ def mock_blob_client(monkeypatch):  # noqa: ARG001
                 return True
             else:
                 return False
+
+    def mock_blob_client(
+        self,  # noqa: ARG001
+        resource_group_name,
+        storage_account_name,
+        storage_container_name,
+        blob_name,
+    ):
+        return MockBlobClient(
+            resource_group_name,
+            storage_account_name,
+            storage_container_name,
+            blob_name,
+        )
+
+    monkeypatch.setattr(
+        data_safe_haven.external.api.azure_api.AzureApi, "blob_client", mock_blob_client
+    )
 
 
 class TestAzureApi:
@@ -58,12 +77,16 @@ class TestAzureApi:
 
     def test_blob_exists(self, mock_blob_client):  # noqa: ARG002
         api = AzureApi("subscription name")
-        assert api.blob_exists(
-            "resource_group", "storage_account", "storage_container", "exists"
+        exists = api.blob_exists(
+            "exists", "resource_group", "storage_account", "storage_container"
         )
+        assert isinstance(exists, bool)
+        assert exists
 
     def test_blob_does_not_exist(self, mock_blob_client):  # noqa: ARG002
         api = AzureApi("subscription name")
-        assert not api.blob_exists(
-            "resource_group", "storage_account", "storage_container", "abc.txt"
+        exists = api.blob_exists(
+            "abc.txt", "resource_group", "storage_account", "storage_container"
         )
+        assert isinstance(exists, bool)
+        assert not exists

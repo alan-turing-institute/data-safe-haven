@@ -35,12 +35,12 @@ where you must specify the usernames for each user you want to add to this SRE.
 
 ## Listing available users
 
-1. You can do this in your Entra tenant by browsing to `Identity > Users > All users.`.
+1. You can do this in your Entra tenant by browsing to `Entra ID > Groups > Data Safe Haven SRE <name> Users > Members`.
 
 2. You can do this at the command line by running the following command:
 
 ```{code} shell
-$ dsh users list
+$ dsh users list <SRE name>
 ```
 
 ## Removing a deployed Data Safe Haven

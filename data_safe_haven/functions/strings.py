@@ -1,4 +1,5 @@
 import base64
+import datetime
 import hashlib
 import random
 import secrets
@@ -6,19 +7,67 @@ import string
 import uuid
 from collections.abc import Sequence
 
+import pytz
+
+from data_safe_haven.exceptions import DataSafeHavenInputError
+
 
 def alphanumeric(input_string: str) -> str:
     """Strip any characters that are not letters or numbers from a string."""
     return "".join(filter(str.isalnum, input_string))
 
 
-def sanitise_sre_name(name: str) -> str:
-    return alphanumeric(name).lower()
-
-
 def b64encode(input_string: str) -> str:
     """Encode a normal string into a Base64 string."""
     return base64.b64encode(input_string.encode("utf-8")).decode()
+
+
+def json_safe(name: str) -> str:
+    """Construct a JSON-safe version of an input string"""
+    return alphanumeric(name).lower()
+
+
+def next_occurrence(
+    hour: int, minute: int, timezone: str, *, time_format: str = "iso"
+) -> str:
+    """
+    Get an ISO-formatted string representing the next occurence in UTC of a daily
+    repeating time in the local timezone.
+
+    Args:
+        hour: hour in the local timezone
+        minute: minute in the local timezone
+        timezone: string representation of the local timezone
+        time_format: either 'iso' (YYYY-MM-DDTHH:MM:SS.mmmmmm) or 'iso_minute' (YYYY-MM-DD HH:MM)
+    """
+    try:
+        local_tz = pytz.timezone(timezone)
+        local_dt = datetime.datetime.now(local_tz).replace(
+            hour=hour,
+            minute=minute,
+            second=0,
+            microsecond=0,
+        )
+        utc_dt = local_dt.astimezone(pytz.utc)
+        # Add one day until this datetime is at least 1 hour in the future.
+        # This ensures that any Azure functions which depend on this datetime being in
+        # the future should treat it as valid.
+        utc_near_future = datetime.datetime.now(pytz.utc) + datetime.timedelta(hours=1)
+        while utc_dt < utc_near_future:
+            utc_dt += datetime.timedelta(days=1)
+        if time_format == "iso":
+            return utc_dt.isoformat()
+        elif time_format == "iso_minute":
+            return utc_dt.strftime(r"%Y-%m-%d %H:%M")
+        else:
+            msg = f"Time format '{time_format}' was not recognised."
+            raise DataSafeHavenInputError(msg)
+    except pytz.exceptions.UnknownTimeZoneError as exc:
+        msg = f"Timezone '{timezone}' was not recognised.\n{exc}"
+        raise DataSafeHavenInputError(msg) from exc
+    except ValueError as exc:
+        msg = f"Time '{hour}:{minute}' was not recognised.\n{exc}"
+        raise DataSafeHavenInputError(msg) from exc
 
 
 def password(length: int) -> str:
@@ -39,7 +88,7 @@ def password(length: int) -> str:
 
 
 def replace_separators(input_string: str, separator: str = "") -> str:
-    """Return a string using underscores as a separator"""
+    """Return a string replacing all instances of [ _-.] with the desired separator."""
     return (
         input_string.replace(" ", separator)
         .replace("_", separator)

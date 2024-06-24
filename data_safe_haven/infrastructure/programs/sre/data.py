@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
 import pulumi_random
-from pulumi import ComponentResource, Config, Input, Output, ResourceOptions
+from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
     keyvault,
@@ -17,7 +17,6 @@ from pulumi_azure_native import (
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import (
     alphanumeric,
-    ordered_private_dns_zones,
     replace_separators,
     seeded_uuid,
     sha256hash,
@@ -33,6 +32,7 @@ from data_safe_haven.infrastructure.components import (
     SSLCertificate,
     SSLCertificateProps,
 )
+from data_safe_haven.types import AzureDnsZoneNames
 
 
 class SREDataProps:
@@ -44,11 +44,11 @@ class SREDataProps:
         admin_group_id: Input[str],
         admin_ip_addresses: Input[Sequence[str]],
         data_provider_ip_addresses: Input[Sequence[str]],
+        dns_private_zones: Input[dict[str, network.PrivateZone]],
         dns_record: Input[network.RecordSet],
         dns_server_admin_password: Input[pulumi_random.RandomPassword],
         location: Input[str],
         networking_resource_group: Input[resources.ResourceGroup],
-        pulumi_opts: Config,
         sre_fqdn: Input[str],
         subnet_data_configuration: Input[network.GetSubnetResult],
         subnet_data_private: Input[network.GetSubnetResult],
@@ -66,15 +66,13 @@ class SREDataProps:
                 ip for address_list in address_lists for ip in address_list
             }
         )
+        self.dns_private_zones = dns_private_zones
         self.dns_record = dns_record
         self.password_dns_server_admin = dns_server_admin_password
         self.location = location
         self.networking_resource_group_name = Output.from_input(
             networking_resource_group
         ).apply(get_name_from_rg)
-        self.private_dns_zone_base_id = self.get_secret(
-            pulumi_opts, "shm-networking-private_dns_zone_base_id"
-        )
         self.sre_fqdn = sre_fqdn
         self.subnet_data_configuration_id = Output.from_input(
             subnet_data_configuration
@@ -85,9 +83,6 @@ class SREDataProps:
         self.subscription_id = subscription_id
         self.subscription_name = subscription_name
         self.tenant_id = tenant_id
-
-    def get_secret(self, pulumi_opts: Config, secret_name: str) -> Output[str]:
-        return Output.secret(pulumi_opts.require(secret_name))
 
 
 class SREDataComponent(ComponentResource):
@@ -449,11 +444,9 @@ class SREDataComponent(ComponentResource):
                         f"{stack_name}-storage-account-data-configuration-to-{dns_zone_name}",
                         "-",
                     ),
-                    private_dns_zone_id=Output.concat(
-                        props.private_dns_zone_base_id, dns_zone_name
-                    ),
+                    private_dns_zone_id=props.dns_private_zones[dns_zone_name].id,
                 )
-                for dns_zone_name in ordered_private_dns_zones("Storage account")
+                for dns_zone_name in AzureDnsZoneNames.STORAGE_ACCOUNT
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-configuration",
             private_endpoint_name=storage_account_data_configuration_private_endpoint.name,
@@ -630,11 +623,9 @@ class SREDataComponent(ComponentResource):
                         f"{stack_name}-storage-account-data-private-sensitive-to-{dns_zone_name}",
                         "-",
                     ),
-                    private_dns_zone_id=Output.concat(
-                        props.private_dns_zone_base_id, dns_zone_name
-                    ),
+                    private_dns_zone_id=props.dns_private_zones[dns_zone_name].id,
                 )
-                for dns_zone_name in ordered_private_dns_zones("Storage account")
+                for dns_zone_name in AzureDnsZoneNames.STORAGE_ACCOUNT
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-private-sensitive",
             private_endpoint_name=storage_account_data_private_sensitive_endpoint.name,
@@ -738,11 +729,9 @@ class SREDataComponent(ComponentResource):
                         f"{stack_name}-storage-account-data-private-user-to-{dns_zone_name}",
                         "-",
                     ),
-                    private_dns_zone_id=Output.concat(
-                        props.private_dns_zone_base_id, dns_zone_name
-                    ),
+                    private_dns_zone_id=props.dns_private_zones[dns_zone_name].id,
                 )
-                for dns_zone_name in ordered_private_dns_zones("Storage account")
+                for dns_zone_name in AzureDnsZoneNames.STORAGE_ACCOUNT
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-private-user",
             private_endpoint_name=storage_account_data_private_user_endpoint.name,

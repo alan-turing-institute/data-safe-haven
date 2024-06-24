@@ -8,22 +8,22 @@ from azure.keyvault.keys import KeyVaultKey
 from pydantic import BaseModel
 
 from data_safe_haven import __version__
+from data_safe_haven.directories import config_dir
 from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.serialisers import ContextBase
 from data_safe_haven.types import (
     AzureLocation,
-    AzureLongName,
+    AzureSubscriptionName,
     Guid,
 )
-from data_safe_haven.utility import config_dir
 
 
 class Context(ContextBase, BaseModel, validate_assignment=True):
     admin_group_id: Guid
     location: AzureLocation
     name: str
-    subscription_name: AzureLongName
+    subscription_name: AzureSubscriptionName
     storage_container_name: ClassVar[str] = "config"
     pulumi_storage_container_name: ClassVar[str] = "pulumi"
     pulumi_encryption_key_name: ClassVar[str] = "pulumi-encryption-key"

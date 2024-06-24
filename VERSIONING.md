@@ -67,6 +67,7 @@ We usually deploy the latest available version of the Data Safe Haven for each o
 | May 2023         | DSG 2023-05                   | [v4.0.3](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.0.3)           |
 | September 2023   | DDRC DSG Exeter 2023          | [v4.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.1.0)           |
 | December 2023    | DSG 2023-12                   | [v4.1.0](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.1.0)           |
+| May 2024         | DSG 2024-05                   | [v4.2.1](https://github.com/alan-turing-institute/data-safe-haven/releases/tag/v4.2.1)           |
 
 Additionally, a production instance of DSH is maintained for use by research projects at the Turing.
 

@@ -1,6 +1,7 @@
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
+from data_safe_haven.logging import get_logger
 
 
 class ContextInfrastructure:
@@ -78,7 +79,7 @@ class ContextInfrastructure:
                 key_name=self.context.pulumi_encryption_key_name,
                 key_vault_name=keyvault.name,
             )
-        except Exception as exc:
+        except DataSafeHavenAzureError as exc:
             msg = f"Failed to create context resources.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
@@ -88,8 +89,12 @@ class ContextInfrastructure:
         Raises:
             DataSafeHavenAzureError if any resources cannot be destroyed
         """
+        logger = get_logger()
         try:
+            logger.info(
+                f"Removing context {self.context.name} resource group {self.context.resource_group_name}"
+            )
             self.azure_api.remove_resource_group(self.context.resource_group_name)
-        except Exception as exc:
+        except DataSafeHavenAzureError as exc:
             msg = f"Failed to destroy context resources.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc

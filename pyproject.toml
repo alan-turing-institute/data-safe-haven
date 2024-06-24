@@ -14,7 +14,7 @@ license = "BSD-3-Clause"
 dependencies = [
   "appdirs~=1.4",
   "azure-core~=1.26",
-  "azure-identity~=1.12",
+  "azure-identity~=1.16.1",
   "azure-keyvault-certificates~=4.6",
   "azure-keyvault-keys~=4.6",
   "azure-keyvault-secrets~=4.6",
@@ -33,7 +33,6 @@ dependencies = [
   "azure-storage-file-share~=12.10",
   "chevron~=0.14",
   "cryptography~=42.0",
-  "dnspython~=2.3",
   "fqdn~=1.5",
   "msal~=1.21",
   "psycopg~=3.1",
@@ -114,14 +113,15 @@ all = [
 [tool.hatch.envs.test]
 dependencies = [
   "coverage>=7.5.1",
+  "freezegun>=1.5",
   "pytest>=8.1",
   "pytest-mock>=3.14",
 ]
 pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.hatch.envs.test.scripts]
-test = "coverage run -m pytest {args:-vvv tests}"
-test-report = "coverage report {args: --omit=*tests/*}"
+test = "coverage run --omit=tests/* -m pytest {args: tests}"
+test-report = "coverage report {args:}"
 test-coverage = ["test", "test-report"]
 
 [tool.hatch.version]
@@ -161,6 +161,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 addopts = [
+    "-vvv",
     "--import-mode=importlib",
     "--disable-warnings",
     "--ignore=tests/*",

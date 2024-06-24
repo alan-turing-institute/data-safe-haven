@@ -23,7 +23,7 @@ def example_config_class():
 
 @fixture
 def example_config_yaml():
-    return "\n".join(["string: 'abc'", "integer: -3", "list_of_integers: [-1,0,1]"])
+    return "\n".join(["string: 'hello'", "integer: 5", "list_of_integers: [1,2,3]"])
 
 
 class TestYAMLSerialisableModel:
@@ -38,9 +38,9 @@ class TestYAMLSerialisableModel:
         example_config_class = ExampleYAMLSerialisableModel.from_filepath(filepath)
         assert isinstance(example_config_class, ExampleYAMLSerialisableModel)
         assert isinstance(example_config_class, YAMLSerialisableModel)
-        assert example_config_class.string == "abc"
-        assert example_config_class.integer == -3
-        assert example_config_class.list_of_integers == [-1, 0, 1]
+        assert example_config_class.string == "hello"
+        assert example_config_class.integer == 5
+        assert example_config_class.list_of_integers == [1, 2, 3]
 
     def test_from_yaml(self, example_config_yaml):
         example_config_class = ExampleYAMLSerialisableModel.from_yaml(
@@ -48,9 +48,9 @@ class TestYAMLSerialisableModel:
         )
         assert isinstance(example_config_class, ExampleYAMLSerialisableModel)
         assert isinstance(example_config_class, YAMLSerialisableModel)
-        assert example_config_class.string == "abc"
-        assert example_config_class.integer == -3
-        assert example_config_class.list_of_integers == [-1, 0, 1]
+        assert example_config_class.string == "hello"
+        assert example_config_class.integer == 5
+        assert example_config_class.list_of_integers == [1, 2, 3]
 
     def test_from_yaml_invalid_yaml(self):
         yaml = "\n".join(["string: 'abc'", "integer: -3", "list_of_integers: [-1,0,1"])
@@ -95,3 +95,29 @@ class TestYAMLSerialisableModel:
         assert "string: hello" in yaml
         assert "integer: 5" in yaml
         assert "config_type" not in yaml
+
+    def test_yaml_diff(self, example_config_class):
+        other = example_config_class.model_copy(deep=True)
+        diff = example_config_class.yaml_diff(other)
+        assert not diff
+        assert diff == []
+
+    def test_yaml_diff_difference(self, example_config_class):
+        other = example_config_class.model_copy(deep=True)
+        other.integer = 3
+        other.string = "abc"
+        diff = example_config_class.yaml_diff(other)
+        assert isinstance(diff, list)
+        assert diff == [
+            "--- other\n",
+            "+++ self\n",
+            "@@ -1,6 +1,6 @@\n",
+            "-integer: 3\n",
+            "+integer: 5\n",
+            " list_of_integers:\n",
+            " - 1\n",
+            " - 2\n",
+            " - 3\n",
+            "-string: abc\n",
+            "+string: hello\n",
+        ]

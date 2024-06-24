@@ -9,7 +9,7 @@ class TestDeploySHM:
         mocker,
         runner,
         context,
-        mock_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote,  # noqa: ARG002
     ):
         def exception():
             raise Exception

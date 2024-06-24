@@ -6,7 +6,6 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.infrastructure.common import (
-    Ports,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -16,7 +15,7 @@ from data_safe_haven.infrastructure.components import (
     LocalDnsRecordProps,
 )
 from data_safe_haven.resources import resources_path
-from data_safe_haven.types import SoftwarePackageCategory
+from data_safe_haven.types import Ports, SoftwarePackageCategory
 from data_safe_haven.utility import FileReader
 
 
@@ -165,7 +164,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 container_group_name=f"{stack_name}-container-group-software-repositories",
                 containers=[
                     containerinstance.ContainerArgs(
-                        image="caddy:2.7.6",
+                        image="caddy:2.8.4",
                         name="caddy"[:63],
                         ports=[
                             containerinstance.ContainerPortArgs(
@@ -188,7 +187,7 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                         ],
                     ),
                     containerinstance.ContainerArgs(
-                        image="sonatype/nexus3:3.67.1",
+                        image="sonatype/nexus3:3.69.0",
                         name="nexus"[:63],
                         environment_variables=[],
                         ports=[],

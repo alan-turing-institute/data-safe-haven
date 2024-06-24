@@ -2,7 +2,7 @@
 name: Release checklist
 about: Log completion of required actions for release testing
 title: "Release: <version number>"
-labels: "type: release-candidate"
+labels: "release candidate"
 assignees: ""
 ---
 
@@ -17,6 +17,13 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
 - [ ] Consult the `data-safe-haven/VERSIONING.md` guide and determine the version number of the new release. Record it in the title of this issue.
 - [ ] Create a release branch called e.g. `release-v0.0.1`
 - [ ] Draft a changelog for the release similar to our previous releases, see https://github.com/alan-turing-institute/data-safe-haven/releases
+
+### For patch releases only
+
+- [ ] Confirm that the resource to which the patch applies can be successfully deployed
+
+### For minor releases and above
+
 - [ ] Deploy an SHM from this branch and save a transcript of the deployment logs
 - [ ] Build an SRE compute image (SRD) and save transcripts of the logs
 - Using the new image, deploy a tier 2 and a tier 3 SRE
@@ -24,8 +31,9 @@ Refer to the [Deployment](https://data-safe-haven.readthedocs.io/en/latest/deplo
     - [ ] Save the transcript of your tier 3 SRE deployment
 - [ ] Complete the [Security evaluation checklist](https://data-safe-haven.readthedocs.io/en/latest/deployment/security_checklist.html) from the deployment documentation
 - [ ] Update [SECURITY.md](../../SECURITY.md) and [VERSIONING.md](../../VERSIONING.md)
+- [ ] Add the new versions tag as an active build on [Read The Docs](https://readthedocs.org) (You can add as a hidden build, before release, to preview)
 
-### For major releases
+### For major releases only
 
 - [ ] Confirm that a third party has carried out a full penetration test evaluating:
   1. external attack surface
