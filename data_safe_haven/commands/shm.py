@@ -5,15 +5,13 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import console
-from data_safe_haven.config import ContextSettings, DSHPulumiConfig, SHMConfig
+from data_safe_haven.config import ContextSettings, SHMConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenAzureError,
     DataSafeHavenConfigError,
-    DataSafeHavenError,
-    DataSafeHavenInputError,
 )
-from data_safe_haven.infrastructure import BackendInfrastructure, SHMProjectManager
+from data_safe_haven.infrastructure import BackendInfrastructure
 from data_safe_haven.logging import get_logger
 from data_safe_haven.validators import typer_aad_guid, typer_fqdn
 
@@ -27,14 +25,6 @@ def deploy(
         typer.Option(
             help="Tenant ID for the Entra ID used to manage TRE users.",
             callback=typer_aad_guid,
-        ),
-    ] = None,
-    force: Annotated[
-        Optional[bool],  # noqa: UP007
-        typer.Option(
-            "--force",
-            "-f",
-            help="Force this operation, cancelling any others that are in progress.",
         ),
     ] = None,
     fqdn: Annotated[
@@ -111,45 +101,6 @@ def deploy(
     # Upload config file to blob storage
     config.upload(context)
 
-    # Create/load the Pulumi config and upload it to blob storage
-    pulumi_config = DSHPulumiConfig.from_remote_or_create(
-        context, encrypted_key=None, projects={}
-    )
-    pulumi_config.upload(context)
-
-    # Deploy the Data Safe Haven SHM infrastructure
-    try:
-        # Initialise Pulumi stack
-        stack = SHMProjectManager(
-            context=context,
-            config=config,
-            pulumi_config=pulumi_config,
-            create_project=True,
-        )
-        # Set Azure options
-        stack.add_option("azure-native:location", context.location, replace=False)
-        stack.add_option(
-            "azure-native:subscriptionId",
-            config.azure.subscription_id,
-            replace=False,
-        )
-        stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
-
-        # Deploy Azure infrastructure with Pulumi
-        if force is None:
-            stack.deploy()
-        else:
-            stack.deploy(force=force)
-
-    except DataSafeHavenError as exc:
-        # Note, would like to exit with a non-zero code here.
-        # However, typer.Exit does not print the exception tree which is very unhelpful
-        # for figuring out what went wrong.
-        # print("Could not deploy Data Safe Haven Management environment.")
-        # raise typer.Exit(code=1) from exc
-        msg = "Could not deploy Data Safe Haven Management environment."
-        raise DataSafeHavenError(msg) from exc
-
 
 @shm_command_group.command()
 def teardown() -> None:
@@ -175,29 +126,3 @@ def teardown() -> None:
             "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
         )
         raise typer.Exit(1) from exc
-
-    # Teardown Data Safe Haven SHM infrastructure deployed with Pulumi
-    config = SHMConfig.from_remote(context)
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-    try:
-        try:
-            # Teardown the Pulumi project
-            stack = SHMProjectManager(
-                context=context,
-                config=config,
-                pulumi_config=pulumi_config,
-            )
-            stack.teardown()
-
-            # Remove information from config file
-            del pulumi_config[context.shm_name]
-
-            # Upload Pulumi config to blob storage
-            pulumi_config.upload(context)
-        except Exception as exc:
-            msg = "Unable to teardown Pulumi infrastructure."
-            raise DataSafeHavenInputError(msg) from exc
-
-    except DataSafeHavenError as exc:
-        msg = "Could not teardown Safe Haven Management environment."
-        raise DataSafeHavenError(msg) from exc
