@@ -33,6 +33,10 @@ def init_logging() -> None:
     logger = get_logger()
     logger.setLevel(logging.NOTSET)
 
+    # Clear existing handlers
+    for handler in logger.handlers[:]:
+        logger.removeHandler(handler)
+
     console_handler = RichHandler(
         level=logging.INFO,
         markup=True,
