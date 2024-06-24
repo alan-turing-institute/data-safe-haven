@@ -1,6 +1,5 @@
 import pathlib
 from collections.abc import Sequence
-from typing import Any
 
 from data_safe_haven.config import DSHPulumiConfig, SREConfig
 from data_safe_haven.context import Context
@@ -11,15 +10,14 @@ from .research_user import ResearchUser
 
 
 class GuacamoleUsers:
+    """Interact with users in a Guacamole database."""
+
     def __init__(
         self,
         context: Context,
         config: SREConfig,
         pulumi_config: DSHPulumiConfig,
-        *args: Any,
-        **kwargs: Any,
     ):
-        super().__init__(*args, **kwargs)
         sre_stack = SREProjectManager(
             context=context,
             config=config,

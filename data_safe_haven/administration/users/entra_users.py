@@ -1,7 +1,6 @@
 """Interact with users in Entra ID."""
 
 from collections.abc import Sequence
-from typing import Any
 
 from data_safe_haven.exceptions import (
     DataSafeHavenEntraIDError,
@@ -21,10 +20,7 @@ class EntraUsers:
     def __init__(
         self,
         graph_api: GraphApi,
-        *args: Any,
-        **kwargs: Any,
     ) -> None:
-        super().__init__(*args, **kwargs)
         self.graph_api = graph_api
         self.logger = get_logger()
 

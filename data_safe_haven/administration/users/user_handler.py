@@ -25,7 +25,6 @@ class UserHandler:
         self.context = context
         self.pulumi_config = pulumi_config
         self.logger = get_logger()
-        self.sre_guacamole_users_: dict[str, GuacamoleUsers] = {}
 
     def add(self, users_csv_path: pathlib.Path) -> None:
         """Add users to Entra ID and Guacamole
@@ -91,13 +90,8 @@ class UserHandler:
         """Lazy-load usernames from Guacamole"""
         try:
             sre_config = SREConfig.from_remote_by_name(self.context, sre_name)
-            if sre_name not in self.sre_guacamole_users_.keys():
-                self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
-                    self.context, sre_config, pulumi_config
-                )
-            return [
-                user.username for user in self.sre_guacamole_users_[sre_name].list()
-            ]
+            guacamole_users = GuacamoleUsers(self.context, sre_config, pulumi_config)
+            return [user.username for user in guacamole_users.list()]
         except Exception:
             self.logger.error(f"Could not load users for SRE '{sre_name}'.")
             return []
