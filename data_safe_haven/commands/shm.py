@@ -95,8 +95,6 @@ def deploy(
         config = SHMConfig.from_local(
             context, entra_tenant_id=entra_tenant_id, fqdn=fqdn
         )
-    # Upload config file to blob storage
-    config.upload(context)
 
     # Create Data Safe Haven context infrastructure.
     try:
@@ -110,6 +108,8 @@ def deploy(
         msg = "Failed to deploy Data Safe Haven infrastructure."
         logger.critical(msg)
         raise typer.Exit(1) from exc
+    # Upload config file to blob storage
+    config.upload(context)
 
     # Create/load the Pulumi config and upload it to blob storage
     pulumi_config = DSHPulumiConfig.from_remote_or_create(
