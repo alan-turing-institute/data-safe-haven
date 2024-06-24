@@ -23,7 +23,7 @@ from data_safe_haven.external import AzureApi, PulumiAccount
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.logging import from_ansi, get_console_handler, get_logger
 
-from .programs import DeclarativeSHM, DeclarativeSRE
+from .programs import DeclarativeSRE
 
 
 class ProjectManager:
@@ -41,7 +41,7 @@ class ProjectManager:
         context: Context,
         pulumi_config: DSHPulumiConfig,
         pulumi_project_name: str,
-        program: DeclarativeSHM | DeclarativeSRE,
+        program: DeclarativeSRE,
         *,
         create_project: bool,
     ) -> None:
