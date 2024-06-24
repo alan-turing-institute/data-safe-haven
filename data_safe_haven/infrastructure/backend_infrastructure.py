@@ -2,8 +2,9 @@ from data_safe_haven.config import SHMConfig
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
+    DataSafeHavenMicrosoftGraphError,
 )
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.logging import get_logger
 
 
@@ -14,7 +15,6 @@ class BackendInfrastructure:
         self.azure_api_: AzureApi | None = None
         self.config = config
         self.context = context
-        self.nameservers: list[str] = []
         self.tags = {"component": "context"} | context.tags
 
     @property
@@ -30,14 +30,14 @@ class BackendInfrastructure:
             )
         return self.azure_api_
 
-    def create(self, domain_verification_record: str) -> None:
+    def create(self) -> None:
         """Create all desired resources
 
         Raises:
             DataSafeHavenAzureError if any resources cannot be created
         """
+        # Deploy the resources needed by Pulumi
         try:
-            # Deploy the resources needed by Pulumi
             resource_group = self.azure_api.ensure_resource_group(
                 location=self.context.location,
                 resource_group_name=self.context.resource_group_name,
@@ -85,7 +85,12 @@ class BackendInfrastructure:
                 key_name=self.context.pulumi_encryption_key_name,
                 key_vault_name=keyvault.name,
             )
-            # Deploy common resources that will be needed by SREs
+        except DataSafeHavenAzureError as exc:
+            msg = f"Failed to deploy resources needed by Pulumi.\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc
+
+        # Deploy common resources that will be needed by SREs
+        try:
             zone = self.azure_api.ensure_dns_zone(
                 resource_group_name=resource_group.name,
                 zone_name=self.config.shm.fqdn,
@@ -93,7 +98,7 @@ class BackendInfrastructure:
             if not zone.name_servers:
                 msg = f"DNS zone '{self.config.shm.fqdn}' was not created."
                 raise DataSafeHavenAzureError(msg)
-            self.nameservers = [str(n) for n in zone.name_servers]
+            nameservers = [str(n) for n in zone.name_servers]
             self.azure_api.ensure_dns_caa_record(
                 record_flags=0,
                 record_name="@",
@@ -103,15 +108,37 @@ class BackendInfrastructure:
                 ttl=3600,
                 zone_name=self.config.shm.fqdn,
             )
+        except DataSafeHavenAzureError as exc:
+            msg = f"Failed to create SHM resources.\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc
+
+        # Add the SHM domain to the Entra ID via interactive GraphAPI
+        try:
+            # Generate the verification record
+            graph_api = GraphApi(
+                tenant_id=self.config.shm.entra_tenant_id,
+                default_scopes=[
+                    "Application.ReadWrite.All",
+                    "Domain.ReadWrite.All",
+                    "Group.ReadWrite.All",
+                ],
+            )
+            verification_record = graph_api.add_custom_domain(self.config.shm.fqdn)
+            # Add the record to DNS
             self.azure_api.ensure_dns_txt_record(
                 record_name="@",
-                record_value=domain_verification_record,
+                record_value=verification_record,
                 resource_group_name=resource_group.name,
                 ttl=3600,
                 zone_name=self.config.shm.fqdn,
             )
-        except DataSafeHavenAzureError as exc:
-            msg = "Failed to create context resources."
+            # Verify the record
+            graph_api.verify_custom_domain(
+                self.config.shm.fqdn,
+                nameservers,
+            )
+        except (DataSafeHavenMicrosoftGraphError, DataSafeHavenAzureError) as exc:
+            msg = f"Failed to add custom domain '{self.config.shm.fqdn}' to Entra ID."
             raise DataSafeHavenAzureError(msg) from exc
 
     def teardown(self) -> None:

@@ -8,12 +8,11 @@ from data_safe_haven import console
 from data_safe_haven.config import ContextSettings, DSHPulumiConfig, SHMConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
+    DataSafeHavenAzureError,
     DataSafeHavenConfigError,
     DataSafeHavenError,
     DataSafeHavenInputError,
-    DataSafeHavenMicrosoftGraphError,
 )
-from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import BackendInfrastructure, SHMProjectManager
 from data_safe_haven.logging import get_logger
 from data_safe_haven.validators import typer_aad_guid, typer_fqdn
@@ -99,28 +98,16 @@ def deploy(
     # Upload config file to blob storage
     config.upload(context)
 
-    # Add the SHM domain to the Entra ID via interactive GraphAPI
-    try:
-        graph_api = GraphApi(
-            tenant_id=config.shm.entra_tenant_id,
-            default_scopes=[
-                "Application.ReadWrite.All",
-                "Domain.ReadWrite.All",
-                "Group.ReadWrite.All",
-            ],
-        )
-        verification_record = graph_api.add_custom_domain(config.shm.fqdn)
-    except DataSafeHavenMicrosoftGraphError as exc:
-        msg = f"Failed to add custom domain '{config.shm.fqdn}' to Entra ID."
-        logger.critical(msg)
-        raise typer.Exit(1) from exc
-
     # Create Data Safe Haven context infrastructure.
     try:
         context_infra = BackendInfrastructure(context, config)
-        context_infra.create(verification_record)
+        context_infra.create()
     except DataSafeHavenAzureAPIAuthenticationError as exc:
         msg = "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
+        logger.critical(msg)
+        raise typer.Exit(1) from exc
+    except DataSafeHavenAzureError as exc:
+        msg = "Failed to deploy Data Safe Haven infrastructure."
         logger.critical(msg)
         raise typer.Exit(1) from exc
 
@@ -147,10 +134,6 @@ def deploy(
             replace=False,
         )
         stack.add_option("azure-native:tenantId", config.azure.tenant_id, replace=False)
-        # Add necessary secrets
-        stack.add_secret(
-            "verification-azuread-custom-domain", verification_record, replace=False
-        )
 
         # Deploy Azure infrastructure with Pulumi
         if force is None:
@@ -158,11 +141,6 @@ def deploy(
         else:
             stack.deploy(force=force)
 
-        # Add the SHM domain to Entra ID as a custom domain
-        graph_api.verify_custom_domain(
-            config.shm.fqdn,
-            context_infra.nameservers,
-        )
     except DataSafeHavenError as exc:
         # Note, would like to exit with a non-zero code here.
         # However, typer.Exit does not print the exception tree which is very unhelpful
