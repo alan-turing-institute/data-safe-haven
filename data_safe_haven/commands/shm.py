@@ -118,7 +118,7 @@ def deploy(
     # Create Data Safe Haven context infrastructure.
     try:
         context_infra = BackendInfrastructure(context, config)
-        context_infra.create()
+        context_infra.create(verification_record)
     except DataSafeHavenAzureAPIAuthenticationError as exc:
         msg = "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
         logger.critical(msg)

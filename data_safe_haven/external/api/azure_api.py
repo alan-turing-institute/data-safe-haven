@@ -182,7 +182,7 @@ class AzureApi(AzureAuthenticator):
 
             # Ensure that record exists
             self.logger.debug(
-                f"Ensuring that DNS record [green]{record_name}[/] exists in zone [bold]{zone_name}[/]...",
+                f"Ensuring that DNS CAA record [green]{record_name}[/] exists in zone [bold]{zone_name}[/]...",
             )
             record_set = dns_client.record_sets.create_or_update(
                 parameters=RecordSet(
@@ -199,13 +199,11 @@ class AzureApi(AzureAuthenticator):
                 zone_name=zone_name,
             )
             self.logger.info(
-                f"Ensured that DNS record [green]{record_name}[/] exists in zone [bold]{zone_name}[/].",
+                f"Ensured that DNS CAA record [green]{record_name}[/] exists in zone [bold]{zone_name}[/].",
             )
             return record_set
         except AzureError as exc:
-            msg = (
-                f"Failed to create DNS record {record_name} in zone {zone_name}.\n{exc}"
-            )
+            msg = f"Failed to create DNS CAA record {record_name} in zone {zone_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_dns_txt_record(
@@ -230,7 +228,7 @@ class AzureApi(AzureAuthenticator):
 
             # Ensure that record exists
             self.logger.debug(
-                f"Ensuring that DNS record [green]{record_name}[/] exists in zone [bold]{zone_name}[/]...",
+                f"Ensuring that DNS TXT record [green]{record_name}[/] exists in zone [bold]{zone_name}[/]...",
             )
             record_set = dns_client.record_sets.create_or_update(
                 parameters=RecordSet(
@@ -242,11 +240,11 @@ class AzureApi(AzureAuthenticator):
                 zone_name=zone_name,
             )
             self.logger.info(
-                f"Ensured that DNS record [green]{record_name}[/] exists in zone [bold]{zone_name}[/].",
+                f"Ensured that DNS TXT record [green]{record_name}[/] exists in zone [bold]{zone_name}[/].",
             )
             return record_set
         except AzureError as exc:
-            msg = f"Failed to create DNS record {record_name} in zone {zone_name}."
+            msg = f"Failed to create DNS TXT record {record_name} in zone {zone_name}."
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_dns_zone(

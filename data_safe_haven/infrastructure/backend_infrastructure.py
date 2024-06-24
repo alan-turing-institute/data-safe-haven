@@ -1,6 +1,8 @@
 from data_safe_haven.config import SHMConfig
 from data_safe_haven.context import Context
-from data_safe_haven.exceptions import DataSafeHavenAzureError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
+)
 from data_safe_haven.external import AzureApi
 from data_safe_haven.logging import get_logger
 
@@ -28,7 +30,7 @@ class BackendInfrastructure:
             )
         return self.azure_api_
 
-    def create(self) -> None:
+    def create(self, domain_verification_record: str) -> None:
         """Create all desired resources
 
         Raises:
@@ -97,6 +99,13 @@ class BackendInfrastructure:
                 record_name="@",
                 record_tag="issue",
                 record_value="letsencrypt.org",
+                resource_group_name=resource_group.name,
+                ttl=3600,
+                zone_name=self.config.shm.fqdn,
+            )
+            self.azure_api.ensure_dns_txt_record(
+                record_name="@",
+                record_value=domain_verification_record,
                 resource_group_name=resource_group.name,
                 ttl=3600,
                 zone_name=self.config.shm.fqdn,

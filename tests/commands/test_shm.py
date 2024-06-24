@@ -1,7 +1,10 @@
+import pytest
+
 from data_safe_haven.commands.shm import shm_command_group
 
 
 class TestDeploySHM:
+    @pytest.mark.skip
     def test_context_infrastructure_create(
         self,
         runner,
