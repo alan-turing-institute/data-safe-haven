@@ -7,10 +7,9 @@ class DataSafeHavenError(Exception):
 
         # Log exception message as an error
         logger = get_logger()
-        # Pad additional lines with spaces to ensure they line-up
-        padding = " " * 34  # date (10) + 1 + time (12) + 3 + log_level (5) + 3
         message_str = message if isinstance(message, str) else message.decode("utf-8")
-        logger.error(message_str.replace("\n", f"\n{padding}"))
+        # Replace line breaks with escape code
+        logger.error(message_str.replace("\n", r"\n"))
 
 
 class DataSafeHavenCloudError(DataSafeHavenError):
