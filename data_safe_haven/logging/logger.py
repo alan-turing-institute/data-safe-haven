@@ -4,10 +4,15 @@ import logging
 from datetime import UTC, datetime
 
 from rich.logging import RichHandler
+from rich.text import Text
 
 from data_safe_haven.directories import log_dir
 
 from .plain_file_handler import PlainFileHandler
+
+
+def from_ansi(logger: logging.Logger, text: str) -> None:
+    logger.info(Text.from_ansi(text))
 
 
 def get_logger() -> logging.Logger:

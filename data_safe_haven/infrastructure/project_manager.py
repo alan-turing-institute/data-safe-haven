@@ -2,8 +2,9 @@
 
 import logging
 import time
-from collections.abc import MutableMapping
+from collections.abc import Callable, MutableMapping
 from contextlib import suppress
+from functools import partial
 from importlib import metadata
 from typing import Any
 
@@ -24,7 +25,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi, PulumiAccount
 from data_safe_haven.functions import replace_separators
-from data_safe_haven.logging import get_logger
+from data_safe_haven.logging import from_ansi, get_logger
 
 from .programs import DeclarativeSHM, DeclarativeSRE
 
@@ -73,7 +74,7 @@ class ProjectManager:
     def pulumi_extra_args(self) -> dict[str, Any]:
         extra_args: dict[str, Any] = {}
         # Produce verbose Pulumi output if running in verbose mode
-        if self.logger.console_handler.level <= logging.DEBUG:
+        if self.logger.console_handler.level <= logging.DEBUG:  # type: ignore [attr-defined]
             extra_args["debug"] = True
             extra_args["log_to_std_err"] = True
             extra_args["log_verbosity"] = 9
@@ -82,9 +83,9 @@ class ProjectManager:
             extra_args["log_to_std_err"] = None
             extra_args["log_verbosity"] = None
 
-        extra_args["color"] = "never"
+        extra_args["color"] = "always"
         extra_args["log_flow"] = True
-        extra_args["on_output"] = self.logger.info
+        extra_args["on_output"] = self.from_ansi()
         return extra_args
 
     @property
@@ -278,6 +279,9 @@ class ProjectManager:
             msg = "Pulumi operation failed."
             raise DataSafeHavenPulumiError(msg)
 
+    def from_ansi(self) -> Callable[[str], None]:
+        return partial(from_ansi, logger=self.logger)
+
     def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
         try:
@@ -320,7 +324,7 @@ class ProjectManager:
         try:
             self.logger.info(f"Refreshing stack [green]{self.stack.name}[/].")
             # Note that we disable parallelisation which can cause deadlock
-            self.stack.refresh(color="always", parallel=1)
+            self.stack.refresh(parallel=1, **self.pulumi_extra_args)
         except automation.CommandError as exc:
             msg = f"Pulumi refresh failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc

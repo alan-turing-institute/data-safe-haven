@@ -22,7 +22,14 @@ class PlainFileHandler(logging.FileHandler):
         text.spans = []
         return str(text)
 
+    @staticmethod
+    def convert_text(text: Text) -> str:
+        """Convert a rich.text.Text object to a string"""
+        return str(text)
+
     def emit(self, record: logging.LogRecord) -> None:
         """Emit a record without formatting"""
+        if isinstance(record.msg, Text):
+            record.msg = self.convert_text(record.msg)
         record.msg = self.strip_formatting(record.msg)
         super().emit(record)
