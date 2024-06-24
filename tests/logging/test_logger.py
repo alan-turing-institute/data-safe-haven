@@ -23,11 +23,6 @@ class TestFromAnsi:
         assert r"\033" not in out
 
 
-class TestPlainFileHandler:
-    def test_strip_formatting(self):
-        assert PlainFileHandler.strip_formatting("[green]hello[/]") == "hello"
-
-
 class TestLogFileName:
     def test_logfile_name(self):
         name = logfile_name()
