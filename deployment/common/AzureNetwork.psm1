@@ -408,9 +408,6 @@ function Deploy-PublicIpAddress {
     if ($notExists) {
         Add-LogMessage -Level Info "[ ] Creating public IP address '$Name'"
         $ipAddressParams = @{}
-        # if ($Sku -eq "Standard") {
-        #     $ipAddressParams["Zone"] = @(1, 2, 3)
-        # }
         $publicIpAddress = New-AzPublicIpAddress -Name $Name -ResourceGroupName $ResourceGroupName -AllocationMethod $AllocationMethod -Location $Location -Sku $Sku @ipAddressParams
         if ($?) {
             Add-LogMessage -Level Success "Created public IP address '$Name'"
