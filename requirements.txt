@@ -149,12 +149,12 @@ markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-msal==1.28.1
+msal==1.29.0
     # via
     #   azure-identity
     #   data-safe-haven (pyproject.toml)
     #   msal-extensions
-msal-extensions==1.1.0
+msal-extensions==1.2.0
     # via azure-identity
 msrest==0.7.1
     # via
@@ -163,24 +163,22 @@ msrest==0.7.1
     #   azure-mgmt-rdbms
 oauthlib==3.2.2
     # via requests-oauthlib
-packaging==24.1
-    # via msal-extensions
 parver==0.5
     # via
     #   pulumi-azure-native
     #   pulumi-random
-portalocker==2.8.2
+portalocker==2.10.0
     # via msal-extensions
 protobuf==4.25.3
     # via pulumi
 psycopg==3.1.19
     # via data-safe-haven (pyproject.toml)
-pulumi==3.120.0
+pulumi==3.121.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.45.0
+pulumi-azure-native==2.46.0
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.2
     # via data-safe-haven (pyproject.toml)
