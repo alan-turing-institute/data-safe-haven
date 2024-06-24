@@ -15,6 +15,10 @@ def from_ansi(logger: logging.Logger, text: str) -> None:
     logger.info(Text.from_ansi(text))
 
 
+def get_console_handler() -> RichHandler:
+    return next(h for h in get_logger().handlers if isinstance(h, RichHandler))
+
+
 def get_logger() -> logging.Logger:
     return logging.getLogger("data_safe_haven")
 
@@ -52,9 +56,7 @@ def init_logging() -> None:
 
     # Add handlers
     logger.addHandler(console_handler)
-    logger.console_handler = console_handler  # type: ignore [attr-defined]
     logger.addHandler(file_handler)
-    logger.file_handler = file_handler  # type: ignore [attr-defined]
 
     # Disable unnecessarily verbose external logging
     logging.getLogger("azure.core.pipeline.policies").setLevel(logging.ERROR)
@@ -69,8 +71,8 @@ def logfile_name() -> str:
 
 
 def set_console_level(level: int | str) -> None:
-    get_logger().console_handler.setLevel(level)  # type: ignore [attr-defined]
+    get_console_handler().setLevel(level)
 
 
 def show_console_level() -> None:
-    get_logger().console_handler._log_render.show_level = True  # type: ignore [attr-defined]
+    get_console_handler()._log_render.show_level = True

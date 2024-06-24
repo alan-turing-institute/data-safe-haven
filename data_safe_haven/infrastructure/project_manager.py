@@ -24,7 +24,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi, PulumiAccount
 from data_safe_haven.functions import replace_separators
-from data_safe_haven.logging import from_ansi, get_logger
+from data_safe_haven.logging import from_ansi, get_console_handler, get_logger
 
 from .programs import DeclarativeSHM, DeclarativeSRE
 
@@ -73,7 +73,7 @@ class ProjectManager:
     def pulumi_extra_args(self) -> dict[str, Any]:
         extra_args: dict[str, Any] = {}
         # Produce verbose Pulumi output if running in verbose mode
-        if self.logger.console_handler.level <= logging.DEBUG:  # type: ignore [attr-defined]
+        if get_console_handler().level <= logging.DEBUG:
             extra_args["debug"] = True
             extra_args["log_to_std_err"] = True
             extra_args["log_verbosity"] = 9
