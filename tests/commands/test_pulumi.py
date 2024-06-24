@@ -31,6 +31,25 @@ class TestRun:
         result = runner.invoke(pulumi_command_group, ["shm", "not a pulumi command"])
         assert result.exit_code == 1
 
+    def test_run_sre(
+        self,
+        runner,
+        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
+        mock_graph_api_create_token_administrator,  # noqa: ARG002
+        mock_azure_cli_confirm,  # noqa: ARG002
+        mock_install_plugins,  # noqa: ARG002
+        mock_key_vault_key,  # noqa: ARG002
+        offline_pulumi_account,  # noqa: ARG002
+        local_project_settings,  # noqa: ARG002
+    ):
+        result = runner.invoke(
+            pulumi_command_group, ["sre", "stack ls", "--sre-name", "sandbox"]
+        )
+        assert result.exit_code == 0
+        assert "shm-acmedeployment-sre-sandbox*" in result.stdout
+
     def test_run_sre_no_name(
         self,
         runner,
@@ -38,3 +57,42 @@ class TestRun:
         result = runner.invoke(pulumi_command_group, ["sre", "stack ls"])
         assert result.exit_code == 1
         assert "--sre-name is required." in result.stdout
+
+    def test_run_sre_invalid_command(
+        self,
+        runner,
+        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_sre_config_from_remote,  # noqa: ARG002
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
+        mock_graph_api_create_token_administrator,  # noqa: ARG002
+        mock_azure_cli_confirm,  # noqa: ARG002
+        mock_install_plugins,  # noqa: ARG002
+        mock_key_vault_key,  # noqa: ARG002
+        offline_pulumi_account,  # noqa: ARG002
+        local_project_settings,  # noqa: ARG002
+    ):
+        result = runner.invoke(
+            pulumi_command_group,
+            ["sre", "not a pulumi command", "--sre-name", "sandbox"],
+        )
+        assert result.exit_code == 1
+        assert 'Error: unknown command "not" for "pulumi"' in result.stdout
+
+    def test_run_sre_invalid_name(
+        self,
+        runner,
+        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_sre_config_alternate_from_remote,  # noqa: ARG002
+        mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
+        mock_graph_api_create_token_administrator,  # noqa: ARG002
+        mock_azure_cli_confirm,  # noqa: ARG002
+        mock_install_plugins,  # noqa: ARG002
+        mock_key_vault_key,  # noqa: ARG002
+        offline_pulumi_account,  # noqa: ARG002
+        local_project_settings,  # noqa: ARG002
+    ):
+        result = runner.invoke(
+            pulumi_command_group, ["sre", "stack ls", "--sre-name", "alternate"]
+        )
+        assert result.exit_code == 1
+        assert "No SHM/SRE named alternative is defined" in result.stdout

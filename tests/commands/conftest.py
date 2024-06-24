@@ -126,6 +126,13 @@ def mock_sre_config_from_remote(mocker, sre_config):
 
 
 @fixture
+def mock_sre_config_alternate_from_remote(mocker, sre_config_alternate):
+    mocker.patch.object(
+        SREConfig, "from_remote_by_name", return_value=sre_config_alternate
+    )
+
+
+@fixture
 def runner(tmp_contexts):
     runner = CliRunner(
         env={
