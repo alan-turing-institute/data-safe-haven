@@ -14,15 +14,15 @@ class TestDSHPulumiProject:
         assert "azure-native:location" in pulumi_project.stack_config.keys()
         assert pulumi_project.stack_config.get("azure-native:location") == "uksouth"
 
-    def test_dump(self, pulumi_project, stack_config):
+    def test_dump(self, pulumi_project, pulumi_project_stack_config):
         d = pulumi_project.model_dump()
-        assert d.get("stack_config") == stack_config
+        assert d.get("stack_config") == pulumi_project_stack_config
 
     def test_eq(self, pulumi_project):
         assert pulumi_project == pulumi_project.model_copy(deep=True)
 
-    def test_not_eq(self, pulumi_project, pulumi_project2):
-        assert pulumi_project != pulumi_project2
+    def test_not_eq(self, pulumi_project, pulumi_project_other):
+        assert pulumi_project != pulumi_project_other
 
 
 class TestDSHPulumiConfig:
@@ -35,9 +35,9 @@ class TestDSHPulumiConfig:
         assert isinstance(config.encrypted_key, str)
         assert config.encrypted_key == "NZVaEDfeuIPR7N8Dwnpx"
 
-    def test_getitem(self, pulumi_config, pulumi_project, pulumi_project2):
+    def test_getitem(self, pulumi_config, pulumi_project, pulumi_project_other):
         assert pulumi_config["acmedeployment"] == pulumi_project
-        assert pulumi_config["other_project"] == pulumi_project2
+        assert pulumi_config["other_project"] == pulumi_project_other
 
     def test_getitem_type_error(self, pulumi_config):
         with raises(TypeError, match="'key' must be a string."):

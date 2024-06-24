@@ -159,11 +159,14 @@ def offline_pulumi_account(monkeypatch, mock_azure_cli_confirm):  # noqa: ARG001
 
 @fixture
 def pulumi_config(
-    pulumi_project: DSHPulumiProject, pulumi_project2: DSHPulumiProject
+    pulumi_project: DSHPulumiProject, pulumi_project_other: DSHPulumiProject
 ) -> DSHPulumiConfig:
     return DSHPulumiConfig(
         encrypted_key="CALbHybtRdxKjSnr9UYY",
-        projects={"acmedeployment": pulumi_project, "other_project": pulumi_project2},
+        projects={
+            "acmedeployment": pulumi_project,
+            "other_project": pulumi_project_other,
+        },
     )
 
 
@@ -177,30 +180,56 @@ def pulumi_config_empty() -> DSHPulumiConfig:
 
 @fixture
 def pulumi_config_no_key(
-    pulumi_project: DSHPulumiProject, pulumi_project2: DSHPulumiProject
+    pulumi_project: DSHPulumiProject,
+    pulumi_project_other: DSHPulumiProject,
+    pulumi_project_sandbox: DSHPulumiProject,
 ) -> DSHPulumiConfig:
     return DSHPulumiConfig(
         encrypted_key=None,
-        projects={"acmedeployment": pulumi_project, "other_project": pulumi_project2},
+        projects={
+            "acmedeployment": pulumi_project,
+            "other_project": pulumi_project_other,
+            "sandbox": pulumi_project_sandbox,
+        },
     )
 
 
 @fixture
-def pulumi_project(stack_config) -> DSHPulumiProject:
+def pulumi_project(pulumi_project_stack_config) -> DSHPulumiProject:
     return DSHPulumiProject(
-        stack_config=stack_config,
+        stack_config=pulumi_project_stack_config,
     )
 
 
 @fixture
-def pulumi_project2() -> DSHPulumiProject:
+def pulumi_project_other() -> DSHPulumiProject:
     return DSHPulumiProject(
         stack_config={
             "azure-native:location": "uksouth",
             "azure-native:subscriptionId": "def",
-            "data-safe-haven:variable": -3,
+            "data-safe-haven:variable": "-3",
         },
     )
+
+
+@fixture
+def pulumi_project_sandbox() -> DSHPulumiProject:
+    return DSHPulumiProject(
+        stack_config={
+            "azure-native:location": "uksouth",
+            "azure-native:subscriptionId": "ghi",
+            "data-safe-haven:variable": "8",
+        },
+    )
+
+
+@fixture
+def pulumi_project_stack_config():
+    return {
+        "azure-native:location": "uksouth",
+        "azure-native:subscriptionId": "abc",
+        "data-safe-haven:variable": "5",
+    }
 
 
 @fixture
@@ -360,12 +389,3 @@ def sre_config_yaml():
         workspace_skus: []
     """
     return yaml.dump(yaml.safe_load(content))
-
-
-@fixture
-def stack_config():
-    return {
-        "azure-native:location": "uksouth",
-        "azure-native:subscriptionId": "abc",
-        "data-safe-haven:variable": "5",
-    }
