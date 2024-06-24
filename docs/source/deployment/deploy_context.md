@@ -1,12 +1,12 @@
 (deploy_context)=
 
-# Deploy the Data Safe Haven Context
+# The Data Safe Haven Context
 
-The 'Context' is a collection of infrastructure, which _is not_ part of your TRE, but which is used to deploy and manage your TRE.
-It contains, for example, storage for synchronising persistent configuration information.
+The 'Context' contains some basic metadata about your TRE deployment.
+It defines the name of your TRE and the subscription where the supporting resources should be deployed.
 
 :::{important}
-The Context **must** be deployed before any other TRE components.
+The Context **must** be configured before any TRE components can be deployed.
 :::
 
 ## Configuration
@@ -14,7 +14,7 @@ The Context **must** be deployed before any other TRE components.
 A local context configuration file (`context.yaml`) holds the information necessary to find and access a context.
 
 :::{note}
-You can specify the directory where your context configuration (context.yaml) is stored by setting the environment variable `DSH_CONFIG_DIRECTORY`.
+You can specify the directory where your context configuration (`context.yaml`) is stored by setting the environment variable `DSH_CONFIG_DIRECTORY`.
 :::
 
 ## Creating a context
@@ -28,7 +28,7 @@ $ dsh context add --help
 - Run a command like the following to create your local context file.
 
 ```{code} shell
-$ dsh context add --admin-group <group name> --location <location> --name <human friendly name> --subscription <Azure subscription name>
+$ dsh context add --admin-group <group name> --name <human friendly name> --subscription <Azure subscription name>
 ```
 
 :::{note}

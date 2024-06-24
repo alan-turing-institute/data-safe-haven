@@ -58,7 +58,9 @@ def deploy(
             graph_api_token=graph_api.token,
         )
         # Set Azure options
-        stack.add_option("azure-native:location", context.location, replace=False)
+        stack.add_option(
+            "azure-native:location", sre_config.azure.location, replace=False
+        )
         stack.add_option(
             "azure-native:subscriptionId",
             sre_config.azure.subscription_id,
@@ -88,7 +90,7 @@ def deploy(
         # Provision SRE with anything that could not be done in Pulumi
         manager = SREProvisioningManager(
             graph_api_token=graph_api.token,
-            location=context.location,
+            location=sre_config.azure.location,
             sre_name=sre_config.safe_name,
             sre_stack=stack,
             subscription_name=context.subscription_name,

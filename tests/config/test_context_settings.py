@@ -29,13 +29,6 @@ class TestContext:
         ):
             Context(**context_dict)
 
-    def test_invalid_location(self, context_dict):
-        context_dict["location"] = "not_a_location"
-        with pytest.raises(
-            ValidationError, match="Value error, Expected valid Azure location"
-        ):
-            Context(**context_dict)
-
     def test_invalid_subscription_name(self, context_dict):
         context_dict["subscription_name"] = "very " * 15 + "long name"
         with pytest.raises(
@@ -235,7 +228,6 @@ class TestContextSettings:
             name="Example",
             subscription_name="Data Safe Haven Example",
             admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-            location="uksouth",
         )
         context_settings.selected = "example"
         assert context_settings.selected == "example"
@@ -251,7 +243,6 @@ class TestContextSettings:
                 name="Acme Deployment",
                 subscription_name="Data Safe Haven Acme",
                 admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-                location="uksouth",
             )
 
     def test_remove(self, context_settings):

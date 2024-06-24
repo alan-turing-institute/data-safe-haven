@@ -49,6 +49,7 @@ class SREConfig(AzureSerialisableModel):
         """Create SREConfig without validation to allow "replace me" prompts."""
         return SREConfig.model_construct(
             azure=ConfigSectionAzure.model_construct(
+                location="Azure location where SRE resources will be deployed.",
                 subscription_id="ID of the Azure subscription that the SRE will be deployed to",
                 tenant_id="Home tenant for the Azure account used to deploy infrastructure: `az account show`",
             ),

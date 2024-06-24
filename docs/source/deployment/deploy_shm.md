@@ -42,7 +42,7 @@ $ dsh config upload-shm config.yaml
 - Next deploy the Safe Haven Management (SHM) infrastructure [approx 30 minutes]:
 
 ```{code} shell
-$ dsh shm deploy
+$ dsh shm deploy --entra-tenant-id <Entra tenant ID>  --fqdn <fully-qualified domain name>  --location <location>
 ```
 
 :::{important}

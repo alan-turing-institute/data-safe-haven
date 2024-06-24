@@ -13,9 +13,20 @@ from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 class TestConfigSectionAzure:
     def test_constructor(self) -> None:
         ConfigSectionAzure(
+            location="uksouth",
             subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         )
+
+    def test_invalid_location(self):
+        with pytest.raises(
+            ValidationError, match="Value error, Expected valid Azure location"
+        ):
+            ConfigSectionAzure(
+                location="not_a_location",
+                subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+                tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+            )
 
 
 class TestConfigSectionSHM:

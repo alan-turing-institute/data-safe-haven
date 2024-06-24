@@ -31,6 +31,7 @@ from data_safe_haven.logging import init_logging
 @fixture
 def azure_config():
     return ConfigSectionAzure(
+        location="uksouth",
         subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
     )
@@ -45,7 +46,6 @@ def context(context_dict):
 def context_dict():
     return {
         "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        "location": "uksouth",
         "name": "Acme Deployment",
         "subscription_name": "Data Safe Haven Acme",
     }
@@ -76,12 +76,10 @@ def context_yaml():
         acmedeployment:
             name: Acme Deployment
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-            location: uksouth
             subscription_name: Data Safe Haven Acme
         gems:
             name: Gems
             admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-            location: uksouth
             subscription_name: Data Safe Haven Gems
     """
     return yaml.dump(yaml.safe_load(content))
@@ -298,6 +296,7 @@ def shm_config_section():
 def shm_config_yaml():
     content = """---
     azure:
+        location: uksouth
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
     shm:
@@ -353,6 +352,7 @@ def sre_config_section() -> ConfigSectionSRE:
 def sre_config_yaml():
     content = """---
     azure:
+        location: uksouth
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
     name: sandbox

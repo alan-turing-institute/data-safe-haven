@@ -35,7 +35,6 @@ def show() -> None:
             f"\tName: {current_context.name}",
             f"\tAdmin Group ID: {current_context.admin_group_id}",
             f"\tSubscription name: {current_context.subscription_name}",
-            f"\tLocation: {current_context.location}",
             sep="\n",
         )
 
@@ -88,12 +87,6 @@ def add(
             callback=validators.typer_aad_guid,
         ),
     ],
-    location: Annotated[
-        str,
-        typer.Option(
-            help="The Azure location to deploy resources into.",
-        ),
-    ],
     name: Annotated[
         str,
         typer.Option(
@@ -117,7 +110,6 @@ def add(
     # Add the context to the file and write it
     settings.add(
         admin_group_id=admin_group,
-        location=location,
         name=name,
         subscription_name=subscription_name,
     )
@@ -131,12 +123,6 @@ def update(
         typer.Option(
             help="The ID of an Azure group containing all administrators.",
             callback=validators.typer_aad_guid,
-        ),
-    ] = None,
-    location: Annotated[
-        Optional[str],  # noqa: UP007
-        typer.Option(
-            help="The Azure location to deploy resources into.",
         ),
     ] = None,
     name: Annotated[
@@ -164,7 +150,6 @@ def update(
 
     settings.update(
         admin_group_id=admin_group,
-        location=location,
         name=name,
         subscription_name=subscription,
     )

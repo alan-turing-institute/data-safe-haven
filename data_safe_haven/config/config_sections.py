@@ -9,6 +9,7 @@ from pydantic import (
 
 from data_safe_haven.logging import get_logger
 from data_safe_haven.types import (
+    AzureLocation,
     AzureVmSku,
     DatabaseSystem,
     EmailAddress,
@@ -22,6 +23,7 @@ from data_safe_haven.types import (
 
 
 class ConfigSectionAzure(BaseModel, validate_assignment=True):
+    location: AzureLocation
     subscription_id: Guid
     tenant_id: Guid
 

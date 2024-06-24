@@ -13,7 +13,6 @@ from data_safe_haven.external import AzureApi
 from data_safe_haven.functions import json_safe
 from data_safe_haven.serialisers import ContextBase
 from data_safe_haven.types import (
-    AzureLocation,
     AzureSubscriptionName,
     Guid,
 )
@@ -21,7 +20,6 @@ from data_safe_haven.types import (
 
 class Context(ContextBase, BaseModel, validate_assignment=True):
     admin_group_id: Guid
-    location: AzureLocation
     name: str
     subscription_name: AzureSubscriptionName
     storage_container_name: ClassVar[str] = "config"

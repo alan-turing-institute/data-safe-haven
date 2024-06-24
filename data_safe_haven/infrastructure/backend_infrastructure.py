@@ -39,7 +39,7 @@ class BackendInfrastructure:
         # Deploy the resources needed by Pulumi
         try:
             resource_group = self.azure_api.ensure_resource_group(
-                location=self.context.location,
+                location=self.config.azure.location,
                 resource_group_name=self.context.resource_group_name,
                 tags=self.tags,
             )

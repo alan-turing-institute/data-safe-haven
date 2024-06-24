@@ -29,7 +29,7 @@ class DeclarativeSHM:
             self.stack_name,
             SHMNetworkingProps(
                 fqdn=self.cfg.shm.fqdn,
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 record_domain_verification=self.pulumi_opts.require(
                     "verification-azuread-custom-domain"
                 ),

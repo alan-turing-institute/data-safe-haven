@@ -34,6 +34,12 @@ def deploy(
             callback=typer_fqdn,
         ),
     ] = None,
+    location: Annotated[
+        Optional[str],  # noqa: UP007
+        typer.Option(
+            help="The Azure location to deploy resources into.",
+        ),
+    ] = None,
 ) -> None:
     """Deploy a Safe Haven Management environment."""
     # Load selected context
@@ -59,6 +65,8 @@ def deploy(
             config.shm.fqdn = fqdn
         if entra_tenant_id:
             config.shm.entra_tenant_id = entra_tenant_id
+        if location:
+            config.azure.location = location
         if diff := config.remote_yaml_diff(context):
             logger = get_logger()
             for line in "".join(diff).splitlines():
@@ -72,18 +80,23 @@ def deploy(
             ):
                 raise typer.Exit(0)
     else:
-        if not fqdn:
-            logger.critical(
-                "You must provide the --fqdn argument when first deploying an SHM."
-            )
-            raise typer.Exit(1)
         if not entra_tenant_id:
             logger.critical(
                 "You must provide the --entra-tenant-id argument when first deploying an SHM."
             )
             raise typer.Exit(1)
+        if not fqdn:
+            logger.critical(
+                "You must provide the --fqdn argument when first deploying an SHM."
+            )
+            raise typer.Exit(1)
+        if not location:
+            logger.critical(
+                "You must provide the --location argument when first deploying an SHM."
+            )
+            raise typer.Exit(1)
         config = SHMConfig.from_local(
-            context, entra_tenant_id=entra_tenant_id, fqdn=fqdn
+            context, entra_tenant_id=entra_tenant_id, fqdn=fqdn, location=location
         )
 
     # Create Data Safe Haven context infrastructure.
