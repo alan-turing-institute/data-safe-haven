@@ -55,7 +55,7 @@ jobs:
       - name: Create pull request
         if: ${{ (env.TIMEOUT_REACHED == 0) && (! env.ACT) }}
         id: pull-request
-        uses: peter-evans/create-pull-request@v6.0.5
+        uses: peter-evans/create-pull-request@v6.1.0
         with:
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           base: develop
