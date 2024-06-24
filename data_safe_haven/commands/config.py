@@ -31,59 +31,6 @@ def show_shm(
         console.print(config_yaml)
 
 
-@config_command_group.command()
-def template_shm(
-    file: Annotated[
-        Optional[Path],  # noqa: UP007
-        typer.Option(help="File path to write configuration template to."),
-    ] = None
-) -> None:
-    """Write a template Data Safe Haven SHM configuration."""
-    shm_config = SHMConfig.template()
-    # The template uses explanatory strings in place of the expected types.
-    # Serialisation warnings are therefore suppressed to avoid misleading the users into
-    # thinking there is a problem and contaminating the output.
-    config_yaml = shm_config.to_yaml(warnings=False)
-    if file:
-        with open(file, "w") as outfile:
-            outfile.write(config_yaml)
-    else:
-        console.print(config_yaml)
-
-
-@config_command_group.command()
-def upload_shm(
-    file: Annotated[Path, typer.Argument(help="Path to configuration file")],
-) -> None:
-    """Upload an SHM configuration to the Data Safe Haven context"""
-    context = ContextSettings.from_file().assert_context()
-
-    # Create configuration object from file
-    with open(file) as config_file:
-        config_yaml = config_file.read()
-    config = SHMConfig.from_yaml(config_yaml)
-
-    # Present diff to user
-    if SHMConfig.remote_exists(context):
-        if diff := config.remote_yaml_diff(context):
-            logger = get_logger()
-            for line in "".join(diff).splitlines():
-                logger.info(line)
-            if not console.confirm(
-                (
-                    "Configuration has changed, "
-                    "do you want to overwrite the remote configuration?"
-                ),
-                default_to_yes=False,
-            ):
-                raise typer.Exit()
-        else:
-            console.print("No changes, won't upload configuration.")
-            raise typer.Exit()
-
-    config.upload(context)
-
-
 # Commands related to an SRE
 @config_command_group.command()
 def show_sre(
