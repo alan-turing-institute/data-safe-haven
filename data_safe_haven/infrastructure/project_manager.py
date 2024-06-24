@@ -2,9 +2,8 @@
 
 import logging
 import time
-from collections.abc import Callable, MutableMapping
+from collections.abc import MutableMapping
 from contextlib import suppress
-from functools import partial
 from importlib import metadata
 from typing import Any
 
@@ -85,7 +84,7 @@ class ProjectManager:
 
         extra_args["color"] = "always"
         extra_args["log_flow"] = True
-        extra_args["on_output"] = self.from_ansi()
+        extra_args["on_output"] = self.log_message
         return extra_args
 
     @property
@@ -279,9 +278,6 @@ class ProjectManager:
             msg = "Pulumi operation failed."
             raise DataSafeHavenPulumiError(msg)
 
-    def from_ansi(self) -> Callable[[str], None]:
-        return partial(from_ansi, logger=self.logger)
-
     def install_plugins(self) -> None:
         """For inline programs, we must manage plugins ourselves."""
         try:
@@ -295,6 +291,9 @@ class ProjectManager:
         except Exception as exc:
             msg = f"Installing Pulumi plugins failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
+
+    def log_message(self, message: str) -> None:
+        return from_ansi(self.logger, message)
 
     def output(self, name: str) -> Any:
         """Get a named output value from a stack"""
