@@ -10,7 +10,7 @@ class TestShowSRE:
         mock_method = mocker.patch.object(
             AzureApi, "download_blob", return_value=sre_config_yaml
         )
-        result = runner.invoke(config_command_group, ["show-sre", sre_name])
+        result = runner.invoke(config_command_group, ["show", sre_name])
 
         assert result.exit_code == 0
         assert sre_config_yaml in result.stdout
@@ -26,7 +26,7 @@ class TestShowSRE:
         mocker.patch.object(AzureApi, "download_blob", return_value=sre_config_yaml)
         template_file = (tmp_path / "template_show.yaml").absolute()
         result = runner.invoke(
-            config_command_group, ["show-sre", "sre-name", "--file", str(template_file)]
+            config_command_group, ["show", "sre-name", "--file", str(template_file)]
         )
 
         assert result.exit_code == 0
@@ -37,7 +37,7 @@ class TestShowSRE:
 
 class TestTemplateSRE:
     def test_template(self, runner):
-        result = runner.invoke(config_command_group, ["template-sre"])
+        result = runner.invoke(config_command_group, ["template"])
         assert result.exit_code == 0
         assert (
             "subscription_id: ID of the Azure subscription that the SRE will be deployed to"
@@ -48,7 +48,7 @@ class TestTemplateSRE:
     def test_template_file(self, runner, tmp_path):
         template_file = (tmp_path / "template_create.yaml").absolute()
         result = runner.invoke(
-            config_command_group, ["template-sre", "--file", str(template_file)]
+            config_command_group, ["template", "--file", str(template_file)]
         )
         assert result.exit_code == 0
         with open(template_file) as f:
@@ -72,7 +72,7 @@ class TestUploadSRE:
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload-sre", str(sre_config_file)],
+            ["upload", str(sre_config_file)],
         )
         assert result.exit_code == 0
 
@@ -97,7 +97,7 @@ class TestUploadSRE:
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload-sre", str(sre_config_file)],
+            ["upload", str(sre_config_file)],
         )
         assert result.exit_code == 0
 
@@ -125,7 +125,7 @@ class TestUploadSRE:
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload-sre", str(sre_config_file)],
+            ["upload", str(sre_config_file)],
             input="y\n",
         )
         assert result.exit_code == 0
@@ -155,7 +155,7 @@ class TestUploadSRE:
         mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload-sre", str(sre_config_file)],
+            ["upload", str(sre_config_file)],
             input="n\n",
         )
         assert result.exit_code == 0
@@ -171,6 +171,6 @@ class TestUploadSRE:
         mocker.patch.object(AzureApi, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
-            ["upload-sre"],
+            ["upload"],
         )
         assert result.exit_code == 2

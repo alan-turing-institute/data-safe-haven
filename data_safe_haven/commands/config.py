@@ -33,7 +33,7 @@ def show_shm(
 
 # Commands related to an SRE
 @config_command_group.command()
-def show_sre(
+def show(
     name: Annotated[str, typer.Argument(help="Name of SRE to show")],
     file: Annotated[
         Optional[Path],  # noqa: UP007
@@ -52,7 +52,7 @@ def show_sre(
 
 
 @config_command_group.command()
-def template_sre(
+def template(
     file: Annotated[
         Optional[Path],  # noqa: UP007
         typer.Option(help="File path to write configuration template to."),
@@ -72,7 +72,7 @@ def template_sre(
 
 
 @config_command_group.command()
-def upload_sre(
+def upload(
     file: Annotated[Path, typer.Argument(help="Path to configuration file")],
 ) -> None:
     """Upload an SRE configuration to the Data Safe Haven context"""
