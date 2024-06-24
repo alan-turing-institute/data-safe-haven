@@ -10,7 +10,7 @@ from data_safe_haven.config import (
 from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError
 from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
-from data_safe_haven.infrastructure import BackendInfrastructure
+from data_safe_haven.infrastructure import ImperativeSHM
 
 
 @fixture
@@ -38,43 +38,6 @@ def mock_azure_authenticator_login_exception(mocker):
 
 
 @fixture
-def mock_backend_infrastructure_create(mocker):
-    mocker.patch.object(
-        BackendInfrastructure,
-        "create",
-        side_effect=print("mock create"),  # noqa: T201
-    )
-
-
-@fixture
-def mock_backend_infrastructure_create_then_exit(mocker):
-    def create_then_exit():
-        print("mock create")  # noqa: T201
-        msg = "mock creation error"
-        raise DataSafeHavenAzureAPIAuthenticationError(msg)
-
-    mocker.patch.object(
-        BackendInfrastructure,
-        "create",
-        side_effect=create_then_exit,
-    )
-
-
-@fixture
-def mock_backend_infrastructure_teardown_then_exit(mocker):
-    def teardown_then_exit():
-        print("mock teardown")  # noqa: T201
-        msg = "mock teardown error"
-        raise DataSafeHavenAzureAPIAuthenticationError(msg)
-
-    mocker.patch.object(
-        BackendInfrastructure,
-        "teardown",
-        side_effect=teardown_then_exit,
-    )
-
-
-@fixture
 def mock_graph_api_add_custom_domain(mocker):
     mocker.patch.object(
         GraphApi, "add_custom_domain", return_value="dummy-verification-record"
@@ -85,6 +48,43 @@ def mock_graph_api_add_custom_domain(mocker):
 def mock_graph_api_create_token_administrator(mocker):
     mocker.patch.object(
         GraphApi, "create_token_administrator", return_value="dummy-token"
+    )
+
+
+@fixture
+def mock_imperative_shm_deploy(mocker):
+    mocker.patch.object(
+        ImperativeSHM,
+        "deploy",
+        side_effect=print("mock deploy"),  # noqa: T201
+    )
+
+
+@fixture
+def mock_imperative_shm_deploy_then_exit(mocker):
+    def create_then_exit():
+        print("mock deploy")  # noqa: T201
+        msg = "mock deploy error"
+        raise DataSafeHavenAzureAPIAuthenticationError(msg)
+
+    mocker.patch.object(
+        ImperativeSHM,
+        "deploy",
+        side_effect=create_then_exit,
+    )
+
+
+@fixture
+def mock_imperative_shm_teardown_then_exit(mocker):
+    def teardown_then_exit():
+        print("mock teardown")  # noqa: T201
+        msg = "mock teardown error"
+        raise DataSafeHavenAzureAPIAuthenticationError(msg)
+
+    mocker.patch.object(
+        ImperativeSHM,
+        "teardown",
+        side_effect=teardown_then_exit,
     )
 
 

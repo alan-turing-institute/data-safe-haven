@@ -2,10 +2,10 @@ from data_safe_haven.commands.shm import shm_command_group
 
 
 class TestDeploySHM:
-    def test_context_infrastructure_create(
+    def test_infrastructure_deploy(
         self,
         runner,
-        mock_backend_infrastructure_create_then_exit,  # noqa: ARG002
+        mock_imperative_shm_deploy_then_exit,  # noqa: ARG002
         mock_graph_api_add_custom_domain,  # noqa: ARG002
         mock_graph_api_create_token_administrator,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
@@ -14,10 +14,10 @@ class TestDeploySHM:
     ):
         result = runner.invoke(shm_command_group, ["deploy"])
         assert result.exit_code == 1
-        assert "mock create" in result.stdout
-        assert "mock creation error" in result.stdout
+        assert "mock deploy" in result.stdout
+        assert "mock deploy error" in result.stdout
 
-    def test_no_context_file(self, runner_no_context_file):
+    def test_infrastructure_no_context_file(self, runner_no_context_file):
         result = runner_no_context_file.invoke(shm_command_group, ["deploy"])
         assert result.exit_code == 1
         assert "No context configuration file." in result.stdout
@@ -42,7 +42,7 @@ class TestTeardownSHM:
     def test_teardown(
         self,
         runner,
-        mock_backend_infrastructure_teardown_then_exit,  # noqa: ARG002
+        mock_imperative_shm_teardown_then_exit,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
     ):
         result = runner.invoke(shm_command_group, ["teardown"])

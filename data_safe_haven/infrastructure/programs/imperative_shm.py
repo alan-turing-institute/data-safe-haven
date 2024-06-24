@@ -8,7 +8,7 @@ from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.logging import get_logger
 
 
-class BackendInfrastructure:
+class ImperativeSHM:
     """Azure resources to support Data Safe Haven context"""
 
     def __init__(self, context: Context, config: SHMConfig) -> None:
@@ -30,8 +30,8 @@ class BackendInfrastructure:
             )
         return self.azure_api_
 
-    def create(self) -> None:
-        """Create all desired resources
+    def deploy(self) -> None:
+        """Deploy all desired resources
 
         Raises:
             DataSafeHavenAzureError if any resources cannot be created

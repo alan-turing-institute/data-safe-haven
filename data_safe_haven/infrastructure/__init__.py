@@ -1,7 +1,7 @@
-from .backend_infrastructure import BackendInfrastructure
+from .programs import ImperativeSHM
 from .project_manager import SREProjectManager
 
 __all__ = [
-    "BackendInfrastructure",
+    "ImperativeSHM",
     "SREProjectManager",
 ]
