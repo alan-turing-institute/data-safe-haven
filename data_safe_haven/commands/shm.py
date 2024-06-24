@@ -96,6 +96,8 @@ def deploy(
         config = SHMConfig.from_local(
             context, entra_tenant_id=entra_tenant_id, fqdn=fqdn
         )
+    # Upload config file to blob storage
+    config.upload(context)
 
     # Add the SHM domain to the Entra ID via interactive GraphAPI
     try:
@@ -122,11 +124,13 @@ def deploy(
         logger.critical(msg)
         raise typer.Exit(1) from exc
 
-    # Deploy the Data Safe Haven SHM infrastructure
+    # Create/load the Pulumi config and upload it to blob storage
     pulumi_config = DSHPulumiConfig.from_remote_or_create(
         context, encrypted_key=None, projects={}
     )
+    pulumi_config.upload(context)
 
+    # Deploy the Data Safe Haven SHM infrastructure
     try:
         # Initialise Pulumi stack
         stack = SHMProjectManager(
@@ -167,10 +171,6 @@ def deploy(
         # raise typer.Exit(code=1) from exc
         msg = "Could not deploy Data Safe Haven Management environment."
         raise DataSafeHavenError(msg) from exc
-    finally:
-        # Upload config files to blob storage
-        config.upload(context)
-        pulumi_config.upload(context)
 
 
 @shm_command_group.command()
