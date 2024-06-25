@@ -105,7 +105,7 @@ def teardown() -> None:
             stack.teardown()
         except Exception as exc:
             msg = "Unable to teardown Pulumi infrastructure."
-            raise DataSafeHavenInputError(msg) from exc
+            raise DataSafeHavenPulumiError(msg) from exc
 
         # Remove information from config file
         del pulumi_config[context.shm_name]

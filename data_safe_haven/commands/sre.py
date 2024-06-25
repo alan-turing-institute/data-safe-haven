@@ -140,7 +140,7 @@ def teardown(
             stack.teardown()
         except Exception as exc:
             msg = "Unable to teardown Pulumi infrastructure."
-            raise DataSafeHavenInputError(msg) from exc
+            raise DataSafeHavenPulumiError(msg) from exc
 
         # Remove Pulumi project from Pulumi config file
         del pulumi_config[name]
