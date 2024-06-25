@@ -24,5 +24,8 @@ class PlainFileHandler(logging.FileHandler):
 
     def emit(self, record: logging.LogRecord) -> None:
         """Emit a record without formatting"""
+        if isinstance(record.msg, Text):
+            # Convert rich.text.Text objects to strings
+            record.msg = str(record.msg)
         record.msg = self.strip_formatting(record.msg)
         super().emit(record)
