@@ -70,6 +70,13 @@ def email_address(email_address: str) -> str:
     return email_address
 
 
+def entra_group_name(entra_group_name: str) -> str:
+    if entra_group_name.startswith(" "):
+        msg = "Entra group names cannot start with a space."
+        raise ValueError(msg)
+    return entra_group_name
+
+
 def ip_address(ip_address: str) -> str:
     try:
         return str(ipaddress.ip_network(ip_address))
