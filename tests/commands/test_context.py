@@ -50,8 +50,7 @@ class TestSwitch:
     def test_invalid_switch(self, runner):
         result = runner.invoke(context_command_group, ["switch", "invalid"])
         assert result.exit_code == 1
-        # Unable to check error as this is written outside of any Typer
-        # assert "Context 'invalid' is not defined " in result.stdout
+        assert "Context 'invalid' is not defined." in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
         result = runner_no_context_file.invoke(
@@ -69,8 +68,6 @@ class TestAdd:
                 "add",
                 "--name",
                 "Example",
-                "--admin-group",
-                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--subscription-name",
                 "Data Safe Haven Example",
             ],
@@ -86,32 +83,14 @@ class TestAdd:
                 "add",
                 "--name",
                 "Acme Deployment",
-                "--admin-group",
-                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--subscription-name",
                 "Data Safe Haven Acme",
             ],
         )
         assert result.exit_code == 1
-        # Unable to check error as this is written outside of any Typer
-        # assert "A context with key 'acmedeployment' is already defined." in result.stdout
-
-    def test_add_invalid_uuid(self, runner):
-        result = runner.invoke(
-            context_command_group,
-            [
-                "add",
-                "--name",
-                "Example",
-                "--admin-group",
-                "not a uuid",
-                "--subscription-name",
-                "Data Safe Haven Example",
-            ],
+        assert (
+            "A context with key 'acmedeployment' is already defined." in result.stdout
         )
-        assert result.exit_code == 2
-        # This works because the context_command_group Typer writes this error
-        assert "Invalid value for '--admin-group': Expected GUID" in result.stderr
 
     def test_add_invalid_subscription_name(self, runner):
         result = runner.invoke(
@@ -120,14 +99,11 @@ class TestAdd:
                 "add",
                 "--name",
                 "Example",
-                "--admin-group",
-                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--subscription-name",
                 "Invalid Subscription Name  ",
             ],
         )
         assert result.exit_code == 2
-        # This works because the context_command_group Typer writes this error
         assert "Invalid value for '--subscription-name':" in result.stderr
 
     def test_add_missing_ags(self, runner):
@@ -150,8 +126,6 @@ class TestAdd:
                 "add",
                 "--name",
                 "Acme Deployment",
-                "--admin-group",
-                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 "--subscription-name",
                 "Data Safe Haven Acme",
             ],
@@ -194,8 +168,7 @@ class TestRemove:
     def test_remove_invalid(self, runner):
         result = runner.invoke(context_command_group, ["remove", "invalid"])
         assert result.exit_code == 1
-        # Unable to check error as this is written outside of any Typer
-        # assert "No context with key 'invalid'." in result.stdout
+        assert "No context with key 'invalid'." in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
         result = runner_no_context_file.invoke(

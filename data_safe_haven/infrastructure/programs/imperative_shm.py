@@ -4,7 +4,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenMicrosoftGraphError,
 )
-from data_safe_haven.external import AzureApi, AzureCliSingleton, GraphApi
+from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.logging import get_logger
 
 
@@ -70,11 +70,8 @@ class ImperativeSHM:
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account.name,
             )
-            admin_group_id = AzureCliSingleton().group_id_from_name(
-                self.config.shm.admin_group_name
-            )
             keyvault = self.azure_api.ensure_keyvault(
-                admin_group_id=admin_group_id,
+                admin_group_id=self.config.shm.admin_group_id,
                 key_vault_name=self.context.key_vault_name,
                 location=resource_group.location,
                 managed_identity=identity,

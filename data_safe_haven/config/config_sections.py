@@ -7,6 +7,7 @@ from pydantic import (
     Field,
 )
 
+from data_safe_haven.external import AzureCliSingleton
 from data_safe_haven.logging import get_logger
 from data_safe_haven.types import (
     AzureLocation,
@@ -33,6 +34,10 @@ class ConfigSectionSHM(BaseModel, validate_assignment=True):
     admin_group_name: EntraGroupName
     entra_tenant_id: Guid
     fqdn: Fqdn
+
+    @property
+    def admin_group_id(self) -> str:
+        return AzureCliSingleton().group_id_from_name(self.admin_group_name)
 
     def update(
         self,

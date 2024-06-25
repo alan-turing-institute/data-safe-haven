@@ -71,6 +71,11 @@ def deploy(
         )
         # Load SHM outputs
         stack.add_option(
+            "shm-admin-group-id",
+            shm_config.shm.admin_group_id,
+            replace=True,
+        )
+        stack.add_option(
             "shm-entra-tenant-id",
             shm_config.shm.entra_tenant_id,
             replace=True,

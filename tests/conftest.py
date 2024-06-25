@@ -45,7 +45,6 @@ def context(context_dict):
 @fixture
 def context_dict():
     return {
-        "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         "name": "Acme Deployment",
         "subscription_name": "Data Safe Haven Acme",
     }
@@ -75,11 +74,9 @@ def context_yaml():
     contexts:
         acmedeployment:
             name: Acme Deployment
-            admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             subscription_name: Data Safe Haven Acme
         gems:
             name: Gems
-            admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             subscription_name: Data Safe Haven Gems
     """
     return yaml.dump(yaml.safe_load(content))
@@ -284,12 +281,17 @@ def shm_config_file(shm_config_yaml: str, tmp_path: Path) -> Path:
 
 
 @fixture
-def shm_config_section():
-    return ConfigSectionSHM(
-        admin_group_name="Test Admins",
-        entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        fqdn="shm.acme.com",
-    )
+def shm_config_section(shm_config_section_dict):
+    return ConfigSectionSHM(**shm_config_section_dict)
+
+
+@fixture
+def shm_config_section_dict():
+    return {
+        "admin_group_name": "Test Admins",
+        "entra_tenant_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        "fqdn": "shm.acme.com",
+    }
 
 
 @fixture

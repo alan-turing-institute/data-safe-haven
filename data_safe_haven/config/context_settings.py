@@ -29,11 +29,9 @@ class ContextSettings(YAMLSerialisableModel):
     contexts:
         acmedeployment:
             name: Acme Deployment
-            admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
             subscription_name: Data Safe Haven (Acme)
         acmetesting:
             name: Acme Testing
-            admin_group_id: 32ebe412-e198-41f3-88f6-bc6687eb471b
             subscription_name: Data Safe Haven (Acme Testing)
         ...
     """
@@ -89,17 +87,11 @@ class ContextSettings(YAMLSerialisableModel):
     def update(
         self,
         *,
-        admin_group_id: str | None = None,
         name: str | None = None,
         subscription_name: str | None = None,
     ) -> None:
         context = self.assert_context()
 
-        if admin_group_id:
-            self.logger.debug(
-                f"Updating '[green]{admin_group_id}[/]' to '{admin_group_id}'."
-            )
-            context.admin_group_id = admin_group_id
         if name:
             self.logger.debug(f"Updating '[green]{name}[/]' to '{name}'.")
             context.name = name
@@ -113,7 +105,6 @@ class ContextSettings(YAMLSerialisableModel):
         self,
         *,
         name: str,
-        admin_group_id: str,
         subscription_name: str,
     ) -> None:
         # Ensure context is not already present
@@ -125,7 +116,6 @@ class ContextSettings(YAMLSerialisableModel):
         self.logger.info(f"Creating a new context with key '{key}'.")
         self.contexts[key] = Context(
             name=name,
-            admin_group_id=admin_group_id,
             subscription_name=subscription_name,
         )
         if not self.selected:

@@ -38,6 +38,13 @@ class TestConfigSectionSHM:
             timezone="UTC",
         )
 
+    def test_invalid_guid(self, shm_config_section_dict):
+        shm_config_section_dict["entra_tenant_id"] = "not a guid"
+        with pytest.raises(
+            ValidationError, match="Value error, Expected GUID, for example"
+        ):
+            ConfigSectionSHM(**shm_config_section_dict)
+
     def test_update(self, shm_config_section: ConfigSectionSHM) -> None:
         assert shm_config_section.fqdn == "shm.acme.com"
         shm_config_section.update(fqdn="shm.example.com")

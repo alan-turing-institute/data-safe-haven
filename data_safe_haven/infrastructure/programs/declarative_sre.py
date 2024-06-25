@@ -74,6 +74,7 @@ class DeclarativeSRE:
     def __call__(self) -> None:
         # Load pulumi configuration options
         self.pulumi_opts = pulumi.Config()
+        shm_admin_group_id = self.pulumi_opts.require("shm-admin-group-id")
         shm_entra_tenant_id = self.pulumi_opts.require("shm-entra-tenant-id")
         shm_fqdn = self.pulumi_opts.require("shm-fqdn")
 
@@ -179,7 +180,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREDataProps(
                 admin_email_address=self.cfg.sre.admin_email_address,
-                admin_group_id=self.context.admin_group_id,
+                admin_group_id=shm_admin_group_id,
                 admin_ip_addresses=self.cfg.sre.admin_ip_addresses,
                 data_provider_ip_addresses=self.cfg.sre.data_provider_ip_addresses,
                 dns_private_zones=dns.private_zones,

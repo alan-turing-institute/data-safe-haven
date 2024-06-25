@@ -22,13 +22,6 @@ class TestContext:
         assert context.pulumi_storage_container_name == "pulumi"
         assert context.pulumi_encryption_key_name == "pulumi-encryption-key"
 
-    def test_invalid_guid(self, context_dict):
-        context_dict["admin_group_id"] = "not a guid"
-        with pytest.raises(
-            ValidationError, match="Value error, Expected GUID, for example"
-        ):
-            Context(**context_dict)
-
     def test_invalid_subscription_name(self, context_dict):
         context_dict["subscription_name"] = "very " * 15 + "long name"
         with pytest.raises(
@@ -227,7 +220,6 @@ class TestContextSettings:
         context_settings.add(
             name="Example",
             subscription_name="Data Safe Haven Example",
-            admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         )
         context_settings.selected = "example"
         assert context_settings.selected == "example"
@@ -242,7 +234,6 @@ class TestContextSettings:
             context_settings.add(
                 name="Acme Deployment",
                 subscription_name="Data Safe Haven Acme",
-                admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             )
 
     def test_remove(self, context_settings):

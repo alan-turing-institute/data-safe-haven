@@ -33,7 +33,6 @@ def show() -> None:
     if current_context is not None:
         console.print(
             f"\tName: {current_context.name}",
-            f"\tAdmin Group ID: {current_context.admin_group_id}",
             f"\tSubscription name: {current_context.subscription_name}",
             sep="\n",
         )
@@ -80,13 +79,6 @@ def switch(
 
 @context_command_group.command()
 def add(
-    admin_group: Annotated[
-        str,
-        typer.Option(
-            help="The ID of an Azure group containing all administrators.",
-            callback=validators.typer_aad_guid,
-        ),
-    ],
     name: Annotated[
         str,
         typer.Option(
@@ -109,7 +101,6 @@ def add(
         settings = ContextSettings(contexts={}, selected=None)
     # Add the context to the file and write it
     settings.add(
-        admin_group_id=admin_group,
         name=name,
         subscription_name=subscription_name,
     )
@@ -118,13 +109,6 @@ def add(
 
 @context_command_group.command()
 def update(
-    admin_group: Annotated[
-        Optional[str],  # noqa: UP007
-        typer.Option(
-            help="The ID of an Azure group containing all administrators.",
-            callback=validators.typer_aad_guid,
-        ),
-    ] = None,
     name: Annotated[
         Optional[str],  # noqa: UP007
         typer.Option(
@@ -149,7 +133,6 @@ def update(
         raise typer.Exit(1) from exc
 
     settings.update(
-        admin_group_id=admin_group,
         name=name,
         subscription_name=subscription,
     )
