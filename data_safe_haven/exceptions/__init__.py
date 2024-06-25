@@ -18,6 +18,26 @@ class DataSafeHavenError(Exception):
         logger.error(message_str.replace("\n", r"\n"))
 
 
+class DataSafeHavenAzureError(DataSafeHavenError):
+    """
+    Exception class for handling errors when interacting with Azure.
+
+    For example, when creating resources in Azure fails.
+    """
+
+    pass
+
+
+class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenAzureError):
+    """
+    Exception class for handling errors when authenticating against the Azure API
+
+    Used to capture exceptions generated when the user is not authenticated or that the authentication has expired
+    """
+
+    pass
+
+
 class DataSafeHavenConfigError(DataSafeHavenError):
     """
     Exception class for handling errors related to configuration files.
@@ -65,6 +85,14 @@ class DataSafeHavenIPRangeError(DataSafeHavenError):
 
     pass
 
+class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
+    """
+    Exception class for handling errors when interacting with the Microsoft Graph API
+
+    """
+
+    pass
+
 
 class DataSafeHavenParameterError(DataSafeHavenError):
     """
@@ -74,6 +102,14 @@ class DataSafeHavenParameterError(DataSafeHavenError):
 
     pass
 
+class DataSafeHavenPulumiError(DataSafeHavenError):
+    """
+    Exception class for handling errors when interacting with Pulumi
+
+    For example, when a Pulumi operation such as a deployment fails
+    """
+
+    pass
 
 class DataSafeHavenSSLError(DataSafeHavenError):
     """
@@ -85,50 +121,11 @@ class DataSafeHavenSSLError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenAzureError(DataSafeHavenError):
-    """
-    Exception class for handling errors when interacting with Azure.
-
-    For example, when creating resources in Azure fails.
-    """
-
-    pass
-
-
-class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenAzureError):
-    """
-    Exception class for handling errors when authenticating against the Azure API
-
-    Used to capture exceptions generated when the user is not authenticated or that the authentication has expired
-    """
-
-    pass
-
-
 class DataSafeHavenUserHandlingError(DataSafeHavenInternalError):
     """
     Exception class for handling errors related to user handling
 
     For example, when listing or registering users fails
-    """
-
-    pass
-
-
-class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
-    """
-    Exception class for handling errors when interacting with the Microsoft Graph API
-
-    """
-
-    pass
-
-
-class DataSafeHavenPulumiError(DataSafeHavenError):
-    """
-    Exception class for handling errors when interacting with Pulumi
-
-    For example, when a Pulumi operation such as a deployment fails
     """
 
     pass
