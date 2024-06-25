@@ -24,7 +24,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi, PulumiAccount
 from data_safe_haven.functions import replace_separators
-from data_safe_haven.logging import get_logger
+from data_safe_haven.logging import from_ansi, get_console_handler, get_logger
 
 from .programs import DeclarativeSHM, DeclarativeSRE
 
@@ -72,10 +72,19 @@ class ProjectManager:
     @property
     def pulumi_extra_args(self) -> dict[str, Any]:
         extra_args: dict[str, Any] = {}
-        if self.logger.isEnabledFor(logging.DEBUG):
+        # Produce verbose Pulumi output if running in verbose mode
+        if get_console_handler().level <= logging.DEBUG:
             extra_args["debug"] = True
             extra_args["log_to_std_err"] = True
             extra_args["log_verbosity"] = 9
+        else:
+            extra_args["debug"] = None
+            extra_args["log_to_std_err"] = None
+            extra_args["log_verbosity"] = None
+
+        extra_args["color"] = "always"
+        extra_args["log_flow"] = True
+        extra_args["on_output"] = self.log_message
         return extra_args
 
     @property
@@ -198,10 +207,6 @@ class ProjectManager:
             while True:
                 try:
                     result = self.stack.destroy(
-                        color="always",
-                        debug=self.logger.isEnabledFor(logging.DEBUG),
-                        log_flow=True,
-                        on_output=self.logger.info,
                         **self.pulumi_extra_args,
                     )
                     self.evaluate(result.summary.result)
@@ -287,6 +292,9 @@ class ProjectManager:
             msg = f"Installing Pulumi plugins failed.\n{exc}."
             raise DataSafeHavenPulumiError(msg) from exc
 
+    def log_message(self, message: str) -> None:
+        return from_ansi(self.logger, message)
+
     def output(self, name: str) -> Any:
         """Get a named output value from a stack"""
         if not self.stack_outputs_:
@@ -302,10 +310,7 @@ class ProjectManager:
             with suppress(automation.CommandError):
                 # Note that we disable parallelisation which can cause deadlock
                 self.stack.preview(
-                    color="always",
                     diff=True,
-                    log_flow=True,
-                    on_output=self.logger.info,
                     parallel=1,
                     **self.pulumi_extra_args,
                 )
@@ -318,7 +323,7 @@ class ProjectManager:
         try:
             self.logger.info(f"Refreshing stack [green]{self.stack.name}[/].")
             # Note that we disable parallelisation which can cause deadlock
-            self.stack.refresh(color="always", parallel=1)
+            self.stack.refresh(parallel=1, **self.pulumi_extra_args)
         except automation.CommandError as exc:
             msg = f"Pulumi refresh failed.\n{exc}"
             raise DataSafeHavenPulumiError(msg) from exc
@@ -360,9 +365,6 @@ class ProjectManager:
         try:
             self.logger.info(f"Applying changes to stack [green]{self.stack.name}[/].")
             result = self.stack.up(
-                color="always",
-                log_flow=True,
-                on_output=self.logger.info,
                 **self.pulumi_extra_args,
             )
             self.evaluate(result.summary.result)
