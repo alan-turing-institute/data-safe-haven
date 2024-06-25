@@ -58,16 +58,6 @@ class DataSafeHavenEntraIDError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenInputError(DataSafeHavenError):
-    """
-    Exception class for handling errors related to input validation.
-
-    Not used consistently, will be removed. Perhaps replace with ValueError
-    """
-
-    pass
-
-
 class DataSafeHavenInternalError(DataSafeHavenError):
     """
     Exception class for handling internal errors.
