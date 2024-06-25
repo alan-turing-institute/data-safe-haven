@@ -29,9 +29,11 @@ class ContextManager(YAMLSerialisableModel):
     selected: acmedeployment
     contexts:
         acmedeployment:
+            admin_group_name: Acme Admins
             name: Acme Deployment
             subscription_name: Data Safe Haven (Acme)
         acmetesting:
+            admin_group_name: Acme Testing Admins
             name: Acme Testing
             subscription_name: Data Safe Haven (Acme Testing)
         ...
@@ -88,23 +90,32 @@ class ContextManager(YAMLSerialisableModel):
     def update(
         self,
         *,
+        admin_group_name: str | None = None,
         name: str | None = None,
         subscription_name: str | None = None,
     ) -> None:
         context = self.assert_context()
 
+        if admin_group_name:
+            self.logger.debug(
+                f"Updating admin group name from '{context.admin_group_name}' to '[green]{admin_group_name}[/]'."
+            )
+            context.admin_group_name = admin_group_name
         if name:
-            self.logger.debug(f"Updating '[green]{name}[/]' to '{name}'.")
+            self.logger.debug(
+                f"Updating name from '{context.name}' to '[green]{name}[/]'."
+            )
             context.name = name
         if subscription_name:
             self.logger.debug(
-                f"Updating '[green]{subscription_name}[/]' to '{subscription_name}'."
+                f"Updating subscription name from '{context.subscription_name}' to '[green]{subscription_name}[/]'."
             )
             context.subscription_name = subscription_name
 
     def add(
         self,
         *,
+        admin_group_name: str,
         name: str,
         subscription_name: str,
     ) -> None:
@@ -116,6 +127,7 @@ class ContextManager(YAMLSerialisableModel):
 
         self.logger.info(f"Creating a new context with key '{key}'.")
         self.contexts[key] = Context(
+            admin_group_name=admin_group_name,
             name=name,
             subscription_name=subscription_name,
         )

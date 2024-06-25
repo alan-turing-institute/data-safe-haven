@@ -68,6 +68,8 @@ class TestAdd:
                 "add",
                 "--name",
                 "Example",
+                "--admin-group-name",
+                "Example Admins",
                 "--subscription-name",
                 "Data Safe Haven Example",
             ],
@@ -83,6 +85,8 @@ class TestAdd:
                 "add",
                 "--name",
                 "Acme Deployment",
+                "--admin-group-name",
+                "Example Admins",
                 "--subscription-name",
                 "Data Safe Haven Acme",
             ],
@@ -92,6 +96,22 @@ class TestAdd:
             "A context with key 'acmedeployment' is already defined." in result.stdout
         )
 
+    def test_add_invalid_entra_group_name(self, runner):
+        result = runner.invoke(
+            context_command_group,
+            [
+                "add",
+                "--name",
+                "Example",
+                "--admin-group-name",
+                " Example Admins",
+                "--subscription-name",
+                "Invalid Subscription Name  ",
+            ],
+        )
+        assert result.exit_code == 2
+        assert "Invalid value for '--admin-group-name':" in result.stderr
+
     def test_add_invalid_subscription_name(self, runner):
         result = runner.invoke(
             context_command_group,
@@ -99,6 +119,8 @@ class TestAdd:
                 "add",
                 "--name",
                 "Example",
+                "--admin-group-name",
+                "Example Admins",
                 "--subscription-name",
                 "Invalid Subscription Name  ",
             ],
@@ -126,6 +148,8 @@ class TestAdd:
                 "add",
                 "--name",
                 "Acme Deployment",
+                "--admin-group-name",
+                "Acme Admins",
                 "--subscription-name",
                 "Data Safe Haven Acme",
             ],

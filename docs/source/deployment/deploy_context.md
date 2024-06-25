@@ -28,7 +28,7 @@ $ dsh context add --help
 - Run a command like the following to create your local context file.
 
 ```{code} shell
-$ dsh context add --name <human friendly name> --subscription <Azure subscription name>
+$ dsh context add --admin-group-name <name of Azure group containing all administrators> --name <human friendly name> --subscription <Azure subscription name>
 ```
 
 :::{note}

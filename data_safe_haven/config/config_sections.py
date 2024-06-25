@@ -7,14 +7,12 @@ from pydantic import (
     Field,
 )
 
-from data_safe_haven.external import AzureCliSingleton
 from data_safe_haven.logging import get_logger
 from data_safe_haven.types import (
     AzureLocation,
     AzureVmSku,
     DatabaseSystem,
     EmailAddress,
-    EntraGroupName,
     Fqdn,
     Guid,
     IpAddress,
@@ -31,34 +29,30 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
-    admin_group_name: EntraGroupName
+    admin_group_id: Guid
     entra_tenant_id: Guid
     fqdn: Fqdn
-
-    @property
-    def admin_group_id(self) -> str:
-        return AzureCliSingleton().group_id_from_name(self.admin_group_name)
 
     def update(
         self,
         *,
-        admin_group_name: str | None = None,
+        admin_group_id: str | None = None,
         entra_tenant_id: str | None = None,
         fqdn: str | None = None,
     ) -> None:
         """Update SHM settings
 
         Args:
-            admin_group_name: Name of a security group that contains all Azure infrastructure admins.
+            admin_group_id: ID of a security group that contains all Azure infrastructure admins.
             entra_tenant_id: Tenant ID for the Entra ID used to manage TRE users
             fqdn: Fully-qualified domain name to use for this TRE
         """
         logger = get_logger()
-        # Set admin group name
-        if admin_group_name:
-            self.admin_group_name = admin_group_name
+        # Set admin group ID
+        if admin_group_id:
+            self.admin_group_id = admin_group_id
         logger.debug(
-            f"[bold]Admin group name[/] will be [green]{self.admin_group_name}[/]."
+            f"[bold]Admin group ID[/] will be [green]{self.admin_group_id}[/]."
         )
         # Set Entra tenant ID
         if entra_tenant_id:

@@ -91,8 +91,7 @@ class TestContextManager:
             contexts={
                 "acmedeployment": Context(
                     name="Acme Deployment",
-                    admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-                    location="uksouth",
+                    admin_group_name="Acme Admins",
                     subscription_name="Data Safe Haven Acme",
                 )
             },
@@ -217,6 +216,7 @@ class TestContextManager:
 
     def test_add(self, context_manager):
         context_manager.add(
+            admin_group_name="Example Admins",
             name="Example",
             subscription_name="Data Safe Haven Example",
         )
@@ -231,6 +231,7 @@ class TestContextManager:
             match="A context with key 'acmedeployment' is already defined.",
         ):
             context_manager.add(
+                admin_group_name="Acme Admins",
                 name="Acme Deployment",
                 subscription_name="Data Safe Haven Acme",
             )

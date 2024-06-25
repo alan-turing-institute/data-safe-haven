@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import ClassVar, Self
 
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureApi, AzureCliSingleton
 from data_safe_haven.serialisers import AzureSerialisableModel, ContextBase
 
 from .config_sections import ConfigSectionAzure, ConfigSectionSHM
@@ -21,13 +21,15 @@ class SHMConfig(AzureSerialisableModel):
         cls: type[Self],
         context: ContextBase,
         *,
-        admin_group_name: str,
         entra_tenant_id: str,
         fqdn: str,
         location: str,
     ) -> SHMConfig:
         """Construct an AzureSerialisableModel from a YAML file in Azure storage."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
+        admin_group_id = AzureCliSingleton().group_id_from_name(
+            context.admin_group_name
+        )
         return SHMConfig.model_construct(
             azure=ConfigSectionAzure.model_construct(
                 location=location,
@@ -35,7 +37,7 @@ class SHMConfig(AzureSerialisableModel):
                 tenant_id=azure_api.tenant_id,
             ),
             shm=ConfigSectionSHM.model_construct(
-                admin_group_name=admin_group_name,
+                admin_group_id=admin_group_id,
                 entra_tenant_id=entra_tenant_id,
                 fqdn=fqdn,
             ),
@@ -51,7 +53,7 @@ class SHMConfig(AzureSerialisableModel):
                 tenant_id="Home tenant for the Azure account used to deploy infrastructure: `az account show`",
             ),
             shm=ConfigSectionSHM.model_construct(
-                admin_group_name="Name of a security group that contains all Azure infrastructure admins.",
+                admin_group_id="ID of a security group that contains all Azure infrastructure admins.",
                 entra_tenant_id="Tenant ID for the Entra ID used to manage TRE users",
                 fqdn="Domain you want your users to belong to and where your TRE will be deployed",
             ),

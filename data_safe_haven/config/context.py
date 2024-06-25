@@ -14,11 +14,13 @@ from data_safe_haven.functions import json_safe
 from data_safe_haven.serialisers import ContextBase
 from data_safe_haven.types import (
     AzureSubscriptionName,
+    EntraGroupName,
 )
 
 
 class Context(ContextBase, BaseModel, validate_assignment=True):
     name: str
+    admin_group_name: EntraGroupName
     subscription_name: AzureSubscriptionName
     storage_container_name: ClassVar[str] = "config"
     pulumi_storage_container_name: ClassVar[str] = "pulumi"

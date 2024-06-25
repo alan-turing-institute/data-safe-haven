@@ -29,11 +29,12 @@ def show() -> None:
     current_context_key = manager.selected
     current_context = manager.context
 
-    console.print(f"Current context: [green]{current_context_key}")
+    console.print(f"Current context: [green]{current_context_key}[/]")
     if current_context is not None:
         console.print(
-            f"\tName: {current_context.name}",
-            f"\tSubscription name: {current_context.subscription_name}",
+            f"\tAdmin group name: [blue]{current_context.admin_group_name}[/]",
+            f"\tName: [blue]{current_context.name}[/]",
+            f"\tSubscription name: [blue]{current_context.subscription_name}[/]",
             sep="\n",
         )
 
@@ -79,6 +80,13 @@ def switch(
 
 @context_command_group.command()
 def add(
+    admin_group_name: Annotated[
+        str,
+        typer.Option(
+            help="Name of a security group that contains all Azure infrastructure admins.",
+            callback=validators.typer_entra_group_name,
+        ),
+    ],
     name: Annotated[
         str,
         typer.Option(
@@ -101,6 +109,7 @@ def add(
         manager = ContextManager(contexts={}, selected=None)
     # Add the context to the file and write it
     manager.add(
+        admin_group_name=admin_group_name,
         name=name,
         subscription_name=subscription_name,
     )
@@ -109,6 +118,13 @@ def add(
 
 @context_command_group.command()
 def update(
+    admin_group_name: Annotated[
+        Optional[str],  # noqa: UP007
+        typer.Option(
+            help="Name of a security group that contains all Azure infrastructure admins.",
+            callback=validators.typer_entra_group_name,
+        ),
+    ] = None,
     name: Annotated[
         Optional[str],  # noqa: UP007
         typer.Option(
@@ -119,6 +135,7 @@ def update(
         Optional[str],  # noqa: UP007
         typer.Option(
             help="The name of an Azure subscription to deploy resources into.",
+            callback=validators.typer_azure_subscription_name,
         ),
     ] = None,
 ) -> None:
@@ -133,6 +150,7 @@ def update(
         raise typer.Exit(1) from exc
 
     manager.update(
+        admin_group_name=admin_group_name,
         name=name,
         subscription_name=subscription,
     )
