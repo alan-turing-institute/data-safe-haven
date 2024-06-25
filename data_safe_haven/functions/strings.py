@@ -9,7 +9,7 @@ from collections.abc import Sequence
 
 import pytz
 
-from data_safe_haven.exceptions import DataSafeHavenInputError
+from data_safe_haven.exceptions import DataSafeHavenValueError
 
 
 def alphanumeric(input_string: str) -> str:
@@ -61,13 +61,13 @@ def next_occurrence(
             return utc_dt.strftime(r"%Y-%m-%d %H:%M")
         else:
             msg = f"Time format '{time_format}' was not recognised."
-            raise DataSafeHavenInputError(msg)
+            raise DataSafeHavenValueError(msg)
     except pytz.exceptions.UnknownTimeZoneError as exc:
         msg = f"Timezone '{timezone}' was not recognised."
-        raise DataSafeHavenInputError(msg) from exc
+        raise DataSafeHavenValueError(msg) from exc
     except ValueError as exc:
         msg = f"Time '{hour}:{minute}' was not recognised."
-        raise DataSafeHavenInputError(msg) from exc
+        raise DataSafeHavenValueError(msg) from exc
 
 
 def password(length: int) -> str:
