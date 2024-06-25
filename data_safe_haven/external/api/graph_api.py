@@ -19,7 +19,7 @@ from msal import (
 
 from data_safe_haven import console
 from data_safe_haven.exceptions import (
-    DataSafeHavenInputError,
+    DataSafeHavenValueError,
     DataSafeHavenInternalError,
     DataSafeHavenMicrosoftGraphError,
 )
@@ -286,7 +286,7 @@ class GraphApi:
                 for cred in application_json["passwordCredentials"]
             ):
                 msg = f"Secret '{application_secret_name}' already exists in application '{application_name}'."
-                raise DataSafeHavenInputError(msg)
+                raise DataSafeHavenValueError(msg)
             # Create the application secret if it does not exist
             self.logger.debug(
                 f"Creating application secret '[green]{application_secret_name}[/]'...",
