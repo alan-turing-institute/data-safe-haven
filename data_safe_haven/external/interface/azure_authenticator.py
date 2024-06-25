@@ -10,7 +10,7 @@ from azure.mgmt.resource.subscriptions.models import Subscription
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenAzureError,
-    DataSafeHavenInputError,
+    DataSafeHavenValueError,
 )
 
 
@@ -68,4 +68,4 @@ class AzureAuthenticator:
             raise DataSafeHavenAzureAPIAuthenticationError(msg) from exc
         if not (self.subscription_id and self.tenant_id):
             msg = f"Could not find subscription '{self.subscription_name}'"
-            raise DataSafeHavenInputError(msg)
+            raise DataSafeHavenValueError(msg)
