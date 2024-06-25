@@ -36,7 +36,7 @@ class TestConfig:
         assert isinstance(config, SHMConfig)
         assert (
             config.azure.subscription_id
-            == "ID of the Azure subscription that the TRE will be deployed to"
+            == "ID of the Azure subscription that the SHM will be deployed to"
         )
 
     def test_template_validation(self) -> None:

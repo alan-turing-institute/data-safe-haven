@@ -13,6 +13,7 @@ from data_safe_haven.types import (
     AzureVmSku,
     DatabaseSystem,
     EmailAddress,
+    EntraGroupName,
     Fqdn,
     Guid,
     IpAddress,
@@ -29,22 +30,31 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):
+    admin_group_name: EntraGroupName
     entra_tenant_id: Guid
     fqdn: Fqdn
 
     def update(
         self,
         *,
+        admin_group_name: str | None = None,
         entra_tenant_id: str | None = None,
         fqdn: str | None = None,
     ) -> None:
         """Update SHM settings
 
         Args:
+            admin_group_name: Name of a security group that contains all Azure infrastructure admins.
             entra_tenant_id: Tenant ID for the Entra ID used to manage TRE users
             fqdn: Fully-qualified domain name to use for this TRE
         """
         logger = get_logger()
+        # Set admin group name
+        if admin_group_name:
+            self.admin_group_name = admin_group_name
+        logger.debug(
+            f"[bold]Admin group name[/] will be [green]{self.admin_group_name}[/]."
+        )
         # Set Entra tenant ID
         if entra_tenant_id:
             self.entra_tenant_id = entra_tenant_id

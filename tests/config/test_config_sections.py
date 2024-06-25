@@ -32,6 +32,7 @@ class TestConfigSectionAzure:
 class TestConfigSectionSHM:
     def test_constructor(self) -> None:
         ConfigSectionSHM(
+            admin_group_name="Test Admins",
             entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             fqdn="shm.acme.com",
             timezone="UTC",

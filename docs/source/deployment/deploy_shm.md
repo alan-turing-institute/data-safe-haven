@@ -21,7 +21,7 @@ Before deploying the Safe Haven Management (SHM) infrastructure you need to deci
 Once you've decided on these, run the following command: [approx 5 minutes]:
 
 ```{code} shell
-$ dsh shm deploy --entra-tenant-id <Entra tenant ID>  --fqdn <fully-qualified domain name>  --location <location>
+$ dsh shm deploy --admin-group-name <name of Azure group containing all administrators> --entra-tenant-id <Entra tenant ID>  --fqdn <fully-qualified domain name>  --location <location>
 ```
 
 :::{important}

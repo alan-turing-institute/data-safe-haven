@@ -286,7 +286,7 @@ def shm_config_file(shm_config_yaml: str, tmp_path: Path) -> Path:
 @fixture
 def shm_config_section():
     return ConfigSectionSHM(
-        admin_ip_addresses=["1.2.3.4"],
+        admin_group_name="Test Admins",
         entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         fqdn="shm.acme.com",
     )
@@ -300,6 +300,7 @@ def shm_config_yaml():
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
     shm:
+        admin_group_name: Test Admins
         entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         fqdn: shm.acme.com
     """

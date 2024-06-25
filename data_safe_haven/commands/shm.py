@@ -13,13 +13,24 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.infrastructure import ImperativeSHM
 from data_safe_haven.logging import get_logger
-from data_safe_haven.validators import typer_aad_guid, typer_fqdn
+from data_safe_haven.validators import (
+    typer_aad_guid,
+    typer_entra_group_name,
+    typer_fqdn,
+)
 
 shm_command_group = typer.Typer()
 
 
 @shm_command_group.command()
 def deploy(
+    admin_group_name: Annotated[
+        Optional[str],  # noqa: UP007
+        typer.Option(
+            help="Name of a security group that contains all Azure infrastructure admins.",
+            callback=typer_entra_group_name,
+        ),
+    ] = None,
     entra_tenant_id: Annotated[
         Optional[str],  # noqa: UP007
         typer.Option(
@@ -61,6 +72,8 @@ def deploy(
     if SHMConfig.remote_exists(context):
         config = SHMConfig.from_remote(context)
         # If command line arguments conflict with the remote version then present diff
+        if admin_group_name:
+            config.shm.admin_group_name = admin_group_name
         if fqdn:
             config.shm.fqdn = fqdn
         if entra_tenant_id:
@@ -80,6 +93,11 @@ def deploy(
             ):
                 raise typer.Exit(0)
     else:
+        if not admin_group_name:
+            logger.critical(
+                "You must provide the --admin-group-name argument when first deploying an SHM."
+            )
+            raise typer.Exit(1)
         if not entra_tenant_id:
             logger.critical(
                 "You must provide the --entra-tenant-id argument when first deploying an SHM."
@@ -96,7 +114,11 @@ def deploy(
             )
             raise typer.Exit(1)
         config = SHMConfig.from_local(
-            context, entra_tenant_id=entra_tenant_id, fqdn=fqdn, location=location
+            context,
+            admin_group_name=admin_group_name,
+            entra_tenant_id=entra_tenant_id,
+            fqdn=fqdn,
+            location=location,
         )
 
     # Create Data Safe Haven SHM infrastructure.
