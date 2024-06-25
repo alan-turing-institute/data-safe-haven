@@ -11,7 +11,6 @@ from typing import ClassVar
 
 from pydantic import Field, model_validator
 
-from data_safe_haven.context import Context
 from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
@@ -20,6 +19,8 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.functions import json_safe
 from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import YAMLSerialisableModel
+
+from .context import Context
 
 
 class ContextManager(YAMLSerialisableModel):

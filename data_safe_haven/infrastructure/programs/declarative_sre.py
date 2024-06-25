@@ -2,8 +2,7 @@
 
 import pulumi
 
-from data_safe_haven.config import SREConfig
-from data_safe_haven.context import Context
+from data_safe_haven.config import Context, SREConfig
 
 from .sre.application_gateway import (
     SREApplicationGatewayComponent,

@@ -2,12 +2,12 @@ from pytest import fixture
 from typer.testing import CliRunner
 
 from data_safe_haven.config import (
+    Context,
     ContextManager,
     DSHPulumiConfig,
     SHMConfig,
     SREConfig,
 )
-from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError
 from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator

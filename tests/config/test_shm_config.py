@@ -1,12 +1,11 @@
 import pytest
 from pydantic import ValidationError
 
-from data_safe_haven.config import SHMConfig
+from data_safe_haven.config import Context, SHMConfig
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
     ConfigSectionSHM,
 )
-from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenParameterError,
 )

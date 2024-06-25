@@ -3,8 +3,7 @@ import pathlib
 from collections.abc import Sequence
 
 from data_safe_haven import console
-from data_safe_haven.config import DSHPulumiConfig, SREConfig
-from data_safe_haven.context import Context
+from data_safe_haven.config import Context, DSHPulumiConfig, SREConfig
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.logging import get_logger

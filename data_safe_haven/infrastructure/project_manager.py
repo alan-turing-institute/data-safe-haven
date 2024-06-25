@@ -9,11 +9,11 @@ from typing import Any
 from pulumi import automation
 
 from data_safe_haven.config import (
+    Context,
     DSHPulumiConfig,
     DSHPulumiProject,
     SREConfig,
 )
-from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenConfigError,

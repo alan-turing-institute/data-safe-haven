@@ -1,13 +1,12 @@
 import pytest
 from pydantic import ValidationError
 
-from data_safe_haven.config import SREConfig
+from data_safe_haven.config import Context, SREConfig
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
     ConfigSectionSRE,
 )
 from data_safe_haven.config.sre_config import sre_config_name
-from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenParameterError,
 )

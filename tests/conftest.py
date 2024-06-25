@@ -9,6 +9,7 @@ from pytest import fixture
 import data_safe_haven.config.context_manager as context_mod
 import data_safe_haven.logging.logger
 from data_safe_haven.config import (
+    Context,
     ContextManager,
     DSHPulumiConfig,
     DSHPulumiProject,
@@ -21,7 +22,6 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
 )
-from data_safe_haven.context import Context
 from data_safe_haven.external import AzureApi, AzureCliSingleton, PulumiAccount
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.infrastructure.project_manager import ProjectManager
