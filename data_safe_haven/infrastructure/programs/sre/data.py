@@ -4,6 +4,7 @@ from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
 import pulumi_random
+import pulumi_tls
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
@@ -32,6 +33,7 @@ from data_safe_haven.infrastructure.components import (
     SSLCertificate,
     SSLCertificateProps,
 )
+from data_safe_haven.strings import b64encode
 from data_safe_haven.types import AzureDnsZoneNames
 
 
@@ -376,6 +378,9 @@ class SREDataComponent(ComponentResource):
             account_name=alphanumeric(
                 f"{''.join(truncate_tokens(stack_name.split('-'), 14))}configdata"
             )[:24],
+            # Hierarchical namespace is required for SFTP support
+            is_hns_enabled=True,
+            is_sftp_enabled=True,
             kind=storage.Kind.STORAGE_V2,
             location=props.location,
             network_rule_set=storage.NetworkRuleSetArgs(
@@ -457,15 +462,37 @@ class SREDataComponent(ComponentResource):
         )
 
         # Deploy desired state share
-        storage.FileShare(
+        container_desired_state = storage.BlobContainer(
             f"{storage_account_data_configuration._name}_desired_state",
-            access_tier=storage.ShareAccessTier.COOL,
+            # access_tier=storage.ShareAccessTier.COOL,
             account_name=storage_account_data_configuration.name,
-            enabled_protocols=storage.EnabledProtocols.NFS,
+            # enabled_protocols=storage.EnabledProtocols.NFS,
+            # resource_group_name=resource_group.name,
+            # root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
+            # share_name="desired_state",
+            # share_quota=1,
+        )
+        # Create key pair for desired state local user
+        container_desired_state_key = pulumi_tls.PrivateKey(
+            algorithm="RSA",
+        )
+        # Create local user for desired state container for workspaces
+        storage.LocalUser(
+            f"{storage_account_data_configuration._name}_local_user_workspaces",
+            account_name=storage_account_data_configuration.name,
+            has_shared_key=False,
+            has_ssh_key=True,
+            has_ssh_password=True,
+            username="workspace_user",
+            permission_scopes=[storage.PermissionScopeArgs(
+                permissions="rl",
+                resource_name=container_desired_state.name,
+            )],
             resource_group_name=resource_group.name,
-            root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
-            share_name="desired_state",
-            share_quota=1,
+            ssh_authorized_keys=[storage.SshPublicKeyArgs(
+                description="Workspace key",
+                key=b64encode(container_desired_state_key.public_key_openssh),
+            )],
         )
 
         # Deploy sensitive data blob storage account
@@ -771,6 +798,9 @@ class SREDataComponent(ComponentResource):
         )
         self.storage_account_data_configuration_name = (
             storage_account_data_configuration.name
+        )
+        self.container_desired_state_private_key = Output.secret(
+            container_desired_state_key.private_key_openssh
         )
         self.managed_identity = identity_key_vault_reader
         self.password_nexus_admin = Output.secret(password_nexus_admin.result)
