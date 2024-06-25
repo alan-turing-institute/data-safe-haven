@@ -58,16 +58,6 @@ class DataSafeHavenEntraIDError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenInternalError(DataSafeHavenError):
-    """
-    Exception class for handling internal errors.
-
-    Usage of this one seems inconsistent. Will be removed. Check subclasses first.
-    """
-
-    pass
-
-
 class DataSafeHavenIPRangeError(DataSafeHavenError):
     """Exception raised when it is not possible to generate a valid IPv4 range."""
 
