@@ -22,7 +22,7 @@ class DataSafeHavenAzureError(DataSafeHavenError):
     """
     Exception class for handling errors when interacting with Azure.
 
-    For example, when creating resources in Azure fails.
+    Raise this error when, for example, creating resources in Azure fails.
     """
 
     pass
@@ -30,9 +30,9 @@ class DataSafeHavenAzureError(DataSafeHavenError):
 
 class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenAzureError):
     """
-    Exception class for handling errors when authenticating against the Azure API
+    Exception class for handling errors when authenticating against the Azure API.
 
-    Used to capture exceptions generated when the user is not authenticated or that the authentication has expired
+    Used to capture exceptions generated when the user is not authenticated or authentication has expired
     """
 
     pass
@@ -60,7 +60,7 @@ class DataSafeHavenEntraIDError(DataSafeHavenError):
 
 class DataSafeHavenInputError(DataSafeHavenError):
     """
-    Exception class for handling errors related to input validation
+    Exception class for handling errors related to input validation.
 
     Not used consistently, will be removed. Perhaps replace with ValueError
     """
@@ -70,7 +70,7 @@ class DataSafeHavenInputError(DataSafeHavenError):
 
 class DataSafeHavenInternalError(DataSafeHavenError):
     """
-    Exception class for handling internal errors
+    Exception class for handling internal errors.
 
     Usage of this one seems inconsistent. Will be removed. Check subclasses first.
     """
@@ -80,14 +80,14 @@ class DataSafeHavenInternalError(DataSafeHavenError):
 
 class DataSafeHavenIPRangeError(DataSafeHavenError):
     """
-    Exception class raised when it is not possible to generate a valid IPv4 range
+    Exception class raised when it is not possible to generate a valid IPv4 range.
     """
 
     pass
 
 class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
     """
-    Exception class for handling errors when interacting with the Microsoft Graph API
+    Exception class for handling errors when interacting with the Microsoft Graph API.
 
     """
 
@@ -104,7 +104,7 @@ class DataSafeHavenParameterError(DataSafeHavenError):
 
 class DataSafeHavenPulumiError(DataSafeHavenError):
     """
-    Exception class for handling errors when interacting with Pulumi
+    Exception class for handling errors when interacting with Pulumi.
 
     For example, when a Pulumi operation such as a deployment fails
     """
@@ -123,7 +123,7 @@ class DataSafeHavenSSLError(DataSafeHavenError):
 
 class DataSafeHavenUserHandlingError(DataSafeHavenInternalError):
     """
-    Exception class for handling errors related to user handling
+    Exception class for handling errors related to user handling.
 
     For example, when listing or registering users fails
     """
