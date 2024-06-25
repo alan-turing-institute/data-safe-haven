@@ -67,7 +67,7 @@ class EntraUsers:
                     f"Ensured user '[green]{user.preferred_username}[/]' exists in Entra ID"
                 )
         except DataSafeHavenError as exc:
-            msg = f"Unable to add users to Entra ID.\n{exc}"
+            msg = "Unable to add users to Entra ID."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def list(self) -> Sequence[ResearchUser]:
@@ -100,7 +100,7 @@ class EntraUsers:
                 for user_details in user_list
             ]
         except DataSafeHavenError as exc:
-            msg = f"Unable list Entra ID users.\n{exc}"
+            msg = "Unable to list Entra ID users."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def register(self, sre_name: str, usernames: Sequence[str]) -> None:
@@ -115,7 +115,7 @@ class EntraUsers:
             for username in usernames:
                 self.graph_api.add_user_to_group(username, group_name)
         except DataSafeHavenError as exc:
-            msg = f"Unable add users to group '{group_name}'.\n{exc}"
+            msg = f"Unable to add users to group '{group_name}'."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
@@ -133,7 +133,7 @@ class EntraUsers:
                 self.graph_api.remove_user(user.username)
                 self.logger.info(f"Removed '{user.preferred_username}'.")
         except DataSafeHavenError as exc:
-            msg = f"Unable to remove users from Entra ID.\n{exc}"
+            msg = "Unable to remove users from Entra ID."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def set(self, users: Sequence[ResearchUser]) -> None:
@@ -149,7 +149,7 @@ class EntraUsers:
             users_to_add = [user for user in users if user not in self.list()]
             self.add(users_to_add)
         except DataSafeHavenError as exc:
-            msg = f"Unable to set desired user list in Entra ID.\n{exc}"
+            msg = "Unable to set desired user list in Entra ID."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def unregister(self, sre_name: str, usernames: Sequence[str]) -> None:
@@ -164,5 +164,5 @@ class EntraUsers:
             for username in usernames:
                 self.graph_api.remove_user_from_group(username, group_name)
         except DataSafeHavenError as exc:
-            msg = f"Unable to remove users from group {group_name}.\n{exc}"
+            msg = f"Unable to remove users from group {group_name}."
             raise DataSafeHavenEntraIDError(msg) from exc

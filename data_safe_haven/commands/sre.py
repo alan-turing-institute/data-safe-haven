@@ -103,7 +103,7 @@ def deploy(
         )
         manager.run()
     except DataSafeHavenError as exc:
-        msg = f"Could not deploy Secure Research Environment {sre_config.safe_name}.\n{exc}"
+        msg = f"Could not deploy Secure Research Environment {sre_config.safe_name}."
         raise DataSafeHavenError(msg) from exc
     finally:
         # Upload Pulumi config to blob storage
@@ -139,8 +139,8 @@ def teardown(
             )
             stack.teardown()
         except Exception as exc:
-            msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
-            raise DataSafeHavenPulumiError(msg) from exc
+            msg = "Unable to teardown Pulumi infrastructure."
+            raise DataSafeHavenInputError(msg) from exc
 
         # Remove Pulumi project from Pulumi config file
         del pulumi_config[name]
@@ -148,5 +148,7 @@ def teardown(
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
-        msg = f"Could not teardown Secure Research Environment '{sre_config.safe_name}'.\n{exc}"
+        msg = (
+            f"Could not teardown Secure Research Environment '{sre_config.safe_name}'."
+        )
         raise DataSafeHavenError(msg) from exc

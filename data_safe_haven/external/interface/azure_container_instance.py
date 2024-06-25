@@ -86,9 +86,7 @@ class AzureContainerInstance:
                 f" with IP address [green]{self.current_ip_address}[/].",
             )
         except Exception as exc:
-            msg = (
-                f"Could not restart container group {self.container_group_name}.\n{exc}"
-            )
+            msg = f"Could not restart container group {self.container_group_name}."
             raise DataSafeHavenAzureError(msg) from exc
 
     def run_executable(self, container_name: str, executable_path: str) -> list[str]:

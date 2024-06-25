@@ -150,14 +150,7 @@ class TestContextSettings:
 
     def test_missing_selected(self, context_yaml):
         context_yaml = "\n".join(context_yaml.splitlines()[1:])
-        msg = "\n".join(
-            [
-                "Could not load ContextSettings configuration.",
-                "1 validation error for ContextSettings",
-                "selected",
-                "  Field required",
-            ]
-        )
+        msg = "Could not load ContextSettings configuration."
         with pytest.raises(DataSafeHavenParameterError, match=msg):
             ContextSettings.from_yaml(context_yaml)
 
@@ -168,7 +161,7 @@ class TestContextSettings:
 
         with pytest.raises(
             DataSafeHavenParameterError,
-            match="Selected context 'invalid' is not defined.",
+            match="Could not load ContextSettings configuration.",
         ):
             ContextSettings.from_yaml(context_yaml)
 

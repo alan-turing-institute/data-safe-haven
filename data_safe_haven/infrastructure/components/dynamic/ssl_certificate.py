@@ -58,7 +58,7 @@ class SSLCertificateProvider(DshResourceProvider):
         except Exception as exc:
             cert_name = f"[green]{props['certificate_secret_name']}[/]"
             domain_name = f"[green]{props['domain_name']}[/]"
-            msg = f"Failed to refresh SSL certificate {cert_name} for {domain_name}.\n{exc}"
+            msg = f"Failed to refresh SSL certificate {cert_name} for {domain_name}."
             raise DataSafeHavenSSLError(msg) from exc
 
     def create(self, props: dict[str, Any]) -> CreateResult:
@@ -140,7 +140,7 @@ class SSLCertificateProvider(DshResourceProvider):
         except Exception as exc:
             cert_name = f"[green]{props['certificate_secret_name']}[/]"
             domain_name = f"[green]{props['domain_name']}[/]"
-            msg = f"Failed to create SSL certificate {cert_name} for {domain_name}.\n{exc}"
+            msg = f"Failed to create SSL certificate {cert_name} for {domain_name}."
             raise DataSafeHavenSSLError(msg) from exc
         return CreateResult(
             f"SSLCertificate-{props['certificate_secret_name']}",
@@ -167,7 +167,7 @@ class SSLCertificateProvider(DshResourceProvider):
         except Exception as exc:
             cert_name = f"[green]{props['certificate_secret_name']}[/]"
             domain_name = f"[green]{props['domain_name']}[/]"
-            msg = f"Failed to delete SSL certificate {cert_name} for {domain_name}.\n{exc}"
+            msg = f"Failed to delete SSL certificate {cert_name} for {domain_name}."
             raise DataSafeHavenSSLError(msg) from exc
 
     def diff(
