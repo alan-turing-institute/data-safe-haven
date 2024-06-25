@@ -3,7 +3,9 @@ from data_safe_haven.logging import get_logger
 
 class DataSafeHavenError(Exception):
     """
-    Parent class for all DataSafeHaven exceptions
+    Parent class for all DataSafeHaven exceptions.
+
+    This class is not intended to be instantiated directly. Developers should use one of the subclasses instead.
     """
 
     def __init__(self, message: str | bytes):
@@ -12,18 +14,6 @@ class DataSafeHavenError(Exception):
         # Log exception message as an error
         logger = get_logger()
         logger.error(message)
-
-
-class DataSafeHavenCloudError(DataSafeHavenError):
-    """
-    Exception class for handling errors when interacting with the cloud.
-
-    This is a parent class for the cloud-related exception classes
-    `DataSafeHavenAzureError`, `DataSafeHavenEntraIDError` and
-    `DataSafeHavenPulumiError`.
-    """
-
-    pass
 
 
 class DataSafeHavenConfigError(DataSafeHavenError):
@@ -36,7 +26,7 @@ class DataSafeHavenConfigError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenEntraIDError(DataSafeHavenCloudError):
+class DataSafeHavenEntraIDError(DataSafeHavenError):
     """
     Exception class for handling errors when interacting with Entra ID.
 
@@ -50,19 +40,26 @@ class DataSafeHavenInputError(DataSafeHavenError):
     """
     Exception class for handling errors related to input validation
 
-
+    Not used consistently, will be removed. Perhaps replace with ValueError
     """
 
     pass
 
 
 class DataSafeHavenInternalError(DataSafeHavenError):
+    """
+    Exception class for handling internal errors
+
+    Usage of this one seems inconsistent. Will be removed. Check subclasses first.
+    """
+
     pass
 
 
 class DataSafeHavenIPRangeError(DataSafeHavenError):
     """
-    Exception class for errors relating to the generation of IP ranges during SRE creation
+    Exception class raised when it is not possible to generate a valid IPv4 range
+
 
     """
 
@@ -70,16 +67,26 @@ class DataSafeHavenIPRangeError(DataSafeHavenError):
 
 
 class DataSafeHavenNotImplementedError(DataSafeHavenInternalError):
+    """
+    Replace with NotImplementedError
+
+    """
+
     pass
 
 
 class DataSafeHavenParameterError(DataSafeHavenError):
+    """
+    Possibly replace with ValueError or TypeError. See also InputError - potentially merge.
+
+    """
+
     pass
 
 
 class DataSafeHavenSSLError(DataSafeHavenError):
     """
-    Exception class for handling errors related to administration of SSL certificates
+    Exception class for handling errors related to administration of SSL certificates.
 
     For example, errors refreshing or creating SSL certificates
     """
@@ -87,21 +94,22 @@ class DataSafeHavenSSLError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenAzureError(DataSafeHavenCloudError):
+class DataSafeHavenAzureError(DataSafeHavenError):
     """
-    Exception class for handling errors when interacting with Azure
+    Exception class for handling errors when interacting with Azure.
 
     For example, when creating resources in Azure fails
     """
 
     pass
 
+class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenAzureError):
+    """
+    Exception class for handling errors when authenticating against the Azure API
 
-class DataSafeHavenAzureAPIError(DataSafeHavenError):
-    pass
+    Used to capture exceptions generated when the user is not authenticated or that the authentication has expired
+    """
 
-
-class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenAzureAPIError):
     pass
 
 
@@ -124,7 +132,7 @@ class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
     pass
 
 
-class DataSafeHavenPulumiError(DataSafeHavenCloudError):
+class DataSafeHavenPulumiError(DataSafeHavenError):
     """
     Exception class for handling errors when interacting with Pulumi
 
