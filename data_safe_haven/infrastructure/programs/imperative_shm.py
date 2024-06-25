@@ -85,7 +85,7 @@ class ImperativeSHM:
                 key_vault_name=keyvault.name,
             )
         except DataSafeHavenAzureError as exc:
-            msg = f"Failed to deploy resources needed by Pulumi.\n{exc}"
+            msg = "Failed to deploy resources needed by Pulumi."
             raise DataSafeHavenAzureError(msg) from exc
 
         # Deploy common resources that will be needed by SREs
@@ -108,7 +108,7 @@ class ImperativeSHM:
                 zone_name=self.config.shm.fqdn,
             )
         except DataSafeHavenAzureError as exc:
-            msg = f"Failed to create SHM resources.\n{exc}"
+            msg = "Failed to create SHM resources."
             raise DataSafeHavenAzureError(msg) from exc
 
         # Add the SHM domain to the Entra ID via interactive GraphAPI
