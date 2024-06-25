@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_df328507d7f81f1c_sre_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-06-25 10:12 +0000
+            created at 2024-06-25 10:48 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -162,7 +162,7 @@
     <p class="pln"><span class="n"><a id="t80" href="#t80">80</a></span><span class="t">        <span class="com"># for figuring out what went wrong.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">        <span class="com"># print("Could not deploy Data Safe Haven Management environment.")</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t82" href="#t82">82</a></span><span class="t">        <span class="com"># raise typer.Exit(code=1) from exc</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t">        <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Could not deploy Data Safe Haven Management environment.\n</span><span class="op">{</span><span class="nam">exc</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t">        <span class="nam">msg</span> <span class="op">=</span> <span class="str">"Could not deploy Data Safe Haven Management environment."</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t84" href="#t84">84</a></span><span class="t">        <span class="key">raise</span> <span class="nam">DataSafeHavenError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t85" href="#t85">85</a></span><span class="t">    <span class="key">finally</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t86" href="#t86">86</a></span><span class="t">        <span class="com"># Upload Pulumi config to blob storage</span>&nbsp;</span><span class="r"></span></p>
@@ -186,7 +186,7 @@
     <p class="pln"><span class="n"><a id="t104" href="#t104">104</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t105" href="#t105">105</a></span><span class="t">            <span class="nam">stack</span><span class="op">.</span><span class="nam">teardown</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t106" href="#t106">106</a></span><span class="t">        <span class="key">except</span> <span class="nam">Exception</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t107" href="#t107">107</a></span><span class="t">            <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Unable to teardown Pulumi infrastructure.\n</span><span class="op">{</span><span class="nam">exc</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t107" href="#t107">107</a></span><span class="t">            <span class="nam">msg</span> <span class="op">=</span> <span class="str">"Unable to teardown Pulumi infrastructure."</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t108" href="#t108">108</a></span><span class="t">            <span class="key">raise</span> <span class="nam">DataSafeHavenInputError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t109" href="#t109">109</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t110" href="#t110">110</a></span><span class="t">        <span class="com"># Remove information from config file</span>&nbsp;</span><span class="r"></span></p>
@@ -195,7 +195,7 @@
     <p class="pln"><span class="n"><a id="t113" href="#t113">113</a></span><span class="t">        <span class="com"># Upload Pulumi config to blob storage</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t114" href="#t114">114</a></span><span class="t">        <span class="nam">pulumi_config</span><span class="op">.</span><span class="nam">upload</span><span class="op">(</span><span class="nam">context</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t115" href="#t115">115</a></span><span class="t">    <span class="key">except</span> <span class="nam">DataSafeHavenError</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t116" href="#t116">116</a></span><span class="t">        <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Could not teardown Safe Haven Management environment.\n</span><span class="op">{</span><span class="nam">exc</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t116" href="#t116">116</a></span><span class="t">        <span class="nam">msg</span> <span class="op">=</span> <span class="str">"Could not teardown Safe Haven Management environment."</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t117" href="#t117">117</a></span><span class="t">        <span class="key">raise</span> <span class="nam">DataSafeHavenError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
@@ -206,7 +206,7 @@
             <a class="nav" href="z_df328507d7f81f1c_sre_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-06-25 10:12 +0000
+            created at 2024-06-25 10:48 +0000
         </p>
     </div>
 </footer>

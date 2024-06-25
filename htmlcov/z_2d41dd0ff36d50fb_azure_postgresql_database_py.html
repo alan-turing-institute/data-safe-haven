@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_2d41dd0ff36d50fb_pulumi_account_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-06-25 10:12 +0000
+            created at 2024-06-25 10:48 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -192,7 +192,7 @@
     <p class="mis show_mis"><span class="n"><a id="t110" href="#t110">110</a></span><span class="t">                    <span class="nam">n_retries</span> <span class="op">-=</span> <span class="num">1</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t111" href="#t111">111</a></span><span class="t">                    <span class="nam">time</span><span class="op">.</span><span class="nam">sleep</span><span class="op">(</span><span class="num">10</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t112" href="#t112">112</a></span><span class="t">            <span class="key">except</span> <span class="nam">Exception</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t113" href="#t113">113</a></span><span class="t">                <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Could not connect to database.\n</span><span class="op">{</span><span class="nam">exc</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t113" href="#t113">113</a></span><span class="t">                <span class="nam">msg</span> <span class="op">=</span> <span class="str">"Could not connect to database."</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t114" href="#t114">114</a></span><span class="t">                <span class="key">raise</span> <span class="nam">DataSafeHavenAzureError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t115" href="#t115">115</a></span><span class="t">        <span class="key">return</span> <span class="nam">connection</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t116" href="#t116">116</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -240,7 +240,7 @@
     <p class="mis show_mis"><span class="n"><a id="t158" href="#t158">158</a></span><span class="t">            <span class="nam">connection</span><span class="op">.</span><span class="nam">commit</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t159" href="#t159">159</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span><span class="fst">f"</span><span class="fst">Finished running </span><span class="op">{</span><span class="nam">len</span><span class="op">(</span><span class="nam">filepaths</span><span class="op">)</span><span class="op">}</span><span class="fst"> SQL scripts.</span><span class="fst">"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t160" href="#t160">160</a></span><span class="t">        <span class="key">except</span> <span class="op">(</span><span class="nam">Exception</span><span class="op">,</span> <span class="nam">psycopg</span><span class="op">.</span><span class="nam">Error</span><span class="op">)</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t161" href="#t161">161</a></span><span class="t">            <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Error while connecting to PostgreSQL.\n</span><span class="op">{</span><span class="nam">exc</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t161" href="#t161">161</a></span><span class="t">            <span class="nam">msg</span> <span class="op">=</span> <span class="str">"Error while connecting to PostgreSQL."</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t162" href="#t162">162</a></span><span class="t">            <span class="key">raise</span> <span class="nam">DataSafeHavenAzureError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t163" href="#t163">163</a></span><span class="t">        <span class="key">finally</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t164" href="#t164">164</a></span><span class="t">            <span class="com"># Close the connection if it is open</span>&nbsp;</span><span class="r"></span></p>
@@ -328,7 +328,7 @@
             <a class="nav" href="z_2d41dd0ff36d50fb_pulumi_account_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-06-25 10:12 +0000
+            created at 2024-06-25 10:48 +0000
         </p>
     </div>
 </footer>

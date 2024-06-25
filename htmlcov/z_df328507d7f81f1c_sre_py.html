@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_df328507d7f81f1c_users_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-06-25 10:12 +0000
+            created at 2024-06-25 10:48 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -185,7 +185,7 @@
     <p class="pln"><span class="n"><a id="t103" href="#t103">103</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t104" href="#t104">104</a></span><span class="t">        <span class="nam">manager</span><span class="op">.</span><span class="nam">run</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t105" href="#t105">105</a></span><span class="t">    <span class="key">except</span> <span class="nam">DataSafeHavenError</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t106" href="#t106">106</a></span><span class="t">        <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Could not deploy Secure Research Environment </span><span class="op">{</span><span class="nam">sre_config</span><span class="op">.</span><span class="nam">safe_name</span><span class="op">}</span><span class="fst">.\n</span><span class="op">{</span><span class="nam">exc</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t106" href="#t106">106</a></span><span class="t">        <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Could not deploy Secure Research Environment </span><span class="op">{</span><span class="nam">sre_config</span><span class="op">.</span><span class="nam">safe_name</span><span class="op">}</span><span class="fst">.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t107" href="#t107">107</a></span><span class="t">        <span class="key">raise</span> <span class="nam">DataSafeHavenError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t108" href="#t108">108</a></span><span class="t">    <span class="key">finally</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t109" href="#t109">109</a></span><span class="t">        <span class="com"># Upload Pulumi config to blob storage</span>&nbsp;</span><span class="r"></span></p>
@@ -221,7 +221,7 @@
     <p class="pln"><span class="n"><a id="t139" href="#t139">139</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t140" href="#t140">140</a></span><span class="t">            <span class="nam">stack</span><span class="op">.</span><span class="nam">teardown</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t141" href="#t141">141</a></span><span class="t">        <span class="key">except</span> <span class="nam">Exception</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t142" href="#t142">142</a></span><span class="t">            <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Unable to teardown Pulumi infrastructure.\n</span><span class="op">{</span><span class="nam">exc</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t142" href="#t142">142</a></span><span class="t">            <span class="nam">msg</span> <span class="op">=</span> <span class="str">"Unable to teardown Pulumi infrastructure."</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t143" href="#t143">143</a></span><span class="t">            <span class="key">raise</span> <span class="nam">DataSafeHavenInputError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t144" href="#t144">144</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t145" href="#t145">145</a></span><span class="t">        <span class="com"># Remove Pulumi project from Pulumi config file</span>&nbsp;</span><span class="r"></span></p>
@@ -230,8 +230,10 @@
     <p class="pln"><span class="n"><a id="t148" href="#t148">148</a></span><span class="t">        <span class="com"># Upload Pulumi config to blob storage</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t149" href="#t149">149</a></span><span class="t">        <span class="nam">pulumi_config</span><span class="op">.</span><span class="nam">upload</span><span class="op">(</span><span class="nam">context</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t150" href="#t150">150</a></span><span class="t">    <span class="key">except</span> <span class="nam">DataSafeHavenError</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t151" href="#t151">151</a></span><span class="t">        <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">Could not teardown Secure Research Environment '</span><span class="op">{</span><span class="nam">sre_config</span><span class="op">.</span><span class="nam">safe_name</span><span class="op">}</span><span class="fst">'.\n</span><span class="op">{</span><span class="nam">exc</span><span class="op">}</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t152" href="#t152">152</a></span><span class="t">        <span class="key">raise</span> <span class="nam">DataSafeHavenError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t151" href="#t151">151</a></span><span class="t">        <span class="nam">msg</span> <span class="op">=</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t152" href="#t152">152</a></span><span class="t">            <span class="fst">f"</span><span class="fst">Could not teardown Secure Research Environment '</span><span class="op">{</span><span class="nam">sre_config</span><span class="op">.</span><span class="nam">safe_name</span><span class="op">}</span><span class="fst">'.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t153" href="#t153">153</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t154" href="#t154">154</a></span><span class="t">        <span class="key">raise</span> <span class="nam">DataSafeHavenError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -241,7 +243,7 @@
             <a class="nav" href="z_df328507d7f81f1c_users_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-06-25 10:12 +0000
+            created at 2024-06-25 10:48 +0000
         </p>
     </div>
 </footer>
