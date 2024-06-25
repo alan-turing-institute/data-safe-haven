@@ -6,10 +6,10 @@ import yaml
 from pulumi.automation import ProjectSettings
 from pytest import fixture
 
-import data_safe_haven.config.context_settings as context_mod
+import data_safe_haven.config.context_manager as context_mod
 import data_safe_haven.logging.logger
 from data_safe_haven.config import (
-    ContextSettings,
+    ContextManager,
     DSHPulumiConfig,
     DSHPulumiProject,
     SHMConfig,
@@ -57,8 +57,8 @@ def context_no_secrets(monkeypatch, context_dict) -> Context:
 
 
 @fixture
-def context_settings(context_yaml) -> ContextSettings:
-    return ContextSettings.from_yaml(context_yaml)
+def context_manager(context_yaml) -> ContextManager:
+    return ContextManager.from_yaml(context_yaml)
 
 
 @fixture

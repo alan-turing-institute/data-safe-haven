@@ -7,7 +7,7 @@ import typer
 
 from data_safe_haven.administration.users import UserHandler
 from data_safe_haven.config import (
-    ContextSettings,
+    ContextManager,
     DSHPulumiConfig,
     SHMConfig,
     SREConfig,
@@ -29,7 +29,7 @@ def add(
     ],
 ) -> None:
     """Add users to a deployed Data Safe Haven."""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     shm_config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
 
@@ -69,7 +69,7 @@ def list_users(
     ],
 ) -> None:
     """List users from a deployed Data Safe Haven."""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     shm_config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
 
@@ -113,7 +113,7 @@ def register(
     ],
 ) -> None:
     """Register existing users with a deployed SRE."""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_config = SHMConfig.from_remote(context)
     sre_config = SREConfig.from_remote_by_name(context, sre)
@@ -175,7 +175,7 @@ def remove(
     ],
 ) -> None:
     """Remove existing users from a deployed Data Safe Haven."""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_config = SHMConfig.from_remote(context)
 
@@ -220,7 +220,7 @@ def unregister(
     ],
 ) -> None:
     """Unregister existing users from a deployed SRE."""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_config = SHMConfig.from_remote(context)
     sre_config = SREConfig.from_remote_by_name(context, sre)

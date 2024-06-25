@@ -5,7 +5,7 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven.config import (
-    ContextSettings,
+    ContextManager,
     DSHPulumiConfig,
     SHMConfig,
     SREConfig,
@@ -31,7 +31,7 @@ def deploy(
     ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_config = SHMConfig.from_remote(context)
     sre_config = SREConfig.from_remote_by_name(context, name)
@@ -115,7 +115,7 @@ def teardown(
     name: Annotated[str, typer.Argument(help="Name of SRE to teardown.")],
 ) -> None:
     """Tear down a deployed a Secure Research Environment."""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_config = SHMConfig.from_remote(context)
     sre_config = SREConfig.from_remote_by_name(context, name)

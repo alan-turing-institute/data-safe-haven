@@ -6,7 +6,7 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import console
-from data_safe_haven.config import ContextSettings, SHMConfig, SREConfig
+from data_safe_haven.config import ContextManager, SHMConfig, SREConfig
 from data_safe_haven.logging import get_logger
 
 config_command_group = typer.Typer()
@@ -21,7 +21,7 @@ def show_shm(
     ] = None
 ) -> None:
     """Print the SHM configuration for the selected Data Safe Haven context"""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     config = SHMConfig.from_remote(context)
     config_yaml = config.to_yaml()
     if file:
@@ -41,7 +41,7 @@ def show(
     ] = None,
 ) -> None:
     """Print the SRE configuration for the selected SRE and Data Safe Haven context"""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     sre_config = SREConfig.from_remote_by_name(context, name)
     config_yaml = sre_config.to_yaml()
     if file:
@@ -76,7 +76,7 @@ def upload(
     file: Annotated[Path, typer.Argument(help="Path to configuration file")],
 ) -> None:
     """Upload an SRE configuration to the Data Safe Haven context"""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     logger = get_logger()
 
     # Create configuration object from file

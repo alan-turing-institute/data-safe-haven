@@ -5,7 +5,7 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import console, validators
-from data_safe_haven.config import ContextSettings
+from data_safe_haven.config import ContextManager
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
 )
@@ -16,18 +16,18 @@ context_command_group = typer.Typer()
 
 @context_command_group.command()
 def show() -> None:
-    """Show information about the selected context."""
+    """Show information about the currently selected context."""
     logger = get_logger()
     try:
-        settings = ContextSettings.from_file()
+        manager = ContextManager.from_file()
     except DataSafeHavenConfigError as exc:
         logger.critical(
             "No context configuration file. Use `dsh context add` to create one."
         )
         raise typer.Exit(code=1) from exc
 
-    current_context_key = settings.selected
-    current_context = settings.context
+    current_context_key = manager.selected
+    current_context = manager.context
 
     console.print(f"Current context: [green]{current_context_key}")
     if current_context is not None:
@@ -43,15 +43,15 @@ def available() -> None:
     """Show the available contexts."""
     logger = get_logger()
     try:
-        settings = ContextSettings.from_file()
+        manager = ContextManager.from_file()
     except DataSafeHavenConfigError as exc:
         logger.critical(
             "No context configuration file. Use `dsh context add` to create one."
         )
         raise typer.Exit(code=1) from exc
 
-    current_context_key = settings.selected
-    available = settings.available
+    current_context_key = manager.selected
+    available = manager.available
 
     if current_context_key is not None:
         available.remove(current_context_key)
@@ -64,17 +64,17 @@ def available() -> None:
 def switch(
     key: Annotated[str, typer.Argument(help="Key of the context to switch to.")]
 ) -> None:
-    """Switch the selected context."""
+    """Switch the currently selected context."""
     logger = get_logger()
     try:
-        settings = ContextSettings.from_file()
+        manager = ContextManager.from_file()
     except DataSafeHavenConfigError as exc:
         logger.critical(
             "No context configuration file. Use `dsh context add` to create one."
         )
         raise typer.Exit(code=1) from exc
-    settings.selected = key
-    settings.write()
+    manager.selected = key
+    manager.write()
 
 
 @context_command_group.command()
@@ -93,18 +93,18 @@ def add(
         ),
     ],
 ) -> None:
-    """Add a new context to the context list."""
+    """Add a new context to the context manager."""
     # Create a new context settings file if none exists
-    if ContextSettings.default_config_file_path().exists():
-        settings = ContextSettings.from_file()
+    if ContextManager.default_config_file_path().exists():
+        manager = ContextManager.from_file()
     else:
-        settings = ContextSettings(contexts={}, selected=None)
+        manager = ContextManager(contexts={}, selected=None)
     # Add the context to the file and write it
-    settings.add(
+    manager.add(
         name=name,
         subscription_name=subscription_name,
     )
-    settings.write()
+    manager.write()
 
 
 @context_command_group.command()
@@ -122,33 +122,33 @@ def update(
         ),
     ] = None,
 ) -> None:
-    """Update the selected context settings."""
+    """Update the currently selected context."""
     logger = get_logger()
     try:
-        settings = ContextSettings.from_file()
+        manager = ContextManager.from_file()
     except DataSafeHavenConfigError as exc:
         logger.critical(
             "No context configuration file. Use `dsh context add` to create one."
         )
         raise typer.Exit(1) from exc
 
-    settings.update(
+    manager.update(
         name=name,
         subscription_name=subscription,
     )
-    settings.write()
+    manager.write()
 
 
 @context_command_group.command()
 def remove(
     key: Annotated[str, typer.Argument(help="Name of the context to remove.")],
 ) -> None:
-    """Removes a context."""
+    """Removes a context from the the context manager."""
     logger = get_logger()
     try:
-        settings = ContextSettings.from_file()
+        manager = ContextManager.from_file()
     except DataSafeHavenConfigError as exc:
         logger.critical("No context configuration file.")
         raise typer.Exit(1) from exc
-    settings.remove(key)
-    settings.write()
+    manager.remove(key)
+    manager.write()

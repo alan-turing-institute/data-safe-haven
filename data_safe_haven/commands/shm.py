@@ -5,7 +5,7 @@ from typing import Annotated, Optional
 import typer
 
 from data_safe_haven import console
-from data_safe_haven.config import ContextSettings, SHMConfig
+from data_safe_haven.config import ContextManager, SHMConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenAzureError,
@@ -56,7 +56,7 @@ def deploy(
     # Load selected context
     logger = get_logger()
     try:
-        context = ContextSettings.from_file().assert_context()
+        context = ContextManager.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
         if exc.args[0] == "No context selected":
             logger.critical(
@@ -142,7 +142,7 @@ def teardown() -> None:
     """Tear down a deployed a Safe Haven Management environment."""
     logger = get_logger()
     try:
-        context = ContextSettings.from_file().assert_context()
+        context = ContextManager.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
         if exc.args[0] == "No context selected":
             msg = "No context selected. Use `dsh context switch` to select one."

@@ -22,7 +22,7 @@ from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import YAMLSerialisableModel
 
 
-class ContextSettings(YAMLSerialisableModel):
+class ContextManager(YAMLSerialisableModel):
     """Load available and current contexts from YAML files structured as follows:
 
     selected: acmedeployment
@@ -36,13 +36,13 @@ class ContextSettings(YAMLSerialisableModel):
         ...
     """
 
-    config_type: ClassVar[str] = "ContextSettings"
+    config_type: ClassVar[str] = "ContextManager"
     selected_: str | None = Field(..., alias="selected")
     contexts: dict[str, Context]
     logger: ClassVar[Logger] = get_logger()
 
     @model_validator(mode="after")
-    def ensure_selected_is_valid(self) -> ContextSettings:
+    def ensure_selected_is_valid(self) -> ContextManager:
         if self.selected is not None:
             if self.selected not in self.available:
                 msg = f"Selected context '{self.selected}' is not defined."
@@ -133,7 +133,7 @@ class ContextSettings(YAMLSerialisableModel):
             self.selected = None
 
     @classmethod
-    def from_file(cls, config_file_path: Path | None = None) -> ContextSettings:
+    def from_file(cls, config_file_path: Path | None = None) -> ContextManager:
         if config_file_path is None:
             config_file_path = cls.default_config_file_path()
         cls.logger.debug(

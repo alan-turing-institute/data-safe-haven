@@ -7,7 +7,7 @@ import typer
 
 from data_safe_haven import console
 from data_safe_haven.config import (
-    ContextSettings,
+    ContextManager,
     DSHPulumiConfig,
     SHMConfig,
     SREConfig,
@@ -36,7 +36,7 @@ def run(
     ],
 ) -> None:
     """Run arbitrary Pulumi commands in a DSH project"""
-    context = ContextSettings.from_file().assert_context()
+    context = ContextManager.from_file().assert_context()
     pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_config = SHMConfig.from_remote(context)
     sre_config = SREConfig.from_remote_by_name(context, sre_name)

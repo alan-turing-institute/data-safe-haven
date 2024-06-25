@@ -2,11 +2,12 @@ from pytest import fixture
 from typer.testing import CliRunner
 
 from data_safe_haven.config import (
-    ContextSettings,
+    ContextManager,
     DSHPulumiConfig,
     SHMConfig,
     SREConfig,
 )
+from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError
 from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
@@ -14,8 +15,8 @@ from data_safe_haven.infrastructure import ImperativeSHM
 
 
 @fixture
-def context(context_yaml):
-    return ContextSettings.from_yaml(context_yaml).context
+def context(context_yaml) -> Context:
+    return ContextManager.from_yaml(context_yaml).context
 
 
 @fixture

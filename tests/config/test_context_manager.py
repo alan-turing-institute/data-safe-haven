@@ -2,7 +2,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from data_safe_haven.config import ContextSettings
+from data_safe_haven.config import ContextManager
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
@@ -85,9 +85,9 @@ class TestContext:
         )
 
 
-class TestContextSettings:
+class TestContextManager:
     def test_constructor(self):
-        settings = ContextSettings(
+        settings = ContextManager(
             selected="acmedeployment",
             contexts={
                 "acmedeployment": Context(
@@ -98,14 +98,14 @@ class TestContextSettings:
                 )
             },
         )
-        assert isinstance(settings, ContextSettings)
+        assert isinstance(settings, ContextManager)
 
     def test_null_selected(self, context_yaml):
         context_yaml = context_yaml.replace(
             "selected: acmedeployment", "selected: null"
         )
 
-        settings = ContextSettings.from_yaml(context_yaml)
+        settings = ContextManager.from_yaml(context_yaml)
         assert settings.selected is None
         assert settings.context is None
         with pytest.raises(DataSafeHavenConfigError, match="No context selected"):
@@ -117,9 +117,9 @@ class TestContextSettings:
         )
         with pytest.raises(
             DataSafeHavenParameterError,
-            match="Could not load ContextSettings configuration.",
+            match="Could not load ContextManager configuration.",
         ):
-            ContextSettings.from_yaml(context_yaml)
+            ContextManager.from_yaml(context_yaml)
 
     def test_invalid_selected_input(self, context_yaml):
         context_yaml = context_yaml.replace(
@@ -127,148 +127,148 @@ class TestContextSettings:
         )
         with pytest.raises(
             DataSafeHavenParameterError,
-            match="Could not load ContextSettings configuration.",
+            match="Could not load ContextManager configuration.",
         ):
-            ContextSettings.from_yaml(context_yaml)
+            ContextManager.from_yaml(context_yaml)
 
     def test_invalid_yaml(self):
         invalid_yaml = "a: [1,2"
         with pytest.raises(
             DataSafeHavenConfigError,
-            match="Could not parse ContextSettings configuration as YAML.",
+            match="Could not parse ContextManager configuration as YAML.",
         ):
-            ContextSettings.from_yaml(invalid_yaml)
+            ContextManager.from_yaml(invalid_yaml)
 
     def test_yaml_not_dict(self):
         not_dict = "[1, 2, 3]"
         with pytest.raises(
             DataSafeHavenConfigError,
-            match="Unable to parse ContextSettings configuration as a dict.",
+            match="Unable to parse ContextManager configuration as a dict.",
         ):
-            ContextSettings.from_yaml(not_dict)
+            ContextManager.from_yaml(not_dict)
 
-    def test_selected(self, context_settings):
-        assert context_settings.selected == "acmedeployment"
+    def test_selected(self, context_manager):
+        assert context_manager.selected == "acmedeployment"
 
-    def test_set_selected(self, context_settings):
-        assert context_settings.selected == "acmedeployment"
-        context_settings.selected = "gems"
-        assert context_settings.selected == "gems"
+    def test_set_selected(self, context_manager):
+        assert context_manager.selected == "acmedeployment"
+        context_manager.selected = "gems"
+        assert context_manager.selected == "gems"
 
-    def test_invalid_selected(self, context_settings):
+    def test_invalid_selected(self, context_manager):
         with pytest.raises(
             DataSafeHavenParameterError, match="Context 'invalid' is not defined."
         ):
-            context_settings.selected = "invalid"
+            context_manager.selected = "invalid"
 
-    def test_context(self, context_yaml, context_settings):
+    def test_context(self, context_yaml, context_manager):
         yaml_dict = yaml.safe_load(context_yaml)
-        assert isinstance(context_settings.context, Context)
+        assert isinstance(context_manager.context, Context)
         assert all(
-            getattr(context_settings.context, item)
+            getattr(context_manager.context, item)
             == yaml_dict["contexts"]["acmedeployment"][item]
             for item in yaml_dict["contexts"]["acmedeployment"].keys()
         )
 
-    def test_set_context(self, context_yaml, context_settings):
+    def test_set_context(self, context_yaml, context_manager):
         yaml_dict = yaml.safe_load(context_yaml)
-        context_settings.selected = "gems"
-        assert isinstance(context_settings.context, Context)
+        context_manager.selected = "gems"
+        assert isinstance(context_manager.context, Context)
         assert all(
-            getattr(context_settings.context, item)
+            getattr(context_manager.context, item)
             == yaml_dict["contexts"]["gems"][item]
             for item in yaml_dict["contexts"]["gems"].keys()
         )
 
-    def test_set_context_none(self, context_settings):
-        context_settings.selected = None
-        assert context_settings.selected is None
-        assert context_settings.context is None
+    def test_set_context_none(self, context_manager):
+        context_manager.selected = None
+        assert context_manager.selected is None
+        assert context_manager.context is None
 
-    def test_assert_context(self, context_settings):
-        context = context_settings.assert_context()
+    def test_assert_context(self, context_manager):
+        context = context_manager.assert_context()
         assert context.name == "Acme Deployment"
 
-    def test_assert_context_none(self, context_settings):
-        context_settings.selected = None
+    def test_assert_context_none(self, context_manager):
+        context_manager.selected = None
         with pytest.raises(DataSafeHavenConfigError, match="No context selected"):
-            context_settings.assert_context()
+            context_manager.assert_context()
 
-    def test_available(self, context_settings):
-        available = context_settings.available
+    def test_available(self, context_manager):
+        available = context_manager.available
         assert isinstance(available, list)
         assert all(isinstance(item, str) for item in available)
         assert available == ["acmedeployment", "gems"]
 
-    def test_update(self, context_settings):
-        assert context_settings.context.name == "Acme Deployment"
-        context_settings.update(name="replaced")
-        assert context_settings.context.name == "replaced"
+    def test_update(self, context_manager):
+        assert context_manager.context.name == "Acme Deployment"
+        context_manager.update(name="replaced")
+        assert context_manager.context.name == "replaced"
 
-    def test_set_update(self, context_settings):
-        context_settings.selected = "gems"
-        assert context_settings.context.name == "Gems"
-        context_settings.update(name="replaced")
-        assert context_settings.context.name == "replaced"
+    def test_set_update(self, context_manager):
+        context_manager.selected = "gems"
+        assert context_manager.context.name == "Gems"
+        context_manager.update(name="replaced")
+        assert context_manager.context.name == "replaced"
 
-    def test_update_none(self, context_settings):
-        context_settings.selected = None
+    def test_update_none(self, context_manager):
+        context_manager.selected = None
         with pytest.raises(DataSafeHavenConfigError, match="No context selected"):
-            context_settings.update(name="replaced")
+            context_manager.update(name="replaced")
 
-    def test_add(self, context_settings):
-        context_settings.add(
+    def test_add(self, context_manager):
+        context_manager.add(
             name="Example",
             subscription_name="Data Safe Haven Example",
         )
-        context_settings.selected = "example"
-        assert context_settings.selected == "example"
-        assert context_settings.context.name == "Example"
-        assert context_settings.context.subscription_name == "Data Safe Haven Example"
+        context_manager.selected = "example"
+        assert context_manager.selected == "example"
+        assert context_manager.context.name == "Example"
+        assert context_manager.context.subscription_name == "Data Safe Haven Example"
 
-    def test_invalid_add(self, context_settings):
+    def test_invalid_add(self, context_manager):
         with pytest.raises(
             DataSafeHavenParameterError,
             match="A context with key 'acmedeployment' is already defined.",
         ):
-            context_settings.add(
+            context_manager.add(
                 name="Acme Deployment",
                 subscription_name="Data Safe Haven Acme",
             )
 
-    def test_remove(self, context_settings):
-        context_settings.remove("gems")
-        assert "gems" not in context_settings.available
-        assert context_settings.selected == "acmedeployment"
+    def test_remove(self, context_manager):
+        context_manager.remove("gems")
+        assert "gems" not in context_manager.available
+        assert context_manager.selected == "acmedeployment"
 
-    def test_invalid_remove(self, context_settings):
+    def test_invalid_remove(self, context_manager):
         with pytest.raises(
             DataSafeHavenParameterError, match="No context with key 'invalid'."
         ):
-            context_settings.remove("invalid")
+            context_manager.remove("invalid")
 
-    def test_remove_selected(self, context_settings):
-        context_settings.remove("acmedeployment")
-        assert "acmedeployment" not in context_settings.available
-        assert context_settings.selected is None
+    def test_remove_selected(self, context_manager):
+        context_manager.remove("acmedeployment")
+        assert "acmedeployment" not in context_manager.available
+        assert context_manager.selected is None
 
     def test_from_file(self, tmp_path, context_yaml):
         config_file_path = tmp_path / "config.yaml"
         with open(config_file_path, "w") as f:
             f.write(context_yaml)
-        settings = ContextSettings.from_file(config_file_path=config_file_path)
+        settings = ContextManager.from_file(config_file_path=config_file_path)
         assert settings.context.name == "Acme Deployment"
 
     def test_file_not_found(self, tmp_path):
         config_file_path = tmp_path / "config.yaml"
         with pytest.raises(DataSafeHavenConfigError, match="Could not find file"):
-            ContextSettings.from_file(config_file_path=config_file_path)
+            ContextManager.from_file(config_file_path=config_file_path)
 
     def test_write(self, tmp_path, context_yaml):
         config_file_path = tmp_path / "config.yaml"
         with open(config_file_path, "w") as f:
             f.write(context_yaml)
-        settings = ContextSettings.from_file(config_file_path=config_file_path)
+        settings = ContextManager.from_file(config_file_path=config_file_path)
         settings.selected = "gems"
         settings.update(name="replaced")
         settings.write(config_file_path)
