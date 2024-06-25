@@ -73,6 +73,7 @@ class DataSafeHavenIPRangeError(DataSafeHavenError):
 
     pass
 
+
 class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
     """
     Exception class for handling errors when interacting with the Microsoft Graph API.
@@ -90,6 +91,7 @@ class DataSafeHavenParameterError(DataSafeHavenError):
 
     pass
 
+
 class DataSafeHavenPulumiError(DataSafeHavenError):
     """
     Exception class for handling errors when interacting with Pulumi.
@@ -98,6 +100,7 @@ class DataSafeHavenPulumiError(DataSafeHavenError):
     """
 
     pass
+
 
 class DataSafeHavenSSLError(DataSafeHavenError):
     """
@@ -108,6 +111,7 @@ class DataSafeHavenSSLError(DataSafeHavenError):
 
     pass
 
+
 class DataSafeHavenTypeError(DataSafeHavenError):
     """
     Exception class for handling errors related to type checking.
@@ -117,6 +121,7 @@ class DataSafeHavenTypeError(DataSafeHavenError):
 
     pass
 
+
 class DataSafeHavenUserHandlingError(DataSafeHavenError):
     """
     Exception class for handling errors related to user handling.
@@ -125,6 +130,7 @@ class DataSafeHavenUserHandlingError(DataSafeHavenError):
     """
 
     pass
+
 
 class DataSafeHavenValueError(DataSafeHavenError):
     """

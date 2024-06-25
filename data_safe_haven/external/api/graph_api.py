@@ -19,9 +19,9 @@ from msal import (
 
 from data_safe_haven import console
 from data_safe_haven.exceptions import (
-    DataSafeHavenValueError,
     DataSafeHavenInternalError,
     DataSafeHavenMicrosoftGraphError,
+    DataSafeHavenValueError,
 )
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger
