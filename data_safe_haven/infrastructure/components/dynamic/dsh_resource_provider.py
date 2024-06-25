@@ -12,8 +12,6 @@ from pulumi.dynamic import (
     UpdateResult,
 )
 
-from data_safe_haven.exceptions import DataSafeHavenNotImplementedError
-
 
 class DshResourceProvider(ResourceProvider):
     @staticmethod
@@ -62,14 +60,14 @@ class DshResourceProvider(ResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(props)
         msg = "DshResourceProvider::create() must be implemented"
-        raise DataSafeHavenNotImplementedError(msg)
+        raise NotImplementedError(msg)
 
     def delete(self, id_: str, props: dict[str, Any]) -> None:
         """Delete the resource."""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id((id_, props))
         msg = "DshResourceProvider::delete() must be implemented"
-        raise DataSafeHavenNotImplementedError(msg)
+        raise NotImplementedError(msg)
 
     def diff(
         self,
@@ -80,7 +78,7 @@ class DshResourceProvider(ResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id((id_, old_props, new_props))
         msg = "DshResourceProvider::diff() must be implemented"
-        raise DataSafeHavenNotImplementedError(msg)
+        raise NotImplementedError(msg)
 
     def read(self, id_: str, props: dict[str, Any]) -> ReadResult:
         """Read data for a resource not managed by Pulumi."""

@@ -66,15 +66,6 @@ class DataSafeHavenIPRangeError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenNotImplementedError(DataSafeHavenInternalError):
-    """
-    Replace with NotImplementedError
-
-    """
-
-    pass
-
-
 class DataSafeHavenParameterError(DataSafeHavenError):
     """
     Possibly replace with ValueError or TypeError. See also InputError - potentially merge.
@@ -98,7 +89,7 @@ class DataSafeHavenAzureError(DataSafeHavenError):
     """
     Exception class for handling errors when interacting with Azure.
 
-    For example, when creating resources in Azure fails
+    For example, when creating resources in Azure fails.
     """
 
     pass
