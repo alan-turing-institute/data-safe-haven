@@ -119,7 +119,7 @@ class DataSafeHavenSSLError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenUserHandlingError(DataSafeHavenInternalError):
+class DataSafeHavenUserHandlingError(DataSafeHavenError):
     """
     Exception class for handling errors related to user handling.
 
