@@ -64,6 +64,30 @@ class AzureCliSingleton(metaclass=Singleton):
 
         return self._account
 
+    @property
+    def personal_access_token(self) -> str:
+        try:
+            result = subprocess.check_output(
+                [self.path, "account", "get-access-token", "--resource-type", "ms-graph"],
+                stderr=subprocess.PIPE,
+                encoding="utf8",
+            )
+        except subprocess.CalledProcessError as exc:
+            msg = f"Error getting account information from Azure CLI.\n{exc.stderr}"
+            raise DataSafeHavenAzureError(msg) from exc
+
+        try:
+            result_dict = json.loads(result)
+        except json.JSONDecodeError as exc:
+            msg = f"Unable to parse Azure CLI output as JSON.\n{result}"
+            raise DataSafeHavenAzureError(msg) from exc
+
+        try:
+            return result_dict["accessToken"]
+        except KeyError:
+            msg = f"Unable to extract access token from Azure CLI output: {result_dict}"
+            raise DataSafeHavenAzureError(msg) from exc
+
     def confirm(self) -> None:
         """Prompt user to confirm the Azure CLI account is correct"""
         if self._confirmed:
@@ -81,3 +105,4 @@ class AzureCliSingleton(metaclass=Singleton):
             raise typer.Exit(1)
 
         self._confirmed = True
+
