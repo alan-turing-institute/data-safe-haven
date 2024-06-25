@@ -17,7 +17,7 @@ class SHMConfig(AzureSerialisableModel):
     shm: ConfigSectionSHM
 
     @classmethod
-    def from_local(
+    def from_args(
         cls: type[Self],
         context: ContextBase,
         *,
@@ -25,7 +25,7 @@ class SHMConfig(AzureSerialisableModel):
         fqdn: str,
         location: str,
     ) -> SHMConfig:
-        """Construct an AzureSerialisableModel from a YAML file in Azure storage."""
+        """Construct an SHMConfig from arguments."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
         admin_group_id = AzureCliSingleton().group_id_from_name(
             context.admin_group_name

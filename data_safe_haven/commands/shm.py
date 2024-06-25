@@ -98,7 +98,7 @@ def deploy(
                 "You must provide the --location argument when first deploying an SHM."
             )
             raise typer.Exit(1)
-        config = SHMConfig.from_local(
+        config = SHMConfig.from_args(
             context,
             entra_tenant_id=entra_tenant_id,
             fqdn=fqdn,
