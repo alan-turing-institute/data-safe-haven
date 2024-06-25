@@ -450,7 +450,7 @@ class AzureApi(AzureAuthenticator):
             )
             return container
         except HttpResponseError as exc:
-            msg = f"Failed to create storage container [green]{container_name}."
+            msg = f"Failed to create storage container '{container_name}'."
             raise DataSafeHavenAzureError(msg) from exc
 
     def get_keyvault_certificate(

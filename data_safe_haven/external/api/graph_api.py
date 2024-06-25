@@ -379,7 +379,7 @@ class GraphApi:
                     raise DataSafeHavenMicrosoftGraphError(msg)
             return application_sp
         except Exception as exc:
-            msg = f"Could not create service principal for application '[green]{application_name}[/]'."
+            msg = f"Could not create service principal for application '{application_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_token_administrator(self) -> str:
