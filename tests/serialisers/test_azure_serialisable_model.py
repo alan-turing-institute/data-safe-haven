@@ -10,7 +10,7 @@ from data_safe_haven.serialisers import AzureSerialisableModel
 
 class ExampleAzureSerialisableModel(AzureSerialisableModel):
     config_type = "Example"
-    filename = "file.yaml"
+    default_filename = "file.yaml"
     string: str
     integer: int
     list_of_integers: list[int]

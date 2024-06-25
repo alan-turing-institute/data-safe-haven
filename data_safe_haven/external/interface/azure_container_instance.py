@@ -11,7 +11,7 @@ from azure.mgmt.containerinstance.models import (
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external import AzureApi
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 
 class AzureContainerInstance:
@@ -24,7 +24,7 @@ class AzureContainerInstance:
         subscription_name: str,
     ):
         self.azure_api = AzureApi(subscription_name)
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
         self.resource_group_name = resource_group_name
         self.container_group_name = container_group_name
 
@@ -86,9 +86,7 @@ class AzureContainerInstance:
                 f" with IP address [green]{self.current_ip_address}[/].",
             )
         except Exception as exc:
-            msg = (
-                f"Could not restart container group {self.container_group_name}.\n{exc}"
-            )
+            msg = f"Could not restart container group {self.container_group_name}."
             raise DataSafeHavenAzureError(msg) from exc
 
     def run_executable(self, container_name: str, executable_path: str) -> list[str]:

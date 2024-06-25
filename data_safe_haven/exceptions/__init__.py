@@ -1,5 +1,15 @@
+from data_safe_haven.logging import get_logger
+
+
 class DataSafeHavenError(Exception):
-    pass
+    def __init__(self, message: str | bytes):
+        super().__init__(message)
+
+        # Log exception message as an error
+        logger = get_logger()
+        message_str = message if isinstance(message, str) else message.decode("utf-8")
+        # Replace line breaks with escape code
+        logger.error(message_str.replace("\n", r"\n"))
 
 
 class DataSafeHavenCloudError(DataSafeHavenError):
@@ -39,6 +49,14 @@ class DataSafeHavenSSLError(DataSafeHavenError):
 
 
 class DataSafeHavenAzureError(DataSafeHavenCloudError):
+    pass
+
+
+class DataSafeHavenAzureAPIError(DataSafeHavenError):
+    pass
+
+
+class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenAzureAPIError):
     pass
 
 

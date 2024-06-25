@@ -12,41 +12,40 @@ authors = [
 requires-python = "==3.12.*"
 license = "BSD-3-Clause"
 dependencies = [
-  "appdirs~=1.4",
-  "azure-core~=1.26",
-  "azure-identity~=1.12",
-  "azure-keyvault-certificates~=4.6",
-  "azure-keyvault-keys~=4.6",
-  "azure-keyvault-secrets~=4.6",
-  "azure-mgmt-automation~=1.0",
-  "azure-mgmt-compute~=30.3",
-  "azure-mgmt-containerinstance~=10.1",
-  "azure-mgmt-dns~=8.0",
-  "azure-mgmt-keyvault~=10.3",
-  "azure-mgmt-msi~=7.0",
-  "azure-mgmt-network~=25.0",
-  "azure-mgmt-rdbms~=10.1",
-  "azure-mgmt-resource~=23.0",
-  "azure-mgmt-storage~=21.1",
-  "azure-storage-blob~=12.15",
-  "azure-storage-file-datalake~=12.10",
-  "azure-storage-file-share~=12.10",
-  "chevron~=0.14",
-  "cryptography~=42.0",
-  "dnspython~=2.3",
-  "fqdn~=1.5",
-  "msal~=1.21",
-  "psycopg~=3.1",
-  "pulumi~=3.80",
-  "pulumi-azure-native~=2.14",
-  "pulumi-random~=4.14",
-  "pydantic~=2.4",
-  "pytz~=2023.3",
-  "PyYAML~=6.0",
-  "rich~=13.4",
-  "simple-acme-dns~=3.0",
-  "typer~=0.9",
-  "websocket-client~=1.5",
+  "appdirs>=1.4",
+  "azure-core>=1.26",
+  "azure-identity>=1.16.1",
+  "azure-keyvault-certificates>=4.6",
+  "azure-keyvault-keys>=4.6",
+  "azure-keyvault-secrets>=4.6",
+  "azure-mgmt-automation>=1.0",
+  "azure-mgmt-compute>=30.3",
+  "azure-mgmt-containerinstance>=10.1",
+  "azure-mgmt-dns>=8.0",
+  "azure-mgmt-keyvault>=10.3",
+  "azure-mgmt-msi>=7.0",
+  "azure-mgmt-network>=25.0",
+  "azure-mgmt-rdbms>=10.1",
+  "azure-mgmt-resource>=23.0",
+  "azure-mgmt-storage>=21.1",
+  "azure-storage-blob>=12.15",
+  "azure-storage-file-datalake>=12.10",
+  "azure-storage-file-share>=12.10",
+  "chevron>=0.14",
+  "cryptography>=42.0",
+  "fqdn>=1.5",
+  "msal>=1.21",
+  "psycopg>=3.1",
+  "pulumi>=3.80",
+  "pulumi-azure-native>=2.14",
+  "pulumi-random>=4.14",
+  "pydantic>=2.4",
+  "pytz>=2023.3",
+  "PyYAML>=6.0",
+  "rich>=13.4",
+  "simple-acme-dns>=3.0",
+  "typer>=0.9",
+  "websocket-client>=1.5",
 ]
 
 [project.scripts]
@@ -114,13 +113,14 @@ all = [
 [tool.hatch.envs.test]
 dependencies = [
   "coverage>=7.5.1",
+  "freezegun>=1.5",
   "pytest>=8.1",
   "pytest-mock>=3.14",
 ]
 pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.hatch.envs.test.scripts]
-test = "coverage run --omit=tests/* -m pytest {args:-vvv tests}"
+test = "coverage run --omit=tests/* -m pytest {args: tests}"
 test-report = "coverage report {args:}"
 test-coverage = ["test", "test-report"]
 
@@ -161,6 +161,7 @@ ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 addopts = [
+    "-vvv",
     "--import-mode=importlib",
     "--disable-warnings",
     "--ignore=tests/*",

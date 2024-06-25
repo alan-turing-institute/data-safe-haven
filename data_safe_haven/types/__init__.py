@@ -1,7 +1,8 @@
 from .annotated_types import (
     AzureLocation,
-    AzureLongName,
+    AzureSubscriptionName,
     AzureVmSku,
+    ConfigName,
     EmailAddress,
     Fqdn,
     Guid,
@@ -23,8 +24,9 @@ from .types import PathType
 __all__ = [
     "AzureDnsZoneNames",
     "AzureLocation",
-    "AzureLongName",
+    "AzureSubscriptionName",
     "AzureVmSku",
+    "ConfigName",
     "DatabaseSystem",
     "EmailAddress",
     "FirewallPriorities",

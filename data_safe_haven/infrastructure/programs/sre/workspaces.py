@@ -31,6 +31,8 @@ class SREWorkspacesProps:
         self,
         admin_password: Input[str],
         apt_proxy_server_hostname: Input[str],
+        data_collection_rule_id: Input[str],
+        data_collection_endpoint_id: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
         ldap_server_hostname: Input[str],
@@ -38,8 +40,6 @@ class SREWorkspacesProps:
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
         location: Input[str],
-        log_analytics_workspace_id: Input[str],
-        log_analytics_workspace_key: Input[str],
         maintenance_configuration_id: Input[str],
         software_repository_hostname: Input[str],
         sre_name: Input[str],
@@ -54,6 +54,8 @@ class SREWorkspacesProps:
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
         self.apt_proxy_server_hostname = apt_proxy_server_hostname
+        self.data_collection_rule_id = data_collection_rule_id
+        self.data_collection_endpoint_id = data_collection_endpoint_id
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
         self.ldap_server_hostname = ldap_server_hostname
@@ -61,8 +63,6 @@ class SREWorkspacesProps:
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
-        self.log_analytics_workspace_id = log_analytics_workspace_id
-        self.log_analytics_workspace_key = log_analytics_workspace_key
         self.maintenance_configuration_id = maintenance_configuration_id
         self.software_repository_hostname = software_repository_hostname
         self.sre_name = sre_name
@@ -143,10 +143,10 @@ class SREWorkspacesComponent(ComponentResource):
                     admin_password=props.admin_password,
                     admin_username=props.admin_username,
                     b64cloudinit=b64cloudinit,
+                    data_collection_rule_id=props.data_collection_rule_id,
+                    data_collection_endpoint_id=props.data_collection_endpoint_id,
                     ip_address_private=props.vm_ip_addresses[vm_idx],
                     location=props.location,
-                    log_analytics_workspace_id=props.log_analytics_workspace_id,
-                    log_analytics_workspace_key=props.log_analytics_workspace_key,
                     maintenance_configuration_id=props.maintenance_configuration_id,
                     resource_group_name=resource_group.name,
                     subnet_name=props.subnet_workspaces_name,

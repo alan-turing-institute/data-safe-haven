@@ -5,17 +5,19 @@ from __future__ import (
     annotations,
 )
 
+from logging import Logger
 from pathlib import Path
 from typing import ClassVar
 
 from pydantic import Field, model_validator
 
+from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
+from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import YAMLSerialisableModel
-from data_safe_haven.utility import LoggingSingleton, config_dir
 
 from .context import Context
 
@@ -41,7 +43,7 @@ class ContextSettings(YAMLSerialisableModel):
     config_type: ClassVar[str] = "ContextSettings"
     selected_: str | None = Field(..., alias="selected")
     contexts: dict[str, Context]
-    logger: ClassVar[LoggingSingleton] = LoggingSingleton()
+    logger: ClassVar[Logger] = get_logger()
 
     @model_validator(mode="after")
     def ensure_selected_is_valid(self) -> ContextSettings:
@@ -149,7 +151,7 @@ class ContextSettings(YAMLSerialisableModel):
     def from_file(cls, config_file_path: Path | None = None) -> ContextSettings:
         if config_file_path is None:
             config_file_path = cls.default_config_file_path()
-        cls.logger.info(
+        cls.logger.debug(
             f"Reading project settings from '[green]{config_file_path}[/]'."
         )
         return cls.from_filepath(config_file_path)
@@ -159,4 +161,4 @@ class ContextSettings(YAMLSerialisableModel):
         if config_file_path is None:
             config_file_path = self.default_config_file_path()
         self.to_filepath(config_file_path)
-        self.logger.info(f"Saved context settings to '[green]{config_file_path}[/]'.")
+        self.logger.debug(f"Saved context settings to '[green]{config_file_path}[/]'.")

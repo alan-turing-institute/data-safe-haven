@@ -10,8 +10,8 @@ from data_safe_haven.external import (
     GraphApi,
 )
 from data_safe_haven.infrastructure import SREProjectManager
-from data_safe_haven.types import AzureLocation, AzureLongName
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import get_logger
+from data_safe_haven.types import AzureLocation, AzureSubscriptionName
 
 
 class SREProvisioningManager:
@@ -23,13 +23,13 @@ class SREProvisioningManager:
         location: AzureLocation,
         sre_name: str,
         sre_stack: SREProjectManager,
-        subscription_name: AzureLongName,
+        subscription_name: AzureSubscriptionName,
         timezone: str,
     ):
         self._available_vm_skus: dict[str, dict[str, Any]] | None = None
         self.location = location
         self.graph_api = GraphApi(auth_token=graph_api_token)
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
         self.sre_name = sre_name
         self.subscription_name = subscription_name
 
@@ -114,7 +114,7 @@ class SREProvisioningManager:
             "user_group_name": self.security_group_params["user_group_name"],
         }
         for details in connection_data["connections"]:
-            self.logger.info(
+            self.logger.debug(
                 f"Adding connection [bold]{details['connection_name']}[/] at [green]{details['ip_address']}[/]."
             )
         postgres_script_path = (

@@ -17,13 +17,14 @@ def alphanumeric(input_string: str) -> str:
     return "".join(filter(str.isalnum, input_string))
 
 
-def sanitise_sre_name(name: str) -> str:
-    return alphanumeric(name).lower()
-
-
 def b64encode(input_string: str) -> str:
     """Encode a normal string into a Base64 string."""
     return base64.b64encode(input_string.encode("utf-8")).decode()
+
+
+def json_safe(name: str) -> str:
+    """Construct a JSON-safe version of an input string"""
+    return alphanumeric(name).lower()
 
 
 def next_occurrence(
@@ -46,8 +47,14 @@ def next_occurrence(
             minute=minute,
             second=0,
             microsecond=0,
-        ) + datetime.timedelta(days=1)
+        )
         utc_dt = local_dt.astimezone(pytz.utc)
+        # Add one day until this datetime is at least 1 hour in the future.
+        # This ensures that any Azure functions which depend on this datetime being in
+        # the future should treat it as valid.
+        utc_near_future = datetime.datetime.now(pytz.utc) + datetime.timedelta(hours=1)
+        while utc_dt < utc_near_future:
+            utc_dt += datetime.timedelta(days=1)
         if time_format == "iso":
             return utc_dt.isoformat()
         elif time_format == "iso_minute":
@@ -56,10 +63,10 @@ def next_occurrence(
             msg = f"Time format '{time_format}' was not recognised."
             raise DataSafeHavenInputError(msg)
     except pytz.exceptions.UnknownTimeZoneError as exc:
-        msg = f"Timezone '{timezone}' was not recognised.\n{exc}"
+        msg = f"Timezone '{timezone}' was not recognised."
         raise DataSafeHavenInputError(msg) from exc
     except ValueError as exc:
-        msg = f"Time '{hour}:{minute}' was not recognised.\n{exc}"
+        msg = f"Time '{hour}:{minute}' was not recognised."
         raise DataSafeHavenInputError(msg) from exc
 
 
@@ -81,7 +88,7 @@ def password(length: int) -> str:
 
 
 def replace_separators(input_string: str, separator: str = "") -> str:
-    """Return a string using underscores as a separator"""
+    """Return a string replacing all instances of [ _-.] with the desired separator."""
     return (
         input_string.replace(" ", separator)
         .replace("_", separator)

@@ -24,11 +24,35 @@ def azure_location(azure_location: str) -> str:
     return azure_location
 
 
+def azure_subscription_name(subscription_name: str) -> str:
+    # https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules
+    if not re.match(r"^[a-zA-Z][a-zA-Z0-9\- ]+[a-zA-Z0-9]$", subscription_name):
+        msg = "Azure subscription names can only contain alphanumeric characters and hyphens.\n They must start with a letter and end with an alphanumeric character."
+        raise ValueError(msg)
+    return subscription_name
+
+
 def azure_vm_sku(azure_vm_sku: str) -> str:
     if not re.match(r"^(Standard|Basic)_\w+$", azure_vm_sku):
         msg = "Expected valid Azure VM SKU, for example 'Standard_D2s_v4'."
         raise ValueError(msg)
     return azure_vm_sku
+
+
+def config_name(config_name: str) -> str:
+    if (
+        (not re.match(r"^[a-zA-Z0-9 -]+$", config_name))
+        or config_name.startswith((" ", "-"))
+        or config_name.endswith((" ", "-"))
+    ):
+        msg = "\n".join(
+            [
+                "DSH config names can only contain alphanumeric characters, spaces and hyphens.",
+                "They must start and end with alphanumeric characters.",
+            ]
+        )
+        raise ValueError(msg)
+    return config_name
 
 
 def fqdn(domain: str) -> str:

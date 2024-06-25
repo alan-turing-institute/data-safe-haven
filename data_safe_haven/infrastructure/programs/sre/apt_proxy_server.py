@@ -102,7 +102,7 @@ class SREAptProxyServerComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-apt-proxy-server",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/squid-deb-proxy:main",
+                    image="ghcr.io/alan-turing-institute/squid-deb-proxy:0.0.1",
                     name="squid-deb-proxy"[:63],
                     environment_variables=[],
                     # All Azure Container Instances need to expose port 80 on at least

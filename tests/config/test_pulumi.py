@@ -125,7 +125,7 @@ class TestDSHPulumiConfig:
 
         mock_method.assert_called_once_with(
             pulumi_config.to_yaml(),
-            DSHPulumiConfig.filename,
+            DSHPulumiConfig.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -142,7 +142,7 @@ class TestDSHPulumiConfig:
         assert len(pulumi_config.projects) == 2
 
         mock_method.assert_called_once_with(
-            DSHPulumiConfig.filename,
+            DSHPulumiConfig.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -160,14 +160,14 @@ class TestDSHPulumiConfig:
         assert len(pulumi_config.projects) == 2
 
         mock_exists.assert_called_once_with(
-            DSHPulumiConfig.filename,
+            DSHPulumiConfig.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
         )
 
         mock_download.assert_called_once_with(
-            DSHPulumiConfig.filename,
+            DSHPulumiConfig.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
@@ -185,7 +185,7 @@ class TestDSHPulumiConfig:
         assert len(pulumi_config.projects) == 0
 
         mock_exists.assert_called_once_with(
-            DSHPulumiConfig.filename,
+            DSHPulumiConfig.default_filename,
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,

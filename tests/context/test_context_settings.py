@@ -37,9 +37,9 @@ class TestContext:
             Context(**context_dict)
 
     def test_invalid_subscription_name(self, context_dict):
-        context_dict["subscription_name"] = "very " * 12 + "long name"
+        context_dict["subscription_name"] = "very " * 15 + "long name"
         with pytest.raises(
-            ValidationError, match="String should have at most 64 characters"
+            ValidationError, match="String should have at most 80 characters"
         ):
             Context(**context_dict)
 
@@ -108,12 +108,12 @@ def context_yaml():
                 name: Acme Deployment
                 admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
                 location: uksouth
-                subscription_name: Data Safe Haven (Acme)
+                subscription_name: Data Safe Haven Acme
             gems:
                 name: Gems
                 admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
                 location: uksouth
-                subscription_name: Data Safe Haven (Gems)"""
+                subscription_name: Data Safe Haven Gems"""
     return context_yaml
 
 
@@ -131,7 +131,7 @@ class TestContextSettings:
                     name="Acme Deployment",
                     admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                     location="uksouth",
-                    subscription_name="Data Safe Haven (Acme)",
+                    subscription_name="Data Safe Haven Acme",
                 )
             },
         )
@@ -150,14 +150,7 @@ class TestContextSettings:
 
     def test_missing_selected(self, context_yaml):
         context_yaml = "\n".join(context_yaml.splitlines()[1:])
-        msg = "\n".join(
-            [
-                "Could not load ContextSettings configuration.",
-                "1 validation error for ContextSettings",
-                "selected",
-                "  Field required",
-            ]
-        )
+        msg = "Could not load ContextSettings configuration."
         with pytest.raises(DataSafeHavenParameterError, match=msg):
             ContextSettings.from_yaml(context_yaml)
 
@@ -168,7 +161,7 @@ class TestContextSettings:
 
         with pytest.raises(
             DataSafeHavenParameterError,
-            match="Selected context 'invalid' is not defined.",
+            match="Could not load ContextSettings configuration.",
         ):
             ContextSettings.from_yaml(context_yaml)
 
@@ -261,14 +254,14 @@ class TestContextSettings:
         context_settings.add(
             key="example",
             name="Example",
-            subscription_name="Data Safe Haven (Example)",
+            subscription_name="Data Safe Haven Example",
             admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             location="uksouth",
         )
         context_settings.selected = "example"
         assert context_settings.selected == "example"
         assert context_settings.context.name == "Example"
-        assert context_settings.context.subscription_name == "Data Safe Haven (Example)"
+        assert context_settings.context.subscription_name == "Data Safe Haven Example"
 
     def test_invalid_add(self, context_settings):
         with pytest.raises(
@@ -278,7 +271,7 @@ class TestContextSettings:
             context_settings.add(
                 key="acme_deployment",
                 name="Acme Deployment",
-                subscription_name="Data Safe Haven (Acme)",
+                subscription_name="Data Safe Haven Acme",
                 admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 location="uksouth",
             )

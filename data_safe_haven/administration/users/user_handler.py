@@ -2,11 +2,12 @@ import csv
 import pathlib
 from collections.abc import Sequence
 
-from data_safe_haven.config import Config, DSHPulumiConfig
+from data_safe_haven import console
+from data_safe_haven.config import DSHPulumiConfig, SREConfig
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 from .entra_users import EntraUsers
 from .guacamole_users import GuacamoleUsers
@@ -17,15 +18,13 @@ class UserHandler:
     def __init__(
         self,
         context: Context,
-        config: Config,
         pulumi_config: DSHPulumiConfig,
         graph_api: GraphApi,
     ):
         self.entra_users = EntraUsers(graph_api)
         self.context = context
-        self.config = config
         self.pulumi_config = pulumi_config
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
         self.sre_guacamole_users_: dict[str, GuacamoleUsers] = {}
 
     def add(self, users_csv_path: pathlib.Path) -> None:
@@ -69,18 +68,17 @@ class UserHandler:
             # Add users to Entra ID
             self.entra_users.add(users)
         except Exception as exc:
-            msg = f"Could not add users from '{users_csv_path}'.\n{exc}"
+            msg = f"Could not add users from '{users_csv_path}'."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
-    def get_usernames(self) -> dict[str, list[str]]:
+    def get_usernames(self, sre_name: str) -> dict[str, list[str]]:
         """Load usernames from all sources"""
         usernames = {}
         usernames["Entra ID"] = self.get_usernames_entra_id()
-        for sre_name in self.config.sre_names:
-            usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
-                sre_name,
-                self.pulumi_config,
-            )
+        usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
+            sre_name,
+            self.pulumi_config,
+        )
         return usernames
 
     def get_usernames_entra_id(self) -> list[str]:
@@ -92,9 +90,10 @@ class UserHandler:
     ) -> list[str]:
         """Lazy-load usernames from Guacamole"""
         try:
+            sre_config = SREConfig.from_remote_by_name(self.context, sre_name)
             if sre_name not in self.sre_guacamole_users_.keys():
                 self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
-                    self.context, self.config, pulumi_config, sre_name
+                    self.context, sre_config, pulumi_config, sre_name
                 )
             return [
                 user.username for user in self.sre_guacamole_users_[sre_name].list()
@@ -103,7 +102,7 @@ class UserHandler:
             self.logger.error(f"Could not load users for SRE '{sre_name}'.")
             return []
 
-    def list(self) -> None:
+    def list(self, sre_name: str) -> None:
         """List Entra ID and Guacamole users
 
         Raises:
@@ -111,7 +110,7 @@ class UserHandler:
         """
         try:
             # Load usernames
-            usernames = self.get_usernames()
+            usernames = self.get_usernames(sre_name)
             # Fill user information as a table
             user_headers = ["username", *list(usernames.keys())]
             user_data = []
@@ -125,11 +124,9 @@ class UserHandler:
                     )
                 user_data.append(user_memberships)
 
-            # Write user information as a table
-            for line in self.logger.tabulate(user_headers, user_data):
-                self.logger.info(line)
+            console.tabulate(user_headers, user_data)
         except Exception as exc:
-            msg = f"Could not list users.\n{exc}"
+            msg = "Could not list users."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def register(self, sre_name: str, user_names: Sequence[str]) -> None:
@@ -142,7 +139,7 @@ class UserHandler:
             # Add users to the SRE security group
             self.entra_users.register(sre_name, user_names)
         except Exception as exc:
-            msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
+            msg = f"Could not register {len(user_names)} users with SRE '{sre_name}'."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def remove(self, user_names: Sequence[str]) -> None:
@@ -153,18 +150,18 @@ class UserHandler:
         """
         try:
             # Construct user lists
-            self.logger.info(f"Attempting to remove {len(user_names)} user(s).")
+            self.logger.debug(f"Attempting to remove {len(user_names)} user(s).")
             entra_users_to_remove = [
                 user for user in self.entra_users.list() if user.username in user_names
             ]
 
             # Commit changes
-            self.logger.info(
+            self.logger.debug(
                 f"Found {len(entra_users_to_remove)} valid user(s) to remove."
             )
             self.entra_users.remove(entra_users_to_remove)
         except Exception as exc:
-            msg = f"Could not remove users: {user_names}.\n{exc}"
+            msg = f"Could not remove users: {user_names}."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def set(self, users_csv_path: str) -> None:
@@ -211,7 +208,7 @@ class UserHandler:
             # Commit changes
             self.entra_users.set(entra_desired_users)
         except Exception as exc:
-            msg = f"Could not set users from '{users_csv_path}'.\n{exc}"
+            msg = f"Could not set users from '{users_csv_path}'."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
     def unregister(self, sre_name: str, user_names: Sequence[str]) -> None:
@@ -224,5 +221,5 @@ class UserHandler:
             # Remove users from the SRE security group
             self.entra_users.unregister(sre_name, user_names)
         except Exception as exc:
-            msg = f"Could not unregister {len(user_names)} users with SRE '{sre_name}'.\n{exc}"
+            msg = f"Could not unregister {len(user_names)} users with SRE '{sre_name}'."
             raise DataSafeHavenUserHandlingError(msg) from exc

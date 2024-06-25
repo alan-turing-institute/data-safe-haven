@@ -7,9 +7,14 @@ from pydantic.functional_validators import AfterValidator
 from data_safe_haven import validators
 
 AzureShortName = Annotated[str, Field(min_length=1, max_length=24)]
-AzureLongName = Annotated[str, Field(min_length=1, max_length=64)]
+AzureSubscriptionName = Annotated[
+    str,
+    Field(min_length=1, max_length=80),
+    AfterValidator(validators.azure_subscription_name),
+]
 AzureLocation = Annotated[str, AfterValidator(validators.azure_location)]
 AzureVmSku = Annotated[str, AfterValidator(validators.azure_vm_sku)]
+ConfigName = Annotated[str, AfterValidator(validators.config_name)]
 EmailAddress = Annotated[str, AfterValidator(validators.email_address)]
 Fqdn = Annotated[str, AfterValidator(validators.fqdn)]
 Guid = Annotated[str, AfterValidator(validators.aad_guid)]

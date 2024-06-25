@@ -9,6 +9,7 @@ from io import UnsupportedOperation
 from typing import Any, ClassVar
 
 import requests
+import typer
 from dns import resolver
 from msal import (
     ConfidentialClientApplication,
@@ -16,13 +17,14 @@ from msal import (
     SerializableTokenCache,
 )
 
+from data_safe_haven import console
 from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
     DataSafeHavenInternalError,
     DataSafeHavenMicrosoftGraphError,
 )
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.utility import LoggingSingleton, NonLoggingSingleton
+from data_safe_haven.logging import get_logger
 
 
 class LocalTokenCache(SerializableTokenCache):
@@ -77,13 +79,12 @@ class GraphApi:
         application_secret: str | None = None,
         base_endpoint: str = "",
         default_scopes: Sequence[str] = [],
-        disable_logging: bool = False,
     ):
         self.base_endpoint = (
             base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
         )
         self.default_scopes = list(default_scopes)
-        self.logger = NonLoggingSingleton() if disable_logging else LoggingSingleton()
+        self.logger = get_logger()
         self.tenant_id = tenant_id
         if auth_token:
             self.token = auth_token
@@ -126,7 +127,7 @@ class GraphApi:
                 raise DataSafeHavenMicrosoftGraphError(msg)
             return txt_records[0]
         except Exception as exc:
-            msg = f"Could not register domain '{domain_name}'.\n{exc}"
+            msg = f"Could not register domain '{domain_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def add_user_to_group(
@@ -163,7 +164,7 @@ class GraphApi:
                     f"Added user [green]'{username}'[/] to group [green]'{group_name}'[/]."
                 )
         except DataSafeHavenMicrosoftGraphError as exc:
-            msg = f"Could not add user '{username}' to group '{group_name}'.\n{exc}"
+            msg = f"Could not add user '{username}' to group '{group_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_application(
@@ -260,7 +261,7 @@ class GraphApi:
             # Return JSON representation of the Entra application
             return json_response
         except Exception as exc:
-            msg = f"Could not create application '{application_name}'.\n{exc}"
+            msg = f"Could not create application '{application_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_application_secret(
@@ -308,7 +309,7 @@ class GraphApi:
             )
             return str(json_response["secretText"])
         except Exception as exc:
-            msg = f"Could not create application secret '{application_secret_name}'.\n{exc}"
+            msg = f"Could not create application secret '{application_secret_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_group(self, group_name: str) -> None:
@@ -342,7 +343,7 @@ class GraphApi:
                 f"Created Entra group '[green]{group_name}[/]'.",
             )
         except Exception as exc:
-            msg = f"Could not create Entra group '{group_name}'.\n{exc}"
+            msg = f"Could not create Entra group '{group_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def ensure_application_service_principal(
@@ -378,7 +379,7 @@ class GraphApi:
                     raise DataSafeHavenMicrosoftGraphError(msg)
             return application_sp
         except Exception as exc:
-            msg = f"Could not create service principal for application '[green]{application_name}[/]'.\n{exc}"
+            msg = f"Could not create service principal for application '{application_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_token_administrator(self) -> str:
@@ -429,7 +430,7 @@ class GraphApi:
             error_description = "Could not create Microsoft Graph access token."
             if isinstance(result, dict) and "error_description" in result:
                 error_description += f"\n{result['error_description']}."
-            msg = f"{error_description}\n{exc}"
+            msg = f"{error_description}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_token_application(
@@ -461,7 +462,7 @@ class GraphApi:
             error_description = "Could not create access token"
             if result and "error_description" in result:
                 error_description += f": {result['error_description']}"
-            msg = f"{error_description}.\n{exc}"
+            msg = f"{error_description}."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_user(
@@ -505,7 +506,9 @@ class GraphApi:
                 )
             except DataSafeHavenMicrosoftGraphError as exc:
                 if "already registered" not in str(exc):
-                    msg = f"Failed to add authentication email address '{email_address}'.\n{exc}"
+                    msg = (
+                        f"Failed to add authentication email address '{email_address}'."
+                    )
                     raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Set the authentication phone number
             try:
@@ -515,7 +518,7 @@ class GraphApi:
                 )
             except DataSafeHavenMicrosoftGraphError as exc:
                 if "already registered" not in str(exc):
-                    msg = f"Failed to add authentication phone number '{phone_number}'.\n{exc}"
+                    msg = f"Failed to add authentication phone number '{phone_number}'."
                     raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Ensure user is enabled
             self.http_patch(
@@ -526,7 +529,7 @@ class GraphApi:
                 f"{final_verb}d Entra user '[green]{username}[/]'.",
             )
         except DataSafeHavenMicrosoftGraphError as exc:
-            msg = f"Could not {final_verb.lower()} user {username}.\n{exc}"
+            msg = f"Could not {final_verb.lower()} user {username}."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def delete_application(
@@ -551,7 +554,7 @@ class GraphApi:
                     f"Deleted application '[green]{application_name}[/]'.",
                 )
         except Exception as exc:
-            msg = f"Could not delete application '{application_name}'.\n{exc}"
+            msg = f"Could not delete application '{application_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def get_application_by_name(self, application_name: str) -> dict[str, Any] | None:
@@ -684,7 +687,7 @@ class GraphApi:
                 f"Assigned application role '[green]{application_role_name}[/]' to '{application_name}'.",
             )
         except Exception as exc:
-            msg = f"Could not assign application role '{application_role_name}' to application '{application_name}'.\n{exc}"
+            msg = f"Could not assign application role '{application_role_name}' to application '{application_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def grant_delegated_role_permissions(
@@ -748,7 +751,7 @@ class GraphApi:
                 f"Assigned delegated role '[green]{application_role_name}[/]' to '{application_name}'.",
             )
         except Exception as exc:
-            msg = f"Could not assign delegated role '{application_role_name}' to application '{application_name}'.\n{exc}"
+            msg = f"Could not assign delegated role '{application_role_name}' to application '{application_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_delete(self, url: str, **kwargs: Any) -> requests.Response:
@@ -776,7 +779,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute DELETE request to '{url}'.\n{exc}"
+            msg = f"Could not execute DELETE request to '{url}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_get(self, url: str, **kwargs: Any) -> requests.Response:
@@ -804,7 +807,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute GET request from '{url}'.\n{exc}"
+            msg = f"Could not execute GET request from '{url}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
@@ -832,7 +835,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute PATCH request to '{url}'.\n{exc}"
+            msg = f"Could not execute PATCH request to '{url}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_post(self, url: str, **kwargs: Any) -> requests.Response:
@@ -861,7 +864,7 @@ class GraphApi:
                 return response
             raise DataSafeHavenInternalError(response.content)
         except Exception as exc:
-            msg = f"Could not execute POST request to '{url}'.\n{exc}"
+            msg = f"Could not execute POST request to '{url}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def read_applications(self) -> Sequence[dict[str, Any]]:
@@ -881,7 +884,7 @@ class GraphApi:
                 ]
             ]
         except Exception as exc:
-            msg = f"Could not load list of applications.\n{exc}"
+            msg = "Could not load list of applications."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def read_application_permissions(
@@ -904,7 +907,7 @@ class GraphApi:
             ).json()["value"]
             return [dict(obj) for obj in (delegated + application)]
         except Exception as exc:
-            msg = f"Could not load list of application permissions.\n{exc}"
+            msg = "Could not load list of application permissions."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def read_domains(self) -> Sequence[dict[str, Any]]:
@@ -920,7 +923,7 @@ class GraphApi:
             json_response = self.http_get(f"{self.base_endpoint}/domains").json()
             return [dict(obj) for obj in json_response["value"]]
         except Exception as exc:
-            msg = f"Could not load list of domains.\n{exc}"
+            msg = "Could not load list of domains."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def read_groups(
@@ -941,7 +944,7 @@ class GraphApi:
                 endpoint += f"?$select={','.join(attributes)}"
             return [dict(obj) for obj in self.http_get(endpoint).json()["value"]]
         except Exception as exc:
-            msg = f"Could not load list of groups.\n{exc}"
+            msg = "Could not load list of groups."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def read_service_principals(self) -> Sequence[dict[str, Any]]:
@@ -954,7 +957,7 @@ class GraphApi:
                 ).json()["value"]
             ]
         except Exception as exc:
-            msg = f"Could not load list of service principals.\n{exc}"
+            msg = "Could not load list of service principals."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def read_users(
@@ -1004,7 +1007,7 @@ class GraphApi:
                 )
             return users
         except Exception as exc:
-            msg = f"Could not load list of users.\n{exc}"
+            msg = "Could not load list of users."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def remove_user(
@@ -1024,7 +1027,7 @@ class GraphApi:
             )
             return
         except Exception as exc:
-            msg = f"Could not remove user '{username}'.\n{exc}"
+            msg = f"Could not remove user '{username}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def remove_user_from_group(
@@ -1059,9 +1062,7 @@ class GraphApi:
                     f"User [green]'{username}'[/] does not belong to group [green]'{group_name}'[/]."
                 )
         except Exception as exc:
-            msg = (
-                f"Could not remove user '{username}' from group '{group_name}'.\n{exc}"
-            )
+            msg = f"Could not remove user '{username}' from group '{group_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def verify_custom_domain(
@@ -1082,7 +1083,7 @@ class GraphApi:
             while True:
                 # Check whether all expected nameservers are active
                 with suppress(resolver.NXDOMAIN):
-                    self.logger.info(
+                    self.logger.debug(
                         f"Checking [green]{domain_name}[/] domain verification status ..."
                     )
                     active_nameservers = [
@@ -1108,14 +1109,14 @@ class GraphApi:
                 self.logger.info(
                     f"You will need to create an NS record pointing to: {ns_list}"
                 )
-                if isinstance(self.logger, LoggingSingleton):
-                    self.logger.confirm(
-                        f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
-                        default_to_yes=True,
+                if not console.confirm(
+                    f"Are you ready to check whether [green]{domain_name}[/] has been delegated to Azure?",
+                    default_to_yes=True,
+                ):
+                    self.logger.error(
+                        "Please use `az login` to connect to the correct Azure CLI account"
                     )
-                else:
-                    msg = "Unable to confirm Azure nameserver delegation."
-                    raise NotImplementedError(msg)
+                    raise typer.Exit(1)
             # Send verification request if needed
             if not any((d["id"] == domain_name and d["isVerified"]) for d in domains):
                 response = self.http_post(
@@ -1124,5 +1125,5 @@ class GraphApi:
                 if not response.json()["isVerified"]:
                     raise DataSafeHavenMicrosoftGraphError(response.content)
         except Exception as exc:
-            msg = f"Could not verify domain '{domain_name}'.\n{exc}"
+            msg = f"Could not verify domain '{domain_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc

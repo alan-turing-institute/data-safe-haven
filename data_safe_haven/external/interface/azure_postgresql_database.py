@@ -18,8 +18,9 @@ from data_safe_haven.exceptions import (
     DataSafeHavenInputError,
 )
 from data_safe_haven.external import AzureApi
+from data_safe_haven.logging import get_logger
 from data_safe_haven.types import PathType
-from data_safe_haven.utility import FileReader, LoggingSingleton
+from data_safe_haven.utility import FileReader
 
 
 class AzurePostgreSQLDatabase:
@@ -50,7 +51,7 @@ class AzurePostgreSQLDatabase:
         self.db_name = database_name
         self.db_server_ = None
         self.db_server_admin_password = database_server_admin_password
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
         self.port = 5432
         self.resource_group_name = resource_group_name
         self.server_name = database_server_name
@@ -109,7 +110,7 @@ class AzurePostgreSQLDatabase:
                     n_retries -= 1
                     time.sleep(10)
             except Exception as exc:
-                msg = f"Could not connect to database.\n{exc}"
+                msg = "Could not connect to database."
                 raise DataSafeHavenAzureError(msg) from exc
         return connection
 
@@ -147,7 +148,7 @@ class AzurePostgreSQLDatabase:
             # Apply the Guacamole initialisation script
             for filepath in filepaths:
                 _filepath = pathlib.Path(filepath)
-                self.logger.info(f"Running SQL script: [green]{_filepath.name}[/].")
+                self.logger.debug(f"Running SQL script: [green]{_filepath.name}[/].")
                 commands = self.load_sql(_filepath, mustache_values)
                 cursor.execute(query=commands.encode())
                 if cursor.statusmessage and "SELECT" in cursor.statusmessage:
@@ -155,9 +156,9 @@ class AzurePostgreSQLDatabase:
 
             # Commit changes
             connection.commit()
-            self.logger.info(f"Finished running {len(filepaths)} SQL scripts.")
+            self.logger.debug(f"Finished running {len(filepaths)} SQL scripts.")
         except (Exception, psycopg.Error) as exc:
-            msg = f"Error while connecting to PostgreSQL.\n{exc}"
+            msg = "Error while connecting to PostgreSQL."
             raise DataSafeHavenAzureError(msg) from exc
         finally:
             # Close the connection if it is open

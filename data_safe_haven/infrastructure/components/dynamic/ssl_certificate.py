@@ -48,7 +48,7 @@ class SSLCertificateProvider(DshResourceProvider):
         try:
             outs = dict(**props)
             with suppress(DataSafeHavenAzureError):
-                azure_api = AzureApi(outs["subscription_name"], disable_logging=True)
+                azure_api = AzureApi(outs["subscription_name"])
                 certificate = azure_api.get_keyvault_certificate(
                     outs["certificate_secret_name"], outs["key_vault_name"]
                 )
@@ -58,7 +58,7 @@ class SSLCertificateProvider(DshResourceProvider):
         except Exception as exc:
             cert_name = f"[green]{props['certificate_secret_name']}[/]"
             domain_name = f"[green]{props['domain_name']}[/]"
-            msg = f"Failed to refresh SSL certificate {cert_name} for {domain_name}.\n{exc}"
+            msg = f"Failed to refresh SSL certificate {cert_name} for {domain_name}."
             raise DataSafeHavenSSLError(msg) from exc
 
     def create(self, props: dict[str, Any]) -> CreateResult:
@@ -78,7 +78,7 @@ class SSLCertificateProvider(DshResourceProvider):
             private_key_bytes = client.generate_private_key(key_type="rsa2048")
             client.generate_csr()
             # Request DNS verification tokens and add them to the DNS record
-            azure_api = AzureApi(props["subscription_name"], disable_logging=True)
+            azure_api = AzureApi(props["subscription_name"])
             verification_tokens = client.request_verification_tokens().items()
             for record_name, record_values in verification_tokens:
                 record_set = azure_api.ensure_dns_txt_record(
@@ -140,7 +140,7 @@ class SSLCertificateProvider(DshResourceProvider):
         except Exception as exc:
             cert_name = f"[green]{props['certificate_secret_name']}[/]"
             domain_name = f"[green]{props['domain_name']}[/]"
-            msg = f"Failed to create SSL certificate {cert_name} for {domain_name}.\n{exc}"
+            msg = f"Failed to create SSL certificate {cert_name} for {domain_name}."
             raise DataSafeHavenSSLError(msg) from exc
         return CreateResult(
             f"SSLCertificate-{props['certificate_secret_name']}",
@@ -153,7 +153,7 @@ class SSLCertificateProvider(DshResourceProvider):
         id(id_)
         try:
             # Remove the DNS record
-            azure_api = AzureApi(props["subscription_name"], disable_logging=True)
+            azure_api = AzureApi(props["subscription_name"])
             azure_api.remove_dns_txt_record(
                 record_name="_acme_challenge",
                 resource_group_name=props["networking_resource_group_name"],
@@ -167,7 +167,7 @@ class SSLCertificateProvider(DshResourceProvider):
         except Exception as exc:
             cert_name = f"[green]{props['certificate_secret_name']}[/]"
             domain_name = f"[green]{props['domain_name']}[/]"
-            msg = f"Failed to delete SSL certificate {cert_name} for {domain_name}.\n{exc}"
+            msg = f"Failed to delete SSL certificate {cert_name} for {domain_name}."
             raise DataSafeHavenSSLError(msg) from exc
 
     def diff(

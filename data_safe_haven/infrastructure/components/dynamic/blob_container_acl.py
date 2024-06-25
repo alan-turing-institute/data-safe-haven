@@ -55,7 +55,7 @@ class BlobContainerAclProvider(DshResourceProvider):
         """Set ACLs for a given blob container."""
         outs = dict(**props)
         try:
-            azure_api = AzureApi(props["subscription_name"], disable_logging=True)
+            azure_api = AzureApi(props["subscription_name"])
             azure_api.set_blob_container_acl(
                 container_name=props["container_name"],
                 desired_acl=props["desired_acl"],
@@ -63,7 +63,7 @@ class BlobContainerAclProvider(DshResourceProvider):
                 storage_account_name=props["storage_account_name"],
             )
         except Exception as exc:
-            msg = f"Failed to set ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc}"
+            msg = f"Failed to set ACLs on storage account '{props['storage_account_name']}'."
             raise DataSafeHavenPulumiError(msg) from exc
         return CreateResult(
             f"BlobContainerAcl-{props['container_name']}",
@@ -75,7 +75,7 @@ class BlobContainerAclProvider(DshResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         try:
-            azure_api = AzureApi(props["subscription_name"], disable_logging=True)
+            azure_api = AzureApi(props["subscription_name"])
             azure_api.set_blob_container_acl(
                 container_name=props["container_name"],
                 desired_acl="user::rwx,group::r-x,other::---",
@@ -83,7 +83,7 @@ class BlobContainerAclProvider(DshResourceProvider):
                 storage_account_name=props["storage_account_name"],
             )
         except Exception as exc:
-            msg = f"Failed to delete custom ACLs on storage account [green]{props['storage_account_name']}[/].\n{exc}"
+            msg = f"Failed to delete custom ACLs on storage account '{props['storage_account_name']}'."
             raise DataSafeHavenPulumiError(msg) from exc
 
     def diff(

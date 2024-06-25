@@ -31,7 +31,7 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
                 settings_yaml = f_yaml.read()
             return cls.from_yaml(settings_yaml)
         except FileNotFoundError as exc:
-            msg = f"Could not find file {config_file_path}.\n{exc}"
+            msg = f"Could not find file {config_file_path}."
             raise DataSafeHavenConfigError(msg) from exc
 
     @classmethod
@@ -40,7 +40,7 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
         try:
             settings_dict = yaml.safe_load(settings_yaml)
         except yaml.YAMLError as exc:
-            msg = f"Could not parse {cls.config_type} configuration as YAML.\n{exc}"
+            msg = f"Could not parse {cls.config_type} configuration as YAML."
             raise DataSafeHavenConfigError(msg) from exc
 
         if not isinstance(settings_dict, dict):
@@ -50,7 +50,7 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
         try:
             return cls.model_validate(settings_dict)
         except ValidationError as exc:
-            msg = f"Could not load {cls.config_type} configuration.\n{exc}"
+            msg = f"Could not load {cls.config_type} configuration."
             raise DataSafeHavenParameterError(msg) from exc
 
     def to_filepath(self, config_file_path: PathType) -> None:
@@ -62,9 +62,11 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
         with open(_config_file_path, "w", encoding="utf-8") as f_yaml:
             f_yaml.write(self.to_yaml())
 
-    def to_yaml(self) -> str:
+    def to_yaml(self, *, warnings: bool = True) -> str:
         """Serialise a YAMLSerialisableModel to a YAML string"""
-        return yaml.dump(self.model_dump(by_alias=True, mode="json"), indent=2)
+        return yaml.dump(
+            self.model_dump(by_alias=True, mode="json", warnings=warnings), indent=2
+        )
 
     def yaml_diff(
         self, other: T, from_name: str = "other", to_name: str = "self"

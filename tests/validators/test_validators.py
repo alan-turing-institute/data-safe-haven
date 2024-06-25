@@ -27,6 +27,66 @@ class TestValidateAadGuid:
             validators.aad_guid(guid)
 
 
+class TestAzureSubscriptionName:
+    @pytest.mark.parametrize(
+        "subscription_name",
+        [
+            "My Subscription",
+            "Example-Subscription",
+            "Subscription5",
+        ],
+    )
+    def test_subscription_name(self, subscription_name):
+        assert (
+            validators.azure_subscription_name(subscription_name) == subscription_name
+        )
+
+    @pytest.mark.parametrize(
+        "subscription_name",
+        [
+            "My_Subscription",
+            "Your Subscription ",
+            "%^*",
+            "1A subscription",
+            "sübscríptìőn",
+            "🙂",
+        ],
+    )
+    def test_subscription_name_fail(self, subscription_name):
+        with pytest.raises(ValueError, match="can only contain alphanumeric"):
+            validators.azure_subscription_name(subscription_name)
+
+
+class TestValidateConfigName:
+    @pytest.mark.parametrize(
+        "config_name",
+        [
+            "valid-with-hyphens",
+            "valid with spaces",
+            "mIxeD CAse iNpuT",
+            "0123456789",
+        ],
+    )
+    def test_config_name(self, config_name):
+        assert validators.config_name(config_name) == config_name
+
+    @pytest.mark.parametrize(
+        "config_name",
+        [
+            " starts with space",
+            "ends with space ",
+            "-starts with hyphen",
+            "ends with hyphen-",
+        ],
+    )
+    def test_config_name_fail(self, config_name):
+        with pytest.raises(
+            ValueError,
+            match="DSH config names can only contain alphanumeric characters, spaces and hyphens.\nThey must start and end with alphanumeric characters.",
+        ):
+            validators.config_name(config_name)
+
+
 class TestValidateFqdn:
     @pytest.mark.parametrize(
         "fqdn",
