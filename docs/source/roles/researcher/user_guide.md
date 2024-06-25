@@ -715,12 +715,16 @@ The contents of `/shared/` will be **identical** on all SRDs in your SRE.
 The `/scratch/` folder should be used for any work-in-progress that isn't ready to share yet.
 Although everyone in your group will have **read-and-write access**, you can create your own folders inside `/scratch` and choose your own permissions for them.
 
+```{caution}
+You should not use `/scratch/` for long-term storage as it can be reset at any time without warning (e.g. when the VM is restarted).
+```
+
 The contents of `/scratch/` will be **different** on different VMs in your SRE.
 
 #### Backup space: `/backup/`
 
 The `/backup/` folder should be used for any work-in-progress that you want to have backed up.
-In the event of any accidental data loss, your system administrator can restore the `/backup` folder to the state it was in at an earlier time.
+In the event of any data loss due to accidental data deletion by a TRE user, your system administrator can restore the `/backup/` folder to the state it was in at an earlier point in time (up to 12 weeks in the past).
 This **cannot** be used to recover individual files - only the complete contents of the folder.
 Everyone in your group will have **read-and-write access** to all folders on `/backup`.
 
@@ -781,12 +785,13 @@ The Data Safe Haven SRE is hosted on the Microsoft Azure cloud platform.
 One of the benefits of having cloud based infastructure is that it can be deleted forever when the project is over.
 Deleting the infrastructure ensures that neither sensitive data nor insights derived from the data or modelling techniques persist.
 
-Make sure that every piece of code you think might be useful is stored in a `GitLab` repository within the secure environment.
-Any other work should be transferred to the shared `/shared/` drive.
+While working on the project, make sure that every piece of code you think might be useful is stored in a `GitLab` repository within the secure environment.
+Any other work should be transferred to the `/shared/` drive so that it is accessible to other TRE users.
+You can also use the `/backup/` drive to store work that you want to keep safe from accidental deletion.
 Anything that you think should be considered for **egress** from the environment (eg. images or processed datasets) should be transferred to the shared `/output/` drive.
 
 ```{caution}
-If you are participating in a Turing Data Study Group, everything that is not stored in a GitLab repository or on the shared `/shared/` or `/output/` drives by Friday lunchtime will be **DESTROYED FOR EVER**.
+Anything that is not transferred to the `/output/` drive to be considered for egress will be deleted forever when the project is over.
 ```
 
 ### {{unlock}} Access GitLab
