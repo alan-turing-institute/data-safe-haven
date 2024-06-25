@@ -14,7 +14,7 @@ from pydantic import Field, model_validator
 from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
+    DataSafeHavenValueError,
 )
 from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import YAMLSerialisableModel
@@ -68,7 +68,7 @@ class ContextSettings(YAMLSerialisableModel):
             self.logger.info(f"Switched context to '{context_name}'.")
         else:
             msg = f"Context '{context_name}' is not defined."
-            raise DataSafeHavenParameterError(msg)
+            raise DataSafeHavenValueError(msg)
 
     @property
     def context(self) -> Context | None:
@@ -127,7 +127,7 @@ class ContextSettings(YAMLSerialisableModel):
         # Ensure context is not already present
         if key in self.available:
             msg = f"A context with key '{key}' is already defined."
-            raise DataSafeHavenParameterError(msg)
+            raise DataSafeHavenValueError(msg)
 
         self.contexts[key] = Context(
             name=name,
@@ -139,7 +139,7 @@ class ContextSettings(YAMLSerialisableModel):
     def remove(self, key: str) -> None:
         if key not in self.available:
             msg = f"No context with key '{key}'."
-            raise DataSafeHavenParameterError(msg)
+            raise DataSafeHavenValueError(msg)
 
         del self.contexts[key]
 
