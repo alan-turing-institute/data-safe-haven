@@ -79,9 +79,7 @@ class DataSafeHavenInternalError(DataSafeHavenError):
 
 
 class DataSafeHavenIPRangeError(DataSafeHavenError):
-    """
-    Exception class raised when it is not possible to generate a valid IPv4 range.
-    """
+    """Exception raised when it is not possible to generate a valid IPv4 range."""
 
     pass
 
