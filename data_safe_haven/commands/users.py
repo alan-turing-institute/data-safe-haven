@@ -51,7 +51,7 @@ def add(
         users = UserHandler(context, pulumi_config, graph_api)
         users.add(csv)
     except DataSafeHavenError as exc:
-        msg = f"Could not add users to Data Safe Haven '{shm_name}'.\n{exc}"
+        msg = f"Could not add users to Data Safe Haven '{shm_name}'."
         raise DataSafeHavenError(msg) from exc
 
 
@@ -87,7 +87,7 @@ def list_users(
         users = UserHandler(context, pulumi_config, graph_api)
         users.list(sre)
     except DataSafeHavenError as exc:
-        msg = f"Could not list users for Data Safe Haven '{shm_name}'.\n{exc}"
+        msg = f"Could not list users for Data Safe Haven '{shm_name}'."
         raise DataSafeHavenError(msg) from exc
 
 
@@ -155,7 +155,7 @@ def register(
                 )
         users.register(sre_name, usernames_to_register)
     except DataSafeHavenError as exc:
-        msg = f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc}"
+        msg = f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'."
         raise DataSafeHavenError(msg) from exc
 
 
@@ -194,7 +194,7 @@ def remove(
             users = UserHandler(context, pulumi_config, graph_api)
             users.remove(usernames)
     except DataSafeHavenError as exc:
-        msg = f"Could not remove users from Data Safe Haven '{shm_name}'.\n{exc}"
+        msg = f"Could not remove users from Data Safe Haven '{shm_name}'."
         raise DataSafeHavenError(msg) from exc
 
 
@@ -263,5 +263,5 @@ def unregister(
         ):
             users.unregister(group_name, usernames_to_unregister)
     except DataSafeHavenError as exc:
-        msg = f"Could not unregister users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'.\n{exc}"
+        msg = f"Could not unregister users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'."
         raise DataSafeHavenError(msg) from exc

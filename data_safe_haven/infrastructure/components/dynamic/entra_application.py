@@ -59,7 +59,7 @@ class EntraApplicationProvider(DshResourceProvider):
                 )
             return outs
         except Exception as exc:
-            msg = f"Failed to refresh application [green]{props['application_name']}[/] in Entra ID.\n{exc}"
+            msg = f"Failed to refresh application '{props['application_name']}' in Entra ID."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create(self, props: dict[str, Any]) -> CreateResult:
@@ -110,7 +110,7 @@ class EntraApplicationProvider(DshResourceProvider):
                 else ""
             )
         except Exception as exc:
-            msg = f"Failed to create application [green]{props['application_name']}[/] in Entra ID.\n{exc}"
+            msg = f"Failed to create application '{props['application_name']}' in Entra ID."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
         return CreateResult(
             f"EntraApplication-{props['application_name']}",
@@ -125,7 +125,7 @@ class EntraApplicationProvider(DshResourceProvider):
             graph_api = GraphApi(auth_token=props["auth_token"])
             graph_api.delete_application(props["application_name"])
         except Exception as exc:
-            msg = f"Failed to delete application [green]{props['application_name']}[/] from Entra ID.\n{exc}"
+            msg = f"Failed to delete application '{props['application_name']}' from Entra ID."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def diff(
@@ -156,7 +156,7 @@ class EntraApplicationProvider(DshResourceProvider):
             updated = self.create(new_props)
             return UpdateResult(outs=updated.outs)
         except Exception as exc:
-            msg = f"Failed to update application [green]{new_props['application_name']}[/] in Entra ID.\n{exc}"
+            msg = f"Failed to update application '{new_props['application_name']}' in Entra ID."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
 

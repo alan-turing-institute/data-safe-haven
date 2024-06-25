@@ -80,7 +80,7 @@ def deploy(
         # for figuring out what went wrong.
         # print("Could not deploy Data Safe Haven Management environment.")
         # raise typer.Exit(code=1) from exc
-        msg = f"Could not deploy Data Safe Haven Management environment.\n{exc}"
+        msg = "Could not deploy Data Safe Haven Management environment."
         raise DataSafeHavenError(msg) from exc
     finally:
         # Upload Pulumi config to blob storage
@@ -104,7 +104,7 @@ def teardown() -> None:
             )
             stack.teardown()
         except Exception as exc:
-            msg = f"Unable to teardown Pulumi infrastructure.\n{exc}"
+            msg = "Unable to teardown Pulumi infrastructure."
             raise DataSafeHavenInputError(msg) from exc
 
         # Remove information from config file
@@ -113,5 +113,5 @@ def teardown() -> None:
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
-        msg = f"Could not teardown Safe Haven Management environment.\n{exc}"
+        msg = "Could not teardown Safe Haven Management environment."
         raise DataSafeHavenError(msg) from exc
