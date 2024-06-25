@@ -777,7 +777,7 @@ class GraphApi:
         if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
             return response
         else:
-            msg = f"Could not execute DELETE request to '{url}'. Response content received: '{response.content}'."
+            msg = f"Could not execute DELETE request to '{url}'. Response content received: '{response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_get(self, url: str, **kwargs: Any) -> requests.Response:
@@ -804,7 +804,7 @@ class GraphApi:
         if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
             return response
         else:
-            msg = f"Could not execute GET request from '{url}'. Response content received: '{response.content}'."
+            msg = f"Could not execute GET request from '{url}'. Response content received: '{response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
@@ -831,7 +831,7 @@ class GraphApi:
         if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
             return response
         else:
-            msg = f"Could not execute PATCH request to '{url}'. Response content received: '{response.content}'."
+            msg = f"Could not execute PATCH request to '{url}'. Response content received: '{response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_post(self, url: str, **kwargs: Any) -> requests.Response:
@@ -859,7 +859,7 @@ class GraphApi:
             time.sleep(30)  # wait for operation to complete
             return response
         else:
-            msg = f"Could not execute POST request to '{url}'. Response content received: '{response.content}'."
+            msg = f"Could not execute POST request to '{url}'. Response content received: '{response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg)
 
     def read_applications(self) -> Sequence[dict[str, Any]]:
