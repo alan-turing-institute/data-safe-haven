@@ -55,10 +55,7 @@ from azure.mgmt.storage.v2021_08_01.models import (
 from azure.storage.blob import BlobClient, BlobServiceClient
 from azure.storage.filedatalake import DataLakeServiceClient
 
-from data_safe_haven.exceptions import (
-    DataSafeHavenAzureError,
-    DataSafeHavenInternalError,
-)
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
 from data_safe_haven.logging import get_logger
 
@@ -866,7 +863,7 @@ class AzureApi(AzureAuthenticator):
             ]
             if resource_groups:
                 msg = f"There are still {len(resource_groups)} resource group(s) remaining."
-                raise DataSafeHavenInternalError(msg)
+                raise DataSafeHavenAzureError(msg)
             self.logger.info(
                 f"Ensured that resource group [green]{resource_group_name}[/] does not exist.",
             )
