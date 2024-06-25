@@ -9,7 +9,7 @@ from data_safe_haven.config.config_sections import (
 from data_safe_haven.config.sre_config import sre_config_name
 from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
-    DataSafeHavenParameterError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.external import AzureApi
 from data_safe_haven.types import SoftwarePackageCategory
@@ -71,7 +71,7 @@ class TestConfig:
 
     def test_template_validation(self) -> None:
         config = SREConfig.template()
-        with pytest.raises(DataSafeHavenParameterError):
+        with pytest.raises(DataSafeHavenTypeError):
             SREConfig.from_yaml(config.to_yaml())
 
     def test_from_yaml(self, sre_config, sre_config_yaml) -> None:
