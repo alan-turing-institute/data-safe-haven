@@ -73,15 +73,6 @@ class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
     pass
 
 
-class DataSafeHavenParameterError(DataSafeHavenError):
-    """
-    Possibly replace with ValueError or TypeError. See also InputError - potentially merge.
-
-    """
-
-    pass
-
-
 class DataSafeHavenPulumiError(DataSafeHavenError):
     """
     Exception class for handling errors when interacting with Pulumi.
