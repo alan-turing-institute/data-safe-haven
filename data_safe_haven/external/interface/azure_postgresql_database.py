@@ -15,7 +15,7 @@ from azure.mgmt.rdbms.postgresql_flexibleservers.models import (
 
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
-    DataSafeHavenInputError,
+    DataSafeHavenValueError,
 )
 from data_safe_haven.external import AzureApi
 from data_safe_haven.logging import get_logger
@@ -226,7 +226,7 @@ class AzurePostgreSQLDatabase:
                 )
         else:
             msg = f"Database access action {action} was not recognised."
-            raise DataSafeHavenInputError(msg)
+            raise DataSafeHavenValueError(msg)
         self.db_server_ = None  # Force refresh of self.db_server
         public_network_access = (
             self.db_server.network.public_network_access
