@@ -726,7 +726,7 @@ class AzureApi(AzureAuthenticator):
                 f"Removed file [green]{blob_name}[/] from blob storage.",
             )
         except AzureError as exc:
-            msg = f"Blob file [green]'{blob_name}'[/] could not be removed from [green]'{storage_account_name}'[/]."
+            msg = f"Blob file '{blob_name}' could not be removed from '{storage_account_name}'."
             raise DataSafeHavenAzureError(msg) from exc
 
     def remove_dns_txt_record(
@@ -770,7 +770,7 @@ class AzureApi(AzureAuthenticator):
                 f"Ensured that DNS record [green]{record_name}[/] is removed from zone [green]{zone_name}[/].",
             )
         except AzureError as exc:
-            msg = f"Failed to remove DNS record [green]{record_name}[/] from zone [green]{zone_name}[/]."
+            msg = f"Failed to remove DNS record {record_name} from zone {zone_name}."
             raise DataSafeHavenAzureError(msg) from exc
 
     def remove_keyvault_certificate(
