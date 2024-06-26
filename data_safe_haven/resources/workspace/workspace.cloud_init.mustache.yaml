@@ -53,6 +53,18 @@ write_files:
     content: |
       xfce4-session
 
+  - path: "/root/.ssh/desired_state_rsa"
+    permissions: "0600"
+    content: |
+      {{ private_key_desired_state }}
+
+  - path: "/root/desired_state.sh"
+    permissions: "0700"
+    content: |
+      #!/usr/bin/env sh
+      scp -r desired_state.{{ storage_account_data_configuration_name }}.workspace_user@desired_state.blob.core.windows.net:ansible ./
+      ansible-playbook -i localhost ansible/desired_state.yaml
+
 mounts:
   # Secure data is in a blob container mounted as NFSv3
   - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress", /data, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
@@ -75,6 +87,7 @@ apt:
 
 # Install necessary apt packages
 packages:
+  - ansible
   # System requirements
   - libnss-ldapd  # LDAP login
   - libpam-ldapd  # LDAP login

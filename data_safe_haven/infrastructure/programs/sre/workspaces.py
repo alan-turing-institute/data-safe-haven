@@ -41,8 +41,10 @@ class SREWorkspacesProps:
         ldap_user_search_base: Input[str],
         location: Input[str],
         maintenance_configuration_id: Input[str],
+        private_key_desired_state: Input[str],
         software_repository_hostname: Input[str],
         sre_name: Input[str],
+        storage_account_data_configuration_name: Input[str],
         storage_account_data_private_user_name: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
         subnet_workspaces: Input[network.GetSubnetResult],
@@ -64,8 +66,12 @@ class SREWorkspacesProps:
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.maintenance_configuration_id = maintenance_configuration_id
+        self.private_key_desired_state = private_key_desired_state
         self.software_repository_hostname = software_repository_hostname
         self.sre_name = sre_name
+        self.storage_account_data_configuration_name = (
+            storage_account_data_configuration_name
+        )
         self.storage_account_data_private_user_name = (
             storage_account_data_private_user_name
         )
@@ -130,7 +136,9 @@ class SREWorkspacesComponent(ComponentResource):
             ldap_server_port=props.ldap_server_port,
             ldap_user_filter=props.ldap_user_filter,
             ldap_user_search_base=props.ldap_user_search_base,
+            private_key_desired_state=props.private_key_desired_state,
             software_repository_hostname=props.software_repository_hostname,
+            storage_account_data_configuration_name=props.storage_account_data_configuration_name,
             storage_account_data_private_user_name=props.storage_account_data_private_user_name,
             storage_account_data_private_sensitive_name=props.storage_account_data_private_sensitive_name,
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
@@ -224,6 +232,7 @@ class SREWorkspacesComponent(ComponentResource):
         ldap_server_port: str,
         ldap_user_filter: str,
         ldap_user_search_base: str,
+        private_key_desired_state: str,
         software_repository_hostname: str,
         storage_account_data_private_sensitive_name: str,
         storage_account_data_private_user_name: str,
@@ -240,6 +249,7 @@ class SREWorkspacesComponent(ComponentResource):
                 "ldap_server_port": ldap_server_port,
                 "ldap_user_filter": ldap_user_filter,
                 "ldap_user_search_base": ldap_user_search_base,
+                "private_key_desired_state": private_key_desired_state,
                 "software_repository_hostname": software_repository_hostname,
                 "storage_account_data_private_user_name": storage_account_data_private_user_name,
                 "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive_name,

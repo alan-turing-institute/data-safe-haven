@@ -469,7 +469,7 @@ class SREDataComponent(ComponentResource):
             # enabled_protocols=storage.EnabledProtocols.NFS,
             # resource_group_name=resource_group.name,
             # root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
-            # share_name="desired_state",
+            share_name="desired_state",
             # share_quota=1,
         )
         # Create key pair for desired state local user
@@ -484,15 +484,19 @@ class SREDataComponent(ComponentResource):
             has_ssh_key=True,
             has_ssh_password=True,
             username="workspace_user",
-            permission_scopes=[storage.PermissionScopeArgs(
-                permissions="rl",
-                resource_name=container_desired_state.name,
-            )],
+            permission_scopes=[
+                storage.PermissionScopeArgs(
+                    permissions="rl",
+                    resource_name=container_desired_state.name,
+                )
+            ],
             resource_group_name=resource_group.name,
-            ssh_authorized_keys=[storage.SshPublicKeyArgs(
-                description="Workspace key",
-                key=b64encode(container_desired_state_key.public_key_openssh),
-            )],
+            ssh_authorized_keys=[
+                storage.SshPublicKeyArgs(
+                    description="Workspace key",
+                    key=b64encode(container_desired_state_key.public_key_openssh),
+                )
+            ],
         )
 
         # Deploy sensitive data blob storage account

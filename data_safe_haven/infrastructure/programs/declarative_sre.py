@@ -347,6 +347,7 @@ class DeclarativeSRE:
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.context.location,
                 maintenance_configuration_id=monitoring.maintenance_configuration.id,
+                private_key_desired_state=data.container_desired_state_private_key,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.sre_name,
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
