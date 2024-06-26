@@ -65,6 +65,33 @@ write_files:
       scp -r desired_state.{{ storage_account_data_configuration_name }}.workspace_user@desired_state.blob.core.windows.net:ansible ./
       ansible-playbook -i localhost ansible/desired_state.yaml
 
+  - path: "/etc/systemd/system/desired-state.timer"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Run desired state script daily
+
+      [Timer]
+      OnCalendar=daily
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+
+  - path: "/etc/systemd/system/desired-state.service"
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Run desired state script
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=oneshot
+      ExecStartPre=sleep 1m
+      ExecStart=/root/desired_state.sh
+
+
 mounts:
   # Secure data is in a blob container mounted as NFSv3
   - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress", /data, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
@@ -150,3 +177,8 @@ runcmd:
   - while (! mountpoint -q /output); do sleep 5; mount /output; done
   - while (! mountpoint -q /shared); do sleep 5; mount /shared; done
   - findmnt
+
+  # Enable and start desired state timer
+  # ------------------------------------
+  - systemctl enable desired-state.timer
+  - systemctl start desired-state.timer
