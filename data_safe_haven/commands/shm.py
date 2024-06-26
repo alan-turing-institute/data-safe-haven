@@ -9,6 +9,7 @@ from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenPulumiError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import SHMProjectManager
+from data_safe_haven.logging import get_logger
 
 shm_command_group = typer.Typer()
 
@@ -94,6 +95,7 @@ def teardown() -> None:
     config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
 
+    logger = get_logger()
     try:
         # Remove infrastructure deployed with Pulumi
         try:
@@ -114,4 +116,5 @@ def teardown() -> None:
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
         msg = "Could not teardown Safe Haven Management environment."
-        raise DataSafeHavenError(msg) from exc
+        logger.critical(msg)
+        raise typer.Exit(1) from exc
