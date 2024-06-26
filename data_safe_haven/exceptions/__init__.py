@@ -117,7 +117,7 @@ class DataSafeHavenValueError(DataSafeHavenError):
     """
     Exception class for handling errors related to value checking.
 
-    For example, when a function is called with an argument of the wrong value
+    For example, when a function is called with an argument of the wrong value.
     """
 
     pass
