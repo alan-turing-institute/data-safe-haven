@@ -107,7 +107,7 @@ class DataSafeHavenUserHandlingError(DataSafeHavenError):
     """
     Exception class for handling errors related to user handling.
 
-    For example, when listing or registering users fails
+    For example, when listing or registering users fails.
     """
 
     pass
