@@ -32,7 +32,7 @@ class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenError):
     """
     Exception class for handling errors when authenticating against the Azure API.
 
-    Used to capture exceptions generated when the user is not authenticated or authentication has expired
+    Used to capture exceptions generated when the user is not authenticated or authentication has expired.
     """
 
     pass
