@@ -77,7 +77,7 @@ class DataSafeHavenPulumiError(DataSafeHavenError):
     """
     Exception class for handling errors when interacting with Pulumi.
 
-    For example, when a Pulumi operation such as a deployment fails
+    For example, when a Pulumi operation such as a deployment fails.
     """
 
     pass
