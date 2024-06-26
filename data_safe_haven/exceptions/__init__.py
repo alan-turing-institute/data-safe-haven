@@ -87,7 +87,7 @@ class DataSafeHavenSSLError(DataSafeHavenError):
     """
     Exception class for handling errors related to administration of SSL certificates.
 
-    For example, errors refreshing or creating SSL certificates
+    For example, errors refreshing or creating SSL certificates.
     """
 
     pass
