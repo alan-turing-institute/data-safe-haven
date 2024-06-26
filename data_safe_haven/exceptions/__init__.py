@@ -67,7 +67,6 @@ class DataSafeHavenIPRangeError(DataSafeHavenError):
 class DataSafeHavenMicrosoftGraphError(DataSafeHavenAzureError):
     """
     Exception class for handling errors when interacting with the Microsoft Graph API.
-
     """
 
     pass
