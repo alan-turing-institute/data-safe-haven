@@ -28,7 +28,7 @@ class DataSafeHavenAzureError(DataSafeHavenError):
     pass
 
 
-class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenAzureError):
+class DataSafeHavenAzureAPIAuthenticationError(DataSafeHavenError):
     """
     Exception class for handling errors when authenticating against the Azure API.
 

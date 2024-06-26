@@ -254,7 +254,7 @@ class TestCreate:
 
         result = runner.invoke(context_command_group, ["create"])
         assert result.exit_code == 1
-        assert "Failed to authenticate with Azure API." in result.stdout
+        assert "Failed to authenticate with the Azure API. You may not be logged into" in result.stdout
 
 
 class TestTeardown:
@@ -287,4 +287,4 @@ class TestTeardown:
 
         result = runner.invoke(context_command_group, ["teardown"])
         assert result.exit_code == 1
-        assert "Failed to authenticate with Azure API." in result.stdout
+        assert "Failed to authenticate with the Azure API. You may not be logged into" in result.stdout
