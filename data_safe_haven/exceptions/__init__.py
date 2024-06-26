@@ -97,7 +97,7 @@ class DataSafeHavenTypeError(DataSafeHavenError):
     """
     Exception class for handling errors related to type checking.
 
-    For example, when a function is called with an argument of the wrong type
+    For example, when a function is called with an argument of the wrong type.
     """
 
     pass
