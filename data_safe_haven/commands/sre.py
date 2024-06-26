@@ -150,5 +150,7 @@ def teardown(
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
-        logger.critical(f"Could not teardown Secure Research Environment '{sre_config.safe_name}'.")
+        logger.critical(
+            f"Could not teardown Secure Research Environment '{sre_config.safe_name}'."
+        )
         raise typer.Exit(1) from exc
