@@ -9,6 +9,7 @@ from data_safe_haven.context import ContextSettings
 from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenPulumiError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
+from data_safe_haven.logging import get_logger
 from data_safe_haven.provisioning import SREProvisioningManager
 
 sre_command_group = typer.Typer()
@@ -120,6 +121,7 @@ def teardown(
     shm_config = SHMConfig.from_remote(context)
     sre_config = SREConfig.from_remote_by_name(context, name)
 
+    logger = get_logger()
     try:
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
@@ -148,7 +150,5 @@ def teardown(
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
-        msg = (
-            f"Could not teardown Secure Research Environment '{sre_config.safe_name}'."
-        )
-        raise DataSafeHavenError(msg) from exc
+        logger.critical(f"Could not teardown Secure Research Environment '{sre_config.safe_name}'.")
+        raise typer.Exit(1) from exc

@@ -115,6 +115,5 @@ def teardown() -> None:
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
-        msg = "Could not teardown Safe Haven Management environment."
-        logger.critical(msg)
+        logger.critical("Could not teardown Safe Haven Management environment.")
         raise typer.Exit(1) from exc
