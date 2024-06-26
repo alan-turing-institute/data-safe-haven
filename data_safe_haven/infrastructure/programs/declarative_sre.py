@@ -350,6 +350,7 @@ class DeclarativeSRE:
                 private_key_desired_state=data.container_desired_state_private_key,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.sre_name,
+                storage_account_data_configuration_name=data.storage_account_data_configuration_name,
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
                 subnet_workspaces=networking.subnet_workspaces,
