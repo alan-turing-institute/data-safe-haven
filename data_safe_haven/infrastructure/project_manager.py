@@ -408,6 +408,6 @@ class SREProjectManager(ProjectManager):
             context,
             pulumi_config,
             config.safe_name,
-            DeclarativeSRE(context, config, context.shm_name, token),
+            DeclarativeSRE(context, config, token),
             create_project=create_project,
         )

@@ -35,8 +35,8 @@ class TestContext:
         assert context.tags["project"] == "Data Safe Haven"
         assert context.tags["version"] == __version__
 
-    def test_shm_name(self, context):
-        assert context.shm_name == "acmedeployment"
+    def test_name(self, context):
+        assert context.name == "acmedeployment"
 
     def test_work_directory(self, context, monkeypatch):
         monkeypatch.delenv("DSH_CONFIG_DIRECTORY", raising=False)
@@ -49,7 +49,7 @@ class TestContext:
         assert context.storage_account_name == "shmacmedeploymentcontext"
 
     def test_long_storage_account_name(self, context_dict):
-        context_dict["description"] = "very " * 5 + "long name"
+        context_dict["name"] = "very" * 5 + "longname"
         context = Context(**context_dict)
         assert context.storage_account_name == "shmveryveryveryvecontext"
 

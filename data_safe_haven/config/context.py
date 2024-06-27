@@ -10,7 +10,6 @@ from pydantic import BaseModel
 from data_safe_haven import __version__
 from data_safe_haven.directories import config_dir
 from data_safe_haven.external import AzureApi
-from data_safe_haven.functions import json_safe
 from data_safe_haven.serialisers import ContextBase
 from data_safe_haven.types import (
     AzureSubscriptionName,
@@ -40,29 +39,25 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
         }
 
     @property
-    def shm_name(self) -> str:
-        return json_safe(self.description)
-
-    @property
     def work_directory(self) -> Path:
-        return config_dir() / self.shm_name
+        return config_dir() / self.name
 
     @property
     def resource_group_name(self) -> str:
-        return f"shm-{self.shm_name}-rg-context"
+        return f"shm-{self.name}-rg-context"
 
     @property
     def storage_account_name(self) -> str:
         # maximum of 24 characters allowed
-        return f"shm{self.shm_name[:14]}context"
+        return f"shm{self.name[:14]}context"
 
     @property
     def key_vault_name(self) -> str:
-        return f"shm-{self.shm_name[:9]}-kv-context"
+        return f"shm-{self.name[:9]}-kv-context"
 
     @property
     def managed_identity_name(self) -> str:
-        return f"shm-{self.shm_name}-identity-reader-context"
+        return f"shm-{self.name}-identity-reader-context"
 
     @property
     def pulumi_backend_url(self) -> str:
