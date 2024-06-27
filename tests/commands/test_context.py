@@ -169,7 +169,6 @@ class TestAdd:
         result = runner.invoke(context_command_group, ["show"])
         assert result.exit_code == 0
         assert "Description: Acme Deployment" in result.stdout
-        assert "Name: acmedeployment" in result.stdout
         result = runner.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
         assert "acmedeployment*" in result.stdout

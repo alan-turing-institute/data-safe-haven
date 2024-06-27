@@ -34,7 +34,6 @@ def show() -> None:
         console.print(
             f"\tAdmin group name: [blue]{current_context.admin_group_name}[/]",
             f"\tDescription: [blue]{current_context.description}[/]",
-            f"\tName: [blue]{current_context.name}[/]",
             f"\tSubscription name: [blue]{current_context.subscription_name}[/]",
             sep="\n",
         )
