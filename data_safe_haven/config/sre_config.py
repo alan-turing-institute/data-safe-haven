@@ -33,11 +33,6 @@ class SREConfig(AzureSerialisableModel):
         """Construct a canonical filename for this SREConfig."""
         return sre_config_name(self.name)
 
-    @property
-    def safe_name(self) -> str:
-        """Construct a JSON-safe version of the name of this SRE."""
-        return json_safe(self.name)
-
     @classmethod
     def from_remote_by_name(
         cls: type[Self], context: ContextBase, sre_name: str

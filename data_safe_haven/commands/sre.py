@@ -98,7 +98,7 @@ def deploy(
         manager = SREProvisioningManager(
             graph_api_token=graph_api.token,
             location=sre_config.azure.location,
-            sre_name=sre_config.safe_name,
+            sre_name=sre_config.name,
             sre_stack=stack,
             subscription_name=context.subscription_name,
             timezone=sre_config.sre.timezone,
@@ -106,7 +106,7 @@ def deploy(
         manager.run()
     except DataSafeHavenError as exc:
         logger.critical(
-            f"Could not deploy Secure Research Environment {sre_config.safe_name}."
+            f"Could not deploy Secure Research Environment {sre_config.name}."
         )
         raise typer.Exit(code=1) from exc
     finally:
@@ -154,6 +154,6 @@ def teardown(
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
         logger.critical(
-            f"Could not teardown Secure Research Environment '{sre_config.safe_name}'."
+            f"Could not teardown Secure Research Environment '{sre_config.name}'."
         )
         raise typer.Exit(1) from exc
