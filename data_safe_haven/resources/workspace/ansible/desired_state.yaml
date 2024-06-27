@@ -35,7 +35,14 @@ tasks:
           fi
         fi
 
-  - name: Set bashrc skeleton
+  - name: Copy bashrc skeleton
     ansible.builtin.copy:
       src: etc/skel/bashrc
       dest: /etc/skel/.bashrc
+      mode: '0755'
+
+  - name: Copy xsession skeleton
+    ansible.builtin.copy:
+      src: etc/skel/xsession
+      dest: /etc/skel/.xsession
+      mode: '0444'

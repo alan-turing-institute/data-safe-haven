@@ -20,11 +20,6 @@ write_files:
           options(repos = r)
       })
 
-  - path: "/etc/skel/.xsession"
-    permissions: "0444"
-    content: |
-      xfce4-session
-
   - path: "/root/.ssh/desired_state_rsa"
     permissions: "0600"
     content: |
