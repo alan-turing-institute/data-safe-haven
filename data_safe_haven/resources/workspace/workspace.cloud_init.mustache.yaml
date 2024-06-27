@@ -118,16 +118,9 @@ package_update: true
 package_upgrade: true
 
 runcmd:
-  # Configure LDAP user login
-  # -------------------------
-  - echo ">=== Configure LDAP user login... ===<"
-  # Allow SSH password authentication
-  - sed -i "s|^PasswordAuthentication.*|PasswordAuthentication yes|g" /etc/ssh/sshd_config
-  - sed -i "s|^UsePAM.*|UsePAM yes|g" /etc/ssh/sshd_config
   # Restart services
   - systemctl restart nscd
   - systemctl restart nslcd
-  - systemctl restart sshd
 
   # Enable xrdp and session manager at startup
   # ------------------------------------------
