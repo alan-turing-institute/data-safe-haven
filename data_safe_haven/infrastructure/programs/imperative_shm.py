@@ -35,6 +35,8 @@ class ImperativeSHM:
         Raises:
             DataSafeHavenAzureError if any resources cannot be created
         """
+        logger = get_logger()
+        logger.info(f"Preparing to deploy [green]{self.context.description}[/] SHM.")
         # Deploy the resources needed by Pulumi
         try:
             resource_group = self.azure_api.ensure_resource_group(
@@ -150,7 +152,7 @@ class ImperativeSHM:
         logger = get_logger()
         try:
             logger.info(
-                f"Removing context {self.context.name} resource group {self.context.resource_group_name}"
+                f"Removing [green]{self.context.description}[/] resource group {self.context.resource_group_name}."
             )
             self.azure_api.remove_resource_group(self.context.resource_group_name)
         except DataSafeHavenAzureError as exc:

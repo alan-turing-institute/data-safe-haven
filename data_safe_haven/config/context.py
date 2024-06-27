@@ -15,12 +15,14 @@ from data_safe_haven.serialisers import ContextBase
 from data_safe_haven.types import (
     AzureSubscriptionName,
     EntraGroupName,
+    SafeString,
 )
 
 
 class Context(ContextBase, BaseModel, validate_assignment=True):
-    name: str
     admin_group_name: EntraGroupName
+    description: str
+    name: SafeString
     subscription_name: AzureSubscriptionName
     storage_container_name: ClassVar[str] = "config"
     pulumi_storage_container_name: ClassVar[str] = "pulumi"
@@ -31,7 +33,7 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
     @property
     def tags(self) -> dict[str, str]:
         return {
-            "deployment": self.name,
+            "deployment": self.description,
             "deployed by": "Python",
             "project": "Data Safe Haven",
             "version": __version__,
@@ -39,7 +41,7 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
 
     @property
     def shm_name(self) -> str:
-        return json_safe(self.name)
+        return json_safe(self.description)
 
     @property
     def work_directory(self) -> Path:

@@ -48,7 +48,7 @@ class TestContext:
         assert context.storage_account_name == "shmacmedeploymentcontext"
 
     def test_long_storage_account_name(self, context_dict):
-        context_dict["name"] = "very " * 5 + "long name"
+        context_dict["description"] = "very " * 5 + "long name"
         context = Context(**context_dict)
         assert context.storage_account_name == "shmveryveryveryvecontext"
 
@@ -90,8 +90,9 @@ class TestContextManager:
             selected="acmedeployment",
             contexts={
                 "acmedeployment": Context(
-                    name="Acme Deployment",
                     admin_group_name="Acme Admins",
+                    description="Acme Deployment",
+                    name="acmedeployment",
                     subscription_name="Data Safe Haven Acme",
                 )
             },
@@ -185,7 +186,8 @@ class TestContextManager:
 
     def test_assert_context(self, context_manager):
         context = context_manager.assert_context()
-        assert context.name == "Acme Deployment"
+        assert context.description == "Acme Deployment"
+        assert context.name == "acmedeployment"
 
     def test_assert_context_none(self, context_manager):
         context_manager.selected = None
@@ -199,13 +201,15 @@ class TestContextManager:
         assert available == ["acmedeployment", "gems"]
 
     def test_update(self, context_manager):
-        assert context_manager.context.name == "Acme Deployment"
+        assert context_manager.context.description == "Acme Deployment"
+        assert context_manager.context.name == "acmedeployment"
         context_manager.update(name="replaced")
         assert context_manager.context.name == "replaced"
 
     def test_set_update(self, context_manager):
         context_manager.selected = "gems"
-        assert context_manager.context.name == "Gems"
+        assert context_manager.context.description == "Gems"
+        assert context_manager.context.name == "gems"
         context_manager.update(name="replaced")
         assert context_manager.context.name == "replaced"
 
@@ -217,22 +221,25 @@ class TestContextManager:
     def test_add(self, context_manager):
         context_manager.add(
             admin_group_name="Example Admins",
-            name="Example",
+            description="Example Deployment",
+            name="example",
             subscription_name="Data Safe Haven Example",
         )
         context_manager.selected = "example"
         assert context_manager.selected == "example"
-        assert context_manager.context.name == "Example"
+        assert context_manager.context.description == "Example Deployment"
+        assert context_manager.context.name == "example"
         assert context_manager.context.subscription_name == "Data Safe Haven Example"
 
     def test_invalid_add(self, context_manager):
         with pytest.raises(
             DataSafeHavenParameterError,
-            match="A context with key 'acmedeployment' is already defined.",
+            match="A context with name 'acmedeployment' is already defined.",
         ):
             context_manager.add(
                 admin_group_name="Acme Admins",
-                name="Acme Deployment",
+                description="Acme Deployment",
+                name="acmedeployment",
                 subscription_name="Data Safe Haven Acme",
             )
 
@@ -243,7 +250,7 @@ class TestContextManager:
 
     def test_invalid_remove(self, context_manager):
         with pytest.raises(
-            DataSafeHavenParameterError, match="No context with key 'invalid'."
+            DataSafeHavenParameterError, match="No context with name 'invalid'."
         ):
             context_manager.remove("invalid")
 
@@ -257,7 +264,8 @@ class TestContextManager:
         with open(config_file_path, "w") as f:
             f.write(context_yaml)
         settings = ContextManager.from_file(config_file_path=config_file_path)
-        assert settings.context.name == "Acme Deployment"
+        assert settings.context.description == "Acme Deployment"
+        assert settings.context.name == "acmedeployment"
 
     def test_file_not_found(self, tmp_path):
         config_file_path = tmp_path / "config.yaml"

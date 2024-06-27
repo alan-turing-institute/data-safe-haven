@@ -6,7 +6,7 @@ class TestShow:
         result = runner.invoke(context_command_group, ["show"])
         assert result.exit_code == 0
         assert "Current context: acmedeployment" in result.stdout
-        assert "Name: Acme Deployment" in result.stdout
+        assert "Description: Acme Deployment" in result.stdout
 
     def test_show_none(self, runner_none):
         result = runner_none.invoke(context_command_group, ["show"])
@@ -67,9 +67,11 @@ class TestAdd:
             [
                 "add",
                 "--name",
-                "Example",
+                "example",
                 "--admin-group-name",
                 "Example Admins",
+                "--description",
+                "Example Deployment",
                 "--subscription-name",
                 "Data Safe Haven Example",
             ],
@@ -83,17 +85,19 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "--name",
-                "Acme Deployment",
                 "--admin-group-name",
                 "Example Admins",
+                "--description",
+                "Acme Deployment",
+                "--name",
+                "acmedeployment",
                 "--subscription-name",
                 "Data Safe Haven Acme",
             ],
         )
         assert result.exit_code == 1
         assert (
-            "A context with key 'acmedeployment' is already defined." in result.stdout
+            "A context with name 'acmedeployment' is already defined." in result.stdout
         )
 
     def test_add_invalid_entra_group_name(self, runner):
@@ -101,10 +105,12 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "--name",
-                "Example",
                 "--admin-group-name",
                 " Example Admins",
+                "--description",
+                "Acme Deployment",
+                "--name",
+                "acmedeployment",
                 "--subscription-name",
                 "Invalid Subscription Name  ",
             ],
@@ -117,10 +123,12 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "--name",
-                "Example",
                 "--admin-group-name",
                 "Example Admins",
+                "--description",
+                "Example Deployment",
+                "--name",
+                "example",
                 "--subscription-name",
                 "Invalid Subscription Name  ",
             ],
@@ -134,7 +142,7 @@ class TestAdd:
             [
                 "add",
                 "--name",
-                "Example",
+                "example",
             ],
         )
         assert result.exit_code == 2
@@ -146,10 +154,12 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "--name",
-                "Acme Deployment",
                 "--admin-group-name",
                 "Acme Admins",
+                "--description",
+                "Acme Deployment",
+                "--name",
+                "acmedeployment",
                 "--subscription-name",
                 "Data Safe Haven Acme",
             ],
@@ -158,7 +168,8 @@ class TestAdd:
         assert (tmp_contexts / "contexts.yaml").exists()
         result = runner.invoke(context_command_group, ["show"])
         assert result.exit_code == 0
-        assert "Name: Acme Deployment" in result.stdout
+        assert "Description: Acme Deployment" in result.stdout
+        assert "Name: acmedeployment" in result.stdout
         result = runner.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
         assert "acmedeployment*" in result.stdout
@@ -167,15 +178,17 @@ class TestAdd:
 
 class TestUpdate:
     def test_update(self, runner):
-        result = runner.invoke(context_command_group, ["update", "--name", "New Name"])
+        result = runner.invoke(
+            context_command_group, ["update", "--description", "New Name"]
+        )
         assert result.exit_code == 0
         result = runner.invoke(context_command_group, ["show"])
         assert result.exit_code == 0
-        assert "Name: New Name" in result.stdout
+        assert "Description: New Name" in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
         result = runner_no_context_file.invoke(
-            context_command_group, ["update", "--name", "New Name"]
+            context_command_group, ["update", "--description", "New Name"]
         )
         assert result.exit_code == 1
         assert "No context configuration file." in result.stdout
@@ -192,7 +205,7 @@ class TestRemove:
     def test_remove_invalid(self, runner):
         result = runner.invoke(context_command_group, ["remove", "invalid"])
         assert result.exit_code == 1
-        assert "No context with key 'invalid'." in result.stdout
+        assert "No context with name 'invalid'." in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
         result = runner_no_context_file.invoke(

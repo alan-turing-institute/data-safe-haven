@@ -46,7 +46,8 @@ def context(context_dict):
 def context_dict():
     return {
         "admin_group_name": "Acme Admins",
-        "name": "Acme Deployment",
+        "description": "Acme Deployment",
+        "name": "acmedeployment",
         "subscription_name": "Data Safe Haven Acme",
     }
 
@@ -75,11 +76,13 @@ def context_yaml():
     contexts:
         acmedeployment:
             admin_group_name: Acme Admins
-            name: Acme Deployment
+            description: Acme Deployment
+            name: acmedeployment
             subscription_name: Data Safe Haven Acme
         gems:
             admin_group_name: Gems Admins
-            name: Gems
+            description: Gems
+            name: gems
             subscription_name: Data Safe Haven Gems
     """
     return yaml.dump(yaml.safe_load(content))

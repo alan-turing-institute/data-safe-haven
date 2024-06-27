@@ -16,7 +16,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenParameterError,
 )
-from data_safe_haven.functions import json_safe
 from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import YAMLSerialisableModel
 
@@ -30,11 +29,13 @@ class ContextManager(YAMLSerialisableModel):
     contexts:
         acmedeployment:
             admin_group_name: Acme Admins
-            name: Acme Deployment
+            description: Acme Deployment
+            name: acmedeployment
             subscription_name: Data Safe Haven (Acme)
         acmetesting:
             admin_group_name: Acme Testing Admins
-            name: Acme Testing
+            description: Acme Testing
+            name: acmetesting
             subscription_name: Data Safe Haven (Acme Testing)
         ...
     """
@@ -61,12 +62,12 @@ class ContextManager(YAMLSerialisableModel):
         return self.selected_
 
     @selected.setter
-    def selected(self, context_name: str | None) -> None:
-        if context_name in self.available or context_name is None:
-            self.selected_ = context_name
-            self.logger.info(f"Switched context to '{context_name}'.")
+    def selected(self, name: str | None) -> None:
+        if name in self.available or name is None:
+            self.selected_ = name
+            self.logger.info(f"Switched context to '{name}'.")
         else:
-            msg = f"Context '{context_name}' is not defined."
+            msg = f"Context '{name}' is not defined."
             raise DataSafeHavenParameterError(msg)
 
     @property
@@ -76,6 +77,10 @@ class ContextManager(YAMLSerialisableModel):
         else:
             return self.contexts[self.selected]
 
+    @property
+    def available(self) -> list[str]:
+        return list(self.contexts.keys())
+
     def assert_context(self) -> Context:
         if context := self.context:
             return context
@@ -83,14 +88,11 @@ class ContextManager(YAMLSerialisableModel):
             msg = "No context selected"
             raise DataSafeHavenConfigError(msg)
 
-    @property
-    def available(self) -> list[str]:
-        return list(self.contexts.keys())
-
     def update(
         self,
         *,
         admin_group_name: str | None = None,
+        description: str | None = None,
         name: str | None = None,
         subscription_name: str | None = None,
     ) -> None:
@@ -101,6 +103,11 @@ class ContextManager(YAMLSerialisableModel):
                 f"Updating admin group name from '{context.admin_group_name}' to '[green]{admin_group_name}[/]'."
             )
             context.admin_group_name = admin_group_name
+        if description:
+            self.logger.debug(
+                f"Updating description from '{context.description}' to '[green]{description}[/]'."
+            )
+            context.description = description
         if name:
             self.logger.debug(
                 f"Updating name from '{context.name}' to '[green]{name}[/]'."
@@ -116,33 +123,34 @@ class ContextManager(YAMLSerialisableModel):
         self,
         *,
         admin_group_name: str,
+        description: str,
         name: str,
         subscription_name: str,
     ) -> None:
         # Ensure context is not already present
-        key = json_safe(name)
-        if key in self.available:
-            msg = f"A context with key '{key}' is already defined."
+        if name in self.available:
+            msg = f"A context with name '{name}' is already defined."
             raise DataSafeHavenParameterError(msg)
 
-        self.logger.info(f"Creating a new context with key '{key}'.")
-        self.contexts[key] = Context(
+        self.logger.info(f"Creating a new context with name '{name}'.")
+        self.contexts[name] = Context(
             admin_group_name=admin_group_name,
+            description=description,
             name=name,
             subscription_name=subscription_name,
         )
         if not self.selected:
-            self.selected = key
+            self.selected = name
 
-    def remove(self, key: str) -> None:
-        if key not in self.available:
-            msg = f"No context with key '{key}'."
+    def remove(self, name: str) -> None:
+        if name not in self.available:
+            msg = f"No context with name '{name}'."
             raise DataSafeHavenParameterError(msg)
 
-        del self.contexts[key]
+        del self.contexts[name]
 
         # Prevent having a deleted context selected
-        if key == self.selected:
+        if name == self.selected:
             self.selected = None
 
     @classmethod
