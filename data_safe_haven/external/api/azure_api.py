@@ -108,6 +108,11 @@ class AzureApi(AzureAuthenticator):
         storage_account_name: str,
         storage_container_name: str,
     ) -> bool:
+        """Find out whether a blob file exists in Azure storage
+
+        Returns:
+            bool: Whether or not the blob exists
+        """
         try:
             blob_client = self.blob_client(
                 resource_group_name,
