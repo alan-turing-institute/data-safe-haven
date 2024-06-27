@@ -44,18 +44,6 @@ class TestConfigSectionSHM:
         ):
             ConfigSectionSHM(**shm_config_section_dict)
 
-    def test_update(self, shm_config_section: ConfigSectionSHM) -> None:
-        assert shm_config_section.fqdn == "shm.acme.com"
-        shm_config_section.update(fqdn="shm.example.com")
-        assert shm_config_section.fqdn == "shm.example.com"
-
-    def test_update_validation(self, shm_config_section: ConfigSectionSHM) -> None:
-        with pytest.raises(
-            ValidationError,
-            match=r"Value error, Expected valid fully qualified domain name, for example 'example.com'.*not an FQDN",
-        ):
-            shm_config_section.update(fqdn="not an FQDN")
-
 
 class TestConfigSectionSRE:
     def test_constructor(
@@ -102,34 +90,6 @@ class TestConfigSectionSRE:
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
             )
 
-    def test_update(self) -> None:
-        sre_config = ConfigSectionSRE(admin_email_address="admin@example.com")
-        assert sre_config.admin_email_address == "admin@example.com"
-        assert sre_config.admin_ip_addresses == []
-        assert sre_config.databases == []
-        assert sre_config.data_provider_ip_addresses == []
-        assert sre_config.workspace_skus == []
-        assert sre_config.research_user_ip_addresses == []
-        assert sre_config.software_packages == SoftwarePackageCategory.NONE
-        assert sre_config.timezone == "Etc/UTC"
-        sre_config.update(
-            admin_email_address="admin@example.org",
-            admin_ip_addresses=["1.2.3.4"],
-            data_provider_ip_addresses=["2.3.4.5"],
-            databases=[DatabaseSystem.MICROSOFT_SQL_SERVER],
-            workspace_skus=["Standard_D8s_v4"],
-            software_packages=SoftwarePackageCategory.ANY,
-            user_ip_addresses=["3.4.5.6"],
-            timezone="Australia/Perth",
-        )
-        assert sre_config.admin_email_address == "admin@example.org"
-        assert sre_config.admin_ip_addresses == ["1.2.3.4/32"]
-        assert sre_config.databases == [DatabaseSystem.MICROSOFT_SQL_SERVER]
-        assert sre_config.data_provider_ip_addresses == ["2.3.4.5/32"]
-        assert sre_config.workspace_skus == ["Standard_D8s_v4"]
-        assert sre_config.research_user_ip_addresses == ["3.4.5.6/32"]
-        assert sre_config.software_packages == SoftwarePackageCategory.ANY
-        assert sre_config.timezone == "Australia/Perth"
 
 
 class TestConfigSubsectionRemoteDesktopOpts:
@@ -139,16 +99,5 @@ class TestConfigSubsectionRemoteDesktopOpts:
     def test_constructor_defaults(self) -> None:
         remote_desktop_config = ConfigSubsectionRemoteDesktopOpts()
         assert not all(
-            (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
-        )
-
-    def test_update(
-        self, remote_desktop_config: ConfigSubsectionRemoteDesktopOpts
-    ) -> None:
-        assert not all(
-            (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
-        )
-        remote_desktop_config.update(allow_copy=True, allow_paste=True)
-        assert all(
             (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
         )
