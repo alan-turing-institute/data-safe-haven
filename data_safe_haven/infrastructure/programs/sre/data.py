@@ -5,7 +5,7 @@ from typing import ClassVar
 
 import pulumi_random
 import pulumi_tls
-from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi import ComponentResource, FileArchive, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
     keyvault,
@@ -34,6 +34,7 @@ from data_safe_haven.infrastructure.components import (
     SSLCertificate,
     SSLCertificateProps,
 )
+from data_safe_haven.resources import resources_path
 from data_safe_haven.types import AzureDnsZoneNames
 
 
@@ -464,13 +465,25 @@ class SREDataComponent(ComponentResource):
         # Deploy desired state share
         container_desired_state = storage.BlobContainer(
             f"{storage_account_data_configuration._name}_desired_state",
-            # access_tier=storage.ShareAccessTier.COOL,
+            access_tier=storage.ShareAccessTier.COOL,
             account_name=storage_account_data_configuration.name,
-            # enabled_protocols=storage.EnabledProtocols.NFS,
-            # resource_group_name=resource_group.name,
-            # root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
+            enabled_protocols=storage.EnabledProtocols.NFS,
+            resource_group_name=resource_group.name,
+            root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
             share_name="desired_state",
-            # share_quota=1,
+            share_quota=1,
+        )
+        # Create archive to uplaod
+        archive_desired_state = FileArchive(
+            str(resources_path / "workspace" / "ansible")
+        )
+        # Upload archive to desired state container
+        storage.Blob(
+            account_name=storage_account_data_configuration.name,
+            blob_name="ansible",
+            container_name=container_desired_state.name,
+            resource_group_name=resource_group.name,
+            source=archive_desired_state,
         )
         # Create key pair for desired state local user
         container_desired_state_key = pulumi_tls.PrivateKey(
