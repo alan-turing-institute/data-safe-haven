@@ -102,7 +102,7 @@ $deploymentTier3Subnet = Set-SubnetNetworkSecurityGroup -Subnet $deploymentTier3
 
 # Create the VPN gateway
 # ----------------------
-$publicIp = Deploy-PublicIpAddress -Name "$($config.network.vnet.name)_GW_PIP" -ResourceGroupName $config.network.vnet.rg -AllocationMethod Dynamic -Location $config.location
+$publicIp = Deploy-PublicIpAddress -Name "$($config.network.vnet.name)_GW_PIP" -ResourceGroupName $config.network.vnet.rg -AllocationMethod Static -Location $config.location -Sku Standard
 $certificate = Resolve-KeyVaultSecret -VaultName $config.keyVault.name -SecretName $config.keyVault.secretNames.vpnCaCertificatePlain -AsPlaintext
 $null = Deploy-VirtualNetworkGateway -Name "$($config.network.vnet.name)_GW" -ResourceGroupName $config.network.vnet.rg -Location $config.location -PublicIpAddressId $publicIp.Id -SubnetId $gatewaySubnet.Id -P2SCertificate $certificate -VpnClientAddressPool $config.network.vpn.cidr
 
