@@ -43,24 +43,21 @@ class TestContext:
         assert "data_safe_haven/acmedeployment" in str(context.work_directory)
 
     def test_resource_group_name(self, context):
-        assert context.resource_group_name == "shm-acmedeployment-rg-context"
+        assert context.resource_group_name == "shm-acmedeployment-rg"
 
     def test_storage_account_name(self, context):
-        assert context.storage_account_name == "shmacmedeploymentcontext"
+        assert context.storage_account_name == "shmacmedeployment"
 
     def test_long_storage_account_name(self, context_dict):
         context_dict["name"] = "very" * 5 + "longname"
         context = Context(**context_dict)
-        assert context.storage_account_name == "shmveryveryveryvecontext"
+        assert context.storage_account_name == "shmveryveryveryveryveryl"
 
     def test_key_vault_name(self, context):
-        assert context.key_vault_name == "shm-acmedeplo-kv-context"
+        assert context.key_vault_name == "shm-acmedeployment-kv"
 
     def test_managed_identity_name(self, context):
-        assert (
-            context.managed_identity_name
-            == "shm-acmedeployment-identity-reader-context"
-        )
+        assert context.managed_identity_name == "shm-acmedeployment-identity-reader"
 
     def test_pulumi_backend_url(self, context):
         assert context.pulumi_backend_url == "azblob://pulumi"
@@ -81,7 +78,7 @@ class TestContext:
     ):
         assert (
             context.pulumi_secrets_provider_url
-            == "azurekeyvault://shm-acmedeplo-kv-context.vault.azure.net/keys/pulumi-encryption-key/version"
+            == "azurekeyvault://shm-acmedeployment-kv.vault.azure.net/keys/pulumi-encryption-key/version"
         )
 
 

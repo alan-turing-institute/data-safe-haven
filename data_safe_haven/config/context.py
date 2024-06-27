@@ -44,20 +44,21 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
 
     @property
     def resource_group_name(self) -> str:
-        return f"shm-{self.name}-rg-context"
+        return f"shm-{self.name}-rg"
 
     @property
     def storage_account_name(self) -> str:
         # maximum of 24 characters allowed
-        return f"shm{self.name[:14]}context"
+        return f"shm{self.name[:21]}"
 
     @property
     def key_vault_name(self) -> str:
-        return f"shm-{self.name[:9]}-kv-context"
+        # maximum of 24 characters allowed
+        return f"shm-{self.name[:17]}-kv"
 
     @property
     def managed_identity_name(self) -> str:
-        return f"shm-{self.name}-identity-reader-context"
+        return f"shm-{self.name}-identity-reader"
 
     @property
     def pulumi_backend_url(self) -> str:
