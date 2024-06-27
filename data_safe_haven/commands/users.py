@@ -32,7 +32,6 @@ def add(
     context = ContextManager.from_file().assert_context()
     shm_config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
-
     shm_name = context.shm_name
 
     logger = get_logger()
@@ -52,7 +51,7 @@ def add(
         )
 
         # Add users to SHM
-        users = UserHandler(context, pulumi_config, graph_api)
+        users = UserHandler(context, graph_api)
         users.add(csv)
     except DataSafeHavenError as exc:
         logger.critical(f"Could not add users to Data Safe Haven '{shm_name}'.")
@@ -88,8 +87,8 @@ def list_users(
         )
 
         # List users from all sources
-        users = UserHandler(context, pulumi_config, graph_api)
-        users.list(sre)
+        users = UserHandler(context, graph_api)
+        users.list(sre, pulumi_config)
     except DataSafeHavenError as exc:
         logger.critical(f"Could not list users for Data Safe Haven '{shm_name}'.")
         raise typer.Exit(1) from exc
@@ -146,7 +145,7 @@ def register(
         )
 
         # List users
-        users = UserHandler(context, pulumi_config, graph_api)
+        users = UserHandler(context, graph_api)
         available_usernames = users.get_usernames_entra_id()
         usernames_to_register = []
         for username in usernames:
@@ -178,9 +177,8 @@ def remove(
 ) -> None:
     """Remove existing users from a deployed Data Safe Haven."""
     context = ContextManager.from_file().assert_context()
-    pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_config = SHMConfig.from_remote(context)
-
+    pulumi_config = DSHPulumiConfig.from_remote(context)
     shm_name = context.shm_name
 
     logger = get_logger()
@@ -197,7 +195,7 @@ def remove(
 
         # Remove users from SHM
         if usernames:
-            users = UserHandler(context, pulumi_config, graph_api)
+            users = UserHandler(context, graph_api)
             users.remove(usernames)
     except DataSafeHavenError as exc:
         logger.critical(f"Could not remove users from Data Safe Haven '{shm_name}'.")
@@ -251,7 +249,7 @@ def unregister(
         )
 
         # List users
-        users = UserHandler(context, pulumi_config, graph_api)
+        users = UserHandler(context, graph_api)
         available_usernames = users.get_usernames_entra_id()
         usernames_to_unregister = []
         for username in usernames:

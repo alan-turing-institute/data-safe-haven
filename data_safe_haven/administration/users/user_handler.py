@@ -17,12 +17,10 @@ class UserHandler:
     def __init__(
         self,
         context: Context,
-        pulumi_config: DSHPulumiConfig,
         graph_api: GraphApi,
     ):
         self.entra_users = EntraUsers(graph_api)
         self.context = context
-        self.pulumi_config = pulumi_config
         self.logger = get_logger()
 
     def add(self, users_csv_path: pathlib.Path) -> None:
@@ -69,13 +67,15 @@ class UserHandler:
             msg = f"Could not add users from '{users_csv_path}'."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
-    def get_usernames(self, sre_name: str) -> dict[str, list[str]]:
+    def get_usernames(
+        self, sre_name: str, pulumi_config: DSHPulumiConfig
+    ) -> dict[str, list[str]]:
         """Load usernames from all sources"""
         usernames = {}
         usernames["Entra ID"] = self.get_usernames_entra_id()
         usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
             sre_name,
-            self.pulumi_config,
+            pulumi_config,
         )
         return usernames
 
@@ -95,7 +95,7 @@ class UserHandler:
             self.logger.error(f"Could not load users for SRE '{sre_name}'.")
             return []
 
-    def list(self, sre_name: str) -> None:
+    def list(self, sre_name: str, pulumi_config: DSHPulumiConfig) -> None:
         """List Entra ID and Guacamole users
 
         Raises:
@@ -103,7 +103,7 @@ class UserHandler:
         """
         try:
             # Load usernames
-            usernames = self.get_usernames(sre_name)
+            usernames = self.get_usernames(sre_name, pulumi_config)
             # Fill user information as a table
             user_headers = ["username", *list(usernames.keys())]
             user_data = []
