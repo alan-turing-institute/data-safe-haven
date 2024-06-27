@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_00ade1cd398c6195_guacamole_users_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-06-27 09:33 +0000
+            created at 2024-06-27 09:38 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -88,7 +88,7 @@
     <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">exceptions</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t">    <span class="nam">DataSafeHavenEntraIDError</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t">    <span class="nam">DataSafeHavenError</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t">    <span class="nam">DataSafeHavenInputError</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t">    <span class="nam">DataSafeHavenTypeError</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">external</span> <span class="key">import</span> <span class="nam">GraphApi</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">functions</span> <span class="key">import</span> <span class="nam">password</span>&nbsp;</span><span class="r"></span></p>
@@ -137,10 +137,10 @@
     <p class="mis show_mis"><span class="n"><a id="t55" href="#t55">55</a></span><span class="t">                    <span class="nam">msg</span> <span class="op">=</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t56" href="#t56">56</a></span><span class="t">                        <span class="fst">f"</span><span class="fst">User '[green]</span><span class="op">{</span><span class="nam">user</span><span class="op">.</span><span class="nam">username</span><span class="op">}</span><span class="fst">[/]' is missing an email address.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t57" href="#t57">57</a></span><span class="t">                    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t58" href="#t58">58</a></span><span class="t">                    <span class="key">raise</span> <span class="nam">DataSafeHavenInputError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t58" href="#t58">58</a></span><span class="t">                    <span class="key">raise</span> <span class="nam">DataSafeHavenTypeError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t59" href="#t59">59</a></span><span class="t">                <span class="key">if</span> <span class="key">not</span> <span class="nam">user</span><span class="op">.</span><span class="nam">phone_number</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t60" href="#t60">60</a></span><span class="t">                    <span class="nam">msg</span> <span class="op">=</span> <span class="fst">f"</span><span class="fst">User '[green]</span><span class="op">{</span><span class="nam">user</span><span class="op">.</span><span class="nam">username</span><span class="op">}</span><span class="fst">[/]' is missing a phone number.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t61" href="#t61">61</a></span><span class="t">                    <span class="key">raise</span> <span class="nam">DataSafeHavenInputError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t61" href="#t61">61</a></span><span class="t">                    <span class="key">raise</span> <span class="nam">DataSafeHavenTypeError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t62" href="#t62">62</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">graph_api</span><span class="op">.</span><span class="nam">create_user</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t63" href="#t63">63</a></span><span class="t">                    <span class="nam">request_json</span><span class="op">,</span> <span class="nam">user</span><span class="op">.</span><span class="nam">email_address</span><span class="op">,</span> <span class="nam">user</span><span class="op">.</span><span class="nam">phone_number</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t64" href="#t64">64</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -256,7 +256,7 @@
             <a class="nav" href="z_00ade1cd398c6195_guacamole_users_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-06-27 09:33 +0000
+            created at 2024-06-27 09:38 +0000
         </p>
     </div>
 </footer>
