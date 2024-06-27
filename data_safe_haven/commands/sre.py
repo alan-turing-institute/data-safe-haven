@@ -4,11 +4,16 @@ from typing import Annotated, Optional
 
 import typer
 
-from data_safe_haven.config import DSHPulumiConfig, SHMConfig, SREConfig
-from data_safe_haven.context import ContextSettings
-from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputError
+from data_safe_haven.config import (
+    ContextManager,
+    DSHPulumiConfig,
+    SHMConfig,
+    SREConfig,
+)
+from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenPulumiError
 from data_safe_haven.external import GraphApi
-from data_safe_haven.infrastructure import SHMProjectManager, SREProjectManager
+from data_safe_haven.infrastructure import SREProjectManager
+from data_safe_haven.logging import get_logger
 from data_safe_haven.provisioning import SREProvisioningManager
 
 sre_command_group = typer.Typer()
@@ -27,12 +32,13 @@ def deploy(
     ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
-    context = ContextSettings.from_file().assert_context()
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-    shm_config = SHMConfig.from_remote(context)
-    sre_config = SREConfig.from_remote_by_name(context, name)
-
+    logger = get_logger()
     try:
+        context = ContextManager.from_file().assert_context()
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        shm_config = SHMConfig.from_remote(context)
+        sre_config = SREConfig.from_remote_by_name(context, name)
+
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(
@@ -46,21 +52,17 @@ def deploy(
         )
 
         # Initialise Pulumi stack
-        shm_stack = SHMProjectManager(
-            context=context,
-            config=shm_config,
-            pulumi_config=pulumi_config,
-        )
         stack = SREProjectManager(
             context=context,
             config=sre_config,
             pulumi_config=pulumi_config,
             create_project=True,
-            sre_name=sre_config.safe_name,
             graph_api_token=graph_api.token,
         )
         # Set Azure options
-        stack.add_option("azure-native:location", context.location, replace=False)
+        stack.add_option(
+            "azure-native:location", sre_config.azure.location, replace=False
+        )
         stack.add_option(
             "azure-native:subscriptionId",
             sre_config.azure.subscription_id,
@@ -71,18 +73,18 @@ def deploy(
         )
         # Load SHM outputs
         stack.add_option(
+            "shm-admin-group-id",
+            shm_config.shm.admin_group_id,
+            replace=True,
+        )
+        stack.add_option(
             "shm-entra-tenant-id",
             shm_config.shm.entra_tenant_id,
             replace=True,
         )
         stack.add_option(
             "shm-fqdn",
-            shm_stack.output("networking")["fqdn"],
-            replace=True,
-        )
-        stack.add_option(
-            "shm-networking-resource_group_name",
-            shm_stack.output("networking")["resource_group_name"],
+            shm_config.shm.fqdn,
             replace=True,
         )
 
@@ -95,7 +97,7 @@ def deploy(
         # Provision SRE with anything that could not be done in Pulumi
         manager = SREProvisioningManager(
             graph_api_token=graph_api.token,
-            location=context.location,
+            location=sre_config.azure.location,
             sre_name=sre_config.safe_name,
             sre_stack=stack,
             subscription_name=context.subscription_name,
@@ -103,11 +105,14 @@ def deploy(
         )
         manager.run()
     except DataSafeHavenError as exc:
-        msg = f"Could not deploy Secure Research Environment {sre_config.safe_name}."
-        raise DataSafeHavenError(msg) from exc
+        logger.critical(
+            f"Could not deploy Secure Research Environment {sre_config.safe_name}."
+        )
+        raise typer.Exit(code=1) from exc
     finally:
         # Upload Pulumi config to blob storage
-        pulumi_config.upload(context)
+        if pulumi_config:
+            pulumi_config.upload(context)
 
 
 @sre_command_group.command()
@@ -115,12 +120,13 @@ def teardown(
     name: Annotated[str, typer.Argument(help="Name of SRE to teardown.")],
 ) -> None:
     """Tear down a deployed a Secure Research Environment."""
-    context = ContextSettings.from_file().assert_context()
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-    shm_config = SHMConfig.from_remote(context)
-    sre_config = SREConfig.from_remote_by_name(context, name)
-
+    logger = get_logger()
     try:
+        context = ContextManager.from_file().assert_context()
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        shm_config = SHMConfig.from_remote(context)
+        sre_config = SREConfig.from_remote_by_name(context, name)
+
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(
@@ -134,13 +140,12 @@ def teardown(
                 context=context,
                 config=sre_config,
                 pulumi_config=pulumi_config,
-                sre_name=sre_config.safe_name,
                 graph_api_token=graph_api.token,
             )
             stack.teardown()
         except Exception as exc:
             msg = "Unable to teardown Pulumi infrastructure."
-            raise DataSafeHavenInputError(msg) from exc
+            raise DataSafeHavenPulumiError(msg) from exc
 
         # Remove Pulumi project from Pulumi config file
         del pulumi_config[name]
@@ -148,7 +153,7 @@ def teardown(
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
-        msg = (
+        logger.critical(
             f"Could not teardown Secure Research Environment '{sre_config.safe_name}'."
         )
-        raise DataSafeHavenError(msg) from exc
+        raise typer.Exit(1) from exc

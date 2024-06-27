@@ -1,7 +1,7 @@
-from .declarative_shm import DeclarativeSHM
 from .declarative_sre import DeclarativeSRE
+from .imperative_shm import ImperativeSHM
 
 __all__ = [
-    "DeclarativeSHM",
     "DeclarativeSRE",
+    "ImperativeSHM",
 ]

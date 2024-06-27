@@ -25,7 +25,14 @@ from azure.mgmt.compute.v2021_07_01.models import (
     RunCommandResult,
 )
 from azure.mgmt.dns.v2018_05_01 import DnsManagementClient
-from azure.mgmt.dns.v2018_05_01.models import RecordSet, RecordType, TxtRecord
+from azure.mgmt.dns.v2018_05_01.models import (
+    CaaRecord,
+    RecordSet,
+    RecordType,
+    TxtRecord,
+    Zone,
+    ZoneType,
+)
 from azure.mgmt.keyvault.v2021_06_01_preview import KeyVaultManagementClient
 from azure.mgmt.keyvault.v2021_06_01_preview.models import (
     AccessPolicyEntry,
@@ -55,10 +62,7 @@ from azure.mgmt.storage.v2021_08_01.models import (
 from azure.storage.blob import BlobClient, BlobServiceClient
 from azure.storage.filedatalake import DataLakeServiceClient
 
-from data_safe_haven.exceptions import (
-    DataSafeHavenAzureError,
-    DataSafeHavenInternalError,
-)
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
 from data_safe_haven.logging import get_logger
 
@@ -82,18 +86,19 @@ class AzureApi(AzureAuthenticator):
         storage_account_keys = self.get_storage_account_keys(
             resource_group_name, storage_account_name
         )
+
+        # Load blob service client
         blob_service_client = BlobServiceClient.from_connection_string(
             f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
         )
-
         if not isinstance(blob_service_client, BlobServiceClient):
             msg = f"Could not connect to storage account '{storage_account_name}'."
             raise DataSafeHavenAzureError(msg)
 
+        # Get the blob client
         blob_client = blob_service_client.get_blob_client(
             container=storage_container_name, blob=blob_name
         )
-
         return blob_client
 
     def blob_exists(
@@ -103,11 +108,21 @@ class AzureApi(AzureAuthenticator):
         storage_account_name: str,
         storage_container_name: str,
     ) -> bool:
-        blob_client = self.blob_client(
-            resource_group_name, storage_account_name, storage_container_name, blob_name
-        )
-        # Upload the created file
-        exists: bool = blob_client.exists()
+        """Find out whether a blob file exists in Azure storage
+
+        Returns:
+            bool: Whether or not the blob exists
+        """
+        try:
+            blob_client = self.blob_client(
+                resource_group_name,
+                storage_account_name,
+                storage_container_name,
+                blob_name,
+            )
+            exists = bool(blob_client.exists())
+        except DataSafeHavenAzureError:
+            exists = False
         response = "exists" if exists else "does not exist"
         self.logger.info(
             f"File [green]{blob_name}[/] {response} in blob storage.",
@@ -146,14 +161,17 @@ class AzureApi(AzureAuthenticator):
             msg = f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'."
             raise DataSafeHavenAzureError(msg) from exc
 
-    def ensure_dns_txt_record(
+    def ensure_dns_caa_record(
         self,
+        record_flags: int,
         record_name: str,
+        record_tag: str,
         record_value: str,
         resource_group_name: str,
         zone_name: str,
+        ttl: int = 30,
     ) -> RecordSet:
-        """Ensure that a DNS record exists in a DNS zone
+        """Ensure that a DNS CAA record exists in a DNS zone
 
         Returns:
             RecordSet: The DNS record set
@@ -167,11 +185,57 @@ class AzureApi(AzureAuthenticator):
 
             # Ensure that record exists
             self.logger.debug(
-                f"Ensuring that DNS record {record_name} exists in zone {zone_name}...",
+                f"Ensuring that DNS CAA record [green]{record_name}[/] exists in zone [bold]{zone_name}[/]...",
             )
             record_set = dns_client.record_sets.create_or_update(
                 parameters=RecordSet(
-                    ttl=30, txt_records=[TxtRecord(value=[record_value])]
+                    ttl=ttl,
+                    caa_records=[
+                        CaaRecord(
+                            flags=record_flags, tag=record_tag, value=record_value
+                        )
+                    ],
+                ),
+                record_type=RecordType.CAA,
+                relative_record_set_name=record_name,
+                resource_group_name=resource_group_name,
+                zone_name=zone_name,
+            )
+            self.logger.info(
+                f"Ensured that DNS CAA record [green]{record_name}[/] exists in zone [bold]{zone_name}[/].",
+            )
+            return record_set
+        except AzureError as exc:
+            msg = f"Failed to create DNS CAA record {record_name} in zone {zone_name}.\n{exc}"
+            raise DataSafeHavenAzureError(msg) from exc
+
+    def ensure_dns_txt_record(
+        self,
+        record_name: str,
+        record_value: str,
+        resource_group_name: str,
+        zone_name: str,
+        ttl: int = 30,
+    ) -> RecordSet:
+        """Ensure that a DNS TXT record exists in a DNS zone
+
+        Returns:
+            RecordSet: The DNS record set
+
+        Raises:
+            DataSafeHavenAzureError if the record could not be created
+        """
+        try:
+            # Connect to Azure clients
+            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+
+            # Ensure that record exists
+            self.logger.debug(
+                f"Ensuring that DNS TXT record [green]{record_name}[/] exists in zone [bold]{zone_name}[/]...",
+            )
+            record_set = dns_client.record_sets.create_or_update(
+                parameters=RecordSet(
+                    ttl=ttl, txt_records=[TxtRecord(value=[record_value])]
                 ),
                 record_type=RecordType.TXT,
                 relative_record_set_name=record_name,
@@ -179,11 +243,50 @@ class AzureApi(AzureAuthenticator):
                 zone_name=zone_name,
             )
             self.logger.info(
-                f"Ensured that DNS record {record_name} exists in zone {zone_name}.",
+                f"Ensured that DNS TXT record [green]{record_name}[/] exists in zone [bold]{zone_name}[/].",
             )
             return record_set
         except AzureError as exc:
-            msg = f"Failed to create DNS record {record_name} in zone {zone_name}."
+            msg = f"Failed to create DNS TXT record {record_name} in zone {zone_name}."
+            raise DataSafeHavenAzureError(msg) from exc
+
+    def ensure_dns_zone(
+        self,
+        resource_group_name: str,
+        zone_name: str,
+        tags: Any = None,
+    ) -> Zone:
+        """Ensure that a DNS zone exists
+
+        Returns:
+            Zone: The DNS zone
+
+        Raises:
+            DataSafeHavenAzureError if the zone could not be created
+        """
+        try:
+            # Connect to Azure clients
+            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+
+            # Ensure that record exists
+            self.logger.debug(
+                f"Ensuring that DNS zone {zone_name} exists...",
+            )
+            zone = dns_client.zones.create_or_update(
+                parameters=Zone(
+                    location="Global",
+                    tags=tags,
+                    zone_type=ZoneType.PUBLIC,
+                ),
+                resource_group_name=resource_group_name,
+                zone_name=zone_name,
+            )
+            self.logger.info(
+                f"Ensured that DNS zone [green]{zone_name}[/] exists.",
+            )
+            return zone
+        except AzureError as exc:
+            msg = f"Failed to create DNS zone {zone_name}.\n{exc}"
             raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_keyvault(
@@ -553,8 +656,8 @@ class AzureApi(AzureAuthenticator):
         Raises:
             DataSafeHavenAzureError if the keys could not be loaded
         """
-        msg_sa = f"storage account [green]'{storage_account_name}'[/]"
-        msg_rg = f"resource group [green]'{resource_group_name}'[/]"
+        msg_sa = f"storage account '{storage_account_name}'"
+        msg_rg = f"resource group '{resource_group_name}'"
         try:
             # Connect to Azure client
             storage_client = StorageManagementClient(
@@ -866,7 +969,7 @@ class AzureApi(AzureAuthenticator):
             ]
             if resource_groups:
                 msg = f"There are still {len(resource_groups)} resource group(s) remaining."
-                raise DataSafeHavenInternalError(msg)
+                raise DataSafeHavenAzureError(msg)
             self.logger.info(
                 f"Ensured that resource group [green]{resource_group_name}[/] does not exist.",
             )

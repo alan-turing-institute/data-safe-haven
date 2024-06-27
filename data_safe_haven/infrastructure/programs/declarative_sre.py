@@ -2,8 +2,7 @@
 
 import pulumi
 
-from data_safe_haven.config import SREConfig
-from data_safe_haven.context import Context
+from data_safe_haven.config import Context, SREConfig
 
 from .sre.application_gateway import (
     SREApplicationGatewayComponent,
@@ -59,27 +58,22 @@ class DeclarativeSRE:
         self,
         context: Context,
         config: SREConfig,
-        shm_name: str,
-        sre_name: str,
         graph_api_token: str,
     ) -> None:
         self.context = context
         self.cfg = config
         self.graph_api_token = graph_api_token
-        self.shm_name = shm_name
-        self.sre_name = sre_name
-        self.short_name = f"sre-{sre_name}"
-        self.stack_name = f"shm-{shm_name}-{self.short_name}"
-        self.tags = context.tags
+        self.sre_name = config.safe_name
+        self.short_name = f"sre-{self.sre_name}"
+        self.stack_name = f"shm-{context.name}-{self.short_name}"
+        self.tags = {"component": f"SRE {config.name}"} | context.tags
 
     def __call__(self) -> None:
         # Load pulumi configuration options
         self.pulumi_opts = pulumi.Config()
+        shm_admin_group_id = self.pulumi_opts.require("shm-admin-group-id")
         shm_entra_tenant_id = self.pulumi_opts.require("shm-entra-tenant-id")
         shm_fqdn = self.pulumi_opts.require("shm-fqdn")
-        shm_networking_resource_group_name = self.pulumi_opts.require(
-            "shm-networking-resource_group_name"
-        )
 
         # Construct LDAP paths
         ldap_root_dn = f"DC={shm_fqdn.replace('.', ',DC=')}"
@@ -133,7 +127,7 @@ class DeclarativeSRE:
             "sre_dns_server",
             self.stack_name,
             SREDnsServerProps(
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 shm_fqdn=shm_fqdn,
             ),
             tags=self.tags,
@@ -148,9 +142,9 @@ class DeclarativeSRE:
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 dns_virtual_network=dns.virtual_network,
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 shm_fqdn=shm_fqdn,
-                shm_networking_resource_group_name=shm_networking_resource_group_name,
+                shm_resource_group_name=self.context.resource_group_name,
                 shm_zone_name=shm_fqdn,
                 sre_name=self.sre_name,
                 user_public_ip_ranges=self.cfg.sre.research_user_ip_addresses,
@@ -163,7 +157,7 @@ class DeclarativeSRE:
             "sre_firewall",
             self.stack_name,
             SREFirewallProps(
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 resource_group_name=networking.resource_group.name,
                 route_table_name=networking.route_table_name,
                 subnet_apt_proxy_server=networking.subnet_apt_proxy_server,
@@ -183,13 +177,13 @@ class DeclarativeSRE:
             self.stack_name,
             SREDataProps(
                 admin_email_address=self.cfg.sre.admin_email_address,
-                admin_group_id=self.context.admin_group_id,
+                admin_group_id=shm_admin_group_id,
                 admin_ip_addresses=self.cfg.sre.admin_ip_addresses,
                 data_provider_ip_addresses=self.cfg.sre.data_provider_ip_addresses,
                 dns_private_zones=dns.private_zones,
                 dns_record=networking.shm_ns_record,
                 dns_server_admin_password=dns.password_admin,
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 networking_resource_group=networking.resource_group,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_data_configuration=networking.subnet_data_configuration,
@@ -209,7 +203,7 @@ class DeclarativeSRE:
                 containers_subnet=networking.subnet_apt_proxy_server,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
@@ -229,7 +223,7 @@ class DeclarativeSRE:
                 entra_application_name=f"sre-{self.sre_name}-apricot",
                 entra_auth_token=self.graph_api_token,
                 entra_tenant_id=shm_entra_tenant_id,
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,
                 shm_fqdn=shm_fqdn,
                 sre_fqdn=networking.sre_fqdn,
@@ -275,7 +269,7 @@ class DeclarativeSRE:
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 storage_account_resource_group_name=data.resource_group_name,
@@ -301,7 +295,7 @@ class DeclarativeSRE:
                 ldap_user_filter=ldap_user_filter,
                 ldap_username_attribute=ldap_username_attribute,
                 ldap_user_search_base=ldap_user_search_base,
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 networking_resource_group_name=networking.resource_group.name,
                 nexus_admin_password=data.password_nexus_admin,
                 software_packages=self.cfg.sre.software_packages,
@@ -323,7 +317,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREMonitoringProps(
                 dns_private_zones=dns.private_zones,
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 subnet=networking.subnet_monitoring,
                 timezone=self.cfg.sre.timezone,
             ),
@@ -345,7 +339,7 @@ class DeclarativeSRE:
                 ldap_server_port=identity.server_port,
                 ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 maintenance_configuration_id=monitoring.maintenance_configuration.id,
                 private_key_desired_state=data.container_desired_state_private_key,
                 software_repository_hostname=user_services.software_repositories.hostname,
@@ -367,7 +361,7 @@ class DeclarativeSRE:
             "sre_backup",
             self.stack_name,
             SREBackupProps(
-                location=self.context.location,
+                location=self.cfg.azure.location,
                 storage_account_data_private_sensitive_id=data.storage_account_data_private_sensitive_id,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
             ),

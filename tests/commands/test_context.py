@@ -1,15 +1,12 @@
 from data_safe_haven.commands.context import context_command_group
-from data_safe_haven.context_infrastructure import ContextInfrastructure
-from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError
-from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
 
 
 class TestShow:
     def test_show(self, runner):
         result = runner.invoke(context_command_group, ["show"])
         assert result.exit_code == 0
-        assert "Current context: acme_deployment" in result.stdout
-        assert "Name: Acme Deployment" in result.stdout
+        assert "Current context: acmedeployment" in result.stdout
+        assert "Description: Acme Deployment" in result.stdout
 
     def test_show_none(self, runner_none):
         result = runner_none.invoke(context_command_group, ["show"])
@@ -26,13 +23,13 @@ class TestAvailable:
     def test_available(self, runner):
         result = runner.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
-        assert "acme_deployment*" in result.stdout
+        assert "acmedeployment*" in result.stdout
         assert "gems" in result.stdout
 
     def test_available_none(self, runner_none):
         result = runner_none.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
-        assert "acme_deployment" in result.stdout
+        assert "acmedeployment" in result.stdout
         assert "gems" in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
@@ -53,8 +50,7 @@ class TestSwitch:
     def test_invalid_switch(self, runner):
         result = runner.invoke(context_command_group, ["switch", "invalid"])
         assert result.exit_code == 1
-        # Unable to check error as this is written outside of any Typer
-        # assert "Context 'invalid' is not defined " in result.stdout
+        assert "Context 'invalid' is not defined." in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
         result = runner_no_context_file.invoke(
@@ -70,13 +66,12 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "example",
                 "--name",
-                "Example",
-                "--admin-group",
-                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-                "--location",
-                "uksouth",
+                "example",
+                "--admin-group-name",
+                "Example Admins",
+                "--description",
+                "Example Deployment",
                 "--subscription-name",
                 "Data Safe Haven Example",
             ],
@@ -90,59 +85,55 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "acme_deployment",
-                "--name",
+                "--admin-group-name",
+                "Example Admins",
+                "--description",
                 "Acme Deployment",
-                "--admin-group",
-                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-                "--location",
-                "uksouth",
+                "--name",
+                "acmedeployment",
                 "--subscription-name",
                 "Data Safe Haven Acme",
             ],
         )
         assert result.exit_code == 1
-        # Unable to check error as this is written outside of any Typer
-        # assert "A context with key 'acme_deployment' is already defined." in result.stdout
+        assert (
+            "A context with name 'acmedeployment' is already defined." in result.stdout
+        )
 
-    def test_add_invalid_uuid(self, runner):
+    def test_add_invalid_entra_group_name(self, runner):
         result = runner.invoke(
             context_command_group,
             [
                 "add",
-                "example",
+                "--admin-group-name",
+                " Example Admins",
+                "--description",
+                "Acme Deployment",
                 "--name",
-                "Example",
-                "--admin-group",
-                "not a uuid",
-                "--location",
-                "uksouth",
+                "acmedeployment",
                 "--subscription-name",
-                "Data Safe Haven Example",
+                "Invalid Subscription Name  ",
             ],
         )
         assert result.exit_code == 2
-        # This works because the context_command_group Typer writes this error
-        assert "Invalid value for '--admin-group': Expected GUID" in result.stderr
+        assert "Invalid value for '--admin-group-name':" in result.stderr
 
     def test_add_invalid_subscription_name(self, runner):
         result = runner.invoke(
             context_command_group,
             [
                 "add",
-                "example",
+                "--admin-group-name",
+                "Example Admins",
+                "--description",
+                "Example Deployment",
                 "--name",
-                "Example",
-                "--admin-group",
-                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-                "--location",
-                "uksouth",
+                "example",
                 "--subscription-name",
                 "Invalid Subscription Name  ",
             ],
         )
         assert result.exit_code == 2
-        # This works because the context_command_group Typer writes this error
         assert "Invalid value for '--subscription-name':" in result.stderr
 
     def test_add_missing_ags(self, runner):
@@ -150,9 +141,8 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "example",
                 "--name",
-                "Example",
+                "example",
             ],
         )
         assert result.exit_code == 2
@@ -164,13 +154,12 @@ class TestAdd:
             context_command_group,
             [
                 "add",
-                "acme_deployment",
-                "--name",
+                "--admin-group-name",
+                "Acme Admins",
+                "--description",
                 "Acme Deployment",
-                "--admin-group",
-                "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-                "--location",
-                "uksouth",
+                "--name",
+                "acmedeployment",
                 "--subscription-name",
                 "Data Safe Haven Acme",
             ],
@@ -179,24 +168,26 @@ class TestAdd:
         assert (tmp_contexts / "contexts.yaml").exists()
         result = runner.invoke(context_command_group, ["show"])
         assert result.exit_code == 0
-        assert "Name: Acme Deployment" in result.stdout
+        assert "Description: Acme Deployment" in result.stdout
         result = runner.invoke(context_command_group, ["available"])
         assert result.exit_code == 0
-        assert "acme_deployment*" in result.stdout
+        assert "acmedeployment*" in result.stdout
         assert "gems" not in result.stdout
 
 
 class TestUpdate:
     def test_update(self, runner):
-        result = runner.invoke(context_command_group, ["update", "--name", "New Name"])
+        result = runner.invoke(
+            context_command_group, ["update", "--description", "New Name"]
+        )
         assert result.exit_code == 0
         result = runner.invoke(context_command_group, ["show"])
         assert result.exit_code == 0
-        assert "Name: New Name" in result.stdout
+        assert "Description: New Name" in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
         result = runner_no_context_file.invoke(
-            context_command_group, ["update", "--name", "New Name"]
+            context_command_group, ["update", "--description", "New Name"]
         )
         assert result.exit_code == 1
         assert "No context configuration file." in result.stdout
@@ -213,8 +204,7 @@ class TestRemove:
     def test_remove_invalid(self, runner):
         result = runner.invoke(context_command_group, ["remove", "invalid"])
         assert result.exit_code == 1
-        # Unable to check error as this is written outside of any Typer
-        # assert "No context with key 'invalid'." in result.stdout
+        assert "No context with name 'invalid'." in result.stdout
 
     def test_no_context_file(self, runner_no_context_file):
         result = runner_no_context_file.invoke(
@@ -222,69 +212,3 @@ class TestRemove:
         )
         assert result.exit_code == 1
         assert "No context configuration file." in result.stdout
-
-
-class TestCreate:
-    def test_create(self, runner, monkeypatch):
-        def mock_create(self):  # noqa: ARG001
-            print("mock create")  # noqa: T201
-
-        monkeypatch.setattr(ContextInfrastructure, "create", mock_create)
-
-        result = runner.invoke(context_command_group, ["create"])
-        assert "mock create" in result.stdout
-        assert result.exit_code == 0
-
-    def test_no_context_file(self, runner_no_context_file):
-        result = runner_no_context_file.invoke(context_command_group, ["create"])
-        assert result.exit_code == 1
-        assert "No context configuration file." in result.stdout
-
-    def test_show_none(self, runner_none):
-        result = runner_none.invoke(context_command_group, ["create"])
-        assert result.exit_code == 1
-        assert "No context selected." in result.stdout
-
-    def test_auth_failure(self, runner, mocker):
-        def mock_login(self):  # noqa: ARG001
-            msg = "Failed to authenticate with Azure API."
-            raise DataSafeHavenAzureAPIAuthenticationError(msg)
-
-        mocker.patch.object(AzureAuthenticator, "login", mock_login)
-
-        result = runner.invoke(context_command_group, ["create"])
-        assert result.exit_code == 1
-        assert "Failed to authenticate with the Azure API." in result.stdout
-
-
-class TestTeardown:
-    def test_teardown(self, runner, monkeypatch):
-        def mock_teardown(self):  # noqa: ARG001
-            print("mock teardown")  # noqa: T201
-
-        monkeypatch.setattr(ContextInfrastructure, "teardown", mock_teardown)
-
-        result = runner.invoke(context_command_group, ["teardown"])
-        assert "mock teardown" in result.stdout
-        assert result.exit_code == 0
-
-    def test_no_context_file(self, runner_no_context_file):
-        result = runner_no_context_file.invoke(context_command_group, ["teardown"])
-        assert result.exit_code == 1
-        assert "No context configuration file." in result.stdout
-
-    def test_show_none(self, runner_none):
-        result = runner_none.invoke(context_command_group, ["teardown"])
-        assert result.exit_code == 1
-        assert "No context selected." in result.stdout
-
-    def test_auth_failure(self, runner, mocker):
-        def mock_login(self):  # noqa: ARG001
-            msg = "Failed to authenticate with Azure API."
-            raise DataSafeHavenAzureAPIAuthenticationError(msg)
-
-        mocker.patch.object(AzureAuthenticator, "login", mock_login)
-
-        result = runner.invoke(context_command_group, ["teardown"])
-        assert result.exit_code == 1
-        assert "Failed to authenticate with the Azure API." in result.stdout

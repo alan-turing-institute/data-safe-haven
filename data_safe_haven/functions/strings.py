@@ -9,7 +9,7 @@ from collections.abc import Sequence
 
 import pytz
 
-from data_safe_haven.exceptions import DataSafeHavenInputError
+from data_safe_haven.exceptions import DataSafeHavenValueError
 
 
 def alphanumeric(input_string: str) -> str:
@@ -22,9 +22,9 @@ def b64encode(input_string: str) -> str:
     return base64.b64encode(input_string.encode("utf-8")).decode()
 
 
-def json_safe(name: str) -> str:
+def json_safe(input_string: str) -> str:
     """Construct a JSON-safe version of an input string"""
-    return alphanumeric(name).lower()
+    return alphanumeric(input_string).lower()
 
 
 def next_occurrence(
@@ -61,13 +61,13 @@ def next_occurrence(
             return utc_dt.strftime(r"%Y-%m-%d %H:%M")
         else:
             msg = f"Time format '{time_format}' was not recognised."
-            raise DataSafeHavenInputError(msg)
+            raise DataSafeHavenValueError(msg)
     except pytz.exceptions.UnknownTimeZoneError as exc:
         msg = f"Timezone '{timezone}' was not recognised."
-        raise DataSafeHavenInputError(msg) from exc
+        raise DataSafeHavenValueError(msg) from exc
     except ValueError as exc:
         msg = f"Time '{hour}:{minute}' was not recognised."
-        raise DataSafeHavenInputError(msg) from exc
+        raise DataSafeHavenValueError(msg) from exc
 
 
 def password(length: int) -> str:

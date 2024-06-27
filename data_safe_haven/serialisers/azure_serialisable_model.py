@@ -2,6 +2,7 @@
 
 from typing import Any, ClassVar, TypeVar
 
+from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenError
 from data_safe_haven.external import AzureApi
 
 from .context_base import ContextBase
@@ -20,15 +21,24 @@ class AzureSerialisableModel(YAMLSerialisableModel):
     def from_remote(
         cls: type[T], context: ContextBase, *, filename: str | None = None
     ) -> T:
-        """Construct an AzureSerialisableModel from a YAML file in Azure storage."""
-        azure_api = AzureApi(subscription_name=context.subscription_name)
-        config_yaml = azure_api.download_blob(
-            filename or cls.default_filename,
-            context.resource_group_name,
-            context.storage_account_name,
-            context.storage_container_name,
-        )
-        return cls.from_yaml(config_yaml)
+        """
+        Construct an AzureSerialisableModel from a YAML file in Azure storage.
+
+        Raises:
+            DataSafeHavenAzureError: if the file cannot be loaded
+        """
+        try:
+            azure_api = AzureApi(subscription_name=context.subscription_name)
+            config_yaml = azure_api.download_blob(
+                filename or cls.default_filename,
+                context.resource_group_name,
+                context.storage_account_name,
+                context.storage_container_name,
+            )
+            return cls.from_yaml(config_yaml)
+        except DataSafeHavenError as exc:
+            msg = f"Could not load file '{filename or cls.default_filename}' from Azure storage."
+            raise DataSafeHavenAzureError(msg) from exc
 
     @classmethod
     def from_remote_or_create(

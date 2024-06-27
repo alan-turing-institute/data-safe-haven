@@ -10,39 +10,18 @@ A single SHM can manage all your SREs.
 However, you may choose to use multiple SHMs if, for example, you want to separate production and development environments.
 :::
 
-## Configuration
-
-- Create a configuration file
-
-```console
-> dsh config template-shm --file config.yaml
-```
-
-- Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.
-
-```yaml
-azure:
-  subscription_id: # ID of the Azure subscription that the TRE will be deployed to
-  tenant_id: # Home tenant for the Azure account used to deploy infrastructure: `az account show`
-shm:
-  entra_tenant_id: # Tenant ID for the Entra ID used to manage TRE users
-  fqdn: # Domain you want your users to belong to and where your TRE will be deployed
-```
-
-## Upload the configuration file
-
-- Upload the config to Azure. This will validate your file and report any problems.
-
-```{code} shell
-$ dsh config upload-shm config.yaml
-```
-
 ## Deployment
 
-- Next deploy the Safe Haven Management (SHM) infrastructure [approx 30 minutes]:
+Before deploying the Safe Haven Management (SHM) infrastructure you need to decide on a few parameters:
+
+- `entra_tenant_id`: Tenant ID for the Entra ID used to manage TRE users
+- `fqdn`: Domain you want your users to belong to and to access your TRE from
+- `location`: Azure location where you want your resources deployed
+
+Once you've decided on these, run the following command: [approx 5 minutes]:
 
 ```{code} shell
-$ dsh shm deploy
+$ dsh shm deploy --entra-tenant-id <Entra tenant ID> --fqdn <fully-qualified domain name> --location <location>
 ```
 
 :::{important}

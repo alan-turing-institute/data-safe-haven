@@ -3,8 +3,7 @@ import pathlib
 from collections.abc import Sequence
 
 from data_safe_haven import console
-from data_safe_haven.config import DSHPulumiConfig, SREConfig
-from data_safe_haven.context import Context
+from data_safe_haven.config import Context, DSHPulumiConfig, SREConfig
 from data_safe_haven.exceptions import DataSafeHavenUserHandlingError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.logging import get_logger
@@ -18,14 +17,11 @@ class UserHandler:
     def __init__(
         self,
         context: Context,
-        pulumi_config: DSHPulumiConfig,
         graph_api: GraphApi,
     ):
         self.entra_users = EntraUsers(graph_api)
         self.context = context
-        self.pulumi_config = pulumi_config
         self.logger = get_logger()
-        self.sre_guacamole_users_: dict[str, GuacamoleUsers] = {}
 
     def add(self, users_csv_path: pathlib.Path) -> None:
         """Add users to Entra ID and Guacamole
@@ -71,13 +67,15 @@ class UserHandler:
             msg = f"Could not add users from '{users_csv_path}'."
             raise DataSafeHavenUserHandlingError(msg) from exc
 
-    def get_usernames(self, sre_name: str) -> dict[str, list[str]]:
+    def get_usernames(
+        self, sre_name: str, pulumi_config: DSHPulumiConfig
+    ) -> dict[str, list[str]]:
         """Load usernames from all sources"""
         usernames = {}
         usernames["Entra ID"] = self.get_usernames_entra_id()
         usernames[f"SRE {sre_name}"] = self.get_usernames_guacamole(
             sre_name,
-            self.pulumi_config,
+            pulumi_config,
         )
         return usernames
 
@@ -91,18 +89,13 @@ class UserHandler:
         """Lazy-load usernames from Guacamole"""
         try:
             sre_config = SREConfig.from_remote_by_name(self.context, sre_name)
-            if sre_name not in self.sre_guacamole_users_.keys():
-                self.sre_guacamole_users_[sre_name] = GuacamoleUsers(
-                    self.context, sre_config, pulumi_config, sre_name
-                )
-            return [
-                user.username for user in self.sre_guacamole_users_[sre_name].list()
-            ]
+            guacamole_users = GuacamoleUsers(self.context, sre_config, pulumi_config)
+            return [user.username for user in guacamole_users.list()]
         except Exception:
             self.logger.error(f"Could not load users for SRE '{sre_name}'.")
             return []
 
-    def list(self, sre_name: str) -> None:
+    def list(self, sre_name: str, pulumi_config: DSHPulumiConfig) -> None:
         """List Entra ID and Guacamole users
 
         Raises:
@@ -110,7 +103,7 @@ class UserHandler:
         """
         try:
             # Load usernames
-            usernames = self.get_usernames(sre_name)
+            usernames = self.get_usernames(sre_name, pulumi_config)
             # Fill user information as a table
             user_headers = ["username", *list(usernames.keys())]
             user_data = []

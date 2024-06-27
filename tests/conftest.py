@@ -6,9 +6,11 @@ import yaml
 from pulumi.automation import ProjectSettings
 from pytest import fixture
 
-import data_safe_haven.context.context_settings as context_mod
+import data_safe_haven.config.context_manager as context_mod
 import data_safe_haven.logging.logger
 from data_safe_haven.config import (
+    Context,
+    ContextManager,
     DSHPulumiConfig,
     DSHPulumiProject,
     SHMConfig,
@@ -20,9 +22,8 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
 )
-from data_safe_haven.context import Context
 from data_safe_haven.external import AzureApi, AzureCliSingleton, PulumiAccount
-from data_safe_haven.infrastructure import SHMProjectManager
+from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.infrastructure.project_manager import ProjectManager
 from data_safe_haven.logging import init_logging
 
@@ -30,6 +31,7 @@ from data_safe_haven.logging import init_logging
 @fixture
 def azure_config():
     return ConfigSectionAzure(
+        location="uksouth",
         subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
     )
@@ -43,39 +45,44 @@ def context(context_dict):
 @fixture
 def context_dict():
     return {
-        "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        "location": "uksouth",
-        "name": "Acme Deployment",
+        "admin_group_name": "Acme Admins",
+        "description": "Acme Deployment",
+        "name": "acmedeployment",
         "subscription_name": "Data Safe Haven Acme",
     }
 
 
 @fixture
-def context_no_secrets(monkeypatch, context_dict):
+def context_no_secrets(monkeypatch, context_dict) -> Context:
     monkeypatch.setattr(Context, "pulumi_secrets_provider_url", None)
     return Context(**context_dict)
 
 
 @fixture
-def context_tmpdir(context_dict, tmpdir, monkeypatch):
+def context_manager(context_yaml) -> ContextManager:
+    return ContextManager.from_yaml(context_yaml)
+
+
+@fixture
+def context_tmpdir(context_dict, tmpdir, monkeypatch) -> tuple[Context, Path]:
     monkeypatch.setattr(context_mod, "config_dir", lambda: Path(tmpdir))
-    return Context(**context_dict), tmpdir
+    return (Context(**context_dict), tmpdir)
 
 
 @fixture
 def context_yaml():
     content = """---
-    selected: acme_deployment
+    selected: acmedeployment
     contexts:
-        acme_deployment:
-            name: Acme Deployment
-            admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-            location: uksouth
+        acmedeployment:
+            admin_group_name: Acme Admins
+            description: Acme Deployment
+            name: acmedeployment
             subscription_name: Data Safe Haven Acme
         gems:
-            name: Gems
-            admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-            location: uksouth
+            admin_group_name: Gems Admins
+            description: Gems
+            name: gems
             subscription_name: Data Safe Haven Gems
     """
     return yaml.dump(yaml.safe_load(content))
@@ -153,11 +160,14 @@ def offline_pulumi_account(monkeypatch, mock_azure_cli_confirm):  # noqa: ARG001
 
 @fixture
 def pulumi_config(
-    pulumi_project: DSHPulumiProject, pulumi_project2: DSHPulumiProject
+    pulumi_project: DSHPulumiProject, pulumi_project_other: DSHPulumiProject
 ) -> DSHPulumiConfig:
     return DSHPulumiConfig(
         encrypted_key="CALbHybtRdxKjSnr9UYY",
-        projects={"acmedeployment": pulumi_project, "other_project": pulumi_project2},
+        projects={
+            "acmedeployment": pulumi_project,
+            "other_project": pulumi_project_other,
+        },
     )
 
 
@@ -171,30 +181,56 @@ def pulumi_config_empty() -> DSHPulumiConfig:
 
 @fixture
 def pulumi_config_no_key(
-    pulumi_project: DSHPulumiProject, pulumi_project2: DSHPulumiProject
+    pulumi_project: DSHPulumiProject,
+    pulumi_project_other: DSHPulumiProject,
+    pulumi_project_sandbox: DSHPulumiProject,
 ) -> DSHPulumiConfig:
     return DSHPulumiConfig(
         encrypted_key=None,
-        projects={"acmedeployment": pulumi_project, "other_project": pulumi_project2},
+        projects={
+            "acmedeployment": pulumi_project,
+            "other_project": pulumi_project_other,
+            "sandbox": pulumi_project_sandbox,
+        },
     )
 
 
 @fixture
-def pulumi_project(stack_config) -> DSHPulumiProject:
+def pulumi_project(pulumi_project_stack_config) -> DSHPulumiProject:
     return DSHPulumiProject(
-        stack_config=stack_config,
+        stack_config=pulumi_project_stack_config,
     )
 
 
 @fixture
-def pulumi_project2() -> DSHPulumiProject:
+def pulumi_project_other() -> DSHPulumiProject:
     return DSHPulumiProject(
         stack_config={
             "azure-native:location": "uksouth",
             "azure-native:subscriptionId": "def",
-            "data-safe-haven:variable": -3,
+            "data-safe-haven:variable": "-3",
         },
     )
+
+
+@fixture
+def pulumi_project_sandbox() -> DSHPulumiProject:
+    return DSHPulumiProject(
+        stack_config={
+            "azure-native:location": "uksouth",
+            "azure-native:subscriptionId": "ghi",
+            "data-safe-haven:variable": "8",
+        },
+    )
+
+
+@fixture
+def pulumi_project_stack_config():
+    return {
+        "azure-native:location": "uksouth",
+        "azure-native:subscriptionId": "abc",
+        "data-safe-haven:variable": "5",
+    }
 
 
 @fixture
@@ -251,43 +287,32 @@ def shm_config_file(shm_config_yaml: str, tmp_path: Path) -> Path:
 
 
 @fixture
-def shm_config_section():
-    return ConfigSectionSHM(
-        admin_ip_addresses=["1.2.3.4"],
-        entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        fqdn="shm.acme.com",
-    )
+def shm_config_section(shm_config_section_dict):
+    return ConfigSectionSHM(**shm_config_section_dict)
+
+
+@fixture
+def shm_config_section_dict():
+    return {
+        "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        "entra_tenant_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        "fqdn": "shm.acme.com",
+    }
 
 
 @fixture
 def shm_config_yaml():
     content = """---
     azure:
+        location: uksouth
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
     shm:
+        admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         fqdn: shm.acme.com
     """
     return yaml.dump(yaml.safe_load(content))
-
-
-@fixture
-def shm_stack_manager(
-    context_no_secrets,
-    sre_config,
-    pulumi_config_no_key,
-    mock_azure_cli_confirm,  # noqa: ARG001
-    mock_install_plugins,  # noqa: ARG001
-    mock_key_vault_key,  # noqa: ARG001
-    offline_pulumi_account,  # noqa: ARG001
-    local_project_settings,  # noqa: ARG001
-):
-    return SHMProjectManager(
-        context=context_no_secrets,
-        config=sre_config,
-        pulumi_config=pulumi_config_no_key,
-    )
 
 
 @fixture
@@ -305,6 +330,7 @@ def sre_config(
 ) -> SREConfig:
     return SREConfig(
         azure=azure_config,
+        description="Sandbox Project",
         name="sandbox",
         sre=sre_config_section,
     )
@@ -318,6 +344,7 @@ def sre_config_alternate(
     sre_config_section.admin_ip_addresses = ["2.3.4.5"]
     return SREConfig(
         azure=azure_config,
+        description="Alternative Project",
         name="alternative",
         sre=sre_config_section,
     )
@@ -336,8 +363,10 @@ def sre_config_section() -> ConfigSectionSRE:
 def sre_config_yaml():
     content = """---
     azure:
+        location: uksouth
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+    description: Sandbox Project
     name: sandbox
     sre:
         admin_email_address: admin@example.com
@@ -357,9 +386,18 @@ def sre_config_yaml():
 
 
 @fixture
-def stack_config():
-    return {
-        "azure-native:location": "uksouth",
-        "azure-native:subscriptionId": "abc",
-        "data-safe-haven:variable": "5",
-    }
+def sre_project_manager(
+    context_no_secrets,
+    sre_config,
+    pulumi_config_no_key,
+    mock_azure_cli_confirm,  # noqa: ARG001
+    mock_install_plugins,  # noqa: ARG001
+    mock_key_vault_key,  # noqa: ARG001
+    offline_pulumi_account,  # noqa: ARG001
+    local_project_settings,  # noqa: ARG001
+):
+    return SREProjectManager(
+        context=context_no_secrets,
+        config=sre_config,
+        pulumi_config=pulumi_config_no_key,
+    )
