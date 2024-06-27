@@ -1,55 +1,75 @@
 ---
-name: Desired state configuration
-hosts: localhost
-become: true
+- name: Desired state configuration
+  hosts: localhost
+  become: true
 
-tasks:
-  - name: Update package cache
-    ansible.builtin.apt:
-      update_cache: true
-      cache_valid_time: 600
+  tasks:
+    - name: Update package cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 600
 
-  - name: Install apt packages
-    ansible.builtin.apt:
-      name: "{{ apt_packages.common | union(apt_packages[ansible_facts['distribution_release']]) }}"
-      state: present
-      async: 3600
-      poll: 30
+    - name: Install apt packages
+      ansible.builtin.apt:
+        name: "{{ apt_packages.common | union(apt_packages[ansible_facts['distribution_release']]) }}"
+        state: present
+        async: 3600
+        poll: 30
 
-  - name: Copy nslcd configuration
-    ansible.builtin.copy:
-      src: etc/nslcd.conf
-      dest: /etc/nslcd.conf
-      mode: '0400'
+    - name: Copy nslcd configuration
+      ansible.builtin.copy:
+        src: etc/nslcd.conf
+        dest: /etc/nslcd.conf
+        mode: '0400'
 
-  - name: Enable bash autocompletion globally
-    ansible.builtin.blockinfile:
-      path: /etc/bash.bashrc
-      block: |
-        # enable bash completion in interactive shells
-        if [ ! $(shopt -oq posix) ]; then
-          if [ -f /usr/share/bash-completion/bash_completion ]; then
-              . /usr/share/bash-completion/bash_completion
-          elif [ -f /etc/bash_completion ]; then
-              . /etc/bash_completion
+    - name: Enable bash autocompletion globally
+      ansible.builtin.blockinfile:
+        path: /etc/bash.bashrc
+        block: |
+          # enable bash completion in interactive shells
+          if [ ! $(shopt -oq posix) ]; then
+            if [ -f /usr/share/bash-completion/bash_completion ]; then
+                . /usr/share/bash-completion/bash_completion
+            elif [ -f /etc/bash_completion ]; then
+                . /etc/bash_completion
+            fi
           fi
-        fi
 
-  - name: Copy bashrc skeleton
-    ansible.builtin.copy:
-      src: etc/skel/bashrc
-      dest: /etc/skel/.bashrc
-      mode: '0755'
+    - name: Copy bashrc skeleton
+      ansible.builtin.copy:
+        src: etc/skel/bashrc
+        dest: /etc/skel/.bashrc
+        mode: '0755'
 
-  - name: Copy xsession skeleton
-    ansible.builtin.copy:
-      src: etc/skel/xsession
-      dest: /etc/skel/.xsession
-      mode: '0444'
+    - name: Copy xsession skeleton
+      ansible.builtin.copy:
+        src: etc/skel/xsession
+        dest: /etc/skel/.xsession
+        mode: '0444'
 
-  - name: Add ldap to /etc/nsswitch.conf
-    ansible.builtin.replace:
-      path: /etc/nsswitch.conf
-      regexp: '^(passwd|group|shadow)(:.*)(?<!ldap)$'
-      line: '\1\2 ldap'
-      backrefs: true
+    - name: Add ldap to /etc/nsswitch.conf
+      ansible.builtin.replace:
+        path: /etc/nsswitch.conf
+        regexp: '^(passwd|group|shadow)(:.*)(?<!ldap)$'
+        line: '\1\2 ldap'
+        backrefs: true
+
+    - name: Ensure home directories are created on LDAP login
+      # Should look to migrate to https://docs.ansible.com/ansible/latest/collections/community/general/pamd_module.html
+      ansible.builtin.lineinfile:
+        path: /etc/pam.d/common-session
+        regexp: '^session required\s+pam_mkhomedir.so'
+        line: 'pam_mkhomedir.so skel=/etc/skel umask=0022'
+      notify: Update Pam auth
+
+    - name: Don't enforce new passwords on change
+      ansible.builtin.lineinfile:
+        path: /etc/pam.d/login
+        state: absent
+        regexp: '^password(.*) use_authtok (.*)$'
+        line: 'password\1 \2'
+
+  handlers:
+    - name: Update PAM auth
+      ansible.builtin.command:
+        cmd: pam-auth-update --enable mkhomedir ldap
