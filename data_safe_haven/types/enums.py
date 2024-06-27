@@ -117,8 +117,8 @@ class PermittedDomains(tuple[str, ...], Enum):
     UBUNTU_SNAPCRAFT = (
         "api.snapcraft.io",
         "*.snapcraftcontent.com",
-        "dashboard.snapcraft.io",
-        "login.ubuntu.com",
+        # "dashboard.snapcraft.io", # not needed to download and install snaps
+        # "login.ubuntu.com",
     )
     ALL = tuple(
         sorted(
