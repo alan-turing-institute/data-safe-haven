@@ -119,7 +119,6 @@ package_upgrade: true
 
 runcmd:
   # Restart services
-  - systemctl restart nscd
   - systemctl restart nslcd
 
   # Enable xrdp and session manager at startup
