@@ -36,7 +36,6 @@ class SREGiteaServerProps:
         location: Input[str],
         networking_resource_group_name: Input[str],
         sre_fqdn: Input[str],
-        sre_private_dns_zone_id: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
@@ -59,7 +58,6 @@ class SREGiteaServerProps:
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.sre_fqdn = sre_fqdn
-        self.sre_private_dns_zone_id = sre_private_dns_zone_id
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
@@ -192,7 +190,7 @@ class SREGiteaServerComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-gitea",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="caddy:2.7.6",
+                    image="caddy:2.8.4",
                     name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
@@ -215,7 +213,7 @@ class SREGiteaServerComponent(ComponentResource):
                     ],
                 ),
                 containerinstance.ContainerArgs(
-                    image="gitea/gitea:1.21.11",
+                    image="gitea/gitea:1.22.0",
                     name="gitea"[:63],
                     command=["/app/custom/entrypoint.sh"],
                     environment_variables=[

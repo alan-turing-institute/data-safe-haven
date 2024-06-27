@@ -7,8 +7,10 @@ from shutil import which
 
 import typer
 
+from data_safe_haven import console
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.utility import LoggingSingleton, Singleton
+from data_safe_haven.logging import get_logger
+from data_safe_haven.singleton import Singleton
 
 
 @dataclass
@@ -24,7 +26,7 @@ class AzureCliSingleton(metaclass=Singleton):
     """Interface to the Azure CLI"""
 
     def __init__(self) -> None:
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
 
         path = which("az")
         if path is None:
@@ -70,7 +72,7 @@ class AzureCliSingleton(metaclass=Singleton):
         account = self.account
         self.logger.info(f"Azure user: {account.name} ({account.id_})")
         self.logger.info(f"Azure tenant ID: {account.tenant_id})")
-        if not self.logger.confirm(
+        if not console.confirm(
             "Is this the Azure account you expect?", default_to_yes=False
         ):
             self.logger.error(
@@ -79,3 +81,25 @@ class AzureCliSingleton(metaclass=Singleton):
             raise typer.Exit(1)
 
         self._confirmed = True
+
+    def group_id_from_name(self, group_name: str) -> str:
+        """Get ID for an Entra ID group that this user is permitted to view."""
+        try:
+            result = subprocess.check_output(
+                [self.path, "ad", "group", "list", "--display-name", group_name],
+                stderr=subprocess.PIPE,
+                encoding="utf8",
+            )
+        except subprocess.CalledProcessError as exc:
+            msg = f"Error reading groups from Azure CLI.\n{exc.stderr}"
+            raise DataSafeHavenAzureError(msg) from exc
+
+        try:
+            result_dict = json.loads(result)
+            return str(result_dict[0]["id"])
+        except json.JSONDecodeError as exc:
+            msg = f"Unable to parse Azure CLI output as JSON.\n{result}"
+            raise DataSafeHavenAzureError(msg) from exc
+        except (IndexError, KeyError) as exc:
+            msg = f"Group '{group_name}' was not found in Azure CLI."
+            raise DataSafeHavenAzureError(msg) from exc

@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
-from data_safe_haven.types import AzureSubscriptionName
+from data_safe_haven.types import AzureSubscriptionName, EntraGroupName
 
 
 class ContextBase(ABC):
+    admin_group_name: EntraGroupName
     subscription_name: AzureSubscriptionName
     storage_container_name: ClassVar[str]
 

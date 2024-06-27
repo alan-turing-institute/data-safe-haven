@@ -8,21 +8,20 @@ from azure.keyvault.keys import KeyVaultKey
 from pydantic import BaseModel
 
 from data_safe_haven import __version__
+from data_safe_haven.directories import config_dir
 from data_safe_haven.external import AzureApi
-from data_safe_haven.functions import alphanumeric
 from data_safe_haven.serialisers import ContextBase
 from data_safe_haven.types import (
-    AzureLocation,
     AzureSubscriptionName,
-    Guid,
+    EntraGroupName,
+    SafeString,
 )
-from data_safe_haven.utility import config_dir
 
 
 class Context(ContextBase, BaseModel, validate_assignment=True):
-    admin_group_id: Guid
-    location: AzureLocation
-    name: str
+    admin_group_name: EntraGroupName
+    description: str
+    name: SafeString
     subscription_name: AzureSubscriptionName
     storage_container_name: ClassVar[str] = "config"
     pulumi_storage_container_name: ClassVar[str] = "pulumi"
@@ -33,36 +32,33 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
     @property
     def tags(self) -> dict[str, str]:
         return {
-            "deployment": self.name,
+            "deployment": self.description,
             "deployed by": "Python",
             "project": "Data Safe Haven",
             "version": __version__,
         }
 
     @property
-    def shm_name(self) -> str:
-        return alphanumeric(self.name).lower()
-
-    @property
     def work_directory(self) -> Path:
-        return config_dir() / self.shm_name
+        return config_dir() / self.name
 
     @property
     def resource_group_name(self) -> str:
-        return f"shm-{self.shm_name}-rg-context"
+        return f"shm-{self.name}-rg"
 
     @property
     def storage_account_name(self) -> str:
         # maximum of 24 characters allowed
-        return f"shm{self.shm_name[:14]}context"
+        return f"shm{self.name[:21]}"
 
     @property
     def key_vault_name(self) -> str:
-        return f"shm-{self.shm_name[:9]}-kv-context"
+        # maximum of 24 characters allowed
+        return f"shm-{self.name[:17]}-kv"
 
     @property
     def managed_identity_name(self) -> str:
-        return f"shm-{self.shm_name}-identity-reader-context"
+        return f"shm-{self.name}-identity-reader"
 
     @property
     def pulumi_backend_url(self) -> str:

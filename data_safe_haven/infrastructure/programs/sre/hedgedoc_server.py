@@ -38,7 +38,6 @@ class SREHedgeDocServerProps:
         location: Input[str],
         networking_resource_group_name: Input[str],
         sre_fqdn: Input[str],
-        sre_private_dns_zone_id: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
@@ -61,7 +60,6 @@ class SREHedgeDocServerProps:
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.sre_fqdn = sre_fqdn
-        self.sre_private_dns_zone_id = sre_private_dns_zone_id
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
@@ -141,7 +139,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-hedgedoc",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="caddy:2.7.6",
+                    image="caddy:2.8.4",
                     name="caddy"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(

@@ -9,7 +9,7 @@ from pydantic import BaseModel, ValidationError
 
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.types import PathType
 
@@ -31,7 +31,7 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
                 settings_yaml = f_yaml.read()
             return cls.from_yaml(settings_yaml)
         except FileNotFoundError as exc:
-            msg = f"Could not find file {config_file_path}.\n{exc}"
+            msg = f"Could not find file {config_file_path}."
             raise DataSafeHavenConfigError(msg) from exc
 
     @classmethod
@@ -40,7 +40,7 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
         try:
             settings_dict = yaml.safe_load(settings_yaml)
         except yaml.YAMLError as exc:
-            msg = f"Could not parse {cls.config_type} configuration as YAML.\n{exc}"
+            msg = f"Could not parse {cls.config_type} configuration as YAML."
             raise DataSafeHavenConfigError(msg) from exc
 
         if not isinstance(settings_dict, dict):
@@ -50,8 +50,8 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
         try:
             return cls.model_validate(settings_dict)
         except ValidationError as exc:
-            msg = f"Could not load {cls.config_type} configuration.\n{exc}"
-            raise DataSafeHavenParameterError(msg) from exc
+            msg = f"Could not load {cls.config_type} configuration."
+            raise DataSafeHavenTypeError(msg) from exc
 
     def to_filepath(self, config_file_path: PathType) -> None:
         """Serialise a YAMLSerialisableModel to a YAML file"""

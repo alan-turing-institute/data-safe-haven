@@ -36,7 +36,6 @@ class SREUserServicesProps:
         nexus_admin_password: Input[str],
         software_packages: SoftwarePackageCategory,
         sre_fqdn: Input[str],
-        sre_private_dns_zone_id: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
@@ -61,7 +60,6 @@ class SREUserServicesProps:
         self.nexus_admin_password = Output.secret(nexus_admin_password)
         self.software_packages = software_packages
         self.sre_fqdn = sre_fqdn
-        self.sre_private_dns_zone_id = sre_private_dns_zone_id
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
@@ -121,7 +119,6 @@ class SREUserServicesComponent(ComponentResource):
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
                 sre_fqdn=props.sre_fqdn,
-                sre_private_dns_zone_id=props.sre_private_dns_zone_id,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
                 storage_account_resource_group_name=props.storage_account_resource_group_name,
@@ -149,7 +146,6 @@ class SREUserServicesComponent(ComponentResource):
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
                 sre_fqdn=props.sre_fqdn,
-                sre_private_dns_zone_id=props.sre_private_dns_zone_id,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
                 storage_account_resource_group_name=props.storage_account_resource_group_name,

@@ -1,11 +1,11 @@
 import pytest
 from freezegun import freeze_time
 
-from data_safe_haven.exceptions import DataSafeHavenInputError
-from data_safe_haven.functions import next_occurrence, sanitise_sre_name
+from data_safe_haven.exceptions import DataSafeHavenValueError
+from data_safe_haven.functions import json_safe, next_occurrence
 
 
-class TestNextOccurance:
+class TestNextOccurrence:
     @pytest.mark.parametrize(
         "hour,minute,timezone,expected",
         [
@@ -36,29 +36,29 @@ class TestNextOccurance:
         assert next_time == "2024-01-03T21:13:00+00:00"
 
     def test_invalid_hour(self):
-        with pytest.raises(DataSafeHavenInputError) as exc_info:
+        with pytest.raises(DataSafeHavenValueError) as exc_info:
             next_occurrence(99, 13, "Europe/London")
         assert exc_info.match(r"Time '99:13' was not recognised.")
 
     def test_invalid_minute(self):
-        with pytest.raises(DataSafeHavenInputError) as exc_info:
+        with pytest.raises(DataSafeHavenValueError) as exc_info:
             next_occurrence(5, 99, "Europe/London")
         assert exc_info.match(r"Time '5:99' was not recognised.")
 
     def test_invalid_timezone(self):
-        with pytest.raises(DataSafeHavenInputError) as exc_info:
+        with pytest.raises(DataSafeHavenValueError) as exc_info:
             next_occurrence(5, 13, "Mars/OlympusMons")
         assert exc_info.match(r"Timezone 'Mars/OlympusMons' was not recognised.")
 
     def test_invalid_timeformat(self):
-        with pytest.raises(DataSafeHavenInputError) as exc_info:
+        with pytest.raises(DataSafeHavenValueError) as exc_info:
             next_occurrence(5, 13, "Australia/Perth", time_format="invalid")
         assert exc_info.match(r"Time format 'invalid' was not recognised.")
 
 
 @pytest.mark.parametrize(
     "value,expected",
-    [("Test SRE", "testsre"), ("%*aBc", "abc"), ("MY_SRE", "mysre")],
+    [(r"Test SRE", "testsre"), (r"%*aBc", "abc"), (r"MY_SRE", "mysre")],
 )
-def test_sanitise_sre_name(value, expected):
-    assert sanitise_sre_name(value) == expected
+def test_json_safe(value, expected):
+    assert json_safe(value) == expected

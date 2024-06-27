@@ -6,7 +6,7 @@ import pulumi_random
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources
 
-from data_safe_haven.functions import b64encode
+from data_safe_haven.functions import b64encode, replace_separators
 from data_safe_haven.infrastructure.common import (
     SREDnsIpRanges,
     SREIpRanges,
@@ -29,16 +29,10 @@ class SREDnsServerProps:
         self,
         location: Input[str],
         shm_fqdn: Input[str],
-        shm_networking_resource_group_name: Input[str],
-        sre_index: Input[int],
     ) -> None:
-        subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
         self.admin_username = "dshadmin"
-        self.ip_range_prefix = str(SREDnsIpRanges().vnet)
         self.location = location
         self.shm_fqdn = shm_fqdn
-        self.shm_networking_resource_group_name = shm_networking_resource_group_name
-        self.sre_vnet_prefix = subnet_ranges.apply(lambda r: str(r.vnet))
 
 
 class SREDnsServerComponent(ComponentResource):
@@ -110,13 +104,13 @@ class SREDnsServerComponent(ComponentResource):
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow inbound connections from attached.",
-                    destination_address_prefix=props.ip_range_prefix,
+                    destination_address_prefix=SREDnsIpRanges.vnet.prefix,
                     destination_port_ranges=[Ports.DNS],
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowSREInbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_ANY,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=props.sre_vnet_prefix,
+                    source_address_prefix=SREIpRanges.vnet.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -141,7 +135,7 @@ class SREDnsServerComponent(ComponentResource):
                     name="AllowDnsInternetOutbound",
                     priority=NetworkingPriorities.EXTERNAL_INTERNET,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
-                    source_address_prefix=props.ip_range_prefix,
+                    source_address_prefix=SREDnsIpRanges.vnet.prefix,
                     source_port_range="*",
                 ),
                 network.SecurityRuleArgs(
@@ -166,13 +160,13 @@ class SREDnsServerComponent(ComponentResource):
         virtual_network = network.VirtualNetwork(
             f"{self._name}_virtual_network",
             address_space=network.AddressSpaceArgs(
-                address_prefixes=[props.ip_range_prefix],
+                address_prefixes=[SREDnsIpRanges.vnet.prefix],
             ),
             resource_group_name=resource_group.name,
             subnets=[  # Note that we define subnets inline to avoid creation order issues
                 # DNS subnet
                 network.SubnetArgs(
-                    address_prefix=props.ip_range_prefix,
+                    address_prefix=SREDnsIpRanges.vnet.prefix,
                     delegations=[
                         network.DelegationArgs(
                             name="SubnetDelegationContainerGroups",
@@ -208,7 +202,7 @@ class SREDnsServerComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-dns",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="adguard/adguardhome:v0.107.48",
+                    image="adguard/adguardhome:v0.107.51",
                     name="adguard",
                     # Providing "command" overwrites the CMD arguments in the Docker
                     # image, so we can either provide them here or set defaults in our
@@ -283,14 +277,29 @@ class SREDnsServerComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Link virtual network to SHM private DNS zones
-        for dns_zone_name in AzureDnsZoneNames.ALL:
-            network.VirtualNetworkLink(
-                f"{self._name}_private_zone_{dns_zone_name}_vnet_dns_link",
+        # Create a private DNS zone for each Azure DNS zone name
+        self.private_zones = {
+            dns_zone_name: network.PrivateZone(
+                replace_separators(f"{self._name}_private_zone_{dns_zone_name}", "_"),
                 location="Global",
                 private_zone_name=f"privatelink.{dns_zone_name}",
+                resource_group_name=resource_group.name,
+                opts=child_opts,
+                tags=child_tags,
+            )
+            for dns_zone_name in AzureDnsZoneNames.ALL
+        }
+
+        # Link Azure private DNS zones to virtual network
+        for dns_zone_name, private_dns_zone in self.private_zones.items():
+            network.VirtualNetworkLink(
+                replace_separators(
+                    f"{self._name}_private_zone_{dns_zone_name}_vnet_dns_link", "_"
+                ),
+                location="Global",
+                private_zone_name=private_dns_zone.name,
                 registration_enabled=False,
-                resource_group_name=props.shm_networking_resource_group_name,
+                resource_group_name=resource_group.name,
                 virtual_network=network.SubResourceArgs(id=virtual_network.id),
                 virtual_network_link_name=Output.concat(
                     "link-to-", virtual_network.name

@@ -1,9 +1,7 @@
 import pathlib
 from collections.abc import Sequence
-from typing import Any
 
-from data_safe_haven.config import Config, DSHPulumiConfig
-from data_safe_haven.context import Context
+from data_safe_haven.config import Context, DSHPulumiConfig, SREConfig
 from data_safe_haven.external import AzureApi, AzurePostgreSQLDatabase
 from data_safe_haven.infrastructure import SREProjectManager
 
@@ -11,21 +9,18 @@ from .research_user import ResearchUser
 
 
 class GuacamoleUsers:
+    """Interact with users in a Guacamole database."""
+
     def __init__(
         self,
         context: Context,
-        config: Config,
+        config: SREConfig,
         pulumi_config: DSHPulumiConfig,
-        sre_name: str,
-        *args: Any,
-        **kwargs: Any,
     ):
-        super().__init__(*args, **kwargs)
         sre_stack = SREProjectManager(
             context=context,
             config=config,
             pulumi_config=pulumi_config,
-            sre_name=sre_name,
         )
         # Read the SRE database secret from key vault
         azure_api = AzureApi(context.subscription_name)
@@ -47,8 +42,7 @@ class GuacamoleUsers:
             / "remote_desktop"
             / "postgresql"
         )
-        self.sre_name = sre_name
-        self.group_name = f"Data Safe Haven SRE {sre_name} Users"
+        self.group_name = f"Data Safe Haven SRE {config.safe_name} Users"
 
     def list(self) -> Sequence[ResearchUser]:
         """List all Guacamole users"""

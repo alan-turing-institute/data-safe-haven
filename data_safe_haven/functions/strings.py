@@ -9,7 +9,7 @@ from collections.abc import Sequence
 
 import pytz
 
-from data_safe_haven.exceptions import DataSafeHavenInputError
+from data_safe_haven.exceptions import DataSafeHavenValueError
 
 
 def alphanumeric(input_string: str) -> str:
@@ -17,13 +17,14 @@ def alphanumeric(input_string: str) -> str:
     return "".join(filter(str.isalnum, input_string))
 
 
-def sanitise_sre_name(name: str) -> str:
-    return alphanumeric(name).lower()
-
-
 def b64encode(input_string: str) -> str:
     """Encode a normal string into a Base64 string."""
     return base64.b64encode(input_string.encode("utf-8")).decode()
+
+
+def json_safe(input_string: str) -> str:
+    """Construct a JSON-safe version of an input string"""
+    return alphanumeric(input_string).lower()
 
 
 def next_occurrence(
@@ -60,13 +61,13 @@ def next_occurrence(
             return utc_dt.strftime(r"%Y-%m-%d %H:%M")
         else:
             msg = f"Time format '{time_format}' was not recognised."
-            raise DataSafeHavenInputError(msg)
+            raise DataSafeHavenValueError(msg)
     except pytz.exceptions.UnknownTimeZoneError as exc:
-        msg = f"Timezone '{timezone}' was not recognised.\n{exc}"
-        raise DataSafeHavenInputError(msg) from exc
+        msg = f"Timezone '{timezone}' was not recognised."
+        raise DataSafeHavenValueError(msg) from exc
     except ValueError as exc:
-        msg = f"Time '{hour}:{minute}' was not recognised.\n{exc}"
-        raise DataSafeHavenInputError(msg) from exc
+        msg = f"Time '{hour}:{minute}' was not recognised."
+        raise DataSafeHavenValueError(msg) from exc
 
 
 def password(length: int) -> str:
@@ -87,7 +88,7 @@ def password(length: int) -> str:
 
 
 def replace_separators(input_string: str, separator: str = "") -> str:
-    """Return a string using underscores as a separator"""
+    """Return a string replacing all instances of [ _-.] with the desired separator."""
     return (
         input_string.replace(" ", separator)
         .replace("_", separator)

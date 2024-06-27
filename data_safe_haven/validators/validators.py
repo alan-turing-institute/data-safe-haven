@@ -39,6 +39,22 @@ def azure_vm_sku(azure_vm_sku: str) -> str:
     return azure_vm_sku
 
 
+def config_name(config_name: str) -> str:
+    if (
+        (not re.match(r"^[a-zA-Z0-9 -]+$", config_name))
+        or config_name.startswith((" ", "-"))
+        or config_name.endswith((" ", "-"))
+    ):
+        msg = "\n".join(
+            [
+                "DSH config names can only contain alphanumeric characters, spaces and hyphens.",
+                "They must start and end with alphanumeric characters.",
+            ]
+        )
+        raise ValueError(msg)
+    return config_name
+
+
 def fqdn(domain: str) -> str:
     trial_fqdn = FQDN(domain)
     if not trial_fqdn.is_valid:
@@ -54,12 +70,26 @@ def email_address(email_address: str) -> str:
     return email_address
 
 
+def entra_group_name(entra_group_name: str) -> str:
+    if entra_group_name.startswith(" "):
+        msg = "Entra group names cannot start with a space."
+        raise ValueError(msg)
+    return entra_group_name
+
+
 def ip_address(ip_address: str) -> str:
     try:
         return str(ipaddress.ip_network(ip_address))
     except Exception as exc:
         msg = "Expected valid IPv4 address, for example '1.1.1.1'."
         raise ValueError(msg) from exc
+
+
+def safe_string(safe_string: str) -> str:
+    if not re.match(r"^[a-zA-Z0-9_]*$", safe_string) or not safe_string:
+        msg = "Expected valid string containing only letters, numbers and underscores."
+        raise ValueError(msg)
+    return safe_string
 
 
 def timezone(timezone: str) -> str:

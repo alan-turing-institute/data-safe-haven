@@ -1,16 +1,15 @@
 """Interact with users in Entra ID."""
 
 from collections.abc import Sequence
-from typing import Any
 
 from data_safe_haven.exceptions import (
     DataSafeHavenEntraIDError,
     DataSafeHavenError,
-    DataSafeHavenInputError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
-from data_safe_haven.utility import LoggingSingleton
+from data_safe_haven.logging import get_logger
 
 from .research_user import ResearchUser
 
@@ -21,12 +20,9 @@ class EntraUsers:
     def __init__(
         self,
         graph_api: GraphApi,
-        *args: Any,
-        **kwargs: Any,
     ) -> None:
-        super().__init__(*args, **kwargs)
         self.graph_api = graph_api
-        self.logger = LoggingSingleton()
+        self.logger = get_logger()
 
     def add(self, new_users: Sequence[ResearchUser]) -> None:
         """
@@ -55,10 +51,10 @@ class EntraUsers:
                     msg = (
                         f"User '[green]{user.username}[/]' is missing an email address."
                     )
-                    raise DataSafeHavenInputError(msg)
+                    raise DataSafeHavenTypeError(msg)
                 if not user.phone_number:
                     msg = f"User '[green]{user.username}[/]' is missing a phone number."
-                    raise DataSafeHavenInputError(msg)
+                    raise DataSafeHavenTypeError(msg)
                 self.graph_api.create_user(
                     request_json, user.email_address, user.phone_number
                 )
@@ -66,7 +62,7 @@ class EntraUsers:
                     f"Ensured user '[green]{user.preferred_username}[/]' exists in Entra ID"
                 )
         except DataSafeHavenError as exc:
-            msg = f"Unable to add users to Entra ID.\n{exc}"
+            msg = "Unable to add users to Entra ID."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def list(self) -> Sequence[ResearchUser]:
@@ -99,7 +95,7 @@ class EntraUsers:
                 for user_details in user_list
             ]
         except DataSafeHavenError as exc:
-            msg = f"Unable list Entra ID users.\n{exc}"
+            msg = "Unable to list Entra ID users."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def register(self, sre_name: str, usernames: Sequence[str]) -> None:
@@ -114,7 +110,7 @@ class EntraUsers:
             for username in usernames:
                 self.graph_api.add_user_to_group(username, group_name)
         except DataSafeHavenError as exc:
-            msg = f"Unable add users to group '{group_name}'.\n{exc}"
+            msg = f"Unable to add users to group '{group_name}'."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def remove(self, users: Sequence[ResearchUser]) -> None:
@@ -132,7 +128,7 @@ class EntraUsers:
                 self.graph_api.remove_user(user.username)
                 self.logger.info(f"Removed '{user.preferred_username}'.")
         except DataSafeHavenError as exc:
-            msg = f"Unable to remove users from Entra ID.\n{exc}"
+            msg = "Unable to remove users from Entra ID."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def set(self, users: Sequence[ResearchUser]) -> None:
@@ -148,7 +144,7 @@ class EntraUsers:
             users_to_add = [user for user in users if user not in self.list()]
             self.add(users_to_add)
         except DataSafeHavenError as exc:
-            msg = f"Unable to set desired user list in Entra ID.\n{exc}"
+            msg = "Unable to set desired user list in Entra ID."
             raise DataSafeHavenEntraIDError(msg) from exc
 
     def unregister(self, sre_name: str, usernames: Sequence[str]) -> None:
@@ -163,5 +159,5 @@ class EntraUsers:
             for username in usernames:
                 self.graph_api.remove_user_from_group(username, group_name)
         except DataSafeHavenError as exc:
-            msg = f"Unable to remove users from group {group_name}.\n{exc}"
+            msg = f"Unable to remove users from group {group_name}."
             raise DataSafeHavenEntraIDError(msg) from exc
