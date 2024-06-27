@@ -50,6 +50,6 @@ tasks:
   - name: Add ldap to /etc/nsswitch.conf
     ansible.builtin.replace:
       path: /etc/nsswitch.conf
-      regexp: '^(passwd|group|shadow)(:.*)'
+      regexp: '^(passwd|group|shadow)(:.*)(?<!ldap)$'
       line: '\1\2 ldap'
       backrefs: true
