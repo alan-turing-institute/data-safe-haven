@@ -9,6 +9,7 @@ package_categories:
   - category: admin
     common:
       - auditd
+      - bats
       - clamav
     focal:
     jammy:
@@ -16,6 +17,14 @@ package_categories:
   - category: browsers
     common:
       - firefox
+    focal:
+    jammy:
+    noble:
+  - category: database
+    common:
+      - libpq-dev     # interact with PostgreSQL databases
+      - msodbcsql17   # interact with Microsoft SQL databases
+      - unixodbc-dev  # interact with Microsoft SQL databases
     focal:
     jammy:
     noble:
@@ -38,9 +47,11 @@ package_categories:
       - python3.9
     jammy:
       - python3.10
+      - python3.10-venv
       - python-is-python3
     noble:
       - python3.12
+      - python3.12-venv
       - python-is-python3
   - category: editors
     common:
@@ -60,6 +71,17 @@ package_categories:
   - category: office
     common:
       - libreoffice
+    focal:
+    jammy:
+    noble:
+  - category: remote_desktop
+    common:
+      - libnss-ldapd  # LDAP login
+      - libpam-ldapd  # LDAP login
+      - ldap-utils    # LDAP login
+      - nfs-common    # Mounting shared volumes
+      - xfce4         # XFCE desktop
+      - xrdp          # remote desktop client
     focal:
     jammy:
     noble:

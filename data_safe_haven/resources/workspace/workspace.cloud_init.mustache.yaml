@@ -115,27 +115,6 @@ apt:
 # Install necessary apt packages
 packages:
   - ansible
-  # System requirements
-  - libnss-ldapd  # LDAP login
-  - libpam-ldapd  # LDAP login
-  - ldap-utils    # LDAP login
-  - nfs-common    # Mounting shared volumes
-  - xfce4         # XFCE desktop
-  - xrdp          # remote desktop client
-  # Programming
-  - python-is-python3  # Python language
-  - python3            # Python language
-  - python3-dev        # Python language
-  - python3-pip        # Python language
-  - python3-venv       # Python language
-  - r-base             # R language
-  # Tools
-  - firefox       # web browser
-  - libpq-dev     # interact with PostgreSQL databases
-  - msodbcsql17   # interact with Microsoft SQL databases
-  - unixodbc-dev  # interact with Microsoft SQL databases
-  # Bash testing
-  - bats
 package_update: true
 package_upgrade: true
 
