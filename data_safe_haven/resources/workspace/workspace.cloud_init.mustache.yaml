@@ -121,14 +121,6 @@ runcmd:
   # Restart services
   - systemctl restart nslcd
 
-  # Enable xrdp and session manager at startup
-  # ------------------------------------------
-  - echo ">=== Enable xrdp... ===<"
-  - systemctl enable xrdp
-  - systemctl enable xrdp-sesman
-  - systemctl start xrdp
-  - systemctl start xrdp-sesman
-
   # Mount all external volumes
   # --------------------------
   - echo ">=== Mounting all external volumes... ===<"
@@ -144,3 +136,7 @@ runcmd:
   # ------------------------------------
   - systemctl enable desired-state.timer
   - systemctl start desired-state.timer
+
+  # Run desired state service
+  # -------------------------
+  - systemctl start desired-state
