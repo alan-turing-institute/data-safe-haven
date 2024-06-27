@@ -50,7 +50,9 @@ def deploy(
         )
 
         # Load Pulumi and SRE configs
-        pulumi_config = DSHPulumiConfig.from_remote(context)
+        pulumi_config = DSHPulumiConfig.from_remote_or_create(
+            context, encrypted_key=None, projects={}
+        )
         sre_config = SREConfig.from_remote_by_name(context, name)
 
         # Initialise Pulumi stack
