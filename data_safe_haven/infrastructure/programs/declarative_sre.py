@@ -68,7 +68,7 @@ class DeclarativeSRE:
         self.sre_name = config.safe_name
         self.short_name = f"sre-{self.sre_name}"
         self.stack_name = f"shm-{shm_name}-{self.short_name}"
-        self.tags = context.tags
+        self.tags = {"component": f"SRE {config.name}"} | context.tags
 
     def __call__(self) -> None:
         # Load pulumi configuration options

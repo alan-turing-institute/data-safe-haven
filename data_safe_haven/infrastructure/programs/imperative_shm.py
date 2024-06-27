@@ -14,7 +14,7 @@ class ImperativeSHM:
         self.azure_api_: AzureApi | None = None
         self.config = config
         self.context = context
-        self.tags = {"component": "context"} | context.tags
+        self.tags = {"component": "SHM"} | context.tags
 
     @property
     def azure_api(self) -> AzureApi:
@@ -93,6 +93,7 @@ class ImperativeSHM:
             zone = self.azure_api.ensure_dns_zone(
                 resource_group_name=resource_group.name,
                 zone_name=self.config.shm.fqdn,
+                tags=self.tags,
             )
             if not zone.name_servers:
                 msg = f"DNS zone '{self.config.shm.fqdn}' was not created."
