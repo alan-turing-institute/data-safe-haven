@@ -13,18 +13,36 @@ from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 class TestConfigSectionAzure:
     def test_constructor(self) -> None:
         ConfigSectionAzure(
+            location="uksouth",
             subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         )
+
+    def test_invalid_location(self):
+        with pytest.raises(
+            ValidationError, match="Value error, Expected valid Azure location"
+        ):
+            ConfigSectionAzure(
+                location="not_a_location",
+                subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+                tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+            )
 
 
 class TestConfigSectionSHM:
     def test_constructor(self) -> None:
         ConfigSectionSHM(
+            admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             fqdn="shm.acme.com",
-            timezone="UTC",
         )
+
+    def test_invalid_guid(self, shm_config_section_dict):
+        shm_config_section_dict["entra_tenant_id"] = "not a guid"
+        with pytest.raises(
+            ValidationError, match="Value error, Expected GUID, for example"
+        ):
+            ConfigSectionSHM(**shm_config_section_dict)
 
     def test_update(self, shm_config_section: ConfigSectionSHM) -> None:
         assert shm_config_section.fqdn == "shm.acme.com"

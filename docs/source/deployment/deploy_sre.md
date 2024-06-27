@@ -9,7 +9,7 @@ Each project will have its own dedicated Secure Research Environment (SRE).
 - Create a configuration file
 
 ```console
-> dsh config template-sre --file config.yaml
+> dsh config template --file config.yaml
 ```
 
 - Edit this file in your favourite text editor, replacing the placeholder text with appropriate values for your setup.
@@ -37,7 +37,7 @@ sre:
 - Upload the config to Azure. This will validate your file and report any problems.
 
 ```{code} shell
-$ dsh config upload-sre config.yaml
+$ dsh config upload config.yaml
 ```
 
 ## Requirements

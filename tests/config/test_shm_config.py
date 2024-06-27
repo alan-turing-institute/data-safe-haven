@@ -1,12 +1,11 @@
 import pytest
 from pydantic import ValidationError
 
-from data_safe_haven.config import SHMConfig
+from data_safe_haven.config import Context, SHMConfig
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
     ConfigSectionSHM,
 )
-from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenTypeError,
 )
@@ -36,7 +35,7 @@ class TestConfig:
         assert isinstance(config, SHMConfig)
         assert (
             config.azure.subscription_id
-            == "ID of the Azure subscription that the TRE will be deployed to"
+            == "ID of the Azure subscription that the SHM will be deployed to"
         )
 
     def test_template_validation(self) -> None:

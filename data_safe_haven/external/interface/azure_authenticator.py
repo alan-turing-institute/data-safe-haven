@@ -66,6 +66,6 @@ class AzureAuthenticator:
         except ClientAuthenticationError as exc:
             msg = "Failed to authenticate with Azure API."
             raise DataSafeHavenAzureAPIAuthenticationError(msg) from exc
-        if not (self.subscription_id and self.tenant_id):
+        if not (self.subscription_id_ and self.tenant_id_):
             msg = f"Could not find subscription '{self.subscription_name}'"
             raise DataSafeHavenValueError(msg)

@@ -1,6 +1,7 @@
-from .project_manager import SHMProjectManager, SREProjectManager
+from .programs import ImperativeSHM
+from .project_manager import SREProjectManager
 
 __all__ = [
-    "SHMProjectManager",
+    "ImperativeSHM",
     "SREProjectManager",
 ]

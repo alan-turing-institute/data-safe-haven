@@ -81,3 +81,25 @@ class AzureCliSingleton(metaclass=Singleton):
             raise typer.Exit(1)
 
         self._confirmed = True
+
+    def group_id_from_name(self, group_name: str) -> str:
+        """Get ID for an Entra ID group that this user is permitted to view."""
+        try:
+            result = subprocess.check_output(
+                [self.path, "ad", "group", "list", "--display-name", group_name],
+                stderr=subprocess.PIPE,
+                encoding="utf8",
+            )
+        except subprocess.CalledProcessError as exc:
+            msg = f"Error reading groups from Azure CLI.\n{exc.stderr}"
+            raise DataSafeHavenAzureError(msg) from exc
+
+        try:
+            result_dict = json.loads(result)
+            return str(result_dict[0]["id"])
+        except json.JSONDecodeError as exc:
+            msg = f"Unable to parse Azure CLI output as JSON.\n{result}"
+            raise DataSafeHavenAzureError(msg) from exc
+        except (IndexError, KeyError) as exc:
+            msg = f"Group '{group_name}' was not found in Azure CLI."
+            raise DataSafeHavenAzureError(msg) from exc

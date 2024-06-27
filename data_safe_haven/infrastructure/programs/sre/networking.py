@@ -29,7 +29,7 @@ class SRENetworkingProps:
         dns_virtual_network: Input[network.VirtualNetwork],
         location: Input[str],
         shm_fqdn: Input[str],
-        shm_networking_resource_group_name: Input[str],
+        shm_resource_group_name: Input[str],
         shm_zone_name: Input[str],
         sre_name: Input[str],
         user_public_ip_ranges: Input[list[str]],
@@ -47,7 +47,7 @@ class SRENetworkingProps:
         self.location = location
         self.user_public_ip_ranges = user_public_ip_ranges
         self.shm_fqdn = shm_fqdn
-        self.shm_networking_resource_group_name = shm_networking_resource_group_name
+        self.shm_resource_group_name = shm_resource_group_name
         self.shm_zone_name = shm_zone_name
         self.sre_name = sre_name
 
@@ -1620,7 +1620,7 @@ class SRENetworkingComponent(ComponentResource):
 
         # Define SRE DNS zone
         shm_dns_zone = Output.all(
-            resource_group_name=props.shm_networking_resource_group_name,
+            resource_group_name=props.shm_resource_group_name,
             zone_name=props.shm_zone_name,
         ).apply(
             lambda kwargs: network.get_zone(
@@ -1648,7 +1648,7 @@ class SRENetworkingComponent(ComponentResource):
             ),
             record_type="NS",
             relative_record_set_name=sre_subdomain,
-            resource_group_name=props.shm_networking_resource_group_name,
+            resource_group_name=props.shm_resource_group_name,
             ttl=3600,
             zone_name=shm_dns_zone.name,
             opts=ResourceOptions.merge(

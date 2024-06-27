@@ -2,21 +2,18 @@
 
 import logging
 import time
-from collections.abc import MutableMapping
 from contextlib import suppress
 from importlib import metadata
 from typing import Any
 
 from pulumi import automation
-from pulumi.automation import ConfigValue
 
 from data_safe_haven.config import (
+    Context,
     DSHPulumiConfig,
     DSHPulumiProject,
-    SHMConfig,
     SREConfig,
 )
-from data_safe_haven.context import Context
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenConfigError,
@@ -26,7 +23,7 @@ from data_safe_haven.external import AzureApi, PulumiAccount
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.logging import from_ansi, get_console_handler, get_logger
 
-from .programs import DeclarativeSHM, DeclarativeSRE
+from .programs import DeclarativeSRE
 
 
 class ProjectManager:
@@ -44,7 +41,7 @@ class ProjectManager:
         context: Context,
         pulumi_config: DSHPulumiConfig,
         pulumi_project_name: str,
-        program: DeclarativeSHM | DeclarativeSRE,
+        program: DeclarativeSRE,
         *,
         create_project: bool,
     ) -> None:
@@ -373,15 +370,10 @@ class ProjectManager:
             msg = "Pulumi update failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
-    @property
-    def stack_all_config(self) -> MutableMapping[str, ConfigValue]:
-        stack_all_config: MutableMapping[str, ConfigValue] = self.stack.get_all_config()
-        return stack_all_config
-
     def update_dsh_pulumi_project(self) -> None:
         """Update persistent data in the DSHPulumiProject object"""
         all_config_dict = {
-            key: item.value for key, item in self.stack_all_config.items()
+            key: item.value for key, item in self.stack.get_all_config().items()
         }
         self.pulumi_project.stack_config = all_config_dict
 
@@ -398,27 +390,6 @@ class ProjectManager:
             raise DataSafeHavenPulumiError(msg)
 
 
-class SHMProjectManager(ProjectManager):
-    """Interact with an SHM using Pulumi"""
-
-    def __init__(
-        self,
-        context: Context,
-        config: SHMConfig,
-        pulumi_config: DSHPulumiConfig,
-        *,
-        create_project: bool = False,
-    ) -> None:
-        """Constructor"""
-        super().__init__(
-            context,
-            pulumi_config,
-            context.shm_name,
-            DeclarativeSHM(context, config, context.shm_name),
-            create_project=create_project,
-        )
-
-
 class SREProjectManager(ProjectManager):
     """Interact with an SRE using Pulumi"""
 
@@ -429,15 +400,14 @@ class SREProjectManager(ProjectManager):
         pulumi_config: DSHPulumiConfig,
         *,
         create_project: bool = False,
-        sre_name: str,
         graph_api_token: str | None = None,
     ) -> None:
         """Constructor"""
-        token = graph_api_token if graph_api_token else ""
+        token = graph_api_token or ""
         super().__init__(
             context,
             pulumi_config,
-            sre_name,
-            DeclarativeSRE(context, config, context.shm_name, sre_name, token),
+            config.safe_name,
+            DeclarativeSRE(context, config, token),
             create_project=create_project,
         )
