@@ -89,9 +89,6 @@ runcmd:
   # Configure LDAP user login
   # -------------------------
   - echo ">=== Configure LDAP user login... ===<"
-  # Configure nsswitch
-  - echo "Adding ldap to /etc/nsswitch.conf"
-  - sed -i -r "s|^(passwd\|group\|shadow)(:.*)$|\1\2 ldap|g" /etc/nsswitch.conf
   # Configure PAM for LDAP
   - echo "Configuring PAM for LDAP login"
   - sed -i "s|pam_mkhomedir.so|pam_mkhomedir.so skel=/etc/skel umask=0022|g" /usr/share/pam-configs/mkhomedir

@@ -46,3 +46,10 @@ tasks:
       src: etc/skel/xsession
       dest: /etc/skel/.xsession
       mode: '0444'
+
+  - name: Add ldap to /etc/nsswitch.conf
+    ansible.builtin.replace:
+      path: /etc/nsswitch.conf
+      regexp: '^(passwd|group|shadow)(:.*)'
+      line: '\1\2 ldap'
+      backrefs: true
