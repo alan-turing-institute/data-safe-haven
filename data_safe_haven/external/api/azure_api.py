@@ -86,18 +86,19 @@ class AzureApi(AzureAuthenticator):
         storage_account_keys = self.get_storage_account_keys(
             resource_group_name, storage_account_name
         )
+
+        # Load blob service client
         blob_service_client = BlobServiceClient.from_connection_string(
             f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_keys[0].value};EndpointSuffix=core.windows.net"
         )
-
         if not isinstance(blob_service_client, BlobServiceClient):
             msg = f"Could not connect to storage account '{storage_account_name}'."
             raise DataSafeHavenAzureError(msg)
 
+        # Get the blob client
         blob_client = blob_service_client.get_blob_client(
             container=storage_container_name, blob=blob_name
         )
-
         return blob_client
 
     def blob_exists(
@@ -650,8 +651,8 @@ class AzureApi(AzureAuthenticator):
         Raises:
             DataSafeHavenAzureError if the keys could not be loaded
         """
-        msg_sa = f"storage account [green]'{storage_account_name}'[/]"
-        msg_rg = f"resource group [green]'{resource_group_name}'[/]"
+        msg_sa = f"storage account '{storage_account_name}'"
+        msg_rg = f"resource group '{resource_group_name}'"
         try:
             # Connect to Azure client
             storage_client = StorageManagementClient(
