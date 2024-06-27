@@ -8,7 +8,10 @@ from data_safe_haven.config import (
     SHMConfig,
     SREConfig,
 )
-from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureAPIAuthenticationError,
+    DataSafeHavenAzureError,
+)
 from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
 from data_safe_haven.infrastructure import ImperativeSHM
@@ -104,6 +107,15 @@ def mock_pulumi_config_no_key_from_remote(mocker, pulumi_config_no_key):
 @fixture
 def mock_shm_config_from_remote(mocker, shm_config):
     mocker.patch.object(SHMConfig, "from_remote", return_value=shm_config)
+
+
+@fixture
+def mock_shm_config_from_remote_fails(mocker):
+    mocker.patch.object(
+        SHMConfig,
+        "from_remote",
+        side_effect=DataSafeHavenAzureError("mock from_remote failure"),
+    )
 
 
 @fixture

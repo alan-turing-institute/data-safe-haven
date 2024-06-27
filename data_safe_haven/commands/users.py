@@ -32,15 +32,13 @@ def add(
     logger = get_logger()
     try:
         context = ContextManager.from_file().assert_context()
-        shm_config = SHMConfig.from_remote(context)
-        pulumi_config = DSHPulumiConfig.from_remote(context)
-        shm_name = context.shm_name
 
-        if shm_name not in pulumi_config.project_names:
-            logger.fatal(
-                f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
-            )
-            raise typer.Exit(1)
+        # Load SHMConfig
+        try:
+            shm_config = SHMConfig.from_remote(context)
+        except DataSafeHavenError:
+            logger.error("Have you deployed the SHM?")
+            raise
 
         # Load GraphAPI
         graph_api = GraphApi(
@@ -56,7 +54,7 @@ def add(
         users = UserHandler(context, graph_api)
         users.add(csv)
     except DataSafeHavenError as exc:
-        logger.critical(f"Could not add users to Data Safe Haven '{shm_name}'.")
+        logger.critical("Could not add users to Data Safe Haven.")
         raise typer.Exit(1) from exc
 
 
@@ -73,15 +71,13 @@ def list_users(
     logger = get_logger()
     try:
         context = ContextManager.from_file().assert_context()
-        shm_config = SHMConfig.from_remote(context)
-        pulumi_config = DSHPulumiConfig.from_remote(context)
-        shm_name = context.shm_name
 
-        if shm_name not in pulumi_config.project_names:
-            logger.fatal(
-                f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
-            )
-            raise typer.Exit(1)
+        # Load SHMConfig
+        try:
+            shm_config = SHMConfig.from_remote(context)
+        except DataSafeHavenError:
+            logger.error("Have you deployed the SHM?")
+            raise
 
         # Load GraphAPI
         graph_api = GraphApi(
@@ -89,11 +85,14 @@ def list_users(
             default_scopes=["Directory.Read.All", "Group.Read.All"],
         )
 
+        # Load Pulumi config
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+
         # List users from all sources
         users = UserHandler(context, graph_api)
         users.list(sre, pulumi_config)
     except DataSafeHavenError as exc:
-        logger.critical(f"Could not list users for Data Safe Haven '{shm_name}'.")
+        logger.critical("Could not list Data Safe Haven users.")
         raise typer.Exit(1) from exc
 
 
@@ -118,32 +117,33 @@ def register(
     logger = get_logger()
     try:
         context = ContextManager.from_file().assert_context()
+
+        # Load SHMConfig
+        try:
+            shm_config = SHMConfig.from_remote(context)
+        except DataSafeHavenError:
+            logger.error("Have you deployed the SHM?")
+            raise
+
+        # Load Pulumi config
         pulumi_config = DSHPulumiConfig.from_remote(context)
-        shm_config = SHMConfig.from_remote(context)
+
+        # Load SREConfig
         sre_config = SREConfig.from_remote_by_name(context, sre)
-        shm_name = context.shm_name
         sre_name = sre_config.safe_name
-
-        if shm_name not in pulumi_config.project_names:
-            logger.critical(
-                f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
-            )
-            raise typer.Exit(1)
-
         if sre_name not in pulumi_config.project_names:
-            logger.critical(
-                f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?"
-            )
-            raise typer.Exit(1)
-
-        logger.debug(
-            f"Preparing to register {len(usernames)} user(s) with SRE '{sre_name}'"
-        )
+            msg = f"Could not load Pulumi settings for '{sre_name}'. Have you deployed the SRE?"
+            logger.error(msg)
+            raise DataSafeHavenError(msg)
 
         # Load GraphAPI
         graph_api = GraphApi(
             tenant_id=shm_config.shm.entra_tenant_id,
             default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
+        )
+
+        logger.debug(
+            f"Preparing to register {len(usernames)} user(s) with SRE '{sre_name}'"
         )
 
         # List users
@@ -160,9 +160,7 @@ def register(
                 )
         users.register(sre_name, usernames_to_register)
     except DataSafeHavenError as exc:
-        logger.critical(
-            f"Could not register users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'."
-        )
+        logger.critical(f"Could not register Data Safe Haven users with SRE '{sre}'.")
         raise typer.Exit(1) from exc
 
 
@@ -181,15 +179,13 @@ def remove(
     logger = get_logger()
     try:
         context = ContextManager.from_file().assert_context()
-        shm_config = SHMConfig.from_remote(context)
-        pulumi_config = DSHPulumiConfig.from_remote(context)
-        shm_name = context.shm_name
 
-        if shm_name not in pulumi_config.project_names:
-            logger.fatal(
-                f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
-            )
-            raise typer.Exit(1)
+        # Load SHMConfig
+        try:
+            shm_config = SHMConfig.from_remote(context)
+        except DataSafeHavenError:
+            logger.error("Have you deployed the SHM?")
+            raise
 
         # Load GraphAPI
         graph_api = GraphApi(
@@ -202,7 +198,7 @@ def remove(
             users = UserHandler(context, graph_api)
             users.remove(usernames)
     except DataSafeHavenError as exc:
-        logger.critical(f"Could not remove users from Data Safe Haven '{shm_name}'.")
+        logger.critical("Could not remove users from Data Safe Haven.")
         raise typer.Exit(1) from exc
 
 
@@ -227,32 +223,33 @@ def unregister(
     logger = get_logger()
     try:
         context = ContextManager.from_file().assert_context()
+
+        # Load SHMConfig
+        try:
+            shm_config = SHMConfig.from_remote(context)
+        except DataSafeHavenError:
+            logger.error("Have you deployed the SHM?")
+            raise
+
+        # Load Pulumi config
         pulumi_config = DSHPulumiConfig.from_remote(context)
-        shm_config = SHMConfig.from_remote(context)
+
+        # Load SREConfig
         sre_config = SREConfig.from_remote_by_name(context, sre)
-        shm_name = context.shm_name
         sre_name = sre_config.safe_name
-
-        if shm_name not in pulumi_config.project_names:
-            logger.fatal(
-                f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
-            )
-            raise typer.Exit(1)
-
         if sre_name not in pulumi_config.project_names:
-            logger.fatal(
-                f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?"
-            )
-            raise typer.Exit(1)
-
-        logger.debug(
-            f"Preparing to unregister {len(usernames)} users with SRE '{sre_name}'"
-        )
+            msg = f"Could not load Pulumi settings for '{sre_name}'. Have you deployed the SRE?"
+            logger.error(msg)
+            raise DataSafeHavenError(msg)
 
         # Load GraphAPI
         graph_api = GraphApi(
             tenant_id=shm_config.shm.entra_tenant_id,
             default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
+        )
+
+        logger.debug(
+            f"Preparing to unregister {len(usernames)} users with SRE '{sre_config.safe_name}'"
         )
 
         # List users
@@ -268,13 +265,11 @@ def unregister(
                     " Please use 'dsh users add' to create it."
                 )
         for group_name in (
-            f"{sre_name} Users",
-            f"{sre_name} Privileged Users",
-            f"{sre_name} Administrators",
+            f"{sre_config.safe_name} Users",
+            f"{sre_config.safe_name} Privileged Users",
+            f"{sre_config.safe_name} Administrators",
         ):
             users.unregister(group_name, usernames_to_unregister)
     except DataSafeHavenError as exc:
-        logger.critical(
-            f"Could not unregister users from Data Safe Haven '{shm_name}' with SRE '{sre_name}'."
-        )
+        logger.critical(f"Could not unregister Data Safe Haven users from SRE '{sre}'.")
         raise typer.Exit(1) from exc

@@ -4,8 +4,7 @@ from data_safe_haven.commands.users import users_command_group
 class TestAdd:
     def test_invalid_shm(
         self,
-        mock_pulumi_config_from_remote,  # noqa: ARG002
-        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote_fails,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
     ):
@@ -18,9 +17,7 @@ class TestAdd:
 class TestListUsers:
     def test_invalid_shm(
         self,
-        mock_sre_config_from_remote,  # noqa: ARG002
-        mock_pulumi_config_from_remote,  # noqa: ARG002
-        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote_fails,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
     ):
@@ -33,9 +30,7 @@ class TestListUsers:
 class TestRegister:
     def test_invalid_shm(
         self,
-        mock_pulumi_config_from_remote,  # noqa: ARG002
-        mock_shm_config_from_remote,  # noqa: ARG002
-        mock_sre_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote_fails,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
     ):
@@ -65,8 +60,7 @@ class TestRegister:
 class TestRemove:
     def test_invalid_shm(
         self,
-        mock_pulumi_config_from_remote,  # noqa: ARG002
-        mock_shm_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote_fails,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
     ):
@@ -79,9 +73,7 @@ class TestRemove:
 class TestUnregister:
     def test_invalid_shm(
         self,
-        mock_pulumi_config_from_remote,  # noqa: ARG002
-        mock_shm_config_from_remote,  # noqa: ARG002
-        mock_sre_config_from_remote,  # noqa: ARG002
+        mock_shm_config_from_remote_fails,  # noqa: ARG002
         runner,
         tmp_contexts_gems,  # noqa: ARG002
     ):
