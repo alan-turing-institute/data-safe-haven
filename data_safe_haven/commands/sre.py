@@ -105,7 +105,9 @@ def deploy(
         )
         manager.run()
     except DataSafeHavenError as exc:
-        logger.critical(f"Could not deploy Secure Research Environment {sre_config.safe_name}.")
+        logger.critical(
+            f"Could not deploy Secure Research Environment {sre_config.safe_name}."
+        )
         raise typer.Exit(code=1) from exc
     finally:
         # Upload Pulumi config to blob storage
