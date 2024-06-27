@@ -6,7 +6,7 @@ from typing import Any
 from data_safe_haven.exceptions import (
     DataSafeHavenEntraIDError,
     DataSafeHavenError,
-    DataSafeHavenInputError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.external import GraphApi
 from data_safe_haven.functions import password
@@ -55,10 +55,10 @@ class EntraUsers:
                     msg = (
                         f"User '[green]{user.username}[/]' is missing an email address."
                     )
-                    raise DataSafeHavenInputError(msg)
+                    raise DataSafeHavenTypeError(msg)
                 if not user.phone_number:
                     msg = f"User '[green]{user.username}[/]' is missing a phone number."
-                    raise DataSafeHavenInputError(msg)
+                    raise DataSafeHavenTypeError(msg)
                 self.graph_api.create_user(
                     request_json, user.email_address, user.phone_number
                 )

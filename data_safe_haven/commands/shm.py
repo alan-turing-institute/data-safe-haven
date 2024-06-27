@@ -6,9 +6,10 @@ import typer
 
 from data_safe_haven.config import DSHPulumiConfig, SHMConfig
 from data_safe_haven.context import ContextSettings
-from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputError
+from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenPulumiError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import SHMProjectManager
+from data_safe_haven.logging import get_logger
 
 shm_command_group = typer.Typer()
 
@@ -31,6 +32,7 @@ def deploy(
         context, encrypted_key=None, projects={}
     )
 
+    logger = get_logger()
     try:
         # Connect to GraphAPI interactively
         graph_api = GraphApi(
@@ -75,13 +77,8 @@ def deploy(
             stack.output("networking")["fqdn_nameservers"],
         )
     except DataSafeHavenError as exc:
-        # Note, would like to exit with a non-zero code here.
-        # However, typer.Exit does not print the exception tree which is very unhelpful
-        # for figuring out what went wrong.
-        # print("Could not deploy Data Safe Haven Management environment.")
-        # raise typer.Exit(code=1) from exc
-        msg = "Could not deploy Data Safe Haven Management environment."
-        raise DataSafeHavenError(msg) from exc
+        logger.critical("Could not deploy Data Safe Haven Management environment.")
+        raise typer.Exit(code=1) from exc
     finally:
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
@@ -94,6 +91,7 @@ def teardown() -> None:
     config = SHMConfig.from_remote(context)
     pulumi_config = DSHPulumiConfig.from_remote(context)
 
+    logger = get_logger()
     try:
         # Remove infrastructure deployed with Pulumi
         try:
@@ -105,7 +103,7 @@ def teardown() -> None:
             stack.teardown()
         except Exception as exc:
             msg = "Unable to teardown Pulumi infrastructure."
-            raise DataSafeHavenInputError(msg) from exc
+            raise DataSafeHavenPulumiError(msg) from exc
 
         # Remove information from config file
         del pulumi_config[context.shm_name]
@@ -113,5 +111,5 @@ def teardown() -> None:
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
-        msg = "Could not teardown Safe Haven Management environment."
-        raise DataSafeHavenError(msg) from exc
+        logger.critical("Could not teardown Safe Haven Management environment.")
+        raise typer.Exit(1) from exc

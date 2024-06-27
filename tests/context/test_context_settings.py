@@ -6,7 +6,8 @@ from pytest import fixture
 from data_safe_haven.context import Context, ContextSettings
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
+    DataSafeHavenTypeError,
+    DataSafeHavenValueError,
 )
 from data_safe_haven.version import __version__
 
@@ -151,7 +152,7 @@ class TestContextSettings:
     def test_missing_selected(self, context_yaml):
         context_yaml = "\n".join(context_yaml.splitlines()[1:])
         msg = "Could not load ContextSettings configuration."
-        with pytest.raises(DataSafeHavenParameterError, match=msg):
+        with pytest.raises(DataSafeHavenTypeError, match=msg):
             ContextSettings.from_yaml(context_yaml)
 
     def test_invalid_selected_input(self, context_yaml):
@@ -160,7 +161,7 @@ class TestContextSettings:
         )
 
         with pytest.raises(
-            DataSafeHavenParameterError,
+            DataSafeHavenTypeError,
             match="Could not load ContextSettings configuration.",
         ):
             ContextSettings.from_yaml(context_yaml)
@@ -191,7 +192,7 @@ class TestContextSettings:
 
     def test_invalid_selected(self, context_settings):
         with pytest.raises(
-            DataSafeHavenParameterError, match="Context 'invalid' is not defined."
+            DataSafeHavenValueError, match="Context 'invalid' is not defined."
         ):
             context_settings.selected = "invalid"
 
@@ -265,7 +266,7 @@ class TestContextSettings:
 
     def test_invalid_add(self, context_settings):
         with pytest.raises(
-            DataSafeHavenParameterError,
+            DataSafeHavenValueError,
             match="A context with key 'acme_deployment' is already defined.",
         ):
             context_settings.add(
@@ -283,7 +284,7 @@ class TestContextSettings:
 
     def test_invalid_remove(self, context_settings):
         with pytest.raises(
-            DataSafeHavenParameterError, match="No context with key 'invalid'."
+            DataSafeHavenValueError, match="No context with key 'invalid'."
         ):
             context_settings.remove("invalid")
 

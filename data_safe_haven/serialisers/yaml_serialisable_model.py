@@ -9,7 +9,7 @@ from pydantic import BaseModel, ValidationError
 
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.types import PathType
 
@@ -51,7 +51,7 @@ class YAMLSerialisableModel(BaseModel, validate_assignment=True):
             return cls.model_validate(settings_dict)
         except ValidationError as exc:
             msg = f"Could not load {cls.config_type} configuration."
-            raise DataSafeHavenParameterError(msg) from exc
+            raise DataSafeHavenTypeError(msg) from exc
 
     def to_filepath(self, config_file_path: PathType) -> None:
         """Serialise a YAMLSerialisableModel to a YAML file"""

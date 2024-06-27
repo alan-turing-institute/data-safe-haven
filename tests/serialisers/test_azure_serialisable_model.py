@@ -2,7 +2,7 @@ from pytest import fixture, raises
 
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.external import AzureApi
 from data_safe_haven.serialisers import AzureSerialisableModel
@@ -117,7 +117,7 @@ class TestAzureSerialisableModel:
         )
 
         with raises(
-            DataSafeHavenParameterError,
+            DataSafeHavenTypeError,
             match="Could not load Example configuration.",
         ):
             ExampleAzureSerialisableModel.from_yaml(yaml)

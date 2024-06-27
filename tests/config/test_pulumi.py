@@ -3,7 +3,7 @@ from pytest import raises
 from data_safe_haven.config import DSHPulumiConfig, DSHPulumiProject
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.external import AzureApi
 
@@ -115,7 +115,7 @@ class TestDSHPulumiConfig:
     def test_from_yaml_validation_error(self):
         not_valid = "projects: -3"
         with raises(
-            DataSafeHavenParameterError, match="Could not load Pulumi configuration."
+            DataSafeHavenTypeError, match="Could not load Pulumi configuration."
         ):
             DSHPulumiConfig.from_yaml(not_valid)
 
