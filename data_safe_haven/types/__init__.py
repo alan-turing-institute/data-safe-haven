@@ -8,6 +8,7 @@ from .annotated_types import (
     Fqdn,
     Guid,
     IpAddress,
+    SafeString,
     TimeZone,
     UniqueList,
 )
@@ -39,6 +40,7 @@ __all__ = [
     "PathType",
     "PermittedDomains",
     "Ports",
+    "SafeString",
     "SoftwarePackageCategory",
     "TimeZone",
     "UniqueList",

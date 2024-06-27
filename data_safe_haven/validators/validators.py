@@ -85,6 +85,13 @@ def ip_address(ip_address: str) -> str:
         raise ValueError(msg) from exc
 
 
+def safe_string(safe_string: str) -> str:
+    if not re.match(r"^[a-zA-Z0-9_]*$", safe_string):
+        msg = "Expected valid string containing only letters, numbers and underscores."
+        raise ValueError(msg)
+    return safe_string
+
+
 def timezone(timezone: str) -> str:
     if timezone not in pytz.all_timezones:
         msg = "Expected valid timezone, for example 'Europe/London'."
