@@ -116,6 +116,36 @@ class TestValidateFqdn:
             validators.fqdn(fqdn)
 
 
+class TestValidateSafeString:
+    @pytest.mark.parametrize(
+        "safe_string",
+        [
+            "valid_with_underscores",
+            "mIxeDCAseiNpuT",
+            "0123456789",
+        ],
+    )
+    def test_safe_string(self, safe_string):
+        assert validators.safe_string(safe_string) == safe_string
+
+    @pytest.mark.parametrize(
+        "safe_string",
+        [
+            "has a space",
+            "has!special@characters",
+            "has\tnon\rprinting\ncharacters",
+            "",
+            "🙂",
+        ],
+    )
+    def test_safe_string_fail(self, safe_string):
+        with pytest.raises(
+            ValueError,
+            match="Expected valid string containing only letters, numbers and underscores",
+        ):
+            validators.safe_string(safe_string)
+
+
 class MyClass:
     def __init__(self, x):
         self.x = x
