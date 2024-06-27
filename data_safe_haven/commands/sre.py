@@ -93,13 +93,14 @@ def deploy(
         )
 
         # Deploy Azure infrastructure with Pulumi
-        if force is None:
-            stack.deploy()
-        else:
-            stack.deploy(force=force)
-
-        # Upload Pulumi config to blob storage
-        pulumi_config.upload(context)
+        try:
+            if force is None:
+                stack.deploy()
+            else:
+                stack.deploy(force=force)
+        finally:
+            # Upload Pulumi config to blob storage
+            pulumi_config.upload(context)
 
         # Provision SRE with anything that could not be done in Pulumi
         manager = SREProvisioningManager(
