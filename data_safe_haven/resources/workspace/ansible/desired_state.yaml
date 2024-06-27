@@ -16,6 +16,12 @@ tasks:
       async: 3600
       poll: 30
 
+  - name: Copy nslcd configuration
+    ansible.builtin.copy:
+      src: etc/nslcd.conf
+      dest: /etc/nslcd.conf
+      mode: '0400'
+
   - name: Enable bash autocompletion globally
     ansible.builtin.blockinfile:
       path: /etc/bash.bashrc
