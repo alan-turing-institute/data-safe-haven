@@ -10,9 +10,10 @@ from data_safe_haven.config import (
     SHMConfig,
     SREConfig,
 )
-from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenInputError
+from data_safe_haven.exceptions import DataSafeHavenError, DataSafeHavenPulumiError
 from data_safe_haven.external import GraphApi
 from data_safe_haven.infrastructure import SREProjectManager
+from data_safe_haven.logging import get_logger
 from data_safe_haven.provisioning import SREProvisioningManager
 
 sre_command_group = typer.Typer()
@@ -36,6 +37,7 @@ def deploy(
     shm_config = SHMConfig.from_remote(context)
     sre_config = SREConfig.from_remote_by_name(context, name)
 
+    logger = get_logger()
     try:
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
@@ -103,8 +105,10 @@ def deploy(
         )
         manager.run()
     except DataSafeHavenError as exc:
-        msg = f"Could not deploy Secure Research Environment {sre_config.safe_name}."
-        raise DataSafeHavenError(msg) from exc
+        logger.critical(
+            f"Could not deploy Secure Research Environment {sre_config.safe_name}."
+        )
+        raise typer.Exit(code=1) from exc
     finally:
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
@@ -120,6 +124,7 @@ def teardown(
     shm_config = SHMConfig.from_remote(context)
     sre_config = SREConfig.from_remote_by_name(context, name)
 
+    logger = get_logger()
     try:
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
@@ -139,7 +144,7 @@ def teardown(
             stack.teardown()
         except Exception as exc:
             msg = "Unable to teardown Pulumi infrastructure."
-            raise DataSafeHavenInputError(msg) from exc
+            raise DataSafeHavenPulumiError(msg) from exc
 
         # Remove Pulumi project from Pulumi config file
         del pulumi_config[name]
@@ -147,7 +152,7 @@ def teardown(
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
     except DataSafeHavenError as exc:
-        msg = (
+        logger.critical(
             f"Could not teardown Secure Research Environment '{sre_config.safe_name}'."
         )
-        raise DataSafeHavenError(msg) from exc
+        raise typer.Exit(1) from exc

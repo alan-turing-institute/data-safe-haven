@@ -8,8 +8,8 @@ from data_safe_haven import console
 from data_safe_haven.config import ContextManager, SHMConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
-    DataSafeHavenAzureError,
     DataSafeHavenConfigError,
+    DataSafeHavenError,
 )
 from data_safe_haven.infrastructure import ImperativeSHM
 from data_safe_haven.logging import get_logger
@@ -45,8 +45,9 @@ def deploy(
     ] = None,
 ) -> None:
     """Deploy a Safe Haven Management environment."""
-    # Load selected context
     logger = get_logger()
+
+    # Load selected context
     try:
         context = ContextManager.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
@@ -113,7 +114,7 @@ def deploy(
         msg = "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
         logger.critical(msg)
         raise typer.Exit(1) from exc
-    except DataSafeHavenAzureError as exc:
+    except DataSafeHavenError as exc:
         msg = "Failed to deploy Data Safe Haven infrastructure."
         logger.critical(msg)
         raise typer.Exit(1) from exc
@@ -140,8 +141,6 @@ def teardown() -> None:
         config = SHMConfig.from_remote(context)
         shm_infra = ImperativeSHM(context, config)
         shm_infra.teardown()
-    except DataSafeHavenAzureAPIAuthenticationError as exc:
-        logger.critical(
-            "Failed to authenticate with the Azure API. You may not be logged into the Azure CLI, or your login may have expired. Try running `az login`."
-        )
+    except DataSafeHavenError as exc:
+        logger.critical("Could not teardown Safe Haven Management environment.")
         raise typer.Exit(1) from exc

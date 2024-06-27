@@ -14,7 +14,7 @@ from pydantic import Field, model_validator
 from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
+    DataSafeHavenValueError,
 )
 from data_safe_haven.logging import get_logger
 from data_safe_haven.serialisers import YAMLSerialisableModel
@@ -68,7 +68,7 @@ class ContextManager(YAMLSerialisableModel):
             self.logger.info(f"Switched context to '{name}'.")
         else:
             msg = f"Context '{name}' is not defined."
-            raise DataSafeHavenParameterError(msg)
+            raise DataSafeHavenValueError(msg)
 
     @property
     def context(self) -> Context | None:
@@ -130,7 +130,7 @@ class ContextManager(YAMLSerialisableModel):
         # Ensure context is not already present
         if name in self.available:
             msg = f"A context with name '{name}' is already defined."
-            raise DataSafeHavenParameterError(msg)
+            raise DataSafeHavenValueError(msg)
 
         self.logger.info(f"Creating a new context with name '{name}'.")
         self.contexts[name] = Context(
@@ -145,8 +145,7 @@ class ContextManager(YAMLSerialisableModel):
     def remove(self, name: str) -> None:
         if name not in self.available:
             msg = f"No context with name '{name}'."
-            raise DataSafeHavenParameterError(msg)
-
+            raise DataSafeHavenValueError(msg)
         del self.contexts[name]
 
         # Prevent having a deleted context selected

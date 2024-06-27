@@ -2,7 +2,7 @@ from pytest import fixture, raises
 
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.serialisers import YAMLSerialisableModel
 
@@ -73,7 +73,7 @@ class TestYAMLSerialisableModel:
             ["string: 'abc'", "integer: 'not an integer'", "list_of_integers: [-1,0,1]"]
         )
         with raises(
-            DataSafeHavenParameterError,
+            DataSafeHavenTypeError,
             match="Could not load Example configuration.",
         ):
             ExampleYAMLSerialisableModel.from_yaml(yaml)

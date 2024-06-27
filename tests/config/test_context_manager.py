@@ -5,7 +5,8 @@ from pydantic import ValidationError
 from data_safe_haven.config import Context, ContextManager
 from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
-    DataSafeHavenParameterError,
+    DataSafeHavenTypeError,
+    DataSafeHavenValueError,
 )
 from data_safe_haven.version import __version__
 
@@ -115,7 +116,7 @@ class TestContextManager:
             [line for line in context_yaml.splitlines() if "selected:" not in line]
         )
         with pytest.raises(
-            DataSafeHavenParameterError,
+            DataSafeHavenTypeError,
             match="Could not load ContextManager configuration.",
         ):
             ContextManager.from_yaml(context_yaml)
@@ -125,7 +126,7 @@ class TestContextManager:
             "selected: acmedeployment", "selected: invalid"
         )
         with pytest.raises(
-            DataSafeHavenParameterError,
+            DataSafeHavenTypeError,
             match="Could not load ContextManager configuration.",
         ):
             ContextManager.from_yaml(context_yaml)
@@ -156,7 +157,7 @@ class TestContextManager:
 
     def test_invalid_selected(self, context_manager):
         with pytest.raises(
-            DataSafeHavenParameterError, match="Context 'invalid' is not defined."
+            DataSafeHavenValueError, match="Context 'invalid' is not defined."
         ):
             context_manager.selected = "invalid"
 
@@ -233,7 +234,7 @@ class TestContextManager:
 
     def test_invalid_add(self, context_manager):
         with pytest.raises(
-            DataSafeHavenParameterError,
+            DataSafeHavenValueError,
             match="A context with name 'acmedeployment' is already defined.",
         ):
             context_manager.add(
@@ -250,7 +251,7 @@ class TestContextManager:
 
     def test_invalid_remove(self, context_manager):
         with pytest.raises(
-            DataSafeHavenParameterError, match="No context with name 'invalid'."
+            DataSafeHavenValueError, match="No context with name 'invalid'."
         ):
             context_manager.remove("invalid")
 

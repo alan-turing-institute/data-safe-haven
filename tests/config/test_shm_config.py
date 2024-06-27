@@ -7,7 +7,7 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionSHM,
 )
 from data_safe_haven.exceptions import (
-    DataSafeHavenParameterError,
+    DataSafeHavenTypeError,
 )
 from data_safe_haven.external import AzureApi
 
@@ -40,7 +40,7 @@ class TestConfig:
 
     def test_template_validation(self) -> None:
         config = SHMConfig.template()
-        with pytest.raises(DataSafeHavenParameterError):
+        with pytest.raises(DataSafeHavenTypeError):
             SHMConfig.from_yaml(config.to_yaml())
 
     def test_from_yaml(self, shm_config: SHMConfig, shm_config_yaml: str) -> None:
