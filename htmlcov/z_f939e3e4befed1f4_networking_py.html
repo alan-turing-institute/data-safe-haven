@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_f939e3e4befed1f4_remote_desktop_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-06-27 09:38 +0000
+            created at 2024-06-27 13:43 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -111,7 +111,7 @@
     <p class="pln"><span class="n"><a id="t29" href="#t29">29</a></span><span class="t">        <span class="nam">dns_virtual_network</span><span class="op">:</span> <span class="nam">Input</span><span class="op">[</span><span class="nam">network</span><span class="op">.</span><span class="nam">VirtualNetwork</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t30" href="#t30">30</a></span><span class="t">        <span class="nam">location</span><span class="op">:</span> <span class="nam">Input</span><span class="op">[</span><span class="nam">str</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t31" href="#t31">31</a></span><span class="t">        <span class="nam">shm_fqdn</span><span class="op">:</span> <span class="nam">Input</span><span class="op">[</span><span class="nam">str</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t32" href="#t32">32</a></span><span class="t">        <span class="nam">shm_networking_resource_group_name</span><span class="op">:</span> <span class="nam">Input</span><span class="op">[</span><span class="nam">str</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t32" href="#t32">32</a></span><span class="t">        <span class="nam">shm_resource_group_name</span><span class="op">:</span> <span class="nam">Input</span><span class="op">[</span><span class="nam">str</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t33" href="#t33">33</a></span><span class="t">        <span class="nam">shm_zone_name</span><span class="op">:</span> <span class="nam">Input</span><span class="op">[</span><span class="nam">str</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t34" href="#t34">34</a></span><span class="t">        <span class="nam">sre_name</span><span class="op">:</span> <span class="nam">Input</span><span class="op">[</span><span class="nam">str</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t35" href="#t35">35</a></span><span class="t">        <span class="nam">user_public_ip_ranges</span><span class="op">:</span> <span class="nam">Input</span><span class="op">[</span><span class="nam">list</span><span class="op">[</span><span class="nam">str</span><span class="op">]</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -129,7 +129,7 @@
     <p class="mis show_mis"><span class="n"><a id="t47" href="#t47">47</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">location</span> <span class="op">=</span> <span class="nam">location</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t48" href="#t48">48</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">user_public_ip_ranges</span> <span class="op">=</span> <span class="nam">user_public_ip_ranges</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t49" href="#t49">49</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">shm_fqdn</span> <span class="op">=</span> <span class="nam">shm_fqdn</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t50" href="#t50">50</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">shm_networking_resource_group_name</span> <span class="op">=</span> <span class="nam">shm_networking_resource_group_name</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t50" href="#t50">50</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">shm_resource_group_name</span> <span class="op">=</span> <span class="nam">shm_resource_group_name</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t51" href="#t51">51</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">shm_zone_name</span> <span class="op">=</span> <span class="nam">shm_zone_name</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t52" href="#t52">52</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">sre_name</span> <span class="op">=</span> <span class="nam">sre_name</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t53" href="#t53">53</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -1702,7 +1702,7 @@
     <p class="pln"><span class="n"><a id="t1620" href="#t1620">1620</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1621" href="#t1621">1621</a></span><span class="t">        <span class="com"># Define SRE DNS zone</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t1622" href="#t1622">1622</a></span><span class="t">        <span class="nam">shm_dns_zone</span> <span class="op">=</span> <span class="nam">Output</span><span class="op">.</span><span class="nam">all</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1623" href="#t1623">1623</a></span><span class="t">            <span class="nam">resource_group_name</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">shm_networking_resource_group_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1623" href="#t1623">1623</a></span><span class="t">            <span class="nam">resource_group_name</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">shm_resource_group_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1624" href="#t1624">1624</a></span><span class="t">            <span class="nam">zone_name</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">shm_zone_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1625" href="#t1625">1625</a></span><span class="t">        <span class="op">)</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1626" href="#t1626">1626</a></span><span class="t">            <span class="key">lambda</span> <span class="nam">kwargs</span><span class="op">:</span> <span class="nam">network</span><span class="op">.</span><span class="nam">get_zone</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
@@ -1730,7 +1730,7 @@
     <p class="pln"><span class="n"><a id="t1648" href="#t1648">1648</a></span><span class="t">            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1649" href="#t1649">1649</a></span><span class="t">            <span class="nam">record_type</span><span class="op">=</span><span class="str">"NS"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1650" href="#t1650">1650</a></span><span class="t">            <span class="nam">relative_record_set_name</span><span class="op">=</span><span class="nam">sre_subdomain</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1651" href="#t1651">1651</a></span><span class="t">            <span class="nam">resource_group_name</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">shm_networking_resource_group_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1651" href="#t1651">1651</a></span><span class="t">            <span class="nam">resource_group_name</span><span class="op">=</span><span class="nam">props</span><span class="op">.</span><span class="nam">shm_resource_group_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1652" href="#t1652">1652</a></span><span class="t">            <span class="nam">ttl</span><span class="op">=</span><span class="num">3600</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1653" href="#t1653">1653</a></span><span class="t">            <span class="nam">zone_name</span><span class="op">=</span><span class="nam">shm_dns_zone</span><span class="op">.</span><span class="nam">name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1654" href="#t1654">1654</a></span><span class="t">            <span class="nam">opts</span><span class="op">=</span><span class="nam">ResourceOptions</span><span class="op">.</span><span class="nam">merge</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
@@ -1899,7 +1899,7 @@
             <a class="nav" href="z_f939e3e4befed1f4_remote_desktop_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-06-27 09:38 +0000
+            created at 2024-06-27 13:43 +0000
         </p>
     </div>
 </footer>
