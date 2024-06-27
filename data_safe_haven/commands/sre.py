@@ -32,13 +32,13 @@ def deploy(
     ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
-    context = ContextManager.from_file().assert_context()
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-    shm_config = SHMConfig.from_remote(context)
-    sre_config = SREConfig.from_remote_by_name(context, name)
-
     logger = get_logger()
     try:
+        context = ContextManager.from_file().assert_context()
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        shm_config = SHMConfig.from_remote(context)
+        sre_config = SREConfig.from_remote_by_name(context, name)
+
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(
@@ -111,7 +111,8 @@ def deploy(
         raise typer.Exit(code=1) from exc
     finally:
         # Upload Pulumi config to blob storage
-        pulumi_config.upload(context)
+        if pulumi_config:
+            pulumi_config.upload(context)
 
 
 @sre_command_group.command()
@@ -119,13 +120,13 @@ def teardown(
     name: Annotated[str, typer.Argument(help="Name of SRE to teardown.")],
 ) -> None:
     """Tear down a deployed a Secure Research Environment."""
-    context = ContextManager.from_file().assert_context()
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-    shm_config = SHMConfig.from_remote(context)
-    sre_config = SREConfig.from_remote_by_name(context, name)
-
     logger = get_logger()
     try:
+        context = ContextManager.from_file().assert_context()
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        shm_config = SHMConfig.from_remote(context)
+        sre_config = SREConfig.from_remote_by_name(context, name)
+
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
         graph_api = GraphApi(

@@ -29,17 +29,19 @@ def add(
     ],
 ) -> None:
     """Add users to a deployed Data Safe Haven."""
-    context = ContextManager.from_file().assert_context()
-    shm_config = SHMConfig.from_remote(context)
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-    shm_name = context.shm_name
-
     logger = get_logger()
-    if shm_name not in pulumi_config.project_names:
-        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
-        raise typer.Exit(1)
-
     try:
+        context = ContextManager.from_file().assert_context()
+        shm_config = SHMConfig.from_remote(context)
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        shm_name = context.shm_name
+
+        if shm_name not in pulumi_config.project_names:
+            logger.fatal(
+                f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
+            )
+            raise typer.Exit(1)
+
         # Load GraphAPI
         graph_api = GraphApi(
             tenant_id=shm_config.shm.entra_tenant_id,
@@ -68,18 +70,19 @@ def list_users(
     ],
 ) -> None:
     """List users from a deployed Data Safe Haven."""
-    context = ContextManager.from_file().assert_context()
-    shm_config = SHMConfig.from_remote(context)
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-
-    shm_name = context.shm_name
-
     logger = get_logger()
-    if shm_name not in pulumi_config.project_names:
-        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
-        raise typer.Exit(1)
-
     try:
+        context = ContextManager.from_file().assert_context()
+        shm_config = SHMConfig.from_remote(context)
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        shm_name = context.shm_name
+
+        if shm_name not in pulumi_config.project_names:
+            logger.fatal(
+                f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
+            )
+            raise typer.Exit(1)
+
         # Load GraphAPI
         graph_api = GraphApi(
             tenant_id=shm_config.shm.entra_tenant_id,
@@ -112,28 +115,27 @@ def register(
     ],
 ) -> None:
     """Register existing users with a deployed SRE."""
-    context = ContextManager.from_file().assert_context()
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-    shm_config = SHMConfig.from_remote(context)
-    sre_config = SREConfig.from_remote_by_name(context, sre)
-
-    shm_name = context.shm_name
-    sre_name = sre_config.safe_name
-
     logger = get_logger()
-    if shm_name not in pulumi_config.project_names:
-        logger.critical(
-            f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
-        )
-        raise typer.Exit(1)
-
-    if sre_name not in pulumi_config.project_names:
-        logger.critical(
-            f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?"
-        )
-        raise typer.Exit(1)
-
     try:
+        context = ContextManager.from_file().assert_context()
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        shm_config = SHMConfig.from_remote(context)
+        sre_config = SREConfig.from_remote_by_name(context, sre)
+        shm_name = context.shm_name
+        sre_name = sre_config.safe_name
+
+        if shm_name not in pulumi_config.project_names:
+            logger.critical(
+                f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
+            )
+            raise typer.Exit(1)
+
+        if sre_name not in pulumi_config.project_names:
+            logger.critical(
+                f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?"
+            )
+            raise typer.Exit(1)
+
         logger.debug(
             f"Preparing to register {len(usernames)} user(s) with SRE '{sre_name}'"
         )
@@ -176,17 +178,19 @@ def remove(
     ],
 ) -> None:
     """Remove existing users from a deployed Data Safe Haven."""
-    context = ContextManager.from_file().assert_context()
-    shm_config = SHMConfig.from_remote(context)
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-    shm_name = context.shm_name
-
     logger = get_logger()
-    if shm_name not in pulumi_config.project_names:
-        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
-        raise typer.Exit(1)
-
     try:
+        context = ContextManager.from_file().assert_context()
+        shm_config = SHMConfig.from_remote(context)
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        shm_name = context.shm_name
+
+        if shm_name not in pulumi_config.project_names:
+            logger.fatal(
+                f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
+            )
+            raise typer.Exit(1)
+
         # Load GraphAPI
         graph_api = GraphApi(
             tenant_id=shm_config.shm.entra_tenant_id,
@@ -220,24 +224,27 @@ def unregister(
     ],
 ) -> None:
     """Unregister existing users from a deployed SRE."""
-    context = ContextManager.from_file().assert_context()
-    pulumi_config = DSHPulumiConfig.from_remote(context)
-    shm_config = SHMConfig.from_remote(context)
-    sre_config = SREConfig.from_remote_by_name(context, sre)
-
-    shm_name = context.shm_name
-    sre_name = sre_config.safe_name
-
     logger = get_logger()
-    if shm_name not in pulumi_config.project_names:
-        logger.fatal(f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?")
-        raise typer.Exit(1)
-
-    if sre_name not in pulumi_config.project_names:
-        logger.fatal(f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?")
-        raise typer.Exit(1)
-
     try:
+        context = ContextManager.from_file().assert_context()
+        pulumi_config = DSHPulumiConfig.from_remote(context)
+        shm_config = SHMConfig.from_remote(context)
+        sre_config = SREConfig.from_remote_by_name(context, sre)
+        shm_name = context.shm_name
+        sre_name = sre_config.safe_name
+
+        if shm_name not in pulumi_config.project_names:
+            logger.fatal(
+                f"No Pulumi project for '{shm_name}'.\nHave you deployed the SHM?"
+            )
+            raise typer.Exit(1)
+
+        if sre_name not in pulumi_config.project_names:
+            logger.fatal(
+                f"No Pulumi project for '{sre_name}'.\nHave you deployed the SRE?"
+            )
+            raise typer.Exit(1)
+
         logger.debug(
             f"Preparing to unregister {len(usernames)} users with SRE '{sre_name}'"
         )
