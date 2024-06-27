@@ -20,6 +20,7 @@ class TestConfig:
     ) -> None:
         config = SREConfig(
             azure=azure_config,
+            description="Sandbox Project",
             name="sandbox",
             sre=sre_config_section,
         )
@@ -32,16 +33,15 @@ class TestConfig:
             ValidationError,
             match=r"1 validation error for SREConfig\nsre\n  Field required.*",
         ):
-            SREConfig(azure=azure_config, name="sandbox")
+            SREConfig(azure=azure_config, description="Sandbox Project", name="sandbox")
 
     @pytest.mark.parametrize(
         "name",
         [
-            r" startswithspace",
-            r"endswithspace ",
-            r"-startswithhyphen",
-            r"endswithhyphen-",
-            r"start!@£$%^&*()end",
+            r"has spaces",
+            r"has!special@characters£",
+            r"has\tnon\rprinting\ncharacters",
+            r"",
         ],
     )
     def test_constructor_invalid_name(
@@ -52,10 +52,11 @@ class TestConfig:
     ) -> None:
         with pytest.raises(
             ValidationError,
-            match=r"1 validation error for SREConfig\nname\n  Value error, DSH config name.*",
+            match=r"1 validation error for SREConfig\nname\n  Value error, Expected valid string.*",
         ):
             SREConfig(
                 azure=azure_config,
+                description="Sandbox Project",
                 name=name,
                 sre=sre_config_section,
             )

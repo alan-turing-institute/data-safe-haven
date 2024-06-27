@@ -86,7 +86,7 @@ def ip_address(ip_address: str) -> str:
 
 
 def safe_string(safe_string: str) -> str:
-    if not re.match(r"^[a-zA-Z0-9_]*$", safe_string):
+    if not re.match(r"^[a-zA-Z0-9_]*$", safe_string) or not safe_string:
         msg = "Expected valid string containing only letters, numbers and underscores."
         raise ValueError(msg)
     return safe_string

@@ -91,7 +91,7 @@ def add(
     description: Annotated[
         str,
         typer.Option(
-            help="The human friendly name to give this Data Safe Haven deployment.",
+            help="The human-friendly name to give this Data Safe Haven deployment.",
         ),
     ],
     name: Annotated[

@@ -330,6 +330,7 @@ def sre_config(
 ) -> SREConfig:
     return SREConfig(
         azure=azure_config,
+        description="Sandbox Project",
         name="sandbox",
         sre=sre_config_section,
     )
@@ -343,6 +344,7 @@ def sre_config_alternate(
     sre_config_section.admin_ip_addresses = ["2.3.4.5"]
     return SREConfig(
         azure=azure_config,
+        description="Alternative Project",
         name="alternative",
         sre=sre_config_section,
     )
@@ -364,6 +366,7 @@ def sre_config_yaml():
         location: uksouth
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+    description: Sandbox Project
     name: sandbox
     sre:
         admin_email_address: admin@example.com

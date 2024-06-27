@@ -6,7 +6,7 @@ from data_safe_haven.external import AzureApi
 
 class TestShowSRE:
     def test_show(self, mocker, runner, context, sre_config_yaml):
-        sre_name = "SandBox"
+        sre_name = "sandbox"
         mock_method = mocker.patch.object(
             AzureApi, "download_blob", return_value=sre_config_yaml
         )
@@ -116,7 +116,7 @@ class TestUploadSRE:
         sre_config_file,
         sre_config_yaml,
     ):
-        sre_name = "SandBox"
+        sre_name = "sandbox"
         sre_filename = sre_config_name(sre_name)
         mock_exists = mocker.patch.object(SREConfig, "remote_exists", return_value=True)
         mock_from_remote = mocker.patch.object(
