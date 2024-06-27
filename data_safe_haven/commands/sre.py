@@ -33,6 +33,7 @@ def deploy(
     shm_config = SHMConfig.from_remote(context)
     sre_config = SREConfig.from_remote_by_name(context, name)
 
+    logger = get_logger()
     try:
         # Load GraphAPI as this may require user-interaction that is not possible as
         # part of a Pulumi declarative command
@@ -104,8 +105,8 @@ def deploy(
         )
         manager.run()
     except DataSafeHavenError as exc:
-        msg = f"Could not deploy Secure Research Environment {sre_config.safe_name}."
-        raise DataSafeHavenError(msg) from exc
+        logger.critical(f"Could not deploy Secure Research Environment {sre_config.safe_name}.")
+        raise typer.Exit(code=1) from exc
     finally:
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)

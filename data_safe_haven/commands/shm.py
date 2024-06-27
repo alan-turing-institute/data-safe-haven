@@ -32,6 +32,7 @@ def deploy(
         context, encrypted_key=None, projects={}
     )
 
+    logger = get_logger()
     try:
         # Connect to GraphAPI interactively
         graph_api = GraphApi(
@@ -76,13 +77,8 @@ def deploy(
             stack.output("networking")["fqdn_nameservers"],
         )
     except DataSafeHavenError as exc:
-        # Note, would like to exit with a non-zero code here.
-        # However, typer.Exit does not print the exception tree which is very unhelpful
-        # for figuring out what went wrong.
-        # print("Could not deploy Data Safe Haven Management environment.")
-        # raise typer.Exit(code=1) from exc
-        msg = "Could not deploy Data Safe Haven Management environment."
-        raise DataSafeHavenError(msg) from exc
+        logger.critical("Could not deploy Data Safe Haven Management environment.")
+        raise typer.Exit(code=1) from exc
     finally:
         # Upload Pulumi config to blob storage
         pulumi_config.upload(context)
