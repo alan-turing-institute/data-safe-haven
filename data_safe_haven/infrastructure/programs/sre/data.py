@@ -513,7 +513,9 @@ class SREDataComponent(ComponentResource):
             ssh_authorized_keys=[
                 storage.SshPublicKeyArgs(
                     description="Workspace key",
-                    key=b64encode(container_desired_state_key.public_key_openssh),
+                    key=container_desired_state_key.public_key_openssh.apply(
+                        lambda key: b64encode(key),
+                    )
                 )
             ],
         )
