@@ -22,7 +22,7 @@ sre_command_group = typer.Typer()
 @sre_command_group.command()
 def deploy(
     name: Annotated[str, typer.Argument(help="Name of SRE to deploy")],
-    force: Annotated[
+    force: Annotated[  # noqa: FBT002
         bool,
         typer.Option(
             "--force",
