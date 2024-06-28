@@ -251,6 +251,10 @@ class SREFirewallComponent(ComponentResource):
                             name="DenyUbuntuSnapcraft",
                             protocols=[
                                 network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTP),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTP,
+                                ),
+                                network.AzureFirewallApplicationRuleProtocolArgs(
                                     port=int(Ports.HTTPS),
                                     protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
                                 ),
