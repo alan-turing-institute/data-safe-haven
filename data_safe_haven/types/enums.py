@@ -42,6 +42,15 @@ class FirewallPriorities(int, Enum):
 
 
 @verify(UNIQUE)
+class ForbiddenDomains(tuple[str, ...], Enum):
+    UBUNTU_SNAPCRAFT = (
+        "dashboard.snapcraft.io",  # upload endpoint
+        "login.ubuntu.com",  # login endpoint (provides auth for upload)
+        "upload.apps.ubuntu.com",
+    )
+
+
+@verify(UNIQUE)
 class NetworkingPriorities(int, Enum):
     """Priorities for network security group rules."""
 
@@ -117,8 +126,6 @@ class PermittedDomains(tuple[str, ...], Enum):
     UBUNTU_SNAPCRAFT = (
         "api.snapcraft.io",
         "*.snapcraftcontent.com",
-        # "dashboard.snapcraft.io", # not needed to download and install snaps
-        # "login.ubuntu.com",
     )
     ALL = tuple(
         sorted(
