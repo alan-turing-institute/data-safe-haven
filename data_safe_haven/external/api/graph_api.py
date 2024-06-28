@@ -797,14 +797,14 @@ class GraphApi:
                 **kwargs,
             )
         except requests.exceptions.RequestException as exc:
-            msg = f"Could not execute GET request from '{url}'."
+            msg = f"Could not execute GET request to '{url}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
         # We do not use response.ok as this allows 3xx codes
         if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
             return response
         else:
-            msg = f"Could not execute GET request from '{url}'. Response content received: '{response.content.decode()}'."
+            msg = f"Could not execute GET request to '{url}'. Response content received: '{response.content.decode()}'. Token {self.token}"
             raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
