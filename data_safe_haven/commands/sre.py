@@ -1,6 +1,6 @@
 """Command-line application for managing SRE infrastructure."""
 
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 
@@ -23,13 +23,13 @@ sre_command_group = typer.Typer()
 def deploy(
     name: Annotated[str, typer.Argument(help="Name of SRE to deploy")],
     force: Annotated[
-        Optional[bool],  # noqa: UP007
+        bool,
         typer.Option(
             "--force",
             "-f",
             help="Force this operation, cancelling any others that are in progress.",
         ),
-    ] = None,
+    ] = False,
 ) -> None:
     """Deploy a Secure Research Environment"""
     logger = get_logger()
@@ -94,10 +94,7 @@ def deploy(
 
         # Deploy Azure infrastructure with Pulumi
         try:
-            if force is None:
-                stack.deploy()
-            else:
-                stack.deploy(force=force)
+            stack.deploy(force=force)
         finally:
             # Upload Pulumi config to blob storage
             pulumi_config.upload(context)
