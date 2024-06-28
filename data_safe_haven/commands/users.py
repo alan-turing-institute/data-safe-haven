@@ -130,9 +130,8 @@ def register(
 
         # Load SREConfig
         sre_config = SREConfig.from_remote_by_name(context, sre)
-        sre_name = sre_config.safe_name
-        if sre_name not in pulumi_config.project_names:
-            msg = f"Could not load Pulumi settings for '{sre_name}'. Have you deployed the SRE?"
+        if sre_config.name not in pulumi_config.project_names:
+            msg = f"Could not load Pulumi settings for '{sre_config.name}'. Have you deployed the SRE?"
             logger.error(msg)
             raise DataSafeHavenError(msg)
 
@@ -143,7 +142,7 @@ def register(
         )
 
         logger.debug(
-            f"Preparing to register {len(usernames)} user(s) with SRE '{sre_name}'"
+            f"Preparing to register {len(usernames)} user(s) with SRE '{sre_config.name}'"
         )
 
         # List users
@@ -158,7 +157,7 @@ def register(
                     f"Username '{username}' does not belong to this Data Safe Haven deployment."
                     " Please use 'dsh users add' to create it."
                 )
-        users.register(sre_name, usernames_to_register)
+        users.register(sre_config.name, usernames_to_register)
     except DataSafeHavenError as exc:
         logger.critical(f"Could not register Data Safe Haven users with SRE '{sre}'.")
         raise typer.Exit(1) from exc
@@ -236,9 +235,8 @@ def unregister(
 
         # Load SREConfig
         sre_config = SREConfig.from_remote_by_name(context, sre)
-        sre_name = sre_config.safe_name
-        if sre_name not in pulumi_config.project_names:
-            msg = f"Could not load Pulumi settings for '{sre_name}'. Have you deployed the SRE?"
+        if sre_config.name not in pulumi_config.project_names:
+            msg = f"Could not load Pulumi settings for '{sre_config.name}'. Have you deployed the SRE?"
             logger.error(msg)
             raise DataSafeHavenError(msg)
 
@@ -249,7 +247,7 @@ def unregister(
         )
 
         logger.debug(
-            f"Preparing to unregister {len(usernames)} users with SRE '{sre_config.safe_name}'"
+            f"Preparing to unregister {len(usernames)} users with SRE '{sre_config.name}'"
         )
 
         # List users
@@ -265,9 +263,9 @@ def unregister(
                     " Please use 'dsh users add' to create it."
                 )
         for group_name in (
-            f"{sre_config.safe_name} Users",
-            f"{sre_config.safe_name} Privileged Users",
-            f"{sre_config.safe_name} Administrators",
+            f"{sre_config.name} Users",
+            f"{sre_config.name} Privileged Users",
+            f"{sre_config.name} Administrators",
         ):
             users.unregister(group_name, usernames_to_unregister)
     except DataSafeHavenError as exc:

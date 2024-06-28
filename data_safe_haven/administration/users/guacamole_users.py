@@ -42,7 +42,7 @@ class GuacamoleUsers:
             / "remote_desktop"
             / "postgresql"
         )
-        self.group_name = f"Data Safe Haven SRE {config.safe_name} Users"
+        self.group_name = f"Data Safe Haven SRE {config.name} Users"
 
     def list(self) -> Sequence[ResearchUser]:
         """List all Guacamole users"""
