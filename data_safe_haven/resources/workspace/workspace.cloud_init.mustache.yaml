@@ -70,7 +70,7 @@ apt:
   preserve_sources_list: true  # Append to the existing /etc/apt/sources.list
   sources:
     microsoft-general.list:
-      source: "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main"
+      source: "deb https://packages.microsoft.com/ubuntu/22.04/prod jammy main"
       keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF  # Microsoft (Release signing) <gpgsecurity@microsoft.com>
 
 # Install necessary apt packages
