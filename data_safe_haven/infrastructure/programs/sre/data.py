@@ -506,6 +506,7 @@ class SREDataComponent(ComponentResource):
                 storage.PermissionScopeArgs(
                     permissions="rl",
                     resource_name=container_desired_state.name,
+                    service="blob",
                 )
             ],
             resource_group_name=resource_group.name,
