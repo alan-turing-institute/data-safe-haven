@@ -352,7 +352,6 @@ class ProjectManager:
         try:
             self.refresh()
             self.destroy()
-            self.update_dsh_pulumi_project()
         except Exception as exc:
             msg = "Tearing down Pulumi infrastructure failed.."
             raise DataSafeHavenPulumiError(msg) from exc
