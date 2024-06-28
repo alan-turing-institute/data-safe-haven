@@ -11,6 +11,7 @@ from data_safe_haven.infrastructure.common import (
 )
 from data_safe_haven.types import (
     FirewallPriorities,
+    ForbiddenDomains,
     PermittedDomains,
     Ports,
 )
@@ -235,6 +236,27 @@ class SREFirewallComponent(ComponentResource):
                             ],
                             source_addresses=props.subnet_workspaces_prefixes,
                             target_fqdns=PermittedDomains.UBUNTU_SNAPCRAFT,
+                        ),
+                    ],
+                ),
+                network.AzureFirewallApplicationRuleCollectionArgs(
+                    action=network.AzureFirewallRCActionArgs(
+                        type=network.AzureFirewallRCActionType.DENY
+                    ),
+                    name="workspaces-deny",
+                    priority=FirewallPriorities.SRE_WORKSPACES,
+                    rules=[
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Deny external Ubuntu Snap Store upload and login access",
+                            name="DenyUbuntuSnapcraft",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                ),
+                            ],
+                            source_addresses=props.subnet_workspaces_prefixes,
+                            target_fqdns=ForbiddenDomains.UBUNTU_SNAPCRAFT,
                         ),
                     ],
                 ),
