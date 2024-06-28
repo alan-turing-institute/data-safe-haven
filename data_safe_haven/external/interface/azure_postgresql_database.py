@@ -5,7 +5,6 @@ from collections.abc import Sequence
 from typing import Any, cast
 
 import psycopg
-import requests
 from azure.core.polling import LROPoller
 from azure.mgmt.rdbms.postgresql_flexibleservers import PostgreSQLManagementClient
 from azure.mgmt.rdbms.postgresql_flexibleservers.models import (
@@ -18,6 +17,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenValueError,
 )
 from data_safe_haven.external import AzureApi
+from data_safe_haven.functions import current_ip_address
 from data_safe_haven.logging import get_logger
 from data_safe_haven.types import PathType
 from data_safe_haven.utility import FileReader
@@ -44,9 +44,7 @@ class AzurePostgreSQLDatabase:
         subscription_name: str,
     ) -> None:
         self.azure_api = AzureApi(subscription_name)
-        self.current_ip = requests.get(
-            "https://api.ipify.org", timeout=300
-        ).content.decode("utf8")
+        self.current_ip = current_ip_address()
         self.db_client_ = None
         self.db_name = database_name
         self.db_server_ = None

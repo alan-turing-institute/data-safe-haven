@@ -1,3 +1,4 @@
+from .network import current_ip_address
 from .strings import (
     alphanumeric,
     b64encode,
@@ -13,6 +14,7 @@ from .strings import (
 __all__ = [
     "alphanumeric",
     "b64encode",
+    "current_ip_address",
     "json_safe",
     "next_occurrence",
     "password",
