@@ -17,16 +17,16 @@
 | data\_safe\_haven/commands/context.py                                             |       71 |        0 |    100% |           |
 | data\_safe\_haven/commands/pulumi.py                                              |       22 |        0 |    100% |           |
 | data\_safe\_haven/commands/shm.py                                                 |       73 |       23 |     68% |69, 71, 73, 75-102, 117-122 |
-| data\_safe\_haven/commands/sre.py                                                 |       55 |       42 |     24% |35-115, 123-159 |
-| data\_safe\_haven/commands/users.py                                               |      120 |       32 |     73% |44-55, 83-93, 140-161, 191-199, 246-272 |
+| data\_safe\_haven/commands/sre.py                                                 |       49 |       36 |     27% |35-116, 124-158 |
+| data\_safe\_haven/commands/users.py                                               |      118 |       32 |     73% |44-55, 83-93, 139-160, 190-198, 244-270 |
 | data\_safe\_haven/config/\_\_init\_\_.py                                          |        7 |        0 |    100% |           |
-| data\_safe\_haven/config/config\_sections.py                                      |       72 |        3 |     96% |53, 59, 165 |
+| data\_safe\_haven/config/config\_sections.py                                      |       24 |        0 |    100% |           |
 | data\_safe\_haven/config/context.py                                               |       56 |        1 |     98% |        88 |
 | data\_safe\_haven/config/context\_manager.py                                      |       88 |        4 |     95% |102-105, 117-120 |
 | data\_safe\_haven/config/dsh\_pulumi\_config.py                                   |       40 |        0 |    100% |           |
 | data\_safe\_haven/config/dsh\_pulumi\_project.py                                  |       11 |        2 |     82% |    15, 19 |
 | data\_safe\_haven/config/shm\_config.py                                           |       18 |        3 |     83% |     29-33 |
-| data\_safe\_haven/config/sre\_config.py                                           |       27 |        0 |    100% |           |
+| data\_safe\_haven/config/sre\_config.py                                           |       24 |        0 |    100% |           |
 | data\_safe\_haven/console/\_\_init\_\_.py                                         |        4 |        0 |    100% |           |
 | data\_safe\_haven/console/format.py                                               |       11 |        0 |    100% |           |
 | data\_safe\_haven/console/pretty.py                                               |        5 |        0 |    100% |           |
@@ -98,16 +98,16 @@
 | data\_safe\_haven/serialisers/yaml\_serialisable\_model.py                        |       43 |        0 |    100% |           |
 | data\_safe\_haven/singleton.py                                                    |        8 |        0 |    100% |           |
 | data\_safe\_haven/types/\_\_init\_\_.py                                           |        4 |        0 |    100% |           |
-| data\_safe\_haven/types/annotated\_types.py                                       |       19 |        0 |    100% |           |
+| data\_safe\_haven/types/annotated\_types.py                                       |       18 |        0 |    100% |           |
 | data\_safe\_haven/types/enums.py                                                  |       80 |        0 |    100% |           |
 | data\_safe\_haven/types/types.py                                                  |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/\_\_init\_\_.py                                         |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/file\_reader.py                                         |       20 |        9 |     55% |16-17, 21, 25-30, 33 |
 | data\_safe\_haven/validators/\_\_init\_\_.py                                      |        3 |        0 |    100% |           |
 | data\_safe\_haven/validators/typer.py                                             |       23 |        0 |    100% |           |
-| data\_safe\_haven/validators/validators.py                                        |       69 |        0 |    100% |           |
+| data\_safe\_haven/validators/validators.py                                        |       64 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4345** | **2280** | **48%** |           |
+|                                                                         **TOTAL** | **4280** | **2271** | **47%** |           |
 
 
 ## Setup coverage badge
