@@ -20,7 +20,7 @@ class TestConfigSectionAzure:
 
     def test_invalid_location(self):
         with pytest.raises(
-            ValidationError, match=r"Value error, Expected valid Azure location"
+            ValidationError, match="Value error, Expected valid Azure location"
         ):
             ConfigSectionAzure(
                 location="not_a_location",
