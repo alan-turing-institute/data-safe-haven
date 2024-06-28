@@ -35,8 +35,7 @@ class EntraApplicationProps:
 
 
 class EntraApplicationProvider(DshResourceProvider):
-    @staticmethod
-    def refresh(props: dict[str, Any]) -> dict[str, Any]:
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
         try:
             outs = dict(**props)
             with suppress(DataSafeHavenMicrosoftGraphError):

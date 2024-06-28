@@ -66,8 +66,7 @@ class FileShareFileProvider(DshResourceProvider):
             credential=storage_account_key,
         )
 
-    @staticmethod
-    def refresh(props: dict[str, Any]) -> dict[str, Any]:
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
         with suppress(Exception):
             file_client = FileShareFileProvider.get_file_client(
                 props["storage_account_name"],
