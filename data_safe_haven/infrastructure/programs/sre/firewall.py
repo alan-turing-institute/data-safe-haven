@@ -244,7 +244,7 @@ class SREFirewallComponent(ComponentResource):
                         type=network.AzureFirewallRCActionType.DENY
                     ),
                     name="workspaces-deny",
-                    priority=FirewallPriorities.SRE_WORKSPACES,
+                    priority=FirewallPriorities.SRE_WORKSPACES_DENY,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Deny external Ubuntu Snap Store upload and login access",
