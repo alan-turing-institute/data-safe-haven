@@ -18,7 +18,6 @@ class EntraApplicationProps:
     def __init__(
         self,
         application_name: Input[str],
-        auth_token: Input[str],
         application_role_assignments: Input[list[str]] | None = None,
         application_secret_name: Input[str] | None = None,
         delegated_role_assignments: Input[list[str]] | None = None,
@@ -28,18 +27,21 @@ class EntraApplicationProps:
         self.application_name = application_name
         self.application_role_assignments = application_role_assignments
         self.application_secret_name = application_secret_name
-        self.auth_token = Output.secret(auth_token)
         self.delegated_role_assignments = delegated_role_assignments
         self.public_client_redirect_uri = public_client_redirect_uri
         self.web_redirect_url = web_redirect_url
 
 
 class EntraApplicationProvider(DshResourceProvider):
+    def __init__(self, auth_token: str):
+        self.auth_token = auth_token
+        super().__init__()
+
     def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
         try:
             outs = dict(**props)
             with suppress(DataSafeHavenMicrosoftGraphError):
-                graph_api = GraphApi(auth_token=outs["auth_token"])
+                graph_api = GraphApi(auth_token=self.auth_token)
                 if json_response := graph_api.get_application_by_name(
                     outs["application_name"]
                 ):
@@ -65,7 +67,7 @@ class EntraApplicationProvider(DshResourceProvider):
         """Create new Entra application."""
         outs = dict(**props)
         try:
-            graph_api = GraphApi(auth_token=props["auth_token"])
+            graph_api = GraphApi(auth_token=self.auth_token)
             request_json = {
                 "displayName": props["application_name"],
                 "signInAudience": "AzureADMyOrg",
@@ -121,7 +123,7 @@ class EntraApplicationProvider(DshResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         try:
-            graph_api = GraphApi(auth_token=props["auth_token"])
+            graph_api = GraphApi(auth_token=self.auth_token)
             graph_api.delete_application(props["application_name"])
         except Exception as exc:
             msg = f"Failed to delete application '{props['application_name']}' from Entra ID."
@@ -136,8 +138,7 @@ class EntraApplicationProvider(DshResourceProvider):
         """Calculate diff between old and new state"""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
-        # Exclude "auth_token" which should not trigger a diff
-        return self.partial_diff(old_props, new_props, ["auth_token"])
+        return self.partial_diff(old_props, new_props)
 
     def update(
         self,
@@ -149,7 +150,6 @@ class EntraApplicationProvider(DshResourceProvider):
         try:
             # Delete the old application, using the auth token from new_props
             old_props_ = {**old_props}
-            old_props_["auth_token"] = new_props["auth_token"]
             self.delete(id_, old_props_)
             # Create a new application
             updated = self.create(new_props)
@@ -169,10 +169,11 @@ class EntraApplication(Resource):
         self,
         name: str,
         props: EntraApplicationProps,
+        auth_token: str,
         opts: ResourceOptions | None = None,
     ):
         super().__init__(
-            EntraApplicationProvider(),
+            EntraApplicationProvider(auth_token),
             name,
             {
                 "application_id": None,
