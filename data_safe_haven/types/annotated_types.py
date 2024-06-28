@@ -14,7 +14,6 @@ AzureSubscriptionName = Annotated[
 ]
 AzureLocation = Annotated[str, AfterValidator(validators.azure_location)]
 AzureVmSku = Annotated[str, AfterValidator(validators.azure_vm_sku)]
-ConfigName = Annotated[str, AfterValidator(validators.config_name)]
 EmailAddress = Annotated[str, AfterValidator(validators.email_address)]
 EntraGroupName = Annotated[str, AfterValidator(validators.entra_group_name)]
 Fqdn = Annotated[str, AfterValidator(validators.fqdn)]

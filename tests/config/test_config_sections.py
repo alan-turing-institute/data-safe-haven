@@ -28,33 +28,56 @@ class TestConfigSectionAzure:
                 tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
             )
 
+    def test_invalid_subscription_id(self):
+        with pytest.raises(
+            ValidationError,
+            match=r"1 validation error for ConfigSectionAzure\nsubscription_id\n  Value error, Expected GUID",
+        ):
+            ConfigSectionAzure(
+                location="uksouth",
+                subscription_id="not_a_guid",
+                tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+            )
+
+    def test_invalid_tenant_id(self):
+        with pytest.raises(
+            ValidationError,
+            match=r"1 validation error for ConfigSectionAzure\ntenant_id\n  Value error, Expected GUID",
+        ):
+            ConfigSectionAzure(
+                location="uksouth",
+                subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+                tenant_id="not_a_guid",
+            )
+
 
 class TestConfigSectionSHM:
-    def test_constructor(self) -> None:
-        ConfigSectionSHM(
-            admin_group_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-            entra_tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-            fqdn="shm.acme.com",
-        )
+    def test_constructor(self, shm_config_section_dict) -> None:
+        ConfigSectionSHM(**shm_config_section_dict)
 
-    def test_invalid_guid(self, shm_config_section_dict):
-        shm_config_section_dict["entra_tenant_id"] = "not a guid"
+    def test_invalid_admin_group_id(self, shm_config_section_dict):
+        shm_config_section_dict["admin_group_id"] = "not a guid"
         with pytest.raises(
-            ValidationError, match="Value error, Expected GUID, for example"
+            ValidationError,
+            match=r"1 validation error for ConfigSectionSHM\nadmin_group_id\n  Value error, Expected GUID",
         ):
             ConfigSectionSHM(**shm_config_section_dict)
 
-    def test_update(self, shm_config_section: ConfigSectionSHM) -> None:
-        assert shm_config_section.fqdn == "shm.acme.com"
-        shm_config_section.update(fqdn="shm.example.com")
-        assert shm_config_section.fqdn == "shm.example.com"
-
-    def test_update_validation(self, shm_config_section: ConfigSectionSHM) -> None:
+    def test_invalid_entra_tenant_id(self, shm_config_section_dict):
+        shm_config_section_dict["entra_tenant_id"] = "not a guid"
         with pytest.raises(
             ValidationError,
-            match=r"Value error, Expected valid fully qualified domain name, for example 'example.com'.*not an FQDN",
+            match=r"1 validation error for ConfigSectionSHM\nentra_tenant_id\n  Value error, Expected GUID",
         ):
-            shm_config_section.update(fqdn="not an FQDN")
+            ConfigSectionSHM(**shm_config_section_dict)
+
+    def test_invalid_fqdn(self, shm_config_section_dict):
+        shm_config_section_dict["fqdn"] = "not a domain"
+        with pytest.raises(
+            ValidationError,
+            match=r"1 validation error for ConfigSectionSHM\nfqdn\n  Value error, Expected valid fully qualified domain name",
+        ):
+            ConfigSectionSHM(**shm_config_section_dict)
 
 
 class TestConfigSectionSRE:
@@ -102,35 +125,6 @@ class TestConfigSectionSRE:
                 databases=[DatabaseSystem.POSTGRESQL, DatabaseSystem.POSTGRESQL],
             )
 
-    def test_update(self) -> None:
-        sre_config = ConfigSectionSRE(admin_email_address="admin@example.com")
-        assert sre_config.admin_email_address == "admin@example.com"
-        assert sre_config.admin_ip_addresses == []
-        assert sre_config.databases == []
-        assert sre_config.data_provider_ip_addresses == []
-        assert sre_config.workspace_skus == []
-        assert sre_config.research_user_ip_addresses == []
-        assert sre_config.software_packages == SoftwarePackageCategory.NONE
-        assert sre_config.timezone == "Etc/UTC"
-        sre_config.update(
-            admin_email_address="admin@example.org",
-            admin_ip_addresses=["1.2.3.4"],
-            data_provider_ip_addresses=["2.3.4.5"],
-            databases=[DatabaseSystem.MICROSOFT_SQL_SERVER],
-            workspace_skus=["Standard_D8s_v4"],
-            software_packages=SoftwarePackageCategory.ANY,
-            user_ip_addresses=["3.4.5.6"],
-            timezone="Australia/Perth",
-        )
-        assert sre_config.admin_email_address == "admin@example.org"
-        assert sre_config.admin_ip_addresses == ["1.2.3.4/32"]
-        assert sre_config.databases == [DatabaseSystem.MICROSOFT_SQL_SERVER]
-        assert sre_config.data_provider_ip_addresses == ["2.3.4.5/32"]
-        assert sre_config.workspace_skus == ["Standard_D8s_v4"]
-        assert sre_config.research_user_ip_addresses == ["3.4.5.6/32"]
-        assert sre_config.software_packages == SoftwarePackageCategory.ANY
-        assert sre_config.timezone == "Australia/Perth"
-
 
 class TestConfigSubsectionRemoteDesktopOpts:
     def test_constructor(self) -> None:
@@ -142,13 +136,12 @@ class TestConfigSubsectionRemoteDesktopOpts:
             (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
         )
 
-    def test_update(
-        self, remote_desktop_config: ConfigSubsectionRemoteDesktopOpts
-    ) -> None:
-        assert not all(
-            (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
-        )
-        remote_desktop_config.update(allow_copy=True, allow_paste=True)
-        assert all(
-            (remote_desktop_config.allow_copy, remote_desktop_config.allow_paste)
-        )
+    def test_constructor_invalid_allow_copy(self) -> None:
+        with pytest.raises(
+            ValueError,
+            match=r"1 validation error for ConfigSubsectionRemoteDesktopOpts\nallow_paste\n  Input should be a valid boolean",
+        ):
+            ConfigSubsectionRemoteDesktopOpts(
+                allow_copy=True,
+                allow_paste="not a bool",
+            )

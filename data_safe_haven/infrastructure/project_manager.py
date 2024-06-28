@@ -407,7 +407,7 @@ class SREProjectManager(ProjectManager):
         super().__init__(
             context,
             pulumi_config,
-            config.safe_name,
+            config.name,
             DeclarativeSRE(context, config, token),
             create_project=create_project,
         )

@@ -63,7 +63,7 @@ class DeclarativeSRE:
         self.context = context
         self.cfg = config
         self.graph_api_token = graph_api_token
-        self.sre_name = config.safe_name
+        self.sre_name = config.name
         self.short_name = f"sre-{self.sre_name}"
         self.stack_name = f"shm-{context.name}-{self.short_name}"
         self.tags = {"component": f"SRE {config.name}"} | context.tags

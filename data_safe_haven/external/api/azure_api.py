@@ -124,7 +124,7 @@ class AzureApi(AzureAuthenticator):
         except DataSafeHavenAzureError:
             exists = False
         response = "exists" if exists else "does not exist"
-        self.logger.info(
+        self.logger.debug(
             f"File [green]{blob_name}[/] {response} in blob storage.",
         )
         return exists
