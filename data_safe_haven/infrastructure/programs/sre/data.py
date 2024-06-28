@@ -501,7 +501,7 @@ class SREDataComponent(ComponentResource):
             has_shared_key=False,
             has_ssh_key=True,
             has_ssh_password=True,
-            username="workspace_user",
+            username="workspaceuser",
             permission_scopes=[
                 storage.PermissionScopeArgs(
                     permissions="rl",
