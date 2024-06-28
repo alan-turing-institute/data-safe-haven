@@ -482,6 +482,7 @@ class SREDataComponent(ComponentResource):
         )
         # Upload archive to desired state container
         storage.Blob(
+            f"{storage_account_data_configuration._name}_desired_state_blob",
             account_name=storage_account_data_configuration.name,
             blob_name="ansible",
             container_name=container_desired_state.name,
@@ -490,11 +491,12 @@ class SREDataComponent(ComponentResource):
         )
         # Create key pair for desired state local user
         container_desired_state_key = pulumi_tls.PrivateKey(
+            f"{storage_account_data_configuration._name}_desired_state_private_key",
             algorithm="RSA",
         )
         # Create local user for desired state container for workspaces
         storage.LocalUser(
-            f"{storage_account_data_configuration._name}_local_user_workspaces",
+            f"{storage_account_data_configuration._name}_desired_state_local_user",
             account_name=storage_account_data_configuration.name,
             has_shared_key=False,
             has_ssh_key=True,
