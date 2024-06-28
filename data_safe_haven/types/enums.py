@@ -43,6 +43,13 @@ class FirewallPriorities(int, Enum):
 
 @verify(UNIQUE)
 class ForbiddenDomains(tuple[str, ...], Enum):
+    # Block snap upload to the Snap store at snapcraft.io
+    # Upload is through dashboard.snapscraft.io and requires a client to be logged in to
+    # an Ubuntu account.
+    # Login is through login.ubuntu.com.
+    # However, once successfully authorised, it is not necessary to reach
+    # login.ubuntu.com before uploading.
+    # Therefore we should block access to both domains.
     UBUNTU_SNAPCRAFT = (
         "dashboard.snapcraft.io",  # upload endpoint
         "login.ubuntu.com",  # login endpoint (provides auth for upload)
