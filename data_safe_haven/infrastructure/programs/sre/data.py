@@ -465,13 +465,16 @@ class SREDataComponent(ComponentResource):
         # Deploy desired state share
         container_desired_state = storage.BlobContainer(
             f"{storage_account_data_configuration._name}_desired_state",
-            access_tier=storage.ShareAccessTier.COOL,
             account_name=storage_account_data_configuration.name,
-            enabled_protocols=storage.EnabledProtocols.NFS,
+            container_name="desired_state",
+            default_encryption_scope="$account-encryption-key",
+            deny_encryption_scope_override=False,
+            public_access=storage.PublicAccess.NONE,
             resource_group_name=resource_group.name,
-            root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
-            share_name="desired_state",
-            share_quota=1,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=storage_account_data_configuration),
+            ),
         )
         # Create archive to uplaod
         archive_desired_state = FileArchive(
