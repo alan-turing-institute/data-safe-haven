@@ -135,8 +135,9 @@ class ProjectManager:
                 )
                 self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
                 # Ensure encrypted key is stored in the Pulumi configuration
-                self.update_dsh_pulumi_config()
+                self.update_dsh_pulumi_encrypted_key()
             except automation.CommandError as exc:
+                self.log_exception(exc)
                 msg = f"Could not load Pulumi stack {self.stack_name}."
                 raise DataSafeHavenPulumiError(msg) from exc
         return self._stack
@@ -228,6 +229,7 @@ class ProjectManager:
                     self._stack.workspace.remove_stack(self.stack_name)
                 self.logger.info(f"Removed Pulumi stack [green]{self.stack_name}[/].")
             except automation.CommandError as exc:
+                self.log_exception(exc)
                 if "no stack named" not in str(exc):
                     msg = "Pulumi stack could not be removed."
                     raise DataSafeHavenPulumiError(msg) from exc
@@ -289,6 +291,11 @@ class ProjectManager:
             msg = "Installing Pulumi plugins failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
+    def log_exception(self, exc: automation.CommandError) -> None:
+        with suppress(KeyError):
+            stderr = str(exc).split("\n")[3].replace(" stderr: ", "")
+            self.log_message(f"Pulumi output: {stderr}")
+
     def log_message(self, message: str) -> None:
         return from_ansi(self.logger, message)
 
@@ -322,6 +329,7 @@ class ProjectManager:
             # Note that we disable parallelisation which can cause deadlock
             self.stack.refresh(parallel=1, **self.pulumi_extra_args)
         except automation.CommandError as exc:
+            self.log_exception(exc)
             msg = "Pulumi refresh failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -331,6 +339,7 @@ class ProjectManager:
             result = self.stack._run_pulumi_cmd_sync(command.split())
             return str(result.stdout)
         except automation.CommandError as exc:
+            self.log_exception(exc)
             msg = "Failed to run command."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -339,6 +348,7 @@ class ProjectManager:
         try:
             return str(self.stack.get_config(name).value)
         except automation.CommandError as exc:
+            self.log_exception(exc)
             msg = f"Secret '{name}' was not found."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -352,8 +362,8 @@ class ProjectManager:
         try:
             self.refresh()
             self.destroy()
-            self.update_dsh_pulumi_project()
         except Exception as exc:
+            self.log_exception(exc)
             msg = "Tearing down Pulumi infrastructure failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -367,6 +377,7 @@ class ProjectManager:
             self.evaluate(result.summary.result)
             self.update_dsh_pulumi_project()
         except automation.CommandError as exc:
+            self.log_exception(exc)
             msg = "Pulumi update failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -377,13 +388,13 @@ class ProjectManager:
         }
         self.pulumi_project.stack_config = all_config_dict
 
-    def update_dsh_pulumi_config(self) -> None:
-        """Update persistent data in the DSHPulumiProject object"""
+    def update_dsh_pulumi_encrypted_key(self) -> None:
+        """Update encrypted key in the DSHPulumiProject object"""
         stack_key = self.stack.workspace.stack_settings(
             stack_name=self.stack_name
         ).encrypted_key
 
-        if self.pulumi_config.encrypted_key is None:
+        if not self.pulumi_config.encrypted_key:
             self.pulumi_config.encrypted_key = stack_key
         elif self.pulumi_config.encrypted_key != stack_key:
             msg = "Stack encrypted key does not match project encrypted key"

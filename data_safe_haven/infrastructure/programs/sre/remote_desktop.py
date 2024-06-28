@@ -37,7 +37,7 @@ class SRERemoteDesktopProps:
         dns_server_ip: Input[str],
         entra_application_fqdn: Input[str],
         entra_application_name: Input[str],
-        entra_auth_token: Input[str],
+        entra_auth_token: str,
         entra_tenant_id: Input[str],
         ldap_group_filter: Input[str],
         ldap_group_search_base: Input[str],
@@ -135,9 +135,9 @@ class SRERemoteDesktopComponent(ComponentResource):
             f"{self._name}_entra_application",
             EntraApplicationProps(
                 application_name=props.entra_application_name,
-                auth_token=props.entra_auth_token,
                 web_redirect_url=props.entra_application_url,
             ),
+            auth_token=props.entra_auth_token,
             opts=child_opts,
         )
 

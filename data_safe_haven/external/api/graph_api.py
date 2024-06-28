@@ -20,7 +20,6 @@ from msal import (
 from data_safe_haven import console
 from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
-    DataSafeHavenValueError,
 )
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger
@@ -266,27 +265,31 @@ class GraphApi:
     def create_application_secret(
         self, application_name: str, application_secret_name: str
     ) -> str:
-        """Add a secret to an existing Entra application
+        """Add a secret to an existing Entra application, overwriting any existing secret.
 
         Returns:
             str: Contents of newly-created secret
 
         Raises:
-            DataSafeHavenMicrosoftGraphError if the secret could not be created or already exists
+            DataSafeHavenMicrosoftGraphError if the secret could not be created
         """
         try:
             application_json = self.get_application_by_name(application_name)
             if not application_json:
                 msg = f"Could not retrieve application '{application_name}'"
                 raise DataSafeHavenMicrosoftGraphError(msg)
-            # If the secret already exists then raise an exception
-            if "passwordCredentials" in application_json and any(
-                cred["displayName"] == application_secret_name
-                for cred in application_json["passwordCredentials"]
-            ):
-                msg = f"Secret '{application_secret_name}' already exists in application '{application_name}'."
-                raise DataSafeHavenValueError(msg)
-            # Create the application secret if it does not exist
+            # If the secret already exists then remove it
+            if "passwordCredentials" in application_json:
+                for secret in application_json["passwordCredentials"]:
+                    if secret["displayName"] == application_secret_name:
+                        self.logger.debug(
+                            f"Removing pre-existing secret '{secret['displayName']}' from application '{application_name}'."
+                        )
+                        self.http_post(
+                            f"{self.base_endpoint}/applications/{application_json['id']}/removePassword",
+                            json={"keyId": secret["keyId"]},
+                        )
+            # Create the application secret
             self.logger.debug(
                 f"Creating application secret '[green]{application_secret_name}[/]'...",
             )
@@ -303,7 +306,7 @@ class GraphApi:
                 f"{self.base_endpoint}/applications/{application_json['id']}/addPassword",
                 json=request_json,
             ).json()
-            self.logger.info(
+            self.logger.debug(
                 f"Created application secret '[green]{application_secret_name}[/]'.",
             )
             return str(json_response["secretText"])
@@ -797,14 +800,14 @@ class GraphApi:
                 **kwargs,
             )
         except requests.exceptions.RequestException as exc:
-            msg = f"Could not execute GET request from '{url}'."
+            msg = f"Could not execute GET request to '{url}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
         # We do not use response.ok as this allows 3xx codes
         if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
             return response
         else:
-            msg = f"Could not execute GET request from '{url}'. Response content received: '{response.content.decode()}'."
+            msg = f"Could not execute GET request to '{url}'. Response content received: '{response.content.decode()}'. Token {self.token}"
             raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:

@@ -43,8 +43,7 @@ class DshResourceProvider(ResourceProvider):
             delete_before_replace=True,  # delete the existing resource before replacing
         )
 
-    @staticmethod
-    def refresh(props: dict[str, Any]) -> dict[str, Any]:
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
         return dict(**props)
 
     def check(

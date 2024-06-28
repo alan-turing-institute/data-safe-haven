@@ -25,7 +25,7 @@ class SREIdentityProps:
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
         entra_application_name: Input[str],
-        entra_auth_token: Input[str],
+        entra_auth_token: str,
         entra_tenant_id: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
@@ -99,10 +99,10 @@ class SREIdentityComponent(ComponentResource):
                 application_name=props.entra_application_name,
                 application_role_assignments=["User.Read.All", "GroupMember.Read.All"],
                 application_secret_name="Apricot Authentication Secret",
-                auth_token=props.entra_auth_token,
                 delegated_role_assignments=["User.Read.All"],
                 public_client_redirect_uri="urn:ietf:wg:oauth:2.0:oob",
             ),
+            auth_token=props.entra_auth_token,
             opts=child_opts,
         )
 
