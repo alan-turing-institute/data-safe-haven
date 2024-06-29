@@ -231,42 +231,11 @@ class SREWorkspacesComponent(ComponentResource):
             "vm_outputs": vm_outputs,
         }
 
-    def read_cloudinit(
-        self,
-        apt_proxy_server_hostname: str,
-        container_desired_state_name: str,
-        container_desired_state_local_user_name: str,
-        container_desired_state_private_key: str,
-        ldap_group_filter: str,
-        ldap_group_search_base: str,
-        ldap_server_hostname: str,
-        ldap_server_port: str,
-        ldap_user_filter: str,
-        ldap_user_search_base: str,
-        software_repository_hostname: str,
-        storage_account_data_configuration_name: str,
-        storage_account_data_private_sensitive_name: str,
-        storage_account_data_private_user_name: str,
-    ) -> str:
+    @staticmethod
+    def read_cloudinit(**kwargs: str) -> str:
         with open(
             resources_path / "workspace" / "workspace.cloud_init.mustache.yaml",
             encoding="utf-8",
         ) as f_cloudinit:
-            mustache_values = {
-                "apt_proxy_server_hostname": apt_proxy_server_hostname,
-                "container_desired_state_name": container_desired_state_name,
-                "container_desired_state_local_user_name": container_desired_state_local_user_name,
-                "container_desired_state_private_key": container_desired_state_private_key,
-                "ldap_group_filter": ldap_group_filter,
-                "ldap_group_search_base": ldap_group_search_base,
-                "ldap_server_hostname": ldap_server_hostname,
-                "ldap_server_port": ldap_server_port,
-                "ldap_user_filter": ldap_user_filter,
-                "ldap_user_search_base": ldap_user_search_base,
-                "software_repository_hostname": software_repository_hostname,
-                "storage_account_data_configuration_name": storage_account_data_configuration_name,
-                "storage_account_data_private_user_name": storage_account_data_private_user_name,
-                "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive_name,
-            }
-            cloudinit = chevron.render(f_cloudinit, mustache_values)
+            cloudinit = chevron.render(f_cloudinit, kwargs)
             return b64encode(cloudinit)
