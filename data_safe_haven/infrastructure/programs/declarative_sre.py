@@ -331,6 +331,9 @@ class DeclarativeSRE:
             SREWorkspacesProps(
                 admin_password=data.password_workspace_admin,
                 apt_proxy_server_hostname=apt_proxy_server.hostname,
+                container_desired_state_name=data.container_desired_state_name,
+                container_desired_state_local_user_name=data.container_desired_state_local_user_name,
+                container_desired_state_private_key=data.container_desired_state_private_key,
                 data_collection_rule_id=monitoring.data_collection_rule_vms.id,
                 data_collection_endpoint_id=monitoring.data_collection_endpoint.id,
                 ldap_group_filter=ldap_group_filter,
@@ -341,7 +344,6 @@ class DeclarativeSRE:
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.cfg.azure.location,
                 maintenance_configuration_id=monitoring.maintenance_configuration.id,
-                private_key_desired_state=data.container_desired_state_private_key,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.sre_name,
                 storage_account_data_configuration_name=data.storage_account_data_configuration_name,

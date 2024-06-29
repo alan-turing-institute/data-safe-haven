@@ -494,7 +494,7 @@ class SREDataComponent(ComponentResource):
             algorithm="RSA",
         )
         # Create local user for desired state container for workspaces
-        storage.LocalUser(
+        container_desired_state_local_user = storage.LocalUser(
             f"{storage_account_data_configuration._name}_desired_state_local_user",
             account_name=storage_account_data_configuration.name,
             has_shared_key=False,
@@ -512,7 +512,7 @@ class SREDataComponent(ComponentResource):
             ssh_authorized_keys=[
                 storage.SshPublicKeyArgs(
                     description="Workspace key",
-                    key=container_desired_state_key.public_key_openssh
+                    key=container_desired_state_key.public_key_openssh,
                 )
             ],
         )
@@ -803,6 +803,13 @@ class SREDataComponent(ComponentResource):
         )
 
         # Register outputs
+        self.container_desired_state_name = container_desired_state.container_name
+        self.container_desired_state_local_user_name = (
+            container_desired_state_local_user.username
+        )
+        self.container_desired_state_private_key = Output.secret(
+            container_desired_state_key.private_key_openssh
+        )
         self.sre_fqdn_certificate_secret_id = sre_fqdn_certificate.secret_id
         self.storage_account_data_private_user_name = (
             storage_account_data_private_user.name
@@ -820,9 +827,6 @@ class SREDataComponent(ComponentResource):
         )
         self.storage_account_data_configuration_name = (
             storage_account_data_configuration.name
-        )
-        self.container_desired_state_private_key = Output.secret(
-            container_desired_state_key.private_key_openssh
         )
         self.managed_identity = identity_key_vault_reader
         self.password_nexus_admin = Output.secret(password_nexus_admin.result)

@@ -31,6 +31,9 @@ class SREWorkspacesProps:
         self,
         admin_password: Input[str],
         apt_proxy_server_hostname: Input[str],
+        container_desired_state_name: Input[str],
+        container_desired_state_local_user_name: Input[str],
+        container_desired_state_private_key: Input[str],
         data_collection_rule_id: Input[str],
         data_collection_endpoint_id: Input[str],
         ldap_group_filter: Input[str],
@@ -41,7 +44,6 @@ class SREWorkspacesProps:
         ldap_user_search_base: Input[str],
         location: Input[str],
         maintenance_configuration_id: Input[str],
-        private_key_desired_state: Input[str],
         software_repository_hostname: Input[str],
         sre_name: Input[str],
         storage_account_data_configuration_name: Input[str],
@@ -56,6 +58,11 @@ class SREWorkspacesProps:
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
         self.apt_proxy_server_hostname = apt_proxy_server_hostname
+        self.container_desired_state_name = container_desired_state_name
+        self.container_desired_state_local_user_name = (
+            container_desired_state_local_user_name
+        )
+        self.container_desired_state_private_key = container_desired_state_private_key
         self.data_collection_rule_id = data_collection_rule_id
         self.data_collection_endpoint_id = data_collection_endpoint_id
         self.ldap_group_filter = ldap_group_filter
@@ -66,7 +73,6 @@ class SREWorkspacesProps:
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.maintenance_configuration_id = maintenance_configuration_id
-        self.private_key_desired_state = private_key_desired_state
         self.software_repository_hostname = software_repository_hostname
         self.sre_name = sre_name
         self.storage_account_data_configuration_name = (
@@ -130,13 +136,15 @@ class SREWorkspacesComponent(ComponentResource):
         # Load cloud-init file
         b64cloudinit = Output.all(
             apt_proxy_server_hostname=props.apt_proxy_server_hostname,
+            container_desired_state_name=props.container_desired_state_name,
+            container_desired_state_local_user_name=props.container_desired_state_local_user_name,
+            container_desired_state_private_key=props.container_desired_state_private_key,
             ldap_group_filter=props.ldap_group_filter,
             ldap_group_search_base=props.ldap_group_search_base,
             ldap_server_hostname=props.ldap_server_hostname,
             ldap_server_port=props.ldap_server_port,
             ldap_user_filter=props.ldap_user_filter,
             ldap_user_search_base=props.ldap_user_search_base,
-            private_key_desired_state=props.private_key_desired_state,
             software_repository_hostname=props.software_repository_hostname,
             storage_account_data_configuration_name=props.storage_account_data_configuration_name,
             storage_account_data_private_user_name=props.storage_account_data_private_user_name,
@@ -226,14 +234,17 @@ class SREWorkspacesComponent(ComponentResource):
     def read_cloudinit(
         self,
         apt_proxy_server_hostname: str,
+        container_desired_state_name: str,
+        container_desired_state_local_user_name: str,
+        container_desired_state_private_key: str,
         ldap_group_filter: str,
         ldap_group_search_base: str,
         ldap_server_hostname: str,
         ldap_server_port: str,
         ldap_user_filter: str,
         ldap_user_search_base: str,
-        private_key_desired_state: str,
         software_repository_hostname: str,
+        storage_account_data_configuration_name: str,
         storage_account_data_private_sensitive_name: str,
         storage_account_data_private_user_name: str,
     ) -> str:
@@ -243,14 +254,17 @@ class SREWorkspacesComponent(ComponentResource):
         ) as f_cloudinit:
             mustache_values = {
                 "apt_proxy_server_hostname": apt_proxy_server_hostname,
+                "container_desired_state_name": container_desired_state_name,
+                "container_desired_state_local_user_name": container_desired_state_local_user_name,
+                "container_desired_state_private_key": container_desired_state_private_key,
                 "ldap_group_filter": ldap_group_filter,
                 "ldap_group_search_base": ldap_group_search_base,
                 "ldap_server_hostname": ldap_server_hostname,
                 "ldap_server_port": ldap_server_port,
                 "ldap_user_filter": ldap_user_filter,
                 "ldap_user_search_base": ldap_user_search_base,
-                "private_key_desired_state": private_key_desired_state,
                 "software_repository_hostname": software_repository_hostname,
+                "storage_account_data_configuration_name": storage_account_data_configuration_name,
                 "storage_account_data_private_user_name": storage_account_data_private_user_name,
                 "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive_name,
             }
