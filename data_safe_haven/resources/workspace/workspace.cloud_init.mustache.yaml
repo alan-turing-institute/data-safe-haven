@@ -57,7 +57,7 @@ write_files:
     permissions: "0700"
     content: |
       #!/usr/bin/env sh
-      scp -r desired_state.{{ storage_account_data_configuration_name }}.workspace_user@desired_state.blob.core.windows.net:ansible ./
+      scp -i /root/.ssh/desired_state_rsa -r desired_state.{{ storage_account_data_configuration_name }}.workspace_user@desired_state.blob.core.windows.net:ansible ./
       ansible-playbook -i localhost ansible/desired_state.yaml
 
   - path: "/etc/systemd/system/desired-state.timer"
