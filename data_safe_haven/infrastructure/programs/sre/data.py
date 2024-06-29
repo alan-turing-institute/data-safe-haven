@@ -23,7 +23,6 @@ from data_safe_haven.functions import (
     sha256hash,
     truncate_tokens,
 )
-from data_safe_haven.functions.strings import b64encode
 from data_safe_haven.infrastructure.common import (
     get_id_from_subnet,
     get_name_from_rg,
@@ -513,9 +512,7 @@ class SREDataComponent(ComponentResource):
             ssh_authorized_keys=[
                 storage.SshPublicKeyArgs(
                     description="Workspace key",
-                    key=container_desired_state_key.public_key_openssh.apply(
-                        lambda key: b64encode(key),
-                    )
+                    key=container_desired_state_key.public_key_openssh
                 )
             ],
         )
