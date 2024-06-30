@@ -90,6 +90,14 @@
         - xrdp
         - xrdp-sesman
 
+    - name: Copy test files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /root/tests/
+        mode: '0700'
+      with_fileglob: 'roots/tests/*'
+
+
   handlers:
     - name: Restart sshd
       ansible.builtin.systemd_service:

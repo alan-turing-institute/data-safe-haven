@@ -16,8 +16,6 @@ from .dynamic import (
     EntraApplicationProps,
     FileShareFile,
     FileShareFileProps,
-    FileUpload,
-    FileUploadProps,
     SSLCertificate,
     SSLCertificateProps,
 )
@@ -32,8 +30,6 @@ __all__ = [
     "EntraApplicationProps",
     "FileShareFile",
     "FileShareFileProps",
-    "FileUpload",
-    "FileUploadProps",
     "LinuxVMComponentProps",
     "LocalDnsRecordComponent",
     "LocalDnsRecordProps",
