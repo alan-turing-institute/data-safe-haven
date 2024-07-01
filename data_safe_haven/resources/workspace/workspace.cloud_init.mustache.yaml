@@ -51,13 +51,13 @@ write_files:
   - path: "/root/.ssh/desired_state_rsa"
     permissions: "0600"
     content: |
-      {{ container_desired_state_private_key }}
+      {{container_desired_state_private_key}}
 
   - path: "/root/desired_state.sh"
     permissions: "0700"
     content: |
       #!/usr/bin/env sh
-      scp -i /root/.ssh/desired_state_rsa -r {{ container_desired_state_name }}.{{ storage_account_data_configuration_name }}.{{ container_desired_state_local_user }}@{{ container_desired_state_name }}.blob.core.windows.net:ansible ./
+      scp -i /root/.ssh/desired_state_rsa -r {{container_desired_state_name}}.{{storage_account_data_configuration_name}}.{{container_desired_state_local_user}}@{{container_desired_state_name}}.blob.core.windows.net:ansible ./
       ansible-playbook -i localhost ansible/desired_state.yaml
 
   - path: "/etc/systemd/system/desired-state.timer"

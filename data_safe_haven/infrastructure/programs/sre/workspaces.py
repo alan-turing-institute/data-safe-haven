@@ -17,6 +17,7 @@ from data_safe_haven.infrastructure.components import (
     LinuxVMComponentProps,
     VMComponent,
 )
+from data_safe_haven.logging import get_logger
 from data_safe_haven.resources import resources_path
 
 
@@ -130,11 +131,13 @@ class SREWorkspacesComponent(ComponentResource):
         )
 
         # Load cloud-init file
-        b64cloudinit = Output.all(
+        cloudinit = Output.all(
             apt_proxy_server_hostname=props.apt_proxy_server_hostname,
             container_desired_state_name=props.container_desired_state_name,
             container_desired_state_local_user_name=props.container_desired_state_local_user_name,
-            container_desired_state_private_key=props.container_desired_state_private_key,
+            container_desired_state_private_key=Output.from_input(
+                props.container_desired_state_private_key
+            ).apply(lambda key: self.cloud_init_indent(key, 6)),
             ldap_group_filter=props.ldap_group_filter,
             ldap_group_search_base=props.ldap_group_search_base,
             ldap_server_hostname=props.ldap_server_hostname,
@@ -145,7 +148,10 @@ class SREWorkspacesComponent(ComponentResource):
             storage_account_data_configuration_name=props.storage_account_data_configuration_name,
             storage_account_data_private_user_name=props.storage_account_data_private_user_name,
             storage_account_data_private_sensitive_name=props.storage_account_data_private_sensitive_name,
-        ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
+        ).apply(lambda kwargs: self.template_cloudinit(**kwargs))
+        b64cloudinit = Output.from_input(cloudinit).apply(
+            lambda cloudinit: b64encode(cloudinit)
+        )
 
         # Deploy a variable number of VMs depending on the input parameters
         vms = [
@@ -194,10 +200,16 @@ class SREWorkspacesComponent(ComponentResource):
         }
 
     @staticmethod
-    def read_cloudinit(**kwargs: str) -> str:
+    def template_cloudinit(**kwargs: str) -> str:
+        logger = get_logger()
         with open(
             resources_path / "workspace" / "workspace.cloud_init.mustache.yaml",
             encoding="utf-8",
         ) as f_cloudinit:
             cloudinit = chevron.render(f_cloudinit, kwargs)
-            return b64encode(cloudinit)
+            logger.debug(f"Generated cloud-init config:\n {cloudinit}")
+            return cloudinit
+
+    @staticmethod
+    def cloud_init_indent(string: str, indent: int) -> str:
+        return string.replace("\n", "\n" + " " * indent)
