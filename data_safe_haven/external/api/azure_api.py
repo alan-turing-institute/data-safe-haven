@@ -907,6 +907,17 @@ class AzureApi(AzureAuthenticator):
                 while not poller.done():
                     poller.wait(10)
 
+            # Wait until the certificate shows up as deleted
+            self.logger.debug(
+                f"Waiting for deletion to complete for certificate [green]{certificate_name}[/]..."
+            )
+            while True:
+                # Keep polling until deleted certificate is available
+                with suppress(ResourceNotFoundError):
+                    if certificate_client.get_deleted_certificate(certificate_name):
+                        break
+                time.sleep(10)
+
             # Now attempt to remove a certificate that has been deleted but not purged
             self.logger.debug(
                 f"Attempting to purge certificate [green]{certificate_name}[/]..."
@@ -920,10 +931,7 @@ class AzureApi(AzureAuthenticator):
             )
             with suppress(ResourceNotFoundError, ServiceRequestError):
                 certificate_client.get_certificate(certificate_name)
-                msg = (
-                    f"Certificate [green]{certificate_name}[/] is still in Key Vault "
-                    f"[green]{key_vault_name}[/] despite deletion."
-                )
+                msg = f"Certificate '{certificate_name}' is still in Key Vault '{key_vault_name}' despite deletion."
                 raise DataSafeHavenAzureError(msg)
 
             self.logger.info(
