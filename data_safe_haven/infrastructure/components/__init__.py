@@ -7,7 +7,6 @@ from .composite import (
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
     VMComponent,
-    WindowsVMComponentProps,
 )
 from .dynamic import (
     BlobContainerAcl,
@@ -40,6 +39,5 @@ __all__ = [
     "SSLCertificate",
     "SSLCertificateProps",
     "VMComponent",
-    "WindowsVMComponentProps",
     "WrappedLogAnalyticsWorkspace",
 ]
