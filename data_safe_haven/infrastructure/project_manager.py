@@ -292,7 +292,7 @@ class ProjectManager:
             raise DataSafeHavenPulumiError(msg) from exc
 
     def log_exception(self, exc: automation.CommandError) -> None:
-        with suppress(KeyError):
+        with suppress(IndexError):
             stderr = str(exc).split("\n")[3].replace(" stderr: ", "")
             self.log_message(f"Pulumi output: {stderr}")
 
