@@ -119,6 +119,14 @@ def deploy(
 @sre_command_group.command()
 def teardown(
     name: Annotated[str, typer.Argument(help="Name of SRE to teardown.")],
+    force: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            "--force",
+            "-f",
+            help="Force this operation, cancelling any others that are in progress.",
+        ),
+    ] = False,
 ) -> None:
     """Tear down a deployed a Secure Research Environment."""
     logger = get_logger()
@@ -144,7 +152,7 @@ def teardown(
             pulumi_config=pulumi_config,
             graph_api_token=graph_api.token,
         )
-        stack.teardown()
+        stack.teardown(force=force)
 
         # Remove Pulumi project from Pulumi config file
         del pulumi_config[name]
