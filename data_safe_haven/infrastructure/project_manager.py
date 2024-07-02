@@ -357,10 +357,12 @@ class ProjectManager:
         self.stack.set_config(name, automation.ConfigValue(value=value, secret=secret))
         self.update_dsh_pulumi_project()
 
-    def teardown(self) -> None:
+    def teardown(self, *, force: bool = False) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
         try:
             self.refresh()
+            if force:
+                self.cancel()
             self.destroy()
         except Exception as exc:
             self.log_exception(exc)
