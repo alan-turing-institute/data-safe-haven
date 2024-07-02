@@ -486,7 +486,7 @@ class SREDataComponent(ComponentResource):
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
                 ip_rules=Output.from_input(
-                    props.data_private_sensitive_ip_addresses
+                    props.data_configuration_ip_addresses
                 ).apply(
                     lambda ip_ranges: [
                         storage.IPRuleArgs(
@@ -499,7 +499,7 @@ class SREDataComponent(ComponentResource):
                 ),
                 virtual_network_rules=[
                     storage.VirtualNetworkRuleArgs(
-                        virtual_network_resource_id=props.subnet_data_private_id,
+                        virtual_network_resource_id=props.subnet_data_configuration_id,
                     )
                 ],
             ),
@@ -554,7 +554,7 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             source=archive_desired_state,
         )
-        # Set up a private endpoint for the sensitive data storage account
+        # Set up a private endpoint for the desired state storage account
         storage_account_data_desired_state_endpoint = network.PrivateEndpoint(
             f"{storage_account_data_desired_state.name}_private_endpoint",
             location=props.location,
@@ -577,7 +577,7 @@ class SREDataComponent(ComponentResource):
             ),
             tags=child_tags,
         )
-        # Add a private DNS record for each sensitive data endpoint custom DNS config
+        # Add a private DNS record for each desired state endpoint custom DNS config
         network.PrivateDnsZoneGroup(
             f"{storage_account_data_desired_state._name}_private_dns_zone_group",
             private_dns_zone_configs=[
