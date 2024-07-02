@@ -29,8 +29,6 @@ class SREWorkspacesProps:
         admin_password: Input[str],
         apt_proxy_server_hostname: Input[str],
         container_desired_state_name: Input[str],
-        container_desired_state_local_user_name: Input[str],
-        container_desired_state_private_key: Input[str],
         data_collection_rule_id: Input[str],
         data_collection_endpoint_id: Input[str],
         ldap_group_filter: Input[str],
@@ -56,10 +54,6 @@ class SREWorkspacesProps:
         self.admin_username = "dshadmin"
         self.apt_proxy_server_hostname = apt_proxy_server_hostname
         self.container_desired_state_name = container_desired_state_name
-        self.container_desired_state_local_user_name = (
-            container_desired_state_local_user_name
-        )
-        self.container_desired_state_private_key = container_desired_state_private_key
         self.data_collection_rule_id = data_collection_rule_id
         self.data_collection_endpoint_id = data_collection_endpoint_id
         self.ldap_group_filter = ldap_group_filter
@@ -134,10 +128,6 @@ class SREWorkspacesComponent(ComponentResource):
         cloudinit = Output.all(
             apt_proxy_server_hostname=props.apt_proxy_server_hostname,
             container_desired_state_name=props.container_desired_state_name,
-            container_desired_state_local_user_name=props.container_desired_state_local_user_name,
-            container_desired_state_private_key=Output.from_input(
-                props.container_desired_state_private_key
-            ).apply(lambda key: self.cloud_init_indent(key, 6)),
             ldap_group_filter=props.ldap_group_filter,
             ldap_group_search_base=props.ldap_group_search_base,
             ldap_server_hostname=props.ldap_server_hostname,

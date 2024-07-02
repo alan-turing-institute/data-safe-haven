@@ -4,7 +4,6 @@ from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
 import pulumi_random
-import pulumi_tls
 from pulumi import ComponentResource, FileArchive, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
@@ -378,9 +377,6 @@ class SREDataComponent(ComponentResource):
             account_name=alphanumeric(
                 f"{''.join(truncate_tokens(stack_name.split('-'), 14))}configdata"
             )[:24],
-            # Hierarchical namespace is required for SFTP support
-            is_hns_enabled=True,
-            is_sftp_enabled=True,
             kind=storage.Kind.STORAGE_V2,
             location=props.location,
             network_rule_set=storage.NetworkRuleSetArgs(
@@ -461,10 +457,61 @@ class SREDataComponent(ComponentResource):
             ),
         )
 
+        # Deploy desired state blob storage account
+        # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
+        # - Store the /desired_state directory here
+        storage_account_data_desired_state = storage.StorageAccount(
+            f"{self._name}_storage_account_data_destired_state",
+            # Storage account names have a maximum of 24 characters
+            account_name=alphanumeric(
+                f"{''.join(truncate_tokens(stack_name.split('-'), 11))}desiredstate{sha256hash(self._name)}"
+            )[:24],
+            enable_https_traffic_only=True,
+            enable_nfs_v3=True,
+            encryption=storage.EncryptionArgs(
+                key_source=storage.KeySource.MICROSOFT_STORAGE,
+                services=storage.EncryptionServicesArgs(
+                    blob=storage.EncryptionServiceArgs(
+                        enabled=True, key_type=storage.KeyType.ACCOUNT
+                    ),
+                    file=storage.EncryptionServiceArgs(
+                        enabled=True, key_type=storage.KeyType.ACCOUNT
+                    ),
+                ),
+            ),
+            kind=storage.Kind.BLOCK_BLOB_STORAGE,
+            is_hns_enabled=True,
+            location=props.location,
+            network_rule_set=storage.NetworkRuleSetArgs(
+                bypass=storage.Bypass.AZURE_SERVICES,
+                default_action=storage.DefaultAction.DENY,
+                ip_rules=Output.from_input(
+                    props.data_private_sensitive_ip_addresses
+                ).apply(
+                    lambda ip_ranges: [
+                        storage.IPRuleArgs(
+                            action=storage.Action.ALLOW,
+                            i_p_address_or_range=str(ip_address),
+                        )
+                        for ip_range in sorted(ip_ranges)
+                        for ip_address in AzureIPv4Range.from_cidr(ip_range).all_ips()
+                    ]
+                ),
+                virtual_network_rules=[
+                    storage.VirtualNetworkRuleArgs(
+                        virtual_network_resource_id=props.subnet_data_private_id,
+                    )
+                ],
+            ),
+            resource_group_name=resource_group.name,
+            sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
+            opts=child_opts,
+            tags=child_tags,
+        )
         # Deploy desired state share
         container_desired_state = storage.BlobContainer(
             f"{storage_account_data_configuration._name}_desired_state",
-            account_name=storage_account_data_configuration.name,
+            account_name=storage_account_data_desired_state.account_name,
             container_name="desiredstate",
             default_encryption_scope="$account-encryption-key",
             deny_encryption_scope_override=False,
@@ -472,7 +519,26 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             opts=ResourceOptions.merge(
                 child_opts,
-                ResourceOptions(parent=storage_account_data_configuration),
+                ResourceOptions(parent=storage_account_data_desired_state),
+            ),
+        )
+        # Set storage container ACLs
+        BlobContainerAcl(
+            f"{container_desired_state._name}_acl",
+            BlobContainerAclProps(
+                acl_user="rwx",
+                acl_group="r-x",
+                acl_other="r-x",
+                # ensure that the above permissions are also set on any newly created
+                # files (eg. with Azure Storage Explorer)
+                apply_default_permissions=True,
+                container_name=container_desired_state.name,
+                resource_group_name=resource_group.name,
+                storage_account_name=storage_account_data_desired_state.name,
+                subscription_name=props.subscription_name,
+            ),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=container_desired_state)
             ),
         )
         # Create archive to uplaod
@@ -488,33 +554,49 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             source=archive_desired_state,
         )
-        # Create key pair for desired state local user
-        container_desired_state_key = pulumi_tls.PrivateKey(
-            f"{storage_account_data_configuration._name}_desired_state_private_key",
-            algorithm="RSA",
-        )
-        # Create local user for desired state container for workspaces
-        container_desired_state_local_user = storage.LocalUser(
-            f"{storage_account_data_configuration._name}_desired_state_local_user",
-            account_name=storage_account_data_configuration.name,
-            has_shared_key=False,
-            has_ssh_key=True,
-            has_ssh_password=True,
-            username="workspaceuser",
-            permission_scopes=[
-                storage.PermissionScopeArgs(
-                    permissions="rl",
-                    resource_name=container_desired_state.name,
-                    service="blob",
+        # Set up a private endpoint for the sensitive data storage account
+        storage_account_data_desired_state_endpoint = network.PrivateEndpoint(
+            f"{storage_account_data_desired_state.name}_private_endpoint",
+            location=props.location,
+            private_endpoint_name=f"{stack_name}-pep-storage-account-desired-state",
+            private_link_service_connections=[
+                network.PrivateLinkServiceConnectionArgs(
+                    group_ids=["blob"],
+                    name=f"{stack_name}-cnxn-pep-storage-account-data-private-sensitive",
+                    private_link_service_id=storage_account_data_desired_state.id,
                 )
             ],
             resource_group_name=resource_group.name,
-            ssh_authorized_keys=[
-                storage.SshPublicKeyArgs(
-                    description="Workspace key",
-                    key=container_desired_state_key.public_key_openssh,
+            subnet=network.SubnetArgs(id=props.subnet_data_configuration_id),
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    ignore_changes=["custom_dns_configs"],
+                    parent=storage_account_data_desired_state,
+                ),
+            ),
+            tags=child_tags,
+        )
+        # Add a private DNS record for each sensitive data endpoint custom DNS config
+        network.PrivateDnsZoneGroup(
+            f"{storage_account_data_desired_state._name}_private_dns_zone_group",
+            private_dns_zone_configs=[
+                network.PrivateDnsZoneConfigArgs(
+                    name=replace_separators(
+                        f"{stack_name}-storage-account-data-desired-state-to-{dns_zone_name}",
+                        "-",
+                    ),
+                    private_dns_zone_id=props.dns_private_zones[dns_zone_name].id,
                 )
+                for dns_zone_name in AzureDnsZoneNames.STORAGE_ACCOUNT
             ],
+            private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-desired-state",
+            private_endpoint_name=storage_account_data_desired_state_endpoint.name,
+            resource_group_name=resource_group.name,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=storage_account_data_desired_state),
+            ),
         )
 
         # Deploy sensitive data blob storage account
@@ -567,26 +649,6 @@ class SREDataComponent(ComponentResource):
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
             tags=child_tags,
-        )
-        # Give the "Storage Blob Data Owner" role to the Azure admin group
-        authorization.RoleAssignment(
-            f"{self._name}_storage_account_data_private_sensitive_data_owner_role_assignment",
-            principal_id=props.admin_group_id,
-            principal_type=authorization.PrincipalType.GROUP,
-            role_assignment_name=str(
-                seeded_uuid(f"{stack_name} Storage Blob Data Owner")
-            ),
-            role_definition_id=Output.concat(
-                "/subscriptions/",
-                props.subscription_id,
-                "/providers/Microsoft.Authorization/roleDefinitions/",
-                self.azure_role_ids["Storage Blob Data Owner"],
-            ),
-            scope=storage_account_data_private_sensitive.id,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=storage_account_data_private_sensitive),
-            ),
         )
         # Deploy storage containers
         storage_container_egress = storage.BlobContainer(
@@ -697,6 +759,28 @@ class SREDataComponent(ComponentResource):
             ),
         )
 
+        # Give the "Storage Blob Data Owner" role to the Azure admin group
+        # for the data resource group
+        authorization.RoleAssignment(
+            f"{self._name}_data_owner_role_assignment",
+            principal_id=props.admin_group_id,
+            principal_type=authorization.PrincipalType.GROUP,
+            role_assignment_name=str(
+                seeded_uuid(f"{stack_name} Storage Blob Data Owner")
+            ),
+            role_definition_id=Output.concat(
+                "/subscriptions/",
+                props.subscription_id,
+                "/providers/Microsoft.Authorization/roleDefinitions/",
+                self.azure_role_ids["Storage Blob Data Owner"],
+            ),
+            scope=resource_group.id,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(parent=resource_group),
+            ),
+        )
+
         # Deploy data_private_user files storage account
         # - Azure Files has better NFS support and cannot be accessed with Azure Storage Explorer
         # - Allows root-squashing to be configured
@@ -804,12 +888,6 @@ class SREDataComponent(ComponentResource):
 
         # Register outputs
         self.container_desired_state_name = container_desired_state.container_name
-        self.container_desired_state_local_user_name = (
-            container_desired_state_local_user.username
-        )
-        self.container_desired_state_private_key = Output.secret(
-            container_desired_state_key.private_key_openssh
-        )
         self.sre_fqdn_certificate_secret_id = sre_fqdn_certificate.secret_id
         self.storage_account_data_private_user_name = (
             storage_account_data_private_user.name

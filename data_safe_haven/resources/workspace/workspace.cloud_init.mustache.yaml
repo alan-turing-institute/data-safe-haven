@@ -48,17 +48,11 @@ write_files:
           options(repos = r)
       })
 
-  - path: "/root/.ssh/desired_state_rsa"
-    permissions: "0600"
-    content: |
-      {{container_desired_state_private_key}}
-
   - path: "/root/desired_state.sh"
     permissions: "0700"
     content: |
       #!/usr/bin/env sh
-      scp -i /root/.ssh/desired_state_rsa -r {{container_desired_state_name}}.{{storage_account_data_configuration_name}}.{{container_desired_state_local_user}}@{{container_desired_state_name}}.blob.core.windows.net:ansible ./
-      ansible-playbook -i localhost ansible/desired_state.yaml
+      ansible-playbook -i localhost /desired_state/desired_state.yaml
 
   - path: "/etc/systemd/system/desired-state.timer"
     permissions: "0644"
@@ -88,6 +82,8 @@ write_files:
 
 
 mounts:
+  # Desired state configuration is in a blob container mounted as NFSv3
+  - ["{{storage_account_data_configuration_name}}.blob.core.windows.net:/{{storage_account_data_configuration_name}}/{{container_desired_state_name}}", /desired_state, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   # Secure data is in a blob container mounted as NFSv3
   - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/ingress", /data, nfs, "ro,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
   - ["{{storage_account_data_private_sensitive_name}}.blob.core.windows.net:/{{storage_account_data_private_sensitive_name}}/egress", /output, nfs, "rw,_netdev,sec=sys,vers=3,nolock,proto=tcp"]
