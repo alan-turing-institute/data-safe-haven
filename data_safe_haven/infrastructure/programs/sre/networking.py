@@ -362,7 +362,7 @@ class SRENetworkingComponent(ComponentResource):
                     destination_port_range="*",
                     direction=network.SecurityRuleDirection.INBOUND,
                     name="AllowWorkspacesInbound",
-                    priority=NetworkingPriorities.INTERNAL_WORKSPACES,
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
                     protocol=network.SecurityRuleProtocol.ASTERISK,
                     source_address_prefix=SREIpRanges.workspaces.prefix,
                     source_port_range="*",
