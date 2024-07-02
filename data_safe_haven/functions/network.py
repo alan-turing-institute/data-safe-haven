@@ -17,9 +17,9 @@ def current_ip_address(*, as_cidr: bool = False) -> str:
         DataSafeHavenValueError: if the current IP address could not be determined
     """
     try:
-        ip_address = requests.get("https://api.ipify.org", timeout=300).content.decode(
-            "utf8"
-        )
+        response = requests.get("https://api.ipify.org", timeout=300)
+        response.raise_for_status()
+        ip_address = response.content.decode("utf8")
         if as_cidr:
             return str(ipaddress.IPv4Network(ip_address))
         return ip_address
