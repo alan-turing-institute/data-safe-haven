@@ -511,7 +511,7 @@ class SREDataComponent(ComponentResource):
         # Deploy desired state share
         container_desired_state = storage.BlobContainer(
             f"{storage_account_data_configuration._name}_desired_state",
-            account_name=storage_account_data_desired_state.account_name,
+            account_name=storage_account_data_desired_state.name,
             container_name="desiredstate",
             default_encryption_scope="$account-encryption-key",
             deny_encryption_scope_override=False,
