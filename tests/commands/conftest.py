@@ -172,6 +172,20 @@ def mock_sre_project_manager_deploy_then_exit(mocker):
 
 
 @fixture
+def mock_sre_project_manager_teardown_then_exit(mocker):
+    def teardown_then_exit(*args, **kwargs):  # noqa: ARG001
+        print("mock teardown")  # noqa: T201
+        msg = "mock teardown error"
+        raise DataSafeHavenAzureAPIAuthenticationError(msg)
+
+    mocker.patch.object(
+        SREProjectManager,
+        "teardown",
+        side_effect=teardown_then_exit,
+    )
+
+
+@fixture
 def runner(tmp_contexts):
     runner = CliRunner(
         env={
