@@ -101,6 +101,7 @@ class BlobContainerAclProvider(DshResourceProvider):
         """TODO: check whether ACLs have changed"""
         return dict(**props)
 
+
 class BlobContainerAcl(Resource):
     _resource_type_name = "dsh:common:BlobContainerAcl"  # set resource type
 
