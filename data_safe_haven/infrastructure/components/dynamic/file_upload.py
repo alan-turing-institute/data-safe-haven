@@ -117,6 +117,10 @@ class FileUploadProvider(DshResourceProvider):
             )
         return self.partial_diff(old_props, new_props, [])
 
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
+        """TODO: check whether file has changed"""
+        return dict(**props)
+
     def update(
         self,
         id_: str,

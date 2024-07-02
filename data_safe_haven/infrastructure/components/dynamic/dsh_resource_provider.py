@@ -58,9 +58,6 @@ class DshResourceProvider(ResourceProvider, metaclass=ABCMeta):
             delete_before_replace=True,  # delete the existing resource before replacing
         )
 
-    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
-        return dict(**props)
-
     def check(
         self, old_props: dict[str, Any], new_props: dict[str, Any]
     ) -> CheckResult:
@@ -133,6 +130,16 @@ class DshResourceProvider(ResourceProvider, metaclass=ABCMeta):
         """
         props = self.refresh(props)
         return ReadResult(id_, props)
+
+    @abstractmethod
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
+        """
+        Given a set of props, check whether these are still correct.
+
+        Returns:
+            dict[str, Any]: a set of props that represent the current state of the remote object
+        """
+        return dict(**props)
 
     def update(
         self,

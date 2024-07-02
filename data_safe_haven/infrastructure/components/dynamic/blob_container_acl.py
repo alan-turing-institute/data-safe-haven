@@ -97,6 +97,9 @@ class BlobContainerAclProvider(DshResourceProvider):
         id(id_)
         return self.partial_diff(old_props, new_props)
 
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
+        """TODO: check whether ACLs have changed"""
+        return dict(**props)
 
 class BlobContainerAcl(Resource):
     _resource_type_name = "dsh:common:BlobContainerAcl"  # set resource type
