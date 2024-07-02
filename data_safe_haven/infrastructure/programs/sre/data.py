@@ -485,9 +485,7 @@ class SREDataComponent(ComponentResource):
             network_rule_set=storage.NetworkRuleSetArgs(
                 bypass=storage.Bypass.AZURE_SERVICES,
                 default_action=storage.DefaultAction.DENY,
-                ip_rules=Output.from_input(
-                    props.data_configuration_ip_addresses
-                ).apply(
+                ip_rules=Output.from_input(props.data_configuration_ip_addresses).apply(
                     lambda ip_ranges: [
                         storage.IPRuleArgs(
                             action=storage.Action.ALLOW,
