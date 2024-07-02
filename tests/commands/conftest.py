@@ -14,7 +14,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureApi, GraphApi
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
-from data_safe_haven.infrastructure import ImperativeSHM
+from data_safe_haven.infrastructure import ImperativeSHM, SREProjectManager
 
 
 @fixture
@@ -98,10 +98,22 @@ def mock_pulumi_config_from_remote(mocker, pulumi_config):
 
 
 @fixture
+def mock_pulumi_config_from_remote_or_create(mocker, pulumi_config_empty):
+    mocker.patch.object(
+        DSHPulumiConfig, "from_remote_or_create", return_value=pulumi_config_empty
+    )
+
+
+@fixture
 def mock_pulumi_config_no_key_from_remote(mocker, pulumi_config_no_key):
     mocker.patch.object(
         DSHPulumiConfig, "from_remote", return_value=pulumi_config_no_key
     )
+
+
+@fixture
+def mock_pulumi_config_upload(mocker):
+    mocker.patch.object(DSHPulumiConfig, "upload", return_value=None)
 
 
 @fixture
@@ -142,6 +154,20 @@ def mock_sre_config_from_remote(mocker, sre_config):
 def mock_sre_config_alternate_from_remote(mocker, sre_config_alternate):
     mocker.patch.object(
         SREConfig, "from_remote_by_name", return_value=sre_config_alternate
+    )
+
+
+@fixture
+def mock_sre_project_manager_deploy_then_exit(mocker):
+    def create_then_exit(*args, **kwargs):  # noqa: ARG001
+        print("mock deploy")  # noqa: T201
+        msg = "mock deploy error"
+        raise DataSafeHavenAzureAPIAuthenticationError(msg)
+
+    mocker.patch.object(
+        SREProjectManager,
+        "deploy",
+        side_effect=create_then_exit,
     )
 
 
