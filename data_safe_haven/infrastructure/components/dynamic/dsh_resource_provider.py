@@ -68,9 +68,11 @@ class DshResourceProvider(ResourceProvider, metaclass=ABCMeta):
         Returns:
             CheckResult: a set of checked inputs together with any failures
         """
-        # Use `id` as a no-op to avoid ARG002 while maintaining function signature
-        id(old_props)
-        return CheckResult(self.refresh(new_props), [])
+        # Ensure that old props are up-to-date
+        props = self.refresh(old_props)
+        # Overwrite with any changes from new props
+        props.update(new_props)
+        return CheckResult(props, [])
 
     @abstractmethod
     def create(self, props: dict[str, Any]) -> CreateResult:
@@ -128,8 +130,7 @@ class DshResourceProvider(ResourceProvider, metaclass=ABCMeta):
         Returns:
             CreateResult: a unique ID for this object plus a set of output properties
         """
-        props = self.refresh(props)
-        return ReadResult(id_, props)
+        return ReadResult(id_, self.refresh(props))
 
     @abstractmethod
     def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
