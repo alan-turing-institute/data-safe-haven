@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
 import pulumi_random
-from pulumi import ComponentResource, FileArchive, Input, Output, ResourceOptions
+from pulumi import ComponentResource, FileAsset, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     authorization,
     keyvault,
@@ -539,19 +539,24 @@ class SREDataComponent(ComponentResource):
                 child_opts, ResourceOptions(parent=container_desired_state)
             ),
         )
-        # Create archive to uplaod
-        archive_desired_state = FileArchive(
-            str(resources_path / "workspace" / "ansible")
-        )
-        # Upload archive to desired state container
-        storage.Blob(
-            f"{storage_account_data_configuration._name}_desired_state_blob",
-            account_name=storage_account_data_configuration.name,
-            blob_name="ansible",
-            container_name=container_desired_state.name,
-            resource_group_name=resource_group.name,
-            source=archive_desired_state,
-        )
+        # Create file assets to upload
+        files_desired_state = [
+            FileAsset(str(file_path))
+            for file_path in sorted(
+                (resources_path / "workspace" / "ansible").rglob("*")
+            )
+            if file_path.is_file()
+        ]
+        # Upload file assets to desired state container
+        for file in files_desired_state:
+            storage.Blob(
+                f"{container_desired_state._name}_blob_{file}",
+                account_name=storage_account_data_configuration.name,
+                blob_name="ansible",
+                container_name=container_desired_state.name,
+                resource_group_name=resource_group.name,
+                source=file,
+            )
         # Set up a private endpoint for the desired state storage account
         storage_account_data_desired_state_endpoint = network.PrivateEndpoint(
             f"{storage_account_data_desired_state.name}_private_endpoint",
