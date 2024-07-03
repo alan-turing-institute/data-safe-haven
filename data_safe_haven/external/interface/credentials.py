@@ -13,6 +13,7 @@ from azure.identity import (
 )
 
 from data_safe_haven.singleton import Singleton
+from data_safe_haven.external.api.azure_cli import AzureCliSingleton
 
 
 class DeferredCredentialLoader(metaclass=Singleton):
@@ -52,6 +53,7 @@ class AzureApiCredentialLoader(DeferredCredentialLoader):
 
     def get_credential(self) -> TokenCredential:
         """Get a new AzureCliCredential."""
+        AzureCliSingleton().confirm()  # get user confirmation of the current account
         return AzureCliCredential(additionally_allowed_tenants=["*"])
 
 

@@ -20,6 +20,7 @@ class AzureCliAccount:
     name: str
     id_: str
     tenant_id: str
+    tenant_name: str
 
 
 class AzureCliSingleton(metaclass=Singleton):
@@ -60,6 +61,7 @@ class AzureCliSingleton(metaclass=Singleton):
                 name=result_dict.get("user").get("name"),
                 id_=result_dict.get("id"),
                 tenant_id=result_dict.get("tenantId"),
+                tenant_name=result_dict.get("tenantDisplayName"),
             )
 
         return self._account
@@ -70,8 +72,13 @@ class AzureCliSingleton(metaclass=Singleton):
             return None
 
         account = self.account
-        self.logger.info(f"Azure user: {account.name} ({account.id_})")
-        self.logger.info(f"Azure tenant ID: {account.tenant_id})")
+        self.logger.info(
+            "You are currently logged into the Azure CLI with the following details:"
+        )
+        self.logger.info(f"... Azure user: [blue]{account.name}[/] ({account.id_})")
+        self.logger.info(
+            f"... Azure tenant: [blue]{account.tenant_name}[/] ({account.tenant_id})"
+        )
         if not console.confirm(
             "Is this the Azure account you expect?", default_to_yes=False
         ):

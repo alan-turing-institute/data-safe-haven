@@ -4,7 +4,7 @@ from shutil import which
 from typing import Any
 
 from data_safe_haven.exceptions import DataSafeHavenPulumiError
-from data_safe_haven.external import AzureApi, AzureCliSingleton
+from data_safe_haven.external import AzureApi
 
 
 class PulumiAccount:
@@ -25,10 +25,6 @@ class PulumiAccount:
         if which("pulumi") is None:
             msg = "Unable to find Pulumi CLI executable in your path.\nPlease ensure that Pulumi is installed"
             raise DataSafeHavenPulumiError(msg)
-
-        # Ensure Azure CLI account is correct
-        # This will be needed to populate env
-        AzureCliSingleton().confirm()
 
     @property
     def env(self) -> dict[str, Any]:
