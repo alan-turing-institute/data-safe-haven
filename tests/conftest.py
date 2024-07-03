@@ -129,11 +129,8 @@ def mock_azure_cli_confirm(monkeypatch):
 
 
 @fixture
-def mock_install_plugins(monkeypatch):
-    """Skip installing Pulumi plugins"""
-    monkeypatch.setattr(
-        ProjectManager, "install_plugins", lambda self: None  # noqa: ARG005
-    )
+def mock_install_plugins(mocker):
+    mocker.patch.object(ProjectManager, "install_plugins", return_value=None)
 
 
 @fixture

@@ -50,7 +50,6 @@ class ProjectManager:
         self.pulumi_project_name = pulumi_project_name
         self.program = program
         self.create_project = create_project
-
         self.account = PulumiAccount(
             resource_group_name=context.resource_group_name,
             storage_account_name=context.storage_account_name,
@@ -63,8 +62,6 @@ class ProjectManager:
         self.project_name = replace_separators(context.tags["project"].lower(), "-")
         self._pulumi_project: DSHPulumiProject | None = None
         self.stack_name = self.program.stack_name
-
-        self.install_plugins()
 
     @property
     def pulumi_extra_args(self) -> dict[str, Any]:
@@ -135,7 +132,9 @@ class ProjectManager:
                 )
                 self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
                 # Ensure encrypted key is stored in the Pulumi configuration
-                self.update_dsh_pulumi_encrypted_key()
+                self.update_dsh_pulumi_encrypted_key(self._stack.workspace)
+                # Ensure workspace plugins are installed
+                self.install_plugins(self._stack.workspace)
             except automation.CommandError as exc:
                 self.log_exception(exc)
                 msg = f"Could not load Pulumi stack {self.stack_name}."
@@ -277,16 +276,14 @@ class ProjectManager:
             msg = "Pulumi operation failed."
             raise DataSafeHavenPulumiError(msg)
 
-    def install_plugins(self) -> None:
+    def install_plugins(self, workspace: automation.Workspace) -> None:
         """For inline programs, we must manage plugins ourselves."""
         try:
             self.logger.debug("Installing required Pulumi plugins")
-            self.stack.workspace.install_plugin(
+            workspace.install_plugin(
                 "azure-native", metadata.version("pulumi-azure-native")
             )
-            self.stack.workspace.install_plugin(
-                "random", metadata.version("pulumi-random")
-            )
+            workspace.install_plugin("random", metadata.version("pulumi-random"))
         except Exception as exc:
             msg = "Installing Pulumi plugins failed.."
             raise DataSafeHavenPulumiError(msg) from exc
@@ -357,10 +354,12 @@ class ProjectManager:
         self.stack.set_config(name, automation.ConfigValue(value=value, secret=secret))
         self.update_dsh_pulumi_project()
 
-    def teardown(self) -> None:
+    def teardown(self, *, force: bool = False) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
         try:
             self.refresh()
+            if force:
+                self.cancel()
             self.destroy()
         except Exception as exc:
             self.log_exception(exc)
@@ -388,11 +387,9 @@ class ProjectManager:
         }
         self.pulumi_project.stack_config = all_config_dict
 
-    def update_dsh_pulumi_encrypted_key(self) -> None:
+    def update_dsh_pulumi_encrypted_key(self, workspace: automation.Workspace) -> None:
         """Update encrypted key in the DSHPulumiProject object"""
-        stack_key = self.stack.workspace.stack_settings(
-            stack_name=self.stack_name
-        ).encrypted_key
+        stack_key = workspace.stack_settings(stack_name=self.stack_name).encrypted_key
 
         if not self.pulumi_config.encrypted_key:
             self.pulumi_config.encrypted_key = stack_key
