@@ -551,7 +551,7 @@ class SREDataComponent(ComponentResource):
         for file in files_desired_state:
             storage.Blob(
                 f"{container_desired_state._name}_blob_{file}",
-                account_name=storage_account_data_configuration.name,
+                account_name=storage_account_data_desired_state.name,
                 blob_name="ansible",
                 container_name=container_desired_state.name,
                 resource_group_name=resource_group.name,
