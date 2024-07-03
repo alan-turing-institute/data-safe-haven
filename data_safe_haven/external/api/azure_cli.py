@@ -103,3 +103,31 @@ class AzureCliSingleton(metaclass=Singleton):
         except (IndexError, KeyError) as exc:
             msg = f"Group '{group_name}' was not found in Azure CLI."
             raise DataSafeHavenAzureError(msg) from exc
+
+    def subscription_id(self, subscription_name: str) -> str:
+        """Get subscription ID from an Azure subscription name."""
+        try:
+            result = subprocess.check_output(
+                [
+                    self.path,
+                    "account",
+                    "subscription",
+                    "list",
+                    "--query",
+                    f"[?displayName == '{subscription_name}']",
+                ],
+                stderr=subprocess.PIPE,
+                encoding="utf8",
+            )
+            result_dict = json.loads(result)
+            return str(result_dict[0]["subscriptionId"])
+        except subprocess.CalledProcessError as exc:
+            self.logger.critical(exc.stderr)
+            msg = "Error reading subscriptions from Azure CLI."
+            raise DataSafeHavenAzureError(msg) from exc
+        except json.JSONDecodeError as exc:
+            msg = "Unable to parse Azure CLI output as JSON."
+            raise DataSafeHavenAzureError(msg) from exc
+        except (IndexError, KeyError) as exc:
+            msg = f"Subscription '{subscription_name}' was not found in Azure CLI."
+            raise DataSafeHavenAzureError(msg) from exc
