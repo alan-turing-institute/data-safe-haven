@@ -11,6 +11,7 @@ from azure.core.exceptions import (
     ResourceNotFoundError,
     ServiceRequestError,
 )
+from azure.identity import AzureCliCredential
 from azure.keyvault.certificates import (
     CertificateClient,
     KeyVaultCertificate,
@@ -66,13 +67,40 @@ from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
 from data_safe_haven.logging import get_logger
 
+from .azure_cli import AzureCliSingleton
 
-class AzureApi(AzureAuthenticator):
+
+class AzureApi:
     """Interface to the Azure REST API"""
 
     def __init__(self, subscription_name: str) -> None:
-        super().__init__(subscription_name)
         self.logger = get_logger()
+        self.subscription_name = subscription_name
+        self.credential_: str | None = None
+        self.subscription_id_: str | None = None
+        self.tenant_id_: str | None = None
+
+    @property
+    def credential(self) -> AzureCliCredential:
+        if not self.credential_:
+            authenticator = AzureAuthenticator(self.subscription_name)
+            self.credential_ = authenticator.credential
+        return self.credential_
+
+    @property
+    def subscription_id(self) -> str:
+        if not self.subscription_id_:
+            self.subscription_id_ = AzureCliSingleton().subscription_id(
+                self.subscription_name
+            )
+        return self.subscription_id_
+
+    @property
+    def tenant_id(self) -> str:
+        if not self.tenant_id_:
+            authenticator = AzureAuthenticator(self.subscription_name)
+            self.tenant_id_ = authenticator.tenant_id
+        return self.tenant_id_
 
     def blob_client(
         self,
