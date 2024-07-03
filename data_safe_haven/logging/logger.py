@@ -3,6 +3,7 @@
 import logging
 from datetime import UTC, datetime
 
+from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
 from rich.text import Text
 
@@ -39,6 +40,7 @@ def init_logging() -> None:
 
     console_handler = RichHandler(
         level=logging.INFO,
+        highlighter=NullHighlighter(),
         markup=True,
         rich_tracebacks=True,
         show_time=False,
