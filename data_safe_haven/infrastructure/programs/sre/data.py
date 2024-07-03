@@ -461,7 +461,7 @@ class SREDataComponent(ComponentResource):
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
         # - Store the /desired_state directory here
         storage_account_data_desired_state = storage.StorageAccount(
-            f"{self._name}_storage_account_data_destired_state",
+            f"{self._name}_storage_account_data_desired_state",
             # Storage account names have a maximum of 24 characters
             account_name=alphanumeric(
                 f"{''.join(truncate_tokens(stack_name.split('-'), 11))}desiredstate{sha256hash(self._name)}"
@@ -559,7 +559,7 @@ class SREDataComponent(ComponentResource):
             )
         # Set up a private endpoint for the desired state storage account
         storage_account_data_desired_state_endpoint = network.PrivateEndpoint(
-            f"{storage_account_data_desired_state.name}_private_endpoint",
+            f"{storage_account_data_desired_state._name}_private_endpoint",
             location=props.location,
             private_endpoint_name=f"{stack_name}-pep-storage-account-desired-state",
             private_link_service_connections=[
