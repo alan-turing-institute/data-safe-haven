@@ -4,6 +4,7 @@ import time
 from contextlib import suppress
 from typing import Any, cast
 
+from azure.core.credentials import TokenCredential
 from azure.core.exceptions import (
     AzureError,
     HttpResponseError,
@@ -11,7 +12,6 @@ from azure.core.exceptions import (
     ResourceNotFoundError,
     ServiceRequestError,
 )
-from azure.identity import AzureCliCredential
 from azure.keyvault.certificates import (
     CertificateClient,
     KeyVaultCertificate,
@@ -65,6 +65,10 @@ from azure.storage.filedatalake import DataLakeServiceClient
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
+from data_safe_haven.external.interface.credentials import AzureApiCredentialLoader
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
+)
 from data_safe_haven.logging import get_logger
 
 from .azure_cli import AzureCliSingleton
@@ -76,16 +80,12 @@ class AzureApi:
     def __init__(self, subscription_name: str) -> None:
         self.logger = get_logger()
         self.subscription_name = subscription_name
-        self.credential_: str | None = None
         self.subscription_id_: str | None = None
         self.tenant_id_: str | None = None
 
     @property
-    def credential(self) -> AzureCliCredential:
-        if not self.credential_:
-            authenticator = AzureAuthenticator(self.subscription_name)
-            self.credential_ = authenticator.credential
-        return self.credential_
+    def credential(self) -> TokenCredential:
+        return AzureApiCredentialLoader().credential
 
     @property
     def subscription_id(self) -> str:
