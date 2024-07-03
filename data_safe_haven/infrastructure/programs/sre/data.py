@@ -1,6 +1,7 @@
 """Pulumi component for SRE data"""
 
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import ClassVar
 
 import pulumi_random
@@ -549,11 +550,16 @@ class SREDataComponent(ComponentResource):
         ]
         # Upload file assets to desired state container
         for file in files_desired_state:
+            file_path = Path(file.path)
+            file_name = file_path.name
+            blob_name = file_path.relative_to(
+                (resources_path / "workspace" / "ansible").absolute()
+            )
             storage.Blob(
-                f"{container_desired_state._name}_blob_{file}",
+                f"{container_desired_state._name}_blob_{file_name}",
                 access_tier=storage.BlobAccessTier.HOT,
                 account_name=storage_account_data_desired_state.name,
-                blob_name=file.path,
+                blob_name=blob_name,
                 container_name=container_desired_state.name,
                 resource_group_name=resource_group.name,
                 source=file,
