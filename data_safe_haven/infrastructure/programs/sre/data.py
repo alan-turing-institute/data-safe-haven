@@ -550,10 +550,14 @@ class SREDataComponent(ComponentResource):
         ]
         # Upload file assets to desired state container
         for file in files_desired_state:
-            file_path = Path(file.path)
-            file_name = file_path.name
-            blob_name = file_path.relative_to(
-                (resources_path / "workspace" / "ansible").absolute()
+            file_path = Output.from_input(file).apply(lambda file: Path(file.path))
+            file_name = Output.from_input(file_path).apply(
+                lambda file_path: file_path.name
+            )
+            blob_name = Output.from_input(file_path).apply(
+                lambda file_path: file_path.relative_to(
+                    (resources_path / "workspace" / "ansible").absolute()
+                )
             )
             storage.Blob(
                 f"{container_desired_state._name}_blob_{file_name}",
