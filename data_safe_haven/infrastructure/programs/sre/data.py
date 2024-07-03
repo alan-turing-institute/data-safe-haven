@@ -1,7 +1,6 @@
 """Pulumi component for SRE data"""
 
 from collections.abc import Mapping, Sequence
-from pathlib import Path
 from typing import ClassVar
 
 import pulumi_random
@@ -541,32 +540,26 @@ class SREDataComponent(ComponentResource):
             ),
         )
         # Create file assets to upload
+        desired_state_directory = (resources_path / "workspace" / "ansible").absolute()
         files_desired_state = [
-            FileAsset(str(file_path))
-            for file_path in sorted(
-                (resources_path / "workspace" / "ansible").rglob("*")
+            (
+                FileAsset(str(file_path)),
+                file_path.name,
+                str(file_path.relative_to(desired_state_directory)),
             )
+            for file_path in sorted(desired_state_directory.rglob("*"))
             if file_path.is_file()
         ]
         # Upload file assets to desired state container
-        for file in files_desired_state:
-            file_path = Output.from_input(file).apply(lambda file: Path(file.path))
-            file_name = Output.from_input(file_path).apply(
-                lambda file_path: file_path.name
-            )
-            blob_name = Output.from_input(file_path).apply(
-                lambda file_path: file_path.relative_to(
-                    (resources_path / "workspace" / "ansible").absolute()
-                )
-            )
+        for file_asset, file_name, file_path in files_desired_state:
             storage.Blob(
                 f"{container_desired_state._name}_blob_{file_name}",
                 access_tier=storage.BlobAccessTier.HOT,
                 account_name=storage_account_data_desired_state.name,
-                blob_name=blob_name,
+                blob_name=file_path,
                 container_name=container_desired_state.name,
                 resource_group_name=resource_group.name,
-                source=file,
+                source=file_asset,
             )
         # Set up a private endpoint for the desired state storage account
         storage_account_data_desired_state_endpoint = network.PrivateEndpoint(
