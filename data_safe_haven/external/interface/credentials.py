@@ -1,11 +1,12 @@
 """Classes related to Azure credentials"""
 
 import pathlib
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import UTC, datetime
+from typing import Any
 
-from azure.core.credentials import TokenCredential
+from azure.core.credentials import AccessToken, TokenCredential
 from azure.identity import (
     AuthenticationRecord,
     AzureCliCredential,
@@ -17,42 +18,48 @@ from data_safe_haven.external.api.azure_cli import AzureCliSingleton
 from data_safe_haven.logging import get_logger
 
 
-class DeferredCredentialLoader(metaclass=ABCMeta):
-    """A wrapper class that initialises and caches credentials as they are needed"""
+class DeferredCredential(TokenCredential):
+    """A token credential that wraps and caches other credential classes."""
+
+    token_: AccessToken | None = None
 
     def __init__(
         self,
         scopes: Sequence[str],
         tenant_id: str | None = None,
     ) -> None:
-        self.credential_: TokenCredential | None = None
+        self.logger = get_logger()
         self.scopes = scopes
         self.tenant_id = tenant_id
 
     @property
-    def credential(self) -> TokenCredential:
-        """Return the cached credential provider."""
-        if not self.credential_:
-            self.credential_ = self.get_credential()
-        return self.credential_
-
-    @property
     def token(self) -> str:
         """Get a token from the credential provider."""
-        return str(
-            self.credential.get_token(
-                *self.scopes,
-                tenant_id=self.tenant_id,
-            ).token
-        )
+        return str(self.get_token(*self.scopes, tenant_id=self.tenant_id).token)
 
     @abstractmethod
     def get_credential(self) -> TokenCredential:
-        """Get new credential provider."""
+        """Get a credential provider from the child class."""
         pass
 
+    def get_token(
+        self,
+        *scopes: str,
+        **kwargs: Any,
+    ) -> AccessToken:
+        # Require at least 10 minutes of remaining validity
+        validity_cutoff = datetime.now(tz=UTC).timestamp() + 10 * 60
+        if not DeferredCredential.token_ or (
+            DeferredCredential.token_.expires_on < validity_cutoff
+        ):
+            # Generate a new token and store it at class-level token
+            DeferredCredential.token_ = self.get_credential().get_token(
+                *scopes, **kwargs
+            )
+        return DeferredCredential.token_
 
-class AzureApiCredentialLoader(DeferredCredentialLoader):
+
+class AzureApiCredential(DeferredCredential):
     """
     Credential loader used by AzureApi
 
@@ -68,7 +75,7 @@ class AzureApiCredentialLoader(DeferredCredentialLoader):
         return AzureCliCredential(additionally_allowed_tenants=["*"])
 
 
-class GraphApiCredentialLoader(DeferredCredentialLoader):
+class GraphApiCredential(DeferredCredential):
     """
     Credential loader used by GraphApi
 
@@ -81,7 +88,6 @@ class GraphApiCredentialLoader(DeferredCredentialLoader):
         scopes: Sequence[str] = [],
     ) -> None:
         super().__init__(scopes=scopes, tenant_id=tenant_id)
-        self.logger = get_logger()
 
     def get_credential(self) -> TokenCredential:
         """Get a new DeviceCodeCredential, using cached credentials if they are available"""

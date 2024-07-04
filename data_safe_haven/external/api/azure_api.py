@@ -4,7 +4,6 @@ import time
 from contextlib import suppress
 from typing import Any, cast
 
-from azure.core.credentials import TokenCredential
 from azure.core.exceptions import (
     AzureError,
     ClientAuthenticationError,
@@ -69,7 +68,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenValueError,
 )
-from data_safe_haven.external.interface.credentials import AzureApiCredentialLoader
+from data_safe_haven.external.interface.credentials import AzureApiCredential
 from data_safe_haven.logging import get_logger
 
 
@@ -78,14 +77,10 @@ class AzureApi:
 
     def __init__(self, subscription_name: str) -> None:
         self.logger = get_logger()
-        self.authenticator = AzureApiCredentialLoader()
+        self.credential = AzureApiCredential()
         self.subscription_name = subscription_name
         self.subscription_id_: str | None = None
         self.tenant_id_: str | None = None
-
-    @property
-    def credential(self) -> TokenCredential:
-        return self.authenticator.credential
 
     @property
     def subscription_id(self) -> str:

@@ -21,7 +21,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
     DataSafeHavenValueError,
 )
-from data_safe_haven.external.interface.credentials import GraphApiCredentialLoader
+from data_safe_haven.external.interface.credentials import GraphApiCredential
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger
 
@@ -75,8 +75,8 @@ class GraphApi:
         scopes: Sequence[str],
         tenant_id: str,
     ):
-        self.authenticator = GraphApiCredentialLoader(tenant_id, list(scopes))
         self.base_endpoint = "https://graph.microsoft.com/v1.0"
+        self.credential = GraphApiCredential(tenant_id, list(scopes))
         self.logger = get_logger()
 
     @classmethod
@@ -93,7 +93,7 @@ class GraphApi:
 
     @property
     def token(self) -> str:
-        return self.authenticator.token
+        return self.credential.token
 
     def add_custom_domain(self, domain_name: str) -> str:
         """Add Entra ID custom domain

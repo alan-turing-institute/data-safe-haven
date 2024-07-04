@@ -39,7 +39,7 @@ def deploy(
         context = ContextManager.from_file().assert_context()
         shm_config = SHMConfig.from_remote(context)
 
-        # Load GraphAPI as this may require user-interaction
+        # Load GraphAPI
         graph_api = GraphApi(
             scopes=[
                 "Application.ReadWrite.All",
@@ -65,6 +65,7 @@ def deploy(
             raise DataSafeHavenConfigError(msg)
 
         # Initialise Pulumi stack
+        # Note that requesting a GraphApi token will trigger possible user-interaction
         stack = SREProjectManager(
             context=context,
             config=sre_config,
