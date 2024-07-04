@@ -3,6 +3,7 @@
 import pathlib
 from abc import ABCMeta, abstractmethod
 from collections.abc import Sequence
+from datetime import datetime
 
 from azure.core.credentials import TokenCredential
 from azure.identity import (
@@ -13,6 +14,7 @@ from azure.identity import (
 )
 
 from data_safe_haven.external.api.azure_cli import AzureCliSingleton
+from data_safe_haven.logging import get_logger
 
 
 class DeferredCredentialLoader(metaclass=ABCMeta):
@@ -79,6 +81,7 @@ class GraphApiCredentialLoader(DeferredCredentialLoader):
         scopes: Sequence[str] = [],
     ) -> None:
         super().__init__(scopes=scopes, tenant_id=tenant_id)
+        self.logger = get_logger()
 
     def get_credential(self) -> TokenCredential:
         """Get a new DeviceCodeCredential, using cached credentials if they are available"""
@@ -99,9 +102,18 @@ class GraphApiCredentialLoader(DeferredCredentialLoader):
             kwargs["client_id"] = "14d82eec-204b-4c2f-b7e8-296a70dab67e"
             kwargs["tenant_id"] = self.tenant_id
 
-        # Get a credential
+        # Get a credential with a custom callback
+        def callback(verification_uri: str, user_code: str, _: datetime) -> None:
+            self.logger.info(
+                f"Go to [bold]{verification_uri}[/] in a web browser and enter the code [bold]{user_code}[/] at the prompt."
+            )
+            self.logger.info(
+                "Use [bold]global administrator credentials[/] for your [blue]Entra ID directory[/] to sign-in."
+            )
+
         credential = DeviceCodeCredential(
             cache_persistence_options=TokenCachePersistenceOptions(name=cache_name),
+            prompt_callback=callback,
             **kwargs,
         )
 
@@ -109,6 +121,17 @@ class GraphApiCredentialLoader(DeferredCredentialLoader):
         new_auth_record = credential.authenticate(scopes=self.scopes)
         with open(authentication_record_path, "w") as f_auth:
             f_auth.write(new_auth_record.serialize())
+
+        # Write confirmation details about this login
+        self.logger.info(
+            "You are currently logged into the [blue]Microsoft Graph API[/] with the following details:"
+        )
+        self.logger.info(
+            f"... user: [green]{new_auth_record.username}[/] ({new_auth_record._home_account_id.split('.')[0]})"
+        )
+        self.logger.info(
+            f"... tenant: [green]{new_auth_record._username.split('@')[1]}[/] ({new_auth_record._tenant_id})"
+        )
 
         # Return the credential
         return credential

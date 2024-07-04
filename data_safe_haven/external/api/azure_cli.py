@@ -73,11 +73,11 @@ class AzureCliSingleton(metaclass=Singleton):
 
         account = self.account
         self.logger.info(
-            "You are currently logged into the Azure CLI with the following details:"
+            "You are currently logged into the [blue]Azure CLI[/] with the following details:"
         )
-        self.logger.info(f"... Azure user: [blue]{account.name}[/] ({account.id_})")
+        self.logger.info(f"... user: [green]{account.name}[/] ({account.id_})")
         self.logger.info(
-            f"... Azure tenant: [blue]{account.tenant_name}[/] ({account.tenant_id})"
+            f"... tenant: [green]{account.tenant_name}[/] ({account.tenant_id})"
         )
         if not console.confirm(
             "Is this the Azure account you expect?", default_to_yes=False
