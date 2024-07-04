@@ -1,20 +1,15 @@
 """Interface to the Microsoft Graph API"""
 
 import datetime
-import pathlib
 import time
 from collections.abc import Sequence
 from contextlib import suppress
-from io import UnsupportedOperation
 from typing import Any, ClassVar, Self
 
 import jwt
 import requests
 import typer
 from dns import resolver
-from msal import (
-    SerializableTokenCache,
-)
 
 from data_safe_haven import console
 from data_safe_haven.exceptions import (
@@ -24,22 +19,6 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.external.interface.credentials import GraphApiCredential
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger
-
-
-class LocalTokenCache(SerializableTokenCache):
-    def __init__(self, token_cache_filename: pathlib.Path) -> None:
-        super().__init__()
-        self.token_cache_filename = token_cache_filename
-        try:
-            if self.token_cache_filename.exists():
-                with open(self.token_cache_filename, encoding="utf-8") as f_token:
-                    self.deserialize(f_token.read())
-        except (FileNotFoundError, UnsupportedOperation):
-            self.deserialize(None)
-
-    def __del__(self) -> None:
-        with open(self.token_cache_filename, "w", encoding="utf-8") as f_token:
-            f_token.write(self.serialize())
 
 
 class GraphApi:
