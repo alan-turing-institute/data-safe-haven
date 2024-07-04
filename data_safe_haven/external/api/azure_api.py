@@ -69,11 +69,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenValueError,
 )
-from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
 from data_safe_haven.external.interface.credentials import AzureApiCredentialLoader
-from data_safe_haven.exceptions import (
-    DataSafeHavenAzureError,
-)
 from data_safe_haven.logging import get_logger
 
 

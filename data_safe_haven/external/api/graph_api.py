@@ -12,8 +12,6 @@ import requests
 import typer
 from dns import resolver
 from msal import (
-    ConfidentialClientApplication,
-    PublicClientApplication,
     SerializableTokenCache,
 )
 
@@ -79,9 +77,7 @@ class GraphApi:
         if tenant_id and scopes:
             self.authenticator = GraphApiCredentialLoader(tenant_id, list(scopes))
         self.base_endpoint = "https://graph.microsoft.com/v1.0"
-        self.default_scopes = list(scopes)
         self.logger = get_logger()
-        self.tenant_id = tenant_id
         self.auth_token = auth_token
 
     @property
@@ -379,89 +375,6 @@ class GraphApi:
             return application_sp
         except Exception as exc:
             msg = f"Could not create service principal for application '{application_name}'."
-            raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-    def create_token_administrator(self) -> str:
-        """Create an access token for a global administrator
-
-        Raises:
-            DataSafeHavenMicrosoftGraphError if the token could not be created
-        """
-        result = None
-        try:
-            # Load local token cache
-            local_token_cache = LocalTokenCache(
-                pathlib.Path.home() / f".msal_cache_{self.tenant_id}"
-            )
-            # Use the Powershell application by default as this should be pre-installed
-            app = PublicClientApplication(
-                authority=f"https://login.microsoftonline.com/{self.tenant_id}",
-                client_id="14d82eec-204b-4c2f-b7e8-296a70dab67e",  # this is the Powershell client id
-                token_cache=local_token_cache,
-            )
-            # Attempt to load token from cache
-            if accounts := app.get_accounts():
-                result = app.acquire_token_silent(
-                    self.default_scopes, account=accounts[0]
-                )
-            # Initiate device code flow
-            if not result:
-                flow = app.initiate_device_flow(scopes=self.default_scopes)
-                if "user_code" not in flow:
-                    msg = f"Could not initiate device login for scopes {self.default_scopes}."
-                    raise DataSafeHavenMicrosoftGraphError(msg)
-                self.logger.info(
-                    "Administrator approval is needed in order to interact with Entra ID."
-                )
-                self.logger.info(
-                    "Please sign-in with [bold]global administrator[/] credentials for"
-                    f" Entra tenant '[green]{self.tenant_id}[/]'."
-                )
-                self.logger.info(
-                    "Note that the sign-in screen will prompt you to sign-in to"
-                    " [blue]Microsoft Graph Command Line Tools[/] - this is expected."
-                )
-                self.logger.info(flow["message"])
-                # Block until a response is received
-                result = app.acquire_token_by_device_flow(flow)
-            return str(result["access_token"])
-        except Exception as exc:
-            error_description = "Could not create Microsoft Graph access token."
-            if isinstance(result, dict) and "error_description" in result:
-                error_description += f"\n{result['error_description']}."
-            msg = f"{error_description}"
-            raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-    def create_token_application(
-        self, application_id: str, application_secret: str
-    ) -> str:
-        """Return an access token for the given application ID and secret
-
-        Raises:
-            DataSafeHavenMicrosoftGraphError if the token could not be created
-        """
-        result = None
-        try:
-            # Use a created application
-            app = ConfidentialClientApplication(
-                client_id=application_id,
-                client_credential=application_secret,
-                authority=f"https://login.microsoftonline.com/{self.tenant_id}",
-            )
-            # Block until a response is received
-            # For this call the scopes are pre-defined by the application privileges
-            result = app.acquire_token_for_client(
-                scopes=["https://graph.microsoft.com/.default"]
-            )
-            if not isinstance(result, dict):
-                msg = "Invalid application token returned from Microsoft Graph."
-                raise DataSafeHavenMicrosoftGraphError(msg)
-            return str(result["access_token"])
-        except Exception as exc:
-            error_description = "Could not create access token"
-            if result and "error_description" in result:
-                error_description += f": {result['error_description']}"
-            msg = f"{error_description}."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_user(
