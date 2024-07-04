@@ -28,7 +28,7 @@ class SREProvisioningManager:
     ):
         self._available_vm_skus: dict[str, dict[str, Any]] | None = None
         self.location = location
-        self.graph_api = GraphApi(auth_token=graph_api_token)
+        self.graph_api = GraphApi.from_token(graph_api_token)
         self.logger = get_logger()
         self.sre_name = sre_name
         self.subscription_name = subscription_name

@@ -6,8 +6,9 @@ import time
 from collections.abc import Sequence
 from contextlib import suppress
 from io import UnsupportedOperation
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
+import jwt
 import requests
 import typer
 from dns import resolver
@@ -18,6 +19,7 @@ from msal import (
 from data_safe_haven import console
 from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
+    DataSafeHavenValueError,
 )
 from data_safe_haven.external.interface.credentials import GraphApiCredentialLoader
 from data_safe_haven.functions import alphanumeric
@@ -70,20 +72,27 @@ class GraphApi:
     def __init__(
         self,
         *,
-        auth_token: str | None = None,
-        scopes: Sequence[str] = [],
-        tenant_id: str | None = None,
+        scopes: Sequence[str],
+        tenant_id: str,
     ):
-        if tenant_id and scopes:
-            self.authenticator = GraphApiCredentialLoader(tenant_id, list(scopes))
+        self.authenticator = GraphApiCredentialLoader(tenant_id, list(scopes))
         self.base_endpoint = "https://graph.microsoft.com/v1.0"
         self.logger = get_logger()
-        self.auth_token = auth_token
+
+    @classmethod
+    def from_token(cls: type[Self], auth_token: str) -> "GraphApi":
+        """Construct a GraphApi from an existing authentication token."""
+        try:
+            decoded = jwt.decode(
+                auth_token, algorithms=["RS256"], options={"verify_signature": False}
+            )
+            return cls(scopes=str(decoded["scp"]).split(), tenant_id=decoded["tid"])
+        except (jwt.exceptions.DecodeError, KeyError) as exc:
+            msg = "Could not interpret Graph API authentication token."
+            raise DataSafeHavenValueError(msg) from exc
 
     @property
     def token(self) -> str:
-        if self.auth_token:
-            return self.auth_token
         return self.authenticator.token
 
     def add_custom_domain(self, domain_name: str) -> str:
