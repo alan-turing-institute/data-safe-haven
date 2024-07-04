@@ -118,12 +118,12 @@ class ImperativeSHM:
         try:
             # Generate the verification record
             graph_api = GraphApi(
-                tenant_id=self.config.shm.entra_tenant_id,
-                default_scopes=[
+                scopes=[
                     "Application.ReadWrite.All",
                     "Domain.ReadWrite.All",
                     "Group.ReadWrite.All",
                 ],
+                tenant_id=self.config.shm.entra_tenant_id,
             )
             verification_record = graph_api.add_custom_domain(self.config.shm.fqdn)
             # Add the record to DNS

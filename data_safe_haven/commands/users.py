@@ -42,12 +42,12 @@ def add(
 
         # Load GraphAPI
         graph_api = GraphApi(
-            tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=[
+            scopes=[
                 "Group.Read.All",
                 "User.ReadWrite.All",
                 "UserAuthenticationMethod.ReadWrite.All",
             ],
+            tenant_id=shm_config.shm.entra_tenant_id,
         )
 
         # Add users to SHM
@@ -81,8 +81,8 @@ def list_users(
 
         # Load GraphAPI
         graph_api = GraphApi(
+            scopes=["Directory.Read.All", "Group.Read.All"],
             tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=["Directory.Read.All", "Group.Read.All"],
         )
 
         # Load Pulumi config
@@ -137,8 +137,8 @@ def register(
 
         # Load GraphAPI
         graph_api = GraphApi(
+            scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
             tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
         )
 
         logger.debug(
@@ -188,8 +188,8 @@ def remove(
 
         # Load GraphAPI
         graph_api = GraphApi(
+            scopes=["User.ReadWrite.All"],
             tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=["User.ReadWrite.All"],
         )
 
         # Remove users from SHM
@@ -242,8 +242,8 @@ def unregister(
 
         # Load GraphAPI
         graph_api = GraphApi(
+            scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
             tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=["Group.ReadWrite.All", "GroupMember.ReadWrite.All"],
         )
 
         logger.debug(

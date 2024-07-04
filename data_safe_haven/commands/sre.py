@@ -41,13 +41,13 @@ def deploy(
 
         # Load GraphAPI as this may require user-interaction
         graph_api = GraphApi(
-            tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=[
+            scopes=[
                 "Application.ReadWrite.All",
                 "AppRoleAssignment.ReadWrite.All",
                 "Directory.ReadWrite.All",
                 "Group.ReadWrite.All",
             ],
+            tenant_id=shm_config.shm.entra_tenant_id,
         )
 
         # Load Pulumi and SRE configs
@@ -146,8 +146,8 @@ def teardown(
 
         # Load GraphAPI as this may require user-interaction
         graph_api = GraphApi(
+            scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
             tenant_id=shm_config.shm.entra_tenant_id,
-            default_scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
         )
 
         # Load Pulumi and SRE configs

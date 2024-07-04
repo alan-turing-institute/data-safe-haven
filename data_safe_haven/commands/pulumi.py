@@ -42,13 +42,13 @@ def run(
     sre_config = SREConfig.from_remote_by_name(context, sre_name)
 
     graph_api = GraphApi(
-        tenant_id=shm_config.shm.entra_tenant_id,
-        default_scopes=[
+        scopes=[
             "Application.ReadWrite.All",
             "AppRoleAssignment.ReadWrite.All",
             "Directory.ReadWrite.All",
             "Group.ReadWrite.All",
         ],
+        tenant_id=shm_config.shm.entra_tenant_id,
     )
 
     project = SREProjectManager(

@@ -21,6 +21,7 @@ from data_safe_haven import console
 from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
 )
+from data_safe_haven.external.interface.credentials import GraphApiCredentialLoader
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger
 
@@ -71,27 +72,23 @@ class GraphApi:
     def __init__(
         self,
         *,
-        tenant_id: str | None = None,
         auth_token: str | None = None,
-        application_id: str | None = None,
-        application_secret: str | None = None,
-        base_endpoint: str = "",
-        default_scopes: Sequence[str] = [],
+        scopes: Sequence[str] = [],
+        tenant_id: str | None = None,
     ):
-        self.base_endpoint = (
-            base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
-        )
-        self.default_scopes = list(default_scopes)
+        if tenant_id and scopes:
+            self.authenticator = GraphApiCredentialLoader(tenant_id, list(scopes))
+        self.base_endpoint = "https://graph.microsoft.com/v1.0"
+        self.default_scopes = list(scopes)
         self.logger = get_logger()
         self.tenant_id = tenant_id
-        if auth_token:
-            self.token = auth_token
-        elif application_id and application_secret:
-            self.token = self.create_token_application(
-                application_id, application_secret
-            )
-        else:
-            self.token = self.create_token_administrator()
+        self.auth_token = auth_token
+
+    @property
+    def token(self) -> str:
+        if self.auth_token:
+            return self.auth_token
+        return self.authenticator.token
 
     def add_custom_domain(self, domain_name: str) -> str:
         """Add Entra ID custom domain
