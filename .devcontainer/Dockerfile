@@ -11,12 +11,12 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     lsb-release \
     python3-sphinx \
     sudo
-    
+
 # Set package versions
 ARG AZURE_CLI_VERSION="2.58.0"
-ARG PWSH_VERSION="7.4.1"
+ARG PWSH_VERSION="7.4.3"
 
-# Install Azure-CLI 
+# Install Azure-CLI
 # Get Microsoft signing key
 RUN sudo mkdir -p /etc/apt/keyrings \
   && curl -sLS https://packages.microsoft.com/keys/microsoft.asc | \
