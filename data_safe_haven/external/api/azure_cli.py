@@ -47,12 +47,11 @@ class AzureCliSingleton(metaclass=Singleton):
                     stderr=subprocess.PIPE,
                     encoding="utf8",
                 )
-            except subprocess.CalledProcessError as exc:
-                msg = f"Error getting account information from Azure CLI.\n{exc.stderr}"
-                raise DataSafeHavenAzureError(msg) from exc
-
-            try:
                 result_dict = json.loads(result)
+            except subprocess.CalledProcessError as exc:
+                self.logger.error(str(exc.stderr).replace("ERROR:", "").strip())
+                msg = "Error getting account information from Azure CLI."
+                raise DataSafeHavenAzureError(msg) from exc
             except json.JSONDecodeError as exc:
                 msg = f"Unable to parse Azure CLI output as JSON.\n{result}"
                 raise DataSafeHavenAzureError(msg) from exc
