@@ -13,7 +13,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
 )
 from data_safe_haven.external import AzureApi, GraphApi
-from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
 from data_safe_haven.infrastructure import ImperativeSHM, SREProjectManager
 
 
@@ -28,20 +27,6 @@ def mock_azure_api_blob_exists_false(mocker):
 
 
 @fixture
-def mock_azure_authenticator_login_exception(mocker):
-    def login_then_exit():
-        print("mock login")  # noqa: T201
-        msg = "mock login error"
-        raise DataSafeHavenAzureAPIAuthenticationError(msg)
-
-    mocker.patch.object(
-        AzureAuthenticator,
-        "login",
-        side_effect=login_then_exit,
-    )
-
-
-@fixture
 def mock_graph_api_add_custom_domain(mocker):
     mocker.patch.object(
         GraphApi, "add_custom_domain", return_value="dummy-verification-record"
@@ -49,10 +34,8 @@ def mock_graph_api_add_custom_domain(mocker):
 
 
 @fixture
-def mock_graph_api_create_token_administrator(mocker):
-    mocker.patch.object(
-        GraphApi, "create_token_administrator", return_value="dummy-token"
-    )
+def mock_graph_api_token(mocker):
+    mocker.patch.object(GraphApi, "token", return_value="dummy-token")
 
 
 @fixture

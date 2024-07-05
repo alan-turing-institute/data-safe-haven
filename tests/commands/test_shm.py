@@ -7,7 +7,7 @@ class TestDeploySHM:
         runner,
         mock_imperative_shm_deploy_then_exit,  # noqa: ARG002
         mock_graph_api_add_custom_domain,  # noqa: ARG002
-        mock_graph_api_create_token_administrator,  # noqa: ARG002
+        mock_graph_api_token,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
         mock_shm_config_remote_exists,  # noqa: ARG002
         mock_shm_config_upload,  # noqa: ARG002
@@ -30,7 +30,7 @@ class TestDeploySHM:
     def test_infrastructure_auth_failure(
         self,
         runner,
-        mock_azure_authenticator_login_exception,  # noqa: ARG002
+        mock_azure_cli_confirm_then_exit,  # noqa: ARG002
     ):
         result = runner.invoke(shm_command_group, ["deploy"])
         assert result.exit_code == 1
@@ -62,7 +62,7 @@ class TestTeardownSHM:
     def test_auth_failure(
         self,
         runner,
-        mock_azure_authenticator_login_exception,  # noqa: ARG002
+        mock_azure_cli_confirm_then_exit,  # noqa: ARG002
     ):
         result = runner.invoke(shm_command_group, ["teardown"])
         assert result.exit_code == 1

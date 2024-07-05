@@ -8,7 +8,7 @@ class TestRun:
         mock_shm_config_from_remote,  # noqa: ARG002
         mock_sre_config_from_remote,  # noqa: ARG002
         mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
-        mock_graph_api_create_token_administrator,  # noqa: ARG002
+        mock_graph_api_token,  # noqa: ARG002
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
         mock_key_vault_key,  # noqa: ARG002
@@ -33,7 +33,7 @@ class TestRun:
         mock_shm_config_from_remote,  # noqa: ARG002
         mock_sre_config_from_remote,  # noqa: ARG002
         mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
-        mock_graph_api_create_token_administrator,  # noqa: ARG002
+        mock_graph_api_token,  # noqa: ARG002
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
         mock_key_vault_key,  # noqa: ARG002
@@ -52,7 +52,7 @@ class TestRun:
         mock_shm_config_from_remote,  # noqa: ARG002
         mock_sre_config_alternate_from_remote,  # noqa: ARG002
         mock_pulumi_config_no_key_from_remote,  # noqa: ARG002
-        mock_graph_api_create_token_administrator,  # noqa: ARG002
+        mock_graph_api_token,  # noqa: ARG002
         mock_azure_cli_confirm,  # noqa: ARG002
         mock_install_plugins,  # noqa: ARG002
         mock_key_vault_key,  # noqa: ARG002

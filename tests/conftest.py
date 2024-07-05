@@ -6,6 +6,7 @@ import yaml
 from pulumi.automation import ProjectSettings
 from pytest import fixture
 
+import data_safe_haven.commands.sre as sre_mod
 import data_safe_haven.config.context_manager as context_mod
 import data_safe_haven.logging.logger
 from data_safe_haven.config import (
@@ -22,6 +23,7 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
 )
+from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError
 from data_safe_haven.external import AzureApi, AzureCliSingleton, PulumiAccount
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.infrastructure.project_manager import ProjectManager
@@ -123,9 +125,27 @@ def log_directory(session_mocker, tmp_path_factory):
 
 
 @fixture
-def mock_azure_cli_confirm(monkeypatch):
+def mock_azure_cli_confirm(mocker):
     """Always pass AzureCliSingleton.confirm without attempting login"""
-    monkeypatch.setattr(AzureCliSingleton, "confirm", lambda self: None)  # noqa: ARG005
+    mocker.patch.object(
+        AzureCliSingleton,
+        "confirm",
+        return_value=None,
+    )
+
+
+@fixture
+def mock_azure_cli_confirm_then_exit(mocker):
+    def confirm_then_exit():
+        print("mock login")  # noqa: T201
+        msg = "mock login error"
+        raise DataSafeHavenAzureAPIAuthenticationError(msg)
+
+    mocker.patch.object(
+        AzureCliSingleton,
+        "confirm",
+        side_effect=confirm_then_exit,
+    )
 
 
 @fixture

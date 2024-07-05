@@ -6,7 +6,7 @@ class TestDeploySRE:
         self,
         runner,
         mock_azure_cli_confirm,  # noqa: ARG002
-        mock_graph_api_create_token_administrator,  # noqa: ARG002
+        mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
         mock_pulumi_config_upload,  # noqa: ARG002
@@ -27,7 +27,7 @@ class TestDeploySRE:
     def test_auth_failure(
         self,
         runner,
-        mock_azure_authenticator_login_exception,  # noqa: ARG002
+        mock_azure_cli_confirm_then_exit,  # noqa: ARG002
     ):
         result = runner.invoke(sre_command_group, ["deploy", "sandbox"])
         assert result.exit_code == 1
@@ -51,7 +51,7 @@ class TestTeardownSRE:
         self,
         runner,
         mock_azure_cli_confirm,  # noqa: ARG002
-        mock_graph_api_create_token_administrator,  # noqa: ARG002
+        mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote,  # noqa: ARG002
         mock_shm_config_from_remote,  # noqa: ARG002
@@ -83,7 +83,7 @@ class TestTeardownSRE:
     def test_auth_failure(
         self,
         runner,
-        mock_azure_authenticator_login_exception,  # noqa: ARG002
+        mock_azure_cli_confirm_then_exit,  # noqa: ARG002
     ):
         result = runner.invoke(sre_command_group, ["teardown", "sandbox"])
         assert result.exit_code == 1
