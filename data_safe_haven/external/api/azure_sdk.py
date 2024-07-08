@@ -718,7 +718,7 @@ class AzureSdk:
             raise DataSafeHavenAzureError(msg) from exc
 
     def get_subscription(self, subscription_name: str) -> Subscription:
-        """Get the current Azure subscription."""
+        """Get an Azure subscription by name."""
         try:
             subscription_client = SubscriptionClient(self.credential)
             for subscription in subscription_client.subscriptions.list():
