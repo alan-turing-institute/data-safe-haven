@@ -16,7 +16,7 @@ from azure.identity import (
     TokenCachePersistenceOptions,
 )
 
-from data_safe_haven.exceptions import DataSafeHavenAzureError
+from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenValueError
 from data_safe_haven.logging import get_logger
 
 
@@ -38,6 +38,20 @@ class DeferredCredential(TokenCredential):
     def token(self) -> str:
         """Get a token from the credential provider."""
         return str(self.get_token(*self.scopes, tenant_id=self.tenant_id).token)
+
+    @classmethod
+    def decode_token(cls, auth_token: str) -> dict[str, Any]:
+        try:
+            return dict(
+                jwt.decode(
+                    auth_token,
+                    algorithms=["RS256"],
+                    options={"verify_signature": False},
+                )
+            )
+        except (jwt.exceptions.DecodeError, KeyError) as exc:
+            msg = "Could not interpret input as an Azure authentication token."
+            raise DataSafeHavenValueError(msg) from exc
 
     @abstractmethod
     def get_credential(self) -> TokenCredential:
@@ -76,10 +90,7 @@ class AzureSdkCredential(DeferredCredential):
         credential = AzureCliCredential(additionally_allowed_tenants=["*"])
         # Check that we are logged into Azure
         try:
-            token = credential.get_token(*self.scopes).token
-            decoded = jwt.decode(
-                token, algorithms=["RS256"], options={"verify_signature": False}
-            )
+            decoded = self.decode_token(credential.get_token(*self.scopes).token)
             self.logger.info(
                 "You are currently logged into the [blue]Azure CLI[/] with the following details:"
             )
@@ -89,7 +100,7 @@ class AzureSdkCredential(DeferredCredential):
             self.logger.info(
                 f"... tenant: [green]{decoded['upn'].split('@')[1]}[/] ({decoded['tid']})"
             )
-        except CredentialUnavailableError as exc:
+        except (CredentialUnavailableError, DataSafeHavenValueError) as exc:
             self.logger.error(
                 "Please authenticate with Azure: run '[green]az login[/]' using [bold]infrastructure administrator[/] credentials."
             )

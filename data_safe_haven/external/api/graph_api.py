@@ -7,7 +7,6 @@ from collections.abc import Sequence
 from contextlib import suppress
 from typing import Any, ClassVar, Self
 
-import jwt
 import requests
 import typer
 from dns import resolver
@@ -72,14 +71,12 @@ class GraphApi:
     def from_token(cls: type[Self], auth_token: str) -> "GraphApi":
         """Construct a GraphApi from an existing authentication token."""
         try:
-            decoded = jwt.decode(
-                auth_token, algorithms=["RS256"], options={"verify_signature": False}
-            )
+            decoded = DeferredCredential.decode_token(auth_token)
             return cls.from_scopes(
                 scopes=str(decoded["scp"]).split(), tenant_id=decoded["tid"]
             )
-        except (jwt.exceptions.DecodeError, KeyError) as exc:
-            msg = "Could not interpret Graph API authentication token."
+        except DataSafeHavenValueError as exc:
+            msg = "Could not construct GraphApi from provided token."
             raise DataSafeHavenValueError(msg) from exc
 
     @property

@@ -8,7 +8,6 @@ from azure.mgmt.resource.subscriptions.models import Subscription
 from pulumi.automation import ProjectSettings
 from pytest import fixture
 
-import data_safe_haven.commands.sre as sre_mod
 import data_safe_haven.config.context_manager as context_mod
 import data_safe_haven.logging.logger
 from data_safe_haven.config import (
