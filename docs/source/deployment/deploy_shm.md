@@ -603,7 +603,7 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
   </details>
 
 - Unzip the zip file and identify the root certificate (`Generic\VpnServerRoot.cer`) and VPN configuration file (`Generic\VpnSettings.xml`)
-- Follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the section appropriate to your operating system (**you do not need to install the `Generic\VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**):
+- Follow the [VPN set up instructions](https://web.archive.org/web/20240527120727/https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-cert-windows) using the section appropriate to your operating system (**you do not need to install the `Generic\VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**):
 
 ```{admonition} ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) instructions
 - Use SSTP for the VPN type
