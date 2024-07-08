@@ -83,7 +83,9 @@ function Get-ShmConfig {
         vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_VMIMAGES"
         storageTypeDefault  = "Standard_GRS"
         diskTypeDefault     = "Standard_LRS"
-}
+        dockerAccount       = $shmConfigBase.docker.account ? $shmConfigBase.docker.account : "NA"
+        dockerPassword      = $shmConfigBase.docker.password ? $shmConfigBase.docker.password : "NA"
+    }
     # For normal usage this does not need to be user-configurable.
     # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
     $shmIpPrefix = $shmConfigBase.overrides.ipPrefix ? $shmConfigBase.overrides.ipPrefix : "10.0.0"
