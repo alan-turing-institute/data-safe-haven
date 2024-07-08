@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import ClassVar, Self
 
-from data_safe_haven.external import AzureApi, AzureCliSingleton
+from data_safe_haven.external import AzureApi
 from data_safe_haven.serialisers import AzureSerialisableModel, ContextBase
 
 from .config_sections import ConfigSectionAzure, ConfigSectionSHM
@@ -27,7 +27,7 @@ class SHMConfig(AzureSerialisableModel):
     ) -> SHMConfig:
         """Construct an SHMConfig from arguments."""
         azure_api = AzureApi(subscription_name=context.subscription_name)
-        admin_group_id = AzureCliSingleton().group_id_from_name(
+        admin_group_id = azure_api.entra_directory.get_id_from_groupname(
             context.admin_group_name
         )
         return SHMConfig.model_construct(
