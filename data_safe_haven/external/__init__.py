@@ -1,5 +1,4 @@
 from .api.azure_api import AzureApi
-from .api.azure_cli import AzureCliSingleton
 from .api.graph_api import GraphApi
 from .interface.azure_container_instance import AzureContainerInstance
 from .interface.azure_ipv4_range import AzureIPv4Range
@@ -8,7 +7,6 @@ from .interface.pulumi_account import PulumiAccount
 
 __all__ = [
     "AzureApi",
-    "AzureCliSingleton",
     "AzureContainerInstance",
     "AzureIPv4Range",
     "AzurePostgreSQLDatabase",
