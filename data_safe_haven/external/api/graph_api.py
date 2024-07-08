@@ -1,6 +1,7 @@
 """Interface to the Microsoft Graph API"""
 
 import datetime
+import json
 import time
 from collections.abc import Sequence
 from contextlib import suppress
@@ -691,7 +692,7 @@ class GraphApi:
             msg = f"Could not execute DELETE request to '{url}'. Response content received: '{response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg)
 
-    def http_get(self, url: str, **kwargs: Any) -> requests.Response:
+    def http_get_single_page(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP GET request
 
         Returns:
@@ -717,6 +718,38 @@ class GraphApi:
         else:
             msg = f"Could not execute GET request to '{url}'. Response content received: '{response.content.decode()}'. Token {self.token}"
             raise DataSafeHavenMicrosoftGraphError(msg)
+
+    def http_get(self, url: str, **kwargs: Any) -> requests.Response:
+        """Make a paged HTTP GET request and return all values
+
+        Returns:
+            requests.Response: The response from the remote server, with all values combined
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if the request failed
+        """
+        try:
+            base_url = url
+            values = []
+
+            # Keep requesting new pages until there are no more
+            while True:
+                response = self.http_get_single_page(url, **kwargs)
+                values += response.json()["value"]
+                url = response.json().get("@odata.nextLink", None)
+                if not url:
+                    break
+
+            # Add previous response values into the content bytes
+            json_content = response.json()
+            json_content["value"] = values
+            response._content = json.dumps(json_content).encode("utf-8")
+
+            # Return the full response
+            return response
+        except requests.exceptions.RequestException as exc:
+            msg = f"Could not execute GET request to '{base_url}'. Response content received: '{response.content.decode()}'. Token {self.token}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP PATCH request
