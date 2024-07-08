@@ -6,15 +6,17 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any
 
+import jwt
 from azure.core.credentials import AccessToken, TokenCredential
 from azure.identity import (
     AuthenticationRecord,
     AzureCliCredential,
+    CredentialUnavailableError,
     DeviceCodeCredential,
     TokenCachePersistenceOptions,
 )
 
-from data_safe_haven.external.api.azure_cli import AzureCliSingleton
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.logging import get_logger
 
 
@@ -71,8 +73,29 @@ class AzureApiCredential(DeferredCredential):
 
     def get_credential(self) -> TokenCredential:
         """Get a new AzureCliCredential."""
-        AzureCliSingleton().confirm()  # get user confirmation of the current account
-        return AzureCliCredential(additionally_allowed_tenants=["*"])
+        credential = AzureCliCredential(additionally_allowed_tenants=["*"])
+        # Check that we are logged into Azure
+        try:
+            token = credential.get_token(*self.scopes).token
+            decoded = jwt.decode(
+                token, algorithms=["RS256"], options={"verify_signature": False}
+            )
+            self.logger.info(
+                "You are currently logged into the [blue]Azure CLI[/] with the following details:"
+            )
+            self.logger.info(
+                f"... user: [green]{decoded['name']}[/] ({decoded['oid']})"
+            )
+            self.logger.info(
+                f"... tenant: [green]{decoded['upn'].split('@')[1]}[/] ({decoded['tid']})"
+            )
+        except CredentialUnavailableError as exc:
+            self.logger.error(
+                "Please authenticate with Azure: run '[green]az login[/]' using [bold]infrastructure administrator[/] credentials."
+            )
+            msg = "Error getting account information from Azure CLI."
+            raise DataSafeHavenAzureError(msg) from exc
+        return credential
 
 
 class GraphApiCredential(DeferredCredential):
