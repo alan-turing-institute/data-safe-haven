@@ -88,7 +88,7 @@ azure-storage-file-datalake==12.15.0
     # via data-safe-haven (pyproject.toml)
 azure-storage-file-share==12.16.0
     # via data-safe-haven (pyproject.toml)
-certifi==2024.6.2
+certifi==2024.7.4
     # via
     #   msrest
     #   requests
@@ -171,22 +171,22 @@ portalocker==2.10.0
     # via msal-extensions
 protobuf==4.25.3
     # via pulumi
-psycopg==3.2.0
+psycopg==3.2.1
     # via data-safe-haven (pyproject.toml)
-pulumi==3.121.0
+pulumi==3.122.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.47.1
+pulumi-azure-native==2.48.0
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.3
     # via data-safe-haven (pyproject.toml)
 pycparser==2.22
     # via cffi
-pydantic==2.7.4
+pydantic==2.8.2
     # via data-safe-haven (pyproject.toml)
-pydantic-core==2.18.4
+pydantic-core==2.20.1
     # via pydantic
 pygments==2.18.0
     # via rich
