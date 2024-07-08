@@ -204,6 +204,7 @@ runcmd:
   - sleep 1m
   - systemctl status docker
   - docker --version
+  - docker login -u {{shm.docker.account}} -p {{shm.docker.password}}
   - docker compose --version
 
   # Set up the codimddaemon user
