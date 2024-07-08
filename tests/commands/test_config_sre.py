@@ -1,14 +1,14 @@
 from data_safe_haven.commands.config import config_command_group
 from data_safe_haven.config import SREConfig
 from data_safe_haven.config.sre_config import sre_config_name
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 
 
 class TestShowSRE:
     def test_show(self, mocker, runner, context, sre_config_yaml):
         sre_name = "sandbox"
         mock_method = mocker.patch.object(
-            AzureApi, "download_blob", return_value=sre_config_yaml
+            AzureSdk, "download_blob", return_value=sre_config_yaml
         )
         result = runner.invoke(config_command_group, ["show", sre_name])
 
@@ -23,7 +23,7 @@ class TestShowSRE:
         )
 
     def test_show_file(self, mocker, runner, sre_config_yaml, tmp_path):
-        mocker.patch.object(AzureApi, "download_blob", return_value=sre_config_yaml)
+        mocker.patch.object(AzureSdk, "download_blob", return_value=sre_config_yaml)
         template_file = (tmp_path / "template_show.yaml").absolute()
         result = runner.invoke(
             config_command_group, ["show", "sre-name", "--file", str(template_file)]
@@ -69,7 +69,7 @@ class TestUploadSRE:
         mock_exists = mocker.patch.object(
             SREConfig, "remote_exists", return_value=False
         )
-        mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        mock_upload = mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
             ["upload", str(sre_config_file)],
@@ -94,7 +94,7 @@ class TestUploadSRE:
         mock_from_remote = mocker.patch.object(
             SREConfig, "from_remote", return_value=sre_config
         )
-        mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        mock_upload = mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
             ["upload", str(sre_config_file)],
@@ -122,7 +122,7 @@ class TestUploadSRE:
         mock_from_remote = mocker.patch.object(
             SREConfig, "from_remote", return_value=sre_config_alternate
         )
-        mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        mock_upload = mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
             ["upload", str(sre_config_file)],
@@ -152,7 +152,7 @@ class TestUploadSRE:
         mock_from_remote = mocker.patch.object(
             SREConfig, "from_remote", return_value=sre_config_alternate
         )
-        mock_upload = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        mock_upload = mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
             ["upload", str(sre_config_file)],
@@ -168,7 +168,7 @@ class TestUploadSRE:
         assert "+++ local" in result.stdout
 
     def test_upload_no_file(self, mocker, runner):
-        mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
         result = runner.invoke(
             config_command_group,
             ["upload"],

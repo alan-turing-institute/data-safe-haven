@@ -3,7 +3,7 @@
 from typing import Any, ClassVar, TypeVar
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenError
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 
 from .context_base import ContextBase
 from .yaml_serialisable_model import YAMLSerialisableModel
@@ -28,8 +28,8 @@ class AzureSerialisableModel(YAMLSerialisableModel):
             DataSafeHavenAzureError: if the file cannot be loaded
         """
         try:
-            azure_api = AzureApi(subscription_name=context.subscription_name)
-            config_yaml = azure_api.download_blob(
+            azure_sdk = AzureSdk(subscription_name=context.subscription_name)
+            config_yaml = azure_sdk.download_blob(
                 filename or cls.default_filename,
                 context.resource_group_name,
                 context.storage_account_name,
@@ -58,8 +58,8 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         cls: type[T], context: ContextBase, *, filename: str | None = None
     ) -> bool:
         """Check whether a remote instance of this model exists."""
-        azure_api = AzureApi(subscription_name=context.subscription_name)
-        return azure_api.blob_exists(
+        azure_sdk = AzureSdk(subscription_name=context.subscription_name)
+        return azure_sdk.blob_exists(
             filename or cls.default_filename,
             context.resource_group_name,
             context.storage_account_name,
@@ -80,8 +80,8 @@ class AzureSerialisableModel(YAMLSerialisableModel):
 
     def upload(self: T, context: ContextBase, *, filename: str | None = None) -> None:
         """Serialise an AzureSerialisableModel to a YAML file in Azure storage."""
-        azure_api = AzureApi(subscription_name=context.subscription_name)
-        azure_api.upload_blob(
+        azure_sdk = AzureSdk(subscription_name=context.subscription_name)
+        azure_sdk.upload_blob(
             self.to_yaml(),
             filename or self.default_filename,
             context.resource_group_name,

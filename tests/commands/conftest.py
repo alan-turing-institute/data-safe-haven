@@ -12,7 +12,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenAzureError,
 )
-from data_safe_haven.external import AzureApi, GraphApi
+from data_safe_haven.external import AzureSdk, GraphApi
 from data_safe_haven.infrastructure import ImperativeSHM, SREProjectManager
 
 
@@ -22,8 +22,8 @@ def context(context_yaml) -> Context:
 
 
 @fixture
-def mock_azure_api_blob_exists_false(mocker):
-    mocker.patch.object(AzureApi, "blob_exists", return_value=False)
+def mock_azure_sdk_blob_exists_false(mocker):
+    mocker.patch.object(AzureSdk, "blob_exists", return_value=False)
 
 
 @fixture

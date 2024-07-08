@@ -26,8 +26,8 @@ from data_safe_haven.config.config_sections import (
     ConfigSubsectionRemoteDesktopOpts,
 )
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.external import AzureApi, PulumiAccount
-from data_safe_haven.external.api.credentials import AzureApiCredential
+from data_safe_haven.external import AzureSdk, PulumiAccount
+from data_safe_haven.external.api.credentials import AzureSdkCredential
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.infrastructure.project_manager import ProjectManager
 from data_safe_haven.logging import init_logging
@@ -134,7 +134,7 @@ def mock_azureapi_get_subscription(mocker):
     subscription.subscription_id = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
     subscription.tenant_id = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
     mocker.patch.object(
-        AzureApi,
+        AzureSdk,
         "get_subscription",
         return_value=subscription,
     )
@@ -147,7 +147,7 @@ def mock_azureapicredential_get_credential(mocker):
             return AccessToken("dummy-token", 0)
 
     mocker.patch.object(
-        AzureApiCredential,
+        AzureSdkCredential,
         "get_credential",
         return_value=MockCredential(),
     )
@@ -161,7 +161,7 @@ def mock_azureapicredential_get_credential_failure(mocker):
         raise DataSafeHavenAzureError(msg)
 
     mocker.patch.object(
-        AzureApiCredential,
+        AzureSdkCredential,
         "get_credential",
         side_effect=fail_get_credential,
     )
@@ -183,7 +183,7 @@ def mock_key_vault_key(monkeypatch):
     def mock_get_keyvault_key(self, key_name, key_vault_name):  # noqa: ARG001
         return MockKeyVaultKey(key_name, key_vault_name)
 
-    monkeypatch.setattr(AzureApi, "get_keyvault_key", mock_get_keyvault_key)
+    monkeypatch.setattr(AzureSdk, "get_keyvault_key", mock_get_keyvault_key)
 
 
 @fixture

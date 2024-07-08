@@ -70,16 +70,16 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.logging import get_logger
 
-from .credentials import AzureApiCredential
+from .credentials import AzureSdkCredential
 from .graph_api import GraphApi
 
 
-class AzureApi:
-    """Interface to the Azure REST API"""
+class AzureSdk:
+    """Interface to the Azure Python SDK"""
 
     def __init__(self, subscription_name: str) -> None:
         self.logger = get_logger()
-        self.credential = AzureApiCredential()
+        self.credential = AzureSdkCredential()
         self.subscription_name = subscription_name
         self.subscription_id_: str | None = None
         self.tenant_id_: str | None = None
@@ -87,7 +87,7 @@ class AzureApi:
     @property
     def entra_directory(self) -> GraphApi:
         return GraphApi(
-            credential=AzureApiCredential("https://graph.microsoft.com//.default"),
+            credential=AzureSdkCredential("https://graph.microsoft.com//.default"),
         )
 
     @property

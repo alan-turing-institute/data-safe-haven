@@ -9,7 +9,7 @@ from data_safe_haven.config.config_sections import (
 from data_safe_haven.exceptions import (
     DataSafeHavenTypeError,
 )
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 
 
 class TestConfig:
@@ -52,7 +52,7 @@ class TestConfig:
         self, mocker, context, shm_config: SHMConfig, shm_config_yaml
     ) -> None:
         mock_method = mocker.patch.object(
-            AzureApi, "download_blob", return_value=shm_config_yaml
+            AzureSdk, "download_blob", return_value=shm_config_yaml
         )
         config = SHMConfig.from_remote(context)
 
@@ -68,7 +68,7 @@ class TestConfig:
         assert shm_config.to_yaml() == shm_config_yaml
 
     def test_upload(self, mocker, context: Context, shm_config: SHMConfig) -> None:
-        mock_method = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        mock_method = mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
         shm_config.upload(context)
 
         mock_method.assert_called_once_with(

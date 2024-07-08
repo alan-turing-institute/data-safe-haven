@@ -19,7 +19,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenPulumiError,
 )
-from data_safe_haven.external import AzureApi, PulumiAccount
+from data_safe_haven.external import AzureSdk, PulumiAccount
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.logging import from_ansi, get_console_handler, get_logger
 
@@ -238,8 +238,8 @@ class ProjectManager:
                 self.logger.debug(
                     f"Removing Pulumi stack backup [green]{stack_backup_name}[/]."
                 )
-                azure_api = AzureApi(self.context.subscription_name)
-                azure_api.remove_blob(
+                azure_sdk = AzureSdk(self.context.subscription_name)
+                azure_sdk.remove_blob(
                     blob_name=f".pulumi/stacks/{self.project_name}/{stack_backup_name}",
                     resource_group_name=self.context.resource_group_name,
                     storage_account_name=self.context.storage_account_name,

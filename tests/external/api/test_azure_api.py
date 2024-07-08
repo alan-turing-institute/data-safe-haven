@@ -2,9 +2,9 @@ import pytest
 from azure.core.exceptions import ResourceNotFoundError
 from pytest import fixture
 
-import data_safe_haven.external.api.azure_api
+import data_safe_haven.external.api.azure_sdk
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.external.api.azure_api import AzureApi
+from data_safe_haven.external.api.azure_sdk import AzureSdk
 
 
 @fixture
@@ -21,7 +21,7 @@ def mock_key_client(monkeypatch):
                 raise ResourceNotFoundError
 
     monkeypatch.setattr(
-        data_safe_haven.external.api.azure_api, "KeyClient", MockKeyClient
+        data_safe_haven.external.api.azure_sdk, "KeyClient", MockKeyClient
     )
 
 
@@ -58,25 +58,25 @@ def mock_blob_client(monkeypatch):
         )
 
     monkeypatch.setattr(
-        data_safe_haven.external.api.azure_api.AzureApi, "blob_client", mock_blob_client
+        data_safe_haven.external.api.azure_sdk.AzureSdk, "blob_client", mock_blob_client
     )
 
 
-class TestAzureApi:
+class TestAzureSdk:
     def test_get_keyvault_key(self, mock_key_client):  # noqa: ARG002
-        api = AzureApi("subscription name")
+        api = AzureSdk("subscription name")
         key = api.get_keyvault_key("exists", "key vault name")
         assert key == "key: exists"
 
     def test_get_keyvault_key_missing(self, mock_key_client):  # noqa: ARG002
-        api = AzureApi("subscription name")
+        api = AzureSdk("subscription name")
         with pytest.raises(
             DataSafeHavenAzureError, match="Failed to retrieve key does not exist"
         ):
             api.get_keyvault_key("does not exist", "key vault name")
 
     def test_blob_exists(self, mock_blob_client):  # noqa: ARG002
-        api = AzureApi("subscription name")
+        api = AzureSdk("subscription name")
         exists = api.blob_exists(
             "exists", "resource_group", "storage_account", "storage_container"
         )
@@ -84,7 +84,7 @@ class TestAzureApi:
         assert exists
 
     def test_blob_does_not_exist(self, mock_blob_client):  # noqa: ARG002
-        api = AzureApi("subscription name")
+        api = AzureSdk("subscription name")
         exists = api.blob_exists(
             "abc.txt", "resource_group", "storage_account", "storage_container"
         )

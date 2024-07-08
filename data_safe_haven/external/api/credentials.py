@@ -61,9 +61,9 @@ class DeferredCredential(TokenCredential):
         return DeferredCredential.token_
 
 
-class AzureApiCredential(DeferredCredential):
+class AzureSdkCredential(DeferredCredential):
     """
-    Credential loader used by AzureApi
+    Credential loader used by AzureSdk
 
     Uses AzureCliCredential for authentication
     """

@@ -4,9 +4,9 @@ import pathlib
 from typing import Any
 
 from data_safe_haven.external import (
-    AzureApi,
     AzureContainerInstance,
     AzurePostgreSQLDatabase,
+    AzureSdk,
     GraphApi,
 )
 from data_safe_haven.infrastructure import SREProjectManager
@@ -36,8 +36,8 @@ class SREProvisioningManager:
         # Read secrets from key vault
         keyvault_name = sre_stack.output("data")["key_vault_name"]
         secret_name = sre_stack.output("data")["password_user_database_admin_secret"]
-        azure_api = AzureApi(self.subscription_name)
-        connection_db_server_password = azure_api.get_keyvault_secret(
+        azure_sdk = AzureSdk(self.subscription_name)
+        connection_db_server_password = azure_sdk.get_keyvault_secret(
             keyvault_name, secret_name
         )
 
@@ -67,8 +67,8 @@ class SREProvisioningManager:
     def available_vm_skus(self) -> dict[str, dict[str, Any]]:
         """Load available VM SKUs for this region"""
         if not self._available_vm_skus:
-            azure_api = AzureApi(self.subscription_name)
-            self._available_vm_skus = azure_api.list_available_vm_skus(self.location)
+            azure_sdk = AzureSdk(self.subscription_name)
+            self._available_vm_skus = azure_sdk.list_available_vm_skus(self.location)
         return self._available_vm_skus
 
     def create_security_groups(self) -> None:
