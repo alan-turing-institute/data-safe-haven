@@ -40,7 +40,7 @@ def deploy(
         shm_config = SHMConfig.from_remote(context)
 
         # Load GraphAPI
-        graph_api = GraphApi(
+        graph_api = GraphApi.from_scopes(
             scopes=[
                 "Application.ReadWrite.All",
                 "AppRoleAssignment.ReadWrite.All",
@@ -146,7 +146,7 @@ def teardown(
         shm_config = SHMConfig.from_remote(context)
 
         # Load GraphAPI as this may require user-interaction
-        graph_api = GraphApi(
+        graph_api = GraphApi.from_scopes(
             scopes=["Application.ReadWrite.All", "Group.ReadWrite.All"],
             tenant_id=shm_config.shm.entra_tenant_id,
         )

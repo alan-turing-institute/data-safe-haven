@@ -54,17 +54,17 @@ class GraphApi:
     def __init__(
         self,
         *,
-        scopes: Sequence[str] | None = None,
-        tenant_id: str | None = None,
-        credential: DeferredCredential | None = None,
+        credential: DeferredCredential,
     ):
         self.base_endpoint = "https://graph.microsoft.com/v1.0"
-        self.credential = (
-            credential
-            if credential
-            else GraphApiCredential(str(tenant_id), list(scopes) if scopes else [])
-        )
+        self.credential = credential
         self.logger = get_logger()
+
+    @classmethod
+    def from_scopes(
+        cls: type[Self], *, scopes: Sequence[str], tenant_id: str
+    ) -> "GraphApi":
+        return cls(credential=GraphApiCredential(tenant_id, scopes))
 
     @classmethod
     def from_token(cls: type[Self], auth_token: str) -> "GraphApi":
@@ -73,7 +73,9 @@ class GraphApi:
             decoded = jwt.decode(
                 auth_token, algorithms=["RS256"], options={"verify_signature": False}
             )
-            return cls(scopes=str(decoded["scp"]).split(), tenant_id=decoded["tid"])
+            return cls.from_scopes(
+                scopes=str(decoded["scp"]).split(), tenant_id=decoded["tid"]
+            )
         except (jwt.exceptions.DecodeError, KeyError) as exc:
             msg = "Could not interpret Graph API authentication token."
             raise DataSafeHavenValueError(msg) from exc

@@ -117,7 +117,7 @@ class ImperativeSHM:
         # Add the SHM domain to the Entra ID via interactive GraphAPI
         try:
             # Generate the verification record
-            graph_api = GraphApi(
+            graph_api = GraphApi.from_scopes(
                 scopes=[
                     "Application.ReadWrite.All",
                     "Domain.ReadWrite.All",

@@ -41,7 +41,7 @@ def run(
     shm_config = SHMConfig.from_remote(context)
     sre_config = SREConfig.from_remote_by_name(context, sre_name)
 
-    graph_api = GraphApi(
+    graph_api = GraphApi.from_scopes(
         scopes=[
             "Application.ReadWrite.All",
             "AppRoleAssignment.ReadWrite.All",
