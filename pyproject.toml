@@ -167,7 +167,7 @@ addopts = [
     "-vvv",
     "--import-mode=importlib",
     "--disable-warnings",
-    "--ignore=tests/*",
+    "--ignore=data_safe_haven/resources/*",
 ]
 
 [tool.ruff.lint]
