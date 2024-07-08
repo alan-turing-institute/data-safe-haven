@@ -93,6 +93,11 @@ def mock_imperative_shm_teardown_then_exit(mocker):
 
 
 @fixture
+def mock_ip_1_2_3_4(requests_mock):
+    requests_mock.get("https://api.ipify.org", text="1.2.3.4")
+
+
+@fixture
 def mock_pulumi_config_from_remote(mocker, pulumi_config):
     mocker.patch.object(DSHPulumiConfig, "from_remote", return_value=pulumi_config)
 
