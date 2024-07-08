@@ -66,8 +66,8 @@ class AzureApiCredential(DeferredCredential):
     Uses AzureCliCredential for authentication
     """
 
-    def __init__(self) -> None:
-        super().__init__(scopes=["https://management.azure.com/.default"])
+    def __init__(self, scope: str = "https://management.azure.com/.default") -> None:
+        super().__init__(scopes=[scope])
 
     def get_credential(self) -> TokenCredential:
         """Get a new AzureCliCredential."""

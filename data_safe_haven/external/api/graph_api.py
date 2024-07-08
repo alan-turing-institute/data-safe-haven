@@ -16,7 +16,10 @@ from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
     DataSafeHavenValueError,
 )
-from data_safe_haven.external.interface.credentials import GraphApiCredential
+from data_safe_haven.external.interface.credentials import (
+    DeferredCredential,
+    GraphApiCredential,
+)
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger
 
@@ -51,11 +54,16 @@ class GraphApi:
     def __init__(
         self,
         *,
-        scopes: Sequence[str],
-        tenant_id: str,
+        scopes: Sequence[str] | None = None,
+        tenant_id: str | None = None,
+        credential: DeferredCredential | None = None,
     ):
         self.base_endpoint = "https://graph.microsoft.com/v1.0"
-        self.credential = GraphApiCredential(tenant_id, list(scopes))
+        self.credential = (
+            credential
+            if credential
+            else GraphApiCredential(str(tenant_id), list(scopes) if scopes else [])
+        )
         self.logger = get_logger()
 
     @classmethod

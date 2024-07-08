@@ -71,6 +71,8 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.external.interface.credentials import AzureApiCredential
 from data_safe_haven.logging import get_logger
 
+from .graph_api import GraphApi
+
 
 class AzureApi:
     """Interface to the Azure REST API"""
@@ -81,6 +83,12 @@ class AzureApi:
         self.subscription_name = subscription_name
         self.subscription_id_: str | None = None
         self.tenant_id_: str | None = None
+
+    @property
+    def entra_directory(self) -> GraphApi:
+        return GraphApi(
+            credential=AzureApiCredential("https://graph.microsoft.com//.default"),
+        )
 
     @property
     def subscription_id(self) -> str:
