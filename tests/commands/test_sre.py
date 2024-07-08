@@ -5,7 +5,6 @@ class TestDeploySRE:
     def test_deploy(
         self,
         runner,
-        mock_azure_cli_confirm,  # noqa: ARG002
         mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote_or_create,  # noqa: ARG002
@@ -27,12 +26,12 @@ class TestDeploySRE:
     def test_auth_failure(
         self,
         runner,
-        mock_azure_cli_confirm_then_exit,  # noqa: ARG002
+        mock_azureapicredential_get_credential_failure,  # noqa: ARG002
     ):
         result = runner.invoke(sre_command_group, ["deploy", "sandbox"])
         assert result.exit_code == 1
-        assert "mock login" in result.stdout
-        assert "mock login error" in result.stdout
+        assert "mock get_credential\n" in result.stdout
+        assert "mock get_credential error" in result.stdout
 
     def test_no_shm(
         self,
@@ -50,7 +49,6 @@ class TestTeardownSRE:
     def test_teardown(
         self,
         runner,
-        mock_azure_cli_confirm,  # noqa: ARG002
         mock_graph_api_token,  # noqa: ARG002
         mock_ip_1_2_3_4,  # noqa: ARG002
         mock_pulumi_config_from_remote,  # noqa: ARG002
@@ -83,9 +81,9 @@ class TestTeardownSRE:
     def test_auth_failure(
         self,
         runner,
-        mock_azure_cli_confirm_then_exit,  # noqa: ARG002
+        mock_azureapicredential_get_credential_failure,  # noqa: ARG002
     ):
         result = runner.invoke(sre_command_group, ["teardown", "sandbox"])
         assert result.exit_code == 1
-        assert "mock login" in result.stdout
-        assert "mock login error" in result.stdout
+        assert "mock get_credential\n" in result.stdout
+        assert "mock get_credential error" in result.stdout

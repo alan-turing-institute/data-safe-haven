@@ -3,6 +3,8 @@ from shutil import which
 from subprocess import run
 
 import yaml
+from azure.core.credentials import AccessToken, TokenCredential
+from azure.mgmt.resource.subscriptions.models import Subscription
 from pulumi.automation import ProjectSettings
 from pytest import fixture
 
@@ -23,8 +25,9 @@ from data_safe_haven.config.config_sections import (
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
 )
-from data_safe_haven.exceptions import DataSafeHavenAzureAPIAuthenticationError
-from data_safe_haven.external import AzureApi, AzureCliSingleton, PulumiAccount
+from data_safe_haven.exceptions import DataSafeHavenAzureError
+from data_safe_haven.external import AzureApi, PulumiAccount
+from data_safe_haven.external.api.credentials import AzureApiCredential
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.infrastructure.project_manager import ProjectManager
 from data_safe_haven.logging import init_logging
@@ -125,26 +128,42 @@ def log_directory(session_mocker, tmp_path_factory):
 
 
 @fixture
-def mock_azure_cli_confirm(mocker):
-    """Always pass AzureCliSingleton.confirm without attempting login"""
+def mock_azureapi_get_subscription(mocker):
+    subscription = Subscription()
+    subscription.display_name = "Data Safe Haven Acme"
+    subscription.subscription_id = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
+    subscription.tenant_id = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
     mocker.patch.object(
-        AzureCliSingleton,
-        "confirm",
-        return_value=None,
+        AzureApi,
+        "get_subscription",
+        return_value=subscription,
     )
 
 
 @fixture
-def mock_azure_cli_confirm_then_exit(mocker):
-    def confirm_then_exit():
-        print("mock login")  # noqa: T201
-        msg = "mock login error"
-        raise DataSafeHavenAzureAPIAuthenticationError(msg)
+def mock_azureapicredential_get_credential(mocker):
+    class MockCredential(TokenCredential):
+        def get_token(*args, **kwargs):  # noqa: ARG002
+            return AccessToken("dummy-token", 0)
 
     mocker.patch.object(
-        AzureCliSingleton,
-        "confirm",
-        side_effect=confirm_then_exit,
+        AzureApiCredential,
+        "get_credential",
+        return_value=MockCredential(),
+    )
+
+
+@fixture
+def mock_azureapicredential_get_credential_failure(mocker):
+    def fail_get_credential():
+        print("mock get_credential")  # noqa: T201
+        msg = "mock get_credential error"
+        raise DataSafeHavenAzureError(msg)
+
+    mocker.patch.object(
+        AzureApiCredential,
+        "get_credential",
+        side_effect=fail_get_credential,
     )
 
 
@@ -168,7 +187,7 @@ def mock_key_vault_key(monkeypatch):
 
 
 @fixture
-def offline_pulumi_account(monkeypatch, mock_azure_cli_confirm):  # noqa: ARG001
+def offline_pulumi_account(monkeypatch):
     """Overwrite PulumiAccount so that it runs locally"""
     monkeypatch.setattr(
         PulumiAccount, "env", {"PULUMI_CONFIG_PASSPHRASE": "passphrase"}
@@ -407,11 +426,10 @@ def sre_project_manager(
     context_no_secrets,
     sre_config,
     pulumi_config_no_key,
-    mock_azure_cli_confirm,  # noqa: ARG001
-    mock_install_plugins,  # noqa: ARG001
-    mock_key_vault_key,  # noqa: ARG001
-    offline_pulumi_account,  # noqa: ARG001
     local_project_settings,  # noqa: ARG001
+    mock_azureapi_get_subscription,  # noqa: ARG001
+    mock_azureapicredential_get_credential,  # noqa: ARG001
+    offline_pulumi_account,  # noqa: ARG001
 ):
     return SREProjectManager(
         context=context_no_secrets,
