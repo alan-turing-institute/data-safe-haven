@@ -68,9 +68,9 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenValueError,
 )
-from data_safe_haven.external.interface.credentials import AzureApiCredential
 from data_safe_haven.logging import get_logger
 
+from .credentials import AzureApiCredential
 from .graph_api import GraphApi
 
 

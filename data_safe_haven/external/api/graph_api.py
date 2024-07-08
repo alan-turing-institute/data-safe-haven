@@ -17,12 +17,13 @@ from data_safe_haven.exceptions import (
     DataSafeHavenMicrosoftGraphError,
     DataSafeHavenValueError,
 )
-from data_safe_haven.external.interface.credentials import (
+from data_safe_haven.functions import alphanumeric
+from data_safe_haven.logging import get_logger
+
+from .credentials import (
     DeferredCredential,
     GraphApiCredential,
 )
-from data_safe_haven.functions import alphanumeric
-from data_safe_haven.logging import get_logger
 
 
 class GraphApi:
