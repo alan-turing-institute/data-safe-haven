@@ -1,6 +1,6 @@
 # Roadmap
 
-Last updated: 2024-03-12
+Last updated: 2024-07-08
 
 ## Background
 
@@ -66,22 +66,6 @@ This may be because they are lower priority than short-term goals or because the
 
 These are features we would like to highlight but which we have actively decided not to incorporate into the long- or short-term roadmap.
 This may be because, for example, we have decided we have insufficient resource, are lacking the right expertise or it is low priority.
-
-### Develop Outside, Run Inside
-
-A workflow enabling researchers to develop this research and analysis code outside of the TRE, using whatever tools they prefer and are familiar with, and bring this work into the TRE to run against the sensitive data.
-
-This would improve,
-
-- Reproducibility (as users would be encouraged and enabled to use public VCS repositories)
-- User experience
-- User efficiency
-- Accuracy of results (as testing code is easier)
-
-This would involve,
-
-- A trusted mechanism to bring code into the TRE
-- Synthetic or dummy data for testing outside of the TRE
 
 ### User Defined Container Support
 
