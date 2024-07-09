@@ -4,7 +4,7 @@ from pytest import fixture
 
 import data_safe_haven.external.api.azure_sdk
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.external.api.azure_sdk import AzureSdk
+from data_safe_haven.external import AzureSdk, GraphApi
 
 
 @fixture
@@ -63,6 +63,24 @@ def mock_blob_client(monkeypatch):
 
 
 class TestAzureSdk:
+    def test_entra_directory(self):
+        api = AzureSdk("subscription name")
+        assert isinstance(api.entra_directory, GraphApi)
+
+    def test_subscription_id(
+        self,
+        mock_azureapi_get_subscription,  # noqa: ARG002
+    ):
+        api = AzureSdk("subscription name")
+        assert api.subscription_id == pytest.guid_subscription
+
+    def test_tenant_id(
+        self,
+        mock_azureapi_get_subscription,  # noqa: ARG002
+    ):
+        api = AzureSdk("subscription name")
+        assert api.tenant_id == pytest.guid_tenant
+
     def test_get_keyvault_key(self, mock_key_client):  # noqa: ARG002
         api = AzureSdk("subscription name")
         key = api.get_keyvault_key("exists", "key vault name")
