@@ -2,6 +2,7 @@ from pathlib import Path
 from shutil import which
 from subprocess import run
 
+import pytest
 import yaml
 from azure.core.credentials import AccessToken, TokenCredential
 from azure.mgmt.resource.subscriptions.models import Subscription
@@ -32,12 +33,20 @@ from data_safe_haven.infrastructure.project_manager import ProjectManager
 from data_safe_haven.logging import init_logging
 
 
+def pytest_configure():
+    """Define constants for use across multiple tests"""
+    pytest.guid_admin = "00edec65-b071-4d26-8779-a9fe791c6e14"
+    pytest.guid_entra = "48b2425b-5f2c-4cbd-9458-0441daa8994c"
+    pytest.guid_subscription = "35ebced1-4e7a-4c1f-b634-c0886937085d"
+    pytest.guid_tenant = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
+
+
 @fixture
 def azure_config():
     return ConfigSectionAzure(
         location="uksouth",
-        subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        subscription_id=pytest.guid_subscription,
+        tenant_id=pytest.guid_tenant,
     )
 
 
@@ -130,8 +139,8 @@ def log_directory(session_mocker, tmp_path_factory):
 def mock_azureapi_get_subscription(mocker):
     subscription = Subscription()
     subscription.display_name = "Data Safe Haven Acme"
-    subscription.subscription_id = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
-    subscription.tenant_id = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
+    subscription.subscription_id = pytest.guid_subscription
+    subscription.tenant_id = pytest.guid_tenant
     mocker.patch.object(
         AzureSdk,
         "get_subscription",
@@ -329,24 +338,31 @@ def shm_config_section(shm_config_section_dict):
 @fixture
 def shm_config_section_dict():
     return {
-        "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        "entra_tenant_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        "admin_group_id": pytest.guid_admin,
+        "entra_tenant_id": pytest.guid_entra,
         "fqdn": "shm.acme.com",
     }
 
 
 @fixture
 def shm_config_yaml():
-    content = """---
+    content = (
+        """---
     azure:
         location: uksouth
-        subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-        tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+        subscription_id: guid_subscription
+        tenant_id: guid_tenant
     shm:
-        admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-        entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+        admin_group_id: guid_admin
+        entra_tenant_id: guid_entra
         fqdn: shm.acme.com
-    """
+    """.replace(
+            "guid_admin", pytest.guid_admin
+        )
+        .replace("guid_entra", pytest.guid_entra)
+        .replace("guid_subscription", pytest.guid_subscription)
+        .replace("guid_tenant", pytest.guid_tenant)
+    )
     return yaml.dump(yaml.safe_load(content))
 
 
@@ -399,8 +415,8 @@ def sre_config_yaml():
     content = """---
     azure:
         location: uksouth
-        subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-        tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+        subscription_id: guid_subscription
+        tenant_id: guid_tenant
     description: Sandbox Project
     name: sandbox
     sre:
@@ -416,7 +432,11 @@ def sre_config_yaml():
         software_packages: none
         timezone: Europe/London
         workspace_skus: []
-    """
+    """.replace(
+        "guid_subscription", pytest.guid_subscription
+    ).replace(
+        "guid_tenant", pytest.guid_tenant
+    )
     return yaml.dump(yaml.safe_load(content))
 
 
