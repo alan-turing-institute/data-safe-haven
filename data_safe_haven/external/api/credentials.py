@@ -1,6 +1,5 @@
 """Classes related to Azure credentials"""
 
-import pathlib
 from abc import abstractmethod
 from collections.abc import Sequence
 from datetime import UTC, datetime
@@ -16,6 +15,7 @@ from azure.identity import (
     TokenCachePersistenceOptions,
 )
 
+from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenValueError
 from data_safe_haven.logging import get_logger
 
@@ -131,7 +131,7 @@ class GraphApiCredential(DeferredCredential):
         """Get a new DeviceCodeCredential, using cached credentials if they are available"""
         cache_name = f"dsh-{self.tenant_id}"
         authentication_record_path = (
-            pathlib.Path.home() / f".msal-authentication-cache-{cache_name}"
+            config_dir() / f".msal-authentication-cache-{cache_name}"
         )
 
         # Read an existing authentication record, using default arguments if unavailable
