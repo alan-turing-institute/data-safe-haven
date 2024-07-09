@@ -1,9 +1,10 @@
 import pytest
 from azure.core.exceptions import ResourceNotFoundError
+from azure.mgmt.resource.subscriptions.models import Subscription
 from pytest import fixture
 
 import data_safe_haven.external.api.azure_sdk
-from data_safe_haven.exceptions import DataSafeHavenAzureError
+from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenValueError
 from data_safe_haven.external import AzureSdk, GraphApi
 
 
@@ -62,49 +63,93 @@ def mock_blob_client(monkeypatch):
     )
 
 
+@fixture
+def mock_subscription_client(monkeypatch):
+    class MockSubscriptionsOperations:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def list(self):
+            subscription_1 = Subscription()
+            subscription_1.display_name = "Subscription 1"
+            subscription_1.id = pytest.subscription_id
+            subscription_2 = Subscription()
+            subscription_2.display_name = "Subscription 2"
+            return [subscription_1, subscription_2]
+
+    class MockSubscriptionClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        @property
+        def subscriptions(self):
+            return MockSubscriptionsOperations()
+
+    monkeypatch.setattr(
+        data_safe_haven.external.api.azure_sdk,
+        "SubscriptionClient",
+        MockSubscriptionClient,
+    )
+
+
 class TestAzureSdk:
     def test_entra_directory(self):
-        api = AzureSdk("subscription name")
-        assert isinstance(api.entra_directory, GraphApi)
+        sdk = AzureSdk("subscription name")
+        assert isinstance(sdk.entra_directory, GraphApi)
 
     def test_subscription_id(
         self,
         mock_azureapi_get_subscription,  # noqa: ARG002
     ):
-        api = AzureSdk("subscription name")
-        assert api.subscription_id == pytest.guid_subscription
+        sdk = AzureSdk("subscription name")
+        assert sdk.subscription_id == pytest.guid_subscription
 
     def test_tenant_id(
         self,
         mock_azureapi_get_subscription,  # noqa: ARG002
     ):
-        api = AzureSdk("subscription name")
-        assert api.tenant_id == pytest.guid_tenant
+        sdk = AzureSdk("subscription name")
+        assert sdk.tenant_id == pytest.guid_tenant
 
     def test_blob_exists(self, mock_blob_client):  # noqa: ARG002
-        api = AzureSdk("subscription name")
-        exists = api.blob_exists(
+        sdk = AzureSdk("subscription name")
+        exists = sdk.blob_exists(
             "exists", "resource_group", "storage_account", "storage_container"
         )
         assert isinstance(exists, bool)
         assert exists
 
     def test_blob_does_not_exist(self, mock_blob_client):  # noqa: ARG002
-        api = AzureSdk("subscription name")
-        exists = api.blob_exists(
+        sdk = AzureSdk("subscription name")
+        exists = sdk.blob_exists(
             "abc.txt", "resource_group", "storage_account", "storage_container"
         )
         assert isinstance(exists, bool)
         assert not exists
 
     def test_get_keyvault_key(self, mock_key_client):  # noqa: ARG002
-        api = AzureSdk("subscription name")
-        key = api.get_keyvault_key("exists", "key vault name")
+        sdk = AzureSdk("subscription name")
+        key = sdk.get_keyvault_key("exists", "key vault name")
         assert key == "key: exists"
 
     def test_get_keyvault_key_missing(self, mock_key_client):  # noqa: ARG002
-        api = AzureSdk("subscription name")
+        sdk = AzureSdk("subscription name")
         with pytest.raises(
             DataSafeHavenAzureError, match="Failed to retrieve key does not exist"
         ):
-            api.get_keyvault_key("does not exist", "key vault name")
+            sdk.get_keyvault_key("does not exist", "key vault name")
+
+    def test_get_subscription(self, mock_subscription_client):  # noqa: ARG002
+        sdk = AzureSdk("subscription name")
+        subscription = sdk.get_subscription("Subscription 1")
+        assert isinstance(subscription, Subscription)
+        assert subscription.display_name == "Subscription 1"
+        assert subscription.id == pytest.subscription_id
+
+    def test_get_subscription_fails(self, mock_subscription_client):  # noqa: ARG002
+        sdk = AzureSdk("subscription name")
+        with pytest.raises(
+            DataSafeHavenValueError,
+            match="Could not find subscription 'Subscription 3'",
+        ):
+            sdk.get_subscription("Subscription 3")
