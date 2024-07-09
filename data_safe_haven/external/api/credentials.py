@@ -95,10 +95,10 @@ class AzureSdkCredential(DeferredCredential):
                 "You are currently logged into the [blue]Azure CLI[/] with the following details:"
             )
             self.logger.info(
-                f"... user: [green]{decoded['name']}[/] ({decoded['oid']})"
+                f"\tuser: [green]{decoded['name']}[/] ({decoded['oid']})"
             )
             self.logger.info(
-                f"... tenant: [green]{decoded['upn'].split('@')[1]}[/] ({decoded['tid']})"
+                f"\ttenant: [green]{decoded['upn'].split('@')[1]}[/] ({decoded['tid']})"
             )
         except (CredentialUnavailableError, DataSafeHavenValueError) as exc:
             self.logger.error(
@@ -167,10 +167,10 @@ else:
             "You are currently logged into the [blue]Microsoft Graph API[/] with the following details:"
         )
         self.logger.info(
-            f"... user: [green]{new_auth_record.username}[/] ({new_auth_record._home_account_id.split('.')[0]})"
+            f"\tuser: [green]{new_auth_record.username}[/] ({new_auth_record._home_account_id.split('.')[0]})"
         )
         self.logger.info(
-            f"... tenant: [green]{new_auth_record._username.split('@')[1]}[/] ({new_auth_record._tenant_id})"
+            f"\ttenant: [green]{new_auth_record._username.split('@')[1]}[/] ({new_auth_record._tenant_id})"
         )
 
         # Return the credential
