@@ -30,7 +30,7 @@ class DeferredCredential(TokenCredential):
         scopes: Sequence[str],
         tenant_id: str | None = None,
     ) -> None:
-        self._show_login_msg = False
+        self._show_login_msg = True
         self.logger = get_logger()
         self.scopes = scopes
         self.tenant_id = tenant_id
