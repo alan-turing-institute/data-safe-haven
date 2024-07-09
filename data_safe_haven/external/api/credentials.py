@@ -132,15 +132,15 @@ class GraphApiCredential(DeferredCredential):
 
         # Read an existing authentication record, using default arguments if unavailable
         kwargs = {}
-        try:
-            with open(authentication_record_path) as f_auth:
-                existing_auth_record = AuthenticationRecord.deserialize(f_auth.read())
-                kwargs["authentication_record"] = existing_auth_record
-        except FileNotFoundError:
-            kwargs["authority"] = "https://login.microsoftonline.com/"
-            # Use the Microsoft Graph Command Line Tools client ID
-            kwargs["client_id"] = "14d82eec-204b-4c2f-b7e8-296a70dab67e"
-            kwargs["tenant_id"] = self.tenant_id
+if authentication_record_path.is_file():
+    with open(authentication_record_path) as f_auth:
+        existing_auth_record = AuthenticationRecord.deserialize(f_auth.read())
+        kwargs["authentication_record"] = existing_auth_record
+else:
+    kwargs["authority"] = "https://login.microsoftonline.com/"
+    # Use the Microsoft Graph Command Line Tools client ID
+    kwargs["client_id"] = "14d82eec-204b-4c2f-b7e8-296a70dab67e"
+    kwargs["tenant_id"] = self.tenant_id
 
         # Get a credential with a custom callback
         def callback(verification_uri: str, user_code: str, _: datetime) -> None:
