@@ -64,6 +64,7 @@ class DeferredCredential(TokenCredential):
         **kwargs: Any,
     ) -> AccessToken:
         # Require at least 10 minutes of remaining validity
+        # The 'expires_on' property is a Unix timestamp integer in seconds
         validity_cutoff = datetime.now(tz=UTC).timestamp() + 10 * 60
         if not DeferredCredential.token_ or (
             DeferredCredential.token_.expires_on < validity_cutoff
