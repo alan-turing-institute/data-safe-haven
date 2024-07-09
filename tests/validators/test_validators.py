@@ -90,7 +90,7 @@ class TestValidateSafeString:
     @pytest.mark.parametrize(
         "safe_string",
         [
-            "valid_with_underscores",
+            "valid_with_underscores-and-hyphens",
             "mIxeDCAseiNpuT",
             "0123456789",
         ],
@@ -111,7 +111,7 @@ class TestValidateSafeString:
     def test_safe_string_fail(self, safe_string):
         with pytest.raises(
             ValueError,
-            match="Expected valid string containing only letters, numbers and underscores",
+            match="Expected valid string containing only letters, numbers, hyphens and underscores",
         ):
             validators.safe_string(safe_string)
 
