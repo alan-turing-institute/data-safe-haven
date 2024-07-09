@@ -57,22 +57,6 @@ Currently we aim to align milestones with Data Study Groups at the Turing, so th
 
 The milestones can be seen [on GitHub](https://github.com/alan-turing-institute/data-safe-haven/milestones)
 
-### Develop Outside, Run Inside
-
-A workflow enabling researchers to develop this research and analysis code outside of the TRE, using whatever tools they prefer and are familiar with, and bring this work into the TRE to run against the sensitive data.
-
-This would improve,
-
-- Reproducibility (as users would be encouraged and enabled to use public VCS repositories)
-- User experience
-- User efficiency
-- Accuracy of results (as testing code is easier)
-
-This would involve,
-
-- A trusted mechanism to bring code into the TRE
-- Synthetic or dummy data for testing outside of the TRE
-
 ## Long Term
 
 Long-term goals are developments which we have committed to but have not planned an expected completion date.
