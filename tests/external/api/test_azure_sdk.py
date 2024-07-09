@@ -81,18 +81,6 @@ class TestAzureSdk:
         api = AzureSdk("subscription name")
         assert api.tenant_id == pytest.guid_tenant
 
-    def test_get_keyvault_key(self, mock_key_client):  # noqa: ARG002
-        api = AzureSdk("subscription name")
-        key = api.get_keyvault_key("exists", "key vault name")
-        assert key == "key: exists"
-
-    def test_get_keyvault_key_missing(self, mock_key_client):  # noqa: ARG002
-        api = AzureSdk("subscription name")
-        with pytest.raises(
-            DataSafeHavenAzureError, match="Failed to retrieve key does not exist"
-        ):
-            api.get_keyvault_key("does not exist", "key vault name")
-
     def test_blob_exists(self, mock_blob_client):  # noqa: ARG002
         api = AzureSdk("subscription name")
         exists = api.blob_exists(
@@ -108,3 +96,15 @@ class TestAzureSdk:
         )
         assert isinstance(exists, bool)
         assert not exists
+
+    def test_get_keyvault_key(self, mock_key_client):  # noqa: ARG002
+        api = AzureSdk("subscription name")
+        key = api.get_keyvault_key("exists", "key vault name")
+        assert key == "key: exists"
+
+    def test_get_keyvault_key_missing(self, mock_key_client):  # noqa: ARG002
+        api = AzureSdk("subscription name")
+        with pytest.raises(
+            DataSafeHavenAzureError, match="Failed to retrieve key does not exist"
+        ):
+            api.get_keyvault_key("does not exist", "key vault name")
