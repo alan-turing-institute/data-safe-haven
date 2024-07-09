@@ -89,6 +89,10 @@ write_files:
     content: |
       {{set_dns.mustache.sh}}
 
+  - path: "/opt/configuration/docker_pat.txt"
+    permissions: "0400"
+    content: {{shm.dockerPassword}}
+
 # Set locale and timezone
 locale: en_GB.UTF-8
 timezone: {{sre.time.timezone.linux}}
@@ -204,7 +208,6 @@ runcmd:
   - sleep 1m
   - systemctl status docker
   - docker --version
-  - docker login -u {{shm.docker.account}} -p {{shm.docker.password}}
   - docker compose --version
 
   # Set up the codimddaemon user
@@ -217,7 +220,8 @@ runcmd:
 
   # Deploy CodiMD using Docker
   - echo ">=== Deploying CodiMD with Docker... ===<"
-  - su codimddaemon -c "docker compose -f /opt/codimd/docker-compose.yml up -d"
+  - su codimddaemon -c "cat /opt/configuration/docker_pat.txt | docker login --username '{{shm.dockerAccount}}' --password-stdin && `
+     docker compose -f /opt/codimd/docker-compose.yml up -d"
 
   # Wait for deployment to finish
   - |
