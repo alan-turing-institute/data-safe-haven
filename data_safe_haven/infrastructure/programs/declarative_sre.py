@@ -3,6 +3,7 @@
 import pulumi
 
 from data_safe_haven.config import Context, SREConfig
+from data_safe_haven.infrastructure.common import DockerHubCredentials
 
 from .sre.application_gateway import (
     SREApplicationGatewayComponent,
@@ -134,6 +135,7 @@ class DeclarativeSRE:
             "sre_dns_server",
             self.stack_name,
             SREDnsServerProps(
+                dockerhub_credentials=dockerhub_credentials,
                 location=self.cfg.azure.location,
                 shm_fqdn=shm_fqdn,
             ),
@@ -227,6 +229,7 @@ class DeclarativeSRE:
             SREIdentityProps(
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
+                dockerhub_credentials=dockerhub_credentials,
                 entra_application_name=f"sre-{self.sre_name}-apricot",
                 entra_auth_token=self.graph_api_token,
                 entra_tenant_id=shm_entra_tenant_id,
@@ -266,6 +269,7 @@ class DeclarativeSRE:
                 allow_paste=self.cfg.sre.remote_desktop.allow_paste,
                 database_password=data.password_user_database_admin,
                 dns_server_ip=dns.ip_address,
+                dockerhub_credentials=dockerhub_credentials,
                 entra_application_fqdn=networking.sre_fqdn,
                 entra_application_name=f"sre-{self.sre_name}-guacamole",
                 entra_auth_token=self.graph_api_token,
@@ -295,6 +299,7 @@ class DeclarativeSRE:
                 databases=self.cfg.sre.databases,
                 dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
+                dockerhub_credentials=dockerhub_credentials,
                 gitea_database_password=data.password_gitea_database_admin,
                 hedgedoc_database_password=data.password_hedgedoc_database_admin,
                 ldap_server_hostname=identity.hostname,

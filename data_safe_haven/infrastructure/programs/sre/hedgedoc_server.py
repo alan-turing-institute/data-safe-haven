@@ -5,6 +5,7 @@ from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.functions import b64encode
 from data_safe_haven.infrastructure.common import (
+    DockerHubCredentials,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -30,6 +31,7 @@ class SREHedgeDocServerProps:
         database_subnet_id: Input[str],
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
+        dockerhub_credentials: DockerHubCredentials,
         ldap_server_hostname: Input[str],
         ldap_server_port: Input[int],
         ldap_user_filter: Input[str],
@@ -52,6 +54,7 @@ class SREHedgeDocServerProps:
         )
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
+        self.dockerhub_credentials = dockerhub_credentials
         self.ldap_server_hostname = ldap_server_hostname
         self.ldap_server_port = Output.from_input(ldap_server_port).apply(str)
         self.ldap_user_filter = ldap_user_filter
@@ -257,6 +260,14 @@ class SREHedgeDocServerComponent(ComponentResource):
             dns_config=containerinstance.DnsConfigurationArgs(
                 name_servers=[props.dns_server_ip],
             ),
+            # Required due to DockerHub rate-limit: https://docs.docker.com/docker-hub/download-rate-limit/
+            image_registry_credentials=[
+                {
+                    "password": Output.secret(props.dockerhub_credentials.access_token),
+                    "server": props.dockerhub_credentials.server,
+                    "username": props.dockerhub_credentials.username,
+                }
+            ],
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(
