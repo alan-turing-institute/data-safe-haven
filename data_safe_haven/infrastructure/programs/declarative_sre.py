@@ -75,6 +75,13 @@ class DeclarativeSRE:
         shm_entra_tenant_id = self.pulumi_opts.require("shm-entra-tenant-id")
         shm_fqdn = self.pulumi_opts.require("shm-fqdn")
 
+        # Construct DockerHubCredentials
+        dockerhub_credentials = DockerHubCredentials(
+            access_token=self.cfg.dockerhub.access_token,
+            server="index.docker.io",
+            username=self.cfg.dockerhub.username,
+        )
+
         # Construct LDAP paths
         ldap_root_dn = f"DC={shm_fqdn.replace('.', ',DC=')}"
         ldap_group_search_base = f"OU=groups,{ldap_root_dn}"
