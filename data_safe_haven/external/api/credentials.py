@@ -30,6 +30,7 @@ class DeferredCredential(TokenCredential):
         scopes: Sequence[str],
         tenant_id: str | None = None,
     ) -> None:
+        self._show_login_msg = False
         self.logger = get_logger()
         self.scopes = scopes
         self.tenant_id = tenant_id
@@ -92,15 +93,17 @@ class AzureSdkCredential(DeferredCredential):
         # Check that we are logged into Azure
         try:
             decoded = self.decode_token(credential.get_token(*self.scopes).token)
-            self.logger.info(
-                "You are currently logged into the [blue]Azure CLI[/] with the following details:"
-            )
-            self.logger.info(
-                f"\tuser: [green]{decoded['name']}[/] ({decoded['oid']})"
-            )
-            self.logger.info(
-                f"\ttenant: [green]{decoded['upn'].split('@')[1]}[/] ({decoded['tid']})"
-            )
+            if self._show_login_msg:
+                self.logger.info(
+                    "You are currently logged into the [blue]Azure CLI[/] with the following details:"
+                )
+                self.logger.info(
+                    f"\tuser: [green]{decoded['name']}[/] ({decoded['oid']})"
+                )
+                self.logger.info(
+                    f"\ttenant: [green]{decoded['upn'].split('@')[1]}[/] ({decoded['tid']})"
+                )
+                self._show_login_msg = False
         except (CredentialUnavailableError, DataSafeHavenValueError) as exc:
             self.logger.error(
                 "Please authenticate with Azure: run '[green]az login[/]' using [bold]infrastructure administrator[/] credentials."
@@ -164,15 +167,17 @@ else:
             f_auth.write(new_auth_record.serialize())
 
         # Write confirmation details about this login
-        self.logger.info(
-            "You are currently logged into the [blue]Microsoft Graph API[/] with the following details:"
-        )
-        self.logger.info(
-            f"\tuser: [green]{new_auth_record.username}[/] ({new_auth_record._home_account_id.split('.')[0]})"
-        )
-        self.logger.info(
-            f"\ttenant: [green]{new_auth_record._username.split('@')[1]}[/] ({new_auth_record._tenant_id})"
-        )
+        if self._show_login_msg:
+            self.logger.info(
+                "You are currently logged into the [blue]Microsoft Graph API[/] with the following details:"
+            )
+            self.logger.info(
+                f"\tuser: [green]{new_auth_record.username}[/] ({new_auth_record._home_account_id.split('.')[0]})"
+            )
+            self.logger.info(
+                f"\ttenant: [green]{new_auth_record._username.split('@')[1]}[/] ({new_auth_record._tenant_id})"
+            )
+            self._show_login_msg = False
 
         # Return the credential
         return credential
