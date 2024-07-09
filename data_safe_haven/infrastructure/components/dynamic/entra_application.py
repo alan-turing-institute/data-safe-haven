@@ -37,32 +37,6 @@ class EntraApplicationProvider(DshResourceProvider):
         self.auth_token = auth_token
         super().__init__()
 
-    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
-        try:
-            outs = dict(**props)
-            with suppress(DataSafeHavenMicrosoftGraphError):
-                graph_api = GraphApi.from_token(self.auth_token)
-                if json_response := graph_api.get_application_by_name(
-                    outs["application_name"]
-                ):
-                    outs["object_id"] = json_response["id"]
-                    outs["application_id"] = json_response["appId"]
-
-                # Ensure that requested role permissions have been granted
-                graph_api.grant_role_permissions(
-                    outs["application_name"],
-                    application_role_assignments=props.get(
-                        "application_role_assignments", []
-                    ),
-                    delegated_role_assignments=props.get(
-                        "delegated_role_assignments", []
-                    ),
-                )
-            return outs
-        except Exception as exc:
-            msg = f"Failed to refresh application '{props['application_name']}' in Entra ID."
-            raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Create new Entra application."""
         outs = dict(**props)
@@ -139,6 +113,32 @@ class EntraApplicationProvider(DshResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         return self.partial_diff(old_props, new_props)
+
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
+        try:
+            outs = dict(**props)
+            with suppress(DataSafeHavenMicrosoftGraphError, KeyError):
+                graph_api = GraphApi.from_token(self.auth_token)
+                if json_response := graph_api.get_application_by_name(
+                    outs["application_name"]
+                ):
+                    outs["object_id"] = json_response["id"]
+                    outs["application_id"] = json_response["appId"]
+
+                # Ensure that requested role permissions have been granted
+                graph_api.grant_role_permissions(
+                    outs["application_name"],
+                    application_role_assignments=props.get(
+                        "application_role_assignments", []
+                    ),
+                    delegated_role_assignments=props.get(
+                        "delegated_role_assignments", []
+                    ),
+                )
+            return outs
+        except Exception as exc:
+            msg = f"Failed to refresh application '{props['application_name']}' in Entra ID."
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def update(
         self,

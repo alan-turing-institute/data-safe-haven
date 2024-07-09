@@ -43,23 +43,6 @@ class SSLCertificateProps:
 
 
 class SSLCertificateProvider(DshResourceProvider):
-    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
-        try:
-            outs = dict(**props)
-            with suppress(DataSafeHavenAzureError):
-                azure_sdk = AzureSdk(outs["subscription_name"])
-                certificate = azure_sdk.get_keyvault_certificate(
-                    outs["certificate_secret_name"], outs["key_vault_name"]
-                )
-                if certificate.secret_id:
-                    outs["secret_id"] = certificate.secret_id
-            return outs
-        except Exception as exc:
-            cert_name = f"[green]{props['certificate_secret_name']}[/]"
-            domain_name = f"[green]{props['domain_name']}[/]"
-            msg = f"Failed to refresh SSL certificate {cert_name} for {domain_name}."
-            raise DataSafeHavenSSLError(msg) from exc
-
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Create new SSL certificate."""
         outs = dict(**props)
@@ -179,6 +162,23 @@ class SSLCertificateProvider(DshResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         return self.partial_diff(old_props, new_props, [])
+
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
+        try:
+            outs = dict(**props)
+            with suppress(DataSafeHavenAzureError, KeyError):
+                azure_sdk = AzureSdk(outs["subscription_name"])
+                certificate = azure_sdk.get_keyvault_certificate(
+                    outs["certificate_secret_name"], outs["key_vault_name"]
+                )
+                if certificate.secret_id:
+                    outs["secret_id"] = certificate.secret_id
+            return outs
+        except Exception as exc:
+            cert_name = f"[green]{props['certificate_secret_name']}[/]"
+            domain_name = f"[green]{props['domain_name']}[/]"
+            msg = f"Failed to refresh SSL certificate {cert_name} for {domain_name}."
+            raise DataSafeHavenSSLError(msg) from exc
 
 
 class SSLCertificate(Resource):
