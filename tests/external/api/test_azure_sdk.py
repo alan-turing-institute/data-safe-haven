@@ -72,7 +72,7 @@ def mock_subscription_client(monkeypatch):
         def list(self):
             subscription_1 = Subscription()
             subscription_1.display_name = "Subscription 1"
-            subscription_1.id = pytest.subscription_id
+            subscription_1.id = pytest.guid_subscription
             subscription_2 = Subscription()
             subscription_2.display_name = "Subscription 2"
             return [subscription_1, subscription_2]
@@ -144,7 +144,7 @@ class TestAzureSdk:
         subscription = sdk.get_subscription("Subscription 1")
         assert isinstance(subscription, Subscription)
         assert subscription.display_name == "Subscription 1"
-        assert subscription.id == pytest.subscription_id
+        assert subscription.id == pytest.guid_subscription
 
     def test_get_subscription_fails(self, mock_subscription_client):  # noqa: ARG002
         sdk = AzureSdk("subscription name")

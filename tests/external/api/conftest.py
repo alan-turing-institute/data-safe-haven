@@ -14,7 +14,6 @@ from data_safe_haven.external.api.credentials import GraphApiCredential
 
 def pytest_configure():
     """Define constants for use across multiple tests"""
-    pytest.subscription_id = "64954419-0f4b-4f6f-bd76-0d4de6ca8b83"
     pytest.user_upn = "username@example.com"
     pytest.user_id = "80b4ccfd-73ef-41b7-bb22-8ec268ec040b"
 
