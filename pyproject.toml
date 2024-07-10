@@ -82,6 +82,7 @@ build = [
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
+  "azure-functions>=1.20.0",
   "black>=24.1.0",
   "mypy>=1.0.0",
   "pydantic>=2.4",
