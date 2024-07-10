@@ -7,7 +7,6 @@ from requests.auth import HTTPBasicAuth
 gitea_host = "http://localhost:3000"
 api_root = "/api/v1"
 path = "/repos/"
-extra_data = {}
 timeout = 60
 
 parser = argparse.ArgumentParser()
@@ -24,7 +23,6 @@ auth = HTTPBasicAuth(
 
 response = requests.delete(
     auth=auth,
-    data={} | extra_data,
     timeout=timeout,
     url=gitea_host + api_root + path + f"/{args.owner}/{args.name}",
 )
