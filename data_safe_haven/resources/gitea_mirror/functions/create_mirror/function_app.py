@@ -64,7 +64,7 @@ def create_mirror(req: func.HttpRequest) -> func.HttpResponse:  #
 
     logging.info(f"Response status code: {response.status_code}.")
     logging.debug(f"Response contents: {response.json()}.")
-    if response.status_code != requests.codes.ok:
+    if response.status_code != 201:
         return func.HttpResponse(
             "Error creating repository.",
             status_code=400,
