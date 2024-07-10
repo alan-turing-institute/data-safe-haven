@@ -11,14 +11,6 @@ app = func.FunctionApp()
 def create_mirror(req: func.HttpRequest) -> func.HttpResponse:  #
     logging.info("Request received.")
 
-    address = req.params.get("address")
-    name = req.params.get("name")
-    password = req.params.get("password")
-    username = req.params.get("username")
-    logging.info(
-        f"parameters: address={address}, name={name}, password={password}, username={username}"
-    )
-
     try:
         req_body = req.get_json()
     except ValueError:
