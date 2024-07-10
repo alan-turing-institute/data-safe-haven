@@ -8,7 +8,7 @@ app = func.FunctionApp()
 
 
 @app.route(route="create-mirror", auth_level=func.AuthLevel.ANONYMOUS)
-def create_mirror(req: func.HttpRequest) -> func.HttpResponse:  #
+def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Request received.")
 
     try:
