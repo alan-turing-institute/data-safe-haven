@@ -7,28 +7,32 @@ from requests.auth import HTTPBasicAuth
 app = func.FunctionApp()
 
 
-@app.route(route="HttpExample", auth_level=func.AuthLevel.ANONYMOUS)
-def HttpExample(req: func.HttpRequest) -> func.HttpResponse:
+@app.route(route="create-mirror", auth_level=func.AuthLevel.ANONYMOUS)
+def create_mirror(req: func.HttpRequest) -> func.HttpResponse:  #
     logging.info("Request received.")
 
     address = req.params.get("address")
-    name = req.params.get('name')
+    name = req.params.get("name")
     password = req.params.get("password")
     username = req.params.get("username")
-    logging.info(f"parameters: address={address}, name={name}, password={password}, username={username}")
+    logging.info(
+        f"parameters: address={address}, name={name}, password={password}, username={username}"
+    )
 
     try:
         req_body = req.get_json()
     except ValueError:
         pass
     else:
-        address = req_body.get('address')
-        name = req_body.get('name')
-        password = req_body.get('password')
-        username = req_body.get('username')
-    logging.info(f"parameters: address={address}, name={name}, password={password}, username={username}")
+        address = req_body.get("address")
+        name = req_body.get("name")
+        password = req_body.get("password")
+        username = req_body.get("username")
+    logging.info(
+        f"parameters: address={address}, name={name}, password={password}, username={username}"
+    )
 
-    if (None in [address, name, password, username]):
+    if None in [address, name, password, username]:
         msg = "Required parameter not provided."
         logging.critical(msg)
         return func.HttpResponse(
