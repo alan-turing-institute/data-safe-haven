@@ -23,13 +23,9 @@ gitea_host = "http://localhost:3000"
 api_root = "/api/v1"
 migrate_path = "/repos/migrate"
 extra_data = {
-    "description": f"Read-only mirror of {args.address}.",
-    "issues": False,
-    "mirror": False,
-    "mirror_interval": "0",
-    "pull_requests": False,
-    "releases": False,
-    "wiki": False,
+    "description": f"Read-only mirror of {args.address}",
+    "mirror": True,
+    "mirror_interval": "10m",
 }
 
 auth = HTTPBasicAuth(
@@ -42,12 +38,12 @@ print(
 )
 
 response = requests.post(
-    gitea_host + api_root + migrate_path,
     auth=auth,
     data={
         "clone_addr": args.address,
         "repo_name": args.name,
     } | extra_data,
+    url=gitea_host + api_root + migrate_path,
 )
 
 print(response.json())
