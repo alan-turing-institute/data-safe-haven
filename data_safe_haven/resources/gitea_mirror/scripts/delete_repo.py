@@ -8,20 +8,13 @@ gitea_host = "http://localhost:3000"
 api_root = "/api/v1"
 path = "/repos/"
 extra_data = {}
+timeout = 60
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    'username'
-)
-parser.add_argument(
-    'password'
-)
-parser.add_argument(
-    'owner'
-)
-parser.add_argument(
-    'name'
-)
+parser.add_argument("username")
+parser.add_argument("password")
+parser.add_argument("owner")
+parser.add_argument("name")
 args = parser.parse_args()
 
 auth = HTTPBasicAuth(
@@ -30,10 +23,10 @@ auth = HTTPBasicAuth(
 )
 
 response = requests.delete(
-    gitea_host + api_root + path + f"/{args.owner}/{args.name}",
     auth=auth,
     data={} | extra_data,
+    timeout=timeout,
+    url=gitea_host + api_root + path + f"/{args.owner}/{args.name}",
 )
 
-# print(response.json())
 response.raise_for_status()
