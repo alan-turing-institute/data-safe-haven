@@ -221,8 +221,8 @@ runcmd:
   # Deploy CodiMD using Docker
   - echo ">=== Deploying CodiMD with Docker... ===<"
   - chown codimddaemon:codimddaemon /opt/configuration/docker_pat.txt # Ensure that the file is owned by the codimddaemon user
-  - su codimddaemon -c "cat /opt/configuration/docker_pat.txt | docker login --username '{{shm.dockerAccount}}' --password-stdin && \
-      docker compose -f /opt/codimd/docker-compose.yml up -d"
+  - su codimddaemon -c "cat /opt/configuration/docker_pat.txt | docker login --username '{{shm.dockerAccount}}' --password-stdin
+    && docker compose -f /opt/codimd/docker-compose.yml up -d"
 
   # Wait for deployment to finish
   - |
