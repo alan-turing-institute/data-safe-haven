@@ -36,7 +36,7 @@ class TestCreateMirror:
                 "password": "password",
                 "username": "username",
             }).encode(),
-            url="/api/delete-mirror",
+            url="/api/create-mirror",
         )
 
         requests_mock.post(
@@ -51,6 +51,80 @@ class TestCreateMirror:
         response = create_mirror_func(req)
         assert response.status_code == 200
         assert b"Mirror successfully created." in response._HttpResponse__body
+
+    def test_create_mirror_missing_args(self, create_mirror_func, requests_mock):
+        req = func.HttpRequest(
+            method="POST",
+            body=json.dumps({
+                "name": "repo",
+                "password": "password",
+                "username": "username",
+            }).encode(),
+            url="/api/create-mirror",
+        )
+
+        requests_mock.post(
+            "http://localhost:3000/api/v1/repos/migrate",
+            status_code=201
+        )
+        requests_mock.patch(
+            "http://localhost:3000/api/v1/repos/username/repo",
+            status_code=200
+        )
+
+        response = create_mirror_func(req)
+        assert response.status_code == 400
+        assert b"Required parameter not provided." in response._HttpResponse__body
+
+    def test_create_mirror_mirror_fail(self, create_mirror_func, requests_mock):
+        req = func.HttpRequest(
+            method="POST",
+            body=json.dumps({
+                "address": "https://github.com/user/repo",
+                "name": "repo",
+                "password": "password",
+                "username": "username",
+            }).encode(),
+            url="/api/create-mirror",
+        )
+
+        requests_mock.post(
+            "http://localhost:3000/api/v1/repos/migrate",
+            status_code=409
+        )
+        requests_mock.patch(
+            "http://localhost:3000/api/v1/repos/username/repo",
+            status_code=200
+        )
+
+        response = create_mirror_func(req)
+        assert response.status_code == 400
+        assert b"Error creating repository." in response._HttpResponse__body
+
+    def test_create_mirror_configure_fail(self, create_mirror_func, requests_mock):
+        req = func.HttpRequest(
+            method="POST",
+            body=json.dumps({
+                "address": "https://github.com/user/repo",
+                "name": "repo",
+                "password": "password",
+                "username": "username",
+            }).encode(),
+            url="/api/create-mirror",
+        )
+
+        requests_mock.post(
+            "http://localhost:3000/api/v1/repos/migrate",
+            status_code=201
+        )
+        requests_mock.patch(
+            "http://localhost:3000/api/v1/repos/username/repo",
+            status_code=403
+        )
+
+        response = create_mirror_func(req)
+        assert response.status_code == 400
+        assert b"Error configuring repository." in response._HttpResponse__body
 
 
 class TestDeleteMirror:
