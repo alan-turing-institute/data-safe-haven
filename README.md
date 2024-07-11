@@ -20,13 +20,13 @@
 | data\_safe\_haven/commands/sre.py                                                 |       58 |       10 |     83% |61-65, 112-120, 159-163, 175-178 |
 | data\_safe\_haven/commands/users.py                                               |      118 |       32 |     73% |44-55, 83-93, 139-160, 190-198, 244-270 |
 | data\_safe\_haven/config/\_\_init\_\_.py                                          |        7 |        0 |    100% |           |
-| data\_safe\_haven/config/config\_sections.py                                      |       24 |        0 |    100% |           |
+| data\_safe\_haven/config/config\_sections.py                                      |       27 |        0 |    100% |           |
 | data\_safe\_haven/config/context.py                                               |       56 |        1 |     98% |        88 |
 | data\_safe\_haven/config/context\_manager.py                                      |       88 |        4 |     95% |102-105, 117-120 |
 | data\_safe\_haven/config/dsh\_pulumi\_config.py                                   |       40 |        0 |    100% |           |
 | data\_safe\_haven/config/dsh\_pulumi\_project.py                                  |       11 |        2 |     82% |    15, 19 |
 | data\_safe\_haven/config/shm\_config.py                                           |       18 |        3 |     83% |     29-33 |
-| data\_safe\_haven/config/sre\_config.py                                           |       24 |        0 |    100% |           |
+| data\_safe\_haven/config/sre\_config.py                                           |       25 |        0 |    100% |           |
 | data\_safe\_haven/console/\_\_init\_\_.py                                         |        4 |        0 |    100% |           |
 | data\_safe\_haven/console/format.py                                               |       11 |        0 |    100% |           |
 | data\_safe\_haven/console/pretty.py                                               |        5 |        0 |    100% |           |
@@ -48,7 +48,8 @@
 | data\_safe\_haven/functions/network.py                                            |       20 |        0 |    100% |           |
 | data\_safe\_haven/functions/strings.py                                            |       61 |       20 |     67% |22, 78-87, 102-104, 109, 119-127 |
 | data\_safe\_haven/infrastructure/\_\_init\_\_.py                                  |        3 |        0 |    100% |           |
-| data\_safe\_haven/infrastructure/common/\_\_init\_\_.py                           |        3 |        0 |    100% |           |
+| data\_safe\_haven/infrastructure/common/\_\_init\_\_.py                           |        4 |        0 |    100% |           |
+| data\_safe\_haven/infrastructure/common/dockerhub\_credentials.py                 |        6 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/common/ip\_ranges.py                             |       23 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/common/transformations.py                        |       57 |       34 |     40% |12-17, 24, 31-32, 39-40, 45-48, 55, 66-81, 88-89, 94-97, 102-105, 110-113 |
 | data\_safe\_haven/infrastructure/components/\_\_init\_\_.py                       |        4 |        0 |    100% |           |
@@ -67,7 +68,7 @@
 | data\_safe\_haven/infrastructure/components/wrapped/\_\_init\_\_.py               |        2 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/components/wrapped/log\_analytics\_workspace.py  |       17 |        6 |     65% |22-23, 39, 46, 53-59 |
 | data\_safe\_haven/infrastructure/programs/\_\_init\_\_.py                         |        3 |        0 |    100% |           |
-| data\_safe\_haven/infrastructure/programs/declarative\_sre.py                     |       52 |       28 |     46% |    73-373 |
+| data\_safe\_haven/infrastructure/programs/declarative\_sre.py                     |       54 |       29 |     46% |    74-385 |
 | data\_safe\_haven/infrastructure/programs/imperative\_shm.py                      |       64 |       50 |     22% |26-30, 38-144, 152-160 |
 | data\_safe\_haven/infrastructure/programs/sre/\_\_init\_\_.py                     |        0 |        0 |    100% |           |
 | data\_safe\_haven/infrastructure/programs/sre/application\_gateway.py             |       24 |        0 |    100% |           |
@@ -75,16 +76,16 @@
 | data\_safe\_haven/infrastructure/programs/sre/backup.py                           |       18 |       11 |     39% |18-22, 38-173 |
 | data\_safe\_haven/infrastructure/programs/sre/data.py                             |       83 |       68 |     18% |59-85, 103-786 |
 | data\_safe\_haven/infrastructure/programs/sre/database\_servers.py                |       26 |       18 |     31% |31-41, 55-107 |
-| data\_safe\_haven/infrastructure/programs/sre/dns\_server.py                      |       36 |       23 |     36% |33-35, 49-317 |
+| data\_safe\_haven/infrastructure/programs/sre/dns\_server.py                      |       37 |       24 |     35% |35-38, 52-328 |
 | data\_safe\_haven/infrastructure/programs/sre/firewall.py                         |       27 |       18 |     33% |36-57, 73-303 |
-| data\_safe\_haven/infrastructure/programs/sre/gitea\_server.py                    |       45 |       34 |     24% |45-64, 78-332 |
-| data\_safe\_haven/infrastructure/programs/sre/hedgedoc\_server.py                 |       42 |       29 |     31% |47-66, 80-310 |
-| data\_safe\_haven/infrastructure/programs/sre/identity.py                         |       32 |       23 |     28% |39-51, 67-253 |
+| data\_safe\_haven/infrastructure/programs/sre/gitea\_server.py                    |       46 |       35 |     24% |47-67, 81-343 |
+| data\_safe\_haven/infrastructure/programs/sre/hedgedoc\_server.py                 |       43 |       30 |     30% |49-69, 83-321 |
+| data\_safe\_haven/infrastructure/programs/sre/identity.py                         |       33 |       24 |     27% |41-54, 70-264 |
 | data\_safe\_haven/infrastructure/programs/sre/monitoring.py                       |       28 |       17 |     39% |32-35, 49-214 |
 | data\_safe\_haven/infrastructure/programs/sre/networking.py                       |       88 |       78 |     11% |38-52, 66-1810 |
-| data\_safe\_haven/infrastructure/programs/sre/remote\_desktop.py                  |       48 |       36 |     25% |56-95, 120-420 |
-| data\_safe\_haven/infrastructure/programs/sre/software\_repositories.py           |       42 |       30 |     29% |40-55, 69-330 |
-| data\_safe\_haven/infrastructure/programs/sre/user\_services.py                   |       46 |       33 |     28% |47-75, 91-200 |
+| data\_safe\_haven/infrastructure/programs/sre/remote\_desktop.py                  |       49 |       37 |     24% |58-98, 123-431 |
+| data\_safe\_haven/infrastructure/programs/sre/software\_repositories.py           |       43 |       31 |     28% |42-58, 72-343 |
+| data\_safe\_haven/infrastructure/programs/sre/user\_services.py                   |       47 |       34 |     28% |51-80, 96-208 |
 | data\_safe\_haven/infrastructure/programs/sre/workspaces.py                       |       69 |       51 |     26% |54-88, 91-97, 111-214, 231-248 |
 | data\_safe\_haven/infrastructure/project\_manager.py                              |      241 |      139 |     42% |68-82, 86, 139-141, 150, 154-164, 168-174, 180, 184, 188-197, 201-261, 265-268, 272-277, 281-289, 301-303, 307-320, 324-331, 345-350, 359-367, 371-381, 396-398 |
 | data\_safe\_haven/logging/\_\_init\_\_.py                                         |        2 |        0 |    100% |           |
@@ -108,7 +109,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       23 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       64 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4333** | **2251** | **48%** |           |
+|                                                                         **TOTAL** | **4353** | **2259** | **48%** |           |
 
 
 ## Setup coverage badge
