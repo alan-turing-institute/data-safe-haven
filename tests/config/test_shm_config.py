@@ -14,21 +14,25 @@ from data_safe_haven.external import AzureApi
 
 class TestConfig:
     def test_constructor(
-        self, azure_config: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+        self,
+        config_section_azure: ConfigSectionAzure,
+        shm_config_section: ConfigSectionSHM,
     ) -> None:
         config = SHMConfig(
-            azure=azure_config,
+            azure=config_section_azure,
             shm=shm_config_section,
         )
         assert isinstance(config.azure, ConfigSectionAzure)
         assert isinstance(config.shm, ConfigSectionSHM)
 
-    def test_constructor_invalid(self, azure_config: ConfigSectionAzure) -> None:
+    def test_constructor_invalid(
+        self, config_section_azure: ConfigSectionAzure
+    ) -> None:
         with pytest.raises(
             ValidationError,
             match=r"1 validation error for SHMConfig\nshm\n  Field required.*",
         ):
-            SHMConfig(azure=azure_config)
+            SHMConfig(azure=config_section_azure)
 
     def test_template(self) -> None:
         config = SHMConfig.template()

@@ -30,7 +30,7 @@ from data_safe_haven.logging import init_logging
 
 
 @fixture
-def azure_config():
+def config_section_azure():
     return ConfigSectionAzure(
         location="uksouth",
         subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
@@ -274,21 +274,21 @@ def remote_desktop_config() -> ConfigSubsectionRemoteDesktopOpts:
 
 @fixture
 def shm_config(
-    azure_config: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+    config_section_azure: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
 ) -> SHMConfig:
     return SHMConfig(
-        azure=azure_config,
+        azure=config_section_azure,
         shm=shm_config_section,
     )
 
 
 @fixture
 def shm_config_alternate(
-    azure_config: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+    config_section_azure: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
 ) -> SHMConfig:
     shm_config_section.fqdn = "shm-alternate.acme.com"
     return SHMConfig(
-        azure=azure_config,
+        azure=config_section_azure,
         shm=shm_config_section,
     )
 
@@ -340,12 +340,12 @@ def sre_config_file(sre_config_yaml, tmp_path):
 
 @fixture
 def sre_config(
-    azure_config: ConfigSectionAzure,
+    config_section_azure: ConfigSectionAzure,
     config_section_dockerhub: ConfigSectionDockerHub,
     sre_config_section: ConfigSectionSRE,
 ) -> SREConfig:
     return SREConfig(
-        azure=azure_config,
+        azure=config_section_azure,
         description="Sandbox Project",
         dockerhub=config_section_dockerhub,
         name="sandbox",
@@ -355,13 +355,13 @@ def sre_config(
 
 @fixture
 def sre_config_alternate(
-    azure_config: ConfigSectionAzure,
+    config_section_azure: ConfigSectionAzure,
     config_section_dockerhub: ConfigSectionDockerHub,
     sre_config_section: ConfigSectionSRE,
 ) -> SREConfig:
     sre_config_section.admin_ip_addresses = ["2.3.4.5"]
     return SREConfig(
-        azure=azure_config,
+        azure=config_section_azure,
         description="Alternative Project",
         dockerhub=config_section_dockerhub,
         name="alternative",

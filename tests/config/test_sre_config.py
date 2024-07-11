@@ -16,10 +16,10 @@ from data_safe_haven.types import SoftwarePackageCategory
 
 class TestConfig:
     def test_constructor(
-        self, azure_config: ConfigSectionAzure, sre_config_section: ConfigSectionSRE
+        self, config_section_azure: ConfigSectionAzure, sre_config_section: ConfigSectionSRE
     ) -> None:
         config = SREConfig(
-            azure=azure_config,
+            azure=config_section_azure,
             description="Sandbox Project",
             name="sandbox",
             sre=sre_config_section,
@@ -28,12 +28,12 @@ class TestConfig:
         assert isinstance(config.name, str)
         assert isinstance(config.sre, ConfigSectionSRE)
 
-    def test_constructor_invalid(self, azure_config: ConfigSectionAzure) -> None:
+    def test_constructor_invalid(self, config_section_azure: ConfigSectionAzure) -> None:
         with pytest.raises(
             ValidationError,
             match=r"1 validation error for SREConfig\nsre\n  Field required.*",
         ):
-            SREConfig(azure=azure_config, description="Sandbox Project", name="sandbox")
+            SREConfig(azure=config_section_azure, description="Sandbox Project", name="sandbox")
 
     @pytest.mark.parametrize(
         "name",
@@ -46,7 +46,7 @@ class TestConfig:
     )
     def test_constructor_invalid_name(
         self,
-        azure_config: ConfigSectionAzure,
+        config_section_azure: ConfigSectionAzure,
         name: str,
         sre_config_section: ConfigSectionSRE,
     ) -> None:
@@ -55,7 +55,7 @@ class TestConfig:
             match=r"1 validation error for SREConfig\nname\n  Value error, Expected valid string.*",
         ):
             SREConfig(
-                azure=azure_config,
+                azure=config_section_azure,
                 description="Sandbox Project",
                 name=name,
                 sre=sre_config_section,
