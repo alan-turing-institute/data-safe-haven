@@ -10,6 +10,7 @@ from azure.identity import (
     DeviceCodeCredential,
 )
 
+from data_safe_haven.external import GraphApi
 from data_safe_haven.external.api.credentials import GraphApiCredential
 
 
@@ -117,6 +118,15 @@ def mock_devicecodecredential_new(mocker, authentication_record):
         DeviceCodeCredential,
         "__new__",
         lambda *args, **kwargs: MockDeviceCodeCredential(*args, **kwargs),
+    )
+
+
+@pytest.fixture
+def mock_graphapi_read_domains(mocker):
+    mocker.patch.object(
+        GraphApi,
+        "read_domains",
+        return_value=[{"id": "example.com"}],
     )
 
 

@@ -95,9 +95,8 @@ class GraphApi:
         try:
             # Create the Entra ID custom domain if it does not already exist
             domains = self.read_domains()
-            domain_exists = any(domain["id"] == domain_name for domain in domains)
-            if not domain_exists:
-                response = self.http_post(
+            if not any(domain["id"] == domain_name for domain in domains):
+                self.http_post(
                     f"{self.base_endpoint}/domains",
                     json={"id": domain_name},
                 )

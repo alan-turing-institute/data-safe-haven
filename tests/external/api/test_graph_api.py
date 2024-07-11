@@ -26,6 +26,29 @@ class TestGraphApi:
         ):
             GraphApi.from_token("not a jwt")
 
+    def test_add_custom_domain(
+        self,
+        requests_mock,
+        mock_graphapicredential_get_token,  # noqa: ARG002
+    ):
+        domain_name = "example.com"
+        requests_mock.get(
+            "https://graph.microsoft.com/v1.0/domains",
+            json={"value": [{"id": domain_name}, {"id": "example.org"}]},
+        )
+        requests_mock.get(
+            f"https://graph.microsoft.com/v1.0/domains/{domain_name}/verificationDnsRecords",
+            json={
+                "value": [
+                    {"recordType": "Caa", "text": "caa-record-text"},
+                    {"recordType": "Txt", "text": "txt-record-text"},
+                ]
+            },
+        )
+        api = GraphApi.from_scopes(scopes=[], tenant_id=pytest.guid_tenant)
+        result = api.add_custom_domain(domain_name)
+        assert result == "txt-record-text"
+
     def test_token(
         self,
         graph_api_token,
