@@ -52,6 +52,21 @@ class TestGraphApiCredential:
         credential = GraphApiCredential(pytest.guid_tenant)
         assert isinstance(credential.get_credential(), DeviceCodeCredential)
 
+    def test_get_credential_callback(
+        self,
+        capsys,
+        mock_devicecodecredential_new,  # noqa: ARG002
+        tmp_config_dir,  # noqa: ARG002
+    ):
+        credential = GraphApiCredential(pytest.guid_tenant)
+        credential.get_credential()
+        captured = capsys.readouterr()
+        cleaned_stdout = " ".join(captured.out.split())
+        assert (
+            "Go to VERIFICATION_URI in a web browser and enter the code USER_DEVICE_CODE at the prompt."
+            in cleaned_stdout
+        )
+
     def test_get_token(
         self,
         mock_graphapicredential_get_token,  # noqa: ARG002

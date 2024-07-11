@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import jwt
@@ -92,11 +93,21 @@ def mock_devicecodecredential_get_token(mocker, graph_api_token):
 @pytest.fixture
 def mock_devicecodecredential_new(mocker, authentication_record):
     class MockDeviceCodeCredential:
+        def __init__(self, *args, prompt_callback, **kwargs):  # noqa: ARG002
+            self.prompt_callback = prompt_callback
+
         def authenticate(self, *args, **kwargs):  # noqa: ARG002
+            self.prompt_callback(
+                "VERIFICATION_URI",
+                "USER_DEVICE_CODE",
+                datetime.datetime.now(tz=datetime.UTC),
+            )
             return authentication_record
 
     return mocker.patch.object(
-        DeviceCodeCredential, "__new__", return_value=MockDeviceCodeCredential()
+        DeviceCodeCredential,
+        "__new__",
+        lambda *args, **kwargs: MockDeviceCodeCredential(*args, **kwargs),
     )
 
 
