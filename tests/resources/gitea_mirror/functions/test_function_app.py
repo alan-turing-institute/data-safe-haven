@@ -4,6 +4,10 @@ import azure.functions as func
 from pytest import fixture
 
 from data_safe_haven.resources.gitea_mirror.functions.function_app import (
+    gitea_host,
+    api_root,
+    migrate_path,
+    repos_path,
     str_or_none,
     create_mirror,
     delete_mirror,
@@ -40,11 +44,11 @@ class TestCreateMirror:
         )
 
         requests_mock.post(
-            "http://localhost:3000/api/v1/repos/migrate",
+            gitea_host + api_root + migrate_path,
             status_code=201
         )
         requests_mock.patch(
-            "http://localhost:3000/api/v1/repos/username/repo",
+            gitea_host + api_root + repos_path + "/username/repo",
             status_code=200
         )
 
@@ -64,11 +68,11 @@ class TestCreateMirror:
         )
 
         requests_mock.post(
-            "http://localhost:3000/api/v1/repos/migrate",
+            gitea_host + api_root + migrate_path,
             status_code=201
         )
         requests_mock.patch(
-            "http://localhost:3000/api/v1/repos/username/repo",
+            gitea_host + api_root + repos_path + "/username/repo",
             status_code=200
         )
 
@@ -89,11 +93,11 @@ class TestCreateMirror:
         )
 
         requests_mock.post(
-            "http://localhost:3000/api/v1/repos/migrate",
+            gitea_host + api_root + migrate_path,
             status_code=409
         )
         requests_mock.patch(
-            "http://localhost:3000/api/v1/repos/username/repo",
+            gitea_host + api_root + repos_path + "/username/repo",
             status_code=200
         )
 
@@ -114,11 +118,11 @@ class TestCreateMirror:
         )
 
         requests_mock.post(
-            "http://localhost:3000/api/v1/repos/migrate",
+            gitea_host + api_root + migrate_path,
             status_code=201
         )
         requests_mock.patch(
-            "http://localhost:3000/api/v1/repos/username/repo",
+            gitea_host + api_root + repos_path + "/username/repo",
             status_code=403
         )
 
@@ -141,7 +145,7 @@ class TestDeleteMirror:
         )
 
         requests_mock.delete(
-            "http://localhost:3000/api/v1/repos/admin/repo",
+            gitea_host + api_root + repos_path + "/admin/repo",
             status_code=204,
         )
 
@@ -160,7 +164,7 @@ class TestDeleteMirror:
         )
 
         requests_mock.delete(
-            "http://localhost:3000/api/v1/repos/admin/repo",
+            gitea_host + api_root + repos_path + "/admin/repo",
             status_code=204,
         )
 
@@ -181,7 +185,7 @@ class TestDeleteMirror:
         )
 
         requests_mock.delete(
-            "http://localhost:3000/api/v1/repos/admin/repo",
+            gitea_host + api_root + repos_path + "/admin/repo",
             status_code=404,
         )
 
