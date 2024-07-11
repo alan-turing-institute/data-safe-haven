@@ -113,6 +113,7 @@ all = [
 
 [tool.hatch.envs.test]
 dependencies = [
+  "azure-functions>=1.20.0",
   "coverage>=7.5.1",
   "freezegun>=1.5",
   "pytest>=8.1",
