@@ -57,7 +57,6 @@ class DeferredCredential(TokenCredential):
     @abstractmethod
     def get_credential(self) -> TokenCredential:
         """Get a credential provider from the child class."""
-        pass
 
     def get_token(
         self,

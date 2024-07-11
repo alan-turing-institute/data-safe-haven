@@ -63,6 +63,15 @@ def mock_azureclicredential_get_token(mocker, azure_cli_token):
 
 
 @pytest.fixture
+def mock_azureclicredential_get_token_invalid(mocker):
+    mocker.patch.object(
+        AzureCliCredential,
+        "get_token",
+        return_value=AccessToken("not a jwt", 0),
+    )
+
+
+@pytest.fixture
 def mock_devicecodecredential_get_token(mocker, graph_api_token):
     mocker.patch.object(
         DeviceCodeCredential,

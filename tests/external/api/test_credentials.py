@@ -1,10 +1,23 @@
 import pytest
 from azure.identity import AzureCliCredential, DeviceCodeCredential
 
+from data_safe_haven.exceptions import DataSafeHavenAzureError
 from data_safe_haven.external.api.credentials import (
     AzureSdkCredential,
     GraphApiCredential,
 )
+
+
+class TestDeferredCredential:
+    def test_decode_token_error(
+        self, mock_azureclicredential_get_token_invalid  # noqa: ARG002
+    ):
+        credential = AzureSdkCredential()
+        with pytest.raises(
+            DataSafeHavenAzureError,
+            match="Error getting account information from Azure CLI.",
+        ):
+            credential.decode_token(credential.token)
 
 
 class TestAzureSdkCredential:
