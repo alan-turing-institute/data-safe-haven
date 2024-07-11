@@ -55,8 +55,17 @@ def graph_api_token():
 
 
 @pytest.fixture
+def mock_authenticationrecord_deserialize(mocker, authentication_record):
+    return mocker.patch.object(
+        AuthenticationRecord,
+        "deserialize",
+        return_value=authentication_record,
+    )
+
+
+@pytest.fixture
 def mock_azureclicredential_get_token(mocker, azure_cli_token):
-    mocker.patch.object(
+    return mocker.patch.object(
         AzureCliCredential,
         "get_token",
         return_value=AccessToken(azure_cli_token, 0),
@@ -65,7 +74,7 @@ def mock_azureclicredential_get_token(mocker, azure_cli_token):
 
 @pytest.fixture
 def mock_azureclicredential_get_token_invalid(mocker):
-    mocker.patch.object(
+    return mocker.patch.object(
         AzureCliCredential,
         "get_token",
         return_value=AccessToken("not a jwt", 0),
@@ -74,7 +83,7 @@ def mock_azureclicredential_get_token_invalid(mocker):
 
 @pytest.fixture
 def mock_devicecodecredential_authenticate(mocker, authentication_record):
-    mocker.patch.object(
+    return mocker.patch.object(
         DeviceCodeCredential,
         "authenticate",
         return_value=authentication_record,
@@ -83,7 +92,7 @@ def mock_devicecodecredential_authenticate(mocker, authentication_record):
 
 @pytest.fixture
 def mock_devicecodecredential_get_token(mocker, graph_api_token):
-    mocker.patch.object(
+    return mocker.patch.object(
         DeviceCodeCredential,
         "get_token",
         return_value=AccessToken(graph_api_token, 0),
@@ -104,10 +113,19 @@ def mock_devicecodecredential_new(mocker, authentication_record):
             )
             return authentication_record
 
-    return mocker.patch.object(
+    mocker.patch.object(
         DeviceCodeCredential,
         "__new__",
         lambda *args, **kwargs: MockDeviceCodeCredential(*args, **kwargs),
+    )
+
+
+@pytest.fixture
+def mock_graphapicredential_get_credential(mocker):
+    mocker.patch.object(
+        GraphApiCredential,
+        "get_credential",
+        return_value=DeviceCodeCredential(),
     )
 
 
