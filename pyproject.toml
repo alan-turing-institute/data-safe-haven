@@ -60,6 +60,10 @@ source = ["data_safe_haven/"]
 
 [tool.coverage.run]
 relative_files = true
+omit= [
+  "tests/*",
+  "data_safe_haven/resources/*",
+]
 
 [tool.hatch.envs.default]
 pre-install-commands = ["pip install -r requirements.txt"]
@@ -122,7 +126,7 @@ dependencies = [
 pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.hatch.envs.test.scripts]
-test = "coverage run --omit=tests/* -m pytest {args: tests}"
+test = "coverage run -m pytest {args: tests}"
 test-report = "coverage report {args:}"
 test-coverage = ["test", "test-report"]
 
