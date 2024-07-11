@@ -21,6 +21,7 @@ from data_safe_haven.config import (
 )
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
+    ConfigSectionDockerHub,
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
@@ -42,11 +43,42 @@ def pytest_configure():
 
 
 @fixture
-def azure_config():
+def config_section_azure():
     return ConfigSectionAzure(
         location="uksouth",
         subscription_id=pytest.guid_subscription,
         tenant_id=pytest.guid_tenant,
+    )
+
+
+@fixture
+def config_section_shm(config_section_shm_dict):
+    return ConfigSectionSHM(**config_section_shm_dict)
+
+
+@fixture
+def config_section_shm_dict():
+    return {
+        "admin_group_id": pytest.guid_admin,
+        "entra_tenant_id": pytest.guid_entra,
+        "fqdn": "shm.acme.com",
+    }
+
+
+@fixture
+def config_section_dockerhub() -> ConfigSectionDockerHub:
+    return ConfigSectionDockerHub(
+        access_token="dummytoken",
+        username="exampleuser",
+    )
+
+
+@fixture
+def config_section_sre() -> ConfigSectionSRE:
+    return ConfigSectionSRE(
+        admin_email_address="admin@example.com",
+        admin_ip_addresses=["1.2.3.4"],
+        timezone="Europe/London",
     )
 
 
@@ -303,22 +335,22 @@ def remote_desktop_config() -> ConfigSubsectionRemoteDesktopOpts:
 
 @fixture
 def shm_config(
-    azure_config: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+    config_section_azure: ConfigSectionAzure, config_section_shm: ConfigSectionSHM
 ) -> SHMConfig:
     return SHMConfig(
-        azure=azure_config,
-        shm=shm_config_section,
+        azure=config_section_azure,
+        shm=config_section_shm,
     )
 
 
 @fixture
 def shm_config_alternate(
-    azure_config: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+    config_section_azure: ConfigSectionAzure, config_section_shm: ConfigSectionSHM
 ) -> SHMConfig:
-    shm_config_section.fqdn = "shm-alternate.acme.com"
+    config_section_shm.fqdn = "shm-alternate.acme.com"
     return SHMConfig(
-        azure=azure_config,
-        shm=shm_config_section,
+        azure=config_section_azure,
+        shm=config_section_shm,
     )
 
 
@@ -328,20 +360,6 @@ def shm_config_file(shm_config_yaml: str, tmp_path: Path) -> Path:
     with open(config_file_path, "w") as f:
         f.write(shm_config_yaml)
     return config_file_path
-
-
-@fixture
-def shm_config_section(shm_config_section_dict):
-    return ConfigSectionSHM(**shm_config_section_dict)
-
-
-@fixture
-def shm_config_section_dict():
-    return {
-        "admin_group_id": pytest.guid_admin,
-        "entra_tenant_id": pytest.guid_entra,
-        "fqdn": "shm.acme.com",
-    }
 
 
 @fixture
@@ -376,37 +394,32 @@ def sre_config_file(sre_config_yaml, tmp_path):
 
 @fixture
 def sre_config(
-    azure_config: ConfigSectionAzure,
-    sre_config_section: ConfigSectionSRE,
+    config_section_azure: ConfigSectionAzure,
+    config_section_dockerhub: ConfigSectionDockerHub,
+    config_section_sre: ConfigSectionSRE,
 ) -> SREConfig:
     return SREConfig(
-        azure=azure_config,
+        azure=config_section_azure,
         description="Sandbox Project",
+        dockerhub=config_section_dockerhub,
         name="sandbox",
-        sre=sre_config_section,
+        sre=config_section_sre,
     )
 
 
 @fixture
 def sre_config_alternate(
-    azure_config: ConfigSectionAzure,
-    sre_config_section: ConfigSectionSRE,
+    config_section_azure: ConfigSectionAzure,
+    config_section_dockerhub: ConfigSectionDockerHub,
+    config_section_sre: ConfigSectionSRE,
 ) -> SREConfig:
-    sre_config_section.admin_ip_addresses = ["2.3.4.5"]
+    config_section_sre.admin_ip_addresses = ["2.3.4.5"]
     return SREConfig(
-        azure=azure_config,
+        azure=config_section_azure,
         description="Alternative Project",
+        dockerhub=config_section_dockerhub,
         name="alternative",
-        sre=sre_config_section,
-    )
-
-
-@fixture
-def sre_config_section() -> ConfigSectionSRE:
-    return ConfigSectionSRE(
-        admin_email_address="admin@example.com",
-        admin_ip_addresses=["1.2.3.4"],
-        timezone="Europe/London",
+        sre=config_section_sre,
     )
 
 
@@ -418,6 +431,9 @@ def sre_config_yaml():
         subscription_id: guid_subscription
         tenant_id: guid_tenant
     description: Sandbox Project
+    dockerhub:
+        access_token: dummytoken
+        username: exampleuser
     name: sandbox
     sre:
         admin_email_address: admin@example.com

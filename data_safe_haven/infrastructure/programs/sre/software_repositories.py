@@ -6,6 +6,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, storage
 
 from data_safe_haven.infrastructure.common import (
+    DockerHubCredentials,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -26,6 +27,7 @@ class SRESoftwareRepositoriesProps:
         self,
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
+        dockerhub_credentials: DockerHubCredentials,
         location: Input[str],
         networking_resource_group_name: Input[str],
         nexus_admin_password: Input[str],
@@ -39,6 +41,7 @@ class SRESoftwareRepositoriesProps:
     ) -> None:
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
+        self.dockerhub_credentials = dockerhub_credentials
         self.location = location
         self.networking_resource_group_name = networking_resource_group_name
         self.nexus_admin_password = Output.secret(nexus_admin_password)
@@ -256,6 +259,16 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 dns_config=containerinstance.DnsConfigurationArgs(
                     name_servers=[props.dns_server_ip],
                 ),
+                # Required due to DockerHub rate-limit: https://docs.docker.com/docker-hub/download-rate-limit/
+                image_registry_credentials=[
+                    {
+                        "password": Output.secret(
+                            props.dockerhub_credentials.access_token
+                        ),
+                        "server": props.dockerhub_credentials.server,
+                        "username": props.dockerhub_credentials.username,
+                    }
+                ],
                 ip_address=containerinstance.IpAddressArgs(
                     ports=[
                         containerinstance.PortArgs(

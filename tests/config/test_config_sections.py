@@ -3,6 +3,7 @@ from pydantic import ValidationError
 
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
+    ConfigSectionDockerHub,
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
@@ -51,33 +52,61 @@ class TestConfigSectionAzure:
             )
 
 
-class TestConfigSectionSHM:
-    def test_constructor(self, shm_config_section_dict) -> None:
-        ConfigSectionSHM(**shm_config_section_dict)
+class TestConfigSectionDockerHub:
+    def test_constructor(self) -> None:
+        ConfigSectionDockerHub(
+            access_token="dummytoken",
+            username="exampleuser",
+        )
 
-    def test_invalid_admin_group_id(self, shm_config_section_dict):
-        shm_config_section_dict["admin_group_id"] = "not a guid"
+    def test_invalid_access_token(self):
+        with pytest.raises(
+            ValidationError,
+            match="Value error, Expected valid string containing only letters, numbers, hyphens and underscores.",
+        ):
+            ConfigSectionDockerHub(
+                access_token="not a valid access token",
+                username="exampleuser",
+            )
+
+    def test_invalid_username(self):
+        with pytest.raises(
+            ValidationError,
+            match="Value error, Expected valid string containing only letters, numbers, hyphens and underscores.",
+        ):
+            ConfigSectionDockerHub(
+                access_token="dummytoken",
+                username="not a valid username",
+            )
+
+
+class TestConfigSectionSHM:
+    def test_constructor(self, config_section_shm_dict) -> None:
+        ConfigSectionSHM(**config_section_shm_dict)
+
+    def test_invalid_admin_group_id(self, config_section_shm_dict):
+        config_section_shm_dict["admin_group_id"] = "not a guid"
         with pytest.raises(
             ValidationError,
             match=r"1 validation error for ConfigSectionSHM\nadmin_group_id\n  Value error, Expected GUID",
         ):
-            ConfigSectionSHM(**shm_config_section_dict)
+            ConfigSectionSHM(**config_section_shm_dict)
 
-    def test_invalid_entra_tenant_id(self, shm_config_section_dict):
-        shm_config_section_dict["entra_tenant_id"] = "not a guid"
+    def test_invalid_entra_tenant_id(self, config_section_shm_dict):
+        config_section_shm_dict["entra_tenant_id"] = "not a guid"
         with pytest.raises(
             ValidationError,
             match=r"1 validation error for ConfigSectionSHM\nentra_tenant_id\n  Value error, Expected GUID",
         ):
-            ConfigSectionSHM(**shm_config_section_dict)
+            ConfigSectionSHM(**config_section_shm_dict)
 
-    def test_invalid_fqdn(self, shm_config_section_dict):
-        shm_config_section_dict["fqdn"] = "not a domain"
+    def test_invalid_fqdn(self, config_section_shm_dict):
+        config_section_shm_dict["fqdn"] = "not a domain"
         with pytest.raises(
             ValidationError,
             match=r"1 validation error for ConfigSectionSHM\nfqdn\n  Value error, Expected valid fully qualified domain name",
         ):
-            ConfigSectionSHM(**shm_config_section_dict)
+            ConfigSectionSHM(**config_section_shm_dict)
 
 
 class TestConfigSectionSRE:
