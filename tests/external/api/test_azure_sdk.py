@@ -1,10 +1,15 @@
 import pytest
-from azure.core.exceptions import ResourceNotFoundError
+from azure.core.exceptions import ClientAuthenticationError, ResourceNotFoundError
+from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.resource.subscriptions.models import Subscription
 from pytest import fixture
 
 import data_safe_haven.external.api.azure_sdk
-from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenValueError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureAPIAuthenticationError,
+    DataSafeHavenAzureError,
+    DataSafeHavenValueError,
+)
 from data_safe_haven.external import AzureSdk, GraphApi
 
 
@@ -146,10 +151,26 @@ class TestAzureSdk:
         assert subscription.display_name == "Subscription 1"
         assert subscription.id == pytest.guid_subscription
 
-    def test_get_subscription_fails(self, mock_subscription_client):  # noqa: ARG002
+    def test_get_subscription_does_not_exist(
+        self, mock_subscription_client  # noqa: ARG002
+    ):
         sdk = AzureSdk("subscription name")
         with pytest.raises(
             DataSafeHavenValueError,
             match="Could not find subscription 'Subscription 3'",
         ):
             sdk.get_subscription("Subscription 3")
+
+    def test_get_subscription_authentication_error(self, mocker):
+        def raise_client_authentication_error(*args):  # noqa: ARG001
+            raise ClientAuthenticationError
+
+        mocker.patch.object(
+            SubscriptionClient, "__new__", side_effect=raise_client_authentication_error
+        )
+        sdk = AzureSdk("subscription name")
+        with pytest.raises(
+            DataSafeHavenAzureAPIAuthenticationError,
+            match="Failed to authenticate with Azure API.",
+        ):
+            sdk.get_subscription("Subscription 1")
