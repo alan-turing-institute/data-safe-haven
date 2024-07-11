@@ -1,5 +1,6 @@
 import pytest
 
+from data_safe_haven.exceptions import DataSafeHavenValueError
 from data_safe_haven.external import GraphApi
 
 
@@ -17,3 +18,10 @@ class TestGraphApi:
         assert api.credential.tenant_id == pytest.guid_tenant
         assert "GroupMember.Read.All" in api.credential.scopes
         assert "User.Read.All" in api.credential.scopes
+
+    def test_from_token_invalid(self):
+        with pytest.raises(
+            DataSafeHavenValueError,
+            match="Could not construct GraphApi from provided token.",
+        ):
+            GraphApi.from_token("not a jwt")
