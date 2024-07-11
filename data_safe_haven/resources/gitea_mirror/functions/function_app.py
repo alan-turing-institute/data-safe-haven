@@ -57,6 +57,8 @@ def handle_response(
             error_message,
             status_code=400,
         )
+    else:
+        return None
 
 
 @app.route(route="create-mirror", auth_level=func.AuthLevel.ANONYMOUS)
