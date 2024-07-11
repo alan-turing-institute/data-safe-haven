@@ -25,3 +25,11 @@ class TestGraphApi:
             match="Could not construct GraphApi from provided token.",
         ):
             GraphApi.from_token("not a jwt")
+
+    def test_token(
+        self,
+        graph_api_token,
+        mock_graphapicredential_get_token,  # noqa: ARG002
+    ):
+        api = GraphApi.from_token(graph_api_token)
+        assert api.token == graph_api_token
