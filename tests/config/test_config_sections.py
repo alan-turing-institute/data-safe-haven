@@ -3,6 +3,7 @@ from pydantic import ValidationError
 
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
+    ConfigSectionDockerHub,
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
@@ -48,6 +49,34 @@ class TestConfigSectionAzure:
                 location="uksouth",
                 subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
                 tenant_id="not_a_guid",
+            )
+
+
+class TestConfigSectionDockerHub:
+    def test_constructor(self) -> None:
+        ConfigSectionDockerHub(
+            access_token="dummytoken",
+            username="exampleuser",
+        )
+
+    def test_invalid_access_token(self):
+        with pytest.raises(
+            ValidationError,
+            match="Value error, Expected valid string containing only letters, numbers, hyphens and underscores.",
+        ):
+            ConfigSectionDockerHub(
+                access_token="not a valid access token",
+                username="exampleuser",
+            )
+
+    def test_invalid_username(self):
+        with pytest.raises(
+            ValidationError,
+            match="Value error, Expected valid string containing only letters, numbers, hyphens and underscores.",
+        ):
+            ConfigSectionDockerHub(
+                access_token="dummytoken",
+                username="not a valid username",
             )
 
 
