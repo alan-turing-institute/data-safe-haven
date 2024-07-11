@@ -6,6 +6,13 @@ from requests.auth import HTTPBasicAuth
 
 app = func.FunctionApp()
 
+# gitea_host = "http://gitea_mirror.local"
+gitea_host = "http://localhost:3000"
+api_root = "/api/v1"
+migrate_path = "/repos/migrate"
+repos_path = "/repos"
+timeout = 60
+
 
 @app.route(route="create-mirror", auth_level=func.AuthLevel.ANONYMOUS)
 def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
@@ -32,17 +39,11 @@ def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
             status_code=400,
         )
 
-    # gitea_host = "http://gitea_mirror.local"
-    gitea_host = "http://localhost:3000"
-    api_root = "/api/v1"
-    migrate_path = "/repos/migrate"
-    repos_path = "/repos"
     extra_data = {
         "description": f"Read-only mirror of {address}",
         "mirror": True,
         "mirror_interval": "10m",
     }
-    timeout = 60
 
     auth = HTTPBasicAuth(
         username=username,
@@ -99,5 +100,48 @@ def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
 
     return func.HttpResponse(
         "Mirror successfully created",
+        status_code=200,
+    )
+
+
+@app.route(route="delete-mirror", auth_level=func.AuthLevel.ANONYMOUS)
+def delete_mirror(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("Request received.")
+
+    try:
+        req_body = req.get_json()
+    except ValueError:
+        pass
+    else:
+        name = req_body.get("name")
+        owner = req_body.get("owner")
+        password = req_body.get("password")
+        username = req_body.get("username")
+    logging.info(
+        f"parameters: name={name}, owner={owner}, password={password}, username={username}"
+    )
+
+    auth = HTTPBasicAuth(
+        username=username,
+        password=password,
+    )
+
+    logging.info("Sending request to delete repository.")
+    response = requests.delete(
+        auth=auth,
+        timeout=timeout,
+        url=gitea_host + api_root + repos_path + f"/{owner}/{name}",
+    )
+
+    logging.info(f"Response status code: {response.status_code}.")
+    logging.debug(f"Response contents: {response.content}.")
+    if response.status_code != 204:  # noqa: PLR2004
+        return func.HttpResponse(
+            "Error configuring repository.",
+            status_code=400,
+        )
+
+    return func.HttpResponse(
+        "Repository successfully deleted.",
         status_code=200,
     )
