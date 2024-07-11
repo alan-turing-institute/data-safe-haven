@@ -1,9 +1,11 @@
 import json
 
 import azure.functions as func
+from pytest import fixture
 
 from data_safe_haven.resources.gitea_mirror.functions.function_app import (
     str_or_none,
+    create_mirror,
     delete_mirror,
 )
 
@@ -14,30 +16,65 @@ class TestStrOrNone:
         assert str_or_none(None) is None
 
 
-class TestDeleteMirror:
-    def test_delete_mirror(self, requests_mock):
+@fixture
+def create_mirror_func():
+    return create_mirror.build().get_user_function()
+
+
+@fixture
+def delete_mirror_func():
+    return delete_mirror.build().get_user_function()
+
+
+class TestCreateMirror:
+    def test_create_mirror(self, create_mirror_func, requests_mock):
         req = func.HttpRequest(
             method="POST",
             body=json.dumps({
+                "address": "https://github.com/user/repo",
                 "name": "repo",
-                "owner": "admin",
                 "password": "password",
                 "username": "username",
             }).encode(),
             url="/api/delete-mirror",
         )
 
-        function = delete_mirror.build().get_user_function()
+        requests_mock.post(
+            "http://localhost:3000/api/v1/repos/migrate",
+            status_code=201
+        )
+        requests_mock.patch(
+            "http://localhost:3000/api/v1/repos/username/repo",
+            status_code=200
+        )
+
+        response = create_mirror_func(req)
+        assert response.status_code == 200
+        assert b"Mirror successfully created." in response._HttpResponse__body
+
+
+class TestDeleteMirror:
+    def test_delete_mirror(self, delete_mirror_func, requests_mock):
+        req = func.HttpRequest(
+            method="POST",
+            body=json.dumps({
+                "owner": "admin",
+                "name": "repo",
+                "password": "password",
+                "username": "username",
+            }).encode(),
+            url="/api/delete-mirror",
+        )
 
         requests_mock.delete(
             "http://localhost:3000/api/v1/repos/admin/repo",
             status_code=204,
         )
 
-        response = function(req)
+        response = delete_mirror_func(req)
         assert response.status_code == 200
 
-    def test_delete_mirror_missing_args(self, requests_mock):
+    def test_delete_mirror_missing_args(self, delete_mirror_func, requests_mock):
         req = func.HttpRequest(
             method="POST",
             body=json.dumps({
@@ -48,13 +85,11 @@ class TestDeleteMirror:
             url="/api/delete-mirror",
         )
 
-        function = delete_mirror.build().get_user_function()
-
         requests_mock.delete(
             "http://localhost:3000/api/v1/repos/admin/repo",
             status_code=204,
         )
 
-        response = function(req)
+        response = delete_mirror_func(req)
         assert response.status_code == 400
         assert b"Required parameter not provided." in response._HttpResponse__body

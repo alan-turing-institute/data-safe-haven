@@ -128,7 +128,7 @@ def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
         return r
 
     return func.HttpResponse(
-        "Mirror successfully created",
+        "Mirror successfully created.",
         status_code=200,
     )
 
