@@ -4,13 +4,13 @@ import azure.functions as func
 from pytest import fixture
 
 from data_safe_haven.resources.gitea_mirror.functions.function_app import (
-    gitea_host,
     api_root,
+    create_mirror,
+    delete_mirror,
+    gitea_host,
     migrate_path,
     repos_path,
     str_or_none,
-    create_mirror,
-    delete_mirror,
 )
 
 
@@ -34,22 +34,20 @@ class TestCreateMirror:
     def test_create_mirror(self, create_mirror_func, requests_mock):
         req = func.HttpRequest(
             method="POST",
-            body=json.dumps({
-                "address": "https://github.com/user/repo",
-                "name": "repo",
-                "password": "password",
-                "username": "username",
-            }).encode(),
+            body=json.dumps(
+                {
+                    "address": "https://github.com/user/repo",
+                    "name": "repo",
+                    "password": "password",
+                    "username": "username",
+                }
+            ).encode(),
             url="/api/create-mirror",
         )
 
-        requests_mock.post(
-            gitea_host + api_root + migrate_path,
-            status_code=201
-        )
+        requests_mock.post(gitea_host + api_root + migrate_path, status_code=201)
         requests_mock.patch(
-            gitea_host + api_root + repos_path + "/username/repo",
-            status_code=200
+            gitea_host + api_root + repos_path + "/username/repo", status_code=200
         )
 
         response = create_mirror_func(req)
@@ -59,21 +57,19 @@ class TestCreateMirror:
     def test_create_mirror_missing_args(self, create_mirror_func, requests_mock):
         req = func.HttpRequest(
             method="POST",
-            body=json.dumps({
-                "name": "repo",
-                "password": "password",
-                "username": "username",
-            }).encode(),
+            body=json.dumps(
+                {
+                    "name": "repo",
+                    "password": "password",
+                    "username": "username",
+                }
+            ).encode(),
             url="/api/create-mirror",
         )
 
-        requests_mock.post(
-            gitea_host + api_root + migrate_path,
-            status_code=201
-        )
+        requests_mock.post(gitea_host + api_root + migrate_path, status_code=201)
         requests_mock.patch(
-            gitea_host + api_root + repos_path + "/username/repo",
-            status_code=200
+            gitea_host + api_root + repos_path + "/username/repo", status_code=200
         )
 
         response = create_mirror_func(req)
@@ -83,22 +79,20 @@ class TestCreateMirror:
     def test_create_mirror_mirror_fail(self, create_mirror_func, requests_mock):
         req = func.HttpRequest(
             method="POST",
-            body=json.dumps({
-                "address": "https://github.com/user/repo",
-                "name": "repo",
-                "password": "password",
-                "username": "username",
-            }).encode(),
+            body=json.dumps(
+                {
+                    "address": "https://github.com/user/repo",
+                    "name": "repo",
+                    "password": "password",
+                    "username": "username",
+                }
+            ).encode(),
             url="/api/create-mirror",
         )
 
-        requests_mock.post(
-            gitea_host + api_root + migrate_path,
-            status_code=409
-        )
+        requests_mock.post(gitea_host + api_root + migrate_path, status_code=409)
         requests_mock.patch(
-            gitea_host + api_root + repos_path + "/username/repo",
-            status_code=200
+            gitea_host + api_root + repos_path + "/username/repo", status_code=200
         )
 
         response = create_mirror_func(req)
@@ -108,22 +102,20 @@ class TestCreateMirror:
     def test_create_mirror_configure_fail(self, create_mirror_func, requests_mock):
         req = func.HttpRequest(
             method="POST",
-            body=json.dumps({
-                "address": "https://github.com/user/repo",
-                "name": "repo",
-                "password": "password",
-                "username": "username",
-            }).encode(),
+            body=json.dumps(
+                {
+                    "address": "https://github.com/user/repo",
+                    "name": "repo",
+                    "password": "password",
+                    "username": "username",
+                }
+            ).encode(),
             url="/api/create-mirror",
         )
 
-        requests_mock.post(
-            gitea_host + api_root + migrate_path,
-            status_code=201
-        )
+        requests_mock.post(gitea_host + api_root + migrate_path, status_code=201)
         requests_mock.patch(
-            gitea_host + api_root + repos_path + "/username/repo",
-            status_code=403
+            gitea_host + api_root + repos_path + "/username/repo", status_code=403
         )
 
         response = create_mirror_func(req)
@@ -135,12 +127,14 @@ class TestDeleteMirror:
     def test_delete_mirror(self, delete_mirror_func, requests_mock):
         req = func.HttpRequest(
             method="POST",
-            body=json.dumps({
-                "owner": "admin",
-                "name": "repo",
-                "password": "password",
-                "username": "username",
-            }).encode(),
+            body=json.dumps(
+                {
+                    "owner": "admin",
+                    "name": "repo",
+                    "password": "password",
+                    "username": "username",
+                }
+            ).encode(),
             url="/api/delete-mirror",
         )
 
@@ -155,11 +149,13 @@ class TestDeleteMirror:
     def test_delete_mirror_missing_args(self, delete_mirror_func, requests_mock):
         req = func.HttpRequest(
             method="POST",
-            body=json.dumps({
-                "name": "repo",
-                "owner": "admin",
-                "password": "password",
-            }).encode(),
+            body=json.dumps(
+                {
+                    "name": "repo",
+                    "owner": "admin",
+                    "password": "password",
+                }
+            ).encode(),
             url="/api/delete-mirror",
         )
 
@@ -175,12 +171,14 @@ class TestDeleteMirror:
     def test_delete_mirror_fail(self, delete_mirror_func, requests_mock):
         req = func.HttpRequest(
             method="POST",
-            body=json.dumps({
-                "name": "repo",
-                "owner": "admin",
-                "password": "password",
-                "username": "admin",
-            }).encode(),
+            body=json.dumps(
+                {
+                    "name": "repo",
+                    "owner": "admin",
+                    "password": "password",
+                    "username": "admin",
+                }
+            ).encode(),
             url="/api/delete-mirror",
         )
 
