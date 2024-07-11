@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from data_safe_haven.config import Context, SREConfig
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
+    ConfigSectionDockerHub,
     ConfigSectionSRE,
 )
 from data_safe_haven.config.sre_config import sre_config_name
@@ -16,24 +17,37 @@ from data_safe_haven.types import SoftwarePackageCategory
 
 class TestConfig:
     def test_constructor(
-        self, azure_config: ConfigSectionAzure, sre_config_section: ConfigSectionSRE
+        self,
+        config_section_azure: ConfigSectionAzure,
+        config_section_dockerhub: ConfigSectionDockerHub,
+        config_section_sre: ConfigSectionSRE,
     ) -> None:
         config = SREConfig(
-            azure=azure_config,
+            azure=config_section_azure,
             description="Sandbox Project",
+            dockerhub=config_section_dockerhub,
             name="sandbox",
-            sre=sre_config_section,
+            sre=config_section_sre,
         )
         assert isinstance(config.azure, ConfigSectionAzure)
         assert isinstance(config.name, str)
         assert isinstance(config.sre, ConfigSectionSRE)
 
-    def test_constructor_invalid(self, azure_config: ConfigSectionAzure) -> None:
+    def test_constructor_invalid(
+        self,
+        config_section_azure: ConfigSectionAzure,
+        config_section_dockerhub: ConfigSectionDockerHub,
+    ) -> None:
         with pytest.raises(
             ValidationError,
             match=r"1 validation error for SREConfig\nsre\n  Field required.*",
         ):
-            SREConfig(azure=azure_config, description="Sandbox Project", name="sandbox")
+            SREConfig(
+                azure=config_section_azure,
+                description="Sandbox Project",
+                dockerhub=config_section_dockerhub,
+                name="sandbox",
+            )
 
     @pytest.mark.parametrize(
         "name",
@@ -46,19 +60,21 @@ class TestConfig:
     )
     def test_constructor_invalid_name(
         self,
-        azure_config: ConfigSectionAzure,
+        config_section_azure: ConfigSectionAzure,
+        config_section_dockerhub: ConfigSectionDockerHub,
+        config_section_sre: ConfigSectionSRE,
         name: str,
-        sre_config_section: ConfigSectionSRE,
     ) -> None:
         with pytest.raises(
             ValidationError,
             match=r"1 validation error for SREConfig\nname\n  Value error, Expected valid string.*",
         ):
             SREConfig(
-                azure=azure_config,
+                azure=config_section_azure,
                 description="Sandbox Project",
+                dockerhub=config_section_dockerhub,
                 name=name,
-                sre=sre_config_section,
+                sre=config_section_sre,
             )
 
     def test_template(self) -> None:

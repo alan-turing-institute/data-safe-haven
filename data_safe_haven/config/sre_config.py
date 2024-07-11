@@ -10,6 +10,7 @@ from data_safe_haven.types import SafeString
 
 from .config_sections import (
     ConfigSectionAzure,
+    ConfigSectionDockerHub,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
 )
@@ -25,6 +26,7 @@ class SREConfig(AzureSerialisableModel):
     default_filename: ClassVar[str] = "sre.yaml"
     azure: ConfigSectionAzure
     description: str
+    dockerhub: ConfigSectionDockerHub
     name: SafeString
     sre: ConfigSectionSRE
 
@@ -48,6 +50,10 @@ class SREConfig(AzureSerialisableModel):
                 location="Azure location where SRE resources will be deployed.",
                 subscription_id="ID of the Azure subscription that the SRE will be deployed to",
                 tenant_id="Home tenant for the Azure account used to deploy infrastructure: `az account show`",
+            ),
+            dockerhub=ConfigSectionDockerHub.model_construct(
+                access_token="A DockerHub personal access token (PAT) with 'Public Read-Only' permissions. See instructions here: https://docs.docker.com/security/for-developers/access-tokens/",
+                username="Your DockerHub username.",
             ),
             description="Human-friendly name for this SRE deployment.",
             name="A name for this config which consists only of letters, numbers and underscores.",

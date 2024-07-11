@@ -12,6 +12,7 @@ from pulumi_azure_native import (
 
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.infrastructure.common import (
+    DockerHubCredentials,
     get_id_from_subnet,
 )
 from data_safe_haven.infrastructure.components import (
@@ -35,6 +36,7 @@ class SRERemoteDesktopProps:
         allow_paste: Input[bool],
         database_password: Input[str],
         dns_server_ip: Input[str],
+        dockerhub_credentials: DockerHubCredentials,
         entra_application_fqdn: Input[str],
         entra_application_name: Input[str],
         entra_auth_token: str,
@@ -60,6 +62,7 @@ class SRERemoteDesktopProps:
         self.disable_copy = not allow_copy
         self.disable_paste = not allow_paste
         self.dns_server_ip = dns_server_ip
+        self.dockerhub_credentials = dockerhub_credentials
         self.entra_application_name = entra_application_name
         self.entra_application_url = Output.concat("https://", entra_application_fqdn)
         self.entra_auth_token = entra_auth_token
@@ -376,6 +379,14 @@ class SRERemoteDesktopComponent(ComponentResource):
             dns_config=containerinstance.DnsConfigurationArgs(
                 name_servers=[props.dns_server_ip],
             ),
+            # Required due to DockerHub rate-limit: https://docs.docker.com/docker-hub/download-rate-limit/
+            image_registry_credentials=[
+                {
+                    "password": Output.secret(props.dockerhub_credentials.access_token),
+                    "server": props.dockerhub_credentials.server,
+                    "username": props.dockerhub_credentials.username,
+                }
+            ],
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(
