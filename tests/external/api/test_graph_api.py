@@ -1,6 +1,10 @@
 import pytest
+import requests
 
-from data_safe_haven.exceptions import DataSafeHavenValueError
+from data_safe_haven.exceptions import (
+    DataSafeHavenMicrosoftGraphError,
+    DataSafeHavenValueError,
+)
 from data_safe_haven.external import GraphApi
 
 
@@ -48,6 +52,20 @@ class TestGraphApi:
         api = GraphApi.from_scopes(scopes=[], tenant_id=pytest.guid_tenant)
         result = api.add_custom_domain(domain_name)
         assert result == "txt-record-text"
+
+    def test_http_get_failure(
+        self,
+        requests_mock,
+        mock_graphapicredential_get_token,  # noqa: ARG002
+    ):
+        url = "https://example.com"
+        requests_mock.get(url, exc=requests.exceptions.ConnectTimeout)
+        api = GraphApi.from_scopes(scopes=[], tenant_id=pytest.guid_tenant)
+        with pytest.raises(
+            DataSafeHavenMicrosoftGraphError,
+            match="Could not execute GET request to 'https://example.com'.",
+        ):
+            api.http_get(url)
 
     def test_token(
         self,
