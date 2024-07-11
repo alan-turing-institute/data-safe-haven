@@ -72,6 +72,15 @@ def mock_azureclicredential_get_token_invalid(mocker):
 
 
 @pytest.fixture
+def mock_devicecodecredential_authenticate(mocker, authentication_record):
+    mocker.patch.object(
+        DeviceCodeCredential,
+        "authenticate",
+        return_value=authentication_record,
+    )
+
+
+@pytest.fixture
 def mock_devicecodecredential_get_token(mocker, graph_api_token):
     mocker.patch.object(
         DeviceCodeCredential,
@@ -81,11 +90,13 @@ def mock_devicecodecredential_get_token(mocker, graph_api_token):
 
 
 @pytest.fixture
-def mock_devicecodecredential_authenticate(mocker, authentication_record):
-    mocker.patch.object(
-        DeviceCodeCredential,
-        "authenticate",
-        return_value=authentication_record,
+def mock_devicecodecredential_new(mocker, authentication_record):
+    class MockDeviceCodeCredential:
+        def authenticate(self, *args, **kwargs):  # noqa: ARG002
+            return authentication_record
+
+    return mocker.patch.object(
+        DeviceCodeCredential, "__new__", return_value=MockDeviceCodeCredential()
     )
 
 
