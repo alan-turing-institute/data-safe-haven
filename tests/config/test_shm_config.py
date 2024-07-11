@@ -16,11 +16,11 @@ class TestConfig:
     def test_constructor(
         self,
         config_section_azure: ConfigSectionAzure,
-        shm_config_section: ConfigSectionSHM,
+        config_section_shm: ConfigSectionSHM,
     ) -> None:
         config = SHMConfig(
             azure=config_section_azure,
-            shm=shm_config_section,
+            shm=config_section_shm,
         )
         assert isinstance(config.azure, ConfigSectionAzure)
         assert isinstance(config.shm, ConfigSectionSHM)

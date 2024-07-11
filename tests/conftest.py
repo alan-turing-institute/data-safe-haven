@@ -39,6 +39,20 @@ def config_section_azure():
 
 
 @fixture
+def config_section_shm(config_section_shm_dict):
+    return ConfigSectionSHM(**config_section_shm_dict)
+
+
+@fixture
+def config_section_shm_dict():
+    return {
+        "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        "entra_tenant_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        "fqdn": "shm.acme.com",
+    }
+
+
+@fixture
 def config_section_dockerhub() -> ConfigSectionDockerHub:
     return ConfigSectionDockerHub(
         access_token="dummytoken",
@@ -274,22 +288,22 @@ def remote_desktop_config() -> ConfigSubsectionRemoteDesktopOpts:
 
 @fixture
 def shm_config(
-    config_section_azure: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+    config_section_azure: ConfigSectionAzure, config_section_shm: ConfigSectionSHM
 ) -> SHMConfig:
     return SHMConfig(
         azure=config_section_azure,
-        shm=shm_config_section,
+        shm=config_section_shm,
     )
 
 
 @fixture
 def shm_config_alternate(
-    config_section_azure: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+    config_section_azure: ConfigSectionAzure, config_section_shm: ConfigSectionSHM
 ) -> SHMConfig:
-    shm_config_section.fqdn = "shm-alternate.acme.com"
+    config_section_shm.fqdn = "shm-alternate.acme.com"
     return SHMConfig(
         azure=config_section_azure,
-        shm=shm_config_section,
+        shm=config_section_shm,
     )
 
 
@@ -299,20 +313,6 @@ def shm_config_file(shm_config_yaml: str, tmp_path: Path) -> Path:
     with open(config_file_path, "w") as f:
         f.write(shm_config_yaml)
     return config_file_path
-
-
-@fixture
-def shm_config_section(shm_config_section_dict):
-    return ConfigSectionSHM(**shm_config_section_dict)
-
-
-@fixture
-def shm_config_section_dict():
-    return {
-        "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        "entra_tenant_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        "fqdn": "shm.acme.com",
-    }
 
 
 @fixture
