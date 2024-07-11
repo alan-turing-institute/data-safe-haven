@@ -47,6 +47,18 @@ def missing_parameters_repsonse() -> func.HttpResponse:
     )
 
 
+def handle_response(
+    response: requests.Response, valid_codes: list[int], error_message: str
+) -> func.HttpResponse | None:
+    logging.info(f"Response status code: {response.status_code}.")
+    logging.debug(f"Response contents: {response.text}.")
+    if response.status_code not in valid_codes:
+        return func.HttpResponse(
+            error_message,
+            status_code=400,
+        )
+
+
 @app.route(route="create-mirror", auth_level=func.AuthLevel.ANONYMOUS)
 def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Request received.")
@@ -88,13 +100,8 @@ def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
         url=gitea_host + api_root + migrate_path,
     )
 
-    logging.info(f"Response status code: {response.status_code}.")
-    logging.debug(f"Response contents: {response.json()}.")
-    if response.status_code != 201:  # noqa: PLR2004
-        return func.HttpResponse(
-            "Error creating repository.",
-            status_code=400,
-        )
+    if r := handle_response(response, [201], "Error creating repository."):
+        return r
 
     # Some arguments of the migrate endpoint seem to be ignored or overwritten.
     # We set repository settings here.
@@ -115,13 +122,8 @@ def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
         url=gitea_host + api_root + repos_path + f"/{args['username']}/{args['name']}",
     )
 
-    logging.info(f"Response status code: {response.status_code}.")
-    logging.debug(f"Response contents: {response.json()}.")
-    if response.status_code != requests.codes.ok:
-        return func.HttpResponse(
-            "Error configuring repository.",
-            status_code=400,
-        )
+    if r := handle_response(response, [200], "Error configuring repository."):
+        return r
 
     return func.HttpResponse(
         "Mirror successfully created",
@@ -158,13 +160,8 @@ def delete_mirror(req: func.HttpRequest) -> func.HttpResponse:
         url=gitea_host + api_root + repos_path + f"/{args['owner']}/{args['name']}",
     )
 
-    logging.info(f"Response status code: {response.status_code}.")
-    logging.debug(f"Response contents: {response.text}.")
-    if response.status_code != 204:  # noqa: PLR2004
-        return func.HttpResponse(
-            "Error deleting repository.",
-            status_code=400,
-        )
+    if r := handle_response(response, [204], "Error deleting repository."):
+        return r
 
     return func.HttpResponse(
         "Repository successfully deleted.",
