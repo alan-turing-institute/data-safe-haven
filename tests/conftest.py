@@ -47,7 +47,7 @@ def config_section_dockerhub() -> ConfigSectionDockerHub:
 
 
 @fixture
-def sre_config_section() -> ConfigSectionSRE:
+def config_section_sre() -> ConfigSectionSRE:
     return ConfigSectionSRE(
         admin_email_address="admin@example.com",
         admin_ip_addresses=["1.2.3.4"],
@@ -342,14 +342,14 @@ def sre_config_file(sre_config_yaml, tmp_path):
 def sre_config(
     config_section_azure: ConfigSectionAzure,
     config_section_dockerhub: ConfigSectionDockerHub,
-    sre_config_section: ConfigSectionSRE,
+    config_section_sre: ConfigSectionSRE,
 ) -> SREConfig:
     return SREConfig(
         azure=config_section_azure,
         description="Sandbox Project",
         dockerhub=config_section_dockerhub,
         name="sandbox",
-        sre=sre_config_section,
+        sre=config_section_sre,
     )
 
 
@@ -357,15 +357,15 @@ def sre_config(
 def sre_config_alternate(
     config_section_azure: ConfigSectionAzure,
     config_section_dockerhub: ConfigSectionDockerHub,
-    sre_config_section: ConfigSectionSRE,
+    config_section_sre: ConfigSectionSRE,
 ) -> SREConfig:
-    sre_config_section.admin_ip_addresses = ["2.3.4.5"]
+    config_section_sre.admin_ip_addresses = ["2.3.4.5"]
     return SREConfig(
         azure=config_section_azure,
         description="Alternative Project",
         dockerhub=config_section_dockerhub,
         name="alternative",
-        sre=sre_config_section,
+        sre=config_section_sre,
     )
 
 

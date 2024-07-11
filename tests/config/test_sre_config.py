@@ -16,13 +16,13 @@ from data_safe_haven.types import SoftwarePackageCategory
 
 class TestConfig:
     def test_constructor(
-        self, config_section_azure: ConfigSectionAzure, sre_config_section: ConfigSectionSRE
+        self, config_section_azure: ConfigSectionAzure, config_section_sre: ConfigSectionSRE
     ) -> None:
         config = SREConfig(
             azure=config_section_azure,
             description="Sandbox Project",
             name="sandbox",
-            sre=sre_config_section,
+            sre=config_section_sre,
         )
         assert isinstance(config.azure, ConfigSectionAzure)
         assert isinstance(config.name, str)
@@ -48,7 +48,7 @@ class TestConfig:
         self,
         config_section_azure: ConfigSectionAzure,
         name: str,
-        sre_config_section: ConfigSectionSRE,
+        config_section_sre: ConfigSectionSRE,
     ) -> None:
         with pytest.raises(
             ValidationError,
@@ -58,7 +58,7 @@ class TestConfig:
                 azure=config_section_azure,
                 description="Sandbox Project",
                 name=name,
-                sre=sre_config_section,
+                sre=config_section_sre,
             )
 
     def test_template(self) -> None:
