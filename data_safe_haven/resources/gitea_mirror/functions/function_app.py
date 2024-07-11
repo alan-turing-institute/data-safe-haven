@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 import azure.functions as func
 import requests
@@ -6,6 +7,7 @@ from requests.auth import HTTPBasicAuth
 
 app = func.FunctionApp()
 
+# Global parameters
 # gitea_host = "http://gitea_mirror.local"
 gitea_host = "http://localhost:3000"
 api_root = "/api/v1"
@@ -14,40 +16,63 @@ repos_path = "/repos"
 timeout = 60
 
 
+def get_args(args: list[str], req: func.HttpRequest) -> dict[str, str | None]:
+    try:
+        req_body = req.get_json()
+    except ValueError:
+        return {}
+
+    args_dict = {arg: str_or_none(req_body.get(arg)) for arg in args}
+    logging.info(f"Parameters: {args}.")
+    return args_dict
+
+
+def str_or_none(item: Any) -> str | None:
+    return str(item) if item is not None else None
+
+
+def check_args(args: dict[str, str | None]) -> dict[str, str] | None:
+    if None in args.values():
+        return None
+    else:
+        return {key: str(value) for key, value in args.items()}
+
+
+def missing_parameters_repsonse() -> func.HttpResponse:
+    msg = "Required parameter not provided."
+    logging.critical(msg)
+    return func.HttpResponse(
+        msg,
+        status_code=400,
+    )
+
+
 @app.route(route="create-mirror", auth_level=func.AuthLevel.ANONYMOUS)
 def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Request received.")
 
-    try:
-        req_body = req.get_json()
-    except ValueError:
-        pass
-    else:
-        address = req_body.get("address")
-        name = req_body.get("name")
-        password = req_body.get("password")
-        username = req_body.get("username")
-    logging.info(
-        f"parameters: address={address}, name={name}, password={password}, username={username}"
+    raw_args = get_args(
+        [
+            "address",
+            "name",
+            "password",
+            "username",
+        ],
+        req,
     )
-
-    if None in [address, name, password, username]:
-        msg = "Required parameter not provided."
-        logging.critical(msg)
-        return func.HttpResponse(
-            msg,
-            status_code=400,
-        )
+    args = check_args(raw_args)
+    if not args:
+        return missing_parameters_repsonse()
 
     extra_data = {
-        "description": f"Read-only mirror of {address}",
+        "description": f"Read-only mirror of {args['address']}",
         "mirror": True,
         "mirror_interval": "10m",
     }
 
     auth = HTTPBasicAuth(
-        username=username,
-        password=password,
+        username=args["username"],
+        password=args["password"],
     )
 
     logging.info("Sending request to create mirror.")
@@ -55,8 +80,8 @@ def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
     response = requests.post(
         auth=auth,
         data={
-            "clone_addr": address,
-            "repo_name": name,
+            "clone_addr": args["address"],
+            "repo_name": args["name"],
         }
         | extra_data,
         timeout=timeout,
@@ -87,7 +112,7 @@ def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
             "has_wiki": False,
         },
         timeout=timeout,
-        url=gitea_host + api_root + repos_path + f"/{username}/{name}",
+        url=gitea_host + api_root + repos_path + f"/{args['username']}/{args['name']}",
     )
 
     logging.info(f"Response status code: {response.status_code}.")
@@ -108,36 +133,36 @@ def create_mirror(req: func.HttpRequest) -> func.HttpResponse:
 def delete_mirror(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Request received.")
 
-    try:
-        req_body = req.get_json()
-    except ValueError:
-        pass
-    else:
-        name = req_body.get("name")
-        owner = req_body.get("owner")
-        password = req_body.get("password")
-        username = req_body.get("username")
-    logging.info(
-        f"parameters: name={name}, owner={owner}, password={password}, username={username}"
+    raw_args = get_args(
+        [
+            "name",
+            "owner",
+            "password",
+            "username",
+        ],
+        req,
     )
+    args = check_args(raw_args)
+    if not args:
+        return missing_parameters_repsonse()
 
     auth = HTTPBasicAuth(
-        username=username,
-        password=password,
+        username=args["username"],
+        password=args["password"],
     )
 
     logging.info("Sending request to delete repository.")
     response = requests.delete(
         auth=auth,
         timeout=timeout,
-        url=gitea_host + api_root + repos_path + f"/{owner}/{name}",
+        url=gitea_host + api_root + repos_path + f"/{args['owner']}/{args['name']}",
     )
 
     logging.info(f"Response status code: {response.status_code}.")
-    logging.debug(f"Response contents: {response.content}.")
+    logging.debug(f"Response contents: {response.text}.")
     if response.status_code != 204:  # noqa: PLR2004
         return func.HttpResponse(
-            "Error configuring repository.",
+            "Error deleting repository.",
             status_code=400,
         )
 
