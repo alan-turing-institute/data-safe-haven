@@ -36,3 +36,25 @@ class TestDeleteMirror:
 
         response = function(req)
         assert response.status_code == 200
+
+    def test_delete_mirror_missing_args(self, requests_mock):
+        req = func.HttpRequest(
+            method="POST",
+            body=json.dumps({
+                "name": "repo",
+                "owner": "admin",
+                "password": "password",
+            }).encode(),
+            url="/api/delete-mirror",
+        )
+
+        function = delete_mirror.build().get_user_function()
+
+        requests_mock.delete(
+            "http://localhost:3000/api/v1/repos/admin/repo",
+            status_code=204,
+        )
+
+        response = function(req)
+        assert response.status_code == 400
+        assert b"Required parameter not provided." in response._HttpResponse__body
