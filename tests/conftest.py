@@ -18,6 +18,7 @@ from data_safe_haven.config import (
 )
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
+    ConfigSectionDockerHub,
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
@@ -34,6 +35,23 @@ def azure_config():
         location="uksouth",
         subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
         tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+    )
+
+
+@fixture
+def config_section_dockerhub() -> ConfigSectionDockerHub:
+    return ConfigSectionDockerHub(
+        access_token="dummytoken",
+        username="exampleuser",
+    )
+
+
+@fixture
+def sre_config_section() -> ConfigSectionSRE:
+    return ConfigSectionSRE(
+        admin_email_address="admin@example.com",
+        admin_ip_addresses=["1.2.3.4"],
+        timezone="Europe/London",
     )
 
 
@@ -323,11 +341,13 @@ def sre_config_file(sre_config_yaml, tmp_path):
 @fixture
 def sre_config(
     azure_config: ConfigSectionAzure,
+    config_section_dockerhub: ConfigSectionDockerHub,
     sre_config_section: ConfigSectionSRE,
 ) -> SREConfig:
     return SREConfig(
         azure=azure_config,
         description="Sandbox Project",
+        dockerhub=config_section_dockerhub,
         name="sandbox",
         sre=sre_config_section,
     )
@@ -336,23 +356,16 @@ def sre_config(
 @fixture
 def sre_config_alternate(
     azure_config: ConfigSectionAzure,
+    config_section_dockerhub: ConfigSectionDockerHub,
     sre_config_section: ConfigSectionSRE,
 ) -> SREConfig:
     sre_config_section.admin_ip_addresses = ["2.3.4.5"]
     return SREConfig(
         azure=azure_config,
         description="Alternative Project",
+        dockerhub=config_section_dockerhub,
         name="alternative",
         sre=sre_config_section,
-    )
-
-
-@fixture
-def sre_config_section() -> ConfigSectionSRE:
-    return ConfigSectionSRE(
-        admin_email_address="admin@example.com",
-        admin_ip_addresses=["1.2.3.4"],
-        timezone="Europe/London",
     )
 
 
@@ -364,6 +377,9 @@ def sre_config_yaml():
         subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
         tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
     description: Sandbox Project
+    dockerhub:
+        access_token: dummytoken
+        username: exampleuser
     name: sandbox
     sre:
         admin_email_address: admin@example.com
