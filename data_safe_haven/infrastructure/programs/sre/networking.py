@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network, resources
+from pulumi_azure_native import network
 
 from data_safe_haven.functions import alphanumeric, replace_separators
 from data_safe_haven.infrastructure.common import (
@@ -24,10 +24,10 @@ class SRENetworkingProps:
     def __init__(
         self,
         dns_private_zones: Input[dict[str, network.PrivateZone]],
-        dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
         dns_virtual_network: Input[network.VirtualNetwork],
         location: Input[str],
+        resource_group_name: Input[str],
         shm_fqdn: Input[str],
         shm_resource_group_name: Input[str],
         shm_zone_name: Input[str],
@@ -36,7 +36,6 @@ class SRENetworkingProps:
     ) -> None:
         # Other variables
         self.dns_private_zones = dns_private_zones
-        self.dns_resource_group_name = dns_resource_group_name
         self.dns_virtual_network_id = Output.from_input(dns_virtual_network).apply(
             get_id_from_vnet
         )
@@ -45,11 +44,12 @@ class SRENetworkingProps:
         )
         self.dns_server_ip = dns_server_ip
         self.location = location
-        self.user_public_ip_ranges = user_public_ip_ranges
+        self.resource_group_name = resource_group_name
         self.shm_fqdn = shm_fqdn
         self.shm_resource_group_name = shm_resource_group_name
         self.shm_zone_name = shm_zone_name
         self.sre_name = sre_name
+        self.user_public_ip_ranges = user_public_ip_ranges
 
 
 class SRENetworkingComponent(ComponentResource):
@@ -67,20 +67,11 @@ class SRENetworkingComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-networking",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Define route table
         route_table = network.RouteTable(
             f"{self._name}_route_table",
             location=props.location,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             route_table_name=f"{stack_name}-route-table",
             routes=[],
             opts=ResourceOptions.merge(
@@ -96,7 +87,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_application_gateway = network.NetworkSecurityGroup(
             f"{self._name}_nsg_application_gateway",
             network_security_group_name=f"{stack_name}-nsg-application-gateway",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -209,7 +200,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_apt_proxy_server = network.NetworkSecurityGroup(
             f"{self._name}_nsg_apt_proxy_server",
             network_security_group_name=f"{stack_name}-nsg-apt-proxy-server",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -304,7 +295,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_data_configuration = network.NetworkSecurityGroup(
             f"{self._name}_nsg_data_configuration",
             network_security_group_name=f"{stack_name}-nsg-data-configuration",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -399,7 +390,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_data_private = network.NetworkSecurityGroup(
             f"{self._name}_nsg_data_private",
             network_security_group_name=f"{stack_name}-nsg-data-private",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -458,7 +449,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_guacamole_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_guacamole_containers",
             network_security_group_name=f"{stack_name}-nsg-guacamole-containers",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -589,7 +580,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_guacamole_containers_support = network.NetworkSecurityGroup(
             f"{self._name}_nsg_guacamole_containers_support",
             network_security_group_name=f"{stack_name}-nsg-guacamole-containers-support",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -648,7 +639,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_identity_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_identity_containers",
             network_security_group_name=f"{stack_name}-nsg-identity-containers",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -767,7 +758,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_monitoring = network.NetworkSecurityGroup(
             f"{self._name}_nsg_monitoring",
             network_security_group_name=f"{stack_name}-nsg-monitoring",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -850,7 +841,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_user_services_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers",
             network_security_group_name=f"{stack_name}-nsg-user-services-containers",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -957,7 +948,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_user_services_containers_support = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers_support",
             network_security_group_name=f"{stack_name}-nsg-user-services-containers-support",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -1016,7 +1007,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_user_services_databases = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_databases",
             network_security_group_name=f"{stack_name}-nsg-user-services-databases",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -1099,7 +1090,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_user_services_software_repositories = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_software_repositories",
             network_security_group_name=f"{stack_name}-nsg-user-services-software-repositories",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -1194,7 +1185,7 @@ class SRENetworkingComponent(ComponentResource):
         nsg_workspaces = network.NetworkSecurityGroup(
             f"{self._name}_nsg_workspaces",
             network_security_group_name=f"{stack_name}-nsg-workspaces",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -1398,7 +1389,7 @@ class SRENetworkingComponent(ComponentResource):
                 address_prefixes=[SREIpRanges.vnet.prefix],
             ),
             dhcp_options=network.DhcpOptionsArgs(dns_servers=[props.dns_server_ip]),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             # Note that we define subnets inline to avoid creation order issues
             subnets=[
                 # Application gateway subnet
@@ -1596,7 +1587,7 @@ class SRENetworkingComponent(ComponentResource):
             remote_virtual_network=network.SubResourceArgs(
                 id=props.dns_virtual_network_id
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
             virtual_network_peering_name=Output.concat(
                 "peer_sre_", props.sre_name, "_to_dns"
@@ -1608,7 +1599,7 @@ class SRENetworkingComponent(ComponentResource):
         network.VirtualNetworkPeering(
             f"{self._name}_dns_to_sre_peering",
             remote_virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
-            resource_group_name=props.dns_resource_group_name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=props.dns_virtual_network_name,
             virtual_network_peering_name=Output.concat(
                 "peer_dns_to_sre_", props.sre_name
@@ -1635,7 +1626,7 @@ class SRENetworkingComponent(ComponentResource):
         sre_dns_zone = network.Zone(
             f"{self._name}_dns_zone",
             location="Global",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             zone_name=sre_fqdn,
             zone_type=network.ZoneType.PUBLIC,
             opts=child_opts,
@@ -1666,7 +1657,7 @@ class SRENetworkingComponent(ComponentResource):
             ],
             record_type="CAA",
             relative_record_set_name="@",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             ttl=30,
             zone_name=sre_dns_zone.name,
             opts=ResourceOptions.merge(
@@ -1679,7 +1670,7 @@ class SRENetworkingComponent(ComponentResource):
             f"{self._name}_private_zone",
             location="Global",
             private_zone_name=Output.concat("privatelink.", sre_fqdn),
-            resource_group_name=props.dns_resource_group_name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=sre_dns_zone)
             ),
@@ -1692,7 +1683,7 @@ class SRENetworkingComponent(ComponentResource):
             location="Global",
             private_zone_name=sre_private_dns_zone.name,
             registration_enabled=False,
-            resource_group_name=props.dns_resource_group_name,
+            resource_group_name=props.resource_group_name,
             virtual_network=network.SubResourceArgs(id=props.dns_virtual_network_id),
             virtual_network_link_name=Output.concat(
                 "link-to-", props.dns_virtual_network_name
@@ -1715,7 +1706,7 @@ class SRENetworkingComponent(ComponentResource):
                 location="Global",
                 private_zone_name=private_dns_zone.name,
                 registration_enabled=False,
-                resource_group_name=props.dns_resource_group_name,
+                resource_group_name=props.resource_group_name,
                 virtual_network=network.SubResourceArgs(id=sre_virtual_network.id),
                 virtual_network_link_name=Output.concat(
                     "link-to-", sre_virtual_network.name
@@ -1727,84 +1718,83 @@ class SRENetworkingComponent(ComponentResource):
             )
 
         # Register outputs
-        self.resource_group = resource_group
         self.route_table_name = route_table.name
         self.shm_ns_record = shm_ns_record
         self.sre_fqdn = sre_dns_zone.name
         self.sre_private_dns_zone = sre_private_dns_zone
         self.subnet_application_gateway = network.get_subnet_output(
             subnet_name=subnet_application_gateway_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_apt_proxy_server = network.get_subnet_output(
             subnet_name=subnet_apt_proxy_server_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_data_configuration = network.get_subnet_output(
             subnet_name=subnet_data_configuration_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_firewall = network.get_subnet_output(
             subnet_name=subnet_firewall_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_firewall_management = network.get_subnet_output(
             subnet_name=subnet_firewall_management_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_guacamole_containers = network.get_subnet_output(
             subnet_name=subnet_guacamole_containers_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_guacamole_containers_support = network.get_subnet_output(
             subnet_name=subnet_guacamole_containers_support_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_identity_containers = network.get_subnet_output(
             subnet_name=subnet_identity_containers_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_monitoring = network.get_subnet_output(
             subnet_name=subnet_monitoring_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_data_private = network.get_subnet_output(
             subnet_name=subnet_data_private_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_user_services_containers = network.get_subnet_output(
             subnet_name=subnet_user_services_containers_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_user_services_containers_support = network.get_subnet_output(
             subnet_name=subnet_user_services_containers_support_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_user_services_databases = network.get_subnet_output(
             subnet_name=subnet_user_services_databases_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_user_services_software_repositories = network.get_subnet_output(
             subnet_name=subnet_user_services_software_repositories_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.subnet_workspaces = network.get_subnet_output(
             subnet_name=subnet_workspaces_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=sre_virtual_network.name,
         )
         self.virtual_network = sre_virtual_network
