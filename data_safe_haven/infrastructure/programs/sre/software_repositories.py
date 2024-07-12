@@ -319,11 +319,8 @@ class SRESoftwareRepositoriesComponent(ComponentResource):
                 f"{self._name}_nexus_dns_record_set",
                 LocalDnsRecordProps(
                     base_fqdn=props.sre_fqdn,
-                    public_resource_group_name=props.resource_group_name,
-                    private_resource_group_name=props.resource_group_name,
-                    private_ip_address=get_ip_address_from_container_group(
-                        container_group
-                    ),
+                    dns_resource_group_name=props.resource_group_name,
+                    private_ip_address=get_ip_address_from_container_group(container_group),
                     record_name="nexus",
                 ),
                 opts=ResourceOptions.merge(
