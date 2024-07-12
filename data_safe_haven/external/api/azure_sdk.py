@@ -6,6 +6,7 @@ from typing import Any, cast
 
 from azure.core.exceptions import (
     AzureError,
+    ClientAuthenticationError,
     HttpResponseError,
     ResourceExistsError,
     ResourceNotFoundError,
@@ -47,7 +48,7 @@ from azure.mgmt.msi.v2022_01_31_preview.models import Identity
 from azure.mgmt.resource.resources.v2021_04_01 import ResourceManagementClient
 from azure.mgmt.resource.resources.v2021_04_01.models import ResourceGroup
 from azure.mgmt.resource.subscriptions import SubscriptionClient
-from azure.mgmt.resource.subscriptions.models import Location
+from azure.mgmt.resource.subscriptions.models import Location, Subscription
 from azure.mgmt.storage.v2021_08_01 import StorageManagementClient
 from azure.mgmt.storage.v2021_08_01.models import (
     BlobContainer,
@@ -62,17 +63,48 @@ from azure.mgmt.storage.v2021_08_01.models import (
 from azure.storage.blob import BlobClient, BlobServiceClient
 from azure.storage.filedatalake import DataLakeServiceClient
 
-from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureAPIAuthenticationError,
+    DataSafeHavenAzureError,
+    DataSafeHavenValueError,
+)
 from data_safe_haven.logging import get_logger
 
+from .credentials import AzureSdkCredential
+from .graph_api import GraphApi
 
-class AzureApi(AzureAuthenticator):
-    """Interface to the Azure REST API"""
+
+class AzureSdk:
+    """Interface to the Azure Python SDK"""
 
     def __init__(self, subscription_name: str) -> None:
-        super().__init__(subscription_name)
         self.logger = get_logger()
+        self.credential = AzureSdkCredential()
+        self.subscription_name = subscription_name
+        self.subscription_id_: str | None = None
+        self.tenant_id_: str | None = None
+
+    @property
+    def entra_directory(self) -> GraphApi:
+        return GraphApi(
+            credential=AzureSdkCredential("https://graph.microsoft.com//.default"),
+        )
+
+    @property
+    def subscription_id(self) -> str:
+        if not self.subscription_id_:
+            self.subscription_id_ = str(
+                self.get_subscription(self.subscription_name).subscription_id
+            )
+        return self.subscription_id_
+
+    @property
+    def tenant_id(self) -> str:
+        if not self.tenant_id_:
+            self.tenant_id_ = str(
+                self.get_subscription(self.subscription_name).tenant_id
+            )
+        return self.tenant_id_
 
     def blob_client(
         self,
@@ -684,6 +716,19 @@ class AzureApi(AzureAuthenticator):
         except AzureError as exc:
             msg = f"Keys could not be loaded for {msg_sa} in {msg_rg}."
             raise DataSafeHavenAzureError(msg) from exc
+
+    def get_subscription(self, subscription_name: str) -> Subscription:
+        """Get an Azure subscription by name."""
+        try:
+            subscription_client = SubscriptionClient(self.credential)
+            for subscription in subscription_client.subscriptions.list():
+                if subscription.display_name == subscription_name:
+                    return subscription
+        except ClientAuthenticationError as exc:
+            msg = "Failed to authenticate with Azure API."
+            raise DataSafeHavenAzureAPIAuthenticationError(msg) from exc
+        msg = f"Could not find subscription '{subscription_name}'"
+        raise DataSafeHavenValueError(msg)
 
     def import_keyvault_certificate(
         self,

@@ -11,7 +11,7 @@ from data_safe_haven.config.sre_config import sre_config_name
 from data_safe_haven.exceptions import (
     DataSafeHavenTypeError,
 )
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 from data_safe_haven.types import SoftwarePackageCategory
 
 
@@ -99,7 +99,7 @@ class TestConfig:
         self, mocker, context: Context, sre_config: SREConfig, sre_config_yaml: str
     ) -> None:
         mock_method = mocker.patch.object(
-            AzureApi, "download_blob", return_value=sre_config_yaml
+            AzureSdk, "download_blob", return_value=sre_config_yaml
         )
         config = SREConfig.from_remote(context)
 
@@ -115,7 +115,7 @@ class TestConfig:
         assert sre_config.to_yaml() == sre_config_yaml
 
     def test_upload(self, mocker, context, sre_config) -> None:
-        mock_method = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        mock_method = mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
         sre_config.upload(context)
 
         mock_method.assert_called_once_with(

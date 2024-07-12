@@ -22,8 +22,6 @@ class TestSREProjectManager:
         sre_config,
         pulumi_config_no_key,
         pulumi_project_sandbox,
-        mock_azure_cli_confirm,  # noqa: ARG002
-        mock_install_plugins,  # noqa: ARG002
     ):
         sre = SREProjectManager(
             context_no_secrets,
@@ -40,8 +38,6 @@ class TestSREProjectManager:
         context_no_secrets,
         sre_config,
         pulumi_config_empty,
-        mock_azure_cli_confirm,  # noqa: ARG002
-        mock_install_plugins,  # noqa: ARG002
     ):
         sre = SREProjectManager(
             context_no_secrets,
@@ -63,8 +59,6 @@ class TestSREProjectManager:
         context_no_secrets,
         sre_config,
         pulumi_config_empty,
-        mock_azure_cli_confirm,  # noqa: ARG002
-        mock_install_plugins,  # noqa: ARG002
     ):
         sre = SREProjectManager(
             context_no_secrets, sre_config, pulumi_config_empty, create_project=False

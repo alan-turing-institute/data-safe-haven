@@ -4,7 +4,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenTypeError,
 )
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 from data_safe_haven.serialisers import AzureSerialisableModel
 
 
@@ -36,7 +36,7 @@ class TestAzureSerialisableModel:
 
     def test_remote_yaml_diff(self, mocker, example_config_class, context):
         mocker.patch.object(
-            AzureApi, "download_blob", return_value=example_config_class.to_yaml()
+            AzureSdk, "download_blob", return_value=example_config_class.to_yaml()
         )
         diff = example_config_class.remote_yaml_diff(context)
         assert not diff
@@ -44,7 +44,7 @@ class TestAzureSerialisableModel:
 
     def test_remote_yaml_diff_difference(self, mocker, example_config_class, context):
         mocker.patch.object(
-            AzureApi, "download_blob", return_value=example_config_class.to_yaml()
+            AzureSdk, "download_blob", return_value=example_config_class.to_yaml()
         )
         example_config_class.integer = 0
         example_config_class.string = "abc"
@@ -74,7 +74,7 @@ class TestAzureSerialisableModel:
         assert "config_type" not in yaml
 
     def test_upload(self, mocker, example_config_class, context):
-        mock_method = mocker.patch.object(AzureApi, "upload_blob", return_value=None)
+        mock_method = mocker.patch.object(AzureSdk, "upload_blob", return_value=None)
         example_config_class.upload(context)
 
         mock_method.assert_called_once_with(
@@ -124,7 +124,7 @@ class TestAzureSerialisableModel:
 
     def test_from_remote(self, mocker, context, example_config_yaml):
         mock_method = mocker.patch.object(
-            AzureApi, "download_blob", return_value=example_config_yaml
+            AzureSdk, "download_blob", return_value=example_config_yaml
         )
         example_config = ExampleAzureSerialisableModel.from_remote(context)
 

@@ -6,7 +6,7 @@ from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource, UpdateResult
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 from data_safe_haven.functions import b64encode
 
 from .dsh_resource_provider import DshResourceProvider
@@ -42,7 +42,7 @@ class FileUploadProvider(DshResourceProvider):
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Run a remote script to create a file on a VM"""
         outs = dict(**props)
-        azure_api = AzureApi(props["subscription_name"])
+        azure_sdk = AzureSdk(props["subscription_name"])
         script_contents = f"""
         target_dir=$(dirname "$target");
         mkdir -p $target_dir 2> /dev/null;
@@ -59,7 +59,7 @@ class FileUploadProvider(DshResourceProvider):
             "target": props["file_target"],
         }
         # Run remote script
-        script_output = azure_api.run_remote_script_waiting(
+        script_output = azure_sdk.run_remote_script_waiting(
             props["vm_resource_group_name"],
             script_contents,
             script_parameters,
@@ -83,7 +83,7 @@ class FileUploadProvider(DshResourceProvider):
         """Delete the remote file from the VM"""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
-        azure_api = AzureApi(props["subscription_name"])
+        azure_sdk = AzureSdk(props["subscription_name"])
         script_contents = """
         rm -f "$target";
         echo "Removed file at $target";
@@ -92,7 +92,7 @@ class FileUploadProvider(DshResourceProvider):
             "target": props["file_target"],
         }
         # Run remote script
-        azure_api.run_remote_script_waiting(
+        azure_sdk.run_remote_script_waiting(
             props["vm_resource_group_name"],
             script_contents,
             script_parameters,

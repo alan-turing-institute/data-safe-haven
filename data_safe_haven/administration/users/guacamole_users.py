@@ -2,7 +2,7 @@ import pathlib
 from collections.abc import Sequence
 
 from data_safe_haven.config import Context, DSHPulumiConfig, SREConfig
-from data_safe_haven.external import AzureApi, AzurePostgreSQLDatabase
+from data_safe_haven.external import AzurePostgreSQLDatabase, AzureSdk
 from data_safe_haven.infrastructure import SREProjectManager
 
 from .research_user import ResearchUser
@@ -23,8 +23,8 @@ class GuacamoleUsers:
             pulumi_config=pulumi_config,
         )
         # Read the SRE database secret from key vault
-        azure_api = AzureApi(context.subscription_name)
-        connection_db_server_password = azure_api.get_keyvault_secret(
+        azure_sdk = AzureSdk(context.subscription_name)
+        connection_db_server_password = azure_sdk.get_keyvault_secret(
             sre_stack.output("data")["key_vault_name"],
             sre_stack.output("data")["password_user_database_admin_secret"],
         )

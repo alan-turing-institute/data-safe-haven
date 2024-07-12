@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from data_safe_haven import __version__
 from data_safe_haven.directories import config_dir
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 from data_safe_haven.serialisers import ContextBase
 from data_safe_haven.types import (
     AzureSubscriptionName,
@@ -67,8 +67,8 @@ class Context(ContextBase, BaseModel, validate_assignment=True):
     @property
     def pulumi_encryption_key(self) -> KeyVaultKey:
         if not self._pulumi_encryption_key:
-            azure_api = AzureApi(subscription_name=self.subscription_name)
-            self._pulumi_encryption_key = azure_api.get_keyvault_key(
+            azure_sdk = AzureSdk(subscription_name=self.subscription_name)
+            self._pulumi_encryption_key = azure_sdk.get_keyvault_key(
                 key_name=self.pulumi_encryption_key_name,
                 key_vault_name=self.key_vault_name,
             )

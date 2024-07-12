@@ -41,7 +41,7 @@ class EntraApplicationProvider(DshResourceProvider):
         """Create new Entra application."""
         outs = dict(**props)
         try:
-            graph_api = GraphApi(auth_token=self.auth_token)
+            graph_api = GraphApi.from_token(self.auth_token)
             request_json = {
                 "displayName": props["application_name"],
                 "signInAudience": "AzureADMyOrg",
@@ -97,7 +97,7 @@ class EntraApplicationProvider(DshResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         try:
-            graph_api = GraphApi(auth_token=self.auth_token)
+            graph_api = GraphApi.from_token(self.auth_token)
             graph_api.delete_application(props["application_name"])
         except Exception as exc:
             msg = f"Failed to delete application '{props['application_name']}' from Entra ID."
@@ -118,7 +118,7 @@ class EntraApplicationProvider(DshResourceProvider):
         try:
             outs = dict(**props)
             with suppress(DataSafeHavenMicrosoftGraphError, KeyError):
-                graph_api = GraphApi(auth_token=self.auth_token)
+                graph_api = GraphApi.from_token(self.auth_token)
                 if json_response := graph_api.get_application_by_name(
                     outs["application_name"]
                 ):
