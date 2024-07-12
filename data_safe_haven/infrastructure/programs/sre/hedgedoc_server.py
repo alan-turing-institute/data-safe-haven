@@ -29,7 +29,6 @@ class SREHedgeDocServerProps:
         containers_subnet_id: Input[str],
         database_password: Input[str],
         database_subnet_id: Input[str],
-        dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
         dockerhub_credentials: DockerHubCredentials,
         ldap_server_hostname: Input[str],
@@ -38,12 +37,10 @@ class SREHedgeDocServerProps:
         ldap_user_search_base: Input[str],
         ldap_username_attribute: Input[str],
         location: Input[str],
-        networking_resource_group_name: Input[str],
+        resource_group_name: Input[str],
         sre_fqdn: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-        storage_account_resource_group_name: Input[str],
-        user_services_resource_group_name: Input[str],
         database_username: Input[str] | None = None,
     ) -> None:
         self.containers_subnet_id = containers_subnet_id
@@ -52,7 +49,7 @@ class SREHedgeDocServerProps:
         self.database_username = (
             database_username if database_username else "postgresadmin"
         )
-        self.dns_resource_group_name = dns_resource_group_name
+        self.resource_group_name = resource_group_name
         self.dns_server_ip = dns_server_ip
         self.dockerhub_credentials = dockerhub_credentials
         self.ldap_server_hostname = ldap_server_hostname
@@ -61,12 +58,10 @@ class SREHedgeDocServerProps:
         self.ldap_user_search_base = ldap_user_search_base
         self.ldap_username_attribute = ldap_username_attribute
         self.location = location
-        self.networking_resource_group_name = networking_resource_group_name
+        self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
-        self.storage_account_resource_group_name = storage_account_resource_group_name
-        self.user_services_resource_group_name = user_services_resource_group_name
 
 
 class SREHedgeDocServerComponent(ComponentResource):
@@ -89,7 +84,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             f"{self._name}_file_share_hedgedoc_caddy",
             access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group_name,
+            resource_group_name=props.resource_group_name,
             share_name="hedgedoc-caddy",
             share_quota=1,
             signed_identifiers=[],
@@ -126,7 +121,7 @@ class SREHedgeDocServerComponent(ComponentResource):
             PostgresqlDatabaseProps(
                 database_names=[db_hedgedoc_documents_name],
                 database_password=props.database_password,
-                database_resource_group_name=props.user_services_resource_group_name,
+                database_resource_group_name=props.resource_group_name,
                 database_server_name=f"{stack_name}-db-server-hedgedoc",
                 database_subnet_id=props.database_subnet_id,
                 database_username=props.database_username,
@@ -278,7 +273,7 @@ class SREHedgeDocServerComponent(ComponentResource):
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
             os_type=containerinstance.OperatingSystemTypes.LINUX,
-            resource_group_name=props.user_services_resource_group_name,
+            resource_group_name=props.resource_group_name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
             subnet_ids=[
@@ -322,8 +317,8 @@ class SREHedgeDocServerComponent(ComponentResource):
             f"{self._name}_hedgedoc_dns_record_set",
             LocalDnsRecordProps(
                 base_fqdn=props.sre_fqdn,
-                public_dns_resource_group_name=props.networking_resource_group_name,
-                private_dns_resource_group_name=props.dns_resource_group_name,
+                public_resource_group_name=props.resource_group_name,
+                private_resource_group_name=props.resource_group_name,
                 private_ip_address=get_ip_address_from_container_group(container_group),
                 record_name="hedgedoc",
             ),
