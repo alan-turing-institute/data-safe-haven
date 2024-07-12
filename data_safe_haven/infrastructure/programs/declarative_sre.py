@@ -174,7 +174,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREFirewallProps(
                 location=self.config.azure.location,
-                resource_group_name=networking.resource_group.name,
+                resource_group_name=resource_group.name,
                 route_table_name=networking.route_table_name,
                 subnet_apt_proxy_server=networking.subnet_apt_proxy_server,
                 subnet_firewall=networking.subnet_firewall,
