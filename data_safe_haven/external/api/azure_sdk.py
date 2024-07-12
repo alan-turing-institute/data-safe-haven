@@ -80,6 +80,7 @@ class AzureSdk:
     def __init__(self, subscription_name: str) -> None:
         self.logger = get_logger()
         self.credential = AzureSdkCredential()
+        self.credential_kv = AzureSdkCredential("https://vault.azure.net")
         self.subscription_name = subscription_name
         self.subscription_id_: str | None = None
         self.tenant_id_: str | None = None
@@ -414,7 +415,8 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             key_client = KeyClient(
-                f"https://{key_vault_name}.vault.azure.net", self.credential
+                credential=self.credential_kv,
+                vault_url=f"https://{key_vault_name}.vault.azure.net",
             )
 
             # Ensure that key exists
@@ -601,8 +603,8 @@ class AzureSdk:
         """
         # Connect to Azure clients
         certificate_client = CertificateClient(
+            credential=self.credential_kv,
             vault_url=f"https://{key_vault_name}.vault.azure.net",
-            credential=self.credential,
         )
         # Ensure that certificate exists
         try:
@@ -622,8 +624,8 @@ class AzureSdk:
         """
         # Connect to Azure clients
         key_client = KeyClient(
+            credential=self.credential_kv,
             vault_url=f"https://{key_vault_name}.vault.azure.net",
-            credential=self.credential,
         )
         # Ensure that certificate exists
         try:
@@ -643,7 +645,8 @@ class AzureSdk:
         """
         # Connect to Azure clients
         secret_client = SecretClient(
-            f"https://{key_vault_name}.vault.azure.net", self.credential
+            credential=self.credential_kv,
+            vault_url=f"https://{key_vault_name}.vault.azure.net",
         )
         # Ensure that secret exists
         try:
@@ -747,8 +750,8 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             certificate_client = CertificateClient(
+                credential=self.credential_kv,
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
-                credential=self.credential,
             )
             # Import the certificate, overwriting any existing certificate with the same name
             self.logger.debug(
@@ -815,8 +818,8 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             certificate_client = CertificateClient(
+                credential=self.credential_kv,
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
-                credential=self.credential,
             )
             # Ensure that record is removed
             self.logger.debug(
@@ -934,8 +937,8 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             certificate_client = CertificateClient(
+                credential=self.credential_kv,
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
-                credential=self.credential,
             )
             self.logger.debug(
                 f"Removing certificate [green]{certificate_name}[/] from Key Vault [green]{key_vault_name}[/]...",
