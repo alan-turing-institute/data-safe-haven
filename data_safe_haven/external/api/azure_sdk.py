@@ -425,9 +425,7 @@ class AzureSdk:
             )
 
             # Ensure that key exists
-            self.logger.debug(
-                f"Ensuring that key [green]{key_name}[/] exists...",
-            )
+            self.logger.debug(f"Ensuring that key [green]{key_name}[/] exists...")
             key = None
             try:
                 key = key_client.get_key(key_name)
