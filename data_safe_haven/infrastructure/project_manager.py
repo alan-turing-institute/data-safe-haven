@@ -145,10 +145,6 @@ class ProjectManager:
         """Add a public configuration option"""
         self.options[name] = (value, False, replace)
 
-    def add_secret(self, name: str, value: str, *, replace: bool) -> None:
-        """Add a secret configuration option if it does not exist"""
-        self.options[name] = (value, True, replace)
-
     def apply_config_options(self) -> None:
         """Set Pulumi config options"""
         try:
@@ -178,10 +174,6 @@ class ProjectManager:
     def copy_option(self, name: str, other_stack: "ProjectManager") -> None:
         """Copy a public configuration option from another Pulumi stack"""
         self.add_option(name, other_stack.secret(name), replace=True)
-
-    def copy_secret(self, name: str, other_stack: "ProjectManager") -> None:
-        """Copy a secret configuration option from another Pulumi stack"""
-        self.add_secret(name, other_stack.secret(name), replace=True)
 
     def deploy(self, *, force: bool = False) -> None:
         """Deploy the infrastructure with Pulumi."""
