@@ -167,6 +167,13 @@ class ProjectManager:
                 f"Cancelling ongoing Pulumi operation for stack [green]{self.stack.name}[/]."
             )
             self.stack.cancel()
+            self.logger.warning(
+                f"Removing any ambiguous Pulumi resources from stack [green]{self.stack.name}[/]."
+            )
+            self.run_pulumi_command("refresh --clear-pending-creates --yes")
+            self.logger.warning(
+                "If you see '[bold]cannot create already existing resource[/]' errors, please manually delete these resources from Azure."
+            )
         except automation.CommandError:
             self.logger.error(
                 f"No ongoing Pulumi operation found for stack [green]{self.stack.name}[/]."
