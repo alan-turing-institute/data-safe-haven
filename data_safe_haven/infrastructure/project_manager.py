@@ -45,22 +45,22 @@ class ProjectManager:
         *,
         create_project: bool,
     ) -> None:
-        self.context = context
-        self.pulumi_config = pulumi_config
-        self.pulumi_project_name = pulumi_project_name
-        self.program = program
-        self.create_project = create_project
+        self._options: dict[str, tuple[str, bool, bool]] = {}
+        self._pulumi_project: DSHPulumiProject | None = None
+        self._stack: automation.Stack | None = None
+        self._stack_outputs: automation.OutputMap | None = None
         self.account = PulumiAccount(
             resource_group_name=context.resource_group_name,
             storage_account_name=context.storage_account_name,
             subscription_name=context.subscription_name,
         )
+        self.context = context
+        self.create_project = create_project
         self.logger = get_logger()
-        self._stack: automation.Stack | None = None
-        self.stack_outputs_: automation.OutputMap | None = None
-        self.options: dict[str, tuple[str, bool, bool]] = {}
+        self.program = program
         self.project_name = replace_separators(context.tags["project"].lower(), "-")
-        self._pulumi_project: DSHPulumiProject | None = None
+        self.pulumi_config = pulumi_config
+        self.pulumi_project_name = pulumi_project_name
         self.stack_name = self.program.stack_name
 
     @property
@@ -119,6 +119,7 @@ class ProjectManager:
         if not self._stack:
             self.logger.debug(f"Creating/loading stack [green]{self.stack_name}[/].")
             try:
+
                 self._stack = automation.create_or_select_stack(
                     opts=automation.LocalWorkspaceOptions(
                         env_vars=self.account.env,
@@ -143,18 +144,18 @@ class ProjectManager:
 
     def add_option(self, name: str, value: str, *, replace: bool) -> None:
         """Add a public configuration option"""
-        self.options[name] = (value, False, replace)
+        self._options[name] = (value, False, replace)
 
     def apply_config_options(self) -> None:
         """Set Pulumi config options"""
         try:
             self.logger.debug("Updating Pulumi configuration")
-            for name, (value, is_secret, replace) in self.options.items():
+            for name, (value, is_secret, replace) in self._options.items():
                 if replace:
                     self.set_config(name, value, secret=is_secret)
                 else:
                     self.ensure_config(name, value, secret=is_secret)
-            self.options = {}
+            self._options = {}
         except Exception as exc:
             msg = "Applying Pulumi configuration options failed.."
             raise DataSafeHavenPulumiError(msg) from exc
@@ -286,9 +287,9 @@ class ProjectManager:
 
     def output(self, name: str) -> Any:
         """Get a named output value from a stack"""
-        if not self.stack_outputs_:
-            self.stack_outputs_ = self.stack.outputs()
-        return self.stack_outputs_[name].value
+        if not self._stack_outputs:
+            self._stack_outputs = self.stack.outputs()
+        return self._stack_outputs[name].value
 
     def preview(self) -> None:
         """Preview the Pulumi stack."""
