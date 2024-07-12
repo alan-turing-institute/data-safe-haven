@@ -20,12 +20,10 @@ class SREDatabaseServerProps:
         self,
         database_password: Input[str],
         database_system: DatabaseSystem,  # this must *not* be passed as an Input[T]
-        dns_resource_group_name: Input[str],
         location: Input[str],
-        networking_resource_group_name: Input[str],
+        resource_group_name: Input[str],
         sre_fqdn: Input[str],
         subnet_id: Input[str],
-        user_services_resource_group_name: Input[str],
         database_username: Input[str] | None = None,
     ) -> None:
         self.database_password = database_password
@@ -33,12 +31,10 @@ class SREDatabaseServerProps:
         self.database_username = (
             database_username if database_username else "databaseadmin"
         )
-        self.dns_resource_group_name = dns_resource_group_name
         self.location = location
-        self.networking_resource_group_name = networking_resource_group_name
+        self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
         self.subnet_id = subnet_id
-        self.user_services_resource_group_name = user_services_resource_group_name
 
 
 class SREDatabaseServerComponent(ComponentResource):
@@ -63,7 +59,7 @@ class SREDatabaseServerComponent(ComponentResource):
                 MicrosoftSQLDatabaseProps(
                     database_names=[],
                     database_password=props.database_password,
-                    database_resource_group_name=props.user_services_resource_group_name,
+                    database_resource_group_name=props.resource_group_name,
                     database_server_name=f"{stack_name}-db-server-mssql",
                     database_subnet_id=props.subnet_id,
                     database_username=props.database_username,
@@ -77,8 +73,8 @@ class SREDatabaseServerComponent(ComponentResource):
                 f"{self._name}_mssql_dns_record_set",
                 LocalDnsRecordProps(
                     base_fqdn=props.sre_fqdn,
-                    public_dns_resource_group_name=props.networking_resource_group_name,
-                    private_dns_resource_group_name=props.dns_resource_group_name,
+                    public_resource_group_name=props.resource_group_name,
+                    private_resource_group_name=props.resource_group_name,
                     private_ip_address=db_server_mssql.private_ip_address,
                     record_name="mssql",
                 ),
@@ -94,7 +90,7 @@ class SREDatabaseServerComponent(ComponentResource):
                 PostgresqlDatabaseProps(
                     database_names=[],
                     database_password=props.database_password,
-                    database_resource_group_name=props.user_services_resource_group_name,
+                    database_resource_group_name=props.resource_group_name,
                     database_server_name=f"{stack_name}-db-server-postgresql",
                     database_subnet_id=props.subnet_id,
                     database_username=props.database_username,
@@ -108,8 +104,8 @@ class SREDatabaseServerComponent(ComponentResource):
                 f"{self._name}_postgresql_dns_record_set",
                 LocalDnsRecordProps(
                     base_fqdn=props.sre_fqdn,
-                    public_dns_resource_group_name=props.networking_resource_group_name,
-                    private_dns_resource_group_name=props.dns_resource_group_name,
+                    public_resource_group_name=props.resource_group_name,
+                    private_resource_group_name=props.resource_group_name,
                     private_ip_address=db_server_postgresql.private_ip_address,
                     record_name="postgresql",
                 ),
