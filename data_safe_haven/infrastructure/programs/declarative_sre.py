@@ -1,6 +1,7 @@
 """Pulumi declarative program"""
 
 import pulumi
+from pulumi_azure_native import resources
 
 from data_safe_haven.config import Context, SREConfig
 from data_safe_haven.infrastructure.common import DockerHubCredentials
@@ -126,6 +127,14 @@ class DeclarativeSRE:
                 ")",
                 ")",
             ]
+        )
+
+        # Deploy resource group
+        resource_group = resources.ResourceGroup(
+            "sre_resource_group",
+            location=self.config.azure.location,
+            resource_group_name=f"{self.stack_name}-rg",
+            tags=self.tags,
         )
 
         # Deploy SRE DNS server
