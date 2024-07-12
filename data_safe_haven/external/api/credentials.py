@@ -89,7 +89,7 @@ class AzureSdkCredential(DeferredCredential):
     def __init__(
         self, scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT
     ) -> None:
-        super().__init__(scopes=[scope])
+        super().__init__(scopes=[scope.value])
 
     def get_credential(self) -> TokenCredential:
         """Get a new AzureCliCredential."""
