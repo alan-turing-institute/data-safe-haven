@@ -143,7 +143,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREDnsServerProps(
                 dockerhub_credentials=dockerhub_credentials,
-                location=self.config.azure.location,
+                resource_group_name=resource_group.name,
                 shm_fqdn=shm_fqdn,
             ),
             tags=self.tags,

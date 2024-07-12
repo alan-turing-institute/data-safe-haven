@@ -4,7 +4,7 @@ from collections.abc import Mapping
 
 import pulumi_random
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import containerinstance, network, resources
+from pulumi_azure_native import containerinstance, network
 
 from data_safe_haven.functions import b64encode, replace_separators
 from data_safe_haven.infrastructure.common import (
@@ -29,12 +29,12 @@ class SREDnsServerProps:
     def __init__(
         self,
         dockerhub_credentials: DockerHubCredentials,
-        location: Input[str],
+        resource_group_name: Input[str],
         shm_fqdn: Input[str],
     ) -> None:
         self.admin_username = "dshadmin"
         self.dockerhub_credentials = dockerhub_credentials
-        self.location = location
+        self.resource_group_name = resource_group_name
         self.shm_fqdn = shm_fqdn
 
 
@@ -52,15 +52,6 @@ class SREDnsServerComponent(ComponentResource):
         super().__init__("dsh:sre:DnsServerComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
-
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-dns",
-            opts=child_opts,
-            tags=child_tags,
-        )
 
         # Generate admin password
         password_admin = pulumi_random.RandomPassword(
@@ -101,7 +92,7 @@ class SREDnsServerComponent(ComponentResource):
         nsg = network.NetworkSecurityGroup(
             f"{self._name}_nsg_dns",
             network_security_group_name=f"{stack_name}-nsg-dns",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             security_rules=[
                 # Inbound
                 network.SecurityRuleArgs(
@@ -165,7 +156,7 @@ class SREDnsServerComponent(ComponentResource):
             address_space=network.AddressSpaceArgs(
                 address_prefixes=[SREDnsIpRanges.vnet.prefix],
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             subnets=[  # Note that we define subnets inline to avoid creation order issues
                 # DNS subnet
                 network.SubnetArgs(
@@ -195,7 +186,7 @@ class SREDnsServerComponent(ComponentResource):
 
         subnet_dns = network.get_subnet_output(
             subnet_name=subnet_name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             virtual_network_name=virtual_network.name,
         )
 
@@ -261,7 +252,7 @@ class SREDnsServerComponent(ComponentResource):
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
             os_type=containerinstance.OperatingSystemTypes.LINUX,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
             subnet_ids=[containerinstance.ContainerGroupSubnetIdArgs(id=subnet_dns.id)],
@@ -294,7 +285,7 @@ class SREDnsServerComponent(ComponentResource):
                 replace_separators(f"{self._name}_private_zone_{dns_zone_name}", "_"),
                 location="Global",
                 private_zone_name=f"privatelink.{dns_zone_name}",
-                resource_group_name=resource_group.name,
+                resource_group_name=props.resource_group_name,
                 opts=child_opts,
                 tags=child_tags,
             )
@@ -310,7 +301,7 @@ class SREDnsServerComponent(ComponentResource):
                 location="Global",
                 private_zone_name=private_dns_zone.name,
                 registration_enabled=False,
-                resource_group_name=resource_group.name,
+                resource_group_name=props.resource_group_name,
                 virtual_network=network.SubResourceArgs(id=virtual_network.id),
                 virtual_network_link_name=Output.concat(
                     "link-to-", virtual_network.name
@@ -324,5 +315,4 @@ class SREDnsServerComponent(ComponentResource):
         # Register outputs
         self.ip_address = get_ip_address_from_container_group(container_group)
         self.password_admin = password_admin
-        self.resource_group = resource_group
         self.virtual_network = virtual_network
