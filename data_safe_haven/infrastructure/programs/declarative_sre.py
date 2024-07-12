@@ -374,6 +374,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREBackupProps(
                 location=self.config.azure.location,
+                resource_group_name=resource_group.name,
                 storage_account_data_private_sensitive_id=data.storage_account_data_private_sensitive_id,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
             ),
