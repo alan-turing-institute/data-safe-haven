@@ -8,7 +8,6 @@ from pulumi_azure_native import (
     maintenance,
     network,
     operationalinsights,
-    resources,
 )
 
 from data_safe_haven.functions import next_occurrence, replace_separators
@@ -26,11 +25,13 @@ class SREMonitoringProps:
         self,
         dns_private_zones: Input[dict[str, network.PrivateZone]],
         location: Input[str],
+        resource_group_name: Input[str],
         subnet: Input[network.GetSubnetResult],
         timezone: Input[str],
     ) -> None:
         self.dns_private_zones = dns_private_zones
         self.location = location
+        self.resource_group_name = resource_group_name
         self.subnet_id = Output.from_input(subnet).apply(get_id_from_subnet)
         self.timezone = timezone
 
@@ -50,15 +51,6 @@ class SREMonitoringComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-monitoring",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Deploy maintenance configuration
         # See https://learn.microsoft.com/en-us/azure/update-manager/scheduled-patching
         self.maintenance_configuration = maintenance.MaintenanceConfiguration(
@@ -74,7 +66,7 @@ class SREMonitoringComponent(ComponentResource):
             location=props.location,
             maintenance_scope=maintenance.MaintenanceScope.IN_GUEST_PATCH,
             recur_every="1Day",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             resource_name_=f"{stack_name}-maintenance-configuration",
             start_date_time=Output.from_input(props.timezone).apply(
                 lambda timezone: next_occurrence(
@@ -93,7 +85,7 @@ class SREMonitoringComponent(ComponentResource):
         self.log_analytics = WrappedLogAnalyticsWorkspace(
             f"{self._name}_log_analytics",
             location=props.location,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             retention_in_days=30,
             sku=operationalinsights.WorkspaceSkuArgs(
                 name=operationalinsights.WorkspaceSkuNameEnum.PER_GB2018,
@@ -111,7 +103,7 @@ class SREMonitoringComponent(ComponentResource):
                 query_access_mode=insights.AccessMode.PRIVATE_ONLY,
             ),
             location="Global",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             scope_name=f"{stack_name}-ampls",
             opts=ResourceOptions.merge(
                 child_opts,
@@ -126,7 +118,7 @@ class SREMonitoringComponent(ComponentResource):
             f"{self._name}_log_analytics_ampls_connection",
             linked_resource_id=self.log_analytics.id,
             name=f"{stack_name}-cnxn-ampls-to-log-analytics",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             scope_name=log_analytics_private_link_scope.name,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
@@ -146,7 +138,7 @@ class SREMonitoringComponent(ComponentResource):
                     private_link_service_id=log_analytics_private_link_scope.id,
                 )
             ],
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             subnet=network.SubnetArgs(id=props.subnet_id),
             opts=ResourceOptions.merge(
                 child_opts,
@@ -173,7 +165,7 @@ class SREMonitoringComponent(ComponentResource):
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-log",
             private_endpoint_name=log_analytics_private_endpoint.name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
@@ -191,7 +183,7 @@ class SREMonitoringComponent(ComponentResource):
             network_acls=insights.DataCollectionEndpointNetworkAclsArgs(
                 public_network_access=insights.KnownPublicNetworkAccessOptions.DISABLED,
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=self.log_analytics),
@@ -203,7 +195,7 @@ class SREMonitoringComponent(ComponentResource):
             f"{self._name}_data_collection_endpoint_ampls_connection",
             linked_resource_id=self.data_collection_endpoint.id,
             name=f"{stack_name}-cnxn-ampls-to-dce",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             scope_name=log_analytics_private_link_scope.name,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=log_analytics_private_link_scope)
@@ -299,7 +291,7 @@ class SREMonitoringComponent(ComponentResource):
                 ],
             ),
             location=props.location,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=self.log_analytics),

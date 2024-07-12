@@ -331,6 +331,7 @@ class DeclarativeSRE:
             SREMonitoringProps(
                 dns_private_zones=dns.private_zones,
                 location=self.config.azure.location,
+                resource_group_name=resource_group.name,
                 subnet=networking.subnet_monitoring,
                 timezone=self.config.sre.timezone,
             ),
