@@ -9,17 +9,17 @@ from data_safe_haven.external import GraphApi
 
 
 class TestGraphApi:
-    def test_from_scopes(self):
+    def test_from_scopes(self, request):
         api = GraphApi.from_scopes(
-            scopes=["scope1", "scope2"], tenant_id=pytest.guid_tenant
+            scopes=["scope1", "scope2"], tenant_id=request.config.guid_tenant
         )
-        assert api.credential.tenant_id == pytest.guid_tenant
+        assert api.credential.tenant_id == request.config.guid_tenant
         assert "scope1" in api.credential.scopes
         assert "scope2" in api.credential.scopes
 
-    def test_from_token(self, graph_api_token):
+    def test_from_token(self, request, graph_api_token):
         api = GraphApi.from_token(graph_api_token)
-        assert api.credential.tenant_id == pytest.guid_tenant
+        assert api.credential.tenant_id == request.config.guid_tenant
         assert "GroupMember.Read.All" in api.credential.scopes
         assert "User.Read.All" in api.credential.scopes
 
@@ -32,6 +32,7 @@ class TestGraphApi:
 
     def test_add_custom_domain(
         self,
+        request,
         requests_mock,
         mock_graphapicredential_get_token,  # noqa: ARG002
     ):
@@ -49,18 +50,19 @@ class TestGraphApi:
                 ]
             },
         )
-        api = GraphApi.from_scopes(scopes=[], tenant_id=pytest.guid_tenant)
+        api = GraphApi.from_scopes(scopes=[], tenant_id=request.config.guid_tenant)
         result = api.add_custom_domain(domain_name)
         assert result == "txt-record-text"
 
     def test_http_get_failure(
         self,
+        request,
         requests_mock,
         mock_graphapicredential_get_token,  # noqa: ARG002
     ):
         url = "https://example.com"
         requests_mock.get(url, exc=requests.exceptions.ConnectTimeout)
-        api = GraphApi.from_scopes(scopes=[], tenant_id=pytest.guid_tenant)
+        api = GraphApi.from_scopes(scopes=[], tenant_id=request.config.guid_tenant)
         with pytest.raises(
             DataSafeHavenMicrosoftGraphError,
             match="Could not execute GET request to 'https://example.com'.",

@@ -2,7 +2,6 @@ from pathlib import Path
 from shutil import which
 from subprocess import run
 
-import pytest
 import yaml
 from azure.core.credentials import AccessToken, TokenCredential
 from azure.mgmt.resource.subscriptions.models import Subscription
@@ -34,20 +33,21 @@ from data_safe_haven.infrastructure.project_manager import ProjectManager
 from data_safe_haven.logging import init_logging
 
 
-def pytest_configure():
+def pytest_configure(config):
     """Define constants for use across multiple tests"""
-    pytest.guid_admin = "00edec65-b071-4d26-8779-a9fe791c6e14"
-    pytest.guid_entra = "48b2425b-5f2c-4cbd-9458-0441daa8994c"
-    pytest.guid_subscription = "35ebced1-4e7a-4c1f-b634-c0886937085d"
-    pytest.guid_tenant = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
+    config.guid_admin = "00edec65-b071-4d26-8779-a9fe791c6e14"
+    config.guid_entra = "48b2425b-5f2c-4cbd-9458-0441daa8994c"
+    config.guid_subscription = "35ebced1-4e7a-4c1f-b634-c0886937085d"
+    config.guid_tenant = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
+    config.guid_user = "80b4ccfd-73ef-41b7-bb22-8ec268ec040b"
 
 
 @fixture
-def config_section_azure():
+def config_section_azure(request):
     return ConfigSectionAzure(
         location="uksouth",
-        subscription_id=pytest.guid_subscription,
-        tenant_id=pytest.guid_tenant,
+        subscription_id=request.config.guid_subscription,
+        tenant_id=request.config.guid_tenant,
     )
 
 
@@ -57,10 +57,10 @@ def config_section_shm(config_section_shm_dict):
 
 
 @fixture
-def config_section_shm_dict():
+def config_section_shm_dict(request):
     return {
-        "admin_group_id": pytest.guid_admin,
-        "entra_tenant_id": pytest.guid_entra,
+        "admin_group_id": request.config.guid_admin,
+        "entra_tenant_id": request.config.guid_entra,
         "fqdn": "shm.acme.com",
     }
 
@@ -168,11 +168,11 @@ def log_directory(session_mocker, tmp_path_factory):
 
 
 @fixture
-def mock_azureapi_get_subscription(mocker):
+def mock_azureapi_get_subscription(mocker, request):
     subscription = Subscription()
     subscription.display_name = "Data Safe Haven Acme"
-    subscription.subscription_id = pytest.guid_subscription
-    subscription.tenant_id = pytest.guid_tenant
+    subscription.subscription_id = request.config.guid_subscription
+    subscription.tenant_id = request.config.guid_tenant
     mocker.patch.object(
         AzureSdk,
         "get_subscription",
@@ -363,7 +363,7 @@ def shm_config_file(shm_config_yaml: str, tmp_path: Path) -> Path:
 
 
 @fixture
-def shm_config_yaml():
+def shm_config_yaml(request):
     content = (
         """---
     azure:
@@ -375,11 +375,11 @@ def shm_config_yaml():
         entra_tenant_id: guid_entra
         fqdn: shm.acme.com
     """.replace(
-            "guid_admin", pytest.guid_admin
+            "guid_admin", request.config.guid_admin
         )
-        .replace("guid_entra", pytest.guid_entra)
-        .replace("guid_subscription", pytest.guid_subscription)
-        .replace("guid_tenant", pytest.guid_tenant)
+        .replace("guid_entra", request.config.guid_entra)
+        .replace("guid_subscription", request.config.guid_subscription)
+        .replace("guid_tenant", request.config.guid_tenant)
     )
     return yaml.dump(yaml.safe_load(content))
 
@@ -424,7 +424,7 @@ def sre_config_alternate(
 
 
 @fixture
-def sre_config_yaml():
+def sre_config_yaml(request):
     content = """---
     azure:
         location: uksouth
@@ -449,9 +449,9 @@ def sre_config_yaml():
         timezone: Europe/London
         workspace_skus: []
     """.replace(
-        "guid_subscription", pytest.guid_subscription
+        "guid_subscription", request.config.guid_subscription
     ).replace(
-        "guid_tenant", pytest.guid_tenant
+        "guid_tenant", request.config.guid_tenant
     )
     return yaml.dump(yaml.safe_load(content))
 

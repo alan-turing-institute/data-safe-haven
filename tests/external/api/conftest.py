@@ -14,42 +14,41 @@ from data_safe_haven.external import GraphApi
 from data_safe_haven.external.api.credentials import GraphApiCredential
 
 
-def pytest_configure():
+def pytest_configure(config):
     """Define constants for use across multiple tests"""
-    pytest.user_upn = "username@example.com"
-    pytest.user_id = "80b4ccfd-73ef-41b7-bb22-8ec268ec040b"
+    config.user_upn = "username@example.com"
 
 
 @pytest.fixture
-def authentication_record():
+def authentication_record(request):
     return AuthenticationRecord(
-        tenant_id=pytest.guid_tenant,
+        tenant_id=request.config.guid_tenant,
         client_id="14d82eec-204b-4c2f-b7e8-296a70dab67e",
         authority="login.microsoftonline.com",
-        home_account_id=pytest.user_id,
-        username=pytest.user_upn,
+        home_account_id=request.config.guid_user,
+        username=request.config.user_upn,
     )
 
 
 @pytest.fixture
-def azure_cli_token():
+def azure_cli_token(request):
     return jwt.encode(
         {
             "name": "username",
-            "oid": pytest.user_id,
-            "upn": pytest.user_upn,
-            "tid": pytest.guid_tenant,
+            "oid": request.config.guid_user,
+            "upn": request.config.user_upn,
+            "tid": request.config.guid_tenant,
         },
         "key",
     )
 
 
 @pytest.fixture
-def graph_api_token():
+def graph_api_token(request):
     return jwt.encode(
         {
             "scp": "GroupMember.Read.All User.Read.All",
-            "tid": pytest.guid_tenant,
+            "tid": request.config.guid_tenant,
         },
         "key",
     )

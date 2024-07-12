@@ -69,7 +69,7 @@ def mock_blob_client(monkeypatch):
 
 
 @fixture
-def mock_subscription_client(monkeypatch):
+def mock_subscription_client(monkeypatch, request):
     class MockSubscriptionsOperations:
         def __init__(self, *args, **kwargs):
             pass
@@ -77,7 +77,7 @@ def mock_subscription_client(monkeypatch):
         def list(self):
             subscription_1 = Subscription()
             subscription_1.display_name = "Subscription 1"
-            subscription_1.id = pytest.guid_subscription
+            subscription_1.id = request.config.guid_subscription
             subscription_2 = Subscription()
             subscription_2.display_name = "Subscription 2"
             return [subscription_1, subscription_2]
@@ -104,17 +104,19 @@ class TestAzureSdk:
 
     def test_subscription_id(
         self,
+        request,
         mock_azureapi_get_subscription,  # noqa: ARG002
     ):
         sdk = AzureSdk("subscription name")
-        assert sdk.subscription_id == pytest.guid_subscription
+        assert sdk.subscription_id == request.config.guid_subscription
 
     def test_tenant_id(
         self,
+        request,
         mock_azureapi_get_subscription,  # noqa: ARG002
     ):
         sdk = AzureSdk("subscription name")
-        assert sdk.tenant_id == pytest.guid_tenant
+        assert sdk.tenant_id == request.config.guid_tenant
 
     def test_blob_exists(self, mock_blob_client):  # noqa: ARG002
         sdk = AzureSdk("subscription name")
@@ -144,12 +146,12 @@ class TestAzureSdk:
         ):
             sdk.get_keyvault_key("does not exist", "key vault name")
 
-    def test_get_subscription(self, mock_subscription_client):  # noqa: ARG002
+    def test_get_subscription(self, request, mock_subscription_client):  # noqa: ARG002
         sdk = AzureSdk("subscription name")
         subscription = sdk.get_subscription("Subscription 1")
         assert isinstance(subscription, Subscription)
         assert subscription.display_name == "Subscription 1"
-        assert subscription.id == pytest.guid_subscription
+        assert subscription.id == request.config.guid_subscription
 
     def test_get_subscription_does_not_exist(
         self, mock_subscription_client  # noqa: ARG002

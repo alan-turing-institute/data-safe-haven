@@ -33,25 +33,30 @@ class TestAzureSdkCredential:
         credential = AzureSdkCredential()
         assert isinstance(credential.token, str)
 
-    def test_decode_token(self, mock_azureclicredential_get_token):  # noqa: ARG002
+    def test_decode_token(
+        self,
+        request,
+        mock_azureclicredential_get_token,  # noqa: ARG002
+    ):
         credential = AzureSdkCredential()
         decoded = credential.decode_token(credential.token)
         assert decoded["name"] == "username"
-        assert decoded["oid"] == pytest.user_id
+        assert decoded["oid"] == request.config.guid_user
         assert decoded["upn"] == "username@example.com"
-        assert decoded["tid"] == pytest.guid_tenant
+        assert decoded["tid"] == request.config.guid_tenant
 
 
 class TestGraphApiCredential:
     def test_authentication_record_is_used(
         self,
+        request,
         authentication_record,
         mock_authenticationrecord_deserialize,
         mock_devicecodecredential_authenticate,  # noqa: ARG002
         tmp_config_dir,  # noqa: ARG002
     ):
         # Write an authentication record
-        cache_name = f"dsh-{pytest.guid_tenant}"
+        cache_name = f"dsh-{request.config.guid_tenant}"
         authentication_record_path = (
             config_dir() / f".msal-authentication-cache-{cache_name}"
         )
@@ -60,7 +65,7 @@ class TestGraphApiCredential:
             f_auth.write(serialised_record)
 
         # Get a credential
-        credential = GraphApiCredential(pytest.guid_tenant)
+        credential = GraphApiCredential(request.config.guid_tenant)
         credential.get_credential()
 
         # Remove the authentication record
@@ -70,29 +75,32 @@ class TestGraphApiCredential:
 
     def test_decode_token(
         self,
+        request,
         mock_graphapicredential_get_token,  # noqa: ARG002
     ):
-        credential = GraphApiCredential(pytest.guid_tenant)
+        credential = GraphApiCredential(request.config.guid_tenant)
         decoded = credential.decode_token(credential.token)
         assert decoded["scp"] == "GroupMember.Read.All User.Read.All"
-        assert decoded["tid"] == pytest.guid_tenant
+        assert decoded["tid"] == request.config.guid_tenant
 
     def test_get_credential(
         self,
+        request,
         mock_devicecodecredential_authenticate,  # noqa: ARG002
         mock_devicecodecredential_get_token,  # noqa: ARG002
         tmp_config_dir,  # noqa: ARG002
     ):
-        credential = GraphApiCredential(pytest.guid_tenant)
+        credential = GraphApiCredential(request.config.guid_tenant)
         assert isinstance(credential.get_credential(), DeviceCodeCredential)
 
     def test_get_credential_callback(
         self,
         capsys,
+        request,
         mock_devicecodecredential_new,  # noqa: ARG002
         tmp_config_dir,  # noqa: ARG002
     ):
-        credential = GraphApiCredential(pytest.guid_tenant)
+        credential = GraphApiCredential(request.config.guid_tenant)
         credential.get_credential()
         captured = capsys.readouterr()
         cleaned_stdout = " ".join(captured.out.split())
@@ -103,8 +111,9 @@ class TestGraphApiCredential:
 
     def test_get_token(
         self,
+        request,
         mock_devicecodecredential_get_token,  # noqa: ARG002
         mock_graphapicredential_get_credential,  # noqa: ARG002
     ):
-        credential = GraphApiCredential(pytest.guid_tenant)
+        credential = GraphApiCredential(request.config.guid_tenant)
         assert isinstance(credential.token, str)
