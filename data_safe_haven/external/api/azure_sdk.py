@@ -69,6 +69,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenValueError,
 )
 from data_safe_haven.logging import get_logger
+from data_safe_haven.types import AzureSdkCredentialScope
 
 from .credentials import AzureSdkCredential
 from .graph_api import GraphApi
@@ -78,18 +79,15 @@ class AzureSdk:
     """Interface to the Azure Python SDK"""
 
     def __init__(self, subscription_name: str) -> None:
+        self._credentials: dict[AzureSdkCredentialScope, AzureSdkCredential] = {}
         self.logger = get_logger()
-        self.credential = AzureSdkCredential()
-        self.credential_kv = AzureSdkCredential("https://vault.azure.net")
         self.subscription_name = subscription_name
         self.subscription_id_: str | None = None
         self.tenant_id_: str | None = None
 
     @property
     def entra_directory(self) -> GraphApi:
-        return GraphApi(
-            credential=AzureSdkCredential("https://graph.microsoft.com//.default"),
-        )
+        return GraphApi(credential=self.credential(AzureSdkCredentialScope.GRAPH_API))
 
     @property
     def subscription_id(self) -> str:
@@ -162,6 +160,13 @@ class AzureSdk:
         )
         return exists
 
+    def credential(
+        self, scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT
+    ) -> AzureSdkCredential:
+        if scope not in self._credentials:
+            self._credentials[scope] = AzureSdkCredential(scope)
+        return self._credentials[scope]
+
     def download_blob(
         self,
         blob_name: str,
@@ -214,7 +219,7 @@ class AzureSdk:
         """
         try:
             # Connect to Azure clients
-            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+            dns_client = DnsManagementClient(self.credential(), self.subscription_id)
 
             # Ensure that record exists
             self.logger.debug(
@@ -260,7 +265,7 @@ class AzureSdk:
         """
         try:
             # Connect to Azure clients
-            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+            dns_client = DnsManagementClient(self.credential(), self.subscription_id)
 
             # Ensure that record exists
             self.logger.debug(
@@ -299,7 +304,7 @@ class AzureSdk:
         """
         try:
             # Connect to Azure clients
-            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+            dns_client = DnsManagementClient(self.credential(), self.subscription_id)
 
             # Ensure that record exists
             self.logger.debug(
@@ -345,7 +350,7 @@ class AzureSdk:
 
             # Connect to Azure clients
             key_vault_client = KeyVaultManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             # Ensure that key vault exists
             key_vault_client.vaults.begin_create_or_update(
@@ -415,7 +420,7 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             key_client = KeyClient(
-                credential=self.credential_kv,
+                credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
             )
 
@@ -456,7 +461,7 @@ class AzureSdk:
                 f"Ensuring that managed identity [green]{identity_name}[/] exists...",
             )
             msi_client = ManagedServiceIdentityClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             managed_identity = msi_client.user_assigned_identities.create_or_update(
                 resource_group_name,
@@ -485,7 +490,7 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             resource_client = ResourceManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
 
             # Ensure that resource group exists
@@ -531,7 +536,7 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             storage_client = StorageManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             self.logger.debug(
                 f"Ensuring that storage account [green]{storage_account_name}[/] exists...",
@@ -570,7 +575,9 @@ class AzureSdk:
             DataSafeHavenAzureError if the existence of the certificate could not be verified
         """
         # Connect to Azure clients
-        storage_client = StorageManagementClient(self.credential, self.subscription_id)
+        storage_client = StorageManagementClient(
+            self.credential(), self.subscription_id
+        )
 
         self.logger.debug(
             f"Ensuring that storage container [green]{container_name}[/] exists...",
@@ -603,7 +610,7 @@ class AzureSdk:
         """
         # Connect to Azure clients
         certificate_client = CertificateClient(
-            credential=self.credential_kv,
+            credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
             vault_url=f"https://{key_vault_name}.vault.azure.net",
         )
         # Ensure that certificate exists
@@ -624,7 +631,7 @@ class AzureSdk:
         """
         # Connect to Azure clients
         key_client = KeyClient(
-            credential=self.credential_kv,
+            credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
             vault_url=f"https://{key_vault_name}.vault.azure.net",
         )
         # Ensure that certificate exists
@@ -645,7 +652,7 @@ class AzureSdk:
         """
         # Connect to Azure clients
         secret_client = SecretClient(
-            credential=self.credential_kv,
+            credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
             vault_url=f"https://{key_vault_name}.vault.azure.net",
         )
         # Ensure that secret exists
@@ -666,7 +673,7 @@ class AzureSdk:
             List[str]: Names of Azure locations
         """
         try:
-            subscription_client = SubscriptionClient(self.credential)
+            subscription_client = SubscriptionClient(self.credential())
             return [
                 str(location.name)
                 for location in cast(
@@ -696,7 +703,7 @@ class AzureSdk:
         try:
             # Connect to Azure client
             storage_client = StorageManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             storage_keys = None
             for _ in range(attempts):
@@ -723,7 +730,7 @@ class AzureSdk:
     def get_subscription(self, subscription_name: str) -> Subscription:
         """Get an Azure subscription by name."""
         try:
-            subscription_client = SubscriptionClient(self.credential)
+            subscription_client = SubscriptionClient(self.credential())
             for subscription in subscription_client.subscriptions.list():
                 if subscription.display_name == subscription_name:
                     return subscription
@@ -750,7 +757,7 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             certificate_client = CertificateClient(
-                credential=self.credential_kv,
+                credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
             )
             # Import the certificate, overwriting any existing certificate with the same name
@@ -781,7 +788,7 @@ class AzureSdk:
         try:
             # Connect to Azure client
             compute_client = ComputeManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             # Construct SKU information
             skus = {}
@@ -818,7 +825,7 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             certificate_client = CertificateClient(
-                credential=self.credential_kv,
+                credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
             )
             # Ensure that record is removed
@@ -893,7 +900,7 @@ class AzureSdk:
         """
         try:
             # Connect to Azure clients
-            dns_client = DnsManagementClient(self.credential, self.subscription_id)
+            dns_client = DnsManagementClient(self.credential(), self.subscription_id)
             # Check whether resource currently exists
             try:
                 dns_client.record_sets.get(
@@ -937,7 +944,7 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             certificate_client = CertificateClient(
-                credential=self.credential_kv,
+                credential=self.credential(AzureSdkCredentialScope.KEY_VAULT),
                 vault_url=f"https://{key_vault_name}.vault.azure.net",
             )
             self.logger.debug(
@@ -998,7 +1005,7 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             resource_client = ResourceManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
 
             if not resource_client.resource_groups.check_existence(resource_group_name):
@@ -1051,7 +1058,7 @@ class AzureSdk:
         try:
             # Connect to Azure clients
             compute_client = ComputeManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             vm = compute_client.virtual_machines.get(resource_group_name, vm_name)
             if not vm.os_profile:
@@ -1136,7 +1143,7 @@ class AzureSdk:
         try:
             # Ensure that storage container exists in the storage account
             storage_client = StorageManagementClient(
-                self.credential, self.subscription_id
+                self.credential(), self.subscription_id
             )
             try:
                 container = storage_client.blob_containers.get(
@@ -1154,7 +1161,8 @@ class AzureSdk:
 
             # Connect to Azure clients
             service_client = DataLakeServiceClient(
-                f"https://{storage_account_name}.dfs.core.windows.net", self.credential
+                account_url=f"https://{storage_account_name}.dfs.core.windows.net",
+                credential=self.credential(),
             )
             file_system_client = service_client.get_file_system_client(
                 file_system=container_name

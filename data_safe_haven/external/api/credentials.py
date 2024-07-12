@@ -3,7 +3,7 @@
 from abc import abstractmethod
 from collections.abc import Sequence
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import jwt
 from azure.core.credentials import AccessToken, TokenCredential
@@ -18,12 +18,13 @@ from azure.identity import (
 from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenValueError
 from data_safe_haven.logging import get_logger
+from data_safe_haven.types import AzureSdkCredentialScope
 
 
 class DeferredCredential(TokenCredential):
     """A token credential that wraps and caches other credential classes."""
 
-    tokens_: dict[str, AccessToken] = {}
+    tokens_: ClassVar[dict[str, AccessToken]] = {}
 
     def __init__(
         self,
@@ -70,8 +71,8 @@ class DeferredCredential(TokenCredential):
             DeferredCredential.tokens_[combined_scopes].expires_on < validity_cutoff
         ):
             # Generate a new token and store it at class-level token
-            DeferredCredential.tokens_[combined_scopes] = self.get_credential().get_token(
-                *scopes, **kwargs
+            DeferredCredential.tokens_[combined_scopes] = (
+                self.get_credential().get_token(*scopes, **kwargs)
             )
         return DeferredCredential.tokens_[combined_scopes]
 
@@ -82,9 +83,12 @@ class AzureSdkCredential(DeferredCredential):
 
     Uses AzureCliCredential for authentication
     """
+
     _show_login_msg = True
 
-    def __init__(self, scope: str = "https://management.azure.com/.default") -> None:
+    def __init__(
+        self, scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT
+    ) -> None:
         super().__init__(scopes=[scope])
 
     def get_credential(self) -> TokenCredential:
@@ -119,6 +123,7 @@ class GraphApiCredential(DeferredCredential):
 
     Uses DeviceCodeCredential for authentication
     """
+
     _show_login_msg = True
 
     def __init__(
