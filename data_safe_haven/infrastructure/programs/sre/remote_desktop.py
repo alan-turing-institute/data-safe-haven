@@ -421,4 +421,5 @@ class SRERemoteDesktopComponent(ComponentResource):
             "container_group_name": container_group.name,
             "disable_copy": props.disable_copy,
             "disable_paste": props.disable_paste,
+            "resource_group_name": props.resource_group_name,
         }
