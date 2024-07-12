@@ -217,14 +217,12 @@ class DeclarativeSRE:
             self.stack_name,
             SREAptProxyServerProps(
                 containers_subnet=networking.subnet_apt_proxy_server,
-                dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 location=self.config.azure.location,
-                networking_resource_group_name=networking.resource_group.name,
+                resource_group_name=resource_group.name,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
-                storage_account_resource_group_name=data.resource_group_name,
             ),
             tags=self.tags,
         )
