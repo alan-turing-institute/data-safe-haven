@@ -171,10 +171,6 @@ class ProjectManager:
                 f"No ongoing Pulumi operation found for stack [green]{self.stack.name}[/]."
             )
 
-    def copy_option(self, name: str, other_stack: "ProjectManager") -> None:
-        """Copy a public configuration option from another Pulumi stack"""
-        self.add_option(name, other_stack.secret(name), replace=True)
-
     def deploy(self, *, force: bool = False) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
