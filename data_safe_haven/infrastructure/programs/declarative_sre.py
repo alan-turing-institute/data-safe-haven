@@ -200,7 +200,7 @@ class DeclarativeSRE:
                 dns_record=networking.shm_ns_record,
                 dns_server_admin_password=dns.password_admin,
                 location=self.config.azure.location,
-                networking_resource_group=networking.resource_group,
+                resource_group_name=resource_group.name,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_data_configuration=networking.subnet_data_configuration,
                 subnet_data_private=networking.subnet_data_private,
