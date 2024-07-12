@@ -64,8 +64,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_786c5be1c2ccaad1_context_manager_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-07-11 11:16 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.0">coverage.py v7.6.0</a>,
+            created at 2024-07-12 10:29 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -91,7 +91,7 @@
     <p class="pln"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span> <span class="key">import</span> <span class="nam">__version__</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">directories</span> <span class="key">import</span> <span class="nam">config_dir</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">external</span> <span class="key">import</span> <span class="nam">AzureApi</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">external</span> <span class="key">import</span> <span class="nam">AzureSdk</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">serialisers</span> <span class="key">import</span> <span class="nam">ContextBase</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">types</span> <span class="key">import</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t">    <span class="nam">AzureSubscriptionName</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -149,8 +149,8 @@
     <p class="run"><span class="n"><a id="t67" href="#t67">67</a></span><span class="t">    <span class="op">@</span><span class="nam">property</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">    <span class="key">def</span> <span class="nam">pulumi_encryption_key</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span> <span class="op">-></span> <span class="nam">KeyVaultKey</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t69" href="#t69">69</a></span><span class="t">        <span class="key">if</span> <span class="key">not</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_pulumi_encryption_key</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">            <span class="nam">azure_api</span> <span class="op">=</span> <span class="nam">AzureApi</span><span class="op">(</span><span class="nam">subscription_name</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">subscription_name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">_pulumi_encryption_key</span> <span class="op">=</span> <span class="nam">azure_api</span><span class="op">.</span><span class="nam">get_keyvault_key</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">            <span class="nam">azure_sdk</span> <span class="op">=</span> <span class="nam">AzureSdk</span><span class="op">(</span><span class="nam">subscription_name</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">subscription_name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">_pulumi_encryption_key</span> <span class="op">=</span> <span class="nam">azure_sdk</span><span class="op">.</span><span class="nam">get_keyvault_key</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t72" href="#t72">72</a></span><span class="t">                <span class="nam">key_name</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">pulumi_encryption_key_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t73" href="#t73">73</a></span><span class="t">                <span class="nam">key_vault_name</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">key_vault_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t74" href="#t74">74</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -176,8 +176,8 @@
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_786c5be1c2ccaad1_context_manager_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-07-11 11:16 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.0">coverage.py v7.6.0</a>,
+            created at 2024-07-12 10:29 +0000
         </p>
     </div>
 </footer>

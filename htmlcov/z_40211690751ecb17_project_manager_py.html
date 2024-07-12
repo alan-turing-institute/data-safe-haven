@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for data_safe_haven/infrastructure/project_manager.py: 42%</title>
+    <title>Coverage for data_safe_haven/infrastructure/project_manager.py: 44%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
     <link rel="stylesheet" href="style_cb_8e611ae1.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>data_safe_haven/infrastructure/project_manager.py</b>:
-            <span class="pc_cov">42%</span>
+            <span class="pc_cov">44%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -55,8 +55,8 @@
         </aside>
         <h2>
             <span class="text">241 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">102<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">139<span class="text"> missing</span></button>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">106<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">135<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -64,8 +64,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_f7c124f61c23c805___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-07-11 11:16 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.0">coverage.py v7.6.0</a>,
+            created at 2024-07-12 10:29 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -101,7 +101,7 @@
     <p class="pln"><span class="n"><a id="t19" href="#t19">19</a></span><span class="t">    <span class="nam">DataSafeHavenConfigError</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t20" href="#t20">20</a></span><span class="t">    <span class="nam">DataSafeHavenPulumiError</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t21" href="#t21">21</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t22" href="#t22">22</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">external</span> <span class="key">import</span> <span class="nam">AzureApi</span><span class="op">,</span> <span class="nam">PulumiAccount</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t22" href="#t22">22</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">external</span> <span class="key">import</span> <span class="nam">AzureSdk</span><span class="op">,</span> <span class="nam">PulumiAccount</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t23" href="#t23">23</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">functions</span> <span class="key">import</span> <span class="nam">replace_separators</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t24" href="#t24">24</a></span><span class="t"><span class="key">from</span> <span class="nam">data_safe_haven</span><span class="op">.</span><span class="nam">logging</span> <span class="key">import</span> <span class="nam">from_ansi</span><span class="op">,</span> <span class="nam">get_console_handler</span><span class="op">,</span> <span class="nam">get_logger</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t25" href="#t25">25</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -320,8 +320,8 @@
     <p class="mis show_mis"><span class="n"><a id="t238" href="#t238">238</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t239" href="#t239">239</a></span><span class="t">                    <span class="fst">f"</span><span class="fst">Removing Pulumi stack backup [green]</span><span class="op">{</span><span class="nam">stack_backup_name</span><span class="op">}</span><span class="fst">[/].</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t240" href="#t240">240</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t241" href="#t241">241</a></span><span class="t">                <span class="nam">azure_api</span> <span class="op">=</span> <span class="nam">AzureApi</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">.</span><span class="nam">subscription_name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t242" href="#t242">242</a></span><span class="t">                <span class="nam">azure_api</span><span class="op">.</span><span class="nam">remove_blob</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t241" href="#t241">241</a></span><span class="t">                <span class="nam">azure_sdk</span> <span class="op">=</span> <span class="nam">AzureSdk</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">.</span><span class="nam">subscription_name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t242" href="#t242">242</a></span><span class="t">                <span class="nam">azure_sdk</span><span class="op">.</span><span class="nam">remove_blob</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t243" href="#t243">243</a></span><span class="t">                    <span class="nam">blob_name</span><span class="op">=</span><span class="fst">f"</span><span class="fst">.pulumi/stacks/</span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">project_name</span><span class="op">}</span><span class="fst">/</span><span class="op">{</span><span class="nam">stack_backup_name</span><span class="op">}</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t244" href="#t244">244</a></span><span class="t">                    <span class="nam">resource_group_name</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">.</span><span class="nam">resource_group_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t245" href="#t245">245</a></span><span class="t">                    <span class="nam">storage_account_name</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">context</span><span class="op">.</span><span class="nam">storage_account_name</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -360,12 +360,12 @@
     <p class="pln"><span class="n"><a id="t278" href="#t278">278</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t279" href="#t279">279</a></span><span class="t">    <span class="key">def</span> <span class="nam">install_plugins</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">workspace</span><span class="op">:</span> <span class="nam">automation</span><span class="op">.</span><span class="nam">Workspace</span><span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t280" href="#t280">280</a></span><span class="t">        <span class="str">"""For inline programs, we must manage plugins ourselves."""</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t281" href="#t281">281</a></span><span class="t">        <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t282" href="#t282">282</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span><span class="str">"Installing required Pulumi plugins"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t283" href="#t283">283</a></span><span class="t">            <span class="nam">workspace</span><span class="op">.</span><span class="nam">install_plugin</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t281" href="#t281">281</a></span><span class="t">        <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t282" href="#t282">282</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span><span class="str">"Installing required Pulumi plugins"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t283" href="#t283">283</a></span><span class="t">            <span class="nam">workspace</span><span class="op">.</span><span class="nam">install_plugin</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t284" href="#t284">284</a></span><span class="t">                <span class="str">"azure-native"</span><span class="op">,</span> <span class="nam">metadata</span><span class="op">.</span><span class="nam">version</span><span class="op">(</span><span class="str">"pulumi-azure-native"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t285" href="#t285">285</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t286" href="#t286">286</a></span><span class="t">            <span class="nam">workspace</span><span class="op">.</span><span class="nam">install_plugin</span><span class="op">(</span><span class="str">"random"</span><span class="op">,</span> <span class="nam">metadata</span><span class="op">.</span><span class="nam">version</span><span class="op">(</span><span class="str">"pulumi-random"</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t286" href="#t286">286</a></span><span class="t">            <span class="nam">workspace</span><span class="op">.</span><span class="nam">install_plugin</span><span class="op">(</span><span class="str">"random"</span><span class="op">,</span> <span class="nam">metadata</span><span class="op">.</span><span class="nam">version</span><span class="op">(</span><span class="str">"pulumi-random"</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t287" href="#t287">287</a></span><span class="t">        <span class="key">except</span> <span class="nam">Exception</span> <span class="key">as</span> <span class="nam">exc</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t288" href="#t288">288</a></span><span class="t">            <span class="nam">msg</span> <span class="op">=</span> <span class="str">"Installing Pulumi plugins failed.."</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t289" href="#t289">289</a></span><span class="t">            <span class="key">raise</span> <span class="nam">DataSafeHavenPulumiError</span><span class="op">(</span><span class="nam">msg</span><span class="op">)</span> <span class="key">from</span> <span class="nam">exc</span>&nbsp;</span><span class="r"></span></p>
@@ -509,8 +509,8 @@
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_f7c124f61c23c805___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.5.4">coverage.py v7.5.4</a>,
-            created at 2024-07-11 11:16 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.0">coverage.py v7.6.0</a>,
+            created at 2024-07-12 10:29 +0000
         </p>
     </div>
 </footer>
