@@ -893,7 +893,6 @@ class SREDataComponent(ComponentResource):
         )
 
         # Register outputs
-        self.container_desired_state_name = container_desired_state.container_name
         self.sre_fqdn_certificate_secret_id = sre_fqdn_certificate.secret_id
         self.storage_account_data_private_user_name = (
             storage_account_data_private_user.name
@@ -911,6 +910,9 @@ class SREDataComponent(ComponentResource):
         )
         self.storage_account_data_configuration_name = (
             storage_account_data_configuration.name
+        )
+        self.storage_account_data_desired_state_name = (
+            storage_account_data_desired_state.name
         )
         self.managed_identity = identity_key_vault_reader
         self.password_nexus_admin = Output.secret(password_nexus_admin.result)

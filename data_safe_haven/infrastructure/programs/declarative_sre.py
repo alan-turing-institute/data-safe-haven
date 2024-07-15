@@ -341,7 +341,6 @@ class DeclarativeSRE:
             SREWorkspacesProps(
                 admin_password=data.password_workspace_admin,
                 apt_proxy_server_hostname=apt_proxy_server.hostname,
-                container_desired_state_name=data.container_desired_state_name,
                 data_collection_rule_id=monitoring.data_collection_rule_vms.id,
                 data_collection_endpoint_id=monitoring.data_collection_endpoint.id,
                 ldap_group_filter=ldap_group_filter,
@@ -354,7 +353,7 @@ class DeclarativeSRE:
                 maintenance_configuration_id=monitoring.maintenance_configuration.id,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.config.name,
-                storage_account_data_configuration_name=data.storage_account_data_configuration_name,
+                storage_account_data_desired_state_name=data.storage_account_data_desired_state_name,
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
                 subnet_workspaces=networking.subnet_workspaces,
