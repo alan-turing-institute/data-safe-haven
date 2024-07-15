@@ -6,14 +6,34 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches: [develop, latest]
   pull_request:
-    branches: [develop, latest]
 
 jobs:
+  lint_caddy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install caddy
+        shell: bash
+        run: |
+          sudo mkdir -m 0755 -p /usr/share/keyrings/
+          sudo wget 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' -O - | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+          sudo wget 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' -O /etc/apt/sources.list.d/caddy-stable.list
+          sudo apt update
+          sudo apt install caddy
+      - name: Lint Caddy
+        shell: bash
+        run: |
+          # Check Caddyfile formatting
+          find . -name Caddyfile -print0 | xargs -0 -n 1 caddy fmt > /dev/null
+          # Check Caddyfile validity
+          find . -name Caddyfile -print0 | xargs -0 -n 1 -I {} caddy validate --config "{}"
+
   lint_json:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install requirements
         shell: bash
         run: npm install -g jsonlint mustache
@@ -27,44 +47,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install requirements
         shell: bash
         run: sudo gem install mdl
       - name: Lint Markdown
         run: mdl --style .mdlstyle.rb .
 
-  lint_powershell:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install requirements
-        shell: pwsh
-        run: |
-          Set-PSRepository PSGallery -InstallationPolicy Trusted
-          Install-Module PSScriptAnalyzer
-      - name: Lint PowerShell
-        shell: pwsh
-        run: Invoke-ScriptAnalyzer -Path . -Settings .PSScriptAnalyzerSettings.psd1 -Recurse -EnableExit -ReportSummary
-
   lint_python:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install requirements
-        shell: bash
-        run: pip install flake8
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - name: Install hatch
+        run: pip install hatch
+      - name: Print package versions
+        run: |
+          hatch run lint:ruff --version
+          hatch run lint:black --version
       - name: Lint Python
-        shell: bash
-        run: flake8 . --statistics --count
+        run: hatch run lint:all
 
   lint_shell:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install requirements
         shell: bash
         run: sudo apt install shellcheck
@@ -76,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install requirements
         shell: bash
         run: |
@@ -92,7 +104,7 @@ jobs:
           done
           rm expanded.tmp
       - name: Lint YAML
-        uses: karancode/yamllint-github-action@dd59165b84d90d37fc919c3c7dd84c7e37cd6bfb  # this is 2.0.0
+        uses: karancode/yamllint-github-action@v2.1.1
         with:
           yamllint_strict: true
           yamllint_comment: false

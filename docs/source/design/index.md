@@ -4,7 +4,6 @@
 :hidden: true
 :maxdepth: 2
 
-architecture/index.md
 security/index.md
 ```
 
@@ -17,9 +16,6 @@ In addition to describing the architecture and technical security controls confi
 ```{warning}
 Each organisation deploying their own instance of the Data Safe Haven is responsible for verifying their Data Safe Haven instance is deployed and operates as expected and that the deployed configuration effectively supports the purpose for which they have deployed the Data Safe Haven and their own information governance policies and processes.
 ```
-
-[Architecture](architecture/index.md)
-: How the Data Safe Haven infrastructure is designed.
 
 [Security](security/index.md)
 : Details about the security configuration used at the Alan Turing Institute

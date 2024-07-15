@@ -1,5 +1,6 @@
 # System files
 *.DS_Store
+__pycache__
 
 # All secrets folders, no matter how nested
 secrets/
@@ -13,6 +14,7 @@ environment_configs/package_lists/dependency-cache.json
 
 # Python build caches
 __pycache__/
+.venv/
 
 # Development tools
 .vscode
@@ -35,6 +37,16 @@ docs/venv
 # Files produced during testing
 .mustache_config.json
 expanded.yaml
+.coverage
 
 # Lychee cache
 .lycheecache
+
+# mypy cache
+.mypy_cache
+
+# ruff cache
+.pytest_cache
+
+# ruff cache
+.ruff_cache

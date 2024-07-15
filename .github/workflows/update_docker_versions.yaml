@@ -1,0 +1,67 @@
+---
+name: Update Docker image versions
+
+on:  # yamllint disable-line rule:truthy
+  schedule:
+    - cron: "0 3 * * 1"  # run at 3:00 every Monday
+  workflow_dispatch:  # allow this workflow to be manually triggered
+
+# checkout needs 'contents:read'
+# pull request needs 'pull-requests:write' and 'contents:write'
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update_docker_versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python packages
+        run: |
+          pip install --upgrade pip
+          pip install -r .github/scripts/requirements.txt
+
+      - name: Update Docker image versions
+        run: |
+          python .github/scripts/update_docker_versions.py
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Create pull request
+        if: ${{ ! env.ACT }}
+        id: pull-request
+        uses: peter-evans/create-pull-request@v6.1.0
+        with:
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          base: develop
+          body: |
+            :warning: In order for CI to run on this PR it needs to be manually closed and re-opened :warning:
+
+            ### :arrow_heading_up: Summary
+            - Update Docker image versions from ${{ github.sha }} on ${{ steps.date.outputs.date }}
+
+            ### :closed_umbrella: Related issues
+            None
+
+            ### :microscope: Tests
+            Package versions only
+          branch: update-docker-images
+          commit-message: ":arrow_up: Update Pulumi Docker images"
+          committer: GitHub Actions <noreply@github.com>
+          delete-branch: true
+          draft: false
+          labels: |
+            affected: developers
+            severity: minor
+            type: enhancement
+          title: ":arrow_up: Update Pulumi Docker images"

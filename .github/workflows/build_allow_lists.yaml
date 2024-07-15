@@ -23,10 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: environment_configs/package_lists/dependency-cache.json
           key: dependencies-${{ github.sha }}  # request a cache that does not yet exist
@@ -55,26 +55,28 @@ jobs:
       - name: Create pull request
         if: ${{ (env.TIMEOUT_REACHED == 0) && (! env.ACT) }}
         id: pull-request
-        uses: peter-evans/create-pull-request@38e0b6e68b4c852a5500a94740f0e535e0d7ba54  # This commit corresponds to tag 4.2.4
+        uses: peter-evans/create-pull-request@v6.1.0
         with:
-          commit-message: Update PyPI and CRAN allow lists
-          committer: GitHub Actions <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           base: develop
-          branch: package-allowlist-updates
-          delete-branch: true
-          title: Update PyPI and CRAN allow lists
           body: |
+            :warning: In order for CI to run on this PR it needs to be manually closed and re-opened :warning:
+
             ### :arrow_heading_up: Summary
-            - Apply package allowlist diff from ${{ github.sha }} on ${{ steps.date.outputs.date }}
+            - Update package allowlists from ${{ github.sha }} on ${{ steps.date.outputs.date }}
 
             ### :closed_umbrella: Related issues
             None
 
             ### :microscope: Tests
             Allow-list only
+          branch: package-allowlist-updates
+          commit-message: ":arrow_up: Update PyPI and CRAN allow lists"
+          committer: GitHub Actions <noreply@github.com>
+          delete-branch: true
+          draft: false
           labels: |
             affected: developers
             severity: minor
             type: enhancement
-          draft: false
+          title: ":arrow_up: Update PyPI and CRAN allow lists"
