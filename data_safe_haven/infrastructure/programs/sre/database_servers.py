@@ -73,9 +73,9 @@ class SREDatabaseServerComponent(ComponentResource):
                 f"{self._name}_mssql_dns_record_set",
                 LocalDnsRecordProps(
                     base_fqdn=props.sre_fqdn,
-                    dns_resource_group_name=props.resource_group_name,
                     private_ip_address=db_server_mssql.private_ip_address,
                     record_name="mssql",
+                    resource_group_name=props.resource_group_name,
                 ),
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=db_server_mssql)
@@ -103,9 +103,9 @@ class SREDatabaseServerComponent(ComponentResource):
                 f"{self._name}_postgresql_dns_record_set",
                 LocalDnsRecordProps(
                     base_fqdn=props.sre_fqdn,
-                    dns_resource_group_name=props.resource_group_name,
                     private_ip_address=db_server_postgresql.private_ip_address,
                     record_name="postgresql",
+                    resource_group_name=props.resource_group_name,
                 ),
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=db_server_postgresql)
