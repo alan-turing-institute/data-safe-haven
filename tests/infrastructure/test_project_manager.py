@@ -65,7 +65,7 @@ class TestSREProjectManager:
         )
         with raises(
             DataSafeHavenConfigError,
-            match="No SHM/SRE named sandbox is defined.",
+            match="No SRE named sandbox is defined.",
         ):
             _ = sre.pulumi_project
 
