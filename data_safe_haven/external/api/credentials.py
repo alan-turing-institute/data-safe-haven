@@ -3,7 +3,7 @@
 from abc import abstractmethod
 from collections.abc import Sequence
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import jwt
 from azure.core.credentials import AccessToken, TokenCredential
@@ -18,19 +18,19 @@ from azure.identity import (
 from data_safe_haven.directories import config_dir
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenValueError
 from data_safe_haven.logging import get_logger
+from data_safe_haven.types import AzureSdkCredentialScope
 
 
 class DeferredCredential(TokenCredential):
     """A token credential that wraps and caches other credential classes."""
 
-    token_: AccessToken | None = None
+    tokens_: ClassVar[dict[str, AccessToken]] = {}
 
     def __init__(
         self,
         scopes: Sequence[str],
         tenant_id: str | None = None,
     ) -> None:
-        self._show_login_msg = True
         self.logger = get_logger()
         self.scopes = scopes
         self.tenant_id = tenant_id
@@ -63,17 +63,18 @@ class DeferredCredential(TokenCredential):
         *scopes: str,
         **kwargs: Any,
     ) -> AccessToken:
+        combined_scopes = " ".join(scopes)
         # Require at least 10 minutes of remaining validity
         # The 'expires_on' property is a Unix timestamp integer in seconds
         validity_cutoff = datetime.now(tz=UTC).timestamp() + 10 * 60
-        if not DeferredCredential.token_ or (
-            DeferredCredential.token_.expires_on < validity_cutoff
+        if not DeferredCredential.tokens_.get(combined_scopes, None) or (
+            DeferredCredential.tokens_[combined_scopes].expires_on < validity_cutoff
         ):
             # Generate a new token and store it at class-level token
-            DeferredCredential.token_ = self.get_credential().get_token(
-                *scopes, **kwargs
+            DeferredCredential.tokens_[combined_scopes] = (
+                self.get_credential().get_token(*scopes, **kwargs)
             )
-        return DeferredCredential.token_
+        return DeferredCredential.tokens_[combined_scopes]
 
 
 class AzureSdkCredential(DeferredCredential):
@@ -83,8 +84,12 @@ class AzureSdkCredential(DeferredCredential):
     Uses AzureCliCredential for authentication
     """
 
-    def __init__(self, scope: str = "https://management.azure.com/.default") -> None:
-        super().__init__(scopes=[scope])
+    _show_login_msg = True
+
+    def __init__(
+        self, scope: AzureSdkCredentialScope = AzureSdkCredentialScope.DEFAULT
+    ) -> None:
+        super().__init__(scopes=[scope.value])
 
     def get_credential(self) -> TokenCredential:
         """Get a new AzureCliCredential."""
@@ -92,7 +97,7 @@ class AzureSdkCredential(DeferredCredential):
         # Check that we are logged into Azure
         try:
             decoded = self.decode_token(credential.get_token(*self.scopes).token)
-            if self._show_login_msg:
+            if AzureSdkCredential._show_login_msg:
                 self.logger.info(
                     "You are currently logged into the [blue]Azure CLI[/] with the following details:"
                 )
@@ -102,7 +107,7 @@ class AzureSdkCredential(DeferredCredential):
                 self.logger.info(
                     f"\ttenant: [green]{decoded['upn'].split('@')[1]}[/] ({decoded['tid']})"
                 )
-                self._show_login_msg = False
+                AzureSdkCredential._show_login_msg = False
         except (CredentialUnavailableError, DataSafeHavenValueError) as exc:
             self.logger.error(
                 "Please authenticate with Azure: run '[green]az login[/]' using [bold]infrastructure administrator[/] credentials."
@@ -118,6 +123,8 @@ class GraphApiCredential(DeferredCredential):
 
     Uses DeviceCodeCredential for authentication
     """
+
+    _show_login_msg = True
 
     def __init__(
         self,
@@ -166,7 +173,7 @@ class GraphApiCredential(DeferredCredential):
             f_auth.write(new_auth_record.serialize())
 
         # Write confirmation details about this login
-        if self._show_login_msg:
+        if GraphApiCredential._show_login_msg:
             self.logger.info(
                 "You are currently logged into the [blue]Microsoft Graph API[/] with the following details:"
             )
@@ -176,7 +183,7 @@ class GraphApiCredential(DeferredCredential):
             self.logger.info(
                 f"\ttenant: [green]{new_auth_record._username.split('@')[1]}[/] ({new_auth_record._tenant_id})"
             )
-            self._show_login_msg = False
+            GraphApiCredential._show_login_msg = False
 
         # Return the credential
         return credential

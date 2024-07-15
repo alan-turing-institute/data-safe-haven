@@ -20,6 +20,13 @@ class AzureDnsZoneNames(tuple[str, ...], Enum):
 
 
 @verify(UNIQUE)
+class AzureSdkCredentialScope(str, Enum):
+    DEFAULT = "https://management.azure.com/.default"
+    GRAPH_API = "https://graph.microsoft.com/.default"
+    KEY_VAULT = "https://vault.azure.net"
+
+
+@verify(UNIQUE)
 class DatabaseSystem(str, Enum):
     MICROSOFT_SQL_SERVER = "mssql"
     POSTGRESQL = "postgresql"
