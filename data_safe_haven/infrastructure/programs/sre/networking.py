@@ -1296,6 +1296,18 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to configuration data endpoints.",
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDataConfigurationEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_CONFIGURATION,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to monitoring tools.",
                     destination_address_prefix=SREIpRanges.monitoring.prefix,
                     destination_port_ranges=[Ports.HTTPS],
