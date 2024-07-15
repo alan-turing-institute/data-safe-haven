@@ -53,7 +53,8 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
     - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manager or install manually following the [instructions on GitHub](https://github.com/openssl/openssl)
 
 - `Docker Hub` account
-    - The DSH makes use of several public Docker images. Due to Docker Hub download rate limits https://docs.docker.com/docker-hub/download-rate-limit/, we now require Docker credentials to ensure that all images are successfully downloaded at the time of deployment.
+    - The DSH makes use of several public Docker images.
+      Due to Docker Hub download [rate limits](https://docs.docker.com/docker-hub/download-rate-limit/), we now require Docker credentials to ensure that all images are successfully downloaded at the time of deployment.
     - We recommend using a personal access token (PAT) with Public Repo Read-Only permissions rather than your Docker account password.
       See [instructions on Docker](https://docs.docker.com/security/for-developers/access-tokens/) for details of how to create a PAT.
 
