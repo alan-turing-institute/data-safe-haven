@@ -11,7 +11,7 @@
         }
       },
       "external_dns_resolver": "168.63.129.16",
-      "fqdn": "DC1-SHM-BLUE.blue.develop.turingsafehaven.ac.uk",
+      "fqdn": "dc1-shm-blue.blue.develop.turingsafehaven.ac.uk",
       "hostname": "DC1-SHM-BLUE",
       "hostnameLower": "dc1-shm-blue",
       "hostnameUpper": "DC1-SHM-BLUE",
@@ -23,7 +23,7 @@
       "vmSize": "Standard_D2s_v3"
     },
     "dcb": {
-      "fqdn": "DC2-SHM-BLUE.blue.develop.turingsafehaven.ac.uk",
+      "fqdn": "dc2-shm-blue.blue.develop.turingsafehaven.ac.uk",
       "hostname": "DC2-SHM-BLUE",
       "ip": "10.0.0.5",
       "vmName": "DC2-SHM-BLUE"
@@ -33,6 +33,8 @@
       "rg": "RG_SHM_DNS_TEST",
       "subscriptionName": "[Prod] Safe Haven Domains"
     },
+    "dockerAccount": "youraccountname",
+    "dockerPassword": "dckr_pat_0o0o0o0o0o0o0o0o0o0o0o0o0o0",
     "domain": {
       "dn": "DC=blue,DC=develop,DC=turingsafehaven,DC=ac,DC=uk",
       "fqdn": "blue.develop.turingsafehaven.ac.uk",
@@ -118,17 +120,8 @@
             "87.238.57.227",
             "147.75.85.69",
             "217.196.149.55",
-            "91.189.91.38",
-            "91.189.91.39",
-            "91.189.91.48",
-            "91.189.91.49",
-            "91.189.91.81",
-            "91.189.91.82",
-            "91.189.91.83",
-            "185.125.190.17",
-            "185.125.190.18",
-            "185.125.190.36",
-            "185.125.190.39",
+            "91.189.88.0/21",
+            "185.125.188.0/22",
             "103.21.244.0/22",
             "103.22.200.0/22",
             "103.31.4.0/22",
@@ -1221,7 +1214,7 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GUACAMOLE-SRE-T1GUAC.blue.develop.turingsafehaven.ac.uk",
+        "fqdn": "guacamole-sre-t1guac.blue.develop.turingsafehaven.ac.uk",
         "hostname": "GUACAMOLE-SRE-T1GUAC",
         "ip": "10.151.1.4",
         "vmName": "GUACAMOLE-SRE-T1GUAC",
@@ -1386,7 +1379,7 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "CODIMD.t1guac.blue.develop.turingsafehaven.ac.uk",
+        "fqdn": "codimd.t1guac.blue.develop.turingsafehaven.ac.uk",
         "hostname": "CODIMD",
         "ip": "10.151.5.6",
         "osVersion": "Ubuntu-latest",
@@ -1409,7 +1402,7 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GITLAB.t1guac.blue.develop.turingsafehaven.ac.uk",
+        "fqdn": "gitlab.t1guac.blue.develop.turingsafehaven.ac.uk",
         "hostname": "GITLAB",
         "ip": "10.151.5.5",
         "osVersion": "Ubuntu-latest",

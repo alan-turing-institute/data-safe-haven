@@ -10,7 +10,7 @@
       }
     },
     "external_dns_resolver": "168.63.129.16",
-    "fqdn": "DC1-SHM-GREEN.green.develop.turingsafehaven.ac.uk",
+    "fqdn": "dc1-shm-green.green.develop.turingsafehaven.ac.uk",
     "hostname": "DC1-SHM-GREEN",
     "hostnameLower": "dc1-shm-green",
     "hostnameUpper": "DC1-SHM-GREEN",
@@ -22,7 +22,7 @@
     "vmSize": "Standard_D2s_v3"
   },
   "dcb": {
-    "fqdn": "DC2-SHM-GREEN.green.develop.turingsafehaven.ac.uk",
+    "fqdn": "dc2-shm-green.green.develop.turingsafehaven.ac.uk",
     "hostname": "DC2-SHM-GREEN",
     "ip": "10.0.0.5",
     "vmName": "DC2-SHM-GREEN"
@@ -32,6 +32,8 @@
     "rg": "RG_SHM_DNS_TEST",
     "subscriptionName": "[Prod] Safe Haven Domains"
   },
+  "dockerAccount": "youraccountname",
+  "dockerPassword": "dckr_pat_0o0o0o0o0o0o0o0o0o0o0o0o0o0",
   "domain": {
     "dn": "DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk",
     "fqdn": "green.develop.turingsafehaven.ac.uk",
@@ -117,17 +119,8 @@
           "87.238.57.227",
           "147.75.85.69",
           "217.196.149.55",
-          "91.189.91.38",
-          "91.189.91.39",
-          "91.189.91.48",
-          "91.189.91.49",
-          "91.189.91.81",
-          "91.189.91.82",
-          "91.189.91.83",
-          "185.125.190.17",
-          "185.125.190.18",
-          "185.125.190.36",
-          "185.125.190.39",
+          "91.189.88.0/21",
+          "185.125.188.0/22",
           "103.21.244.0/22",
           "103.22.200.0/22",
           "103.31.4.0/22",

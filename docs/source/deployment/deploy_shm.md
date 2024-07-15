@@ -52,6 +52,12 @@ Alternatively, you may run multiple SHMs concurrently, for example you may have 
 
     - ![Linux](https://img.shields.io/badge/-555?&logo=linux&logoColor=white) use your favourite package manager or install manually following the [instructions on GitHub](https://github.com/openssl/openssl)
 
+- `Docker Hub` account
+    - The DSH makes use of several public Docker images.
+      Due to Docker Hub download [rate limits](https://docs.docker.com/docker-hub/download-rate-limit/), we now require Docker credentials to ensure that all images are successfully downloaded at the time of deployment.
+    - We recommend using a personal access token (PAT) with Public Repo Read-Only permissions rather than your Docker account password.
+      See [instructions on Docker](https://docs.docker.com/security/for-developers/access-tokens/) for details of how to create a PAT.
+
 ````{hint}
 If you run:
 
@@ -117,6 +123,10 @@ The following core SHM properties are required - look in the `environment_config
     "subscriptionName": "[Optional] Azure subscription where VM images will be built (if not specified then the value from the 'azure' block will be used). Multiple Safe Haven deployments can share a single set of VM images in a common subscription if desired - this is what is done in the Turing deployment. If you are hoping to use images that have already been built for another Safe Haven deployment, make sure you specify this parameter accordingly.",
     "location": "[Optional] Azure location where VM images should be built (if not specified then the value from the 'azure' block will be used). Multiple Safe Haven deployments can share a single set of VM images in a common subscription if desired - this is what is done in the Turing deployment. If you are hoping to use images that have already been built for another Safe Haven deployment, make sure you specify this parameter accordingly.",
     "buildIpAddresses": "[Optional] One or more IP addresses which admins will be running the VM build scripts from (if not specified then Turing IP addresses will be used)."
+  },
+  "docker": {
+    "account": "A Docker Hub account name.",
+    "password": "The password or personal access token for the above account. We strongly recommend using a Personal Access Token with permissions set to Public Repo Read-only"
   },
   "overrides": "[Optional, Advanced] Do not use this unless you know what you're doing! If you want to override any of the default settings, you can do so by creating the same JSON structure that would be found in the final config file and nesting it under this entry. For example, to change the size of the data disk on the domain controller, you could use something like: 'shm: { dc: { disks: { data: { sizeGb: 50 } } } }'"
 }
@@ -603,7 +613,7 @@ Note that a full set of {ref}`policy_tier_2` local mirrors currently take around
   </details>
 
 - Unzip the zip file and identify the root certificate (`Generic\VpnServerRoot.cer`) and VPN configuration file (`Generic\VpnSettings.xml`)
-- Follow the [VPN set up instructions](https://docs.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-configuration-azure-cert) using the section appropriate to your operating system (**you do not need to install the `Generic\VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**):
+- Follow the [VPN set up instructions](https://web.archive.org/web/20240527120727/https://learn.microsoft.com/en-us/azure/vpn-gateway/point-to-site-vpn-client-cert-windows) using the section appropriate to your operating system (**you do not need to install the `Generic\VpnServerRoot.cer` certificate, as we're using our own self-signed root certificate**):
 
 ```{admonition} ![Windows](https://img.shields.io/badge/-555?&logo=windows&logoColor=white) instructions
 - Use SSTP for the VPN type

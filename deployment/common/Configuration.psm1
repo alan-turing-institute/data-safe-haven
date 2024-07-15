@@ -83,7 +83,9 @@ function Get-ShmConfig {
         vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_VMIMAGES"
         storageTypeDefault  = "Standard_GRS"
         diskTypeDefault     = "Standard_LRS"
-}
+        dockerAccount       = $shmConfigBase.docker.account ? $shmConfigBase.docker.account : "NA"
+        dockerPassword      = $shmConfigBase.docker.password ? $shmConfigBase.docker.password : "NA"
+    }
     # For normal usage this does not need to be user-configurable.
     # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
     $shmIpPrefix = $shmConfigBase.overrides.ipPrefix ? $shmConfigBase.overrides.ipPrefix : "10.0.0"
@@ -327,7 +329,7 @@ function Get-ShmConfig {
             externalIpAddresses = [ordered]@{
                 linux   = (
                     @("72.32.157.246", "87.238.57.227", "147.75.85.69", "217.196.149.55") + # apt.postgresql.org
-                    @("91.189.91.38", "91.189.91.39", "91.189.91.48", "91.189.91.49", "91.189.91.81", "91.189.91.82", "91.189.91.83", "185.125.190.17", "185.125.190.18", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
+                    @("91.189.88.0/21", "185.125.188.0/22") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
                     $cloudFlareIpAddresses + # database.clamav.net, packages.gitlab.com and qgis.org use Cloudflare
                     $cloudFrontIpAddresses + # packages.gitlab.com uses Cloudfront to host its Release file
                     @("104.131.190.124") + # dbeaver.io
@@ -431,7 +433,7 @@ function Get-ShmConfig {
         hostname                   = $hostname
         hostnameLower              = $hostname.ToLower()
         hostnameUpper              = $hostname.ToUpper()
-        fqdn                       = "${hostname}.$($shm.domain.fqdn)"
+        fqdn                       = "${hostname}.$($shm.domain.fqdn)".ToLower()
         ip                         = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 4
         external_dns_resolver      = "168.63.129.16"  # https://docs.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
         installationDirectory      = "C:\Installation"
@@ -451,7 +453,7 @@ function Get-ShmConfig {
     $shm.dcb = [ordered]@{
         vmName   = $hostname
         hostname = $hostname
-        fqdn     = "${hostname}.$($shm.domain.fqdn)"
+        fqdn     = "${hostname}.$($shm.domain.fqdn)".ToLower()
         ip       = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 5
     }
 
@@ -613,10 +615,12 @@ function Get-SreConfig {
     $sreConfigBase = Get-CoreConfig -shmId $shmId -sreId $sreId
 
     # Support for "MicrosoftRDS" has been removed. The "remotedDesktopProvider" field now defaults to "ApacheGuacamole"
-    if ($sreConfigBase.remoteDesktopProvider -ne "ApacheGuacamole") {
-        Add-LogMessage -Level Fatal "Support for remote desktops other than ApacheGuacamole has been removed"
-    } elseif ($sreConfigBase.remoteDesktopProvider -eq "ApacheGuacamole") {
-        Add-LogMessage -Level Warning "The remoteDesktopProvider configuration option has been deprecated and will be removed in the future"
+    if ($null -ne $sreConfigBase.remoteDesktopProvider) {
+        if ($sreConfigBase.remoteDesktopProvider -eq "ApacheGuacamole") {
+            Add-LogMessage -Level Warning "The remoteDesktopProvider configuration option has been deprecated and will be removed in the future"
+        } else {
+            Add-LogMessage -Level Fatal "Support for remote desktops other than ApacheGuacamole has been removed"
+        }
     }
     $sreConfigBase.remoteDesktopProvider = "ApacheGuacamole"
 
@@ -661,7 +665,7 @@ function Get-SreConfig {
     $sreDomain = $sreConfigBase.domain ? $sreConfigBase.domain : "$($config.sre.id).$($config.shm.domain.fqdn)".ToLower()
     $config.sre.domain = [ordered]@{
         dn          = "DC=$($sreDomain.Replace('.',',DC='))"
-        fqdn        = $sreDomain
+        fqdn        = "$sreDomain".ToLower()
         netbiosName = $($config.sre.id).ToUpper() | Limit-StringLength -MaximumLength 15 -FailureIsFatal
     }
     $config.sre.domain.securityGroups = [ordered]@{
@@ -892,7 +896,7 @@ function Get-SreConfig {
     foreach ($server in $config.sre.remoteDesktop.Keys) {
         if (-not $config.sre.remoteDesktop[$server].vmName) { continue }
         $config.sre.remoteDesktop[$server].hostname = $config.sre.remoteDesktop[$server].vmName
-        $config.sre.remoteDesktop[$server].fqdn = "$($config.sre.remoteDesktop[$server].vmName).$($config.shm.domain.fqdn)"
+        $config.sre.remoteDesktop[$server].fqdn = "$($config.sre.remoteDesktop[$server].vmName).$($config.shm.domain.fqdn)".ToLower()
     }
 
     # Set the appropriate tier-dependent network rules for the remote desktop server
@@ -980,7 +984,7 @@ function Get-SreConfig {
     # Construct the hostname and FQDN for each VM
     foreach ($server in $config.sre.webapps.Keys) {
         if ($config.sre.webapps[$server] -IsNot [System.Collections.Specialized.OrderedDictionary]) { continue }
-        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].hostname).$($config.sre.domain.fqdn)"
+        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].hostname).$($config.sre.domain.fqdn)".ToLower()
         $config.sre.webapps[$server].vmName = "$($config.sre.webapps[$server].hostname)-SRE-$($config.sre.id)".ToUpper()
     }
 

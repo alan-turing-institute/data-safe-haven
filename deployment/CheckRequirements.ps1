@@ -13,7 +13,7 @@ $ModuleVersionRequired = @{
     "Az.Accounts"                                  = @("ge", "2.11.1")
     "Az.Automation"                                = @("ge", "1.9.0")
     "Az.Compute"                                   = @("ge", "5.3.0")
-    "Az.DataProtection"                            = @("ge", "0.4.0")
+    "Az.DataProtection"                            = @("ge", "2.4.0")
     "Az.Dns"                                       = @("ge", "1.1.2")
     "Az.KeyVault"                                  = @("ge", "4.9.1")
     "Az.Monitor"                                   = @("ge", "4.2.0")
@@ -28,6 +28,7 @@ $ModuleVersionRequired = @{
     "Microsoft.Graph.Applications"                 = @("ge", "1.21.0")
     "Microsoft.Graph.Identity.DirectoryManagement" = @("ge", "1.21.0")
     "Microsoft.Graph.Users"                        = @("ge", "1.21.0")
+    "Posh-ACME"                                    = @("ge", "4.23.0")
     "Poshstache"                                   = @("ge", "0.1.10")
     "Powershell-Yaml"                              = @("ge", "0.4.2")
 }

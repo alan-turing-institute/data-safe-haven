@@ -157,11 +157,12 @@ function Deploy-DataProtectionBackupPolicy {
             Edit-AzDataProtectionPolicyTriggerClientObject -Policy $Template `
                                                            -Schedule $Schedule
         } elseif ($DataSourcetype -eq 'blob') {
-            # Modify default for retention to 12 weeks
-            # Modifying the object directly seems required as,
-            # Adding New Retention Rule is not supported for AzureBlob datasource Type.
-            # Removing Default Retention Rule is not allowed. Please try again with different rule name.
-            $Template.PolicyRule.Lifecycle.DeleteAfterDuration = "P12W"
+            Edit-AzDataProtectionPolicyTriggerClientObject -Policy $Template -RemoveSchedule
+            # Change default retention period to 12 weeks
+            $lifeCycleOperationalTier = New-AzDataProtectionRetentionLifeCycleClientObject -SourceDataStore OperationalStore `
+                                                                                           -SourceRetentionDurationType Weeks `
+                                                                                           -SourceRetentionDurationCount 12
+            Edit-AzDataProtectionPolicyRetentionRuleClientObject -Policy $Template -Name Default -LifeCycles $lifeCycleOperationalTier -IsDefault $true -OverwriteLifeCycle $true
         }
         $Policy = New-AzDataProtectionBackupPolicy -ResourceGroupName $ResourceGroupName `
                                                    -VaultName $VaultName `

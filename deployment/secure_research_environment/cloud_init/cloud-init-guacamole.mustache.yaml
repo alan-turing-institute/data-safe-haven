@@ -84,6 +84,10 @@ write_files:
     content: |
       SRD Main;{{guacamole.ipAddressFirstSRD}}
 
+  - path: "/opt/configuration/docker_pat.txt"
+    permissions: "0400"
+    content: {{shm.dockerPassword}}
+
 # Set locale and timezone
 locale: en_GB.UTF-8
 timezone: {{sre.time.timezone.linux}}
@@ -170,7 +174,7 @@ runcmd:
   - sleep 1m
   - systemctl status docker
   - docker --version
-  - docker compose --version
+  - docker compose version
 
   # Set up the guacamoledaemon user
   - echo ">=== Configuring guacamoledaemon user... ===<"
@@ -197,6 +201,8 @@ runcmd:
 
   # Deploy Guacamole using Docker
   - echo ">=== Deploying Guacamole with Docker...  ===<"
+  - chown guacamoledaemon:guacamoledaemon /opt/configuration/docker_pat.txt  # Ensure that the file is owned by the codimddaemon user
+  - su guacamoledaemon -c "cat /opt/configuration/docker_pat.txt | docker login --username {{shm.dockerAccount}} --password-stdin"
   - su guacamoledaemon -c "docker compose -f /opt/guacamole/docker-compose.yaml up -d"
 
   # Generate the necessary SQL config for the local PostgreSQL database and run it
