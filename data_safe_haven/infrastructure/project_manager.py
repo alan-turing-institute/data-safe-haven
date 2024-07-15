@@ -17,6 +17,7 @@ from data_safe_haven.config import (
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenConfigError,
+    DataSafeHavenError,
     DataSafeHavenPulumiError,
 )
 from data_safe_haven.external import AzureSdk, PulumiAccount
@@ -119,7 +120,6 @@ class ProjectManager:
         if not self._stack:
             self.logger.debug(f"Creating/loading stack [green]{self.stack_name}[/].")
             try:
-
                 self._stack = automation.create_or_select_stack(
                     opts=automation.LocalWorkspaceOptions(
                         env_vars=self.account.env,
@@ -179,6 +179,54 @@ class ProjectManager:
                 f"No ongoing Pulumi operation found for stack [green]{self.stack.name}[/]."
             )
 
+    def cleanup(self) -> None:
+        """Cleanup deployed infrastructure."""
+        try:
+            azure_sdk = AzureSdk(self.context.subscription_name)
+            # Remove stack JSON
+            try:
+                self.logger.debug(f"Removing Pulumi stack [green]{self.stack_name}[/].")
+                if self._stack:
+                    self._stack.workspace.remove_stack(self.stack_name)
+                    self.logger.info(f"Removed Pulumi stack [green]{self.stack_name}[/].")
+            except automation.CommandError as exc:
+                self.log_exception(exc)
+                if "no stack named" not in str(exc):
+                    msg = "Pulumi stack could not be removed."
+                    raise DataSafeHavenPulumiError(msg) from exc
+            # Remove stack JSON backup
+            stack_backup_name = f"{self.stack_name}.json.bak"
+            try:
+                self.logger.debug(
+                    f"Removing Pulumi stack backup [green]{stack_backup_name}[/]."
+                )
+                if azure_sdk.blob_exists(
+                    blob_name=f".pulumi/stacks/{self.project_name}/{stack_backup_name}",
+                    resource_group_name=self.context.resource_group_name,
+                    storage_account_name=self.context.storage_account_name,
+                    storage_container_name=self.context.pulumi_storage_container_name,
+                ):
+                    azure_sdk.remove_blob(
+                        blob_name=f".pulumi/stacks/{self.project_name}/{stack_backup_name}",
+                        resource_group_name=self.context.resource_group_name,
+                        storage_account_name=self.context.storage_account_name,
+                        storage_container_name=self.context.pulumi_storage_container_name,
+                    )
+                    self.logger.info(
+                        f"Removed Pulumi stack backup [green]{stack_backup_name}[/]."
+                    )
+            except DataSafeHavenAzureError as exc:
+                if "blob does not exist" in str(exc):
+                    self.logger.warning(
+                        f"Pulumi stack backup [green]{stack_backup_name}[/] could not be removed."
+                    )
+                else:
+                    msg = "Pulumi stack backup could not be removed."
+                    raise DataSafeHavenPulumiError(msg) from exc
+        except DataSafeHavenError as exc:
+            msg = "Pulumi destroy failed."
+            raise DataSafeHavenPulumiError(msg) from exc
+
     def deploy(self, *, force: bool = False) -> None:
         """Deploy the infrastructure with Pulumi."""
         try:
@@ -217,42 +265,7 @@ class ProjectManager:
                     else:
                         msg = "Pulumi resource destruction failed."
                         raise DataSafeHavenPulumiError(msg) from exc
-            # Remove stack JSON
-            try:
-                self.logger.debug(f"Removing Pulumi stack [green]{self.stack_name}[/].")
-                if self._stack:
-                    self._stack.workspace.remove_stack(self.stack_name)
-                self.logger.info(f"Removed Pulumi stack [green]{self.stack_name}[/].")
-            except automation.CommandError as exc:
-                self.log_exception(exc)
-                if "no stack named" not in str(exc):
-                    msg = "Pulumi stack could not be removed."
-                    raise DataSafeHavenPulumiError(msg) from exc
-            # Remove stack JSON backup
-            stack_backup_name = f"{self.stack_name}.json.bak"
-            try:
-                self.logger.debug(
-                    f"Removing Pulumi stack backup [green]{stack_backup_name}[/]."
-                )
-                azure_sdk = AzureSdk(self.context.subscription_name)
-                azure_sdk.remove_blob(
-                    blob_name=f".pulumi/stacks/{self.project_name}/{stack_backup_name}",
-                    resource_group_name=self.context.resource_group_name,
-                    storage_account_name=self.context.storage_account_name,
-                    storage_container_name=self.context.pulumi_storage_container_name,
-                )
-                self.logger.debug(
-                    f"Removed Pulumi stack backup [green]{stack_backup_name}[/]."
-                )
-            except DataSafeHavenAzureError as exc:
-                if "blob does not exist" in str(exc):
-                    self.logger.warning(
-                        f"Pulumi stack backup [green]{stack_backup_name}[/] could not be found."
-                    )
-                else:
-                    msg = "Pulumi stack backup could not be removed."
-                    raise DataSafeHavenPulumiError(msg) from exc
-        except DataSafeHavenPulumiError as exc:
+        except DataSafeHavenError as exc:
             msg = "Pulumi destroy failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -353,10 +366,14 @@ class ProjectManager:
     def teardown(self, *, force: bool = False) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
         try:
-            self.refresh()
-            if force:
-                self.cancel()
-            self.destroy()
+            # Pulumi operations can fail if there's no stack, but we still want to run cleanup
+            try:
+                self.refresh()
+                if force:
+                    self.cancel()
+                self.destroy()
+            finally:
+                self.cleanup()
         except Exception as exc:
             self.log_exception(exc)
             msg = "Tearing down Pulumi infrastructure failed.."
