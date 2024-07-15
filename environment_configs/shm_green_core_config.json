@@ -26,5 +26,9 @@
     },
     "vmImages": {
         "subscriptionName": "[Prod] Safe Haven VM Images"
+    },
+    "docker": {
+        "account": "youraccountname",
+        "password": "dckr_pat_0o0o0o0o0o0o0o0o0o0o0o0o0o0"
     }
 }
