@@ -167,7 +167,7 @@ runcmd:
 
   # Set up the Nexus container
   - echo ">=== Creating Nexus container... ===<"
-  - chown nexusdaemon:nexusdaemon /opt/configuration/docker_pat.txt # Ensure that the file is owned by the nexusdaemon user
+  - chown nexusdaemon:nexusdaemon /opt/configuration/docker_pat.txt  # Ensure that the file is owned by the nexusdaemon user
   - su nexusdaemon -c "cat /opt/configuration/docker_pat.txt | docker login --username '{{dockerAccount}}' --password-stdin
     && docker compose -f /etc/nexus/docker-compose.yaml up -d"
 
