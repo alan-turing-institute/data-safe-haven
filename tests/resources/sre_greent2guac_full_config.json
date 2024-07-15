@@ -11,7 +11,7 @@
         }
       },
       "external_dns_resolver": "168.63.129.16",
-      "fqdn": "DC1-SHM-GREEN.green.develop.turingsafehaven.ac.uk",
+      "fqdn": "dc1-shm-green.green.develop.turingsafehaven.ac.uk",
       "hostname": "DC1-SHM-GREEN",
       "hostnameLower": "dc1-shm-green",
       "hostnameUpper": "DC1-SHM-GREEN",
@@ -23,7 +23,7 @@
       "vmSize": "Standard_D2s_v3"
     },
     "dcb": {
-      "fqdn": "DC2-SHM-GREEN.green.develop.turingsafehaven.ac.uk",
+      "fqdn": "dc2-shm-green.green.develop.turingsafehaven.ac.uk",
       "hostname": "DC2-SHM-GREEN",
       "ip": "10.0.0.5",
       "vmName": "DC2-SHM-GREEN"
@@ -33,6 +33,8 @@
       "rg": "RG_SHM_DNS_TEST",
       "subscriptionName": "[Prod] Safe Haven Domains"
     },
+    "dockerAccount": "youraccountname",
+    "dockerPassword": "dckr_pat_0o0o0o0o0o0o0o0o0o0o0o0o0o0",
     "domain": {
       "dn": "DC=green,DC=develop,DC=turingsafehaven,DC=ac,DC=uk",
       "fqdn": "green.develop.turingsafehaven.ac.uk",
@@ -129,6 +131,9 @@
             "185.125.190.18",
             "185.125.190.36",
             "185.125.190.39",
+            "185.125.190.81",
+            "185.125.190.82",
+            "185.125.190.83",
             "103.21.244.0/22",
             "103.22.200.0/22",
             "103.31.4.0/22",
@@ -1274,7 +1279,7 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GUACAMOLE-SRE-T2GUAC.green.develop.turingsafehaven.ac.uk",
+        "fqdn": "guacamole-sre-t2guac.green.develop.turingsafehaven.ac.uk",
         "hostname": "GUACAMOLE-SRE-T2GUAC",
         "ip": "10.152.1.4",
         "vmName": "GUACAMOLE-SRE-T2GUAC",
@@ -1439,7 +1444,7 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "CODIMD.t2guac.green.develop.turingsafehaven.ac.uk",
+        "fqdn": "codimd.t2guac.green.develop.turingsafehaven.ac.uk",
         "hostname": "CODIMD",
         "ip": "10.152.5.6",
         "osVersion": "Ubuntu-latest",
@@ -1462,7 +1467,7 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GITLAB.t2guac.green.develop.turingsafehaven.ac.uk",
+        "fqdn": "gitlab.t2guac.green.develop.turingsafehaven.ac.uk",
         "hostname": "GITLAB",
         "ip": "10.152.5.5",
         "osVersion": "Ubuntu-latest",
