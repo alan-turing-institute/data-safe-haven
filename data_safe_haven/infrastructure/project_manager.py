@@ -21,7 +21,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenPulumiError,
 )
 from data_safe_haven.external import AzureSdk, PulumiAccount
-from data_safe_haven.functions import replace_separators
+from data_safe_haven.functions import get_key_vault_name, replace_separators
 from data_safe_haven.logging import from_ansi, get_console_handler, get_logger
 
 from .programs import DeclarativeSRE
@@ -188,7 +188,9 @@ class ProjectManager:
                 self.logger.debug(f"Removing Pulumi stack [green]{self.stack_name}[/].")
                 if self._stack:
                     self._stack.workspace.remove_stack(self.stack_name)
-                    self.logger.info(f"Removed Pulumi stack [green]{self.stack_name}[/].")
+                    self.logger.info(
+                        f"Removed Pulumi stack [green]{self.stack_name}[/]."
+                    )
             except automation.CommandError as exc:
                 self.log_exception(exc)
                 if "no stack named" not in str(exc):
@@ -223,6 +225,11 @@ class ProjectManager:
                 else:
                     msg = "Pulumi stack backup could not be removed."
                     raise DataSafeHavenPulumiError(msg) from exc
+            # Purge the key vault, which otherwise blocks re-use of this SRE name
+            key_vault_name = get_key_vault_name(self.stack_name)
+            self.logger.debug(f"Purging Azure Key Vault [green]{key_vault_name}[/].")
+            azure_sdk.purge_keyvault(key_vault_name, self.program.config.azure.location)
+            self.logger.info(f"Purged Azure Key Vault [green]{key_vault_name}[/].")
         except DataSafeHavenError as exc:
             msg = "Pulumi destroy failed."
             raise DataSafeHavenPulumiError(msg) from exc
