@@ -35,8 +35,8 @@
 | data\_safe\_haven/exceptions/\_\_init\_\_.py                                      |       29 |        0 |    100% |           |
 | data\_safe\_haven/external/\_\_init\_\_.py                                        |        7 |        0 |    100% |           |
 | data\_safe\_haven/external/api/\_\_init\_\_.py                                    |        0 |        0 |    100% |           |
-| data\_safe\_haven/external/api/azure\_sdk.py                                      |      406 |      297 |     27% |123-134, 187-191, 193-194, 214-242, 260-283, 299-322, 339-399, 414-436, 452-470, 483-512, 529-554, 571-589, 603-612, 645-657, 665-678, 698-715, 717-718, 747-775, 778-803, 815-840, 857-878, 891-922, 934-987, 995-1031, 1048-1083, 1100-1119, 1133-1164, 1182-1196 |
-| data\_safe\_haven/external/api/credentials.py                                     |       78 |        0 |    100% |           |
+| data\_safe\_haven/external/api/azure\_sdk.py                                      |      411 |      297 |     28% |122-133, 193-197, 199-200, 220-248, 266-289, 305-328, 345-405, 420-441, 457-475, 488-517, 534-559, 576-596, 610-619, 652-665, 673-686, 706-723, 725-726, 755-783, 786-811, 823-848, 865-886, 899-930, 942-995, 1003-1039, 1056-1091, 1108-1127, 1141-1173, 1191-1205 |
+| data\_safe\_haven/external/api/credentials.py                                     |       81 |        0 |    100% |           |
 | data\_safe\_haven/external/api/graph\_api.py                                      |      415 |      318 |     23% |99, 113-114, 116-118, 130-155, 169-252, 265-304, 312-338, 348-374, 387-441, 452-466, 469-476, 481-488, 491-500, 503-512, 535-543, 558-599, 614-663, 674-690, 716-717, 748-749, 760-776, 787-804, 815-824, 837-847, 861-863, 877-884, 888-897, 910-947, 958-967, 979-1002, 1012-1065 |
 | data\_safe\_haven/external/interface/\_\_init\_\_.py                              |        0 |        0 |    100% |           |
 | data\_safe\_haven/external/interface/azure\_container\_instance.py                |       56 |       39 |     30% |26-29, 33-34, 38-47, 52-90, 100-125 |
@@ -98,7 +98,7 @@
 | data\_safe\_haven/serialisers/yaml\_serialisable\_model.py                        |       43 |        0 |    100% |           |
 | data\_safe\_haven/types/\_\_init\_\_.py                                           |        4 |        0 |    100% |           |
 | data\_safe\_haven/types/annotated\_types.py                                       |       18 |        0 |    100% |           |
-| data\_safe\_haven/types/enums.py                                                  |       85 |        0 |    100% |           |
+| data\_safe\_haven/types/enums.py                                                  |       90 |        0 |    100% |           |
 | data\_safe\_haven/types/types.py                                                  |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/\_\_init\_\_.py                                         |        2 |        0 |    100% |           |
 | data\_safe\_haven/utility/file\_reader.py                                         |       20 |        9 |     55% |16-17, 21, 25-30, 33 |
@@ -106,7 +106,7 @@
 | data\_safe\_haven/validators/typer.py                                             |       23 |        0 |    100% |           |
 | data\_safe\_haven/validators/validators.py                                        |       64 |        0 |    100% |           |
 | data\_safe\_haven/version.py                                                      |        2 |        0 |    100% |           |
-|                                                                         **TOTAL** | **4306** | **2125** | **51%** |           |
+|                                                                         **TOTAL** | **4319** | **2125** | **51%** |           |
 
 
 ## Setup coverage badge
