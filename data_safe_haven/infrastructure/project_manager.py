@@ -373,14 +373,11 @@ class ProjectManager:
     def teardown(self, *, force: bool = False) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
         try:
-            # Pulumi operations can fail if there's no stack, but we still want to run cleanup
-            try:
-                self.refresh()
-                if force:
-                    self.cancel()
-                self.destroy()
-            finally:
-                self.cleanup()
+            self.refresh()
+            if force:
+                self.cancel()
+            self.destroy()
+            self.cleanup()
         except Exception as exc:
             self.log_exception(exc)
             msg = "Tearing down Pulumi infrastructure failed.."
