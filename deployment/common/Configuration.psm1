@@ -83,7 +83,9 @@ function Get-ShmConfig {
         vmImagesRgPrefix    = $shmConfigBase.vmImages.rgPrefix ? $shmConfigBase.vmImages.rgPrefix : "RG_VMIMAGES"
         storageTypeDefault  = "Standard_GRS"
         diskTypeDefault     = "Standard_LRS"
-}
+        dockerAccount       = $shmConfigBase.docker.account ? $shmConfigBase.docker.account : "NA"
+        dockerPassword      = $shmConfigBase.docker.password ? $shmConfigBase.docker.password : "NA"
+    }
     # For normal usage this does not need to be user-configurable.
     # However, if you are migrating an existing SHM you will need to ensure that the address spaces of the SHMs do not overlap
     $shmIpPrefix = $shmConfigBase.overrides.ipPrefix ? $shmConfigBase.overrides.ipPrefix : "10.0.0"
@@ -327,7 +329,7 @@ function Get-ShmConfig {
             externalIpAddresses = [ordered]@{
                 linux   = (
                     @("72.32.157.246", "87.238.57.227", "147.75.85.69", "217.196.149.55") + # apt.postgresql.org
-                    @("91.189.91.38", "91.189.91.39", "91.189.91.48", "91.189.91.49", "91.189.91.81", "91.189.91.82", "91.189.91.83", "185.125.190.17", "185.125.190.18", "185.125.190.36", "185.125.190.39") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
+                    @("91.189.91.38", "91.189.91.39", "91.189.91.48", "91.189.91.49", "91.189.91.81", "91.189.91.82", "91.189.91.83", "185.125.190.17", "185.125.190.18", "185.125.190.36", "185.125.190.39", "185.125.190.81", "185.125.190.82", "185.125.190.83") + # archive.ubuntu.com, changelogs.ubuntu.com, security.ubuntu.com
                     $cloudFlareIpAddresses + # database.clamav.net, packages.gitlab.com and qgis.org use Cloudflare
                     $cloudFrontIpAddresses + # packages.gitlab.com uses Cloudfront to host its Release file
                     @("104.131.190.124") + # dbeaver.io
