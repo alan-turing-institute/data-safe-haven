@@ -167,18 +167,18 @@ parver==0.5
     # via
     #   pulumi-azure-native
     #   pulumi-random
-portalocker==2.10.0
+portalocker==2.10.1
     # via msal-extensions
 protobuf==4.25.3
     # via pulumi
 psycopg==3.2.1
     # via data-safe-haven (pyproject.toml)
-pulumi==3.122.0
+pulumi==3.124.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.48.0
+pulumi-azure-native==2.49.1
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.3
     # via data-safe-haven (pyproject.toml)
@@ -192,8 +192,8 @@ pygments==2.18.0
     # via rich
 pyjwt[crypto]==2.8.0
     # via
+    #   data-safe-haven (pyproject.toml)
     #   msal
-    #   pyjwt
 pyopenssl==24.1.0
     # via
     #   acme
