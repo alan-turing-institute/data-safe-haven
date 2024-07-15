@@ -197,8 +197,8 @@ class ProjectManager:
                     msg = "Pulumi stack could not be removed."
                     raise DataSafeHavenPulumiError(msg) from exc
             # Remove stack JSON backup
-            stack_backup_name = f"{self.stack_name}.json.bak"
             try:
+                stack_backup_name = f"{self.stack_name}.json.bak"
                 self.logger.debug(
                     f"Removing Pulumi stack backup [green]{stack_backup_name}[/]."
                 )
@@ -227,9 +227,13 @@ class ProjectManager:
                     raise DataSafeHavenPulumiError(msg) from exc
             # Purge the key vault, which otherwise blocks re-use of this SRE name
             key_vault_name = get_key_vault_name(self.stack_name)
-            self.logger.debug(f"Purging Azure Key Vault [green]{key_vault_name}[/].")
-            azure_sdk.purge_keyvault(key_vault_name, self.program.config.azure.location)
-            self.logger.info(f"Purged Azure Key Vault [green]{key_vault_name}[/].")
+            self.logger.debug(
+                f"Attempting to purge Azure Key Vault [green]{key_vault_name}[/]."
+            )
+            if azure_sdk.purge_keyvault(
+                key_vault_name, self.program.config.azure.location
+            ):
+                self.logger.info(f"Purged Azure Key Vault [green]{key_vault_name}[/].")
         except DataSafeHavenError as exc:
             msg = "Pulumi destroy failed."
             raise DataSafeHavenPulumiError(msg) from exc

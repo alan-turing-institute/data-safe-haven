@@ -814,8 +814,12 @@ class AzureSdk:
         self,
         key_vault_name: str,
         location: str,
-    ) -> None:
+    ) -> bool:
         """Purge a deleted Key Vault from Azure
+
+        Returns:
+            True: if the Key Vault was purged from a deleted state
+            False: if the Key Vault did not need to be purged
 
         Raises:
             DataSafeHavenAzureError if the non-existence of the Key Vault could not be verified
@@ -836,7 +840,7 @@ class AzureSdk:
                 self.logger.info(
                     f"Key Vault [green]{key_vault_name}[/] does not need to be purged."
                 )
-                return
+                return False
 
             # Purge the Key Vault
             with suppress(HttpResponseError):
@@ -861,6 +865,7 @@ class AzureSdk:
                     msg = f"Key Vault '{key_vault_name}' exists in deleted state."
                     raise AzureError(msg)
             self.logger.info(f"Purged Key Vault [green]{key_vault_name}[/].")
+            return True
         except AzureError as exc:
             msg = f"Failed to remove Key Vault '{key_vault_name}'."
             raise DataSafeHavenAzureError(msg) from exc
