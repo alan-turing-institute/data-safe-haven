@@ -19,7 +19,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenConfigError,
     DataSafeHavenPulumiError,
 )
-from data_safe_haven.external import AzureApi, PulumiAccount
+from data_safe_haven.external import AzureSdk, PulumiAccount
 from data_safe_haven.functions import replace_separators
 from data_safe_haven.logging import from_ansi, get_console_handler, get_logger
 
@@ -45,26 +45,23 @@ class ProjectManager:
         *,
         create_project: bool,
     ) -> None:
-        self.context = context
-        self.pulumi_config = pulumi_config
-        self.pulumi_project_name = pulumi_project_name
-        self.program = program
-        self.create_project = create_project
-
+        self._options: dict[str, tuple[str, bool, bool]] = {}
+        self._pulumi_project: DSHPulumiProject | None = None
+        self._stack: automation.Stack | None = None
+        self._stack_outputs: automation.OutputMap | None = None
         self.account = PulumiAccount(
             resource_group_name=context.resource_group_name,
             storage_account_name=context.storage_account_name,
             subscription_name=context.subscription_name,
         )
+        self.context = context
+        self.create_project = create_project
         self.logger = get_logger()
-        self._stack: automation.Stack | None = None
-        self.stack_outputs_: automation.OutputMap | None = None
-        self.options: dict[str, tuple[str, bool, bool]] = {}
+        self.program = program
         self.project_name = replace_separators(context.tags["project"].lower(), "-")
-        self._pulumi_project: DSHPulumiProject | None = None
+        self.pulumi_config = pulumi_config
+        self.pulumi_project_name = pulumi_project_name
         self.stack_name = self.program.stack_name
-
-        self.install_plugins()
 
     @property
     def pulumi_extra_args(self) -> dict[str, Any]:
@@ -122,6 +119,7 @@ class ProjectManager:
         if not self._stack:
             self.logger.debug(f"Creating/loading stack [green]{self.stack_name}[/].")
             try:
+
                 self._stack = automation.create_or_select_stack(
                     opts=automation.LocalWorkspaceOptions(
                         env_vars=self.account.env,
@@ -135,30 +133,29 @@ class ProjectManager:
                 )
                 self.logger.info(f"Loaded stack [green]{self.stack_name}[/].")
                 # Ensure encrypted key is stored in the Pulumi configuration
-                self.update_dsh_pulumi_config()
+                self.update_dsh_pulumi_encrypted_key(self._stack.workspace)
+                # Ensure workspace plugins are installed
+                self.install_plugins(self._stack.workspace)
             except automation.CommandError as exc:
+                self.log_exception(exc)
                 msg = f"Could not load Pulumi stack {self.stack_name}."
                 raise DataSafeHavenPulumiError(msg) from exc
         return self._stack
 
     def add_option(self, name: str, value: str, *, replace: bool) -> None:
         """Add a public configuration option"""
-        self.options[name] = (value, False, replace)
-
-    def add_secret(self, name: str, value: str, *, replace: bool) -> None:
-        """Add a secret configuration option if it does not exist"""
-        self.options[name] = (value, True, replace)
+        self._options[name] = (value, False, replace)
 
     def apply_config_options(self) -> None:
         """Set Pulumi config options"""
         try:
             self.logger.debug("Updating Pulumi configuration")
-            for name, (value, is_secret, replace) in self.options.items():
+            for name, (value, is_secret, replace) in self._options.items():
                 if replace:
                     self.set_config(name, value, secret=is_secret)
                 else:
                     self.ensure_config(name, value, secret=is_secret)
-            self.options = {}
+            self._options = {}
         except Exception as exc:
             msg = "Applying Pulumi configuration options failed.."
             raise DataSafeHavenPulumiError(msg) from exc
@@ -170,18 +167,17 @@ class ProjectManager:
                 f"Cancelling ongoing Pulumi operation for stack [green]{self.stack.name}[/]."
             )
             self.stack.cancel()
+            self.logger.warning(
+                f"Removing any ambiguous Pulumi resources from stack [green]{self.stack.name}[/]."
+            )
+            self.run_pulumi_command("refresh --clear-pending-creates --yes")
+            self.logger.warning(
+                "If you see '[bold]cannot create already existing resource[/]' errors, please manually delete these resources from Azure."
+            )
         except automation.CommandError:
             self.logger.error(
                 f"No ongoing Pulumi operation found for stack [green]{self.stack.name}[/]."
             )
-
-    def copy_option(self, name: str, other_stack: "ProjectManager") -> None:
-        """Copy a public configuration option from another Pulumi stack"""
-        self.add_option(name, other_stack.secret(name), replace=True)
-
-    def copy_secret(self, name: str, other_stack: "ProjectManager") -> None:
-        """Copy a secret configuration option from another Pulumi stack"""
-        self.add_secret(name, other_stack.secret(name), replace=True)
 
     def deploy(self, *, force: bool = False) -> None:
         """Deploy the infrastructure with Pulumi."""
@@ -228,6 +224,7 @@ class ProjectManager:
                     self._stack.workspace.remove_stack(self.stack_name)
                 self.logger.info(f"Removed Pulumi stack [green]{self.stack_name}[/].")
             except automation.CommandError as exc:
+                self.log_exception(exc)
                 if "no stack named" not in str(exc):
                     msg = "Pulumi stack could not be removed."
                     raise DataSafeHavenPulumiError(msg) from exc
@@ -237,8 +234,8 @@ class ProjectManager:
                 self.logger.debug(
                     f"Removing Pulumi stack backup [green]{stack_backup_name}[/]."
                 )
-                azure_api = AzureApi(self.context.subscription_name)
-                azure_api.remove_blob(
+                azure_sdk = AzureSdk(self.context.subscription_name)
+                azure_sdk.remove_blob(
                     blob_name=f".pulumi/stacks/{self.project_name}/{stack_backup_name}",
                     resource_group_name=self.context.resource_group_name,
                     storage_account_name=self.context.storage_account_name,
@@ -275,28 +272,31 @@ class ProjectManager:
             msg = "Pulumi operation failed."
             raise DataSafeHavenPulumiError(msg)
 
-    def install_plugins(self) -> None:
+    def install_plugins(self, workspace: automation.Workspace) -> None:
         """For inline programs, we must manage plugins ourselves."""
         try:
             self.logger.debug("Installing required Pulumi plugins")
-            self.stack.workspace.install_plugin(
+            workspace.install_plugin(
                 "azure-native", metadata.version("pulumi-azure-native")
             )
-            self.stack.workspace.install_plugin(
-                "random", metadata.version("pulumi-random")
-            )
+            workspace.install_plugin("random", metadata.version("pulumi-random"))
         except Exception as exc:
             msg = "Installing Pulumi plugins failed.."
             raise DataSafeHavenPulumiError(msg) from exc
+
+    def log_exception(self, exc: automation.CommandError) -> None:
+        with suppress(IndexError):
+            stderr = str(exc).split("\n")[3].replace(" stderr: ", "")
+            self.log_message(f"Pulumi output: {stderr}")
 
     def log_message(self, message: str) -> None:
         return from_ansi(self.logger, message)
 
     def output(self, name: str) -> Any:
         """Get a named output value from a stack"""
-        if not self.stack_outputs_:
-            self.stack_outputs_ = self.stack.outputs()
-        return self.stack_outputs_[name].value
+        if not self._stack_outputs:
+            self._stack_outputs = self.stack.outputs()
+        return self._stack_outputs[name].value
 
     def preview(self) -> None:
         """Preview the Pulumi stack."""
@@ -322,6 +322,7 @@ class ProjectManager:
             # Note that we disable parallelisation which can cause deadlock
             self.stack.refresh(parallel=1, **self.pulumi_extra_args)
         except automation.CommandError as exc:
+            self.log_exception(exc)
             msg = "Pulumi refresh failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -331,6 +332,7 @@ class ProjectManager:
             result = self.stack._run_pulumi_cmd_sync(command.split())
             return str(result.stdout)
         except automation.CommandError as exc:
+            self.log_exception(exc)
             msg = "Failed to run command."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -339,6 +341,7 @@ class ProjectManager:
         try:
             return str(self.stack.get_config(name).value)
         except automation.CommandError as exc:
+            self.log_exception(exc)
             msg = f"Secret '{name}' was not found."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -347,13 +350,15 @@ class ProjectManager:
         self.stack.set_config(name, automation.ConfigValue(value=value, secret=secret))
         self.update_dsh_pulumi_project()
 
-    def teardown(self) -> None:
+    def teardown(self, *, force: bool = False) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
         try:
             self.refresh()
+            if force:
+                self.cancel()
             self.destroy()
-            self.update_dsh_pulumi_project()
         except Exception as exc:
+            self.log_exception(exc)
             msg = "Tearing down Pulumi infrastructure failed.."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -367,6 +372,7 @@ class ProjectManager:
             self.evaluate(result.summary.result)
             self.update_dsh_pulumi_project()
         except automation.CommandError as exc:
+            self.log_exception(exc)
             msg = "Pulumi update failed."
             raise DataSafeHavenPulumiError(msg) from exc
 
@@ -377,13 +383,11 @@ class ProjectManager:
         }
         self.pulumi_project.stack_config = all_config_dict
 
-    def update_dsh_pulumi_config(self) -> None:
-        """Update persistent data in the DSHPulumiProject object"""
-        stack_key = self.stack.workspace.stack_settings(
-            stack_name=self.stack_name
-        ).encrypted_key
+    def update_dsh_pulumi_encrypted_key(self, workspace: automation.Workspace) -> None:
+        """Update encrypted key in the DSHPulumiProject object"""
+        stack_key = workspace.stack_settings(stack_name=self.stack_name).encrypted_key
 
-        if self.pulumi_config.encrypted_key is None:
+        if not self.pulumi_config.encrypted_key:
             self.pulumi_config.encrypted_key = stack_key
         elif self.pulumi_config.encrypted_key != stack_key:
             msg = "Stack encrypted key does not match project encrypted key"

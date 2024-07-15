@@ -15,6 +15,7 @@ from data_safe_haven.types import (
     Fqdn,
     Guid,
     IpAddress,
+    SafeString,
     SoftwarePackageCategory,
     TimeZone,
     UniqueList,
@@ -25,6 +26,11 @@ class ConfigSectionAzure(BaseModel, validate_assignment=True):
     location: AzureLocation
     subscription_id: Guid
     tenant_id: Guid
+
+
+class ConfigSectionDockerHub(BaseModel, validate_assignment=True):
+    access_token: SafeString
+    username: SafeString
 
 
 class ConfigSectionSHM(BaseModel, validate_assignment=True):

@@ -4,7 +4,7 @@ from shutil import which
 from typing import Any
 
 from data_safe_haven.exceptions import DataSafeHavenPulumiError
-from data_safe_haven.external import AzureApi, AzureCliSingleton
+from data_safe_haven.external import AzureSdk
 
 
 class PulumiAccount:
@@ -26,16 +26,12 @@ class PulumiAccount:
             msg = "Unable to find Pulumi CLI executable in your path.\nPlease ensure that Pulumi is installed"
             raise DataSafeHavenPulumiError(msg)
 
-        # Ensure Azure CLI account is correct
-        # This will be needed to populate env
-        AzureCliSingleton().confirm()
-
     @property
     def env(self) -> dict[str, Any]:
         """Get necessary Pulumi environment variables"""
         if not self._env:
-            azure_api = AzureApi(self.subscription_name)
-            storage_account_keys = azure_api.get_storage_account_keys(
+            azure_sdk = AzureSdk(self.subscription_name)
+            storage_account_keys = azure_sdk.get_storage_account_keys(
                 self.resource_group_name,
                 self.storage_account_name,
             )

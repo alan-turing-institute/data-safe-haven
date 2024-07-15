@@ -12,9 +12,8 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenAzureError,
 )
-from data_safe_haven.external import AzureApi, GraphApi
-from data_safe_haven.external.interface.azure_authenticator import AzureAuthenticator
-from data_safe_haven.infrastructure import ImperativeSHM
+from data_safe_haven.external import AzureSdk, GraphApi
+from data_safe_haven.infrastructure import ImperativeSHM, SREProjectManager
 
 
 @fixture
@@ -23,22 +22,8 @@ def context(context_yaml) -> Context:
 
 
 @fixture
-def mock_azure_api_blob_exists_false(mocker):
-    mocker.patch.object(AzureApi, "blob_exists", return_value=False)
-
-
-@fixture
-def mock_azure_authenticator_login_exception(mocker):
-    def login_then_exit():
-        print("mock login")  # noqa: T201
-        msg = "mock login error"
-        raise DataSafeHavenAzureAPIAuthenticationError(msg)
-
-    mocker.patch.object(
-        AzureAuthenticator,
-        "login",
-        side_effect=login_then_exit,
-    )
+def mock_azure_sdk_blob_exists_false(mocker):
+    mocker.patch.object(AzureSdk, "blob_exists", return_value=False)
 
 
 @fixture
@@ -49,10 +34,8 @@ def mock_graph_api_add_custom_domain(mocker):
 
 
 @fixture
-def mock_graph_api_create_token_administrator(mocker):
-    mocker.patch.object(
-        GraphApi, "create_token_administrator", return_value="dummy-token"
-    )
+def mock_graph_api_token(mocker):
+    mocker.patch.object(GraphApi, "token", return_value="dummy-token")
 
 
 @fixture
@@ -93,8 +76,20 @@ def mock_imperative_shm_teardown_then_exit(mocker):
 
 
 @fixture
+def mock_ip_1_2_3_4(requests_mock):
+    requests_mock.get("https://api.ipify.org", text="1.2.3.4")
+
+
+@fixture
 def mock_pulumi_config_from_remote(mocker, pulumi_config):
     mocker.patch.object(DSHPulumiConfig, "from_remote", return_value=pulumi_config)
+
+
+@fixture
+def mock_pulumi_config_from_remote_or_create(mocker, pulumi_config_empty):
+    mocker.patch.object(
+        DSHPulumiConfig, "from_remote_or_create", return_value=pulumi_config_empty
+    )
 
 
 @fixture
@@ -102,6 +97,11 @@ def mock_pulumi_config_no_key_from_remote(mocker, pulumi_config_no_key):
     mocker.patch.object(
         DSHPulumiConfig, "from_remote", return_value=pulumi_config_no_key
     )
+
+
+@fixture
+def mock_pulumi_config_upload(mocker):
+    mocker.patch.object(DSHPulumiConfig, "upload", return_value=None)
 
 
 @fixture
@@ -142,6 +142,34 @@ def mock_sre_config_from_remote(mocker, sre_config):
 def mock_sre_config_alternate_from_remote(mocker, sre_config_alternate):
     mocker.patch.object(
         SREConfig, "from_remote_by_name", return_value=sre_config_alternate
+    )
+
+
+@fixture
+def mock_sre_project_manager_deploy_then_exit(mocker):
+    def create_then_exit(*args, **kwargs):  # noqa: ARG001
+        print("mock deploy")  # noqa: T201
+        msg = "mock deploy error"
+        raise DataSafeHavenAzureAPIAuthenticationError(msg)
+
+    mocker.patch.object(
+        SREProjectManager,
+        "deploy",
+        side_effect=create_then_exit,
+    )
+
+
+@fixture
+def mock_sre_project_manager_teardown_then_exit(mocker):
+    def teardown_then_exit(*args, **kwargs):  # noqa: ARG001
+        print("mock teardown")  # noqa: T201
+        msg = "mock teardown error"
+        raise DataSafeHavenAzureAPIAuthenticationError(msg)
+
+    mocker.patch.object(
+        SREProjectManager,
+        "teardown",
+        side_effect=teardown_then_exit,
     )
 
 

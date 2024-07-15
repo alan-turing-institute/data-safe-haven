@@ -17,7 +17,7 @@ from pulumi.dynamic import CreateResult, DiffResult, Resource
 from simple_acme_dns import ACMEClient
 
 from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenSSLError
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 
 from .dsh_resource_provider import DshResourceProvider
 
@@ -43,24 +43,6 @@ class SSLCertificateProps:
 
 
 class SSLCertificateProvider(DshResourceProvider):
-    @staticmethod
-    def refresh(props: dict[str, Any]) -> dict[str, Any]:
-        try:
-            outs = dict(**props)
-            with suppress(DataSafeHavenAzureError):
-                azure_api = AzureApi(outs["subscription_name"])
-                certificate = azure_api.get_keyvault_certificate(
-                    outs["certificate_secret_name"], outs["key_vault_name"]
-                )
-                if certificate.secret_id:
-                    outs["secret_id"] = certificate.secret_id
-            return outs
-        except Exception as exc:
-            cert_name = f"[green]{props['certificate_secret_name']}[/]"
-            domain_name = f"[green]{props['domain_name']}[/]"
-            msg = f"Failed to refresh SSL certificate {cert_name} for {domain_name}."
-            raise DataSafeHavenSSLError(msg) from exc
-
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Create new SSL certificate."""
         outs = dict(**props)
@@ -78,10 +60,10 @@ class SSLCertificateProvider(DshResourceProvider):
             private_key_bytes = client.generate_private_key(key_type="rsa2048")
             client.generate_csr()
             # Request DNS verification tokens and add them to the DNS record
-            azure_api = AzureApi(props["subscription_name"])
+            azure_sdk = AzureSdk(props["subscription_name"])
             verification_tokens = client.request_verification_tokens().items()
             for record_name, record_values in verification_tokens:
-                record_set = azure_api.ensure_dns_txt_record(
+                record_set = azure_sdk.ensure_dns_txt_record(
                     record_name=record_name.replace(f".{props['domain_name']}", ""),
                     record_value=record_values[0],
                     resource_group_name=props["networking_resource_group_name"],
@@ -131,7 +113,7 @@ class SSLCertificateProvider(DshResourceProvider):
                 NoEncryption(),
             )
             # Add certificate to KeyVault
-            kvcert = azure_api.import_keyvault_certificate(
+            kvcert = azure_sdk.import_keyvault_certificate(
                 certificate_name=props["certificate_secret_name"],
                 certificate_contents=pfx_bytes,
                 key_vault_name=props["key_vault_name"],
@@ -153,14 +135,14 @@ class SSLCertificateProvider(DshResourceProvider):
         id(id_)
         try:
             # Remove the DNS record
-            azure_api = AzureApi(props["subscription_name"])
-            azure_api.remove_dns_txt_record(
+            azure_sdk = AzureSdk(props["subscription_name"])
+            azure_sdk.remove_dns_txt_record(
                 record_name="_acme_challenge",
                 resource_group_name=props["networking_resource_group_name"],
                 zone_name=props["domain_name"],
             )
             # Remove the Key Vault certificate
-            azure_api.remove_keyvault_certificate(
+            azure_sdk.remove_keyvault_certificate(
                 certificate_name=props["certificate_secret_name"],
                 key_vault_name=props["key_vault_name"],
             )
@@ -180,6 +162,23 @@ class SSLCertificateProvider(DshResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         return self.partial_diff(old_props, new_props, [])
+
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
+        try:
+            outs = dict(**props)
+            with suppress(DataSafeHavenAzureError, KeyError):
+                azure_sdk = AzureSdk(outs["subscription_name"])
+                certificate = azure_sdk.get_keyvault_certificate(
+                    outs["certificate_secret_name"], outs["key_vault_name"]
+                )
+                if certificate.secret_id:
+                    outs["secret_id"] = certificate.secret_id
+            return outs
+        except Exception as exc:
+            cert_name = f"[green]{props['certificate_secret_name']}[/]"
+            domain_name = f"[green]{props['domain_name']}[/]"
+            msg = f"Failed to refresh SSL certificate {cert_name} for {domain_name}."
+            raise DataSafeHavenSSLError(msg) from exc
 
 
 class SSLCertificate(Resource):

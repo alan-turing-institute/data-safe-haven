@@ -3,7 +3,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenMicrosoftGraphError,
 )
-from data_safe_haven.external import AzureApi, GraphApi
+from data_safe_haven.external import AzureSdk, GraphApi
 from data_safe_haven.logging import get_logger
 
 
@@ -11,23 +11,23 @@ class ImperativeSHM:
     """Azure resources to support Data Safe Haven context"""
 
     def __init__(self, context: Context, config: SHMConfig) -> None:
-        self.azure_api_: AzureApi | None = None
+        self.azure_sdk_: AzureSdk | None = None
         self.config = config
         self.context = context
         self.tags = {"component": "SHM"} | context.tags
 
     @property
-    def azure_api(self) -> AzureApi:
+    def azure_sdk(self) -> AzureSdk:
         """Load AzureAPI on demand
 
         Returns:
-            AzureApi: An initialised AzureApi object
+            AzureSdk: An initialised AzureSdk object
         """
-        if not self.azure_api_:
-            self.azure_api_ = AzureApi(
+        if not self.azure_sdk_:
+            self.azure_sdk_ = AzureSdk(
                 subscription_name=self.context.subscription_name,
             )
-        return self.azure_api_
+        return self.azure_sdk_
 
     def deploy(self) -> None:
         """Deploy all desired resources
@@ -39,7 +39,7 @@ class ImperativeSHM:
         logger.info(f"Preparing to deploy [green]{self.context.description}[/] SHM.")
         # Deploy the resources needed by Pulumi
         try:
-            resource_group = self.azure_api.ensure_resource_group(
+            resource_group = self.azure_sdk.ensure_resource_group(
                 location=self.config.azure.location,
                 resource_group_name=self.context.resource_group_name,
                 tags=self.tags,
@@ -47,12 +47,12 @@ class ImperativeSHM:
             if not resource_group.name:
                 msg = f"Resource group '{self.context.resource_group_name}' was not created."
                 raise DataSafeHavenAzureError(msg)
-            identity = self.azure_api.ensure_managed_identity(
+            identity = self.azure_sdk.ensure_managed_identity(
                 identity_name=self.context.managed_identity_name,
                 location=resource_group.location,
                 resource_group_name=resource_group.name,
             )
-            storage_account = self.azure_api.ensure_storage_account(
+            storage_account = self.azure_sdk.ensure_storage_account(
                 location=resource_group.location,
                 resource_group_name=resource_group.name,
                 storage_account_name=self.context.storage_account_name,
@@ -61,17 +61,17 @@ class ImperativeSHM:
             if not storage_account.name:
                 msg = f"Storage account '{self.context.storage_account_name}' was not created."
                 raise DataSafeHavenAzureError(msg)
-            _ = self.azure_api.ensure_storage_blob_container(
+            _ = self.azure_sdk.ensure_storage_blob_container(
                 container_name=self.context.storage_container_name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account.name,
             )
-            _ = self.azure_api.ensure_storage_blob_container(
+            _ = self.azure_sdk.ensure_storage_blob_container(
                 container_name=self.context.pulumi_storage_container_name,
                 resource_group_name=resource_group.name,
                 storage_account_name=storage_account.name,
             )
-            keyvault = self.azure_api.ensure_keyvault(
+            keyvault = self.azure_sdk.ensure_keyvault(
                 admin_group_id=self.config.shm.admin_group_id,
                 key_vault_name=self.context.key_vault_name,
                 location=resource_group.location,
@@ -82,7 +82,7 @@ class ImperativeSHM:
             if not keyvault.name:
                 msg = f"Keyvault '{self.context.key_vault_name}' was not created."
                 raise DataSafeHavenAzureError(msg)
-            self.azure_api.ensure_keyvault_key(
+            self.azure_sdk.ensure_keyvault_key(
                 key_name=self.context.pulumi_encryption_key_name,
                 key_vault_name=keyvault.name,
             )
@@ -92,7 +92,7 @@ class ImperativeSHM:
 
         # Deploy common resources that will be needed by SREs
         try:
-            zone = self.azure_api.ensure_dns_zone(
+            zone = self.azure_sdk.ensure_dns_zone(
                 resource_group_name=resource_group.name,
                 zone_name=self.config.shm.fqdn,
                 tags=self.tags,
@@ -101,7 +101,7 @@ class ImperativeSHM:
                 msg = f"DNS zone '{self.config.shm.fqdn}' was not created."
                 raise DataSafeHavenAzureError(msg)
             nameservers = [str(n) for n in zone.name_servers]
-            self.azure_api.ensure_dns_caa_record(
+            self.azure_sdk.ensure_dns_caa_record(
                 record_flags=0,
                 record_name="@",
                 record_tag="issue",
@@ -117,17 +117,17 @@ class ImperativeSHM:
         # Add the SHM domain to the Entra ID via interactive GraphAPI
         try:
             # Generate the verification record
-            graph_api = GraphApi(
-                tenant_id=self.config.shm.entra_tenant_id,
-                default_scopes=[
+            graph_api = GraphApi.from_scopes(
+                scopes=[
                     "Application.ReadWrite.All",
                     "Domain.ReadWrite.All",
                     "Group.ReadWrite.All",
                 ],
+                tenant_id=self.config.shm.entra_tenant_id,
             )
             verification_record = graph_api.add_custom_domain(self.config.shm.fqdn)
             # Add the record to DNS
-            self.azure_api.ensure_dns_txt_record(
+            self.azure_sdk.ensure_dns_txt_record(
                 record_name="@",
                 record_value=verification_record,
                 resource_group_name=resource_group.name,
@@ -154,7 +154,7 @@ class ImperativeSHM:
             logger.info(
                 f"Removing [green]{self.context.description}[/] resource group {self.context.resource_group_name}."
             )
-            self.azure_api.remove_resource_group(self.context.resource_group_name)
+            self.azure_sdk.remove_resource_group(self.context.resource_group_name)
         except DataSafeHavenAzureError as exc:
             msg = "Failed to destroy context resources."
             raise DataSafeHavenAzureError(msg) from exc

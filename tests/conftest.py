@@ -3,6 +3,8 @@ from shutil import which
 from subprocess import run
 
 import yaml
+from azure.core.credentials import AccessToken, TokenCredential
+from azure.mgmt.resource.subscriptions.models import Subscription
 from pulumi.automation import ProjectSettings
 from pytest import fixture
 
@@ -18,22 +20,65 @@ from data_safe_haven.config import (
 )
 from data_safe_haven.config.config_sections import (
     ConfigSectionAzure,
+    ConfigSectionDockerHub,
     ConfigSectionSHM,
     ConfigSectionSRE,
     ConfigSubsectionRemoteDesktopOpts,
 )
-from data_safe_haven.external import AzureApi, AzureCliSingleton, PulumiAccount
+from data_safe_haven.exceptions import DataSafeHavenAzureError
+from data_safe_haven.external import AzureSdk, PulumiAccount
+from data_safe_haven.external.api.credentials import AzureSdkCredential
 from data_safe_haven.infrastructure import SREProjectManager
 from data_safe_haven.infrastructure.project_manager import ProjectManager
 from data_safe_haven.logging import init_logging
 
 
+def pytest_configure(config):
+    """Define constants for use across multiple tests"""
+    config.guid_admin = "00edec65-b071-4d26-8779-a9fe791c6e14"
+    config.guid_entra = "48b2425b-5f2c-4cbd-9458-0441daa8994c"
+    config.guid_subscription = "35ebced1-4e7a-4c1f-b634-c0886937085d"
+    config.guid_tenant = "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd"
+    config.guid_user = "80b4ccfd-73ef-41b7-bb22-8ec268ec040b"
+
+
 @fixture
-def azure_config():
+def config_section_azure(request):
     return ConfigSectionAzure(
         location="uksouth",
-        subscription_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        tenant_id="d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
+        subscription_id=request.config.guid_subscription,
+        tenant_id=request.config.guid_tenant,
+    )
+
+
+@fixture
+def config_section_shm(config_section_shm_dict):
+    return ConfigSectionSHM(**config_section_shm_dict)
+
+
+@fixture
+def config_section_shm_dict(request):
+    return {
+        "admin_group_id": request.config.guid_admin,
+        "entra_tenant_id": request.config.guid_entra,
+        "fqdn": "shm.acme.com",
+    }
+
+
+@fixture
+def config_section_dockerhub() -> ConfigSectionDockerHub:
+    return ConfigSectionDockerHub(
+        access_token="dummytoken",
+        username="exampleuser",
+    )
+
+
+@fixture
+def config_section_sre() -> ConfigSectionSRE:
+    return ConfigSectionSRE(
+        admin_email_address="admin@example.com",
+        admin_ip_addresses=["1.2.3.4"],
+        timezone="Europe/London",
     )
 
 
@@ -123,17 +168,48 @@ def log_directory(session_mocker, tmp_path_factory):
 
 
 @fixture
-def mock_azure_cli_confirm(monkeypatch):
-    """Always pass AzureCliSingleton.confirm without attempting login"""
-    monkeypatch.setattr(AzureCliSingleton, "confirm", lambda self: None)  # noqa: ARG005
+def mock_azureapi_get_subscription(mocker, request):
+    subscription = Subscription()
+    subscription.display_name = "Data Safe Haven Acme"
+    subscription.subscription_id = request.config.guid_subscription
+    subscription.tenant_id = request.config.guid_tenant
+    mocker.patch.object(
+        AzureSdk,
+        "get_subscription",
+        return_value=subscription,
+    )
 
 
 @fixture
-def mock_install_plugins(monkeypatch):
-    """Skip installing Pulumi plugins"""
-    monkeypatch.setattr(
-        ProjectManager, "install_plugins", lambda self: None  # noqa: ARG005
+def mock_azureapicredential_get_credential(mocker):
+    class MockCredential(TokenCredential):
+        def get_token(*args, **kwargs):  # noqa: ARG002
+            return AccessToken("dummy-token", 0)
+
+    mocker.patch.object(
+        AzureSdkCredential,
+        "get_credential",
+        return_value=MockCredential(),
     )
+
+
+@fixture
+def mock_azureapicredential_get_credential_failure(mocker):
+    def fail_get_credential():
+        print("mock get_credential")  # noqa: T201
+        msg = "mock get_credential error"
+        raise DataSafeHavenAzureError(msg)
+
+    mocker.patch.object(
+        AzureSdkCredential,
+        "get_credential",
+        side_effect=fail_get_credential,
+    )
+
+
+@fixture
+def mock_install_plugins(mocker):
+    mocker.patch.object(ProjectManager, "install_plugins", return_value=None)
 
 
 @fixture
@@ -147,11 +223,11 @@ def mock_key_vault_key(monkeypatch):
     def mock_get_keyvault_key(self, key_name, key_vault_name):  # noqa: ARG001
         return MockKeyVaultKey(key_name, key_vault_name)
 
-    monkeypatch.setattr(AzureApi, "get_keyvault_key", mock_get_keyvault_key)
+    monkeypatch.setattr(AzureSdk, "get_keyvault_key", mock_get_keyvault_key)
 
 
 @fixture
-def offline_pulumi_account(monkeypatch, mock_azure_cli_confirm):  # noqa: ARG001
+def offline_pulumi_account(monkeypatch):
     """Overwrite PulumiAccount so that it runs locally"""
     monkeypatch.setattr(
         PulumiAccount, "env", {"PULUMI_CONFIG_PASSPHRASE": "passphrase"}
@@ -259,22 +335,22 @@ def remote_desktop_config() -> ConfigSubsectionRemoteDesktopOpts:
 
 @fixture
 def shm_config(
-    azure_config: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+    config_section_azure: ConfigSectionAzure, config_section_shm: ConfigSectionSHM
 ) -> SHMConfig:
     return SHMConfig(
-        azure=azure_config,
-        shm=shm_config_section,
+        azure=config_section_azure,
+        shm=config_section_shm,
     )
 
 
 @fixture
 def shm_config_alternate(
-    azure_config: ConfigSectionAzure, shm_config_section: ConfigSectionSHM
+    config_section_azure: ConfigSectionAzure, config_section_shm: ConfigSectionSHM
 ) -> SHMConfig:
-    shm_config_section.fqdn = "shm-alternate.acme.com"
+    config_section_shm.fqdn = "shm-alternate.acme.com"
     return SHMConfig(
-        azure=azure_config,
-        shm=shm_config_section,
+        azure=config_section_azure,
+        shm=config_section_shm,
     )
 
 
@@ -287,31 +363,24 @@ def shm_config_file(shm_config_yaml: str, tmp_path: Path) -> Path:
 
 
 @fixture
-def shm_config_section(shm_config_section_dict):
-    return ConfigSectionSHM(**shm_config_section_dict)
-
-
-@fixture
-def shm_config_section_dict():
-    return {
-        "admin_group_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        "entra_tenant_id": "d5c5c439-1115-4cb6-ab50-b8e547b6c8dd",
-        "fqdn": "shm.acme.com",
-    }
-
-
-@fixture
-def shm_config_yaml():
-    content = """---
+def shm_config_yaml(request):
+    content = (
+        """---
     azure:
         location: uksouth
-        subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-        tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+        subscription_id: guid_subscription
+        tenant_id: guid_tenant
     shm:
-        admin_group_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-        entra_tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+        admin_group_id: guid_admin
+        entra_tenant_id: guid_entra
         fqdn: shm.acme.com
-    """
+    """.replace(
+            "guid_admin", request.config.guid_admin
+        )
+        .replace("guid_entra", request.config.guid_entra)
+        .replace("guid_subscription", request.config.guid_subscription)
+        .replace("guid_tenant", request.config.guid_tenant)
+    )
     return yaml.dump(yaml.safe_load(content))
 
 
@@ -325,48 +394,46 @@ def sre_config_file(sre_config_yaml, tmp_path):
 
 @fixture
 def sre_config(
-    azure_config: ConfigSectionAzure,
-    sre_config_section: ConfigSectionSRE,
+    config_section_azure: ConfigSectionAzure,
+    config_section_dockerhub: ConfigSectionDockerHub,
+    config_section_sre: ConfigSectionSRE,
 ) -> SREConfig:
     return SREConfig(
-        azure=azure_config,
+        azure=config_section_azure,
         description="Sandbox Project",
+        dockerhub=config_section_dockerhub,
         name="sandbox",
-        sre=sre_config_section,
+        sre=config_section_sre,
     )
 
 
 @fixture
 def sre_config_alternate(
-    azure_config: ConfigSectionAzure,
-    sre_config_section: ConfigSectionSRE,
+    config_section_azure: ConfigSectionAzure,
+    config_section_dockerhub: ConfigSectionDockerHub,
+    config_section_sre: ConfigSectionSRE,
 ) -> SREConfig:
-    sre_config_section.admin_ip_addresses = ["2.3.4.5"]
+    config_section_sre.admin_ip_addresses = ["2.3.4.5"]
     return SREConfig(
-        azure=azure_config,
+        azure=config_section_azure,
         description="Alternative Project",
+        dockerhub=config_section_dockerhub,
         name="alternative",
-        sre=sre_config_section,
+        sre=config_section_sre,
     )
 
 
 @fixture
-def sre_config_section() -> ConfigSectionSRE:
-    return ConfigSectionSRE(
-        admin_email_address="admin@example.com",
-        admin_ip_addresses=["1.2.3.4"],
-        timezone="Europe/London",
-    )
-
-
-@fixture
-def sre_config_yaml():
+def sre_config_yaml(request):
     content = """---
     azure:
         location: uksouth
-        subscription_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
-        tenant_id: d5c5c439-1115-4cb6-ab50-b8e547b6c8dd
+        subscription_id: guid_subscription
+        tenant_id: guid_tenant
     description: Sandbox Project
+    dockerhub:
+        access_token: dummytoken
+        username: exampleuser
     name: sandbox
     sre:
         admin_email_address: admin@example.com
@@ -381,7 +448,11 @@ def sre_config_yaml():
         software_packages: none
         timezone: Europe/London
         workspace_skus: []
-    """
+    """.replace(
+        "guid_subscription", request.config.guid_subscription
+    ).replace(
+        "guid_tenant", request.config.guid_tenant
+    )
     return yaml.dump(yaml.safe_load(content))
 
 
@@ -390,11 +461,10 @@ def sre_project_manager(
     context_no_secrets,
     sre_config,
     pulumi_config_no_key,
-    mock_azure_cli_confirm,  # noqa: ARG001
-    mock_install_plugins,  # noqa: ARG001
-    mock_key_vault_key,  # noqa: ARG001
-    offline_pulumi_account,  # noqa: ARG001
     local_project_settings,  # noqa: ARG001
+    mock_azureapi_get_subscription,  # noqa: ARG001
+    mock_azureapicredential_get_credential,  # noqa: ARG001
+    offline_pulumi_account,  # noqa: ARG001
 ):
     return SREProjectManager(
         context=context_no_secrets,

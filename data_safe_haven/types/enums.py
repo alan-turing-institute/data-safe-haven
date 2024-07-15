@@ -20,6 +20,13 @@ class AzureDnsZoneNames(tuple[str, ...], Enum):
 
 
 @verify(UNIQUE)
+class AzureSdkCredentialScope(str, Enum):
+    DEFAULT = "https://management.azure.com/.default"
+    GRAPH_API = "https://graph.microsoft.com/.default"
+    KEY_VAULT = "https://vault.azure.net"
+
+
+@verify(UNIQUE)
 class DatabaseSystem(str, Enum):
     MICROSOFT_SQL_SERVER = "mssql"
     POSTGRESQL = "postgresql"
@@ -39,7 +46,7 @@ class FirewallPriorities(int, Enum):
     SRE_IDENTITY_CONTAINERS = 3200
     SRE_USER_SERVICES_SOFTWARE_REPOSITORIES = 3300
     SRE_WORKSPACES_DENY = 3400
-    SRE_WORKSPACES = 3410
+    SRE_WORKSPACES = 3450
 
 
 @verify(UNIQUE)

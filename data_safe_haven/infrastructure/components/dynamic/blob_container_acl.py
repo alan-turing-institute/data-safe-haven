@@ -6,7 +6,7 @@ from pulumi import Input, Output, ResourceOptions
 from pulumi.dynamic import CreateResult, DiffResult, Resource
 
 from data_safe_haven.exceptions import DataSafeHavenPulumiError
-from data_safe_haven.external import AzureApi
+from data_safe_haven.external import AzureSdk
 
 from .dsh_resource_provider import DshResourceProvider
 
@@ -55,8 +55,8 @@ class BlobContainerAclProvider(DshResourceProvider):
         """Set ACLs for a given blob container."""
         outs = dict(**props)
         try:
-            azure_api = AzureApi(props["subscription_name"])
-            azure_api.set_blob_container_acl(
+            azure_sdk = AzureSdk(props["subscription_name"])
+            azure_sdk.set_blob_container_acl(
                 container_name=props["container_name"],
                 desired_acl=props["desired_acl"],
                 resource_group_name=props["resource_group_name"],
@@ -75,8 +75,8 @@ class BlobContainerAclProvider(DshResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         try:
-            azure_api = AzureApi(props["subscription_name"])
-            azure_api.set_blob_container_acl(
+            azure_sdk = AzureSdk(props["subscription_name"])
+            azure_sdk.set_blob_container_acl(
                 container_name=props["container_name"],
                 desired_acl="user::rwx,group::r-x,other::---",
                 resource_group_name=props["resource_group_name"],
@@ -96,6 +96,10 @@ class BlobContainerAclProvider(DshResourceProvider):
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
         return self.partial_diff(old_props, new_props)
+
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
+        """TODO: check whether ACLs have changed"""
+        return dict(**props)
 
 
 class BlobContainerAcl(Resource):

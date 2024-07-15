@@ -66,19 +66,6 @@ class FileShareFileProvider(DshResourceProvider):
             credential=storage_account_key,
         )
 
-    @staticmethod
-    def refresh(props: dict[str, Any]) -> dict[str, Any]:
-        with suppress(Exception):
-            file_client = FileShareFileProvider.get_file_client(
-                props["storage_account_name"],
-                props["storage_account_key"],
-                props["share_name"],
-                props["destination_path"],
-            )
-            if not FileShareFileProvider.file_exists(file_client):
-                props["file_name"] = ""
-        return dict(**props)
-
     def create(self, props: dict[str, Any]) -> CreateResult:
         """Create file in target storage account with specified contents."""
         outs = dict(**props)
@@ -132,6 +119,18 @@ class FileShareFileProvider(DshResourceProvider):
         id(id_)
         # Exclude "storage_account_key" which should not trigger a diff
         return self.partial_diff(old_props, new_props, ["storage_account_key"])
+
+    def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
+        with suppress(Exception):
+            file_client = FileShareFileProvider.get_file_client(
+                props["storage_account_name"],
+                props["storage_account_key"],
+                props["share_name"],
+                props["destination_path"],
+            )
+            if not FileShareFileProvider.file_exists(file_client):
+                props["file_name"] = ""
+        return dict(**props)
 
 
 class FileShareFile(Resource):

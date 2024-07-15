@@ -1,21 +1,15 @@
 """Interface to the Microsoft Graph API"""
 
 import datetime
-import pathlib
+import json
 import time
 from collections.abc import Sequence
 from contextlib import suppress
-from io import UnsupportedOperation
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
 import requests
 import typer
 from dns import resolver
-from msal import (
-    ConfidentialClientApplication,
-    PublicClientApplication,
-    SerializableTokenCache,
-)
 
 from data_safe_haven import console
 from data_safe_haven.exceptions import (
@@ -25,21 +19,10 @@ from data_safe_haven.exceptions import (
 from data_safe_haven.functions import alphanumeric
 from data_safe_haven.logging import get_logger
 
-
-class LocalTokenCache(SerializableTokenCache):
-    def __init__(self, token_cache_filename: pathlib.Path) -> None:
-        super().__init__()
-        self.token_cache_filename = token_cache_filename
-        try:
-            if self.token_cache_filename.exists():
-                with open(self.token_cache_filename, encoding="utf-8") as f_token:
-                    self.deserialize(f_token.read())
-        except (FileNotFoundError, UnsupportedOperation):
-            self.deserialize(None)
-
-    def __del__(self) -> None:
-        with open(self.token_cache_filename, "w", encoding="utf-8") as f_token:
-            f_token.write(self.serialize())
+from .credentials import (
+    DeferredCredential,
+    GraphApiCredential,
+)
 
 
 class GraphApi:
@@ -72,27 +55,33 @@ class GraphApi:
     def __init__(
         self,
         *,
-        tenant_id: str | None = None,
-        auth_token: str | None = None,
-        application_id: str | None = None,
-        application_secret: str | None = None,
-        base_endpoint: str = "",
-        default_scopes: Sequence[str] = [],
+        credential: DeferredCredential,
     ):
-        self.base_endpoint = (
-            base_endpoint if base_endpoint else "https://graph.microsoft.com/v1.0"
-        )
-        self.default_scopes = list(default_scopes)
+        self.base_endpoint = "https://graph.microsoft.com/v1.0"
+        self.credential = credential
         self.logger = get_logger()
-        self.tenant_id = tenant_id
-        if auth_token:
-            self.token = auth_token
-        elif application_id and application_secret:
-            self.token = self.create_token_application(
-                application_id, application_secret
+
+    @classmethod
+    def from_scopes(
+        cls: type[Self], *, scopes: Sequence[str], tenant_id: str
+    ) -> "GraphApi":
+        return cls(credential=GraphApiCredential(tenant_id, scopes))
+
+    @classmethod
+    def from_token(cls: type[Self], auth_token: str) -> "GraphApi":
+        """Construct a GraphApi from an existing authentication token."""
+        try:
+            decoded = DeferredCredential.decode_token(auth_token)
+            return cls.from_scopes(
+                scopes=str(decoded["scp"]).split(), tenant_id=decoded["tid"]
             )
-        else:
-            self.token = self.create_token_administrator()
+        except DataSafeHavenValueError as exc:
+            msg = "Could not construct GraphApi from provided token."
+            raise DataSafeHavenValueError(msg) from exc
+
+    @property
+    def token(self) -> str:
+        return self.credential.token
 
     def add_custom_domain(self, domain_name: str) -> str:
         """Add Entra ID custom domain
@@ -106,9 +95,8 @@ class GraphApi:
         try:
             # Create the Entra ID custom domain if it does not already exist
             domains = self.read_domains()
-            domain_exists = any(domain["id"] == domain_name for domain in domains)
-            if not domain_exists:
-                response = self.http_post(
+            if not any(domain["id"] == domain_name for domain in domains):
+                self.http_post(
                     f"{self.base_endpoint}/domains",
                     json={"id": domain_name},
                 )
@@ -266,27 +254,31 @@ class GraphApi:
     def create_application_secret(
         self, application_name: str, application_secret_name: str
     ) -> str:
-        """Add a secret to an existing Entra application
+        """Add a secret to an existing Entra application, overwriting any existing secret.
 
         Returns:
             str: Contents of newly-created secret
 
         Raises:
-            DataSafeHavenMicrosoftGraphError if the secret could not be created or already exists
+            DataSafeHavenMicrosoftGraphError if the secret could not be created
         """
         try:
             application_json = self.get_application_by_name(application_name)
             if not application_json:
                 msg = f"Could not retrieve application '{application_name}'"
                 raise DataSafeHavenMicrosoftGraphError(msg)
-            # If the secret already exists then raise an exception
-            if "passwordCredentials" in application_json and any(
-                cred["displayName"] == application_secret_name
-                for cred in application_json["passwordCredentials"]
-            ):
-                msg = f"Secret '{application_secret_name}' already exists in application '{application_name}'."
-                raise DataSafeHavenValueError(msg)
-            # Create the application secret if it does not exist
+            # If the secret already exists then remove it
+            if "passwordCredentials" in application_json:
+                for secret in application_json["passwordCredentials"]:
+                    if secret["displayName"] == application_secret_name:
+                        self.logger.debug(
+                            f"Removing pre-existing secret '{secret['displayName']}' from application '{application_name}'."
+                        )
+                        self.http_post(
+                            f"{self.base_endpoint}/applications/{application_json['id']}/removePassword",
+                            json={"keyId": secret["keyId"]},
+                        )
+            # Create the application secret
             self.logger.debug(
                 f"Creating application secret '[green]{application_secret_name}[/]'...",
             )
@@ -303,7 +295,7 @@ class GraphApi:
                 f"{self.base_endpoint}/applications/{application_json['id']}/addPassword",
                 json=request_json,
             ).json()
-            self.logger.info(
+            self.logger.debug(
                 f"Created application secret '[green]{application_secret_name}[/]'.",
             )
             return str(json_response["secretText"])
@@ -379,89 +371,6 @@ class GraphApi:
             return application_sp
         except Exception as exc:
             msg = f"Could not create service principal for application '{application_name}'."
-            raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-    def create_token_administrator(self) -> str:
-        """Create an access token for a global administrator
-
-        Raises:
-            DataSafeHavenMicrosoftGraphError if the token could not be created
-        """
-        result = None
-        try:
-            # Load local token cache
-            local_token_cache = LocalTokenCache(
-                pathlib.Path.home() / f".msal_cache_{self.tenant_id}"
-            )
-            # Use the Powershell application by default as this should be pre-installed
-            app = PublicClientApplication(
-                authority=f"https://login.microsoftonline.com/{self.tenant_id}",
-                client_id="14d82eec-204b-4c2f-b7e8-296a70dab67e",  # this is the Powershell client id
-                token_cache=local_token_cache,
-            )
-            # Attempt to load token from cache
-            if accounts := app.get_accounts():
-                result = app.acquire_token_silent(
-                    self.default_scopes, account=accounts[0]
-                )
-            # Initiate device code flow
-            if not result:
-                flow = app.initiate_device_flow(scopes=self.default_scopes)
-                if "user_code" not in flow:
-                    msg = f"Could not initiate device login for scopes {self.default_scopes}."
-                    raise DataSafeHavenMicrosoftGraphError(msg)
-                self.logger.info(
-                    "Administrator approval is needed in order to interact with Entra ID."
-                )
-                self.logger.info(
-                    "Please sign-in with [bold]global administrator[/] credentials for"
-                    f" Entra tenant '[green]{self.tenant_id}[/]'."
-                )
-                self.logger.info(
-                    "Note that the sign-in screen will prompt you to sign-in to"
-                    " [blue]Microsoft Graph Command Line Tools[/] - this is expected."
-                )
-                self.logger.info(flow["message"])
-                # Block until a response is received
-                result = app.acquire_token_by_device_flow(flow)
-            return str(result["access_token"])
-        except Exception as exc:
-            error_description = "Could not create Microsoft Graph access token."
-            if isinstance(result, dict) and "error_description" in result:
-                error_description += f"\n{result['error_description']}."
-            msg = f"{error_description}"
-            raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-    def create_token_application(
-        self, application_id: str, application_secret: str
-    ) -> str:
-        """Return an access token for the given application ID and secret
-
-        Raises:
-            DataSafeHavenMicrosoftGraphError if the token could not be created
-        """
-        result = None
-        try:
-            # Use a created application
-            app = ConfidentialClientApplication(
-                client_id=application_id,
-                client_credential=application_secret,
-                authority=f"https://login.microsoftonline.com/{self.tenant_id}",
-            )
-            # Block until a response is received
-            # For this call the scopes are pre-defined by the application privileges
-            result = app.acquire_token_for_client(
-                scopes=["https://graph.microsoft.com/.default"]
-            )
-            if not isinstance(result, dict):
-                msg = "Invalid application token returned from Microsoft Graph."
-                raise DataSafeHavenMicrosoftGraphError(msg)
-            return str(result["access_token"])
-        except Exception as exc:
-            error_description = "Could not create access token"
-            if result and "error_description" in result:
-                error_description += f": {result['error_description']}"
-            msg = f"{error_description}."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create_user(
@@ -780,7 +689,7 @@ class GraphApi:
             msg = f"Could not execute DELETE request to '{url}'. Response content received: '{response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg)
 
-    def http_get(self, url: str, **kwargs: Any) -> requests.Response:
+    def http_get_single_page(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP GET request
 
         Returns:
@@ -797,15 +706,47 @@ class GraphApi:
                 **kwargs,
             )
         except requests.exceptions.RequestException as exc:
-            msg = f"Could not execute GET request from '{url}'."
+            msg = f"Could not execute GET request to '{url}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
         # We do not use response.ok as this allows 3xx codes
         if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
             return response
         else:
-            msg = f"Could not execute GET request from '{url}'. Response content received: '{response.content.decode()}'."
+            msg = f"Could not execute GET request to '{url}'. Response content received: '{response.content.decode()}'. Token {self.token}"
             raise DataSafeHavenMicrosoftGraphError(msg)
+
+    def http_get(self, url: str, **kwargs: Any) -> requests.Response:
+        """Make a paged HTTP GET request and return all values
+
+        Returns:
+            requests.Response: The response from the remote server, with all values combined
+
+        Raises:
+            DataSafeHavenMicrosoftGraphError if the request failed
+        """
+        try:
+            base_url = url
+            values = []
+
+            # Keep requesting new pages until there are no more
+            while True:
+                response = self.http_get_single_page(url, **kwargs)
+                values += response.json()["value"]
+                url = response.json().get("@odata.nextLink", None)
+                if not url:
+                    break
+
+            # Add previous response values into the content bytes
+            json_content = response.json()
+            json_content["value"] = values
+            response._content = json.dumps(json_content).encode("utf-8")
+
+            # Return the full response
+            return response
+        except requests.exceptions.RequestException as exc:
+            msg = f"Could not execute GET request to '{base_url}'. Response content received: '{response.content.decode()}'. Token {self.token}"
+            raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP PATCH request

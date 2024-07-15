@@ -3,7 +3,10 @@ from collections.abc import Mapping
 from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import network, resources
 
-from data_safe_haven.infrastructure.common import get_id_from_subnet
+from data_safe_haven.infrastructure.common import (
+    DockerHubCredentials,
+    get_id_from_subnet,
+)
 from data_safe_haven.types import DatabaseSystem, SoftwarePackageCategory
 
 from .database_servers import SREDatabaseServerComponent, SREDatabaseServerProps
@@ -24,6 +27,7 @@ class SREUserServicesProps:
         databases: list[DatabaseSystem],  # this must *not* be passed as an Input[T]
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
+        dockerhub_credentials: DockerHubCredentials,
         gitea_database_password: Input[str],
         hedgedoc_database_password: Input[str],
         ldap_server_hostname: Input[str],
@@ -48,6 +52,7 @@ class SREUserServicesProps:
         self.databases = databases
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
+        self.dockerhub_credentials = dockerhub_credentials
         self.gitea_database_password = gitea_database_password
         self.hedgedoc_database_password = hedgedoc_database_password
         self.ldap_server_hostname = ldap_server_hostname
@@ -111,6 +116,7 @@ class SREUserServicesComponent(ComponentResource):
                 database_password=props.gitea_database_password,
                 dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
+                dockerhub_credentials=props.dockerhub_credentials,
                 ldap_server_hostname=props.ldap_server_hostname,
                 ldap_server_port=props.ldap_server_port,
                 ldap_username_attribute=props.ldap_username_attribute,
@@ -138,6 +144,7 @@ class SREUserServicesComponent(ComponentResource):
                 database_subnet_id=props.subnet_containers_support_id,
                 dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
+                dockerhub_credentials=props.dockerhub_credentials,
                 ldap_server_hostname=props.ldap_server_hostname,
                 ldap_server_port=props.ldap_server_port,
                 ldap_username_attribute=props.ldap_username_attribute,
@@ -162,6 +169,7 @@ class SREUserServicesComponent(ComponentResource):
             SRESoftwareRepositoriesProps(
                 dns_resource_group_name=props.dns_resource_group_name,
                 dns_server_ip=props.dns_server_ip,
+                dockerhub_credentials=props.dockerhub_credentials,
                 location=props.location,
                 networking_resource_group_name=props.networking_resource_group_name,
                 nexus_admin_password=props.nexus_admin_password,

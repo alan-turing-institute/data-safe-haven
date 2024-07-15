@@ -41,6 +41,7 @@ dependencies = [
   "pulumi-random>=4.14",
   "pulumi-tls>=5.0.3",
   "pydantic>=2.4",
+  "pyjwt>=2.8",
   "pytz>=2023.3",
   "PyYAML>=6.0",
   "rich>=13.4",
@@ -60,6 +61,10 @@ source = ["data_safe_haven/"]
 
 [tool.coverage.run]
 relative_files = true
+omit= [
+  "tests/*",
+  "data_safe_haven/resources/*",
+]
 
 [tool.hatch.envs.default]
 pre-install-commands = ["pip install -r requirements.txt"]
@@ -117,11 +122,12 @@ dependencies = [
   "freezegun>=1.5",
   "pytest>=8.1",
   "pytest-mock>=3.14",
+  "requests-mock>=1.12",
 ]
 pre-install-commands = ["pip install -r requirements.txt"]
 
 [tool.hatch.envs.test.scripts]
-test = "coverage run --omit=tests/* -m pytest {args: tests}"
+test = "coverage run -m pytest {args: tests}"
 test-report = "coverage report {args:}"
 test-coverage = ["test", "test-report"]
 
@@ -144,6 +150,7 @@ module = [
     "azure.storage.*",
     "cryptography.*",
     "dns.*",
+    "jwt.*",
     "msal.*",
     "numpy.*",
     "pandas.*",
@@ -165,7 +172,7 @@ addopts = [
     "-vvv",
     "--import-mode=importlib",
     "--disable-warnings",
-    "--ignore=tests/*",
+    "--ignore=data_safe_haven/resources/*",
 ]
 
 [tool.ruff.lint]

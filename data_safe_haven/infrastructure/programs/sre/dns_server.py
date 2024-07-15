@@ -8,6 +8,7 @@ from pulumi_azure_native import containerinstance, network, resources
 
 from data_safe_haven.functions import b64encode, replace_separators
 from data_safe_haven.infrastructure.common import (
+    DockerHubCredentials,
     SREDnsIpRanges,
     SREIpRanges,
     get_ip_address_from_container_group,
@@ -27,10 +28,12 @@ class SREDnsServerProps:
 
     def __init__(
         self,
+        dockerhub_credentials: DockerHubCredentials,
         location: Input[str],
         shm_fqdn: Input[str],
     ) -> None:
         self.admin_username = "dshadmin"
+        self.dockerhub_credentials = dockerhub_credentials
         self.location = location
         self.shm_fqdn = shm_fqdn
 
@@ -202,7 +205,7 @@ class SREDnsServerComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-dns",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="adguard/adguardhome:v0.107.51",
+                    image="adguard/adguardhome:v0.107.52",
                     name="adguard",
                     # Providing "command" overwrites the CMD arguments in the Docker
                     # image, so we can either provide them here or set defaults in our
@@ -239,6 +242,14 @@ class SREDnsServerComponent(ComponentResource):
                         ),
                     ],
                 ),
+            ],
+            # Required due to DockerHub rate-limit: https://docs.docker.com/docker-hub/download-rate-limit/
+            image_registry_credentials=[
+                {
+                    "password": Output.secret(props.dockerhub_credentials.access_token),
+                    "server": props.dockerhub_credentials.server,
+                    "username": props.dockerhub_credentials.username,
+                }
             ],
             ip_address=containerinstance.IpAddressArgs(
                 ports=[

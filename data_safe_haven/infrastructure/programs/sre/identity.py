@@ -6,6 +6,7 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources, storage
 
 from data_safe_haven.infrastructure.common import (
+    DockerHubCredentials,
     get_id_from_subnet,
     get_ip_address_from_container_group,
 )
@@ -24,8 +25,9 @@ class SREIdentityProps:
         self,
         dns_resource_group_name: Input[str],
         dns_server_ip: Input[str],
+        dockerhub_credentials: DockerHubCredentials,
         entra_application_name: Input[str],
-        entra_auth_token: Input[str],
+        entra_auth_token: str,
         entra_tenant_id: Input[str],
         location: Input[str],
         networking_resource_group_name: Input[str],
@@ -38,6 +40,7 @@ class SREIdentityProps:
     ) -> None:
         self.dns_resource_group_name = dns_resource_group_name
         self.dns_server_ip = dns_server_ip
+        self.dockerhub_credentials = dockerhub_credentials
         self.entra_application_name = entra_application_name
         self.entra_auth_token = entra_auth_token
         self.entra_tenant_id = entra_tenant_id
@@ -99,10 +102,10 @@ class SREIdentityComponent(ComponentResource):
                 application_name=props.entra_application_name,
                 application_role_assignments=["User.Read.All", "GroupMember.Read.All"],
                 application_secret_name="Apricot Authentication Secret",
-                auth_token=props.entra_auth_token,
                 delegated_role_assignments=["User.Read.All"],
                 public_client_redirect_uri="urn:ietf:wg:oauth:2.0:oob",
             ),
+            auth_token=props.entra_auth_token,
             opts=child_opts,
         )
 
@@ -192,6 +195,14 @@ class SREIdentityComponent(ComponentResource):
             dns_config=containerinstance.DnsConfigurationArgs(
                 name_servers=[props.dns_server_ip],
             ),
+            # Required due to DockerHub rate-limit: https://docs.docker.com/docker-hub/download-rate-limit/
+            image_registry_credentials=[
+                {
+                    "password": Output.secret(props.dockerhub_credentials.access_token),
+                    "server": props.dockerhub_credentials.server,
+                    "username": props.dockerhub_credentials.username,
+                }
+            ],
             ip_address=containerinstance.IpAddressArgs(
                 ports=[
                     containerinstance.PortArgs(
