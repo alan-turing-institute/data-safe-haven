@@ -81,7 +81,7 @@ class AzurePostgreSQLDatabase:
         """Get the database client."""
         if not self.db_client_:
             self.db_client_ = PostgreSQLManagementClient(
-                self.azure_sdk.credential, self.azure_sdk.subscription_id
+                self.azure_sdk.credential(), self.azure_sdk.subscription_id
             )
         return self.db_client_
 
