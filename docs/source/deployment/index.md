@@ -38,7 +38,7 @@ As Docker Hub now imposes [rate limits](https://docs.docker.com/docker-hub/downl
 You can create one following [the instructions here](https://hub.docker.com/) if you do not already have one.
 
 :::{important}
-We recommend using a personal access token (PAT) with `Public Repo Read-Only` permissions rather than your Docker account password.
+We recommend using a personal access token (PAT) with **Public Repo Read-Only** permissions rather than your Docker account password.
 See [the instructions here](https://docs.docker.com/security/for-developers/access-tokens/) for details of how to create a PAT.
 :::
 
