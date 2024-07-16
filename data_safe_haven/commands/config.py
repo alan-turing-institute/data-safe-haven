@@ -27,9 +27,7 @@ def show_shm(
     try:
         config = SHMConfig.from_remote(context)
     except DataSafeHavenError as exc:
-        logger.critical(
-            "No SHM configuration exists for the selected context."
-        )
+        logger.critical("No SHM configuration exists for the selected context.")
         raise typer.Exit(1) from exc
     config_yaml = config.to_yaml()
     if file:
@@ -57,7 +55,7 @@ def show(
         logger.critical(
             f"No configuration exists for an SRE named '{name}' for the selected context ."
         )
-        raise typer.Exit(1)
+        raise typer.Exit(1) from exc
     config_yaml = sre_config.to_yaml()
     if file:
         with open(file, "w") as outfile:
