@@ -56,24 +56,36 @@ class GraphApi:
         self,
         *,
         credential: DeferredCredential,
+        disable_logging: bool = False,
     ):
         self.base_endpoint = "https://graph.microsoft.com/v1.0"
         self.credential = credential
-        self.logger = get_logger()
+        self.logger = get_logger(disable_logging=disable_logging)
 
     @classmethod
     def from_scopes(
-        cls: type[Self], *, scopes: Sequence[str], tenant_id: str
+        cls: type[Self],
+        *,
+        scopes: Sequence[str],
+        tenant_id: str,
+        disable_logging: bool = False,
     ) -> "GraphApi":
-        return cls(credential=GraphApiCredential(tenant_id, scopes))
+        return cls(
+            credential=GraphApiCredential(tenant_id, scopes),
+            disable_logging=disable_logging,
+        )
 
     @classmethod
-    def from_token(cls: type[Self], auth_token: str) -> "GraphApi":
+    def from_token(
+        cls: type[Self], auth_token: str, *, disable_logging: bool = False
+    ) -> "GraphApi":
         """Construct a GraphApi from an existing authentication token."""
         try:
             decoded = DeferredCredential.decode_token(auth_token)
             return cls.from_scopes(
-                scopes=str(decoded["scp"]).split(), tenant_id=decoded["tid"]
+                disable_logging=disable_logging,
+                scopes=str(decoded["scp"]).split(),
+                tenant_id=decoded["tid"],
             )
         except DataSafeHavenValueError as exc:
             msg = "Could not construct GraphApi from provided token."
