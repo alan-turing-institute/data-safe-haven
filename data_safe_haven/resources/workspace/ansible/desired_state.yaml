@@ -154,11 +154,11 @@
         dest: /etc/clamav/clamd.conf
         mode: '0644'
 
-    - name: Stop and disable fresh clam
+    - name: Start and enable fresh clam
       ansible.builtin.systemd:
         name: clamav-freshclam
-        state: stopped
-        enabled: false
+        state: started
+        enabled: true
 
     - name: Install ClamAV services and timer
       ansible.builtin.copy:

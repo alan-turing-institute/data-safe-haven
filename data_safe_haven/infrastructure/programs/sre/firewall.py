@@ -239,6 +239,18 @@ class SREFirewallComponent(ComponentResource):
                             source_addresses=props.subnet_workspaces_prefixes,
                             target_fqdns=PermittedDomains.UBUNTU_SNAPCRAFT,
                         ),
+                        network.AzureFirewallApplicationRuleArgs(
+                            description="Allow external Clam AV database access",
+                            name="AllowClamAVDatabase",
+                            protocols=[
+                                network.AzureFirewallApplicationRuleProtocolArgs(
+                                    port=int(Ports.HTTPS),
+                                    protocol_type=network.AzureFirewallApplicationRuleProtocolType.HTTPS,
+                                ),
+                            ],
+                            source_addresses=props.subnet_workspaces_prefixes,
+                            target_fqdns=PermittedDomains.CLAMAV_UPDATES,
+                        ),
                     ],
                 ),
                 network.AzureFirewallApplicationRuleCollectionArgs(
