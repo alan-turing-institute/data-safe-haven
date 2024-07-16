@@ -94,7 +94,7 @@
         src: "{{ item }}"
         dest: /root/tests/
         mode: '0700'
-      with_fileglob: 'roots/tests/*'
+      with_fileglob: 'root/tests/*'
 
 
   handlers:
