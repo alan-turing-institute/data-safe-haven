@@ -20,7 +20,7 @@ azure:
   tenant_id: # Home tenant for the Azure account used to deploy infrastructure: `az account show`
 description: # A free-text description of your SRE deployment
 dockerhub:
-  access_token: # The password or personal access token for the above account. We strongly recommend using a Personal Access Token with permissions set to Public Repo Read-only
+  access_token: # The password or personal access token for your Docker Hub account. We strongly recommend using a Personal Access Token with permissions set to Public Repo Read-only
   username: # Your Docker Hub account name
 name: # A name for your SRE deployment containing only letters, numbers, hyphens and underscores
 sre:
