@@ -160,6 +160,12 @@
         state: started
         enabled: true
 
+    # This is required to fetch definitions for the clamav daemon to run
+    - name: Initial freshclam run
+      ansible.builtin.command:
+        cmd: freshclam
+        creates: '/var/lib/clamav/main.{c[vl]d,inc}'
+
     - name: Install ClamAV services and timer
       ansible.builtin.copy:
         src: "{{ item }}"
