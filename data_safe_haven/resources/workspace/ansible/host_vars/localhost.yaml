@@ -11,6 +11,10 @@ package_categories:
       - auditd
       - bats
       - clamav
+      - clamav-base
+      - clamav-daemon
+      - clamav-freshclam
+      - clamav-unofficial-sigs
     jammy: []
     noble: []
   - category: browsers
