@@ -13,8 +13,8 @@
       ansible.builtin.apt:
         name: "{{ apt_packages.common | union(apt_packages[ansible_facts['distribution_release']]) }}"
         state: present
-        async: 3600
-        poll: 30
+      async: 3600
+      poll: 30
 
 
     - name: Enable bash autocompletion globally
@@ -46,8 +46,7 @@
       ansible.builtin.replace:
         path: /etc/nsswitch.conf
         regexp: '^(passwd|group|shadow)(:.*)(?<!ldap)$'
-        line: '\1\2 ldap'
-        backrefs: true
+        replace: '\1\2 ldap'
 
     - name: Ensure home directories are created on LDAP login
       # Should look to migrate to https://docs.ansible.com/ansible/latest/collections/community/general/pamd_module.html
@@ -105,6 +104,6 @@
         enabled: true
         state: restarted
 
-    - name: Update PAM auth
+    - name: Update PAM auth  # noqa: no-changed-when
       ansible.builtin.command:
         cmd: pam-auth-update --enable mkhomedir ldap
