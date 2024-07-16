@@ -31,6 +31,17 @@ We suggest creating a new Entra tenant for your DSH deployment, but this is not 
 If you want to do so, follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant).
 :::
 
+### Docker Hub
+
+The Data Safe Haven uses several public Docker images.
+As Docker Hub now imposes [rate limits](https://docs.docker.com/docker-hub/download-rate-limit/) on anonymous downloads, you will need to use a Docker Hub account to deploy the Data Safe Haven.
+You can create one following [the instructions here](https://hub.docker.com/) if you do not already have one.
+
+:::{important}
+We recommend using a personal access token (PAT) with **Public Repo Read-Only** permissions rather than your Docker account password.
+See [the instructions here](https://docs.docker.com/security/for-developers/access-tokens/) for details of how to create a PAT.
+:::
+
 ## Install the project
 
 Download or checkout this code from GitHub.
