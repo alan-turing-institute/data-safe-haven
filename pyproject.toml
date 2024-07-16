@@ -88,6 +88,7 @@ build = [
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
+  "ansible-lint>=24.7.0",
   "black>=24.1.0",
   "mypy>=1.0.0",
   "pydantic>=2.4",
@@ -100,21 +101,22 @@ dependencies = [
 ]
 
 [tool.hatch.envs.lint.scripts]
-typing = "mypy {args:data_safe_haven}"
-
-style = [
-  "ruff check {args:data_safe_haven tests}",
-  "black --check --diff {args:data_safe_haven tests}",
+all = [
+  "style",
+  "typing",
+  "ansible",
 ]
+ansible = "ansible-lint {args:data_safe_haven/resources/workspace/ansible/}"
 fmt = [
   "black {args:data_safe_haven tests}",
   "ruff check --fix {args:data_safe_haven tests}",
   "style",
 ]
-all = [
-  "style",
-  "typing",
+style = [
+  "ruff check {args:data_safe_haven tests}",
+  "black --check --diff {args:data_safe_haven tests}",
 ]
+typing = "mypy {args:data_safe_haven}"
 
 [tool.hatch.envs.test]
 dependencies = [
