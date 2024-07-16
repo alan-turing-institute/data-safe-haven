@@ -78,9 +78,11 @@ from .graph_api import GraphApi
 class AzureSdk:
     """Interface to the Azure Python SDK"""
 
-    def __init__(self, subscription_name: str) -> None:
+    def __init__(
+        self, subscription_name: str, *, disable_logging: bool = False
+    ) -> None:
         self._credentials: dict[AzureSdkCredentialScope, AzureSdkCredential] = {}
-        self.logger = get_logger()
+        self.logger = get_logger(disable_logging=disable_logging)
         self.subscription_name = subscription_name
         self.subscription_id_: str | None = None
         self.tenant_id_: str | None = None
