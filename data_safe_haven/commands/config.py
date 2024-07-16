@@ -7,6 +7,7 @@ import typer
 
 from data_safe_haven import console
 from data_safe_haven.config import ContextManager, SHMConfig, SREConfig
+from data_safe_haven.exceptions import DataSafeHavenError
 from data_safe_haven.logging import get_logger
 
 config_command_group = typer.Typer()
@@ -22,7 +23,14 @@ def show_shm(
 ) -> None:
     """Print the SHM configuration for the selected Data Safe Haven context"""
     context = ContextManager.from_file().assert_context()
-    config = SHMConfig.from_remote(context)
+    logger = get_logger()
+    try:
+        config = SHMConfig.from_remote(context)
+    except DataSafeHavenError as exc:
+        logger.critical(
+            "No SHM configuration exists for the selected context."
+        )
+        raise typer.Exit(1) from exc
     config_yaml = config.to_yaml()
     if file:
         with open(file, "w") as outfile:
@@ -42,7 +50,14 @@ def show(
 ) -> None:
     """Print the SRE configuration for the selected SRE and Data Safe Haven context"""
     context = ContextManager.from_file().assert_context()
-    sre_config = SREConfig.from_remote_by_name(context, name)
+    logger = get_logger()
+    try:
+        sre_config = SREConfig.from_remote_by_name(context, name)
+    except DataSafeHavenError as exc:
+        logger.critical(
+            f"No configuration exists for an SRE named '{name}' for the selected context ."
+        )
+        raise typer.Exit(1)
     config_yaml = sre_config.to_yaml()
     if file:
         with open(file, "w") as outfile:
