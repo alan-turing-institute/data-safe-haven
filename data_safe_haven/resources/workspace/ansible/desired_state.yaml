@@ -54,7 +54,7 @@
         path: /etc/pam.d/common-session
         regexp: '^session required\s+pam_mkhomedir.so'
         line: 'pam_mkhomedir.so skel=/etc/skel umask=0022'
-      notify: Update Pam auth
+      notify: Update PAM auth
 
     - name: Don't enforce new passwords on change
       ansible.builtin.lineinfile:
