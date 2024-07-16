@@ -723,7 +723,7 @@ The `/scratch/` folder should be used for any work-in-progress that isn't ready 
 Although everyone in your group will have **read-and-write access**, you can create your own folders inside `/scratch` and choose your own permissions for them.
 
 ```{caution}
-You should not use `/scratch/` for long-term storage as it can be reset at any time without warning (e.g. when the VM is restarted).
+You should not use `/scratch/` for long-term storage as it can be reset at any time without warning (_e.g._ when the VM is restarted).
 ```
 
 The contents of `/scratch/` will be **different** on different VMs in your SRE.
@@ -792,7 +792,7 @@ The Data Safe Haven SRE is hosted on the Microsoft Azure cloud platform.
 One of the benefits of having cloud based infastructure is that it can be deleted forever when the project is over.
 Deleting the infrastructure ensures that neither sensitive data nor insights derived from the data or modelling techniques persist.
 
-While working on the project, make sure that every piece of code you think might be useful is stored in a `GitLab` repository within the secure environment.
+While working on the project, make sure that every piece of code you think might be useful is stored in a GitLab repository within the secure environment.
 Any other work should be transferred to the `/shared/` drive so that it is accessible to other TRE users.
 You can also use the `/backup/` drive to store work that you want to keep safe from accidental deletion.
 Anything that you think should be considered for **egress** from the environment (eg. images or processed datasets) should be transferred to the shared `/output/` drive.
