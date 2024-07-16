@@ -148,6 +148,44 @@
         creates: /etc/audit/rules.d/50-privileged.rules
       notify: Restart auditd
 
+    - name: Copy ClamAV configuration
+      ansible.builtin.copy:
+        src: etc/clamav/clamd.conf
+        dest: /etc/clamav/clamd.conf
+        mode: '0644'
+
+    - name: Stop and disable fresh clam
+      ansible.builtin.systemd:
+        name: clamav-freshclam
+        state: stopped
+        enabled: false
+
+    - name: Install ClamAV services and timer
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /etc/systemd/system/
+        mode: '0644'
+      with_fileglob: 'etc/systemd/system/clamav*'
+      notify: Systemd daemon reload
+
+    - name: Enable and start ClamAV daemon
+      ansible.builtin.systemd:
+        name: clamav-daemon
+        enabled: true
+        state: started
+
+    - name: Enable and start ClamAV on access scan
+      ansible.builtin.systemd:
+        name: clamav-clamonacc
+        enabled: true
+        state: started
+
+    - name: Enable and start ClamAV timer
+      ansible.builtin.systemd:
+        name: clamav-clamdscan.timer
+        enabled: true
+        state: started
+
     - name: Copy smoke test files
       ansible.builtin.copy:
         src: "{{ item }}"
@@ -172,3 +210,10 @@
     - name: Update PAM auth  # noqa: no-changed-when
       ansible.builtin.command:
         cmd: pam-auth-update --enable mkhomedir ldap
+
+    # Run systemd daemon-reload.
+    # https://www.freedesktop.org/software/systemd/man/systemctl.html#daemon-reload
+    # Should be called when changes are made to .service or .timer files
+    - name: Systemd daemon reload
+      ansible.builtin.systemd:
+        daemon_reload: true
