@@ -92,9 +92,11 @@
     - name: Copy test files
       ansible.builtin.copy:
         src: "{{ item }}"
-        dest: /root/tests/
+        dest: /home/dshadmin/tests/
         mode: '0700'
-      with_fileglob: 'root/tests/*'
+        owner: dshadmin
+        group: dshadmin
+      with_fileglob: 'home/dshadmin/tests/*'
 
 
   handlers:
