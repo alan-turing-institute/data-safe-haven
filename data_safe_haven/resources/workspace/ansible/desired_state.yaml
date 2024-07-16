@@ -81,7 +81,7 @@
       notify: Restart sshd
 
     - name: Enable and start xrdp services
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: "{{ item }}"
         enabled: true
         state: started
@@ -99,7 +99,7 @@
 
   handlers:
     - name: Restart sshd
-      ansible.builtin.systemd_service:
+      ansible.builtin.systemd:
         name: sshd
         enabled: true
         state: restarted
