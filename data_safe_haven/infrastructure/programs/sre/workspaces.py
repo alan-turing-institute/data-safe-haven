@@ -196,7 +196,3 @@ class SREWorkspacesComponent(ComponentResource):
             cloudinit = chevron.render(f_cloudinit, kwargs)
             logger.debug(f"Generated cloud-init config:\n {cloudinit}")
             return cloudinit
-
-    @staticmethod
-    def cloud_init_indent(string: str, indent: int) -> str:
-        return string.replace("\n", "\n" + " " * indent)

@@ -1,20 +1,6 @@
-import pytest
-
 from data_safe_haven.infrastructure.programs.sre.workspaces import (
     SREWorkspacesComponent,
 )
-
-
-class TestCloudInitIndent:
-    @pytest.mark.parametrize(
-        "string,indent,expected",
-        [
-            ("hello\nworld\n!!!", 2, "hello\n  world\n  !!!"),
-            ("hello\nworld\n!!!", 0, "hello\nworld\n!!!"),
-        ],
-    )
-    def test_cloud_init_indent(self, string, indent, expected):
-        assert SREWorkspacesComponent.cloud_init_indent(string, indent) == expected
 
 
 class TestTemplateCloudInit:
