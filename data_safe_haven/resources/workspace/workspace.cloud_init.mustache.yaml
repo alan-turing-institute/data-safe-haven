@@ -51,8 +51,10 @@ write_files:
   - path: "/root/desired_state.sh"
     permissions: "0700"
     content: |
-      #!/usr/bin/env sh
-      ansible-playbook -i localhost /desired_state/desired_state.yaml
+      #!/usr/bin/env bash
+      pushd /desired_state
+      ansible-playbook /desired_state/desired_state.yaml
+      popd /desired_state
 
   - path: "/etc/systemd/system/desired-state.timer"
     permissions: "0644"
