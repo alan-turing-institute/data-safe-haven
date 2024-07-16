@@ -9,6 +9,7 @@ from rich.text import Text
 
 from data_safe_haven.directories import log_dir
 
+from .non_logging_singleton import NonLoggingSingleton
 from .plain_file_handler import PlainFileHandler
 
 
@@ -20,7 +21,9 @@ def get_console_handler() -> RichHandler:
     return next(h for h in get_logger().handlers if isinstance(h, RichHandler))
 
 
-def get_logger() -> logging.Logger:
+def get_logger(*, disable_logging: bool = False) -> logging.Logger:
+    if disable_logging:
+        return NonLoggingSingleton()
     return logging.getLogger("data_safe_haven")
 
 
