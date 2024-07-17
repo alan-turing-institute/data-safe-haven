@@ -190,6 +190,7 @@ class VMComponent(ComponentResource):
                     **network_interface_ip_params,
                 )
             ],
+            location=props.location,
             network_interface_name=Output.concat(props.vm_name, "-nic"),
             resource_group_name=props.resource_group_name,
             opts=child_opts,
