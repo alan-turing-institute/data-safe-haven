@@ -100,6 +100,7 @@ class SREDnsServerComponent(ComponentResource):
         # Define network security group
         nsg = network.NetworkSecurityGroup(
             f"{self._name}_nsg_dns",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-dns",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -165,6 +166,7 @@ class SREDnsServerComponent(ComponentResource):
             address_space=network.AddressSpaceArgs(
                 address_prefixes=[SREDnsIpRanges.vnet.prefix],
             ),
+            location=props.location,
             resource_group_name=resource_group.name,
             subnets=[  # Note that we define subnets inline to avoid creation order issues
                 # DNS subnet
