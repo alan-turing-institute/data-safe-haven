@@ -11,7 +11,9 @@ class TestSREIpRanges:
         )
         assert SREIpRanges.apt_proxy_server == AzureIPv4Range("10.0.1.0", "10.0.1.7")
         assert SREIpRanges.data_configuration == AzureIPv4Range("10.0.1.8", "10.0.1.15")
-        assert SREIpRanges.data_desired_state == AzureIPv4Range("10.0.1.16", "10.0.1.23")
+        assert SREIpRanges.data_desired_state == AzureIPv4Range(
+            "10.0.1.16", "10.0.1.23"
+        )
         assert SREIpRanges.data_private == AzureIPv4Range("10.0.1.24", "10.0.1.31")
         assert SREIpRanges.firewall == AzureIPv4Range("10.0.1.64", "10.0.1.127")
         assert SREIpRanges.firewall_management == AzureIPv4Range(
