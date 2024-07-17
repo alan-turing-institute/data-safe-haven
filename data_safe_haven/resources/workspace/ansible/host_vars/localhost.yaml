@@ -41,6 +41,7 @@ package_categories:
       - ninja-build
       - octave
       - r-base
+      - rustc
     focal:
       - julia
       - python3.8
