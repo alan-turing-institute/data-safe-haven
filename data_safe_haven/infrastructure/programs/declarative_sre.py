@@ -194,6 +194,7 @@ class DeclarativeSRE:
                 networking_resource_group=networking.resource_group,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_data_configuration=networking.subnet_data_configuration,
+                subnet_data_desired_state=networking.subnet_data_desired_state,
                 subnet_data_private=networking.subnet_data_private,
                 subscription_id=self.config.azure.subscription_id,
                 subscription_name=self.context.subscription_name,

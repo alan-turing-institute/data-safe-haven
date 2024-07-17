@@ -52,6 +52,7 @@ class SREDataProps:
         networking_resource_group: Input[resources.ResourceGroup],
         sre_fqdn: Input[str],
         subnet_data_configuration: Input[network.GetSubnetResult],
+        subnet_data_desired_state: Input[network.GetSubnetResult],
         subnet_data_private: Input[network.GetSubnetResult],
         subscription_id: Input[str],
         subscription_name: Input[str],
@@ -77,6 +78,9 @@ class SREDataProps:
         self.sre_fqdn = sre_fqdn
         self.subnet_data_configuration_id = Output.from_input(
             subnet_data_configuration
+        ).apply(get_id_from_subnet)
+        self.subnet_data_desired_state_id = Output.from_input(
+            subnet_data_desired_state
         ).apply(get_id_from_subnet)
         self.subnet_data_private_id = Output.from_input(subnet_data_private).apply(
             get_id_from_subnet
@@ -497,7 +501,7 @@ class SREDataComponent(ComponentResource):
                 ),
                 virtual_network_rules=[
                     storage.VirtualNetworkRuleArgs(
-                        virtual_network_resource_id=props.subnet_data_configuration_id,
+                        virtual_network_resource_id=props.subnet_data_desired_state_id,
                     )
                 ],
             ),
@@ -573,7 +577,7 @@ class SREDataComponent(ComponentResource):
                 )
             ],
             resource_group_name=resource_group.name,
-            subnet=network.SubnetArgs(id=props.subnet_data_configuration_id),
+            subnet=network.SubnetArgs(id=props.subnet_data_desired_state_id),
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
