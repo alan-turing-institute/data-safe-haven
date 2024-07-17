@@ -157,9 +157,9 @@ class TestSREApplicationGatewayComponent:
                         "provisioning_state": None,
                         "type": None,
                         "backend_addresses": [
-                            {"ip_address": "10.0.1.28"},
-                            {"ip_address": "10.0.1.29"},
-                            {"ip_address": "10.0.1.30"},
+                            {"ip_address": "10.0.1.36"},
+                            {"ip_address": "10.0.1.37"},
+                            {"ip_address": "10.0.1.38"},
                         ],
                         "name": "appGatewayBackendGuacamole",
                     }
