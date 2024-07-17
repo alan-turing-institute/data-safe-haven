@@ -88,7 +88,8 @@ build = [
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
-  "ansible-lint>=24.7.0",
+  "ansible>=10.2.0",
+  "ansible-dev-tools>=24.7.1",
   "black>=24.1.0",
   "mypy>=1.0.0",
   "pydantic>=2.4",
