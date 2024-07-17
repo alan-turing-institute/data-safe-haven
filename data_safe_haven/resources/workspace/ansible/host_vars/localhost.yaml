@@ -31,15 +31,18 @@ package_categories:
     noble:
   - category: development
     common:
+      - aspnetcore-runtime-8.0
       - build-essential
       - cargo
       - cmake
       - default-jre
+      - dotnet-sdk-8.0
       - g++
       - gcc
       - gfortran
       - git-all
       - golang
+      - mono-devel
       - ninja-build
       - octave
       - r-base
