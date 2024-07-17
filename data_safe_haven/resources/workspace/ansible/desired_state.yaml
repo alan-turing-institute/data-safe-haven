@@ -16,6 +16,12 @@
       async: 3600
       poll: 30
 
+    - name: Install snap packages
+      community.general.snap:
+        name: "{{ item.name }}"
+        classic: "{{ item.classic }}"
+        state: present
+      loop: "{{ snap_packages }}"
 
     - name: Enable bash autocompletion globally
       ansible.builtin.blockinfile:

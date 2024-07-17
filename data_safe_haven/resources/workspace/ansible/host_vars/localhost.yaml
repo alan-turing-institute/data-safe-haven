@@ -57,6 +57,7 @@ package_categories:
   - category: editors
     common:
       - emacs
+      - nano
       - neovim
       - vim
       - vim-airline
@@ -121,3 +122,9 @@ apt_packages:
   focal: "{{ package_categories | map(attribute='focal') | flatten }}"
   jammy: "{{ package_categories | map(attribute='jammy') | flatten }}"
   noble: "{{ package_categories | map(attribute='noble') | flatten }}"
+
+snap_packages:
+  - name: codium
+    classic: true
+  - name: pycharm-community
+    classic: true
