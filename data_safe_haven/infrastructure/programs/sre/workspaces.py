@@ -192,5 +192,7 @@ class SREWorkspacesComponent(ComponentResource):
             encoding="utf-8",
         ) as f_cloudinit:
             cloudinit = chevron.render(f_cloudinit, kwargs)
-            logger.debug(f"Generated cloud-init config:\n {cloudinit}")
+            logger.debug(
+                f"Generated cloud-init config: {cloudinit.replace('\n', r'\n')}"
+            )
             return cloudinit
