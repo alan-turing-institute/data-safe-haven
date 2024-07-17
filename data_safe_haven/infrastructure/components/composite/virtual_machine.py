@@ -161,6 +161,7 @@ class VMComponent(ComponentResource):
         if props.ip_address_public:
             public_ip = network.PublicIPAddress(
                 f"{name_underscored}_public_ip",
+                location=props.location,
                 public_ip_address_name=Output.concat(props.vm_name, "-public-ip"),
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,

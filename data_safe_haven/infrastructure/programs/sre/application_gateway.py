@@ -23,12 +23,14 @@ class SREApplicationGatewayProps:
         self,
         key_vault_certificate_id: Input[str],
         key_vault_identity: Input[managedidentity.UserAssignedIdentity],
+        location: Input[str],
         resource_group: Input[resources.ResourceGroup],
         sre_fqdn: Input[str],
         subnet_application_gateway: Input[network.GetSubnetResult],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
     ) -> None:
         self.key_vault_certificate_id = key_vault_certificate_id
+        self.location = location
         self.resource_group_id = Output.from_input(resource_group).apply(get_id_from_rg)
         self.resource_group_name = Output.from_input(resource_group).apply(
             get_name_from_rg
@@ -64,6 +66,7 @@ class SREApplicationGatewayComponent(ComponentResource):
         # Define public IP address
         public_ip = network.PublicIPAddress(
             f"{self._name}_public_ip",
+            location=props.location,
             public_ip_address_name=f"{stack_name}-public-ip",
             public_ip_allocation_method=network.IpAllocationMethod.STATIC,
             resource_group_name=props.resource_group_name,
