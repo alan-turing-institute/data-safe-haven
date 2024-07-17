@@ -192,6 +192,7 @@ class SREApplicationGatewayComponent(ComponentResource):
                 type=network.ResourceIdentityType.USER_ASSIGNED,
                 user_assigned_identities=props.user_assigned_identities,
             ),
+            location=props.location,
             redirect_configurations=[
                 # Guacamole HTTP redirect
                 network.ApplicationGatewayRedirectConfigurationArgs(
