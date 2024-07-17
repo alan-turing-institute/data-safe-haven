@@ -24,6 +24,7 @@ package_categories:
     common:
       - libpq-dev     # interact with PostgreSQL databases
       - msodbcsql17   # interact with Microsoft SQL databases
+      - postgresql-client-common  # CLI psql client
       - unixodbc-dev  # interact with Microsoft SQL databases
     focal:
     jammy:
@@ -127,5 +128,7 @@ apt_packages:
 snap_packages:
   - name: codium
     classic: true
+  - name: dbeaver-ce
+    classic: false
   - name: pycharm-community
     classic: true
