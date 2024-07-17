@@ -31,36 +31,36 @@ package_categories:
     noble:
   - category: development
     common:
-      - aspnetcore-runtime-8.0
-      - build-essential
+      - build-essential  # Common build tools (GCC, make, etc.)
       - cabal-install  # Haskell Cabal packaging tools
-      - cargo
+      - cargo  # Rust development and packaging tool
       - clojure  # Clojure functional programming language for JVM
-      - cmake
-      - default-jre
-      - dotnet-sdk-8.0
+      - cmake  # CMake build system
+      - default-jre  # Java runtime environment
+      - dotnetcore-runtime-8.0  # .Net runtime
+      - dotnet-sdk-8.0  # .Net SDK
       - fsharp  # F# functional-first programming language
-      - g++
-      - gcc
-      - gfortran
+      - g++  # GNU C++ compiler
+      - gcc  # GNU C compiler
+      - gfortran  # GNU Fortran compiler
       - ghc  # Glasgow Haskell Compiler
-      - git-all
-      - golang
+      - git-all  # Git including all subpackages
+      - golang  # Go programming language
       - guile-3.0  # GNU Scheme functional programming language
-      - mono-devel
-      - ninja-build
-      - octave
-      - r-base
+      - mono-devel  # Development libraries for Mono open source .Net implementation
+      - ninja-build  # Ninja build system
+      - octave  # Open source Matlab implementation
+      - r-base  # R programming language
       - racket  # Racket functional programming language implementation
       - racket-common  # Racket shared files
       - ruby-full  # Complete Ruby distribution
-      - rustc
-      - scala
-      - scala-library
-      - weka
+      - rustc  # Rust compiler
+      - scala  # Scala multi-paradigm programming language for JVM
+      - scala-library  # Scala standard library
+      - weka  # Data mining tools
     focal:
-      - julia
-      - python3.8
+      - julia  # Julia programming language
+      - python3.8  # Python programming language
       - python3.9
     jammy:
       - python3.10
