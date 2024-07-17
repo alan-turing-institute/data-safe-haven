@@ -37,12 +37,13 @@ package_categories:
       - g++
       - gcc
       - gfortran
-      - git
+      - git-all
       - golang
       - ninja-build
       - octave
       - r-base
       - rustc
+      - weka
     focal:
       - julia
       - python3.8
