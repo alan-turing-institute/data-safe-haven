@@ -33,19 +33,27 @@ package_categories:
     common:
       - aspnetcore-runtime-8.0
       - build-essential
+      - cabal-install  # Haskell Cabal packaging tools
       - cargo
+      - clojure  # Clojure functional programming language for JVM
       - cmake
       - default-jre
       - dotnet-sdk-8.0
+      - fsharp  # F# functional-first programming language
       - g++
       - gcc
       - gfortran
+      - ghc  # Glasgow Haskell Compiler
       - git-all
       - golang
+      - guile-3.0  # GNU Scheme functional programming language
       - mono-devel
       - ninja-build
       - octave
       - r-base
+      - racket  # Racket functional programming language implementation
+      - racket-common  # Racket shared files
+      - ruby-full  # Complete Ruby distribution
       - rustc
       - scala
       - scala-library
