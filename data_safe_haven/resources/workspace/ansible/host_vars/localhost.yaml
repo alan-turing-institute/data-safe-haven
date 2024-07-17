@@ -73,6 +73,7 @@ package_categories:
   - category: office
     common:
       - libreoffice
+      - texlive-full
     focal:
     jammy:
     noble:
