@@ -136,9 +136,7 @@ class SREWorkspacesComponent(ComponentResource):
             storage_account_data_private_user_name=props.storage_account_data_private_user_name,
             storage_account_data_private_sensitive_name=props.storage_account_data_private_sensitive_name,
         ).apply(lambda kwargs: self.template_cloudinit(**kwargs))
-        b64cloudinit = Output.from_input(cloudinit).apply(
-            lambda cloudinit: b64encode(cloudinit)
-        )
+        b64cloudinit = cloudinit.apply(b64encode)
 
         # Deploy a variable number of VMs depending on the input parameters
         vms = [
