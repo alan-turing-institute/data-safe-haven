@@ -34,6 +34,7 @@ package_categories:
       - build-essential
       - cargo
       - cmake
+      - default-jre
       - g++
       - gcc
       - gfortran
@@ -43,6 +44,8 @@ package_categories:
       - octave
       - r-base
       - rustc
+      - scala
+      - scala-library
       - weka
     focal:
       - julia
