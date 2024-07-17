@@ -524,9 +524,9 @@ class SREDataComponent(ComponentResource):
         BlobContainerAcl(
             f"{container_desired_state._name}_acl",
             BlobContainerAclProps(
-                acl_user="rwx",
+                acl_user="r-x",
                 acl_group="r-x",
-                acl_other="r-x",
+                acl_other="---",
                 # ensure that the above permissions are also set on any newly created
                 # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
