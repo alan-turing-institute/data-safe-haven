@@ -47,7 +47,6 @@ package_categories:
       - git-all  # Git including all subpackages
       - golang  # Go programming language
       - guile-3.0  # GNU Scheme functional programming language
-      - mono-devel  # Development libraries for Mono open source .Net implementation
       - ninja-build  # Ninja build system
       - octave  # Open source Matlab implementation
       - r-base  # R programming language
