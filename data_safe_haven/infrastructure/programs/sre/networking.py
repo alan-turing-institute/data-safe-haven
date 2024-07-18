@@ -1358,7 +1358,7 @@ class SRENetworkingComponent(ComponentResource):
                     access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to desired state data endpoints.",
                     destination_address_prefix=SREIpRanges.data_desired_state.prefix,
-                    destination_port_range=[Ports.NFS_V3_1, Ports.NFS_V3_2],
+                    destination_port_ranges=[Ports.NFS_V3_1, Ports.NFS_V3_2],
                     direction=network.SecurityRuleDirection.OUTBOUND,
                     name="AllowDataDesiredStateEndpointsOutbound",
                     priority=NetworkingPriorities.INTERNAL_SRE_DATA_DESIRED_STATE,
