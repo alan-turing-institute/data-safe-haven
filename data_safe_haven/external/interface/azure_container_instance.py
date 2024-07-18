@@ -36,7 +36,7 @@ class AzureContainerInstance:
     @property
     def current_ip_address(self) -> str:
         aci_client = ContainerInstanceManagementClient(
-            self.azure_sdk.credential, self.azure_sdk.subscription_id
+            self.azure_sdk.credential(), self.azure_sdk.subscription_id
         )
         ip_address = aci_client.container_groups.get(
             self.resource_group_name, self.container_group_name
@@ -51,7 +51,7 @@ class AzureContainerInstance:
         # Connect to Azure clients
         try:
             aci_client = ContainerInstanceManagementClient(
-                self.azure_sdk.credential, self.azure_sdk.subscription_id
+                self.azure_sdk.credential(), self.azure_sdk.subscription_id
             )
             if not target_ip_address:
                 target_ip_address = self.current_ip_address
@@ -98,7 +98,7 @@ class AzureContainerInstance:
         """
         # Connect to Azure clients
         aci_client = ContainerInstanceManagementClient(
-            self.azure_sdk.credential, self.azure_sdk.subscription_id
+            self.azure_sdk.credential(), self.azure_sdk.subscription_id
         )
 
         # Run command
