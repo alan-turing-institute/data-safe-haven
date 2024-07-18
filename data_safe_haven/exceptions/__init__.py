@@ -32,7 +32,7 @@ class DataSafeHavenAzureStorageError(DataSafeHavenAzureError):
     """
     Exception class for handling errors when interacting with Azure Storage.
 
-    Raise this error when, for example, uploading or downloading files to Azure Storage fails.
+    Raise this error when a storage account does not exist.
     """
 
     pass
