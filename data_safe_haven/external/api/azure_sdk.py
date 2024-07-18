@@ -145,6 +145,10 @@ class AzureSdk:
         Returns:
             bool: Whether or not the blob exists
         """
+
+        if not self.storage_exists(storage_account_name):
+            msg = f"Storage account '{storage_account_name}' does not exist."
+            raise DataSafeHavenAzureStorageError(msg)
         try:
             blob_client = self.blob_client(
                 resource_group_name,
@@ -152,10 +156,9 @@ class AzureSdk:
                 storage_container_name,
                 blob_name,
             )
-        except DataSafeHavenAzureError as exc:
-            msg = f"Could not connect to storage account '{storage_account_name}'."
-            raise DataSafeHavenAzureStorageError(msg) from exc
-        exists = bool(blob_client.exists())
+            exists = bool(blob_client.exists())
+        except DataSafeHavenAzureError:
+            exists = False
         response = "exists" if exists else "does not exist"
         self.logger.debug(
             f"File [green]{blob_name}[/] {response} in blob storage.",
@@ -182,7 +185,7 @@ class AzureSdk:
             str: The contents of the blob
 
         Raises:
-            DataSafeHavenAzureStorageError if the blob could not be downloaded
+            DataSafeHavenAzureError if the blob could not be downloaded
         """
         try:
             blob_client = self.blob_client(
@@ -199,7 +202,7 @@ class AzureSdk:
             return str(blob_content)
         except AzureError as exc:
             msg = f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'."
-            raise DataSafeHavenAzureStorageError(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
 
     def ensure_dns_caa_record(
         self,
@@ -885,7 +888,7 @@ class AzureSdk:
             )
         except AzureError as exc:
             msg = f"Blob file '{blob_name}' could not be removed from '{storage_account_name}'."
-            raise DataSafeHavenAzureStorageError(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
 
     def remove_dns_txt_record(
         self,
@@ -1174,6 +1177,23 @@ class AzureSdk:
             msg = f"Failed to set ACL '{desired_acl}' on container '{container_name}'."
             raise DataSafeHavenAzureError(msg) from exc
 
+    def storage_exists(
+        self,
+        storage_account_name: str,
+    ) -> bool:
+        """Find out whether a storage account exists in Azure storage
+
+        Returns:
+            bool: Whether or not the storage account exists
+        """
+
+        storage_client = StorageManagementClient(
+            self.credential(), self.subscription_id
+        )
+        return not storage_client.storage_accounts.check_name_availability(
+            {"name": storage_account_name}
+            ).name_available
+
     def upload_blob(
         self,
         blob_data: bytes | str,
@@ -1204,4 +1224,4 @@ class AzureSdk:
             )
         except AzureError as exc:
             msg = f"Blob file '{blob_name}' could not be uploaded to '{storage_account_name}'."
-            raise DataSafeHavenAzureStorageError(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
