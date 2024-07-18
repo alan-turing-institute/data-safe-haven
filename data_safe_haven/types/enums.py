@@ -172,7 +172,7 @@ class Ports(str, Enum):
     MSSQL = "1433"
     NEXUS = "8081"
     NFS_V3_1 = "111"
-    NFS_V3_2 = "2049"
+    NFS_V3_2 = "2048"
     NTP = "123"
     POSTGRESQL = "5432"
     RDP = "3389"
