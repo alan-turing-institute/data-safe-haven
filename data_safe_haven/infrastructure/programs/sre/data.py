@@ -872,7 +872,11 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_data_private_id),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_data_private_user)
+                child_opts,
+                ResourceOptions(
+                    ignore_changes=["custom_dns_configs"],
+                    parent=storage_account_data_private_user,
+                )
             ),
             tags=child_tags,
         )
