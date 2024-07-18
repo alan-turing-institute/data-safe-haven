@@ -3,6 +3,7 @@
 from typing import Any, ClassVar, TypeVar
 
 from data_safe_haven.exceptions import (
+    DataSafeHavenAzureError,
     DataSafeHavenAzureStorageError,
     DataSafeHavenError,
 )
@@ -28,7 +29,8 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         Construct an AzureSerialisableModel from a YAML file in Azure storage.
 
         Raises:
-            DataSafeHavenAzureStorageError: if the file cannot be loaded
+            DataSafeHavenAzureError: if the file cannot be loaded
+            DataSafeHavenAzureStorageError: if the storage account does not exist
         """
         try:
             azure_sdk = AzureSdk(subscription_name=context.subscription_name)
@@ -39,9 +41,12 @@ class AzureSerialisableModel(YAMLSerialisableModel):
                 context.storage_container_name,
             )
             return cls.from_yaml(config_yaml)
+        except DataSafeHavenAzureStorageError as exc:
+            msg = f"Storage account '{context.storage_account_name}' does not exist."
+            raise DataSafeHavenAzureStorageError(msg) from exc
         except DataSafeHavenError as exc:
             msg = f"Could not load file '{filename or cls.default_filename}' from Azure storage."
-            raise DataSafeHavenAzureStorageError(msg) from exc
+            raise DataSafeHavenAzureError(msg) from exc
 
     @classmethod
     def from_remote_or_create(
@@ -62,12 +67,15 @@ class AzureSerialisableModel(YAMLSerialisableModel):
     ) -> bool:
         """Check whether a remote instance of this model exists."""
         azure_sdk = AzureSdk(subscription_name=context.subscription_name)
-        return azure_sdk.blob_exists(
-            filename or cls.default_filename,
-            context.resource_group_name,
-            context.storage_account_name,
-            context.storage_container_name,
-        )
+        if azure_sdk.storage_exists(context.storage_account_name):
+            return azure_sdk.blob_exists(
+                filename or cls.default_filename,
+                context.resource_group_name,
+                context.storage_account_name,
+                context.storage_container_name,
+            )
+        else:
+            return False
 
     def remote_yaml_diff(
         self: T, context: ContextBase, *, filename: str | None = None
