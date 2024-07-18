@@ -568,7 +568,7 @@ class SREDataComponent(ComponentResource):
         storage_account_data_desired_state_endpoint = network.PrivateEndpoint(
             f"{storage_account_data_desired_state._name}_private_endpoint",
             location=props.location,
-            private_endpoint_name=f"{stack_name}-pep-storage-account-desired-state",
+            private_endpoint_name=f"{stack_name}-pep-storage-account-data-desired-state",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["blob"],
