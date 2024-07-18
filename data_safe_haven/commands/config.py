@@ -30,7 +30,7 @@ def show_shm(
     try:
         config = SHMConfig.from_remote(context)
     except DataSafeHavenError as exc:
-        logger.critical("No SHM configuration exists for the selected context.")
+        logger.critical("SHM must be deployed before its configuration can be displayed.")
         raise typer.Exit(1) from exc
     config_yaml = config.to_yaml()
     if file:
@@ -56,7 +56,6 @@ def show(
         sre_config = SREConfig.from_remote_by_name(context, name)
     except DataSafeHavenAzureStorageError as exc:
         logger.critical(
-            "Failed to interact with Azure storage for the selected context. \n"
             "Ensure SHM is deployed before attempting to use SRE configs."
         )
         raise typer.Exit(1) from exc
