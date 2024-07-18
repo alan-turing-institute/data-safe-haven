@@ -15,6 +15,7 @@ from ..resource_assertions import assert_equal, assert_equal_json
 @pytest.fixture
 def application_gateway_props(
     identity_key_vault_reader,
+    location,
     resource_group,
     sre_fqdn,
     subnet_application_gateway,
@@ -23,6 +24,7 @@ def application_gateway_props(
     return SREApplicationGatewayProps(
         key_vault_certificate_id="key_vault_certificate_id",
         key_vault_identity=identity_key_vault_reader,
+        location=location,
         resource_group=resource_group,
         sre_fqdn=sre_fqdn,
         subnet_application_gateway=subnet_application_gateway,
@@ -406,10 +408,12 @@ class TestSREApplicationGatewayComponent:
 
     @pulumi.runtime.test
     def test_application_gateway_location(
-        self, application_gateway_component: SREApplicationGatewayComponent
+        self,
+        application_gateway_component: SREApplicationGatewayComponent,
+        location: str,
     ):
         application_gateway_component.application_gateway.location.apply(
-            partial(assert_equal, None),
+            partial(assert_equal, location),
             run_with_unknowns=True,
         )
 
