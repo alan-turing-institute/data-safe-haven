@@ -103,8 +103,8 @@
 
     - name: Copy auditd rules
       ansible.builtin.copy:
-        src: etc/auditd/rules.d/audit.rules
-        dest: /etc/auditd/rules.d/audit.rules
+        src: etc/audit/rules.d/audit.rules
+        dest: /etc/audit/rules.d/audit.rules
         mode: '0640'
       notify: Restart auditd
 
