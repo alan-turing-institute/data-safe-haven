@@ -250,6 +250,7 @@ class DeclarativeSRE:
             SREApplicationGatewayProps(
                 key_vault_certificate_id=data.sre_fqdn_certificate_secret_id,
                 key_vault_identity=data.managed_identity,
+                location=self.config.azure.location,
                 resource_group=networking.resource_group,
                 subnet_application_gateway=networking.subnet_application_gateway,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,

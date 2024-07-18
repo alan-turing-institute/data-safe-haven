@@ -95,6 +95,7 @@ class SRENetworkingComponent(ComponentResource):
         # Define NSGs
         nsg_application_gateway = network.NetworkSecurityGroup(
             f"{self._name}_nsg_application_gateway",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-application-gateway",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -208,6 +209,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_apt_proxy_server = network.NetworkSecurityGroup(
             f"{self._name}_nsg_apt_proxy_server",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-apt-proxy-server",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -303,6 +305,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_data_configuration = network.NetworkSecurityGroup(
             f"{self._name}_nsg_data_configuration",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-data-configuration",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -398,6 +401,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_data_private = network.NetworkSecurityGroup(
             f"{self._name}_nsg_data_private",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-data-private",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -457,6 +461,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_guacamole_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_guacamole_containers",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-guacamole-containers",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -588,6 +593,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_guacamole_containers_support = network.NetworkSecurityGroup(
             f"{self._name}_nsg_guacamole_containers_support",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-guacamole-containers-support",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -647,6 +653,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_identity_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_identity_containers",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-identity-containers",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -766,6 +773,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_monitoring = network.NetworkSecurityGroup(
             f"{self._name}_nsg_monitoring",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-monitoring",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -849,6 +857,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_user_services_containers = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-user-services-containers",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -956,6 +965,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_user_services_containers_support = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_containers_support",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-user-services-containers-support",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -1015,6 +1025,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_user_services_databases = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_databases",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-user-services-databases",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -1098,6 +1109,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_user_services_software_repositories = network.NetworkSecurityGroup(
             f"{self._name}_nsg_user_services_software_repositories",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-user-services-software-repositories",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -1193,6 +1205,7 @@ class SRENetworkingComponent(ComponentResource):
         )
         nsg_workspaces = network.NetworkSecurityGroup(
             f"{self._name}_nsg_workspaces",
+            location=props.location,
             network_security_group_name=f"{stack_name}-nsg-workspaces",
             resource_group_name=resource_group.name,
             security_rules=[
@@ -1398,6 +1411,7 @@ class SRENetworkingComponent(ComponentResource):
                 address_prefixes=[SREIpRanges.vnet.prefix],
             ),
             dhcp_options=network.DhcpOptionsArgs(dns_servers=[props.dns_server_ip]),
+            location=props.location,
             resource_group_name=resource_group.name,
             # Note that we define subnets inline to avoid creation order issues
             subnets=[
