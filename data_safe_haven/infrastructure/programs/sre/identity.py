@@ -216,6 +216,7 @@ class SREIdentityComponent(ComponentResource):
                 ],
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
+            location=props.location,
             os_type=containerinstance.OperatingSystemTypes.LINUX,
             resource_group_name=resource_group.name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,

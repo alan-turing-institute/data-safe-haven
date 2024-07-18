@@ -95,6 +95,7 @@ class PostgresqlDatabaseComponent(ComponentResource):
         # Deploy a private endpoint for the PostgreSQL server
         private_endpoint = network.PrivateEndpoint(
             f"{self._name}_private_endpoint",
+            location=props.location,
             private_endpoint_name=Output.concat(
                 props.database_server_name, "-endpoint"
             ),
