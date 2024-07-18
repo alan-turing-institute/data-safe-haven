@@ -30,7 +30,9 @@ def show_shm(
     try:
         config = SHMConfig.from_remote(context)
     except DataSafeHavenError as exc:
-        logger.critical("SHM must be deployed before its configuration can be displayed.")
+        logger.critical(
+            "SHM must be deployed before its configuration can be displayed."
+        )
         raise typer.Exit(1) from exc
     config_yaml = config.to_yaml()
     if file:
@@ -55,9 +57,7 @@ def show(
     try:
         sre_config = SREConfig.from_remote_by_name(context, name)
     except DataSafeHavenAzureStorageError as exc:
-        logger.critical(
-            "Ensure SHM is deployed before attempting to use SRE configs."
-        )
+        logger.critical("Ensure SHM is deployed before attempting to use SRE configs.")
         raise typer.Exit(1) from exc
     except DataSafeHavenError as exc:
         logger.critical(
