@@ -95,6 +95,19 @@
         - xrdp
         - xrdp-sesman
 
+    - name: Enable and start auditd service
+      ansible.builtin.systemd:
+        name: auditd
+        enabled: true
+        state: started
+
+    - name: Copy auditd rules
+      ansible.builtin.copy:
+        src: etc/auditd/rules.d/audit.rules
+        dest: /etc/auditd/rules.d/audit.rules
+        mode: '0640'
+      notify: Restart auditd
+
     - name: Copy test files
       ansible.builtin.copy:
         src: "{{ item }}"
@@ -106,6 +119,12 @@
 
 
   handlers:
+    - name: Restart auditd
+      ansible.builtin.systemd:
+        name: auditd
+        enabled: true
+        state: restarted
+
     - name: Restart sshd
       ansible.builtin.systemd:
         name: sshd
