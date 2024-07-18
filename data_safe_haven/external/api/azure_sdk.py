@@ -66,6 +66,7 @@ from azure.storage.filedatalake import DataLakeServiceClient
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureAPIAuthenticationError,
     DataSafeHavenAzureError,
+    DataSafeHavenAzureStorageError,
     DataSafeHavenValueError,
 )
 from data_safe_haven.logging import get_logger
@@ -124,7 +125,7 @@ class AzureSdk:
         )
         if not isinstance(blob_service_client, BlobServiceClient):
             msg = f"Could not connect to storage account '{storage_account_name}'."
-            raise DataSafeHavenAzureError(msg)
+            raise DataSafeHavenAzureStorageError(msg)
 
         # Get the blob client
         blob_client = blob_service_client.get_blob_client(
@@ -151,9 +152,10 @@ class AzureSdk:
                 storage_container_name,
                 blob_name,
             )
-            exists = bool(blob_client.exists())
-        except DataSafeHavenAzureError:
-            exists = False
+        except DataSafeHavenAzureError as exc:
+            msg = f"Could not connect to storage account '{storage_account_name}'."
+            raise DataSafeHavenAzureStorageError(msg) from exc
+        exists = bool(blob_client.exists())
         response = "exists" if exists else "does not exist"
         self.logger.debug(
             f"File [green]{blob_name}[/] {response} in blob storage.",
@@ -180,7 +182,7 @@ class AzureSdk:
             str: The contents of the blob
 
         Raises:
-            DataSafeHavenAzureError if the blob could not be downloaded
+            DataSafeHavenAzureStorageError if the blob could not be downloaded
         """
         try:
             blob_client = self.blob_client(
@@ -197,7 +199,7 @@ class AzureSdk:
             return str(blob_content)
         except AzureError as exc:
             msg = f"Blob file '{blob_name}' could not be downloaded from '{storage_account_name}'."
-            raise DataSafeHavenAzureError(msg) from exc
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def ensure_dns_caa_record(
         self,
@@ -556,7 +558,7 @@ class AzureSdk:
             return storage_account
         except AzureError as exc:
             msg = f"Failed to create storage account {storage_account_name}."
-            raise DataSafeHavenAzureError(msg) from exc
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def ensure_storage_blob_container(
         self,
@@ -593,7 +595,7 @@ class AzureSdk:
             return container
         except HttpResponseError as exc:
             msg = f"Failed to create storage container '{container_name}'."
-            raise DataSafeHavenAzureError(msg) from exc
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def get_keyvault_certificate(
         self, certificate_name: str, key_vault_name: str
@@ -715,15 +717,15 @@ class AzureSdk:
                 time.sleep(5)
             if not isinstance(storage_keys, StorageAccountListKeysResult):
                 msg = f"Could not connect to {msg_sa} in {msg_rg}."
-                raise DataSafeHavenAzureError(msg)
+                raise DataSafeHavenAzureStorageError(msg)
             keys = cast(list[StorageAccountKey], storage_keys.keys)
             if not keys or not isinstance(keys, list) or len(keys) == 0:
                 msg = f"No keys were retrieved for {msg_sa} in {msg_rg}."
-                raise DataSafeHavenAzureError(msg)
+                raise DataSafeHavenAzureStorageError(msg)
             return keys
         except AzureError as exc:
             msg = f"Keys could not be loaded for {msg_sa} in {msg_rg}."
-            raise DataSafeHavenAzureError(msg) from exc
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def get_subscription(self, subscription_name: str) -> Subscription:
         """Get an Azure subscription by name."""
@@ -872,7 +874,7 @@ class AzureSdk:
             )
             if not isinstance(blob_service_client, BlobServiceClient):
                 msg = f"Could not connect to storage account '{storage_account_name}'."
-                raise DataSafeHavenAzureError(msg)
+                raise DataSafeHavenAzureStorageError(msg)
             # Remove the requested blob
             blob_client = blob_service_client.get_blob_client(
                 container=storage_container_name, blob=blob_name
@@ -883,7 +885,7 @@ class AzureSdk:
             )
         except AzureError as exc:
             msg = f"Blob file '{blob_name}' could not be removed from '{storage_account_name}'."
-            raise DataSafeHavenAzureError(msg) from exc
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     def remove_dns_txt_record(
         self,
@@ -1202,4 +1204,4 @@ class AzureSdk:
             )
         except AzureError as exc:
             msg = f"Blob file '{blob_name}' could not be uploaded to '{storage_account_name}'."
-            raise DataSafeHavenAzureError(msg) from exc
+            raise DataSafeHavenAzureStorageError(msg) from exc
