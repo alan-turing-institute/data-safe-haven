@@ -57,7 +57,7 @@ def show(
     except DataSafeHavenAzureStorageError as exc:
         logger.critical(
             "Failed to interact with Azure storage for the selected context. \n"
-            "Ensure context infrastructure is deployed."
+            "Ensure SHM is deployed before attempting to use SRE configs."
         )
         raise typer.Exit(1) from exc
     except DataSafeHavenError as exc:
