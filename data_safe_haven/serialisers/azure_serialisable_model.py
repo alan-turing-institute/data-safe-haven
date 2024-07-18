@@ -2,7 +2,10 @@
 
 from typing import Any, ClassVar, TypeVar
 
-from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureStorageError,
+    DataSafeHavenError,
+)
 from data_safe_haven.external import AzureSdk
 
 from .context_base import ContextBase
@@ -25,7 +28,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
         Construct an AzureSerialisableModel from a YAML file in Azure storage.
 
         Raises:
-            DataSafeHavenAzureError: if the file cannot be loaded
+            DataSafeHavenAzureStorageError: if the file cannot be loaded
         """
         try:
             azure_sdk = AzureSdk(subscription_name=context.subscription_name)
@@ -38,7 +41,7 @@ class AzureSerialisableModel(YAMLSerialisableModel):
             return cls.from_yaml(config_yaml)
         except DataSafeHavenError as exc:
             msg = f"Could not load file '{filename or cls.default_filename}' from Azure storage."
-            raise DataSafeHavenAzureError(msg) from exc
+            raise DataSafeHavenAzureStorageError(msg) from exc
 
     @classmethod
     def from_remote_or_create(
