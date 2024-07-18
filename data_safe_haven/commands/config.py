@@ -7,7 +7,10 @@ import typer
 
 from data_safe_haven import console
 from data_safe_haven.config import ContextManager, SHMConfig, SREConfig
-from data_safe_haven.exceptions import DataSafeHavenError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureStorageError,
+    DataSafeHavenError,
+)
 from data_safe_haven.logging import get_logger
 
 config_command_group = typer.Typer()
@@ -51,6 +54,12 @@ def show(
     logger = get_logger()
     try:
         sre_config = SREConfig.from_remote_by_name(context, name)
+    except DataSafeHavenAzureStorageError as exc:
+        logger.critical(
+            "Failed to interact with Azure storage for the selected context. \n"
+            "Ensure context infrastructure is deployed."
+        )
+        raise typer.Exit(1) from exc
     except DataSafeHavenError as exc:
         logger.critical(
             f"No configuration exists for an SRE named '{name}' for the selected context."
