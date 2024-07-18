@@ -27,6 +27,7 @@ class DataSafeHavenAzureError(DataSafeHavenError):
 
     pass
 
+
 class DataSafeHavenAzureStorageError(DataSafeHavenAzureError):
     """
     Exception class for handling errors when interacting with Azure Storage.
