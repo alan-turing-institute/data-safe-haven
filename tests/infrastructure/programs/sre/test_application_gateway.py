@@ -408,10 +408,12 @@ class TestSREApplicationGatewayComponent:
 
     @pulumi.runtime.test
     def test_application_gateway_location(
-        self, application_gateway_component: SREApplicationGatewayComponent
+        self,
+        application_gateway_component: SREApplicationGatewayComponent,
+        location: str,
     ):
         application_gateway_component.application_gateway.location.apply(
-            partial(assert_equal, None),
+            partial(assert_equal, location),
             run_with_unknowns=True,
         )
 
