@@ -53,7 +53,7 @@ def show(
         sre_config = SREConfig.from_remote_by_name(context, name)
     except DataSafeHavenError as exc:
         logger.critical(
-            f"No configuration exists for an SRE named '{name}' for the selected context ."
+            f"No configuration exists for an SRE named '{name}' for the selected context."
         )
         raise typer.Exit(1) from exc
     config_yaml = sre_config.to_yaml()
@@ -114,4 +114,8 @@ def upload(
             console.print("No changes, won't upload configuration.")
             raise typer.Exit()
 
-    config.upload(context, filename=config.filename)
+    try:
+        config.upload(context, filename=config.filename)
+    except DataSafeHavenError as exc:
+        logger.critical("No infrastructure found for the selected context.")
+        raise typer.Exit(1) from exc
