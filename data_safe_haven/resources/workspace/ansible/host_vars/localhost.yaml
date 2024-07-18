@@ -37,7 +37,7 @@ package_categories:
       - clojure  # Clojure functional programming language for JVM
       - cmake  # CMake build system
       - default-jre  # Java runtime environment
-      - dotnetcore-runtime-8.0  # .Net runtime
+      - dotnet-runtime-8.0  # .Net runtime
       - dotnet-sdk-8.0  # .Net SDK
       - fsharp  # F# functional-first programming language
       - g++  # GNU C++ compiler
