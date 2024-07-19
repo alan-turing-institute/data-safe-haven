@@ -171,8 +171,6 @@ class Ports(str, Enum):
     LINUX_UPDATE = "8000"
     MSSQL = "1433"
     NEXUS = "8081"
-    NFS_V3_1 = "111"
-    NFS_V3_2 = "2048"
     NTP = "123"
     POSTGRESQL = "5432"
     RDP = "3389"
