@@ -375,6 +375,7 @@ class SREDataComponent(ComponentResource):
         )
 
         # Deploy configuration data storage account
+        # - This holds file shares that are mounted by Azure Container Instances
         storage_account_data_configuration = storage.StorageAccount(
             f"{self._name}_storage_account_data_configuration",
             # Note that account names have a maximum of 24 characters
@@ -461,9 +462,9 @@ class SREDataComponent(ComponentResource):
             ),
         )
 
-        # Deploy desired state blob storage account
+        # Deploy desired state storage account
+        # - This holds the /desired_state container that is mounted by workspaces
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
-        # - Store the /desired_state directory here
         storage_account_data_desired_state = storage.StorageAccount(
             f"{self._name}_storage_account_data_desired_state",
             # Storage account names have a maximum of 24 characters
@@ -512,7 +513,7 @@ class SREDataComponent(ComponentResource):
         )
         # Deploy desired state share
         container_desired_state = storage.BlobContainer(
-            f"{storage_account_data_configuration._name}_desired_state",
+            f"{self._name}_blob_desired_state",
             account_name=storage_account_data_desired_state.name,
             container_name="desiredstate",
             default_encryption_scope="$account-encryption-key",
@@ -530,7 +531,7 @@ class SREDataComponent(ComponentResource):
             BlobContainerAclProps(
                 acl_user="r-x",
                 acl_group="r-x",
-                acl_other="---",
+                acl_other="r-x",
                 # ensure that the above permissions are also set on any newly created
                 # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
@@ -568,7 +569,7 @@ class SREDataComponent(ComponentResource):
         storage_account_data_desired_state_endpoint = network.PrivateEndpoint(
             f"{storage_account_data_desired_state._name}_private_endpoint",
             location=props.location,
-            private_endpoint_name=f"{stack_name}-pep-storage-account-desired-state",
+            private_endpoint_name=f"{stack_name}-pep-storage-account-data-desired-state",
             private_link_service_connections=[
                 network.PrivateLinkServiceConnectionArgs(
                     group_ids=["blob"],
@@ -610,8 +611,8 @@ class SREDataComponent(ComponentResource):
         )
 
         # Deploy sensitive data blob storage account
+        # - This holds the /data and /output containers that are mounted by workspaces
         # - Azure blobs have worse NFS support but can be accessed with Azure Storage Explorer
-        # - Store the /data and /output folders here
         storage_account_data_private_sensitive = storage.StorageAccount(
             f"{self._name}_storage_account_data_private_sensitive",
             # Storage account names have a maximum of 24 characters
@@ -792,9 +793,9 @@ class SREDataComponent(ComponentResource):
         )
 
         # Deploy data_private_user files storage account
-        # - Azure Files has better NFS support and cannot be accessed with Azure Storage Explorer
+        # - This holds the /home and /shared containers that are mounted by workspaces
+        # - Azure Files has better NFS support but cannot be accessed with Azure Storage Explorer
         # - Allows root-squashing to be configured
-        # - Store the /home and /shared folders here
         storage_account_data_private_user = storage.StorageAccount(
             f"{self._name}_storage_account_data_private_user",
             access_tier=storage.AccessTier.COOL,
@@ -871,7 +872,11 @@ class SREDataComponent(ComponentResource):
             resource_group_name=resource_group.name,
             subnet=network.SubnetArgs(id=props.subnet_data_private_id),
             opts=ResourceOptions.merge(
-                child_opts, ResourceOptions(parent=storage_account_data_private_user)
+                child_opts,
+                ResourceOptions(
+                    ignore_changes=["custom_dns_configs"],
+                    parent=storage_account_data_private_user,
+                ),
             ),
             tags=child_tags,
         )

@@ -54,7 +54,7 @@ write_files:
       #!/usr/bin/env bash
       pushd /desired_state
       ansible-playbook /desired_state/desired_state.yaml
-      popd /desired_state
+      popd
 
   - path: "/etc/systemd/system/desired-state.timer"
     permissions: "0644"
@@ -81,6 +81,7 @@ write_files:
       Type=oneshot
       ExecStartPre=sleep 1m
       ExecStart=/root/desired_state.sh
+      StandardOutput=journal+console
 
 
 mounts:
@@ -125,6 +126,7 @@ runcmd:
   - grep -v -e '^[[:space:]]*$' /etc/fstab | sed 's|^|  /etc/fstab  |'
   - mount -fav
   - while (! mountpoint -q /data); do sleep 5; mount /data; done
+  - while (! mountpoint -q /desired_state); do sleep 5; mount /desired_state; done
   - while (! mountpoint -q /home); do sleep 5; mount /home; done
   - while (! mountpoint -q /output); do sleep 5; mount /output; done
   - while (! mountpoint -q /shared); do sleep 5; mount /shared; done
@@ -132,9 +134,12 @@ runcmd:
 
   # Enable and start desired state timer
   # ------------------------------------
+  - echo ">=== Enabling desired state timer... ===<"
+  - systemctl daemon-reload
   - systemctl enable desired-state.timer
   - systemctl start desired-state.timer
 
   # Run desired state service
   # -------------------------
+  - echo ">=== Running initial desired state configuration... ===<"
   - systemctl start desired-state
