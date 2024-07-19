@@ -133,9 +133,12 @@ runcmd:
 
   # Enable and start desired state timer
   # ------------------------------------
+  - echo ">=== Enabling desired state timer... ===<"
+  - systemctl daemon-reload
   - systemctl enable desired-state.timer
   - systemctl start desired-state.timer
 
   # Run desired state service
   # -------------------------
+  - echo ">=== Running initial desired state configuration... ===<"
   - systemctl start desired-state
