@@ -129,6 +129,7 @@ runcmd:
   - while (! mountpoint -q /home); do sleep 5; mount /home; done
   - while (! mountpoint -q /output); do sleep 5; mount /output; done
   - while (! mountpoint -q /shared); do sleep 5; mount /shared; done
+  - findmnt
 
   # Enable and start desired state timer
   # ------------------------------------
