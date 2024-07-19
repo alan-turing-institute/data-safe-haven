@@ -81,6 +81,7 @@ write_files:
       Type=oneshot
       ExecStartPre=sleep 1m
       ExecStart=/root/desired_state.sh
+      StandardOutput=journal+console
 
 
 mounts:
