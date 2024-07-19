@@ -54,7 +54,7 @@ write_files:
       #!/usr/bin/env bash
       pushd /desired_state
       ansible-playbook /desired_state/desired_state.yaml
-      popd /desired_state
+      popd
 
   - path: "/etc/systemd/system/desired-state.timer"
     permissions: "0644"
