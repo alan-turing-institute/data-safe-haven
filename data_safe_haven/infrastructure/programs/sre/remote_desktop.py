@@ -310,7 +310,7 @@ class SRERemoteDesktopComponent(ComponentResource):
                     ),
                 ),
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.4.0",
+                    image="ghcr.io/alan-turing-institute/guacamole-user-sync:v0.5.0",
                     name="guacamole-user-sync"[:63],
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
