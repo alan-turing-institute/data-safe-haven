@@ -876,7 +876,7 @@ class SREDataComponent(ComponentResource):
                 ResourceOptions(
                     ignore_changes=["custom_dns_configs"],
                     parent=storage_account_data_private_user,
-                )
+                ),
             ),
             tags=child_tags,
         )
