@@ -95,6 +95,7 @@ exclude = [
   'ipaddressguide\.com',  # 403
   'opensource\.org',  # 403
   'portal\.azure\.com',  # 403
+  'doi\.org',  # 403
 ]
 
 # Exclude these filesystem paths from getting checked.
