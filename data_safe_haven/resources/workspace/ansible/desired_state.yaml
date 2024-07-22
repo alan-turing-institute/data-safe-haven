@@ -55,11 +55,13 @@
         replace: '\1\2 ldap'
 
     - name: Ensure home directories are created on LDAP login
-      # Should look to migrate to https://docs.ansible.com/ansible/latest/collections/community/general/pamd_module.html
-      ansible.builtin.lineinfile:
-        path: /etc/pam.d/common-session
-        regexp: '^session optional\s+pam_mkhomedir\.so'
-        line: 'session optional       pam_mkhomedir.so skel=/etc/skel umask=0022'
+      community.general.pamd:
+        name: common-session
+        type: session
+        control: optional
+        module_path: pam_mkhomedir.so
+        module_arguments: 'skel=/etc/skel umask=0022'
+        state: args_present
       notify: Update PAM auth
 
     - name: Don't enforce new passwords on change
