@@ -162,7 +162,9 @@ class GraphApiCredential(DeferredCredential):
             )
 
         credential = DeviceCodeCredential(
-            cache_persistence_options=TokenCachePersistenceOptions(name=cache_name, allow_unencrypted_storage=True),
+            cache_persistence_options=TokenCachePersistenceOptions(
+                name=cache_name, allow_unencrypted_storage=True
+            ),
             prompt_callback=callback,
             **kwargs,
         )
