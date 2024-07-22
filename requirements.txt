@@ -68,7 +68,7 @@ azure-mgmt-core==1.4.0
     #   azure-mgmt-storage
 azure-mgmt-dns==8.1.0
     # via data-safe-haven (pyproject.toml)
-azure-mgmt-keyvault==10.3.0
+azure-mgmt-keyvault==10.3.1
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-msi==7.0.0
     # via data-safe-haven (pyproject.toml)
@@ -80,13 +80,13 @@ azure-mgmt-resource==23.1.1
     # via data-safe-haven (pyproject.toml)
 azure-mgmt-storage==21.2.1
     # via data-safe-haven (pyproject.toml)
-azure-storage-blob==12.20.0
+azure-storage-blob==12.21.0
     # via
     #   azure-storage-file-datalake
     #   data-safe-haven (pyproject.toml)
-azure-storage-file-datalake==12.15.0
+azure-storage-file-datalake==12.16.0
     # via data-safe-haven (pyproject.toml)
-azure-storage-file-share==12.16.0
+azure-storage-file-share==12.17.0
     # via data-safe-haven (pyproject.toml)
 certifi==2024.7.4
     # via
@@ -100,7 +100,7 @@ chevron==0.14.0
     # via data-safe-haven (pyproject.toml)
 click==8.1.7
     # via typer
-cryptography==42.0.8
+cryptography==43.0.0
     # via
     #   -c requirements-constraints.txt
     #   acme
@@ -149,7 +149,7 @@ markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
-msal==1.29.0
+msal==1.30.0
     # via
     #   azure-identity
     #   data-safe-haven (pyproject.toml)
@@ -173,12 +173,12 @@ protobuf==4.25.3
     # via pulumi
 psycopg==3.2.1
     # via data-safe-haven (pyproject.toml)
-pulumi==3.124.0
+pulumi==3.125.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   pulumi-azure-native
     #   pulumi-random
-pulumi-azure-native==2.49.1
+pulumi-azure-native==2.50.1
     # via data-safe-haven (pyproject.toml)
 pulumi-random==4.16.3
     # via data-safe-haven (pyproject.toml)
@@ -194,7 +194,7 @@ pyjwt[crypto]==2.8.0
     # via
     #   data-safe-haven (pyproject.toml)
     #   msal
-pyopenssl==24.1.0
+pyopenssl==24.2.1
     # via
     #   acme
     #   josepy
@@ -246,6 +246,7 @@ typing-extensions==4.12.2
     #   azure-keyvault-certificates
     #   azure-keyvault-keys
     #   azure-keyvault-secrets
+    #   azure-mgmt-keyvault
     #   azure-storage-blob
     #   azure-storage-file-datalake
     #   azure-storage-file-share
