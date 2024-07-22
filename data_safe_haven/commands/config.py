@@ -101,8 +101,12 @@ def upload(
     logger = get_logger()
 
     # Create configuration object from file
-    with open(file) as config_file:
-        config_yaml = config_file.read()
+    try:
+        with open(file) as config_file:
+            config_yaml = config_file.read()
+    except FileNotFoundError as exc:
+        logger.critical(f"Configuration file '{file}' not found.")
+        raise typer.Exit(1) from exc
     config = SREConfig.from_yaml(config_yaml)
 
     # Present diff to user
