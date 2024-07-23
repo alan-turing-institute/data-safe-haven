@@ -4,6 +4,7 @@
 :hidden:
 
 deploy_context.md
+deploy_entra_id.md
 deploy_shm.md
 deploy_sre.md
 ```
