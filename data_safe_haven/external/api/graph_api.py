@@ -17,7 +17,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenValueError,
 )
 from data_safe_haven.functions import alphanumeric
-from data_safe_haven.logging import get_logger
+from data_safe_haven.logging import get_logger, get_null_logger
 
 from .credentials import (
     DeferredCredential,
@@ -60,7 +60,7 @@ class GraphApi:
     ):
         self.base_endpoint = "https://graph.microsoft.com/v1.0"
         self.credential = credential
-        self.logger = get_logger(disable_logging=disable_logging)
+        self.logger = get_null_logger() if disable_logging else get_logger()
 
     @classmethod
     def from_scopes(

@@ -21,10 +21,12 @@ def get_console_handler() -> RichHandler:
     return next(h for h in get_logger().handlers if isinstance(h, RichHandler))
 
 
-def get_logger(*, disable_logging: bool = False) -> logging.Logger:
-    if disable_logging:
-        return NonLoggingSingleton()
+def get_logger() -> logging.Logger:
     return logging.getLogger("data_safe_haven")
+
+
+def get_null_logger() -> logging.Logger:
+    return NonLoggingSingleton()
 
 
 def init_logging() -> None:

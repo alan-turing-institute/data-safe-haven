@@ -68,7 +68,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureError,
     DataSafeHavenValueError,
 )
-from data_safe_haven.logging import get_logger
+from data_safe_haven.logging import get_logger, get_null_logger
 from data_safe_haven.types import AzureSdkCredentialScope
 
 from .credentials import AzureSdkCredential
@@ -82,7 +82,7 @@ class AzureSdk:
         self, subscription_name: str, *, disable_logging: bool = False
     ) -> None:
         self._credentials: dict[AzureSdkCredentialScope, AzureSdkCredential] = {}
-        self.logger = get_logger(disable_logging=disable_logging)
+        self.logger = get_null_logger() if disable_logging else get_logger()
         self.subscription_name = subscription_name
         self.subscription_id_: str | None = None
         self.tenant_id_: str | None = None
