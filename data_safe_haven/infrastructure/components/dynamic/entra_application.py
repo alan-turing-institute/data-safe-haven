@@ -112,7 +112,13 @@ class EntraApplicationProvider(DshResourceProvider):
         """Calculate diff between old and new state"""
         # Use `id` as a no-op to avoid ARG002 while maintaining function signature
         id(id_)
-        return self.partial_diff(old_props, new_props)
+        # We exclude '__provider' from the diff. This is a Base64-encoded pickle of this
+        # EntraApplicationProvider instance. This means that it contains self.auth_token
+        # and would otherwise trigger a diff each time the auth_token changes. Note that
+        # ignoring '__provider' could cause issues if the structure of this class
+        # changes in any other way, but this could be fixed by manually deleting the
+        # application in the Entra directory.
+        return self.partial_diff(old_props, new_props, excluded_props=["__provider"])
 
     def refresh(self, props: dict[str, Any]) -> dict[str, Any]:
         try:
