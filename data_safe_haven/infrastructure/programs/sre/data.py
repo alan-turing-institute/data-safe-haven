@@ -10,6 +10,7 @@ from pulumi_azure_native import (
     keyvault,
     managedidentity,
     network,
+    resources,
     storage,
 )
 
@@ -22,7 +23,9 @@ from data_safe_haven.functions import (
     truncate_tokens,
 )
 from data_safe_haven.infrastructure.common import (
+    get_id_from_rg,
     get_id_from_subnet,
+    get_name_from_rg,
 )
 from data_safe_haven.infrastructure.components import (
     BlobContainerAcl,
@@ -47,7 +50,7 @@ class SREDataProps:
         dns_record: Input[network.RecordSet],
         dns_server_admin_password: Input[pulumi_random.RandomPassword],
         location: Input[str],
-        resource_group_name: Input[str],
+        resource_group: Input[resources.ResourceGroup],
         sre_fqdn: Input[str],
         subnet_data_configuration: Input[network.GetSubnetResult],
         subnet_data_desired_state: Input[network.GetSubnetResult],
@@ -70,7 +73,10 @@ class SREDataProps:
         self.dns_record = dns_record
         self.password_dns_server_admin = dns_server_admin_password
         self.location = location
-        self.resource_group_name = resource_group_name
+        self.resource_group_id = Output.from_input(resource_group).apply(get_id_from_rg)
+        self.resource_group_name = Output.from_input(resource_group).apply(
+            get_name_from_rg
+        )
         self.sre_fqdn = sre_fqdn
         self.subnet_data_configuration_id = Output.from_input(
             subnet_data_configuration
@@ -493,7 +499,7 @@ class SREDataComponent(ComponentResource):
                     )
                 ],
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
             tags=child_tags,
@@ -506,7 +512,7 @@ class SREDataComponent(ComponentResource):
             default_encryption_scope="$account-encryption-key",
             deny_encryption_scope_override=False,
             public_access=storage.PublicAccess.NONE,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=storage_account_data_desired_state),
@@ -523,7 +529,7 @@ class SREDataComponent(ComponentResource):
                 # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
                 container_name=container_desired_state.name,
-                resource_group_name=resource_group.name,
+                resource_group_name=props.resource_group_name,
                 storage_account_name=storage_account_data_desired_state.name,
                 subscription_name=props.subscription_name,
             ),
@@ -549,7 +555,7 @@ class SREDataComponent(ComponentResource):
                 account_name=storage_account_data_desired_state.name,
                 blob_name=file_path,
                 container_name=container_desired_state.name,
-                resource_group_name=resource_group.name,
+                resource_group_name=props.resource_group_name,
                 source=file_asset,
             )
         # Set up a private endpoint for the desired state storage account
@@ -564,7 +570,7 @@ class SREDataComponent(ComponentResource):
                     private_link_service_id=storage_account_data_desired_state.id,
                 )
             ],
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             subnet=network.SubnetArgs(id=props.subnet_data_desired_state_id),
             opts=ResourceOptions.merge(
                 child_opts,
@@ -590,7 +596,7 @@ class SREDataComponent(ComponentResource):
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-desired-state",
             private_endpoint_name=storage_account_data_desired_state_endpoint.name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=storage_account_data_desired_state),
@@ -772,11 +778,8 @@ class SREDataComponent(ComponentResource):
                 "/providers/Microsoft.Authorization/roleDefinitions/",
                 self.azure_role_ids["Storage Blob Data Owner"],
             ),
-            scope=resource_group.id,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=resource_group),
-            ),
+            scope=props.resource_group_id,
+            opts=child_opts,
         )
 
         # Deploy data_private_user files storage account

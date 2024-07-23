@@ -29,11 +29,13 @@ class SREDnsServerProps:
     def __init__(
         self,
         dockerhub_credentials: DockerHubCredentials,
+        location: Input[str],
         resource_group_name: Input[str],
         shm_fqdn: Input[str],
     ) -> None:
         self.admin_username = "dshadmin"
         self.dockerhub_credentials = dockerhub_credentials
+        self.location = location
         self.resource_group_name = resource_group_name
         self.shm_fqdn = shm_fqdn
 
