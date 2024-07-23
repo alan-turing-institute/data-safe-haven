@@ -49,8 +49,8 @@ In order to avoid being a single point of failure, we strongly recommend that yo
 :::
 
 - Go to the [Entra homepage](https://entra.microsoft.com/)
-- Click `Users` in the left hand sidebar then `All Users`
-- Click on the `+New user` icon in the top menu and select `Create new user` from the dropdown
+- Click `Users > All Users` in the left hand sidebar
+- Click on the `+New user` icon in the top menu and select `Create new user` from the dropdown menu
 
 For each administrator you want to add, create a new user with the following values:
 
@@ -82,3 +82,35 @@ In particular, you must not use the emergency access account as a shared admin a
 
 Create the account as above, using `aad.admin.emergency.access` as the user principal name and `AAD Admin - Emergency Access` as the display name.
 Ensure that you copy the auto-generated password and store it securely somewhere.
+
+### Register allowed authentication methods
+
+When you have finished creating administrator accounts, you will need to ensure that they are able to set their own passwords
+
+- Go to the [Entra homepage](https://entra.microsoft.com/)
+- Click `Protection > Authentication methods` on the left-hand sidebar
+- Click `Manage > Policies` on the left-hand sidebar
+- For each of `Microsoft Authenticator`, `SMS` and `Email OTP` click on the method name
+    - Ensure the slider is set to `Enabled` and the target to `All users`
+    - Click the `Save` button
+
+```{image} ../_static/deployment/enable_mfa_method.png
+:alt: Enable MFA method
+:align: center
+```
+
+### Purchase Microsoft Entra licences
+
+In order to enable self-service password reset (SSPR), at least one user needs to have a [Microsoft Entra Licence](https://www.microsoft.com/en-gb/security/business/microsoft-entra-pricing) assigned.
+
+:::{tip}
+P1 Licences are sufficient, but you may use other options if you prefer
+:::
+
+- Go to the [Entra homepage](https://entra.microsoft.com/)
+- Click `Identity > Billing > Licenses` on the left-hand sidebar
+- Click on `All products` in the left hand sidebar
+- If you have not currently licenced a product:
+  - Click on `+Try/Buy` and choose a suitable product
+  - Click the `Activate` button
+  - Wait for the selected licence to appear on the `All products` list (this may take several minutes)
