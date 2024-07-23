@@ -181,7 +181,7 @@ def mock_azureapi_get_subscription(mocker, request):
 
 
 @fixture
-def mock_azureapicredential_get_credential(mocker):
+def mock_azuresdk_get_credential(mocker):
     class MockCredential(TokenCredential):
         def get_token(*args, **kwargs):  # noqa: ARG002
             return AccessToken("dummy-token", 0)
@@ -194,7 +194,7 @@ def mock_azureapicredential_get_credential(mocker):
 
 
 @fixture
-def mock_azureapicredential_get_credential_failure(mocker):
+def mock_azuresdk_get_credential_failure(mocker):
     def fail_get_credential():
         print("mock get_credential")  # noqa: T201
         msg = "mock get_credential error"
@@ -463,7 +463,7 @@ def sre_project_manager(
     pulumi_config_no_key,
     local_project_settings,  # noqa: ARG001
     mock_azureapi_get_subscription,  # noqa: ARG001
-    mock_azureapicredential_get_credential,  # noqa: ARG001
+    mock_azuresdk_get_credential,  # noqa: ARG001
     offline_pulumi_account,  # noqa: ARG001
 ):
     return SREProjectManager(

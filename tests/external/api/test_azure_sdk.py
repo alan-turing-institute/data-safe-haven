@@ -220,7 +220,7 @@ class TestAzureSdk:
     def test_purge_keyvault(
         self,
         mock_azureapi_get_subscription,  # noqa: ARG002
-        mock_azureapicredential_get_credential,  # noqa: ARG002
+        mock_azuresdk_get_credential,  # noqa: ARG002
         mock_key_vault_management_client,  # noqa: ARG002
         capsys,
     ):
