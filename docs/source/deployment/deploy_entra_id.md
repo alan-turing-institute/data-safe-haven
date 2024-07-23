@@ -48,12 +48,6 @@ After doing so, you can delete the default external user - we strongly recommend
 In order to avoid being a single point of failure, we strongly recommend that you add other administrators in addition to yourself.
 :::
 
-:::{caution}
-An emergency access admin account is created later in the deployment process.
-This should not be used except when **absolute necessary**.
-In particular, it should not be used as a shared admin account for routine administration of the Safe Haven.
-:::
-
 - Go to the [Entra homepage](https://entra.microsoft.com/)
 - Click `Users` in the left hand sidebar then `All Users`
 - Click on the `+New user` icon in the top menu and select `Create new user` from the dropdown
@@ -76,3 +70,15 @@ For each administrator you want to add, create a new user with the following val
   :align: center
   ```
   - Click the `Create` button
+
+### Create Microsoft Entra emergency access administrator account
+
+We also recommend that you create an emergency access administrator account.
+This will be exempt from some login policies and should not be used except when **absolute necessary**.
+
+:::{caution}
+In particular, you must not use the emergency access account as a shared admin account for routine administration of the Safe Haven.
+:::
+
+Create the account as above, using `aad.admin.emergency.access` as the user principal name and `AAD Admin - Emergency Access` as the display name.
+Ensure that you copy the auto-generated password and store it securely somewhere.
