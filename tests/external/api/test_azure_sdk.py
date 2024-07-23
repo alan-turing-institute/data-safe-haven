@@ -1,5 +1,6 @@
 import pytest
 from azure.core.exceptions import ClientAuthenticationError, ResourceNotFoundError
+from azure.mgmt.keyvault.v2023_07_01.models import DeletedVault
 from azure.mgmt.resource.subscriptions import SubscriptionClient
 from azure.mgmt.resource.subscriptions.models import Subscription
 from pytest import fixture
@@ -11,24 +12,6 @@ from data_safe_haven.exceptions import (
     DataSafeHavenValueError,
 )
 from data_safe_haven.external import AzureSdk, GraphApi
-
-
-@fixture
-def mock_key_client(monkeypatch):
-    class MockKeyClient:
-        def __init__(self, vault_url, credential):
-            self.vault_url = vault_url
-            self.credential = credential
-
-        def get_key(self, key_name):
-            if key_name == "exists":
-                return f"key: {key_name}"
-            else:
-                raise ResourceNotFoundError
-
-    monkeypatch.setattr(
-        data_safe_haven.external.api.azure_sdk, "KeyClient", MockKeyClient
-    )
 
 
 @fixture
@@ -65,6 +48,63 @@ def mock_blob_client(monkeypatch):
 
     monkeypatch.setattr(
         data_safe_haven.external.api.azure_sdk.AzureSdk, "blob_client", mock_blob_client
+    )
+
+
+@fixture
+def mock_key_client(monkeypatch):
+    class MockKeyClient:
+        def __init__(self, vault_url, credential):
+            self.vault_url = vault_url
+            self.credential = credential
+
+        def get_key(self, key_name):
+            if key_name == "exists":
+                return f"key: {key_name}"
+            else:
+                raise ResourceNotFoundError
+
+    monkeypatch.setattr(
+        data_safe_haven.external.api.azure_sdk, "KeyClient", MockKeyClient
+    )
+
+
+@fixture
+def mock_key_vault_management_client(monkeypatch):
+    class Poller:
+        def done(self):
+            return True
+
+    class MockVaultsOperations:
+        def __init__(self, vault_name, location):
+            self._vault_name = vault_name
+            self._location = location
+
+        def get_deleted(self, vault_name, location):
+            if self._vault_name == vault_name and self._location == location:
+                print(  # noqa: T201
+                    f"Found deleted key vault {vault_name} in {location}"
+                )
+                return DeletedVault()
+            print("Found no deleted key vaults")  # noqa: T201
+            return None
+
+        def begin_purge_deleted(self, vault_name, location):
+            if self._vault_name == vault_name and self._location == location:
+                print(  # noqa: T201
+                    f"Purging deleted key vault {vault_name} in {location}"
+                )
+                self._vault_name = None
+            return Poller()
+
+    class MockKeyVaultManagementClient:
+        def __init__(self, *args, **kwargs):  # noqa: ARG002
+            self.vaults = MockVaultsOperations("key_vault_name", "location")
+
+    monkeypatch.setattr(
+        data_safe_haven.external.api.azure_sdk,
+        "KeyVaultManagementClient",
+        MockKeyVaultManagementClient,
     )
 
 
@@ -176,3 +216,17 @@ class TestAzureSdk:
             match="Failed to authenticate with Azure API.",
         ):
             sdk.get_subscription("Subscription 1")
+
+    def test_purge_keyvault(
+        self,
+        mock_azureapi_get_subscription,  # noqa: ARG002
+        mock_azureapicredential_get_credential,  # noqa: ARG002
+        mock_key_vault_management_client,  # noqa: ARG002
+        capsys,
+    ):
+        sdk = AzureSdk("subscription name")
+        sdk.purge_keyvault("key_vault_name", "location")
+        stdout, _ = capsys.readouterr()
+        assert "Found deleted key vault key_vault_name in location" in stdout
+        assert "Purging deleted key vault key_vault_name in location" in stdout
+        assert "Purged Key Vault key_vault_name" in stdout
