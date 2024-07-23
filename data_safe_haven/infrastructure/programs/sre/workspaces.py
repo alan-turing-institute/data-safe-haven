@@ -3,13 +3,12 @@ from typing import Any
 
 import chevron
 from pulumi import ComponentResource, Input, Output, ResourceOptions
-from pulumi_azure_native import network, resources
+from pulumi_azure_native import network
 
 from data_safe_haven.exceptions import DataSafeHavenPulumiError
 from data_safe_haven.functions import b64encode, replace_separators
 from data_safe_haven.infrastructure.common import (
     get_available_ips_from_subnet,
-    get_name_from_rg,
     get_name_from_subnet,
     get_name_from_vnet,
 )
@@ -38,6 +37,7 @@ class SREWorkspacesProps:
         ldap_user_search_base: Input[str],
         location: Input[str],
         maintenance_configuration_id: Input[str],
+        resource_group_name: Input[str],
         software_repository_hostname: Input[str],
         sre_name: Input[str],
         storage_account_data_desired_state_name: Input[str],
@@ -45,7 +45,6 @@ class SREWorkspacesProps:
         storage_account_data_private_sensitive_name: Input[str],
         subnet_workspaces: Input[network.GetSubnetResult],
         subscription_name: Input[str],
-        virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
         vm_details: list[tuple[int, str]],  # this must *not* be passed as an Input[T]
     ) -> None:
@@ -62,6 +61,7 @@ class SREWorkspacesProps:
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
         self.maintenance_configuration_id = maintenance_configuration_id
+        self.resource_group_name = resource_group_name
         self.software_repository_hostname = software_repository_hostname
         self.sre_name = sre_name
         self.storage_account_data_desired_state_name = (
@@ -80,9 +80,6 @@ class SREWorkspacesProps:
         self.subnet_workspaces_name = Output.from_input(subnet_workspaces).apply(
             get_name_from_subnet
         )
-        self.virtual_network_resource_group_name = Output.from_input(
-            virtual_network_resource_group
-        ).apply(get_name_from_rg)
         self.vm_ip_addresses = Output.all(subnet_workspaces, vm_details).apply(
             lambda args: self.get_ip_addresses(subnet=args[0], vm_details=args[1])
         )
@@ -113,15 +110,6 @@ class SREWorkspacesComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-workspaces",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Load cloud-init file
         cloudinit = Output.all(
             apt_proxy_server_hostname=props.apt_proxy_server_hostname,
@@ -150,10 +138,10 @@ class SREWorkspacesComponent(ComponentResource):
                     ip_address_private=props.vm_ip_addresses[vm_idx],
                     location=props.location,
                     maintenance_configuration_id=props.maintenance_configuration_id,
-                    resource_group_name=resource_group.name,
+                    resource_group_name=props.resource_group_name,
                     subnet_name=props.subnet_workspaces_name,
                     virtual_network_name=props.virtual_network_name,
-                    virtual_network_resource_group_name=props.virtual_network_resource_group_name,
+                    virtual_network_resource_group_name=props.resource_group_name,
                     vm_name=Output.concat(
                         stack_name, "-vm-workspace-", f"{vm_idx+1:02d}"
                     ).apply(lambda s: replace_separators(s, "-")),
@@ -174,9 +162,6 @@ class SREWorkspacesComponent(ComponentResource):
             }
             for vm in vms
         ]
-
-        # Register outputs
-        self.resource_group = resource_group
 
         # Register exports
         self.exports = {
