@@ -1,0 +1,147 @@
+---
+
+# Packages by category
+# Each category has 'common' packages for when the package name is identical
+# for all releases
+# Other packages are listed in dicts with the name of the release as given by
+# `ansible_facts['distribution_release']`
+package_categories:
+  - category: admin
+    common:
+      - auditd
+      - bats
+      - clamav
+    focal:
+    jammy:
+    noble:
+  - category: browsers
+    common:
+      - firefox
+    focal:
+    jammy:
+    noble:
+  - category: database
+    common:
+      - libpq-dev     # interact with PostgreSQL databases
+      - msodbcsql17   # interact with Microsoft SQL databases
+      - postgresql-client-common  # CLI psql client
+      - unixodbc-dev  # interact with Microsoft SQL databases
+    focal:
+    jammy:
+    noble:
+  - category: development
+    common:
+      - build-essential  # Common build tools (GCC, make, etc.)
+      - cabal-install  # Haskell Cabal packaging tools
+      - cargo  # Rust development and packaging tool
+      - clojure  # Clojure functional programming language for JVM
+      - cmake  # CMake build system
+      - default-jre  # Java runtime environment
+      - dotnet-runtime-8.0  # .Net runtime
+      - dotnet-sdk-8.0  # .Net SDK
+      - fsharp  # F# functional-first programming language
+      - g++  # GNU C++ compiler
+      - gcc  # GNU C compiler
+      - gfortran  # GNU Fortran compiler
+      - ghc  # Glasgow Haskell Compiler
+      - git-all  # Git including all subpackages
+      - golang  # Go programming language
+      - guile-3.0  # GNU Scheme functional programming language
+      - ninja-build  # Ninja build system
+      - octave  # Open source Matlab implementation
+      - python-is-python3  # symlinks python to python3
+      - r-base  # R programming language
+      - racket  # Racket functional programming language implementation
+      - racket-common  # Racket shared files
+      - ruby-full  # Complete Ruby distribution
+      - rustc  # Rust compiler
+      - scala  # Scala multi-paradigm programming language for JVM
+      - scala-library  # Scala standard library
+      - weka  # Data mining tools
+    focal:
+      - julia  # Julia programming language
+      - python3.8  # Python programming language
+      - python3.9
+    jammy:
+      - python3.10
+      - python3.10-venv
+    noble:
+      - python3.12
+      - python3.12-venv
+  - category: editors
+    common:
+      - emacs
+      - nano
+      - neovim
+      - vim
+      - vim-airline
+      - vim-airline-themes
+      - vim-fugitive
+      - vim-gtk3
+      - vim-julia
+      - vim-latexsuite
+      - vim-syntastic
+    focal:
+    jammy:
+    noble:
+  - category: office
+    common:
+      - libreoffice
+      - texlive-full
+    focal:
+    jammy:
+    noble:
+  - category: remote_desktop
+    common:
+      - libnss-ldapd  # LDAP login
+      - libpam-ldapd  # LDAP login
+      - ldap-utils    # LDAP login
+      - nfs-common    # Mounting shared volumes
+      - xfce4         # XFCE desktop
+      - xrdp          # remote desktop client
+    focal:
+    jammy:
+    noble:
+  - category: shells
+    common:
+      - bash
+      - fish
+      - zsh
+      - zsh-syntax-highlighting
+      - zsh-autosuggestions
+    focal:
+    jammy:
+    noble:
+  - category: utilities
+    common:
+      - bat
+      - fd-find
+      - fzf
+      - htop
+      - httpie
+      - nvtop
+      - ripgrep
+      - rsync
+      - tmux
+      - wget
+    focal:
+    jammy:
+    noble:
+      - eza
+      - nvtop
+
+# Collect packages for releases
+# It is important that the dict names for releases match `ansible_facts['distribution_relesase']`
+apt_packages:
+  common: "{{ package_categories | map(attribute='common') | flatten }}"
+  focal: "{{ package_categories | map(attribute='focal') | flatten }}"
+  jammy: "{{ package_categories | map(attribute='jammy') | flatten }}"
+  noble: "{{ package_categories | map(attribute='noble') | flatten }}"
+
+snap_packages:
+  - name: codium
+    classic: true
+  - name: dbeaver-ce
+    classic: false
+  - name: pycharm-community
+    classic: true

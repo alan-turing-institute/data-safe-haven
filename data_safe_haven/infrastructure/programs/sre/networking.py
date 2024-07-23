@@ -399,6 +399,66 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
+        nsg_data_desired_state = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_data_desired_state",
+            location=props.location,
+            network_security_group_name=f"{stack_name}-nsg-data-desired-state",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow inbound connections from workspaces.",
+                    destination_address_prefix=SREIpRanges.data_configuration.prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowWorkspacesInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_WORKSPACES,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other inbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="DenyAllOtherInbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                # Outbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny outbound connections to Azure Platform DNS endpoints (including 168.63.129.16), which are not included in the 'Internet' service tag.",
+                    destination_address_prefix="AzurePlatformDNS",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAzurePlatformDnsOutbound",
+                    priority=NetworkingPriorities.AZURE_PLATFORM_DNS,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.DENY,
+                    description="Deny all other outbound traffic.",
+                    destination_address_prefix="*",
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="DenyAllOtherOutbound",
+                    priority=NetworkingPriorities.ALL_OTHER,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix="*",
+                    source_port_range="*",
+                ),
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
         nsg_data_private = network.NetworkSecurityGroup(
             f"{self._name}_nsg_data_private",
             location=props.location,
@@ -1297,6 +1357,18 @@ class SRENetworkingComponent(ComponentResource):
                 ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow outbound connections to desired state data endpoints.",
+                    destination_address_prefix=SREIpRanges.data_desired_state.prefix,
+                    destination_port_range="*",
+                    direction=network.SecurityRuleDirection.OUTBOUND,
+                    name="AllowDataDesiredStateEndpointsOutbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_DATA_DESIRED_STATE,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=SREIpRanges.workspaces.prefix,
+                    source_port_range="*",
+                ),
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
                     description="Allow outbound connections to monitoring tools.",
                     destination_address_prefix=SREIpRanges.monitoring.prefix,
                     destination_port_ranges=[Ports.HTTPS],
@@ -1389,6 +1461,7 @@ class SRENetworkingComponent(ComponentResource):
         subnet_application_gateway_name = "ApplicationGatewaySubnet"
         subnet_apt_proxy_server_name = "AptProxyServerSubnet"
         subnet_data_configuration_name = "DataConfigurationSubnet"
+        subnet_data_desired_state_name = "DataDesiredStateSubnet"
         subnet_data_private_name = "DataPrivateSubnet"
         subnet_firewall_name = "AzureFirewallSubnet"
         subnet_firewall_management_name = "AzureFirewallManagementSubnet"
@@ -1455,7 +1528,22 @@ class SRENetworkingComponent(ComponentResource):
                         )
                     ],
                 ),
-                # Private data
+                # Desired State data subnet
+                network.SubnetArgs(
+                    address_prefix=SREIpRanges.data_desired_state.prefix,
+                    name=subnet_data_desired_state_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_data_desired_state.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                    service_endpoints=[
+                        network.ServiceEndpointPropertiesFormatArgs(
+                            locations=[props.location],
+                            service="Microsoft.Storage",
+                        )
+                    ],
+                ),
+                # Private data subnet
                 network.SubnetArgs(
                     address_prefix=SREIpRanges.data_private.prefix,
                     name=subnet_data_private_name,
@@ -1758,6 +1846,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_data_configuration = network.get_subnet_output(
             subnet_name=subnet_data_configuration_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_data_desired_state = network.get_subnet_output(
+            subnet_name=subnet_data_desired_state_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )

@@ -103,7 +103,7 @@ class TestSREApplicationGatewayProps:
         self, application_gateway_props: SREApplicationGatewayProps
     ):
         application_gateway_props.subnet_guacamole_containers_ip_addresses.apply(
-            partial(assert_equal, ["10.0.1.28", "10.0.1.29", "10.0.1.30"]),
+            partial(assert_equal, ["10.0.1.36", "10.0.1.37", "10.0.1.38"]),
             run_with_unknowns=True,
         )
 
@@ -159,9 +159,9 @@ class TestSREApplicationGatewayComponent:
                         "provisioning_state": None,
                         "type": None,
                         "backend_addresses": [
-                            {"ip_address": "10.0.1.28"},
-                            {"ip_address": "10.0.1.29"},
-                            {"ip_address": "10.0.1.30"},
+                            {"ip_address": "10.0.1.36"},
+                            {"ip_address": "10.0.1.37"},
+                            {"ip_address": "10.0.1.38"},
                         ],
                         "name": "appGatewayBackendGuacamole",
                     }
