@@ -164,11 +164,14 @@ def teardown(
             raise DataSafeHavenConfigError(msg)
 
         # Remove infrastructure deployed with Pulumi
+        # N.B. We allow the creation of a project (which is immediately removed)
+        # to stop Pulumi operations from crashing due to a missing stack
         stack = SREProjectManager(
             context=context,
             config=sre_config,
             pulumi_config=pulumi_config,
             graph_api_token=graph_api.token,
+            create_project=True,
         )
         stack.teardown(force=force)
 

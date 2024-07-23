@@ -168,7 +168,16 @@ def log_directory(session_mocker, tmp_path_factory):
 
 
 @fixture
-def mock_azureapi_get_subscription(mocker, request):
+def mock_azuresdk_blob_exists(mocker):
+    mocker.patch.object(
+        AzureSdk,
+        "blob_exists",
+        return_value=True,
+    )
+
+
+@fixture
+def mock_azuresdk_get_subscription(mocker, request):
     subscription = Subscription()
     subscription.display_name = "Data Safe Haven Acme"
     subscription.subscription_id = request.config.guid_subscription
@@ -181,7 +190,7 @@ def mock_azureapi_get_subscription(mocker, request):
 
 
 @fixture
-def mock_azureapicredential_get_credential(mocker):
+def mock_azuresdk_get_credential(mocker):
     class MockCredential(TokenCredential):
         def get_token(*args, **kwargs):  # noqa: ARG002
             return AccessToken("dummy-token", 0)
@@ -194,7 +203,7 @@ def mock_azureapicredential_get_credential(mocker):
 
 
 @fixture
-def mock_azureapicredential_get_credential_failure(mocker):
+def mock_azuresdk_get_credential_failure(mocker):
     def fail_get_credential():
         print("mock get_credential")  # noqa: T201
         msg = "mock get_credential error"
@@ -204,6 +213,24 @@ def mock_azureapicredential_get_credential_failure(mocker):
         AzureSdkCredential,
         "get_credential",
         side_effect=fail_get_credential,
+    )
+
+
+@fixture
+def mock_azuresdk_purge_keyvault(mocker):
+    mocker.patch.object(
+        AzureSdk,
+        "purge_keyvault",
+        return_value=True,
+    )
+
+
+@fixture
+def mock_azuresdk_remove_blob(mocker):
+    mocker.patch.object(
+        AzureSdk,
+        "remove_blob",
+        return_value=None,
     )
 
 
@@ -462,8 +489,8 @@ def sre_project_manager(
     sre_config,
     pulumi_config_no_key,
     local_project_settings,  # noqa: ARG001
-    mock_azureapi_get_subscription,  # noqa: ARG001
-    mock_azureapicredential_get_credential,  # noqa: ARG001
+    mock_azuresdk_get_subscription,  # noqa: ARG001
+    mock_azuresdk_get_credential,  # noqa: ARG001
     offline_pulumi_account,  # noqa: ARG001
 ):
     return SREProjectManager(

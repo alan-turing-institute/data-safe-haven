@@ -17,6 +17,7 @@ from pulumi_azure_native import (
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import (
     alphanumeric,
+    get_key_vault_name,
     replace_separators,
     seeded_uuid,
     sha256hash,
@@ -212,7 +213,7 @@ class SREDataComponent(ComponentResource):
                 tenant_id=props.tenant_id,
             ),
             resource_group_name=resource_group.name,
-            vault_name=f"{''.join(truncate_tokens(stack_name.split('-'), 17))}secrets",  # maximum of 24 characters
+            vault_name=get_key_vault_name(stack_name)[:24],  # maximum of 24 characters
             opts=child_opts,
             tags=child_tags,
         )

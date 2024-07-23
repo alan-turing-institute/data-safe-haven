@@ -30,7 +30,7 @@ class TestDeploySHM:
     def test_infrastructure_auth_failure(
         self,
         runner,
-        mock_azureapicredential_get_credential_failure,  # noqa: ARG002
+        mock_azuresdk_get_credential_failure,  # noqa: ARG002
     ):
         result = runner.invoke(shm_command_group, ["deploy"])
         assert result.exit_code == 1
@@ -62,7 +62,7 @@ class TestTeardownSHM:
     def test_auth_failure(
         self,
         runner,
-        mock_azureapicredential_get_credential_failure,  # noqa: ARG002
+        mock_azuresdk_get_credential_failure,  # noqa: ARG002
     ):
         result = runner.invoke(shm_command_group, ["teardown"])
         assert result.exit_code == 1
