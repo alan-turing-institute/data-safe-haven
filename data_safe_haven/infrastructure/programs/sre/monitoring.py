@@ -78,6 +78,13 @@ class SREMonitoringComponent(ComponentResource):
             ),
             time_zone="UTC",  # Our start time is given in UTC
             visibility=maintenance.Visibility.CUSTOM,
+            opts=ResourceOptions.merge(
+                child_opts,
+                ResourceOptions(
+                    # Ignore start_date_time or this will be changed on each redeploy
+                    ignore_changes=["start_date_time"]
+                ),
+            ),
             tags=child_tags,
         )
 

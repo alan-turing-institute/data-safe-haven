@@ -203,6 +203,7 @@ class DeclarativeSRE:
                 resource_group_name=resource_group.name,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_data_configuration=networking.subnet_data_configuration,
+                subnet_data_desired_state=networking.subnet_data_desired_state,
                 subnet_data_private=networking.subnet_data_private,
                 subscription_id=self.config.azure.subscription_id,
                 subscription_name=self.context.subscription_name,
@@ -255,6 +256,7 @@ class DeclarativeSRE:
             SREApplicationGatewayProps(
                 key_vault_certificate_id=data.sre_fqdn_certificate_secret_id,
                 key_vault_identity=data.managed_identity,
+                location=self.config.azure.location,
                 resource_group=resource_group,
                 subnet_application_gateway=networking.subnet_application_gateway,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
@@ -358,6 +360,7 @@ class DeclarativeSRE:
                 resource_group_name=resource_group.name,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.config.name,
+                storage_account_data_desired_state_name=data.storage_account_data_desired_state_name,
                 storage_account_data_private_user_name=data.storage_account_data_private_user_name,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
                 subnet_workspaces=networking.subnet_workspaces,

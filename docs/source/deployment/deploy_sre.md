@@ -18,6 +18,11 @@ Each project will have its own dedicated Secure Research Environment (SRE).
 azure:
   subscription_id: # ID of the Azure subscription that the TRE will be deployed to
   tenant_id: # Home tenant for the Azure account used to deploy infrastructure: `az account show`
+description: # A free-text description of your SRE deployment
+dockerhub:
+  access_token: # The password or personal access token for your Docker Hub account. We strongly recommend using a Personal Access Token with permissions set to Public Repo Read-only
+  username: # Your Docker Hub account name
+name: # A name for your SRE deployment containing only letters, numbers, hyphens and underscores
 sre:
   admin_email_address: # Email address shared by all administrators
   admin_ip_addresses: # List of IP addresses belonging to administrators

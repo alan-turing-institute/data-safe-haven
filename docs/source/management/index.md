@@ -28,10 +28,14 @@ $ dsh users add <my CSV users file>
 2. Alternatively, you can add multiple users from the command line:
 
 ```{code} shell
-$ dsh users register -s <SRE name> <username1> <username2>
+$ dsh users register <SRE name> -u <username1> -u <username2>
 ```
 
 where you must specify the usernames for each user you want to add to this SRE.
+
+:::{note}
+Usernames are of the format `<GivenName>.<Surname>` and do not include the Entra ID domain.
+:::
 
 ## Listing available users
 

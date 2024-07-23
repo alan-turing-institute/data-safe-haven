@@ -1,4 +1,3 @@
-import pathlib
 from collections.abc import Mapping
 from typing import Any
 
@@ -14,13 +13,11 @@ from data_safe_haven.infrastructure.common import (
     get_name_from_vnet,
 )
 from data_safe_haven.infrastructure.components import (
-    FileUpload,
-    FileUploadProps,
     LinuxVMComponentProps,
     VMComponent,
 )
+from data_safe_haven.logging import get_logger
 from data_safe_haven.resources import resources_path
-from data_safe_haven.utility import FileReader
 
 
 class SREWorkspacesProps:
@@ -43,6 +40,7 @@ class SREWorkspacesProps:
         resource_group_name: Input[str],
         software_repository_hostname: Input[str],
         sre_name: Input[str],
+        storage_account_data_desired_state_name: Input[str],
         storage_account_data_private_user_name: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
         subnet_workspaces: Input[network.GetSubnetResult],
@@ -66,6 +64,9 @@ class SREWorkspacesProps:
         self.resource_group_name = resource_group_name
         self.software_repository_hostname = software_repository_hostname
         self.sre_name = sre_name
+        self.storage_account_data_desired_state_name = (
+            storage_account_data_desired_state_name
+        )
         self.storage_account_data_private_user_name = (
             storage_account_data_private_user_name
         )
@@ -110,7 +111,7 @@ class SREWorkspacesComponent(ComponentResource):
         child_tags = tags if tags else {}
 
         # Load cloud-init file
-        b64cloudinit = Output.all(
+        cloudinit = Output.all(
             apt_proxy_server_hostname=props.apt_proxy_server_hostname,
             ldap_group_filter=props.ldap_group_filter,
             ldap_group_search_base=props.ldap_group_search_base,
@@ -119,9 +120,10 @@ class SREWorkspacesComponent(ComponentResource):
             ldap_user_filter=props.ldap_user_filter,
             ldap_user_search_base=props.ldap_user_search_base,
             software_repository_hostname=props.software_repository_hostname,
+            storage_account_data_desired_state_name=props.storage_account_data_desired_state_name,
             storage_account_data_private_user_name=props.storage_account_data_private_user_name,
             storage_account_data_private_sensitive_name=props.storage_account_data_private_sensitive_name,
-        ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
+        ).apply(lambda kwargs: self.template_cloudinit(**kwargs))
 
         # Deploy a variable number of VMs depending on the input parameters
         vms = [
@@ -130,7 +132,7 @@ class SREWorkspacesComponent(ComponentResource):
                 LinuxVMComponentProps(
                     admin_password=props.admin_password,
                     admin_username=props.admin_username,
-                    b64cloudinit=b64cloudinit,
+                    b64cloudinit=cloudinit.apply(b64encode),
                     data_collection_rule_id=props.data_collection_rule_id,
                     data_collection_endpoint_id=props.data_collection_endpoint_id,
                     ip_address_private=props.vm_ip_addresses[vm_idx],
@@ -161,73 +163,20 @@ class SREWorkspacesComponent(ComponentResource):
             for vm in vms
         ]
 
-        # Upload smoke tests
-        mustache_values = {
-            "check_uninstallable_packages": "0",
-        }
-        file_uploads = [
-            (FileReader(resources_path / "workspace" / "run_all_tests.bats"), "0444")
-        ]
-        for test_file in pathlib.Path(resources_path / "workspace").glob("test*"):
-            file_uploads.append((FileReader(test_file), "0444"))
-        for vm_index, (vm, vm_output) in enumerate(
-            zip(vms, vm_outputs, strict=True), start=1
-        ):
-            outputs: dict[str, Output[str]] = {}
-            for file_upload, file_permissions in file_uploads:
-                file_smoke_test = FileUpload(
-                    replace_separators(
-                        f"workspace_{vm_index:02d}_file_{file_upload.name}", "_"
-                    ),
-                    FileUploadProps(
-                        file_contents=file_upload.file_contents(
-                            mustache_values=mustache_values
-                        ),
-                        file_hash=file_upload.sha256(),
-                        file_permissions=file_permissions,
-                        file_target=f"/opt/tests/{file_upload.name}",
-                        subscription_name=props.subscription_name,
-                        vm_name=vm.vm_name,
-                        vm_resource_group_name=props.resource_group_name,
-                    ),
-                    opts=child_opts,
-                )
-                outputs[file_upload.name] = file_smoke_test.script_output
-            vm_output["file_uploads"] = outputs
-
         # Register exports
         self.exports = {
             "vm_outputs": vm_outputs,
         }
 
-    def read_cloudinit(
-        self,
-        apt_proxy_server_hostname: str,
-        ldap_group_filter: str,
-        ldap_group_search_base: str,
-        ldap_server_hostname: str,
-        ldap_server_port: str,
-        ldap_user_filter: str,
-        ldap_user_search_base: str,
-        software_repository_hostname: str,
-        storage_account_data_private_sensitive_name: str,
-        storage_account_data_private_user_name: str,
-    ) -> str:
+    @staticmethod
+    def template_cloudinit(**kwargs: str) -> str:
+        logger = get_logger()
         with open(
             resources_path / "workspace" / "workspace.cloud_init.mustache.yaml",
             encoding="utf-8",
         ) as f_cloudinit:
-            mustache_values = {
-                "apt_proxy_server_hostname": apt_proxy_server_hostname,
-                "ldap_group_filter": ldap_group_filter,
-                "ldap_group_search_base": ldap_group_search_base,
-                "ldap_server_hostname": ldap_server_hostname,
-                "ldap_server_port": ldap_server_port,
-                "ldap_user_filter": ldap_user_filter,
-                "ldap_user_search_base": ldap_user_search_base,
-                "software_repository_hostname": software_repository_hostname,
-                "storage_account_data_private_user_name": storage_account_data_private_user_name,
-                "storage_account_data_private_sensitive_name": storage_account_data_private_sensitive_name,
-            }
-            cloudinit = chevron.render(f_cloudinit, mustache_values)
-            return b64encode(cloudinit)
+            cloudinit = chevron.render(f_cloudinit, kwargs)
+            logger.debug(
+                f"Generated cloud-init config: {cloudinit.replace('\n', r'\n')}"
+            )
+            return cloudinit

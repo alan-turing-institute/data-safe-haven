@@ -7,7 +7,6 @@ from .composite import (
     PostgresqlDatabaseComponent,
     PostgresqlDatabaseProps,
     VMComponent,
-    WindowsVMComponentProps,
 )
 from .dynamic import (
     BlobContainerAcl,
@@ -16,8 +15,6 @@ from .dynamic import (
     EntraApplicationProps,
     FileShareFile,
     FileShareFileProps,
-    FileUpload,
-    FileUploadProps,
     SSLCertificate,
     SSLCertificateProps,
 )
@@ -32,8 +29,6 @@ __all__ = [
     "EntraApplicationProps",
     "FileShareFile",
     "FileShareFileProps",
-    "FileUpload",
-    "FileUploadProps",
     "LinuxVMComponentProps",
     "LocalDnsRecordComponent",
     "LocalDnsRecordProps",
@@ -44,6 +39,5 @@ __all__ = [
     "SSLCertificate",
     "SSLCertificateProps",
     "VMComponent",
-    "WindowsVMComponentProps",
     "WrappedLogAnalyticsWorkspace",
 ]

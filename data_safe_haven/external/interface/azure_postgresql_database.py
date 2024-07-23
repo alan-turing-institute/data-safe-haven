@@ -81,7 +81,7 @@ class AzurePostgreSQLDatabase:
         """Get the database client."""
         if not self.db_client_:
             self.db_client_ = PostgreSQLManagementClient(
-                self.azure_sdk.credential, self.azure_sdk.subscription_id
+                self.azure_sdk.credential(), self.azure_sdk.subscription_id
             )
         return self.db_client_
 
@@ -146,7 +146,7 @@ class AzurePostgreSQLDatabase:
             # Apply the Guacamole initialisation script
             for filepath in filepaths:
                 _filepath = pathlib.Path(filepath)
-                self.logger.debug(f"Running SQL script: [green]{_filepath.name}[/].")
+                self.logger.info(f"Running SQL script: [green]{_filepath.name}[/].")
                 commands = self.load_sql(_filepath, mustache_values)
                 cursor.execute(query=commands.encode())
                 if cursor.statusmessage and "SELECT" in cursor.statusmessage:
@@ -187,7 +187,7 @@ class AzurePostgreSQLDatabase:
                 )
             )
             self.db_connection(n_retries=5)
-            self.logger.info(
+            self.logger.debug(
                 f"Added temporary firewall rule for [green]{self.current_ip}[/].",
             )
         elif action == "disabled":
@@ -215,7 +215,7 @@ class AzurePostgreSQLDatabase:
             # NB. We would like to disable public_network_access at this point but this
             # is not currently supported by the flexibleServer API
             if len(rule_names) == len(rules):
-                self.logger.info(
+                self.logger.debug(
                     f"Removed all firewall rule(s) from [green]{self.server_name}[/].",
                 )
             else:

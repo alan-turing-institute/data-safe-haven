@@ -66,37 +66,6 @@ class VMComponentProps:
         return self.os_profile_args
 
 
-class WindowsVMComponentProps(VMComponentProps):
-    """Properties for WindowsVMComponent"""
-
-    def __init__(
-        self,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        self.image_reference_args = compute.ImageReferenceArgs(
-            offer="WindowsServer",
-            publisher="MicrosoftWindowsServer",
-            sku="2022-Datacenter",
-            version="latest",
-        )
-        self.os_profile_args = compute.OSProfileArgs(
-            admin_password=self.admin_password,
-            admin_username=self.admin_username,
-            computer_name=Output.from_input(self.vm_name).apply(lambda n: n[:15]),
-            windows_configuration=compute.WindowsConfigurationArgs(
-                enable_automatic_updates=True,
-                patch_settings=compute.PatchSettingsArgs(
-                    patch_mode=compute.WindowsVMGuestPatchMode.AUTOMATIC_BY_PLATFORM,
-                ),
-                provision_vm_agent=True,
-            ),
-        )
-        self.azure_monitor_extension_name = "AzureMonitorWindowsAgent"
-        self.azure_monitor_extension_version = "1.0"
-
-
 class LinuxVMComponentProps(VMComponentProps):
     """Properties for LinuxVMComponent"""
 
@@ -161,6 +130,7 @@ class VMComponent(ComponentResource):
         if props.ip_address_public:
             public_ip = network.PublicIPAddress(
                 f"{name_underscored}_public_ip",
+                location=props.location,
                 public_ip_address_name=Output.concat(props.vm_name, "-public-ip"),
                 public_ip_allocation_method="Static",
                 resource_group_name=props.resource_group_name,
@@ -189,6 +159,7 @@ class VMComponent(ComponentResource):
                     **network_interface_ip_params,
                 )
             ],
+            location=props.location,
             network_interface_name=Output.concat(props.vm_name, "-nic"),
             resource_group_name=props.resource_group_name,
             opts=child_opts,

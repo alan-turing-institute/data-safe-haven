@@ -135,6 +135,7 @@ class SREAptProxyServerComponent(ComponentResource):
                 ],
                 type=containerinstance.ContainerGroupIpAddressType.PRIVATE,
             ),
+            location=props.location,
             os_type=containerinstance.OperatingSystemTypes.LINUX,
             resource_group_name=props.resource_group_name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
