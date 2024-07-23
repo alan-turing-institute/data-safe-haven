@@ -168,6 +168,15 @@ def log_directory(session_mocker, tmp_path_factory):
 
 
 @fixture
+def mock_azuresdk_blob_exists(mocker):
+    mocker.patch.object(
+        AzureSdk,
+        "blob_exists",
+        return_value=True,
+    )
+
+
+@fixture
 def mock_azuresdk_get_subscription(mocker, request):
     subscription = Subscription()
     subscription.display_name = "Data Safe Haven Acme"
@@ -204,6 +213,24 @@ def mock_azuresdk_get_credential_failure(mocker):
         AzureSdkCredential,
         "get_credential",
         side_effect=fail_get_credential,
+    )
+
+
+@fixture
+def mock_azuresdk_purge_keyvault(mocker):
+    mocker.patch.object(
+        AzureSdk,
+        "purge_keyvault",
+        return_value=True,
+    )
+
+
+@fixture
+def mock_azuresdk_remove_blob(mocker):
+    mocker.patch.object(
+        AzureSdk,
+        "remove_blob",
+        return_value=None,
     )
 
 

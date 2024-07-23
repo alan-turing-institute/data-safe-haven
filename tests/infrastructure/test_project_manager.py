@@ -33,6 +33,22 @@ class TestSREProjectManager:
         assert sre.context == context_no_secrets
         assert sre.pulumi_project == pulumi_project_sandbox
 
+    def test_cleanup(
+        self,
+        capsys,
+        mock_azuresdk_blob_exists,  # noqa: ARG002
+        mock_azuresdk_purge_keyvault,  # noqa: ARG002
+        mock_azuresdk_remove_blob,  # noqa: ARG002
+        sre_project_manager,
+    ):
+        sre_project_manager.cleanup()
+        stdout, _ = capsys.readouterr()
+        assert (
+            "Removed Pulumi stack backup shm-acmedeployment-sre-sandbox.json.bak."
+            in stdout
+        )
+        assert "Purged Azure Key Vault shmacmedsresandbosecrets." in stdout
+
     def test_new_project(
         self,
         context_no_secrets,
