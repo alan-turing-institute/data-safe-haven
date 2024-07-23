@@ -26,10 +26,11 @@ If you wish to reuse an existing Microsoft Entra directory please make sure you 
 
 ### Get the Microsoft Entra Tenant ID
 
-- Go to the [Entra homepage](https://entra.microsoft.com/)
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Click on your username / profile icon in the top right and select `Switch directory`
   - Ensure that you have selected the directory you chose above
-- From the left hand menu, click `Overview` and note the `Tenant ID`
+- Browse to **Identity > Overview** from the menu on the left side.
+- Take note of the `Tenant ID`
   ```{image} ../_static/deployment/entra_tenant_id.png
   :alt: Finding the Microsoft Entra tenant ID
   :align: center
@@ -48,8 +49,8 @@ After doing so, you can delete the default external user - we strongly recommend
 In order to avoid being a single point of failure, we strongly recommend that you add other administrators in addition to yourself.
 :::
 
-- Go to the [Entra homepage](https://entra.microsoft.com/)
-- Click `Users > All Users` in the left hand sidebar
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Browse to **Users > All Users** from the menu on the left side.
 - Click on the `+New user` icon in the top menu and select `Create new user` from the dropdown menu
 
 For each administrator you want to add, create a new user with the following values:
@@ -87,10 +88,10 @@ Ensure that you copy the auto-generated password and store it securely somewhere
 
 When you have finished creating administrator accounts, you will need to ensure that they are able to set their own passwords
 
-- Go to the [Entra homepage](https://entra.microsoft.com/)
-- Click `Protection > Authentication methods` on the left-hand sidebar
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Browse to **Protection > Authentication methods** from the menu on the left side.
 - Click `Manage > Policies` on the left-hand sidebar
-- For each of `Microsoft Authenticator`, `SMS` and `Email OTP` click on the method name
+- For each of `Microsoft Authenticator`, `Third-party software OATH tokens`, `SMS` and `Email OTP` click on the method name
     - Ensure the slider is set to `Enabled` and the target to `All users`
     - Click the `Save` button
 
@@ -101,16 +102,22 @@ When you have finished creating administrator accounts, you will need to ensure 
 
 ### Purchase Microsoft Entra licences
 
-In order to enable self-service password reset (SSPR), at least one user needs to have a [Microsoft Entra Licence](https://www.microsoft.com/en-gb/security/business/microsoft-entra-pricing) assigned.
+In order to enable [self-service password reset](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-licensing) (SSPR), at least one user needs to have a [Microsoft Entra Licence](https://www.microsoft.com/en-gb/security/business/microsoft-entra-pricing) assigned.
 
 :::{tip}
 P1 Licences are sufficient, but you may use other options if you prefer
 :::
 
-- Go to the [Entra homepage](https://entra.microsoft.com/)
-- Click `Identity > Billing > Licenses` on the left-hand sidebar
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Browse to **Identity > Billing > Licenses** from the menu on the left side.
 - Click on `All products` in the left hand sidebar
 - If you have not currently licenced a product:
   - Click on `+Try/Buy` and choose a suitable product
   - Click the `Activate` button
   - Wait for the selected licence to appear on the `All products` list (this may take several minutes)
+
+### Enable self-service password reset (SSPR)
+
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Browse to **Protection > Password reset** from the menu on the left side.
+- From the **Properties** page, under the option `Self service password reset enabled`, choose **All**.
