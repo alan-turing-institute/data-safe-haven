@@ -145,7 +145,7 @@ class TestAzureSdk:
     def test_subscription_id(
         self,
         request,
-        mock_azureapi_get_subscription,  # noqa: ARG002
+        mock_azuresdk_get_subscription,  # noqa: ARG002
     ):
         sdk = AzureSdk("subscription name")
         assert sdk.subscription_id == request.config.guid_subscription
@@ -153,7 +153,7 @@ class TestAzureSdk:
     def test_tenant_id(
         self,
         request,
-        mock_azureapi_get_subscription,  # noqa: ARG002
+        mock_azuresdk_get_subscription,  # noqa: ARG002
     ):
         sdk = AzureSdk("subscription name")
         assert sdk.tenant_id == request.config.guid_tenant
@@ -219,7 +219,7 @@ class TestAzureSdk:
 
     def test_purge_keyvault(
         self,
-        mock_azureapi_get_subscription,  # noqa: ARG002
+        mock_azuresdk_get_subscription,  # noqa: ARG002
         mock_azuresdk_get_credential,  # noqa: ARG002
         mock_key_vault_management_client,  # noqa: ARG002
         capsys,

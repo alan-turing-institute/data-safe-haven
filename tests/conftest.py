@@ -168,7 +168,7 @@ def log_directory(session_mocker, tmp_path_factory):
 
 
 @fixture
-def mock_azureapi_get_subscription(mocker, request):
+def mock_azuresdk_get_subscription(mocker, request):
     subscription = Subscription()
     subscription.display_name = "Data Safe Haven Acme"
     subscription.subscription_id = request.config.guid_subscription
@@ -462,7 +462,7 @@ def sre_project_manager(
     sre_config,
     pulumi_config_no_key,
     local_project_settings,  # noqa: ARG001
-    mock_azureapi_get_subscription,  # noqa: ARG001
+    mock_azuresdk_get_subscription,  # noqa: ARG001
     mock_azuresdk_get_credential,  # noqa: ARG001
     offline_pulumi_account,  # noqa: ARG001
 ):
