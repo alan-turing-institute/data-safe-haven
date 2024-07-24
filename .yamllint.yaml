@@ -1,5 +1,6 @@
 ---
 # Some rules here are added for compatibility with ansible-lint
+# https://ansible.readthedocs.io/projects/lint/rules/yaml/
 extends: default
 rules:
   # Restrict acceptable spaces inside brackets
