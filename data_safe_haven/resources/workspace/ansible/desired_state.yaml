@@ -99,6 +99,12 @@
         - xrdp
         - xrdp-sesman
 
+    - name: Add polkit rule to allow colord
+      ansible.builtin.copy:
+        src: etc/polkit-1/localauthority/50-local.d/50-colord.pkla
+        dest: /etc/polkit-1/localauthority/50-local.d/50-colord.pkla
+        mode: '0644'
+
     - name: Copy test files
       ansible.builtin.copy:
         src: "{{ item }}"
