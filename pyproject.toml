@@ -37,8 +37,9 @@ dependencies = [
   "msal>=1.21",
   "psycopg>=3.1",
   "pulumi>=3.80",
-  "pulumi-azure-native>=2.14",
+  "pulumi-azure-native>=2.49.1",
   "pulumi-random>=4.14",
+  "pulumi-tls>=5.0.3",
   "pydantic>=2.4",
   "pyjwt>=2.8",
   "pytz>=2023.3",
@@ -87,6 +88,8 @@ build = [
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
+  "ansible>=10.2.0",
+  "ansible-dev-tools>=24.7.1",
   "black>=24.1.0",
   "mypy>=1.0.0",
   "pydantic>=2.4",
@@ -99,21 +102,22 @@ dependencies = [
 ]
 
 [tool.hatch.envs.lint.scripts]
-typing = "mypy {args:data_safe_haven}"
-
-style = [
-  "ruff check {args:data_safe_haven tests}",
-  "black --check --diff {args:data_safe_haven tests}",
+all = [
+  "style",
+  "typing",
+  "ansible",
 ]
+ansible = "ansible-lint {args:data_safe_haven/resources/workspace/ansible/}"
 fmt = [
   "black {args:data_safe_haven tests}",
   "ruff check --fix {args:data_safe_haven tests}",
   "style",
 ]
-all = [
-  "style",
-  "typing",
+style = [
+  "ruff check {args:data_safe_haven tests}",
+  "black --check --diff {args:data_safe_haven tests}",
 ]
+typing = "mypy {args:data_safe_haven}"
 
 [tool.hatch.envs.test]
 dependencies = [
@@ -157,11 +161,11 @@ module = [
     "pulumi.*",
     "pulumi_azure_native.*",
     "pulumi_random.*",
+    "pulumi_tls.*",
     "pymssql.*",
     "rich.*",
     "simple_acme_dns.*",
     "sklearn.*",
-    "typer.*",
     "websocket.*",
 ]
 ignore_missing_imports = true

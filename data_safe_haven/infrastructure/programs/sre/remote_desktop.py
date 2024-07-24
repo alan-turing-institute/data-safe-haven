@@ -6,7 +6,6 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     containerinstance,
     network,
-    resources,
     storage,
 )
 
@@ -48,9 +47,9 @@ class SRERemoteDesktopProps:
         ldap_user_filter: Input[str],
         ldap_user_search_base: Input[str],
         location: Input[str],
+        resource_group_name: Input[str],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
-        storage_account_resource_group_name: Input[str],
         subnet_guacamole_containers: Input[network.GetSubnetResult],
         subnet_guacamole_containers_support: Input[network.GetSubnetResult],
         database_username: Input[str] | None = "postgresadmin",
@@ -74,9 +73,9 @@ class SRERemoteDesktopProps:
         self.ldap_user_filter = ldap_user_filter
         self.ldap_user_search_base = ldap_user_search_base
         self.location = location
+        self.resource_group_name = resource_group_name
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
-        self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_guacamole_containers_id = Output.from_input(
             subnet_guacamole_containers
         ).apply(get_id_from_subnet)
@@ -124,15 +123,6 @@ class SRERemoteDesktopComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-remote-desktop",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Define Entra ID application
         entra_application = EntraApplication(
             f"{self._name}_entra_application",
@@ -149,7 +139,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             f"{self._name}_file_share",
             access_tier=storage.ShareAccessTier.COOL,
             account_name=props.storage_account_name,
-            resource_group_name=props.storage_account_resource_group_name,
+            resource_group_name=props.resource_group_name,
             share_name="remote-desktop-caddy",
             share_quota=1,
             signed_identifiers=[],
@@ -177,7 +167,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             PostgresqlDatabaseProps(
                 database_names=[db_guacamole_connections],
                 database_password=props.database_password,
-                database_resource_group_name=resource_group.name,
+                database_resource_group_name=props.resource_group_name,
                 database_server_name=f"{stack_name}-db-server-guacamole",
                 database_subnet_id=props.subnet_guacamole_containers_support_id,
                 database_username=props.database_username,
@@ -398,7 +388,7 @@ class SRERemoteDesktopComponent(ComponentResource):
             ),
             location=props.location,
             os_type=containerinstance.OperatingSystemTypes.LINUX,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             restart_policy=containerinstance.ContainerGroupRestartPolicy.ALWAYS,
             sku=containerinstance.ContainerGroupSku.STANDARD,
             subnet_ids=[
@@ -425,9 +415,6 @@ class SRERemoteDesktopComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Register outputs
-        self.resource_group_name = resource_group.name
-
         # Register exports
         self.exports = {
             "connection_db_name": db_guacamole_connections,
@@ -435,5 +422,5 @@ class SRERemoteDesktopComponent(ComponentResource):
             "container_group_name": container_group.name,
             "disable_copy": props.disable_copy,
             "disable_paste": props.disable_paste,
-            "resource_group_name": resource_group.name,
+            "resource_group_name": props.resource_group_name,
         }

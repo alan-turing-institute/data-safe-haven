@@ -58,4 +58,4 @@ class TestRun:
     ):
         result = runner.invoke(pulumi_command_group, ["alternate", "stack ls"])
         assert result.exit_code == 1
-        assert "No SHM/SRE named alternative is defined" in result.stdout
+        assert "No SRE named alternative is defined" in result.stdout

@@ -69,7 +69,7 @@ from data_safe_haven.exceptions import (
     DataSafeHavenAzureStorageError,
     DataSafeHavenValueError,
 )
-from data_safe_haven.logging import get_logger
+from data_safe_haven.logging import get_logger, get_null_logger
 from data_safe_haven.types import AzureSdkCredentialScope
 
 from .credentials import AzureSdkCredential
@@ -79,9 +79,11 @@ from .graph_api import GraphApi
 class AzureSdk:
     """Interface to the Azure Python SDK"""
 
-    def __init__(self, subscription_name: str) -> None:
+    def __init__(
+        self, subscription_name: str, *, disable_logging: bool = False
+    ) -> None:
         self._credentials: dict[AzureSdkCredentialScope, AzureSdkCredential] = {}
-        self.logger = get_logger()
+        self.logger = get_null_logger() if disable_logging else get_logger()
         self.subscription_name = subscription_name
         self.subscription_id_: str | None = None
         self.tenant_id_: str | None = None
@@ -815,6 +817,66 @@ class AzureSdk:
             msg = f"Failed to load available VM sizes for Azure location {location}."
             raise DataSafeHavenAzureError(msg) from exc
 
+    def purge_keyvault(
+        self,
+        key_vault_name: str,
+        location: str,
+    ) -> bool:
+        """Purge a deleted Key Vault from Azure
+
+        Returns:
+            True: if the Key Vault was purged from a deleted state
+            False: if the Key Vault did not need to be purged
+
+        Raises:
+            DataSafeHavenAzureError if the non-existence of the Key Vault could not be verified
+        """
+        try:
+            # Connect to Azure clients
+            key_vault_client = KeyVaultManagementClient(
+                self.credential(), self.subscription_id
+            )
+
+            # Check whether a deleted Key Vault exists
+            try:
+                key_vault_client.vaults.get_deleted(
+                    vault_name=key_vault_name,
+                    location=location,
+                )
+            except HttpResponseError:
+                self.logger.info(
+                    f"Key Vault [green]{key_vault_name}[/] does not need to be purged."
+                )
+                return False
+
+            # Purge the Key Vault
+            with suppress(HttpResponseError):
+                self.logger.debug(
+                    f"Purging Key Vault [green]{key_vault_name}[/]...",
+                )
+
+                # Keep polling until purge is finished
+                poller = key_vault_client.vaults.begin_purge_deleted(
+                    vault_name=key_vault_name,
+                    location=location,
+                )
+                while not poller.done():
+                    poller.wait(10)
+
+            # Check whether the Key Vault is still in deleted state
+            with suppress(HttpResponseError):
+                if key_vault_client.vaults.get_deleted(
+                    vault_name=key_vault_name,
+                    location=location,
+                ):
+                    msg = f"Key Vault '{key_vault_name}' exists in deleted state."
+                    raise AzureError(msg)
+            self.logger.info(f"Purged Key Vault [green]{key_vault_name}[/].")
+            return True
+        except AzureError as exc:
+            msg = f"Failed to remove Key Vault '{key_vault_name}'."
+            raise DataSafeHavenAzureError(msg) from exc
+
     def purge_keyvault_certificate(
         self,
         certificate_name: str,
@@ -823,7 +885,7 @@ class AzureSdk:
         """Purge a deleted certificate from the KeyVault
 
         Raises:
-            DataSafeHavenAzureError if the existence of the certificate could not be verified
+            DataSafeHavenAzureError if the non-existence of the certificate could not be verified
         """
         try:
             # Connect to Azure clients

@@ -60,7 +60,7 @@ class SSLCertificateProvider(DshResourceProvider):
             private_key_bytes = client.generate_private_key(key_type="rsa2048")
             client.generate_csr()
             # Request DNS verification tokens and add them to the DNS record
-            azure_sdk = AzureSdk(props["subscription_name"])
+            azure_sdk = AzureSdk(props["subscription_name"], disable_logging=True)
             verification_tokens = client.request_verification_tokens().items()
             for record_name, record_values in verification_tokens:
                 record_set = azure_sdk.ensure_dns_txt_record(
@@ -135,7 +135,7 @@ class SSLCertificateProvider(DshResourceProvider):
         id(id_)
         try:
             # Remove the DNS record
-            azure_sdk = AzureSdk(props["subscription_name"])
+            azure_sdk = AzureSdk(props["subscription_name"], disable_logging=True)
             azure_sdk.remove_dns_txt_record(
                 record_name="_acme_challenge",
                 resource_group_name=props["networking_resource_group_name"],
@@ -167,7 +167,7 @@ class SSLCertificateProvider(DshResourceProvider):
         try:
             outs = dict(**props)
             with suppress(DataSafeHavenAzureError, KeyError):
-                azure_sdk = AzureSdk(outs["subscription_name"])
+                azure_sdk = AzureSdk(outs["subscription_name"], disable_logging=True)
                 certificate = azure_sdk.get_keyvault_certificate(
                     outs["certificate_secret_name"], outs["key_vault_name"]
                 )
