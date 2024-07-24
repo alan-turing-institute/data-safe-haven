@@ -55,19 +55,23 @@
         replace: '\1\2 ldap'
 
     - name: Ensure home directories are created on LDAP login
-      # Should look to migrate to https://docs.ansible.com/ansible/latest/collections/community/general/pamd_module.html
-      ansible.builtin.lineinfile:
-        path: /etc/pam.d/common-session
-        regexp: '^session required\s+pam_mkhomedir.so'
-        line: 'pam_mkhomedir.so skel=/etc/skel umask=0022'
+      community.general.pamd:
+        name: common-session
+        type: session
+        control: optional
+        module_path: pam_mkhomedir.so
+        module_arguments: 'skel=/etc/skel umask=0022'
+        state: args_present
       notify: Update PAM auth
 
-    - name: Don't enforce new passwords on change
-      ansible.builtin.lineinfile:
-        path: /etc/pam.d/login
-        state: absent
-        regexp: '^password(.*) use_authtok (.*)$'
-        line: 'password\1 \2'
+    - name: Don't prompt to change expired passwords via ldap
+      community.general.pamd:
+        name: common-account
+        type: account
+        control: '[success=ok new_authtok_reqd=done ignore=ignore user_unknown=ignore authinfo_unavail=ignore default=bad]'
+        module_path: pam_ldap.so
+        new_control: '[success=ok ignore=ignore user_unknown=ignore authinfo_unavail=ignore default=bad]'
+        state: updated
 
     - name: Enable SSH password authentication
       # Should look to migrate to https://github.com/dev-sec/ansible-collection-hardening

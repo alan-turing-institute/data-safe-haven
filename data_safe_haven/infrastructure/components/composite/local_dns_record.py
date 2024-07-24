@@ -8,16 +8,14 @@ class LocalDnsRecordProps:
     def __init__(
         self,
         base_fqdn: Input[str],
-        public_dns_resource_group_name: Input[str],
-        private_dns_resource_group_name: Input[str],
         private_ip_address: Input[str],
         record_name: Input[str],
+        resource_group_name: Input[str],
     ) -> None:
         self.base_fqdn = base_fqdn
-        self.public_dns_resource_group_name = public_dns_resource_group_name
-        self.private_dns_resource_group_name = private_dns_resource_group_name
         self.private_ip_address = private_ip_address
         self.record_name = record_name
+        self.resource_group_name = resource_group_name
 
 
 class LocalDnsRecordComponent(ComponentResource):
@@ -43,7 +41,7 @@ class LocalDnsRecordComponent(ComponentResource):
             private_zone_name=Output.concat("privatelink.", props.base_fqdn),
             record_type="A",
             relative_record_set_name=props.record_name,
-            resource_group_name=props.private_dns_resource_group_name,
+            resource_group_name=props.resource_group_name,
             ttl=30,
             opts=child_opts,
         )
@@ -56,7 +54,7 @@ class LocalDnsRecordComponent(ComponentResource):
             ),
             record_type="CNAME",
             relative_record_set_name=props.record_name,
-            resource_group_name=props.public_dns_resource_group_name,
+            resource_group_name=props.resource_group_name,
             ttl=3600,
             zone_name=props.base_fqdn,
             opts=ResourceOptions.merge(

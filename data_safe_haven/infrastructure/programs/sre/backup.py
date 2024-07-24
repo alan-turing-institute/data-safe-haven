@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 
 from pulumi import ComponentResource, Input, ResourceOptions
-from pulumi_azure_native import dataprotection, resources
+from pulumi_azure_native import dataprotection
 
 
 class SREBackupProps:
@@ -12,10 +12,12 @@ class SREBackupProps:
     def __init__(
         self,
         location: Input[str],
+        resource_group_name: Input[str],
         storage_account_data_private_sensitive_id: Input[str],
         storage_account_data_private_sensitive_name: Input[str],
     ) -> None:
         self.location = location
+        self.resource_group_name = resource_group_name
         self.storage_account_data_private_sensitive_id = (
             storage_account_data_private_sensitive_id
         )
@@ -39,15 +41,6 @@ class SREBackupComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-backup",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Deploy backup vault
         backup_vault = dataprotection.BackupVault(
             f"{self._name}_backup_vault",
@@ -63,7 +56,7 @@ class SREBackupComponent(ComponentResource):
                     )
                 ],
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             vault_name=f"{stack_name}-bv-backup",
             opts=child_opts,
             tags=child_tags,
@@ -97,7 +90,7 @@ class SREBackupComponent(ComponentResource):
                     ),
                 ],
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             vault_name=backup_vault.name,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=backup_vault)
@@ -162,7 +155,7 @@ class SREBackupComponent(ComponentResource):
                     ),
                 ],
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             vault_name=backup_vault.name,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=backup_vault)
@@ -189,7 +182,7 @@ class SREBackupComponent(ComponentResource):
                 ),
                 friendly_name="BlobBackupSensitiveData",
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             vault_name=backup_vault.name,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=backup_policy_blobs)

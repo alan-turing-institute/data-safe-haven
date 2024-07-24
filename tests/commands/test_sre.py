@@ -26,7 +26,7 @@ class TestDeploySRE:
     def test_auth_failure(
         self,
         runner,
-        mock_azureapicredential_get_credential_failure,  # noqa: ARG002
+        mock_azuresdk_get_credential_failure,  # noqa: ARG002
     ):
         result = runner.invoke(sre_command_group, ["deploy", "sandbox"])
         assert result.exit_code == 1
@@ -81,7 +81,7 @@ class TestTeardownSRE:
     def test_auth_failure(
         self,
         runner,
-        mock_azureapicredential_get_credential_failure,  # noqa: ARG002
+        mock_azuresdk_get_credential_failure,  # noqa: ARG002
     ):
         result = runner.invoke(sre_command_group, ["teardown", "sandbox"])
         assert result.exit_code == 1

@@ -17,12 +17,14 @@ from pulumi_azure_native import (
 from data_safe_haven.external import AzureIPv4Range
 from data_safe_haven.functions import (
     alphanumeric,
+    get_key_vault_name,
     replace_separators,
     seeded_uuid,
     sha256hash,
     truncate_tokens,
 )
 from data_safe_haven.infrastructure.common import (
+    get_id_from_rg,
     get_id_from_subnet,
     get_name_from_rg,
 )
@@ -49,7 +51,7 @@ class SREDataProps:
         dns_record: Input[network.RecordSet],
         dns_server_admin_password: Input[pulumi_random.RandomPassword],
         location: Input[str],
-        networking_resource_group: Input[resources.ResourceGroup],
+        resource_group: Input[resources.ResourceGroup],
         sre_fqdn: Input[str],
         subnet_data_configuration: Input[network.GetSubnetResult],
         subnet_data_desired_state: Input[network.GetSubnetResult],
@@ -72,9 +74,10 @@ class SREDataProps:
         self.dns_record = dns_record
         self.password_dns_server_admin = dns_server_admin_password
         self.location = location
-        self.networking_resource_group_name = Output.from_input(
-            networking_resource_group
-        ).apply(get_name_from_rg)
+        self.resource_group_id = Output.from_input(resource_group).apply(get_id_from_rg)
+        self.resource_group_name = Output.from_input(resource_group).apply(
+            get_name_from_rg
+        )
         self.sre_fqdn = sre_fqdn
         self.subnet_data_configuration_id = Output.from_input(
             subnet_data_configuration
@@ -109,20 +112,11 @@ class SREDataComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-data",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Define Key Vault reader
         identity_key_vault_reader = managedidentity.UserAssignedIdentity(
             f"{self._name}_id_key_vault_reader",
             location=props.location,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             resource_name_=f"{stack_name}-id-key-vault-reader",
             opts=child_opts,
             tags=child_tags,
@@ -211,8 +205,8 @@ class SREDataComponent(ComponentResource):
                 soft_delete_retention_in_days=7,  # minimum allowed
                 tenant_id=props.tenant_id,
             ),
-            resource_group_name=resource_group.name,
-            vault_name=f"{''.join(truncate_tokens(stack_name.split('-'), 17))}secrets",  # maximum of 24 characters
+            resource_group_name=props.resource_group_name,
+            vault_name=get_key_vault_name(stack_name)[:24],  # maximum of 24 characters
             opts=child_opts,
             tags=child_tags,
         )
@@ -227,7 +221,7 @@ class SREDataComponent(ComponentResource):
                 domain_name=props.sre_fqdn,
                 admin_email_address=props.admin_email_address,
                 key_vault_name=key_vault.name,
-                networking_resource_group_name=props.networking_resource_group_name,
+                networking_resource_group_name=props.resource_group_name,
                 subscription_name=props.subscription_name,
             ),
             opts=ResourceOptions.merge(
@@ -251,7 +245,7 @@ class SREDataComponent(ComponentResource):
             properties=keyvault.SecretPropertiesArgs(
                 value=password_database_service_admin.result,
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             secret_name="password-database-service-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(
@@ -266,7 +260,7 @@ class SREDataComponent(ComponentResource):
             properties=keyvault.SecretPropertiesArgs(
                 value=props.password_dns_server_admin.result,
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             secret_name="password-dns-server-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=key_vault)),
@@ -285,7 +279,7 @@ class SREDataComponent(ComponentResource):
             properties=keyvault.SecretPropertiesArgs(
                 value=password_gitea_database_admin.result
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             secret_name="password-gitea-database-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(
@@ -306,7 +300,7 @@ class SREDataComponent(ComponentResource):
             properties=keyvault.SecretPropertiesArgs(
                 value=password_hedgedoc_database_admin.result
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             secret_name="password-hedgedoc-database-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(
@@ -325,7 +319,7 @@ class SREDataComponent(ComponentResource):
         keyvault.Secret(
             f"{self._name}_kvs_password_nexus_admin",
             properties=keyvault.SecretPropertiesArgs(value=password_nexus_admin.result),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             secret_name="password-nexus-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(
@@ -346,7 +340,7 @@ class SREDataComponent(ComponentResource):
             properties=keyvault.SecretPropertiesArgs(
                 value=password_user_database_admin.result
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             secret_name="password-user-database-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions.merge(
@@ -367,7 +361,7 @@ class SREDataComponent(ComponentResource):
             properties=keyvault.SecretPropertiesArgs(
                 value=password_workspace_admin.result
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             secret_name="password-workspace-admin",
             vault_name=key_vault.name,
             opts=ResourceOptions(parent=password_workspace_admin),
@@ -403,7 +397,7 @@ class SREDataComponent(ComponentResource):
                     )
                 ],
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
             opts=child_opts,
             tags=child_tags,
@@ -411,7 +405,7 @@ class SREDataComponent(ComponentResource):
         # Retrieve configuration data storage account keys
         storage_account_data_configuration_keys = Output.all(
             account_name=storage_account_data_configuration.name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
         ).apply(
             lambda kwargs: storage.list_storage_account_keys(
                 account_name=kwargs["account_name"],
@@ -430,7 +424,7 @@ class SREDataComponent(ComponentResource):
                     private_link_service_id=storage_account_data_configuration.id,
                 )
             ],
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             subnet=network.SubnetArgs(id=props.subnet_data_configuration_id),
             opts=ResourceOptions.merge(
                 child_opts,
@@ -456,7 +450,7 @@ class SREDataComponent(ComponentResource):
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-configuration",
             private_endpoint_name=storage_account_data_configuration_private_endpoint.name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_account_data_configuration)
             ),
@@ -506,7 +500,7 @@ class SREDataComponent(ComponentResource):
                     )
                 ],
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
             tags=child_tags,
@@ -519,7 +513,7 @@ class SREDataComponent(ComponentResource):
             default_encryption_scope="$account-encryption-key",
             deny_encryption_scope_override=False,
             public_access=storage.PublicAccess.NONE,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=storage_account_data_desired_state),
@@ -536,7 +530,7 @@ class SREDataComponent(ComponentResource):
                 # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
                 container_name=container_desired_state.name,
-                resource_group_name=resource_group.name,
+                resource_group_name=props.resource_group_name,
                 storage_account_name=storage_account_data_desired_state.name,
                 subscription_name=props.subscription_name,
             ),
@@ -562,7 +556,7 @@ class SREDataComponent(ComponentResource):
                 account_name=storage_account_data_desired_state.name,
                 blob_name=file_path,
                 container_name=container_desired_state.name,
-                resource_group_name=resource_group.name,
+                resource_group_name=props.resource_group_name,
                 source=file_asset,
             )
         # Set up a private endpoint for the desired state storage account
@@ -577,7 +571,7 @@ class SREDataComponent(ComponentResource):
                     private_link_service_id=storage_account_data_desired_state.id,
                 )
             ],
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             subnet=network.SubnetArgs(id=props.subnet_data_desired_state_id),
             opts=ResourceOptions.merge(
                 child_opts,
@@ -603,7 +597,7 @@ class SREDataComponent(ComponentResource):
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-desired-state",
             private_endpoint_name=storage_account_data_desired_state_endpoint.name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=storage_account_data_desired_state),
@@ -656,7 +650,7 @@ class SREDataComponent(ComponentResource):
                     )
                 ],
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
             tags=child_tags,
@@ -669,7 +663,7 @@ class SREDataComponent(ComponentResource):
             default_encryption_scope="$account-encryption-key",
             deny_encryption_scope_override=False,
             public_access=storage.PublicAccess.NONE,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=storage_account_data_private_sensitive),
@@ -682,7 +676,7 @@ class SREDataComponent(ComponentResource):
             default_encryption_scope="$account-encryption-key",
             deny_encryption_scope_override=False,
             public_access=storage.PublicAccess.NONE,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=storage_account_data_private_sensitive),
@@ -699,7 +693,7 @@ class SREDataComponent(ComponentResource):
                 # 65533 ownership of the fileshare (preventing use inside the SRE)
                 apply_default_permissions=False,
                 container_name=storage_container_egress.name,
-                resource_group_name=resource_group.name,
+                resource_group_name=props.resource_group_name,
                 storage_account_name=storage_account_data_private_sensitive.name,
                 subscription_name=props.subscription_name,
             ),
@@ -717,7 +711,7 @@ class SREDataComponent(ComponentResource):
                 # files (eg. with Azure Storage Explorer)
                 apply_default_permissions=True,
                 container_name=storage_container_ingress.name,
-                resource_group_name=resource_group.name,
+                resource_group_name=props.resource_group_name,
                 storage_account_name=storage_account_data_private_sensitive.name,
                 subscription_name=props.subscription_name,
             ),
@@ -737,7 +731,7 @@ class SREDataComponent(ComponentResource):
                     private_link_service_id=storage_account_data_private_sensitive.id,
                 )
             ],
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             subnet=network.SubnetArgs(id=props.subnet_data_private_id),
             opts=ResourceOptions.merge(
                 child_opts,
@@ -763,7 +757,7 @@ class SREDataComponent(ComponentResource):
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-private-sensitive",
             private_endpoint_name=storage_account_data_private_sensitive_endpoint.name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=storage_account_data_private_sensitive),
@@ -785,11 +779,8 @@ class SREDataComponent(ComponentResource):
                 "/providers/Microsoft.Authorization/roleDefinitions/",
                 self.azure_role_ids["Storage Blob Data Owner"],
             ),
-            scope=resource_group.id,
-            opts=ResourceOptions.merge(
-                child_opts,
-                ResourceOptions(parent=resource_group),
-            ),
+            scope=props.resource_group_id,
+            opts=child_opts,
         )
 
         # Deploy data_private_user files storage account
@@ -823,7 +814,7 @@ class SREDataComponent(ComponentResource):
                     )
                 ],
             ),
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name=storage.SkuName.PREMIUM_ZRS),
             opts=child_opts,
             tags=child_tags,
@@ -833,7 +824,7 @@ class SREDataComponent(ComponentResource):
             access_tier=storage.ShareAccessTier.PREMIUM,
             account_name=storage_account_data_private_user.name,
             enabled_protocols=storage.EnabledProtocols.NFS,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             # Squashing prevents root from creating user home directories
             root_squash=storage.RootSquashType.NO_ROOT_SQUASH,
             share_name="home",
@@ -848,7 +839,7 @@ class SREDataComponent(ComponentResource):
             access_tier=storage.ShareAccessTier.PREMIUM,
             account_name=storage_account_data_private_user.name,
             enabled_protocols=storage.EnabledProtocols.NFS,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             root_squash=storage.RootSquashType.ROOT_SQUASH,
             share_name="shared",
             share_quota=1024,
@@ -869,7 +860,7 @@ class SREDataComponent(ComponentResource):
                     private_link_service_id=storage_account_data_private_user.id,
                 )
             ],
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             subnet=network.SubnetArgs(id=props.subnet_data_private_id),
             opts=ResourceOptions.merge(
                 child_opts,
@@ -895,7 +886,7 @@ class SREDataComponent(ComponentResource):
             ],
             private_dns_zone_group_name=f"{stack_name}-dzg-storage-account-data-private-user",
             private_endpoint_name=storage_account_data_private_user_endpoint.name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=storage_account_data_private_user)
             ),
@@ -943,7 +934,6 @@ class SREDataComponent(ComponentResource):
             password_user_database_admin.result
         )
         self.password_workspace_admin = Output.secret(password_workspace_admin.result)
-        self.resource_group_name = resource_group.name
 
         # Register exports
         self.exports = {

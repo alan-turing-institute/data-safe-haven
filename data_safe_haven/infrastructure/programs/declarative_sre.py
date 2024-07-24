@@ -1,6 +1,7 @@
 """Pulumi declarative program"""
 
 import pulumi
+from pulumi_azure_native import resources
 
 from data_safe_haven.config import Context, SREConfig
 from data_safe_haven.infrastructure.common import DockerHubCredentials
@@ -128,6 +129,14 @@ class DeclarativeSRE:
             ]
         )
 
+        # Deploy resource group
+        resource_group = resources.ResourceGroup(
+            "sre_resource_group",
+            location=self.config.azure.location,
+            resource_group_name=f"{self.stack_name}-rg",
+            tags=self.tags,
+        )
+
         # Deploy SRE DNS server
         dns = SREDnsServerComponent(
             "sre_dns_server",
@@ -135,6 +144,7 @@ class DeclarativeSRE:
             SREDnsServerProps(
                 dockerhub_credentials=dockerhub_credentials,
                 location=self.config.azure.location,
+                resource_group_name=resource_group.name,
                 shm_fqdn=shm_fqdn,
             ),
             tags=self.tags,
@@ -146,10 +156,10 @@ class DeclarativeSRE:
             self.stack_name,
             SRENetworkingProps(
                 dns_private_zones=dns.private_zones,
-                dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 dns_virtual_network=dns.virtual_network,
                 location=self.config.azure.location,
+                resource_group_name=resource_group.name,
                 shm_fqdn=shm_fqdn,
                 shm_resource_group_name=self.context.resource_group_name,
                 shm_zone_name=shm_fqdn,
@@ -165,7 +175,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREFirewallProps(
                 location=self.config.azure.location,
-                resource_group_name=networking.resource_group.name,
+                resource_group_name=resource_group.name,
                 route_table_name=networking.route_table_name,
                 subnet_apt_proxy_server=networking.subnet_apt_proxy_server,
                 subnet_firewall=networking.subnet_firewall,
@@ -191,7 +201,7 @@ class DeclarativeSRE:
                 dns_record=networking.shm_ns_record,
                 dns_server_admin_password=dns.password_admin,
                 location=self.config.azure.location,
-                networking_resource_group=networking.resource_group,
+                resource_group=resource_group,
                 sre_fqdn=networking.sre_fqdn,
                 subnet_data_configuration=networking.subnet_data_configuration,
                 subnet_data_desired_state=networking.subnet_data_desired_state,
@@ -209,14 +219,12 @@ class DeclarativeSRE:
             self.stack_name,
             SREAptProxyServerProps(
                 containers_subnet=networking.subnet_apt_proxy_server,
-                dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 location=self.config.azure.location,
-                networking_resource_group_name=networking.resource_group.name,
+                resource_group_name=resource_group.name,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
-                storage_account_resource_group_name=data.resource_group_name,
             ),
             tags=self.tags,
         )
@@ -226,19 +234,17 @@ class DeclarativeSRE:
             "sre_identity",
             self.stack_name,
             SREIdentityProps(
-                dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,
                 entra_application_name=f"sre-{self.config.name}-apricot",
                 entra_auth_token=self.graph_api_token,
                 entra_tenant_id=shm_entra_tenant_id,
                 location=self.config.azure.location,
-                networking_resource_group_name=networking.resource_group.name,
+                resource_group_name=resource_group.name,
                 shm_fqdn=shm_fqdn,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
-                storage_account_resource_group_name=data.resource_group_name,
                 subnet_containers=networking.subnet_identity_containers,
             ),
             tags=self.tags,
@@ -252,7 +258,7 @@ class DeclarativeSRE:
                 key_vault_certificate_id=data.sre_fqdn_certificate_secret_id,
                 key_vault_identity=data.managed_identity,
                 location=self.config.azure.location,
-                resource_group=networking.resource_group,
+                resource_group=resource_group,
                 subnet_application_gateway=networking.subnet_application_gateway,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
                 sre_fqdn=networking.sre_fqdn,
@@ -281,9 +287,9 @@ class DeclarativeSRE:
                 ldap_user_filter=ldap_user_filter,
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.config.azure.location,
+                resource_group_name=resource_group.name,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
-                storage_account_resource_group_name=data.resource_group_name,
                 subnet_guacamole_containers_support=networking.subnet_guacamole_containers_support,
                 subnet_guacamole_containers=networking.subnet_guacamole_containers,
             ),
@@ -297,7 +303,6 @@ class DeclarativeSRE:
             SREUserServicesProps(
                 database_service_admin_password=data.password_database_service_admin,
                 databases=self.config.sre.databases,
-                dns_resource_group_name=dns.resource_group.name,
                 dns_server_ip=dns.ip_address,
                 dockerhub_credentials=dockerhub_credentials,
                 gitea_database_password=data.password_gitea_database_admin,
@@ -308,13 +313,12 @@ class DeclarativeSRE:
                 ldap_username_attribute=ldap_username_attribute,
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.config.azure.location,
-                networking_resource_group_name=networking.resource_group.name,
                 nexus_admin_password=data.password_nexus_admin,
+                resource_group_name=resource_group.name,
                 software_packages=self.config.sre.software_packages,
                 sre_fqdn=networking.sre_fqdn,
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
-                storage_account_resource_group_name=data.resource_group_name,
                 subnet_containers=networking.subnet_user_services_containers,
                 subnet_containers_support=networking.subnet_user_services_containers_support,
                 subnet_databases=networking.subnet_user_services_databases,
@@ -330,6 +334,7 @@ class DeclarativeSRE:
             SREMonitoringProps(
                 dns_private_zones=dns.private_zones,
                 location=self.config.azure.location,
+                resource_group_name=resource_group.name,
                 subnet=networking.subnet_monitoring,
                 timezone=self.config.sre.timezone,
             ),
@@ -353,6 +358,7 @@ class DeclarativeSRE:
                 ldap_user_search_base=ldap_user_search_base,
                 location=self.config.azure.location,
                 maintenance_configuration_id=monitoring.maintenance_configuration.id,
+                resource_group_name=resource_group.name,
                 software_repository_hostname=user_services.software_repositories.hostname,
                 sre_name=self.config.name,
                 storage_account_data_desired_state_name=data.storage_account_data_desired_state_name,
@@ -360,7 +366,6 @@ class DeclarativeSRE:
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
                 subnet_workspaces=networking.subnet_workspaces,
                 subscription_name=self.context.subscription_name,
-                virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
                 vm_details=list(enumerate(self.config.sre.workspace_skus)),
             ),
@@ -373,6 +378,7 @@ class DeclarativeSRE:
             self.stack_name,
             SREBackupProps(
                 location=self.config.azure.location,
+                resource_group_name=resource_group.name,
                 storage_account_data_private_sensitive_id=data.storage_account_data_private_sensitive_id,
                 storage_account_data_private_sensitive_name=data.storage_account_data_private_sensitive_name,
             ),
