@@ -350,6 +350,7 @@ class DeclarativeSRE:
                 apt_proxy_server_hostname=apt_proxy_server.hostname,
                 data_collection_rule_id=monitoring.data_collection_rule_vms.id,
                 data_collection_endpoint_id=monitoring.data_collection_endpoint.id,
+                database_service_admin_password=data.password_database_service_admin,
                 ldap_group_filter=ldap_group_filter,
                 ldap_group_search_base=ldap_group_search_base,
                 ldap_server_hostname=identity.hostname,
