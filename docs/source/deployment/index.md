@@ -11,8 +11,9 @@ deploy_sre.md
 
 Deploying an instance of the Data Safe Haven involves the following steps:
 
-- Deploying the context used to host the Pulumi backend infrastructure
+- Configuring the context used to host the Pulumi backend infrastructure
 - Deploying the Safe Haven management component
+- Configuring the Microsoft Entra directory where you will manage users
 - Deploying a Secure Research Environment for each project
 
 ## Requirements
@@ -22,15 +23,6 @@ Install the following requirements before starting
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 - [Hatch](https://hatch.pypa.io/1.9/install/)
 - [Pulumi](https://www.pulumi.com/docs/get-started/install/)
-
-:::{important}
-You will also need an account with `Global Administrator` privileges on a Microsoft Entra tenant.
-:::
-
-:::{hint}
-We suggest creating a new Entra tenant for your DSH deployment, but this is not a requirement.
-If you want to do so, follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant).
-:::
 
 ### Docker Hub
 
