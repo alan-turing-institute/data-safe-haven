@@ -105,10 +105,11 @@
         enabled: true
         state: started
 
-    - name: Get minimum uid
-      ansible.builting.command:
+    - name: Get minimum uid  # noqa: inline-env-var
+      ansible.builtin.command:
         cmd: awk '/^\s*UID_MIN/{print $2}' /etc/login.defs
         register: uid_min
+      changed_when: false
 
     - name: Template auditd rules
       ansible.builtin.template:
