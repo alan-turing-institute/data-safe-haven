@@ -131,7 +131,7 @@
     - name: Generate auditd privileged executable rules
       tags: auditd
       ansible.builtin.shell:
-        cmd: /usr/local/bin/privileged-rules >> /etc/audit/rules.d/50-privileged.rules
+        cmd: /usr/local/bin/privileged-rules > /etc/audit/rules.d/50-privileged.rules
         creates: /etc/audit/rules.d/50-privileged.rules
       notify: Restart auditd
 
