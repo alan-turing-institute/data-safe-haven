@@ -4,8 +4,8 @@
 :hidden:
 
 setup_context.md
-deploy_entra_id.md
 deploy_shm.md
+configure_entra_id.md
 deploy_sre.md
 ```
 

@@ -1,6 +1,6 @@
-(deploy_entra_id)=
+(configure_entra_id)=
 
-# Deploy Microsoft Entra ID
+# Configure Microsoft Entra ID
 
 These instructions will deploy the [Entra ID](https://www.microsoft.com/en-gb/security/business/identity-access/microsoft-entra-id) where you will manage your users.
 This is required to manage your Secure Research Environments (SREs) and **must be** deployed before you create your SHM.
