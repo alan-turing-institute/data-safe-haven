@@ -11,24 +11,24 @@ package_categories:
       - auditd
       - bats
       - clamav
-    focal:
-    jammy:
-    noble:
+    focal: []
+    jammy: []
+    noble: []
   - category: browsers
     common:
       - firefox
-    focal:
-    jammy:
-    noble:
+    focal: []
+    jammy: []
+    noble: []
   - category: database
     common:
       - libpq-dev     # interact with PostgreSQL databases
       - msodbcsql17   # interact with Microsoft SQL databases
       - postgresql-client-common  # CLI psql client
       - unixodbc-dev  # interact with Microsoft SQL databases
-    focal:
-    jammy:
-    noble:
+    focal: []
+    jammy: []
+    noble: []
   - category: development
     common:
       - build-essential  # Common build tools (GCC, make, etc.)
@@ -81,16 +81,16 @@ package_categories:
       - vim-julia
       - vim-latexsuite
       - vim-syntastic
-    focal:
-    jammy:
-    noble:
+    focal: []
+    jammy: []
+    noble: []
   - category: office
     common:
       - libreoffice
       - texlive-full
-    focal:
-    jammy:
-    noble:
+    focal: []
+    jammy: []
+    noble: []
   - category: remote_desktop
     common:
       - libnss-ldapd  # LDAP login
@@ -99,9 +99,9 @@ package_categories:
       - nfs-common    # Mounting shared volumes
       - xfce4         # XFCE desktop
       - xrdp          # remote desktop client
-    focal:
-    jammy:
-    noble:
+    focal: []
+    jammy: []
+    noble: []
   - category: shells
     common:
       - bash
@@ -109,9 +109,9 @@ package_categories:
       - zsh
       - zsh-syntax-highlighting
       - zsh-autosuggestions
-    focal:
-    jammy:
-    noble:
+    focal: []
+    jammy: []
+    noble: []
   - category: utilities
     common:
       - bat
@@ -124,8 +124,8 @@ package_categories:
       - rsync
       - tmux
       - wget
-    focal:
-    jammy:
+    focal: []
+    jammy: []
     noble:
       - eza
       - nvtop

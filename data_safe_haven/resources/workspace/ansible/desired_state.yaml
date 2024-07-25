@@ -5,13 +5,20 @@
 
   tasks:
     - name: Update package cache
+      tags: apt
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 600
 
+    - name: List apt packages to install
+      tags: apt
+      ansible.builtin.debug:
+        msg: "{{ apt_packages.common | union(apt_packages[ansible_facts.distribution_release]) }}"
+
     - name: Install apt packages
+      tags: apt
       ansible.builtin.apt:
-        name: "{{ apt_packages.common | union(apt_packages[ansible_facts['distribution_release']]) }}"
+        name: "{{ apt_packages.common | union(apt_packages[ansible_facts.distribution_release]) }}"
         state: present
       async: 3600
       poll: 30
