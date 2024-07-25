@@ -1,12 +1,12 @@
-(deploy_context)=
+(setup_context)=
 
-# The Data Safe Haven Context
+# Set up a Data Safe Haven context
 
-The 'Context' contains some basic metadata about your TRE deployment.
+The 'context' contains some basic metadata about your TRE deployment.
 It defines the name of your TRE and the subscription where the supporting resources should be deployed.
 
 :::{important}
-The Context **must** be configured before any TRE components can be deployed.
+The context **must** be setup before any TRE components can be deployed.
 :::
 
 ## Configuration
