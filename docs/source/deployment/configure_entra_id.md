@@ -49,12 +49,6 @@ This is necessary both to secure logins and to allow users to set their own pass
 
     ::::
 
-In order to enable self-service password reset (SSPR) you will need to do the following:
-
-- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Protection > Password reset** from the menu on the left side.
-- From the **Properties** page, under the option `Self service password reset enabled`, choose **All**.
-
 ## Activate a native Microsoft Entra account
 
 In order to use this account you will need to activate it.
@@ -109,18 +103,75 @@ To do so, follow the instructions [here](https://learn.microsoft.com/en-us/entra
 Since this account will be exempt from normal login policies, it should not be used except when **absolutely necessary**.
 :::
 
-### Purchase Microsoft Entra licences
+## Purchase Microsoft Entra licences
 
-In order to enable [self-service password reset](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-licensing) (SSPR), at least one user needs to have a [Microsoft Entra Licence](https://www.microsoft.com/en-gb/security/business/microsoft-entra-pricing) assigned.
+At least one user needs to have a [Microsoft Entra Licence](https://www.microsoft.com/en-gb/security/business/microsoft-entra-pricing) assigned in order to enable [self-service password reset](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-licensing) and conditional access policies.
 
 :::{tip}
-P1 Licences are sufficient, but you may use other options if you prefer
+P1 Licences are sufficient, but you may use another licence if you prefer.
 :::
 
 - Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Browse to **Identity > Billing > Licenses** from the menu on the left side.
-- Click on `All products` in the left hand sidebar
+- Click on `All products` on the internal menu on the left side.
 - If you have not currently licenced a product:
   - Click on `+Try/Buy` and choose a suitable product
   - Click the `Activate` button
   - Wait for the selected licence to appear on the `All products` list (this may take several minutes)
+
+## Enable self-service password reset
+
+In order to enable self-service password reset (SSPR) you will need to do the following:
+
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Browse to **Protection > Password reset** from the menu on the left side.
+- Click **Manage > Properties** on the internal menu on the left side.
+- Under the option `Self service password reset enabled`, choose **All**.
+
+## Apply conditional access policies
+
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Browse to **Protection > Conditional Access** from the menu on the left side.
+- Click **Policies** on the internal menu on the left side.
+- Create a new policy as follows:
+  - Set the name to `Require MFA`
+  - Under `Users` set:
+    - **Include**: Select `All users`
+    - **Exclude**:
+      - Check `Users and groups`
+      - Select your Emergency Access admin here if you have one
+  - Under `Target resources` set:
+    - **Include**: Select `All cloud apps`
+  - Under `Conditions` select `Device platforms` and set:
+    - **Configure:** `Yes`
+    - **Select device platforms:** Check all the boxes
+    - Click `Done`
+  - Under `Grant` set:
+    - Check `Grant access`
+    - Check `Require multi-factor authentication`
+    - Click `Select`
+  - Leave the `Session` condition unchanged
+  - Under `Enable policy` select `On`
+    - Check `I understand that my account will be impacted by this policy. Proceed anyway.`
+  - Click the `Create` button
+- Create a new policy as follows:
+  - Set the name to `Restrict Microsoft Entra ID access`
+  - Under `Users` set:
+    - **Include**: Select `All users`
+    - **Exclude**:
+      - Check `Directory roles`
+      - In the drop-down menu select `Global administrator`.
+  - Under `Target resources` set:
+    - **Include**:
+      - Select `Select apps`
+      - Click `Select`
+      - In the pop-up menu on the right, select
+        - `Windows Azure Service Management API` and
+        - `Microsoft Graph Command Line Tools` then
+      - Click `Select`
+    - **Exclude**: Leave unchanged as `None`
+  - Under `Grant` set:
+    - Check `Block access`
+    - Click `Select`
+  - Under `Enable policy` select `On`
+  - Click the `Create` button
