@@ -1,4 +1,4 @@
-# Managing a Data Safe Haven
+# Management
 
 ## Add users to the Data Safe Haven
 

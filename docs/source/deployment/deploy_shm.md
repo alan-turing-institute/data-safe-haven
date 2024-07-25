@@ -1,6 +1,6 @@
 (deploy_shm)=
 
-# Deploy a Safe Haven Management Environment (SHM)
+# Deploy the management environment
 
 These instructions will deploy a new Safe Haven Management Environment (SHM).
 This is required to manage your Secure Research Environments (SREs).

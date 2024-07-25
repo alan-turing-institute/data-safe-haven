@@ -1,6 +1,6 @@
 (deploy_sre)=
 
-# Deploy a Secure Research Environment (SRE)
+# Deploy a Secure Research Environment
 
 ## Configuration
 

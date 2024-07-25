@@ -1,6 +1,6 @@
 (setup_context)=
 
-# Set up a Data Safe Haven context
+# Set up context
 
 The 'context' contains some basic metadata about your TRE deployment.
 It defines the name of your TRE and the subscription where the supporting resources should be deployed.
