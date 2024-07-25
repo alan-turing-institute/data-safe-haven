@@ -24,13 +24,10 @@ class SREDatabaseServerProps:
         resource_group_name: Input[str],
         sre_fqdn: Input[str],
         subnet_id: Input[str],
-        database_username: Input[str] | None = None,
     ) -> None:
         self.database_password = database_password
         self.database_system = database_system
-        self.database_username = (
-            database_username if database_username else "databaseadmin"
-        )
+        self.database_username = "databaseadmin"
         self.location = location
         self.resource_group_name = resource_group_name
         self.sre_fqdn = sre_fqdn
