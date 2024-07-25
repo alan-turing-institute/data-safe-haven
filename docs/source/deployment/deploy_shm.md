@@ -33,6 +33,7 @@ Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundament
 - set the `Organisation Name` to something appropriate for your deployment (e.g. `Contoso Production Safe Haven`)
 - set the `Initial Domain Name` to the lower-case version of the `Organisation Name` with spaces and special characters removed (e.g. `contosoproductionsafehaven`)
 - set the `Country or Region` to whichever country is appropriate for your deployment (e.g. `United Kingdom`)
+
 :::
 
 ## Deployment
@@ -51,6 +52,7 @@ Before deploying the Safe Haven Management (SHM) infrastructure you need to deci
 - Ensure that you have selected the directory you chose above
 - Browse to **Identity > Overview** from the menu on the left side.
 - Take note of the `Tenant ID`
+
 :::
 
 Once you've decided on these, run the following command: [approx 5 minutes]:
@@ -61,8 +63,10 @@ $ dsh shm deploy --entra-tenant-id <Entra tenant ID> --fqdn <fully-qualified dom
 
 :::{note}
 You will be prompted to log in to the Azure CLI and to the Graph API.
+
 - Azure CLI: use your **infrastructure** user credentials
 - Graph API: use your **Entra tenant** administrator credentials
+
 :::
 
 :::{important}
@@ -70,4 +74,5 @@ You may be asked to delegate your domain name to Azure. To do this, you'll need 
 
 - Follow [this tutorial](https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain) if the parent domain is hosted outside Azure
 - Follow [this tutorial](https://learn.microsoft.com/en-us/azure/dns/tutorial-public-dns-zones-child#verify-the-child-dns-zone) if the parent domain is hosted in Azure
+
 :::

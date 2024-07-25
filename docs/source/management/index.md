@@ -59,10 +59,10 @@ If you have manually created a user and want to enable SSPR, do the following
 - Browse to **Users > All Users** from the menu on the left side
 - Select the user you want to enable SSPR for
 - On the **Manage > Authentication Methods** page fill out their contact info as follows:
-  - Phone: add the user's phone number with a space between the country code and the rest of the number (e.g. `+44 7700900000`).
-  - Email: enter the user's email address here
-  - Ensure that you have registered **both** a phone number and an email address.
-  - Click the `Save` icon in the top panel
+    - Phone: add the user's phone number with a space between the country code and the rest of the number (e.g. `+44 7700900000`).
+    - Email: enter the user's email address here
+    - Ensure that you have registered **both** a phone number and an email address.
+    - Click the `Save` icon in the top panel
 
 ## Removing a deployed Data Safe Haven
 

@@ -16,14 +16,14 @@ Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundament
 Use the following settings:
 
 - `Basics` tab:
-  - **User principal name:** `entra.admin.firstname.lastname` (ensure you select the appropriate domain for your SHM)
-  - **Display name:** `Entra Admin - Firstname Lastname`
-  - **Other fields:** leave them with their default values
+    - **User principal name:** `entra.admin.firstname.lastname` (ensure you select the appropriate domain for your SHM)
+    - **Display name:** `Entra Admin - Firstname Lastname`
+    - **Other fields:** leave them with their default values
 - `Properties` tab:
-  - **Usage location:** set to the country being used for this deployment
+    - **Usage location:** set to the country being used for this deployment
 - `Assigments` tab:
-  - Click `+ Add role`
-  - Search for `Global Administrator`, check the box and click the `Select` button
+    - Click `+ Add role`
+    - Search for `Global Administrator`, check the box and click the `Select` button
 
 :::
 
@@ -46,16 +46,20 @@ Start by setting up authentication methods for this user, following the steps be
 
 :::{admonition} How to set up authentication for an Entra user
 :class: dropdown hint
+
 - Follow the instructions [here](https://learn.microsoft.com/en-us/entra/identity/authentication/howto-mfa-userdevicesettings#add-authentication-methods-for-a-user).
 - Ensure that you provide **both** a phone number **and** an email address.
+
 :::
 
 Now you can reset the password for this user, following the steps below.
 
 :::{admonition} How to reset your Entra user password
 :class: dropdown hint
+
 - Go [here](https://passwordreset.microsoftonline.com/) and follow the instructions to set your password.
 - You will need access to the phone number and/or email address from the previous step.
+
 :::
 
 ## Delete any external administrators
@@ -105,9 +109,9 @@ P1 Licences are sufficient, but you may use another licence if you prefer.
 - Browse to **Identity > Billing > Licenses** from the menu on the left side.
 - Click on `All products` on the internal menu on the left side.
 - If you have not currently licenced a product:
-  - Click on `+Try/Buy` and choose a suitable product
-  - Click the `Activate` button
-  - Wait for the selected licence to appear on the `All products` list (this may take several minutes)
+    - Click on `+Try/Buy` and choose a suitable product
+    - Click the `Activate` button
+    - Wait for the selected licence to appear on the `All products` list (this may take several minutes)
 
 ## Enable self-service password reset
 
@@ -124,11 +128,10 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
 - Browse to **Identity > Overview > Properties** from the menu on the left side.
 - Select **Manage security defaults**
 - In the pop-up menu on the right, set
-  - **Security defaults** to `Disabled (not recommended)`
-  - Select **My organization is planning to use Conditional Access**
-  - Click the `Save` button
+    - **Security defaults** to `Disabled (not recommended)`
+    - Select **My organization is planning to use Conditional Access**
+    - Click the `Save` button
 - At the prompt click the `Disable` button
-
 
 ## Apply conditional access policies
 
@@ -140,44 +143,44 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
 
 - Create a new policy named `Require MFA`
 - Under `Users` set:
-  - **Include**: Select `All users`
-  - **Exclude**:
-    - Check `Users and groups`
-    - Select your **Emergency Access admin** account here if you have one
+    - **Include**: Select `All users`
+    - **Exclude**:
+        - Check `Users and groups`
+        - Select your **Emergency Access admin** account here if you have one
 - Under `Target resources` set:
-  - **Include**: Select `All cloud apps`
+    - **Include**: Select `All cloud apps`
 - Under `Conditions` select `Device platforms` and set:
-  - **Configure:** `Yes`
-  - **Select device platforms:** Check all the boxes
-  - Click `Done`
+    - **Configure:** `Yes`
+    - **Select device platforms:** Check all the boxes
+    - Click `Done`
 - Under `Grant` set:
-  - Check `Grant access`
-  - Check `Require multi-factor authentication`
-  - Click `Select`
+    - Check `Grant access`
+    - Check `Require multi-factor authentication`
+    - Click `Select`
 - Leave the `Session` condition unchanged
 - Under `Enable policy` select `On`
-  - Check `I understand that my account will be impacted by this policy. Proceed anyway.`
+    - Check `I understand that my account will be impacted by this policy. Proceed anyway.`
 - Click the `Create` button
 
 ### Restrict Microsoft Entra ID access
 
 - Create a new policy named `Restrict Microsoft Entra ID access`
 - Under `Users` set:
-  - **Include**: Select `All users`
-  - **Exclude**:
-    - Check `Directory roles`
-    - In the drop-down menu select `Global administrator`.
+    - **Include**: Select `All users`
+    - **Exclude**:
+        - Check `Directory roles`
+        - In the drop-down menu select `Global administrator`.
 - Under `Target resources` set:
-  - **Include**:
-    - Select `Select apps`
-    - Click `Select`
-    - In the pop-up menu on the right, select
-      - `Windows Azure Service Management API` and
-      - `Microsoft Graph Command Line Tools` then
-    - Click `Select`
-  - **Exclude**: Leave unchanged as `None`
+    - **Include**:
+        - Select `Select apps`
+        - Click `Select`
+        - In the pop-up menu on the right, select
+            - `Windows Azure Service Management API` and
+            - `Microsoft Graph Command Line Tools` then
+        - Click `Select`
+    - **Exclude**: Leave unchanged as `None`
 - Under `Grant` set:
-  - Check `Block access`
-  - Click `Select`
+    - Check `Block access`
+    - Click `Select`
 - Under `Enable policy` select `On`
 - Click the `Create` button
