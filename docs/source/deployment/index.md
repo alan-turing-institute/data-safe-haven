@@ -44,7 +44,7 @@ Download or checkout this code from GitHub.
 Please contact the development team in case of any problems.
 :::
 
-Enter the base directory and run:
+Enter the base directory and start a new `hatch` environment by doing the following:
 
 ```{code} shell
 $ hatch shell

@@ -32,7 +32,7 @@ Use the following settings:
 In this section, you will determine which methods are permitted for multi-factor authentication (MFA).
 This is necessary both to secure logins and to allow users to set their own passwords.
 
-- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Browse to **Protection > Authentication methods** from the menu on the left side.
 - Click **Manage > Policies** on the internal menu on the left side.
 - For each of `Microsoft Authenticator`, `Third-party software OATH tokens`, `SMS` and `Email OTP` click on the method name
@@ -83,7 +83,7 @@ Start by identifying whether you have any external users
 The **User principal name** field for external users will contain the external domain and will have `#EXT#` before the `@` sign.
 :::
 
-- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Click on your profile picture at the top right of the page
 - Log out of any accounts using the `Sign out` button
 - Log in with your **native** administrator credentials
@@ -111,7 +111,7 @@ At least one user needs to have a [Microsoft Entra Licence](https://www.microsof
 P1 Licences are sufficient, but you may use another licence if you prefer.
 :::
 
-- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Browse to **Identity > Billing > Licenses** from the menu on the left side.
 - Click on `All products` on the internal menu on the left side.
 - If you have not currently licenced a product:
@@ -123,55 +123,71 @@ P1 Licences are sufficient, but you may use another licence if you prefer.
 
 In order to enable self-service password reset (SSPR) you will need to do the following:
 
-- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Browse to **Protection > Password reset** from the menu on the left side.
 - Click **Manage > Properties** on the internal menu on the left side.
 - Under the option `Self service password reset enabled`, choose **All**.
 
+## Disable security defaults
+
+- Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Browse to **Identity > Overview > Properties** from the menu on the left side.
+- Select **Manage security defaults**
+- In the pop-up menu on the right, set
+  - **Security defaults** to `Disabled (not recommended)`
+  - Select **My organization is planning to use Conditional Access**
+  - Click the `Save` button
+- At the prompt click the `Disable` button
+
+
 ## Apply conditional access policies
 
-- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Browse to **Protection > Conditional Access** from the menu on the left side.
 - Click **Policies** on the internal menu on the left side.
-- Create a new policy as follows:
-  - Set the name to `Require MFA`
-  - Under `Users` set:
-    - **Include**: Select `All users`
-    - **Exclude**:
-      - Check `Users and groups`
-      - Select your Emergency Access admin here if you have one
-  - Under `Target resources` set:
-    - **Include**: Select `All cloud apps`
-  - Under `Conditions` select `Device platforms` and set:
-    - **Configure:** `Yes`
-    - **Select device platforms:** Check all the boxes
-    - Click `Done`
-  - Under `Grant` set:
-    - Check `Grant access`
-    - Check `Require multi-factor authentication`
+
+### Require MFA
+
+- Create a new policy named `Require MFA`
+- Under `Users` set:
+  - **Include**: Select `All users`
+  - **Exclude**:
+    - Check `Users and groups`
+    - Select your **Emergency Access admin** account here if you have one
+- Under `Target resources` set:
+  - **Include**: Select `All cloud apps`
+- Under `Conditions` select `Device platforms` and set:
+  - **Configure:** `Yes`
+  - **Select device platforms:** Check all the boxes
+  - Click `Done`
+- Under `Grant` set:
+  - Check `Grant access`
+  - Check `Require multi-factor authentication`
+  - Click `Select`
+- Leave the `Session` condition unchanged
+- Under `Enable policy` select `On`
+  - Check `I understand that my account will be impacted by this policy. Proceed anyway.`
+- Click the `Create` button
+
+### Restrict Microsoft Entra ID access
+
+- Create a new policy named `Restrict Microsoft Entra ID access`
+- Under `Users` set:
+  - **Include**: Select `All users`
+  - **Exclude**:
+    - Check `Directory roles`
+    - In the drop-down menu select `Global administrator`.
+- Under `Target resources` set:
+  - **Include**:
+    - Select `Select apps`
     - Click `Select`
-  - Leave the `Session` condition unchanged
-  - Under `Enable policy` select `On`
-    - Check `I understand that my account will be impacted by this policy. Proceed anyway.`
-  - Click the `Create` button
-- Create a new policy as follows:
-  - Set the name to `Restrict Microsoft Entra ID access`
-  - Under `Users` set:
-    - **Include**: Select `All users`
-    - **Exclude**:
-      - Check `Directory roles`
-      - In the drop-down menu select `Global administrator`.
-  - Under `Target resources` set:
-    - **Include**:
-      - Select `Select apps`
-      - Click `Select`
-      - In the pop-up menu on the right, select
-        - `Windows Azure Service Management API` and
-        - `Microsoft Graph Command Line Tools` then
-      - Click `Select`
-    - **Exclude**: Leave unchanged as `None`
-  - Under `Grant` set:
-    - Check `Block access`
+    - In the pop-up menu on the right, select
+      - `Windows Azure Service Management API` and
+      - `Microsoft Graph Command Line Tools` then
     - Click `Select`
-  - Under `Enable policy` select `On`
-  - Click the `Create` button
+  - **Exclude**: Leave unchanged as `None`
+- Under `Grant` set:
+  - Check `Block access`
+  - Click `Select`
+- Under `Enable policy` select `On`
+- Click the `Create` button

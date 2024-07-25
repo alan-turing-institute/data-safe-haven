@@ -23,7 +23,7 @@ We recommend using a separate tenants for your users and your infrastructure sub
 :::
 
 :::{admonition} How to deploy a new tenant
-:class: dropdown hint
+:class: dropdown note
 Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant).
 
 - set the `Organisation Name` to something appropriate for your deployment (e.g. `Contoso Production Safe Haven`)
@@ -36,20 +36,18 @@ Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundament
 Before deploying the Safe Haven Management (SHM) infrastructure you need to decide on a few parameters:
 
 - `entra_tenant_id`: Tenant ID for the Entra ID used to manage TRE users
-
-    :::{admonition} How to find your Microsoft Entra Tenant ID
-    :class: dropdown hint
-
-    - Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-    - Click on your username / profile icon in the top right and select `Switch directory`
-    - Ensure that you have selected the directory you chose above
-    - Browse to **Identity > Overview** from the menu on the left side.
-    - Take note of the `Tenant ID`
-    :::
-
-
 - `fqdn`: Domain you want your users to belong to and to access your TRE from
 - `location`: Azure location where you want your resources deployed
+
+:::{admonition} How to find your Microsoft Entra Tenant ID
+:class: dropdown note
+
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Click on your username / profile icon in the top right and select `Switch directory`
+- Ensure that you have selected the directory you chose above
+- Browse to **Identity > Overview** from the menu on the left side.
+- Take note of the `Tenant ID`
+:::
 
 Once you've decided on these, run the following command: [approx 5 minutes]:
 
