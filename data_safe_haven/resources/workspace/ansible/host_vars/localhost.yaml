@@ -11,13 +11,11 @@ package_categories:
       - auditd
       - bats
       - clamav
-    focal: []
     jammy: []
     noble: []
   - category: browsers
     common:
       - firefox
-    focal: []
     jammy: []
     noble: []
   - category: database
@@ -26,7 +24,6 @@ package_categories:
       - msodbcsql17   # interact with Microsoft SQL databases
       - postgresql-client-common  # CLI psql client
       - unixodbc-dev  # interact with Microsoft SQL databases
-    focal: []
     jammy: []
     noble: []
   - category: development
@@ -50,6 +47,8 @@ package_categories:
       - ninja-build  # Ninja build system
       - octave  # Open source Matlab implementation
       - python-is-python3  # symlinks python to python3
+      - python3  # System Python3 distribution
+      - python3-venv  # Python3 venv module
       - r-base  # R programming language
       - racket  # Racket functional programming language implementation
       - racket-common  # Racket shared files
@@ -58,10 +57,6 @@ package_categories:
       - scala  # Scala multi-paradigm programming language for JVM
       - scala-library  # Scala standard library
       - weka  # Data mining tools
-    focal:
-      - julia  # Julia programming language
-      - python3.8  # Python programming language
-      - python3.9
     jammy:
       - python3.10
       - python3.10-venv
@@ -81,14 +76,12 @@ package_categories:
       - vim-julia
       - vim-latexsuite
       - vim-syntastic
-    focal: []
     jammy: []
     noble: []
   - category: office
     common:
       - libreoffice
       - texlive-full
-    focal: []
     jammy: []
     noble: []
   - category: remote_desktop
@@ -99,7 +92,6 @@ package_categories:
       - nfs-common    # Mounting shared volumes
       - xfce4         # XFCE desktop
       - xrdp          # remote desktop client
-    focal: []
     jammy: []
     noble: []
   - category: shells
@@ -109,7 +101,6 @@ package_categories:
       - zsh
       - zsh-syntax-highlighting
       - zsh-autosuggestions
-    focal: []
     jammy: []
     noble: []
   - category: utilities
@@ -124,7 +115,6 @@ package_categories:
       - rsync
       - tmux
       - wget
-    focal: []
     jammy: []
     noble:
       - eza
@@ -134,7 +124,6 @@ package_categories:
 # It is important that the dict names for releases match `ansible_facts['distribution_relesase']`
 apt_packages:
   common: "{{ package_categories | map(attribute='common') | flatten }}"
-  focal: "{{ package_categories | map(attribute='focal') | flatten }}"
   jammy: "{{ package_categories | map(attribute='jammy') | flatten }}"
   noble: "{{ package_categories | map(attribute='noble') | flatten }}"
 
