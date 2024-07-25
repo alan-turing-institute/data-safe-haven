@@ -2,103 +2,112 @@
 
 # Configure Microsoft Entra ID
 
-These instructions will deploy the [Entra ID](https://www.microsoft.com/en-gb/security/business/identity-access/microsoft-entra-id) where you will manage your users.
-This is required to manage your Secure Research Environments (SREs) and **must be** deployed before you create your SHM.
+These instructions will configure the [Microsoft Entra ID](https://www.microsoft.com/en-gb/security/business/identity-access/microsoft-entra-id) where you will manage your users.
+You only need one Microsoft Entra ID for your deployment of the Data Safe Haven.
 
-:::{note}
-A single SHM can manage all your SREs.
-However, you may choose to use multiple SHMs if, for example, you want to separate production and development environments.
-:::
+## Create a native Microsoft Entra administrator account
 
-## Set up your Entra directory
+If you created a new Microsoft Entra tenant, an external administrator account will have been automatically created for you.
+If you do not already have access to a **native** administrator account, create one using the steps below.
 
-- If you want to re-use an existing Microsoft Entra directory, you can skip this step
-
-:::{warning}
-If you wish to reuse an existing Microsoft Entra directory please make sure you remove any existing DSH-related `Conditional Access Policies` by going to `Security > Conditional Access > Policies` and manually removing the `Restrict Microsoft Entra ID access` and `Require MFA` policies.
-:::
-
-- If you want to deploy a dedicated Microsoft Entra directory for use with your DSH deployment, follow [this tutorial](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant)
-    - set the `Organisation Name` to something appropriate for your deployment (e.g. `Contoso Production Safe Haven`)
-    - set the `Initial Domain Name` to the lower-case version of the `Organisation Name` with spaces and special characters removed (e.g. `contosoproductionsafehaven`)
-    - set the `Country or Region` to whichever country is appropriate for your deployment (e.g. `United Kingdom`)
-
-
-### Get the Microsoft Entra Tenant ID
-
-- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Click on your username / profile icon in the top right and select `Switch directory`
-  - Ensure that you have selected the directory you chose above
-- Browse to **Identity > Overview** from the menu on the left side.
-- Take note of the `Tenant ID`
-  ```{image} ../_static/deployment/entra_tenant_id.png
-  :alt: Finding the Microsoft Entra tenant ID
-  :align: center
-  ```
-
-### Create Microsoft Entra administrator accounts
-
-A default external administrator account was automatically created for the user you were logged in as when you initially created the Microsoft Entra ID.
-This user should also **not be used** for administering the Microsoft Entra ID.
-
-Several later steps will require the use of a **native** administrator account with a valid mobile phone and email address.
-You must therefore create and activate a **native** administrator account for each person who will be acting as a system administrator.
-After doing so, you can delete the default external user - we strongly recommend that you do so.
-
-:::{tip}
-In order to avoid being a single point of failure, we strongly recommend that you add other administrators in addition to yourself.
-:::
-
-- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Users > All Users** from the menu on the left side.
-- Click on the `+New user` icon in the top menu and select `Create new user` from the dropdown menu
-
-For each administrator you want to add, create a new user with the following values:
+:::{admonition} How to create a native Entra administrator
+:class: dropdown hint
+Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-create-delete-users#create-a-new-user).
+Use the following settings:
 
 - `Basics` tab:
-  - User principal name: `aad.admin.firstname.lastname` (ensure you select the appropriate domain for your SHM)
-  - Display name: `AAD Admin - Firstname Lastname`
-  - Other fields: leave them with their default values
+  - **User principal name:** `entra.admin.firstname.lastname` (ensure you select the appropriate domain for your SHM)
+  - **Display name:** `Entra Admin - Firstname Lastname`
+  - **Other fields:** leave them with their default values
 - `Properties` tab:
-  - Usage location: set to the country being used for this deployment
+  - **Usage location:** set to the country being used for this deployment
 - `Assigments` tab:
   - Click `+ Add role`
   - Search for `Global Administrator`, check the box and click the `Select` button
-- `Review + create` tab:
-  - Check that the user properties look something like this:
-  ```{image} ../_static/deployment/entra_tenant_id.png
-  :alt: Finding the Microsoft Entra tenant ID
-  :align: center
-  ```
-  - Click the `Create` button
 
-### Create Microsoft Entra emergency access administrator account
-
-We also recommend that you create an emergency access administrator account.
-This will be exempt from some login policies and should not be used except when **absolute necessary**.
-
-:::{caution}
-In particular, you must not use the emergency access account as a shared admin account for routine administration of the Safe Haven.
 :::
 
-Create the account as above, using `aad.admin.emergency.access` as the user principal name and `AAD Admin - Emergency Access` as the display name.
-Ensure that you copy the auto-generated password and store it securely somewhere.
+## Register allowed authentication methods
 
-### Register allowed authentication methods
-
-When you have finished creating administrator accounts, you will need to ensure that they are able to set their own passwords
+In this section, you will determine which methods are permitted for multi-factor authentication (MFA).
+This is necessary both to secure logins and to allow users to set their own passwords.
 
 - Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Browse to **Protection > Authentication methods** from the menu on the left side.
-- Click `Manage > Policies` on the left-hand sidebar
+- Click **Manage > Policies** on the internal menu on the left side.
 - For each of `Microsoft Authenticator`, `Third-party software OATH tokens`, `SMS` and `Email OTP` click on the method name
     - Ensure the slider is set to `Enabled` and the target to `All users`
     - Click the `Save` button
 
-```{image} ../_static/deployment/enable_mfa_method.png
-:alt: Enable MFA method
-:align: center
-```
+    ::::{admonition} Screenshot
+    :class: dropdown seealso
+
+    :::{image} images/enable_mfa_method.png
+    :alt: Enable MFA method
+    :align: center
+    :::
+
+    ::::
+
+In order to enable self-service password reset (SSPR) you will need to do the following:
+
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Browse to **Protection > Password reset** from the menu on the left side.
+- From the **Properties** page, under the option `Self service password reset enabled`, choose **All**.
+
+## Activate a native Microsoft Entra account
+
+In order to use this account you will need to activate it.
+Start by setting up authentication methods for this user, following the steps below.
+
+:::{admonition} How to set up authentication for an Entra user
+:class: dropdown hint
+- Follow the instructions [here](https://learn.microsoft.com/en-us/entra/identity/authentication/howto-mfa-userdevicesettings#add-authentication-methods-for-a-user).
+- Ensure that you provide **both** a phone number **and** an email address.
+:::
+
+Now you can reset the password for this user, following the steps below.
+
+:::{admonition} How to reset your Entra user password
+:class: dropdown hint
+- Go [here](https://passwordreset.microsoftonline.com/) and follow the instructions to set your password.
+- You will need access to the phone number and/or email address from the previous step.
+:::
+
+## Delete any external administrators
+
+:::{warning}
+In this step we will delete any external admin account which might belong to Microsoft Entra ID.
+Before you do this, you **must** ensure that you can log into Entra using your **native** administrator account.
+:::
+
+Start by identifying whether you have any external users
+
+:::{admonition} How to identify external users
+:class: dropdown hint
+
+The **User principal name** field for external users will contain the external domain and will have `#EXT#` before the `@` sign.
+:::
+
+- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
+- Click on your profile picture at the top right of the page
+- Log out of any accounts using the `Sign out` button
+- Log in with your **native** administrator credentials
+- For each **external** user follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-create-delete-users#delete-a-user) to delete the account
+
+## Create additional administrators
+
+:::{important}
+In order to avoid being a single point of failure, we strongly recommend that you add other administrators in addition to yourself.
+:::
+
+For each other person who will act as an administrator, create an account for them following the steps above and then allow them to reset their own password.
+
+:::{caution}
+You may want to set up an emergency administrator to ensure access to this tenant is not lost if you misconfigure MFA.
+To do so, follow the instructions [here](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access).
+Since this account will be exempt from normal login policies, it should not be used except when **absolutely necessary**.
+:::
 
 ### Purchase Microsoft Entra licences
 
@@ -115,9 +124,3 @@ P1 Licences are sufficient, but you may use other options if you prefer
   - Click on `+Try/Buy` and choose a suitable product
   - Click the `Activate` button
   - Wait for the selected licence to appear on the `All products` list (this may take several minutes)
-
-### Enable self-service password reset (SSPR)
-
-- Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Protection > Password reset** from the menu on the left side.
-- From the **Properties** page, under the option `Self service password reset enabled`, choose **All**.

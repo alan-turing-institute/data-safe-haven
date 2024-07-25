@@ -18,7 +18,13 @@ However, you may choose to use multiple SHMs if, for example, you want to separa
 
 :::{hint}
 We suggest using a dedicated Microsoft Entra tenant for your DSH deployment, but this is not a requirement.
-If you want to do so, follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant).
+
+We recommend using a separate tenants for your users and your infrastructure subscriptions, but this is not a requirement.
+:::
+
+:::{admonition} How to deploy a new tenant
+:class: dropdown hint
+Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant).
 
 - set the `Organisation Name` to something appropriate for your deployment (e.g. `Contoso Production Safe Haven`)
 - set the `Initial Domain Name` to the lower-case version of the `Organisation Name` with spaces and special characters removed (e.g. `contosoproductionsafehaven`)
