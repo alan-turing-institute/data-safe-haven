@@ -116,7 +116,7 @@
     - name: Template auditd rules
       tags: auditd
       ansible.builtin.template:
-        src: etc/audit/rules.d/audit.rules
+        src: etc/audit/rules.d/audit.rules.j2
         dest: /etc/audit/rules.d/audit.rules
         mode: '0640'
       notify: Restart auditd
