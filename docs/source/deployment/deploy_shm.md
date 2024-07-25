@@ -3,7 +3,11 @@
 # Deploy a Safe Haven Management Environment (SHM)
 
 These instructions will deploy a new Safe Haven Management Environment (SHM).
-This is required to manage your Secure Research Environments (SREs) and **must be** deployed before you create any SREs.
+This is required to manage your Secure Research Environments (SREs).
+
+:::{important}
+The SHM **must** be setup before any SREs can be deployed.
+:::
 
 :::{note}
 A single SHM can manage all your SREs.
@@ -66,5 +70,4 @@ You may be asked to delegate your domain name to Azure. To do this, you'll need 
 
 - Follow [this tutorial](https://learn.microsoft.com/en-us/azure/dns/dns-delegate-domain-azure-dns#delegate-the-domain) if the parent domain is hosted outside Azure
 - Follow [this tutorial](https://learn.microsoft.com/en-us/azure/dns/tutorial-public-dns-zones-child#verify-the-child-dns-zone) if the parent domain is hosted in Azure
-
 :::

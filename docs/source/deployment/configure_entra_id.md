@@ -39,16 +39,6 @@ This is necessary both to secure logins and to allow users to set their own pass
     - Ensure the slider is set to `Enabled` and the target to `All users`
     - Click the `Save` button
 
-    ::::{admonition} Screenshot
-    :class: dropdown seealso
-
-    :::{image} images/enable_mfa_method.png
-    :alt: Enable MFA method
-    :align: center
-    :::
-
-    ::::
-
 ## Activate a native Microsoft Entra account
 
 In order to use this account you will need to activate it.
