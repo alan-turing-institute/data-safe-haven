@@ -32,12 +32,15 @@ class EntraUsers:
             DataSafeHavenEntraIDError if any user could not be created
         """
         try:
-            default_domain = next(
+            available_domains = {
                 domain["id"]
                 for domain in self.graph_api.read_domains()
-                if domain["isDefault"]
-            )
+                if domain["isVerified"]
+            }
             for user in new_users:
+                if user.domain not in available_domains:
+                    msg = f"Domain '[green]{user.domain}[/]' is not verified."
+                    raise DataSafeHavenTypeError(msg)
                 request_json = {
                     "accountEnabled": user.account_enabled,
                     "displayName": user.display_name,
@@ -45,7 +48,7 @@ class EntraUsers:
                     "surname": user.surname,
                     "mailNickname": user.username,
                     "passwordProfile": {"password": password(20)},
-                    "userPrincipalName": f"{user.username}@{default_domain}",
+                    "userPrincipalName": f"{user.username}@{user.domain}",
                 }
                 if not user.email_address:
                     msg = (
