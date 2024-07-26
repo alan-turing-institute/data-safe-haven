@@ -50,7 +50,7 @@ Before deploying the Safe Haven Management (SHM) infrastructure you need to deci
 - Go to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Click on your username / profile icon in the top right and select `Switch directory`
 - Ensure that you have selected the directory you chose above
-- Browse to **Identity > Overview** from the menu on the left side.
+- Browse to **{menuselection}`Identity --> Overview`** from the menu on the left side.
 - Take note of the `Tenant ID`
 
 :::

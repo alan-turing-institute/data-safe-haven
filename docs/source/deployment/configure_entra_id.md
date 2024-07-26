@@ -35,8 +35,8 @@ In this section, you will determine which methods are permitted for multi-factor
 This is necessary both to secure logins and to allow users to set their own passwords.
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Protection > Authentication methods** from the menu on the left side
-- Browse to **Manage > Policies** from the secondary menu on the left side
+- Browse to **{menuselection}`Protection --> Authentication methods`** from the menu on the left side
+- Browse to **{menuselection}`Manage --> Policies`** from the secondary menu on the left side
 - For each of **Microsoft Authenticator**, **SMS**, **Third-party software OATH tokens**, **Voice call** and **Email OTP** click on the method name
     - Ensure the slider is set to **Enable** and the target to **All users**
     - Click the **Save** button
@@ -108,8 +108,8 @@ P1 Licences are sufficient but you may use another licence if you prefer.
 :::
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Identity > Billing > Licenses** from the menu on the left side
-- Browse to **All products** from the secondary menu on the left side
+- Browse to **{menuselection}`Identity --> Billing --> Licenses`** from the menu on the left side
+- Browse to **{menuselection}`All products`** from the secondary menu on the left side
 - If you have not currently licenced a product:
     - Click on **+Try/Buy** and choose a suitable product
     - Click the **Activate** button
@@ -120,15 +120,15 @@ P1 Licences are sufficient but you may use another licence if you prefer.
 In order to enable self-service password reset (SSPR) you will need to do the following:
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Protection > Password reset** from the menu on the left side
-- Browse to **Manage > Properties** from the secondary menu on the left side
+- Browse to **{menuselection}`Protection --> Password reset`** from the menu on the left side
+- Browse to **{menuselection}`Manage --> Properties`** from the secondary menu on the left side
 - Under the option **Self service password reset enabled**, choose **All**
 
 ## Disable security defaults
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Identity > Overview > Properties** from the menu on the left side
-- Click **Manage security defaults** at the bottom of the page
+- Browse to **{menuselection}`Identity --> Overview --> Properties`** from the menu on the left side
+- Click **{menuselection}`Manage security defaults`** at the bottom of the page
 - In the pop-up menu on the right, set
     - **Security defaults** to **Disabled (not recommended)**
     - Select **My organization is planning to use Conditional Access**
@@ -138,8 +138,8 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
 ## Apply conditional access policies
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Protection > Conditional Access** from the menu on the left side
-- Browse to **Policies** from the secondary menu on the left side
+- Browse to **{menuselection}`Protection --> Conditional Access`** from the menu on the left side
+- Browse to **{menuselection}`Policies`** from the secondary menu on the left side
 
 ### Require MFA
 
@@ -149,27 +149,27 @@ These instructions will create a policy which requires all users (except the eme
 :class: dropdown hint
 
 - Create a new policy named **Require MFA**
-- Under **Users**:
+- Under **{menuselection}`Users`**:
     - **Include**: Select **All users**
     - **Exclude**:
         - Check **Users and groups**
         - If you created an emergency access admin account, select it here
-- Under **Target resources**:
+- Under **{menuselection}`Target resources`**:
     - **Include**: Select **All cloud apps**
-- Under **Conditions**:
+- Under **{menuselection}`Conditions`**:
     - Select **Device platforms** and set:
         - **Configure:** Select **Yes**
         - **Select device platforms:** Check all the boxes
         - Click the **Done** button
-- Under **Grant**:
+- Under **{menuselection}`Grant`**:
     - Check **Grant access**
     - Check **Require multi-factor authentication**
     - Click the **Select** button
-- Under **Session**:
+- Under **{menuselection}`Session`**:
     - Check **Sign-in frequency**
     - Check **Periodic reauthentication**
         - Set the value to **1 day(s)**
-- Under **Enable policy**:
+- Under **{menuselection}`Enable policy`**:
     - Select **On**
     - Check **I understand that my account will be impacted by this policy. Proceed anyway.**
 - Click the **Create** button
@@ -184,12 +184,12 @@ These instructions will prevent non-administrators from being able to view the E
 :class: dropdown hint
 
 - Create a new policy named **Restrict Microsoft Entra ID access**
-- Under **Users**:
+- Under **{menuselection}`Users`**:
     - **Include**: Select **All users**
     - **Exclude**:
         - Check **Directory roles**
         - In the drop-down menu select **Global administrator**
-- Under **Target resources**:
+- Under **{menuselection}`Target resources`**:
     - **Include**:
         - Select **Select apps**
         - Click the **Select** button
@@ -198,10 +198,11 @@ These instructions will prevent non-administrators from being able to view the E
             - **Microsoft Graph Command Line Tools** then
         - Click the **Select** button
     - **Exclude**: Leave unchanged as **None**
-- Under **Grant**:
+- Under **{menuselection}`Grant`**:
     - Check **Block access**
     - Click the **Select** button
-- Under **Enable policy** select **On**
+- Under **{menuselection}`Enable policy`**
+    - Select **On**
 - Click the **Create** button
 
 :::
