@@ -425,7 +425,11 @@ class GraphApi:
                     json={"emailAddress": email_address},
                 )
             except DataSafeHavenMicrosoftGraphError as exc:
-                if "already registered" not in str(exc):
+                if "already registered" in str(exc):
+                    self.logger.warning(
+                        f"Email authentication is already set up for Entra user '[green]{username}[/]'"
+                    )
+                else:
                     msg = (
                         f"Failed to add authentication email address '{email_address}'."
                     )
@@ -437,7 +441,11 @@ class GraphApi:
                     json={"phoneNumber": phone_number, "phoneType": "mobile"},
                 )
             except DataSafeHavenMicrosoftGraphError as exc:
-                if "already registered" not in str(exc):
+                if "already registered" in str(exc):
+                    self.logger.warning(
+                        f"Phone authentication is already set up for Entra user '[green]{username}[/]'"
+                    )
+                else:
                     msg = f"Failed to add authentication phone number '{phone_number}'."
                     raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Ensure user is enabled
@@ -811,9 +819,8 @@ class GraphApi:
         if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
             time.sleep(30)  # wait for operation to complete
             return response
-        else:
-            msg = f"Could not execute POST request to '{url}'. Response content received: '{response.content.decode()}'."
-            raise DataSafeHavenMicrosoftGraphError(msg)
+        msg = f"Could not execute POST request to '{url}'. Response content received: '{response.content.decode()}'."
+        raise DataSafeHavenMicrosoftGraphError(msg)
 
     def read_applications(self) -> Sequence[dict[str, Any]]:
         """Get list of applications
