@@ -22,7 +22,7 @@ package_categories:
     common:
       - libpq-dev     # interact with PostgreSQL databases
       - msodbcsql17   # interact with Microsoft SQL databases
-      - postgresql-client-common  # CLI psql client
+      - postgresql-client  # CLI psql client
       - unixodbc-dev  # interact with Microsoft SQL databases
     jammy: []
     noble: []

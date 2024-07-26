@@ -1,17 +1,23 @@
 #! /bin/bash
-
 # We need to test packages that are:
 # - *not* pre-installed
-# - on the allowlist (so we can test this is working)
+# - on the tier-3 list (so we can test all tiers)
 # - alphabetically early and late (so we can test the progress of the mirror synchronisation)
-installable_packages=("contourpy" "tzdata")
-uninstallable_packages=("awscli")
+packages=("askpass" "zeallot")
+uninstallable_packages=("aws.s3")
+
+# Create a temporary library directory
+TEST_INSTALL_PATH="${HOME}/.local/bats-r-environment"
+# TEST_INSTALL_PATH="${HOME}/test-repository-R"
+# rm -rf "$TEST_INSTALL_PATH"
+# mkdir -p "$TEST_INSTALL_PATH"
 
 # Install sample packages to local user library
 N_FAILURES=0
-for package in "${installable_packages[@]}"; do
+for package in "${packages[@]}"; do
     echo "Attempting to install ${package}..."
-    if (pip install "$package" --quiet); then
+    Rscript -e "options(warn=-1); install.packages('${package}', lib='${TEST_INSTALL_PATH}', quiet=TRUE)"
+    if (Rscript -e "library('${package}', lib.loc='${TEST_INSTALL_PATH}')"); then
         echo "... $package installation succeeded"
     else
         echo "... $package installation failed"
@@ -19,11 +25,12 @@ for package in "${installable_packages[@]}"; do
     fi
 done
 # If requested, demonstrate that installation fails for packages *not* on the approved list
-TEST_FAILURE="{{check_uninstallable_packages}}"
+TEST_FAILURE=0
 if [ $TEST_FAILURE -eq 1 ]; then
     for package in "${uninstallable_packages[@]}"; do
         echo "Attempting to install ${package}..."
-        if (pip install "$package" --quiet); then
+        Rscript -e "options(warn=-1); install.packages('${package}', lib='${TEST_INSTALL_PATH}', quiet=TRUE)"
+        if (Rscript -e "library('${package}', lib.loc='${TEST_INSTALL_PATH}')"); then
             echo "... $package installation unexpectedly succeeded!"
             N_FAILURES=$((N_FAILURES + 1))
         else

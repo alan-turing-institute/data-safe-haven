@@ -24,7 +24,7 @@ def test_database(
             server=server_name, user=username_full, password=password, database=db_name
         )
     elif db_type == "postgresql":
-        connection_string = f"host={server_name} port={port} dbname={db_name} user={username_full} password={password}"
+        connection_string = f"host={server_name} port={port} dbname={db_name} user={username} password={password}"
         cnxn = psycopg.connect(connection_string)
     else:
         msg = f"Database type '{db_type}' was not recognised"

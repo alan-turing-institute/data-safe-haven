@@ -148,14 +148,12 @@
         creates: /etc/audit/rules.d/50-privileged.rules
       notify: Restart auditd
 
-    - name: Copy test files
+    - name: Copy smoke test files
       ansible.builtin.copy:
         src: "{{ item }}"
-        dest: /home/dshadmin/tests/
-        mode: '0700'
-        owner: dshadmin
-        group: dshadmin
-      with_fileglob: 'home/dshadmin/tests/*'
+        dest: /usr/local/smoke_tests/
+        mode: '0755'
+      with_fileglob: 'usr/local/smoke_tests/*'
 
 
   handlers:
