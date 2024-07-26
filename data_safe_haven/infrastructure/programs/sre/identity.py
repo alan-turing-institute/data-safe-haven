@@ -102,7 +102,7 @@ class SREIdentityComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-identity",
             containers=[
                 containerinstance.ContainerArgs(
-                    image="ghcr.io/alan-turing-institute/apricot:0.0.6",
+                    image="ghcr.io/alan-turing-institute/apricot:0.0.7",
                     name="apricot",
                     environment_variables=[
                         containerinstance.EnvironmentVariableArgs(
