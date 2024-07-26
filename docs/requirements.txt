@@ -23,6 +23,7 @@ docutils==0.21.2
     #   myst-parser
     #   pydata-sphinx-theme
     #   sphinx
+    #   sphinx-togglebutton
 emoji==2.12.1
     # via -r -
 idna==3.7
@@ -73,6 +74,9 @@ sphinx==7.4.7
     #   -r -
     #   myst-parser
     #   pydata-sphinx-theme
+    #   sphinx-togglebutton
+sphinx-togglebutton==0.3.2
+    # via -r -
 sphinxcontrib-applehelp==1.0.8
     # via sphinx
 sphinxcontrib-devhelp==1.0.6
@@ -93,3 +97,8 @@ urllib3==2.2.2
     # via
     #   -c requirements-constraints.txt
     #   requests
+wheel==0.43.0
+    # via sphinx-togglebutton
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
