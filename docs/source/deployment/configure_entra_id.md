@@ -16,7 +16,8 @@ Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundament
 Use the following settings:
 
 - `Basics` tab:
-    - **User principal name:** `entra.admin.firstname.lastname` (ensure you select the appropriate domain for your SHM)
+    - **User principal name:** `entra.admin.firstname.lastname`
+        - If you have a choice of domains use `<your organisation>.onmicrosoft.com` which will create a clearer separation between administrators and users
     - **Display name:** `Entra Admin - Firstname Lastname`
     - **Other fields:** leave them with their default values
 - `Properties` tab:
