@@ -145,6 +145,9 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
 
 These instructions will create a policy which requires all users (except the emergency administrator if you have created one) to use multi-factor authentication (MFA) to log in.
 
+:::{admonition} Require MFA policy details
+:class: dropdown hint
+
 - Create a new policy named **Require MFA**
 - Under **Users**:
     - **Include**: Select **All users**
@@ -155,7 +158,7 @@ These instructions will create a policy which requires all users (except the eme
     - **Include**: Select **All cloud apps**
 - Under **Conditions**:
     - Select **Device platforms** and set:
-        - **Configure:** `Yes`
+        - **Configure:** Select **Yes**
         - **Select device platforms:** Check all the boxes
         - Click the **Done** button
 - Under **Grant**:
@@ -171,9 +174,14 @@ These instructions will create a policy which requires all users (except the eme
     - Check **I understand that my account will be impacted by this policy. Proceed anyway.**
 - Click the **Create** button
 
+:::
+
 ### Restrict Microsoft Entra ID access
 
 These instructions will prevent non-administrators from being able to view the Entra ID configuration.
+
+:::{admonition} Restrict Microsoft Entra ID access policy details
+:class: dropdown hint
 
 - Create a new policy named **Restrict Microsoft Entra ID access**
 - Under **Users**:
@@ -195,3 +203,5 @@ These instructions will prevent non-administrators from being able to view the E
     - Click the **Select** button
 - Under **Enable policy** select **On**
 - Click the **Create** button
+
+:::
