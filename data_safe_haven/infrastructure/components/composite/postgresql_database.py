@@ -82,8 +82,8 @@ class PostgresqlDatabaseComponent(ComponentResource):
             configuration_name="require_secure_transport",
             resource_group_name=props.database_resource_group_name,
             server_name=props.database_server_name,
-            source="Pulumi",
-            value="off",
+            source="user-override",
+            value="OFF",
         )
         # Add any databases that are requested
         props.database_names.apply(
