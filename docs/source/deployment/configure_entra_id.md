@@ -16,8 +16,8 @@ Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundament
 Use the following settings:
 
 - `Basics` tab:
-    - **User principal name:** `entra.admin.firstname.lastname`
-        - If you have a choice of domains use `<your organisation>.onmicrosoft.com` which will create a clearer separation between administrators and users
+    - **User principal name:** `entra.admin.<firstname>.<lastname>`
+        - If you have a choice of domains use `<your organisation>.onmicrosoft.com`, which will create a clearer separation between administrators and users
     - **Display name:** `Entra Admin - Firstname Lastname`
     - **Other fields:** leave them with their default values
 - `Properties` tab:
@@ -34,8 +34,8 @@ In this section, you will determine which methods are permitted for multi-factor
 This is necessary both to secure logins and to allow users to set their own passwords.
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Protection > Authentication methods** from the menu on the left side.
-- Click **Manage > Policies** on the internal menu on the left side.
+- Browse to **Protection > Authentication methods** from the menu on the left side
+- Click **Manage > Policies** on the internal menu on the left side
 - For each of `Microsoft Authenticator`, `Third-party software OATH tokens`, `SMS` and `Email OTP` click on the method name
     - Ensure the slider is set to `Enabled` and the target to `All users`
     - Click the `Save` button
@@ -58,8 +58,8 @@ Now you can reset the password for this user, following the steps below.
 :::{admonition} How to reset your Entra user password
 :class: dropdown hint
 
-- Go [here](https://passwordreset.microsoftonline.com/) and follow the instructions to set your password.
-- You will need access to the phone number and/or email address from the previous step.
+- Follow the instructions [here](https://passwordreset.microsoftonline.com/) to set your password
+- You will need access to the phone number and/or email address from the previous step
 
 :::
 
@@ -70,7 +70,7 @@ In this step we will delete any external admin account which might belong to Mic
 Before you do this, you **must** ensure that you can log into Entra using your **native** administrator account.
 :::
 
-Start by identifying whether you have any external users
+Start by identifying whether you have any external users.
 
 :::{admonition} How to identify external users
 :class: dropdown hint
@@ -103,12 +103,12 @@ Since this account will be exempt from normal login policies, it should not be u
 At least one user needs to have a [Microsoft Entra Licence](https://www.microsoft.com/en-gb/security/business/microsoft-entra-pricing) assigned in order to enable [self-service password reset](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-sspr-licensing) and conditional access policies.
 
 :::{tip}
-P1 Licences are sufficient, but you may use another licence if you prefer.
+P1 Licences are sufficient but you may use another licence if you prefer.
 :::
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Identity > Billing > Licenses** from the menu on the left side.
-- Click on `All products` on the internal menu on the left side.
+- Browse to **Identity > Billing > Licenses** from the menu on the left side
+- Click on `All products` on the internal menu on the left side
 - If you have not currently licenced a product:
     - Click on `+Try/Buy` and choose a suitable product
     - Click the `Activate` button
@@ -119,14 +119,14 @@ P1 Licences are sufficient, but you may use another licence if you prefer.
 In order to enable self-service password reset (SSPR) you will need to do the following:
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Protection > Password reset** from the menu on the left side.
-- Click **Manage > Properties** on the internal menu on the left side.
-- Under the option `Self service password reset enabled`, choose **All**.
+- Browse to **Protection > Password reset** from the menu on the left side
+- Click **Manage > Properties** on the internal menu on the left side
+- Under the option `Self service password reset enabled`, choose **All**
 
 ## Disable security defaults
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Identity > Overview > Properties** from the menu on the left side.
+- Browse to **Identity > Overview > Properties** from the menu on the left side
 - Select **Manage security defaults**
 - In the pop-up menu on the right, set
     - **Security defaults** to `Disabled (not recommended)`
@@ -137,8 +137,8 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
 ## Apply conditional access policies
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
-- Browse to **Protection > Conditional Access** from the menu on the left side.
-- Click **Policies** on the internal menu on the left side.
+- Browse to **Protection > Conditional Access** from the menu on the left side
+- Click **Policies** on the internal menu on the left side
 
 ### Require MFA
 
@@ -173,7 +173,7 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
     - **Include**: Select `All users`
     - **Exclude**:
         - Check `Directory roles`
-        - In the drop-down menu select `Global administrator`.
+        - In the drop-down menu select `Global administrator`
 - Under `Target resources` set:
     - **Include**:
         - Select `Select apps`
