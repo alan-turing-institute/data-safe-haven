@@ -1,0 +1,115 @@
+# This file contains the auditctl rules that are loaded
+# whenever the audit daemon is started via the initscripts.
+# The rules are simply the parameters that would be passed
+# to auditctl.
+
+# Section numbers refer to the CIS Ubuntu 22.04 LTS benchmark
+
+# First rule - delete all
+-D
+
+# Increase the buffers to survive stress events.
+# Make this bigger for busy systems
+-b 8192
+
+# This determines how long to wait in bursts of events
+--backlog_wait_time 0
+
+# Set failure mode to syslog
+-f 1
+
+# Record all sockets
+-a always,exit -F arch=b64 -F a0=2 -S socket -k dsh-socket
+
+# Record all connections
+-a always,exit -F arch=b64 -F a0=2 -S connect -k dsh-connect
+
+# 6.3.3.1 Ensure changes to system administration scope (sudoers) is collected
+-w /etc/sudoers -p wa -k scope
+-w /etc/sudoers.d -p wa -k scope
+
+# 6.3.3.2 Ensure actions as another user are always logged
+-a always,exit -F arch=b64 -C euid!=uid -F auid!=unset -S execve -k user_emulation
+-a always,exit -F arch=b32 -C euid!=uid -F auid!=unset -S execve -k user_emulation
+
+# 6.3.3.3 Ensure events that modify the sudo log file are collected
+-w /var/log/sudo.log -p wa -k sudo_log_file
+
+# 6.3.3.4 Ensure events that modify date and time information are # collected
+-a always,exit -F arch=b64 -S adjtimex,settimeofday,clock_settime -k time- change
+-a always,exit -F arch=b32 -S adjtimex,settimeofday,clock_settime -k time- change
+-w /etc/localtime -p wa -k time-change
+
+# 6.3.3.5 Ensure events that modify the system's network environment are collected
+-a always,exit -F arch=b64 -S sethostname,setdomainname -k system-locale
+-a always,exit -F arch=b32 -S sethostname,setdomainname -k system-locale
+-w /etc/issue -p wa -k system-locale
+-w /etc/issue.net -p wa -k system-locale
+-w /etc/hosts -p wa -k system-locale
+-w /etc/networks -p wa -k system-locale
+-w /etc/network/ -p wa -k system-locale
+-w /etc/netplan/ -p wa -k system-locale
+
+# 6.3.3.7 Ensure unsuccessful file access attempts are collected
+-a always,exit -F arch=b64 -S creat,open,openat,truncate,ftruncate -F exit=- EACCES -F auid>={{ uid_min.stdout }} -F auid!=unset -k access
+-a always,exit -F arch=b64 -S creat,open,openat,truncate,ftruncate -F exit=- EPERM -F auid>={{ uid_min.stdout }} -F auid!=unset -k access
+-a always,exit -F arch=b32 -S creat,open,openat,truncate,ftruncate -F exit=- EACCES -F auid>={{ uid_min.stdout }} -F auid!=unset -k access
+-a always,exit -F arch=b32 -S creat,open,openat,truncate,ftruncate -F exit=- EPERM -F auid>={{ uid_min.stdout }} -F auid!=unset -k access
+
+# 6.3.3.8 Ensure events that modify user/group information are collected
+-w /etc/group -p wa -k identity
+-w /etc/passwd -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/security/opasswd -p wa -k identity
+-w /etc/nsswitch.conf -p wa -k identity
+-w /etc/pam.conf -p wa -k identity
+-w /etc/pam.d -p wa -k identity
+
+# 6.3.3.9 Ensure discretionary access control permission modification events are collected
+-a always,exit -F arch=b64 -S chmod,fchmod,fchmodat -F auid>={{ uid_min.stdout }} -F auid!=unset -F key=perm_mod
+-a always,exit -F arch=b64 -S chown,fchown,lchown,fchownat -F auid>={{ uid_min.stdout }} -F auid!=unset -F key=perm_mod
+-a always,exit -F arch=b32 -S chmod,fchmod,fchmodat -F auid>={{ uid_min.stdout }} -F auid!=unset -F key=perm_mod
+-a always,exit -F arch=b32 -S lchown,fchown,chown,fchownat -F auid>={{ uid_min.stdout }} -F auid!=unset -F key=perm_mod
+-a always,exit -F arch=b64 -S setxattr,lsetxattr,fsetxattr,removexattr,lremovexattr,fremovexattr -F auid>={{ uid_min.stdout }} -F auid!=unset -F key=perm_mod
+-a always,exit -F arch=b32 -S setxattr,lsetxattr,fsetxattr,removexattr,lremovexattr,fremovexattr -F auid>={{ uid_min.stdout }} -F auid!=unset -F key=perm_mod
+
+# 6.3.3.10 Ensure successful file system mounts are collected
+-a always,exit -F arch=b32 -S mount -F auid>={{ uid_min.stdout }} -F auid!=unset -k mounts
+-a always,exit -F arch=b64 -S mount -F auid>={{ uid_min.stdout }} -F auid!=unset -k mounts
+
+# 6.3.3.11 Ensure session initiation information is collected
+-w /var/run/utmp -p wa -k session
+-w /var/log/wtmp -p wa -k session
+-w /var/log/btmp -p wa -k session
+
+# 6.3.3.12 Ensure login and logout events are collected
+-w /var/log/lastlog -p wa -k logins
+-w /var/run/faillock -p wa -k logins
+
+# 6.3.3.13 Ensure file deletion events by users are collected
+-a always,exit -F arch=b64 -S rename,unlink,unlinkat,renameat -F auid>={{ uid_min.stdout }} -F auid!=unset -F key=delete
+-a always,exit -F arch=b32 -S rename,unlink,unlinkat,renameat -F auid>={{ uid_min.stdout }} -F auid!=unset -F key=delete
+
+# 6.3.3.14 Ensure events that modify the system's Mandatory Access Controls are collected
+-w /etc/apparmor/ -p wa -k MAC-policy
+-w /etc/apparmor.d/ -p wa -k MAC-policy
+
+# 6.3.3.15 Ensure successful and unsuccessful attempts to use the chcon command are recorded
+-a always,exit -F path=/usr/bin/chcon -F perm=x -F auid>={{ uid_min.stdout }} -F auid!=unset -k perm_chng
+
+# 6.3.3.16 Ensure successful and unsuccessful attempts to use the setfacl command are recorded
+-a always,exit -F path=/usr/bin/setfacl -F perm=x -F auid>={{ uid_min.stdout }} -F auid!=unset -k perm_chng
+
+# 6.3.3.17 Ensure successful and unsuccessful attempts to use the chacl command are recorded
+-a always,exit -F path=/usr/bin/chacl -F perm=x -F auid>={{ uid_min.stdout }} -F auid!=unset -k perm_chng
+
+# 6.3.3.18 Ensure successful and unsuccessful attempts to use the usermod command are recorded
+-a always,exit -F path=/usr/sbin/usermod -F perm=x -F auid>={{ uid_min.stdout }} -F auid!=unset -k usermod
+
+# 6.3.3.19 Ensure kernel module loading unloading and modification is collected
+-a always,exit -F arch=b64 -S init_module,finit_module,delete_module -F auid>={{ uid_min.stdout }} -F auid!=unset -k kernel_modules
+-a always,exit -F path=/usr/bin/kmod -F perm=x -F auid>={{ uid_min.stdout }} -F auid!=unset -k kernel_modules
+
+# 6.3.3.20 Ensure the audit configuration is immutable
+-e 2
