@@ -47,7 +47,7 @@ Usernames are of the format `<GivenName>.<Surname>` and do not include the Entra
 $ dsh users list <SRE name>
 ```
 
-## Manually register users for SSPR
+## Manually register users for self-service password reset
 
 :::{tip}
 Users created via the `dsh users` command line tool will be automatically registered for SSPR.

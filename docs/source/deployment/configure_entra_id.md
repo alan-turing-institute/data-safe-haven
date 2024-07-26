@@ -18,7 +18,7 @@ Use the following settings:
 - `Basics` tab:
     - **User principal name:** `entra.admin.<firstname>.<lastname>`
         - If you have a choice of domains use `<your organisation>.onmicrosoft.com`, which will create a clearer separation between administrators and users
-    - **Display name:** `Entra Admin - Firstname Lastname`
+    - **Display name:** `Entra Admin - <Firstname> <Lastname>`
     - **Other fields:** leave them with their default values
 - `Properties` tab:
     - **Usage location:** set to the country being used for this deployment
