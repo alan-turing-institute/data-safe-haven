@@ -420,34 +420,43 @@ class GraphApi:
                 user_id = json_response["id"]
             # Set the authentication email address
             try:
-                self.http_post(
-                    f"https://graph.microsoft.com/beta/users/{user_id}/authentication/emailMethods",
-                    json={"emailAddress": email_address},
+                response = self.http_get(
+                    f"https://graph.microsoft.com/beta/users/{user_id}/authentication/emailMethods"
                 )
-            except DataSafeHavenMicrosoftGraphError as exc:
-                if "already registered" in str(exc):
+                if existing_email_addresses := [
+                    item["emailAddress"] for item in response.json()["value"]
+                ]:
                     self.logger.warning(
-                        f"Email authentication is already set up for Entra user '[green]{username}[/]'"
+                        f"Email authentication is already set up for Entra user '[green]{username}[/]' using {existing_email_addresses}."
                     )
                 else:
-                    msg = (
-                        f"Failed to add authentication email address '{email_address}'."
+                    self.http_post(
+                        f"https://graph.microsoft.com/beta/users/{user_id}/authentication/emailMethods",
+                        json={"emailAddress": email_address},
                     )
-                    raise DataSafeHavenMicrosoftGraphError(msg) from exc
+            except DataSafeHavenMicrosoftGraphError as exc:
+                msg = f"Failed to add authentication email address'{email_address}'."
+                raise DataSafeHavenMicrosoftGraphError(msg) from exc
+
             # Set the authentication phone number
             try:
-                self.http_post(
-                    f"https://graph.microsoft.com/beta/users/{user_id}/authentication/phoneMethods",
-                    json={"phoneNumber": phone_number, "phoneType": "mobile"},
+                response = self.http_get(
+                    f"https://graph.microsoft.com/beta/users/{user_id}/authentication/phoneMethods"
                 )
-            except DataSafeHavenMicrosoftGraphError as exc:
-                if "already registered" in str(exc):
+                if existing_phone_numbers := [
+                    item["phoneNumber"] for item in response.json()["value"]
+                ]:
                     self.logger.warning(
-                        f"Phone authentication is already set up for Entra user '[green]{username}[/]'"
+                        f"Phone authentication is already set up for Entra user '[green]{username}[/]' using {existing_phone_numbers}."
                     )
                 else:
-                    msg = f"Failed to add authentication phone number '{phone_number}'."
-                    raise DataSafeHavenMicrosoftGraphError(msg) from exc
+                    self.http_post(
+                        f"https://graph.microsoft.com/beta/users/{user_id}/authentication/phoneMethods",
+                        json={"phoneNumber": phone_number, "phoneType": "mobile"},
+                    )
+            except DataSafeHavenMicrosoftGraphError as exc:
+                msg = f"Failed to add authentication phone number '{phone_number}'."
+                raise DataSafeHavenMicrosoftGraphError(msg) from exc
             # Ensure user is enabled
             self.http_patch(
                 f"{self.base_endpoint}/users/{user_id}",
