@@ -30,9 +30,9 @@ We recommend using a separate tenants for your users and your infrastructure sub
 :class: dropdown note
 Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/create-new-tenant).
 
-- set the `Organisation Name` to something appropriate for your deployment (e.g. `Contoso Production Safe Haven`)
-- set the `Initial Domain Name` to the lower-case version of the `Organisation Name` with spaces and special characters removed (e.g. `contosoproductionsafehaven`)
-- set the `Country or Region` to whichever country is appropriate for your deployment (e.g. `United Kingdom`)
+- set the **Organisation Name** to something appropriate for your deployment (_e.g._ _Contoso Production Safe Haven_)
+- set the **Initial Domain Name** to the lower-case version of the organisation name with spaces and special characters removed (_e.g._ _contosoproductionsafehaven_)
+- set the **Country or Region** to whichever country is appropriate for your deployment (_e.g._ _United Kingdom_)
 
 :::
 
@@ -41,7 +41,7 @@ Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundament
 Before deploying the Safe Haven Management (SHM) infrastructure you need to decide on a few parameters:
 
 - `entra_tenant_id`: Tenant ID for the Entra ID used to manage TRE users
-- `fqdn`: Domain you want your users to belong to and to access your TRE from
+- `fqdn`: Fully-qualified domain you want your users to belong to and to access your TRE from
 - `location`: Azure location where you want your resources deployed
 
 :::{admonition} How to find your Microsoft Entra Tenant ID
@@ -58,7 +58,7 @@ Before deploying the Safe Haven Management (SHM) infrastructure you need to deci
 Once you've decided on these, run the following command: [approx 5 minutes]:
 
 ```{code} shell
-$ dsh shm deploy --entra-tenant-id <Entra tenant ID> --fqdn <fully-qualified domain name> --location <location>
+$ dsh shm deploy --entra-tenant-id _YOUR_ENTRA_TENANT_ID_ --fqdn _YOUR_DOMAIN_NAME_ --location _YOUR_LOCATION_
 ```
 
 :::{note}
