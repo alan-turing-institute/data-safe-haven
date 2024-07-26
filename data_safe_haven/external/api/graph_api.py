@@ -682,6 +682,20 @@ class GraphApi:
             msg = f"Could not assign delegated role '{application_role_name}' to application '{application_name}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
+    @staticmethod
+    def http_raise_for_status(response: requests.Response) -> None:
+        """Check the status of a response
+
+        Raises:
+            RequestException if the response did not succeed
+        """
+        # We do not use response.ok as this allows 3xx codes
+        if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
+            return
+        raise requests.exceptions.RequestException(
+            response=response, request=response.request
+        )
+
     def http_delete(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP DELETE request
 
@@ -698,16 +712,14 @@ class GraphApi:
                 timeout=120,
                 **kwargs,
             )
+            self.http_raise_for_status(response)
+            return response
+
         except requests.exceptions.RequestException as exc:
             msg = f"Could not execute DELETE request to '{url}'."
+            if exc.response:
+                msg += f" Response content received: '{exc.response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-        # We do not use response.ok as this allows 3xx codes
-        if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
-            return response
-        else:
-            msg = f"Could not execute DELETE request to '{url}'. Response content received: '{response.content.decode()}'."
-            raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_get_single_page(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP GET request
@@ -725,16 +737,13 @@ class GraphApi:
                 timeout=120,
                 **kwargs,
             )
+            self.http_raise_for_status(response)
+            return response
         except requests.exceptions.RequestException as exc:
             msg = f"Could not execute GET request to '{url}'."
+            if exc.response:
+                msg += f" Response content received: '{exc.response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-        # We do not use response.ok as this allows 3xx codes
-        if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
-            return response
-        else:
-            msg = f"Could not execute GET request to '{url}'. Response content received: '{response.content.decode()}'. Token {self.token}"
-            raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_get(self, url: str, **kwargs: Any) -> requests.Response:
         """Make a paged HTTP GET request and return all values
@@ -763,9 +772,13 @@ class GraphApi:
             response._content = json.dumps(json_content).encode("utf-8")
 
             # Return the full response
+            self.http_raise_for_status(response)
             return response
         except requests.exceptions.RequestException as exc:
-            msg = f"Could not execute GET request to '{base_url}'. Response content received: '{response.content.decode()}'. Token {self.token}"
+            msg = f"Could not execute GET request to '{base_url}'."
+            if exc.response:
+                msg += f" Response content received: '{exc.response.content.decode()}'."
+            msg += f" Token {self.token}."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def http_patch(self, url: str, **kwargs: Any) -> requests.Response:
@@ -784,16 +797,13 @@ class GraphApi:
                 timeout=120,
                 **kwargs,
             )
+            self.http_raise_for_status(response)
+            return response
         except requests.exceptions.RequestException as exc:
             msg = f"Could not execute PATCH request to '{url}'."
+            if exc.response:
+                msg += f" Response content received: '{exc.response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-        # We do not use response.ok as this allows 3xx codes
-        if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
-            return response
-        else:
-            msg = f"Could not execute PATCH request to '{url}'. Response content received: '{response.content.decode()}'."
-            raise DataSafeHavenMicrosoftGraphError(msg)
 
     def http_post(self, url: str, **kwargs: Any) -> requests.Response:
         """Make an HTTP POST request
@@ -811,16 +821,16 @@ class GraphApi:
                 timeout=120,
                 **kwargs,
             )
+            self.http_raise_for_status(response)
+
+            # Wait for operation to complete before returning
+            time.sleep(30)
+            return response
         except requests.exceptions.RequestException as exc:
             msg = f"Could not execute POST request to '{url}'."
+            if exc.response:
+                msg += f" Response content received: '{exc.response.content.decode()}'."
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
-
-        # We do not use response.ok as this allows 3xx codes
-        if requests.codes.OK <= response.status_code < requests.codes.MULTIPLE_CHOICES:
-            time.sleep(30)  # wait for operation to complete
-            return response
-        msg = f"Could not execute POST request to '{url}'. Response content received: '{response.content.decode()}'."
-        raise DataSafeHavenMicrosoftGraphError(msg)
 
     def read_applications(self) -> Sequence[dict[str, Any]]:
         """Get list of applications
