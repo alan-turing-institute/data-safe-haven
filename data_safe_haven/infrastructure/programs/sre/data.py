@@ -254,7 +254,7 @@ class SREDataComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Secret: dns server admin password
+        # Secret: DNS server admin password
         keyvault.Secret(
             f"{self._name}_kvs_password_dns_server_admin",
             properties=keyvault.SecretPropertiesArgs(
