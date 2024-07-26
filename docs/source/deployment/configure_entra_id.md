@@ -23,9 +23,9 @@ Use the following settings:
 - **Properties** tab:
     - **Usage location:** set to the country being used for this deployment
 - **Assigments** tab:
-    - Click the **+ Add role** button
+    - Click the **{guilabel}`+ Add role`** button
     - Search for **Global Administrator**, and check the box
-    - Click the **Select** button
+    - Click the **{guilabel}`Select`** button
 
 :::
 
@@ -39,7 +39,7 @@ This is necessary both to secure logins and to allow users to set their own pass
 - Browse to **{menuselection}`Manage --> Policies`** from the secondary menu on the left side
 - For each of **Microsoft Authenticator**, **SMS**, **Third-party software OATH tokens**, **Voice call** and **Email OTP** click on the method name
     - Ensure the slider is set to **Enable** and the target to **All users**
-    - Click the **Save** button
+    - Click the **{guilabel}`Save`** button
 
 ## Activate a native Microsoft Entra account
 
@@ -81,7 +81,7 @@ The **User principal name** field for external users will contain the external d
 
 - Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com/)
 - Click on your profile picture at the top right of the page
-- Click the **Sign out** button to log out of any accounts
+- Click the **{guilabel}`Sign out`** button to log out of any accounts
 - Log in with your native administrator credentials
 - Follow the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-create-delete-users#delete-a-user) to delete each external user
 
@@ -111,8 +111,8 @@ P1 Licences are sufficient but you may use another licence if you prefer.
 - Browse to **{menuselection}`Identity --> Billing --> Licenses`** from the menu on the left side
 - Browse to **{menuselection}`All products`** from the secondary menu on the left side
 - If you have not currently licenced a product:
-    - Click on **+Try/Buy** and choose a suitable product
-    - Click the **Activate** button
+    - Click on **{guilabel}`+Try/Buy`** and choose a suitable product
+    - Click the **{guilabel}`Activate`** button
 - Wait a few minutes until the selected licence appears on the **All products** view
 
 ## Enable self-service password reset
@@ -132,8 +132,8 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
 - In the pop-up menu on the right, set
     - **Security defaults** to **Disabled (not recommended)**
     - Select **My organization is planning to use Conditional Access**
-    - Click the **Save** button
-- At the prompt click the **Disable** button
+    - Click the **{guilabel}`Save`** button
+- At the prompt click the **{guilabel}`Disable`** button
 
 ## Apply conditional access policies
 
@@ -160,11 +160,11 @@ These instructions will create a policy which requires all users (except the eme
     - Select **Device platforms** and set:
         - **Configure:** Select **Yes**
         - **Select device platforms:** Check all the boxes
-        - Click the **Done** button
+        - Click the **{guilabel}`Done`** button
 - Under **{menuselection}`Grant`**:
     - Check **Grant access**
     - Check **Require multi-factor authentication**
-    - Click the **Select** button
+    - Click the **{guilabel}`Select`** button
 - Under **{menuselection}`Session`**:
     - Check **Sign-in frequency**
     - Check **Periodic reauthentication**
@@ -172,7 +172,7 @@ These instructions will create a policy which requires all users (except the eme
 - Under **{menuselection}`Enable policy`**:
     - Select **On**
     - Check **I understand that my account will be impacted by this policy. Proceed anyway.**
-- Click the **Create** button
+- Click the **{guilabel}`Create`** button
 
 :::
 
@@ -192,17 +192,17 @@ These instructions will prevent non-administrators from being able to view the E
 - Under **{menuselection}`Target resources`**:
     - **Include**:
         - Select **Select apps**
-        - Click the **Select** button
+        - Click the **{guilabel}`Select`** button
         - In the pop-up menu on the right, select
             - **Windows Azure Service Management API** and
             - **Microsoft Graph Command Line Tools** then
-        - Click the **Select** button
+        - Click the **{guilabel}`Select`** button
     - **Exclude**: Leave unchanged as **None**
 - Under **{menuselection}`Grant`**:
     - Check **Block access**
-    - Click the **Select** button
+    - Click the **{guilabel}`Select`** button
 - Under **{menuselection}`Enable policy`**
     - Select **On**
-- Click the **Create** button
+- Click the **{guilabel}`Create`** button
 
 :::
