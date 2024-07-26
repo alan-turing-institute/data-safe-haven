@@ -142,6 +142,8 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
 
 ### Require MFA
 
+These instructions will create a policy which requires all users (except the emergency administrator if you have created one) to use multi-factor authentication (MFA) to log in.
+
 - Create a new policy named `Require MFA`
 - Under `Users` set:
     - **Include**: Select `All users`
@@ -167,6 +169,8 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
 - Click the `Create` button
 
 ### Restrict Microsoft Entra ID access
+
+These instructions will prevent non-administrators from being able to view the Entra ID configuration.
 
 - Create a new policy named `Restrict Microsoft Entra ID access`
 - Under `Users` set:
