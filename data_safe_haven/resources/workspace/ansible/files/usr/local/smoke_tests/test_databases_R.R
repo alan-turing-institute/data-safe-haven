@@ -34,7 +34,7 @@ if (db_type == "mssql") {
         host = server_name,
         port = port,
         dbname = db_name,
-        user = paste(username, "@", hostname, sep=""),
+        user = username,
         password = password
     )
 } else {
