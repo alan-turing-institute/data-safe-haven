@@ -154,11 +154,14 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
     - **Configure:** `Yes`
     - **Select device platforms:** Check all the boxes
     - Click `Done`
-- Under `Grant` set:
+- Under `Grant`:
     - Check `Grant access`
     - Check `Require multi-factor authentication`
     - Click `Select`
-- Leave the `Session` condition unchanged
+- Under `Session`:
+    - Check `Sign-in frequency`
+    - Check `Periodic reauthentication`
+        - Set the value to `1 day(s)`
 - Under `Enable policy` select `On`
     - Check `I understand that my account will be impacted by this policy. Proceed anyway.`
 - Click the `Create` button
@@ -180,7 +183,7 @@ In order to enable self-service password reset (SSPR) you will need to do the fo
             - `Microsoft Graph Command Line Tools` then
         - Click `Select`
     - **Exclude**: Leave unchanged as `None`
-- Under `Grant` set:
+- Under `Grant`:
     - Check `Block access`
     - Click `Select`
 - Under `Enable policy` select `On`
