@@ -54,7 +54,7 @@ class SREWorkspacesProps:
         self.apt_proxy_server_hostname = apt_proxy_server_hostname
         self.data_collection_rule_id = data_collection_rule_id
         self.data_collection_endpoint_id = data_collection_endpoint_id
-        self.database_service_admin_password = (database_service_admin_password,)
+        self.database_service_admin_password = database_service_admin_password
         self.ldap_group_filter = ldap_group_filter
         self.ldap_group_search_base = ldap_group_search_base
         self.ldap_server_hostname = ldap_server_hostname
