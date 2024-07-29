@@ -377,9 +377,9 @@ class ProjectManager:
     def teardown(self, *, force: bool = False) -> None:
         """Teardown the infrastructure deployed with Pulumi."""
         try:
-            self.refresh()
             if force:
                 self.cancel()
+            self.refresh()
             self.destroy()
             self.cleanup()
         except Exception as exc:
