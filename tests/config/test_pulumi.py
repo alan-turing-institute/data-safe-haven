@@ -7,7 +7,6 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureSdk
 
-
 class TestDSHPulumiProject:
     def test_pulumi_project(self, pulumi_project):
         assert isinstance(pulumi_project.stack_config, dict)
@@ -153,6 +152,7 @@ class TestDSHPulumiConfig:
         mock_download = mocker.patch.object(
             AzureSdk, "download_blob", return_value=pulumi_config_yaml
         )
+        mock_storage_exists = mocker.patch.object(AzureSdk, "storage_exists", return_value=True)
         pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
 
         assert isinstance(pulumi_config, DSHPulumiConfig)
@@ -173,10 +173,16 @@ class TestDSHPulumiConfig:
             context.storage_container_name,
         )
 
+        mock_storage_exists.assert_called_once_with(
+            context.storage_account_name,
+        )
+
+
     def test_from_remote_or_create_create(
         self, mocker, pulumi_config_yaml, context  # noqa: ARG002
     ):
         mock_exists = mocker.patch.object(AzureSdk, "blob_exists", return_value=False)
+        mock_storage_exists = mocker.patch.object(AzureSdk, "storage_exists", return_value=True)
         pulumi_config = DSHPulumiConfig.from_remote_or_create(
             context, encrypted_key="abc", projects={}
         )
@@ -189,6 +195,10 @@ class TestDSHPulumiConfig:
             context.resource_group_name,
             context.storage_account_name,
             context.storage_container_name,
+        )
+
+        mock_storage_exists.assert_called_once_with(
+            context.storage_account_name,
         )
 
     def test_create_or_select_project(self, pulumi_config, pulumi_project):
