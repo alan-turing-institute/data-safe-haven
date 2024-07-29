@@ -11,12 +11,14 @@ class PostgresqlDatabaseProps:
 
     def __init__(
         self,
+        *,
         database_names: Input[Sequence[str]],
         database_password: Input[str],
         database_resource_group_name: Input[str],
         database_server_name: Input[str],
         database_subnet_id: Input[str],
         database_username: Input[str],
+        disable_secure_transport: bool,
         location: Input[str],
     ) -> None:
         self.database_names = Output.from_input(database_names)
@@ -25,6 +27,7 @@ class PostgresqlDatabaseProps:
         self.database_server_name = database_server_name
         self.database_subnet_id = database_subnet_id
         self.database_username = database_username
+        self.disable_secure_transport = disable_secure_transport
         self.location = location
 
 
@@ -77,16 +80,19 @@ class PostgresqlDatabaseComponent(ComponentResource):
             tags=child_tags,
         )
         # Configure require_secure_transport
-        dbforpostgresql.Configuration(
-            f"{self._name}_secure_transport_configuration",
-            configuration_name="require_secure_transport",
-            resource_group_name=props.database_resource_group_name,
-            server_name=db_server.name,
-            source="user-override",
-            value="OFF",
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=db_server)),
-            tags=child_tags,
-        )
+        if props.disable_secure_transport:
+            dbforpostgresql.Configuration(
+                f"{self._name}_secure_transport_configuration",
+                configuration_name="require_secure_transport",
+                resource_group_name=props.database_resource_group_name,
+                server_name=db_server.name,
+                source="user-override",
+                value="OFF",
+                opts=ResourceOptions.merge(
+                    child_opts, ResourceOptions(parent=db_server)
+                ),
+                tags=child_tags,
+            )
         # Add any databases that are requested
         props.database_names.apply(
             lambda db_names: [

@@ -90,6 +90,7 @@ class SREDatabaseServerComponent(ComponentResource):
                     database_server_name=f"{stack_name}-db-server-postgresql",
                     database_subnet_id=props.subnet_id,
                     database_username=props.database_username,
+                    disable_secure_transport=True,
                     location=props.location,
                 ),
                 opts=child_opts,
