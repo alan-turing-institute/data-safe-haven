@@ -9,6 +9,7 @@ You will need a full name, phone number, email address and country for each user
 1. You can add users directly in your Entra tenant, following the instructions [here](https://learn.microsoft.com/en-us/entra/fundamentals/how-to-create-delete-users).
 
 2. Alternatively, you can add multiple users from a CSV file with columns named (`GivenName`, `Surname`, `Phone`, `Email`, `CountryCode`).
+    - (Optional) you can provide a `Domain` column if you like but this will otherwise default to the domain of your SHM
 
 ```{code} shell
 $ dsh users add <my CSV users file>
