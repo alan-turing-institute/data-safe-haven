@@ -84,6 +84,8 @@ class PostgresqlDatabaseComponent(ComponentResource):
             server_name=db_server.name,
             source="user-override",
             value="OFF",
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=db_server)),
+            tags=child_tags,
         )
         # Add any databases that are requested
         props.database_names.apply(
