@@ -91,7 +91,6 @@ class PostgresqlDatabaseComponent(ComponentResource):
                 opts=ResourceOptions.merge(
                     child_opts, ResourceOptions(parent=db_server)
                 ),
-                tags=child_tags,
             )
         # Add any databases that are requested
         props.database_names.apply(
