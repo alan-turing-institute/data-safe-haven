@@ -81,7 +81,7 @@ class PostgresqlDatabaseComponent(ComponentResource):
             f"{self._name}_secure_transport_configuration",
             configuration_name="require_secure_transport",
             resource_group_name=props.database_resource_group_name,
-            server_name=props.database_server_name,
+            server_name=db_server.name,
             source="user-override",
             value="OFF",
         )
