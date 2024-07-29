@@ -147,12 +147,11 @@ class TestDSHPulumiConfig:
             context.storage_container_name,
         )
 
-    def test_from_remote_or_create(self, mocker, pulumi_config_yaml, context):
+    def test_from_remote_or_create(self, mocker, pulumi_config_yaml, context, mock_storage_exists):
         mock_exists = mocker.patch.object(AzureSdk, "blob_exists", return_value=True)
         mock_download = mocker.patch.object(
             AzureSdk, "download_blob", return_value=pulumi_config_yaml
         )
-        mock_storage_exists = mocker.patch.object(AzureSdk, "storage_exists", return_value=True)
         pulumi_config = DSHPulumiConfig.from_remote_or_create(context, projects={})
 
         assert isinstance(pulumi_config, DSHPulumiConfig)
@@ -179,10 +178,9 @@ class TestDSHPulumiConfig:
 
 
     def test_from_remote_or_create_create(
-        self, mocker, pulumi_config_yaml, context  # noqa: ARG002
+        self, mocker, pulumi_config_yaml, context, mock_storage_exists  # noqa: ARG002
     ):
         mock_exists = mocker.patch.object(AzureSdk, "blob_exists", return_value=False)
-        mock_storage_exists = mocker.patch.object(AzureSdk, "storage_exists", return_value=True)
         pulumi_config = DSHPulumiConfig.from_remote_or_create(
             context, encrypted_key="abc", projects={}
         )
