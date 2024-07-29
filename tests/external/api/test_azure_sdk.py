@@ -158,7 +158,8 @@ class TestAzureSdk:
         sdk = AzureSdk("subscription name")
         assert sdk.tenant_id == request.config.guid_tenant
 
-    def test_blob_exists(self, mock_blob_client):  # noqa: ARG002
+    def test_blob_exists(self, mocker, mock_blob_client):  # noqa: ARG002
+        mock_storage = mocker.patch.object(AzureSdk, "storage_exists", return_value=True)
         sdk = AzureSdk("subscription name")
         exists = sdk.blob_exists(
             "exists", "resource_group", "storage_account", "storage_container"
@@ -166,13 +167,22 @@ class TestAzureSdk:
         assert isinstance(exists, bool)
         assert exists
 
-    def test_blob_does_not_exist(self, mock_blob_client):  # noqa: ARG002
+        mock_storage.assert_called_once_with(
+            "storage_account",
+        )
+
+    def test_blob_does_not_exist(self, mocker, mock_blob_client):  # noqa: ARG002
+        mock_storage = mocker.patch.object(AzureSdk, "storage_exists", return_value=True)
         sdk = AzureSdk("subscription name")
         exists = sdk.blob_exists(
             "abc.txt", "resource_group", "storage_account", "storage_container"
         )
         assert isinstance(exists, bool)
         assert not exists
+
+        mock_storage.assert_called_once_with(
+            "storage_account",
+        )
 
     def test_get_keyvault_key(self, mock_key_client):  # noqa: ARG002
         sdk = AzureSdk("subscription name")
