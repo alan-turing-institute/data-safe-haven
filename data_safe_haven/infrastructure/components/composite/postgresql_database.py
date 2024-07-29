@@ -89,7 +89,11 @@ class PostgresqlDatabaseComponent(ComponentResource):
                 source="user-override",
                 value="OFF",
                 opts=ResourceOptions.merge(
-                    child_opts, ResourceOptions(parent=db_server)
+                    child_opts,
+                    # Pulumi workaround for being unable to delete Configuration
+                    # resource
+                    # https://github.com/pulumi/pulumi-azure-native/issues/3072
+                    ResourceOptions(parent=db_server, retain_on_delete=True),
                 ),
             )
         # Add any databases that are requested
