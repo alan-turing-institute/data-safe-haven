@@ -32,7 +32,7 @@ install_r_package_version() {
 }
 
 check_db_credentials() {
-    db_credentials="${HOME}/.local/db.dsh"
+    db_credentials="/etc/database_credential"
     if [ -f "$db_credentials" ]; then
         return 0
     fi

@@ -5,13 +5,20 @@
 
   tasks:
     - name: Update package cache
+      tags: apt
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 600
 
+    - name: List apt packages to install
+      tags: apt
+      ansible.builtin.debug:
+        msg: "{{ apt_packages.common | union(apt_packages[ansible_facts.distribution_release]) }}"
+
     - name: Install apt packages
+      tags: apt
       ansible.builtin.apt:
-        name: "{{ apt_packages.common | union(apt_packages[ansible_facts['distribution_release']]) }}"
+        name: "{{ apt_packages.common | union(apt_packages[ansible_facts.distribution_release]) }}"
         state: present
       async: 3600
       poll: 30
@@ -99,17 +106,63 @@
         - xrdp
         - xrdp-sesman
 
-    - name: Copy test files
+    - name: Add polkit rule to allow colord
+      ansible.builtin.copy:
+        src: etc/polkit-1/localauthority/50-local.d/50-colord.pkla
+        dest: /etc/polkit-1/localauthority/50-local.d/50-colord.pkla
+        mode: '0644'
+
+    - name: Enable and start auditd service
+      tags: auditd
+      ansible.builtin.systemd:
+        name: auditd
+        enabled: true
+        state: started
+
+    - name: Get minimum uid  # noqa: inline-env-var
+      tags: auditd
+      ansible.builtin.command:
+        cmd: awk '/^\s*UID_MIN/{print $2}' /etc/login.defs
+      register: uid_min
+      changed_when: false
+
+    - name: Template auditd rules
+      tags: auditd
+      ansible.builtin.template:
+        src: etc/audit/rules.d/audit.rules.j2
+        dest: /etc/audit/rules.d/audit.rules
+        mode: '0640'
+      notify: Restart auditd
+
+    - name: Copy auditd privileged executable rules script
+      tags: auditd
+      ansible.builtin.copy:
+        src: usr/local/bin/privileged-rules
+        dest: /usr/local/bin/privileged-rules
+        mode: '0500'
+
+    - name: Generate auditd privileged executable rules
+      tags: auditd
+      ansible.builtin.shell:
+        cmd: /usr/local/bin/privileged-rules > /etc/audit/rules.d/50-privileged.rules
+        creates: /etc/audit/rules.d/50-privileged.rules
+      notify: Restart auditd
+
+    - name: Copy smoke test files
       ansible.builtin.copy:
         src: "{{ item }}"
-        dest: /home/dshadmin/tests/
-        mode: '0700'
-        owner: dshadmin
-        group: dshadmin
-      with_fileglob: 'home/dshadmin/tests/*'
+        dest: /usr/local/smoke_tests/
+        mode: '0755'
+      with_fileglob: 'usr/local/smoke_tests/*'
 
 
   handlers:
+    - name: Restart auditd
+      ansible.builtin.systemd:
+        name: auditd
+        enabled: true
+        state: restarted
+
     - name: Restart sshd
       ansible.builtin.systemd:
         name: sshd

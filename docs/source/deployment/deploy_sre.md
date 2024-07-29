@@ -1,6 +1,6 @@
 (deploy_sre)=
 
-# Deploy a Secure Research Environment (SRE)
+# Deploy a Secure Research Environment
 
 ## Configuration
 
@@ -61,5 +61,5 @@ $ az feature register --name "enablePrivateEndpoint" --namespace "Microsoft.DBfo
 - Deploy each SRE individually [approx 30 minutes]:
 
 ```{code} shell
-$ dsh sre deploy <name of your SRE>
+$ dsh sre deploy _YOUR_SRE_NAME_
 ```

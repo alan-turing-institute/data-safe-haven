@@ -10,7 +10,7 @@ authors = [
   { name = "Data Safe Haven development team", email = "safehavendevs@turing.ac.uk" },
 ]
 requires-python = "==3.12.*"
-license = "BSD-3-Clause"
+license = { text = "BSD-3-Clause" }
 dependencies = [
   "appdirs>=1.4",
   "azure-core>=1.26",
@@ -76,6 +76,7 @@ dependencies = [
   "myst-parser>=2.0.0",
   "pydata-sphinx-theme>=0.15.0",
   "Sphinx>=7.3.0",
+  "sphinx-togglebutton>0.3.0",
 ]
 pre-install-commands = ["pip install -r docs/requirements.txt"]
 

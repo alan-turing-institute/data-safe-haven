@@ -12,7 +12,7 @@ while getopts d:l: flag; do
     esac
 done
 
-db_credentials="${HOME}/.local/db.dsh"
+db_credentials="/etc/database_credential"
 if [ -f "$db_credentials" ]; then
     username="databaseadmin"
     password="$(cat "$db_credentials")"

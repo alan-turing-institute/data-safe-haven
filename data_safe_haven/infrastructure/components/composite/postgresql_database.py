@@ -76,6 +76,15 @@ class PostgresqlDatabaseComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
+        # Configure require_secure_transport
+        dbforpostgresql.Configuration(
+            f"{self._name}_secure_transport_configuration",
+            configuration_name="require_secure_transport",
+            resource_group_name=props.database_resource_group_name,
+            server_name=props.database_server_name,
+            source="user-override",
+            value="OFF",
+        )
         # Add any databases that are requested
         props.database_names.apply(
             lambda db_names: [

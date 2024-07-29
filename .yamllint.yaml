@@ -1,11 +1,25 @@
 ---
+# Some rules here are added for compatibility with ansible-lint
+# https://ansible.readthedocs.io/projects/lint/rules/yaml/
 extends: default
 rules:
+  # Restrict acceptable spaces inside brackets
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
   # Remove requirement for comments to start with '# ' as this breaks cloud-init
   comments:
+    min-spaces-from-content: 1
     require-starting-space: false
+  # Don't force comments to be indented like content
+  comments-indentation: false
   # Remove requirement to start with '---' as this breaks cloud-init
   document-start: disable
   # Allow longer lines
   line-length:
     max: 400
+  # Forbid non-quoted octal values
+  # https://yamllint.readthedocs.io/en/stable/rules.html#module-yamllint.rules.octal_values
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
