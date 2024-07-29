@@ -7,6 +7,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureSdk
 
+
 class TestDSHPulumiProject:
     def test_pulumi_project(self, pulumi_project):
         assert isinstance(pulumi_project.stack_config, dict)
