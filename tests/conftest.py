@@ -252,6 +252,13 @@ def mock_key_vault_key(monkeypatch):
 
     monkeypatch.setattr(AzureSdk, "get_keyvault_key", mock_get_keyvault_key)
 
+@fixture
+def mock_storage_exists(mocker):
+    return mocker.patch.object(
+        AzureSdk,
+        "storage_exists",
+        return_value=True,
+    )
 
 @fixture
 def offline_pulumi_account(monkeypatch):
