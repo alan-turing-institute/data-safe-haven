@@ -85,7 +85,7 @@ class ContextManager(YAMLSerialisableModel):
         if context := self.context:
             return context
         else:
-            msg = "No context selected"
+            msg = "No context selected."
             raise DataSafeHavenConfigError(msg)
 
     def update(
