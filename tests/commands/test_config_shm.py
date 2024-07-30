@@ -48,5 +48,14 @@ class TestShowSHM:
             ContextManager, "from_file", side_effect=DataSafeHavenConfigError(" ")
         )
         result = runner.invoke(config_command_group, ["show-shm"])
-        assert "No context" in result.stdout
+        assert "No context is selected" in result.stdout
+        assert result.exit_code == 1
+
+    def test_no_selected_context(self, mocker, runner):
+
+        mocker.patch.object(
+            ContextManager, "assert_context", side_effect=DataSafeHavenConfigError(" ")
+        )
+        result = runner.invoke(config_command_group, ["show-shm"])
+        assert "No context is selected" in result.stdout
         assert result.exit_code == 1
