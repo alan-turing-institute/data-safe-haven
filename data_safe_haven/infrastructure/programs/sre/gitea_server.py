@@ -175,6 +175,7 @@ class SREGiteaServerComponent(ComponentResource):
                 database_server_name=f"{stack_name}-db-server-gitea",
                 database_subnet_id=props.database_subnet_id,
                 database_username=props.database_username,
+                disable_secure_transport=False,
                 location=props.location,
             ),
             opts=child_opts,
