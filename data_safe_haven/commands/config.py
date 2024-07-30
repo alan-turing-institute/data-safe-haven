@@ -116,7 +116,7 @@ def upload(
     logger = get_logger()
 
     # Create configuration object from file
-    if file:
+    if file.is_file():
         with open(file) as config_file:
             config_yaml = config_file.read()
     else:
