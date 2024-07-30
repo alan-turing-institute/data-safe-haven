@@ -1,7 +1,11 @@
 from data_safe_haven.commands.config import config_command_group
 from data_safe_haven.config import ContextManager, SREConfig
 from data_safe_haven.config.sre_config import sre_config_name
-from data_safe_haven.exceptions import DataSafeHavenConfigError
+from data_safe_haven.exceptions import (
+    DataSafeHavenAzureStorageError,
+    DataSafeHavenConfigError,
+    DataSafeHavenError,
+)
 from data_safe_haven.external import AzureSdk
 
 
@@ -36,7 +40,6 @@ class TestShowSRE:
         assert sre_config_yaml in template_text
 
     def test_no_context(self, mocker, runner):
-
         sre_name = "sandbox"
         mocker.patch.object(
             ContextManager, "from_file", side_effect=DataSafeHavenConfigError(" ")
@@ -46,13 +49,32 @@ class TestShowSRE:
         assert result.exit_code == 1
 
     def test_no_selected_context(self, mocker, runner):
-
         sre_name = "sandbox"
         mocker.patch.object(
             ContextManager, "assert_context", side_effect=DataSafeHavenConfigError(" ")
         )
         result = runner.invoke(config_command_group, ["show", sre_name])
         assert "No context is selected" in result.stdout
+        assert result.exit_code == 1
+
+    def test_no_storage_account(self, mocker, runner):
+        sre_name = "sandbox"
+        mocker.patch.object(
+            SREConfig,
+            "from_remote_by_name",
+            side_effect=DataSafeHavenAzureStorageError(" "),
+        )
+        result = runner.invoke(config_command_group, ["show", sre_name])
+        assert "Ensure SHM is deployed" in result.stdout
+        assert result.exit_code == 1
+
+    def test_incorrect_sre_name(self, mocker, runner):
+        sre_name = "sandbox"
+        mocker.patch.object(
+            SREConfig, "from_remote_by_name", side_effect=DataSafeHavenError(" ")
+        )
+        result = runner.invoke(config_command_group, ["show", sre_name])
+        assert "No configuration exists for an SRE" in result.stdout
         assert result.exit_code == 1
 
 
