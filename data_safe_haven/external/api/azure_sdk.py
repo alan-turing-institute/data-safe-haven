@@ -1252,9 +1252,7 @@ class AzureSdk:
         storage_client = StorageManagementClient(
             self.credential(), self.subscription_id
         )
-        return not storage_client.storage_accounts.check_name_availability(
-            {"name": storage_account_name}
-        ).name_available
+        return storage_account_name in storage_client.storage_account.list()
 
     def upload_blob(
         self,
