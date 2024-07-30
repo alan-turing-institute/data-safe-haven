@@ -65,7 +65,7 @@ def show(
         context = ContextManager.from_file().assert_context()
     except DataSafeHavenConfigError as exc:
         logger.critical(
-            "No context is currently selected. Use `dsh context add` to create a context "
+            "No context is selected. Use `dsh context add` to create a context "
             "or `dsh context switch` to select one."
         )
         raise typer.Exit(1) from exc
