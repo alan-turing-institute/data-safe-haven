@@ -8,6 +8,7 @@ from data_safe_haven.exceptions import (
 )
 from data_safe_haven.external import AzureSdk
 
+from pathlib import Path
 
 class TestShowSRE:
     def test_show(self, mocker, runner, context, sre_config_yaml):
@@ -217,3 +218,12 @@ class TestUploadSRE:
             ["upload"],
         )
         assert result.exit_code == 2
+
+    def test_upload_file_does_not_exist(self, mocker, runner):
+        mocker.patch.object(Path, "is_file", return_value=False)
+        result = runner.invoke(
+            config_command_group,
+            ["upload", "fake_config.yaml"]
+        )
+        assert "Configuration file 'fake_config.yaml' not found." in result.stdout
+        assert result.exit_code == 1
