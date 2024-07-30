@@ -9,6 +9,7 @@ from data_safe_haven import console
 from data_safe_haven.config import ContextManager, SHMConfig, SREConfig
 from data_safe_haven.exceptions import (
     DataSafeHavenAzureStorageError,
+    DataSafeHavenConfigError,
     DataSafeHavenError,
 )
 from data_safe_haven.logging import get_logger
@@ -25,8 +26,15 @@ def show_shm(
     ] = None
 ) -> None:
     """Print the SHM configuration for the selected Data Safe Haven context"""
-    context = ContextManager.from_file().assert_context()
     logger = get_logger()
+    try:
+        context = ContextManager.from_file().assert_context()
+    except DataSafeHavenConfigError as exc:
+        logger.critical(
+            "No context is currently selected. Use `dsh context add` to create a context "
+            "or `dsh context switch` to select one."
+        )
+        raise typer.Exit(1) from exc
     try:
         config = SHMConfig.from_remote(context)
     except DataSafeHavenError as exc:
@@ -52,8 +60,15 @@ def show(
     ] = None,
 ) -> None:
     """Print the SRE configuration for the selected SRE and Data Safe Haven context"""
-    context = ContextManager.from_file().assert_context()
     logger = get_logger()
+    try:
+        context = ContextManager.from_file().assert_context()
+    except DataSafeHavenConfigError as exc:
+        logger.critical(
+            "No context is currently selected. Use `dsh context add` to create a context "
+            "or `dsh context switch` to select one."
+        )
+        raise typer.Exit(1) from exc
     try:
         sre_config = SREConfig.from_remote_by_name(context, name)
     except DataSafeHavenAzureStorageError as exc:
@@ -101,12 +116,12 @@ def upload(
     logger = get_logger()
 
     # Create configuration object from file
-    try:
+    if file:
         with open(file) as config_file:
             config_yaml = config_file.read()
-    except FileNotFoundError as exc:
+    else:
         logger.critical(f"Configuration file '{file}' not found.")
-        raise typer.Exit(1) from exc
+        raise typer.Exit(1)
     config = SREConfig.from_yaml(config_yaml)
 
     # Present diff to user
