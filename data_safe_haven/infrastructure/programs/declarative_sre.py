@@ -2,6 +2,10 @@
 
 import pulumi
 from pulumi_azure_native import resources
+from sre.apps import (
+    SREAppsComponent,
+    SREAppsProps,
+)
 
 from data_safe_haven.config import Context, SREConfig
 from data_safe_haven.infrastructure.common import DockerHubCredentials
@@ -323,6 +327,17 @@ class DeclarativeSRE:
                 subnet_containers_support=networking.subnet_user_services_containers_support,
                 subnet_databases=networking.subnet_user_services_databases,
                 subnet_software_repositories=networking.subnet_user_services_software_repositories,
+            ),
+            tags=self.tags,
+        )
+
+        # Deploy apps
+        SREAppsComponent(
+            "sre_apps",
+            self.stack_name,
+            SREAppsProps(
+                location=self.config.azure.location,
+                resource_group_name=resource_group.name,
             ),
             tags=self.tags,
         )

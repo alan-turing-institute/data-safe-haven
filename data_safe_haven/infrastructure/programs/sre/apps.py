@@ -4,7 +4,6 @@ from collections.abc import Mapping
 
 from pulumi import ComponentResource, FileArchive, Input, Output, ResourceOptions
 from pulumi_azure_native import (
-    resources,
     storage,
     web,
 )
@@ -12,9 +11,6 @@ from pulumi_azure_native import (
 from data_safe_haven.functions import (
     alphanumeric,
     truncate_tokens,
-)
-from data_safe_haven.infrastructure.common import (
-    get_name_from_rg,
 )
 from data_safe_haven.resources import resources_path
 
@@ -25,12 +21,10 @@ class SREAppsProps:
     def __init__(
         self,
         location: Input[str],
-        resource_group: Input[resources.ResourceGroup],
+        resource_group_name: Input[str],
     ):
         self.location = location
-        self.resource_group_name = Output.from_input(resource_group).apply(
-            get_name_from_rg
-        )
+        self.resource_group_name = resource_group_name
 
 
 class SREAppsComponent(ComponentResource):
