@@ -1,6 +1,6 @@
 from data_safe_haven.commands.config import config_command_group
-from data_safe_haven.config import SHMConfig
-from data_safe_haven.exceptions import DataSafeHavenAzureError
+from data_safe_haven.config import ContextManager, SHMConfig
+from data_safe_haven.exceptions import DataSafeHavenAzureError, DataSafeHavenConfigError
 from data_safe_haven.external import AzureSdk
 
 
@@ -40,4 +40,13 @@ class TestShowSHM:
         )
         result = runner.invoke(config_command_group, ["show-shm"])
         assert "SHM must be deployed" in result.stdout
+        assert result.exit_code == 1
+
+    def test_no_context(self, mocker, runner):
+
+        mocker.patch.object(
+            ContextManager, "from_file", side_effect=DataSafeHavenConfigError(" ")
+        )
+        result = runner.invoke(config_command_group, ["show-shm"])
+        assert "No context" in result.stdout
         assert result.exit_code == 1
