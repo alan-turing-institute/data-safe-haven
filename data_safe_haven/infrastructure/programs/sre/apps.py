@@ -134,7 +134,7 @@ class SREAppsComponent(ComponentResource):
                     {"name": "WEBSITE_RUN_FROM_PACKAGE", "value": blob_url},
                     {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~4"},
                 ],
-            )
+            ),
         )
 
 
