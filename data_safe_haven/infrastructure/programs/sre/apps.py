@@ -1,8 +1,8 @@
 """Pulumi component for SRE function/web apps"""
 
-from typing import Mapping
+from collections.abc import Mapping
 
-from pulumi import ComponentResource, ResourceOptions, Input, FileArchive
+from pulumi import ComponentResource, FileArchive, Input, Output, ResourceOptions
 from pulumi_azure_native import (
     resources,
     storage,
@@ -13,12 +13,22 @@ from data_safe_haven.functions import (
     alphanumeric,
     truncate_tokens,
 )
+from data_safe_haven.infrastructure.common import (
+    get_name_from_rg,
+)
 from data_safe_haven.resources import resources_path
 
 
 class SREAppsProps:
     """Properties for SREAppsComponent"""
-    pass
+
+    def __init__(
+        self,
+        resource_group: Input[resources.ResourceGroup],
+    ):
+        self.resource_group_name = Output.from_input(resource_group).apply(
+            get_name_from_rg
+        )
 
 
 class SREAppsComponent(ComponentResource):
@@ -36,15 +46,6 @@ class SREAppsComponent(ComponentResource):
         child_opts = ResourceOptions.merge(opts, ResourceOptions(parent=self))
         child_tags = tags if tags else {}
 
-        # Deploy resource group
-        resource_group = resources.ResourceGroup(
-            f"{self._name}_resource_group",
-            location=props.location,
-            resource_group_name=f"{stack_name}-rg-apps",
-            opts=child_opts,
-            tags=child_tags,
-        )
-
         # Deploy storage account
         # The storage account holds app data/configuration
         storage_account = storage.StorageAccount(
@@ -54,7 +55,7 @@ class SREAppsComponent(ComponentResource):
             )[:24],
             kind=storage.Kind.STORAGE_V2,
             location=props.location,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             sku=storage.SkuArgs(name=storage.SkuName.STANDARD_GRS),
             opts=child_opts,
             tags=child_tags,
@@ -66,7 +67,7 @@ class SREAppsComponent(ComponentResource):
             account_name=storage_account.name,
             container_name="functions",
             public_access=storage.PublicAccess.NONE,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(parent=storage_account),
@@ -79,7 +80,7 @@ class SREAppsComponent(ComponentResource):
             f"{self._name}_blob_gitea_mirror",
             account_name=storage_account.name,
             container_name=container.name,
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             source=FileArchive(
                 str((resources_path / "gitea_mirror" / "functions").absolute()),
             ),
@@ -96,14 +97,14 @@ class SREAppsComponent(ComponentResource):
             kind="linux",
             location=props.location,
             name=f"{stack_name}-app-service-plan",
-            resource_group_name=resource_group.name,
+            resource_group_name=props.resource_group_name,
             sku={
                 "name": "B1",
                 "tier": "Basic",
                 "size": "B1",
                 "family": "B",
-                "capacity": 1
-            }
+                "capacity": 1,
+            },
         )
 
         # connection_string = get_connection_string()
